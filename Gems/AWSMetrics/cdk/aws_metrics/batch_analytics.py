@@ -5,8 +5,10 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    Fn,
+    CfnOutput,
     aws_athena as athena
 )
 
@@ -19,11 +21,13 @@ class BatchAnalytics:
     Query the metrics stored in the S3 data lake via Amazon Athena
     """
     def __init__(self,
-                 stack: core.Construct,
+                 stack: Construct,
+                 application_name: str,
                  analytics_bucket_name: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._analytics_bucket_name = analytics_bucket_name
         self._events_database_name = events_database_name
         self._events_table_name = events_table_name
@@ -48,7 +52,7 @@ class BatchAnalytics:
                     encryption_configuration=athena.CfnWorkGroup.EncryptionConfigurationProperty(
                         encryption_option='SSE_S3'
                     ),
-                    output_location=core.Fn.sub(
+                    output_location=Fn.sub(
                         body='s3://${AnalyticsBucket}/${AthenaOutputDirectory}/',
                         variables={
                             'AnalyticsBucket': self._analytics_bucket_name,
@@ -58,6 +62,13 @@ class BatchAnalytics:
                 )
             )
         )
+
+        CfnOutput(
+            self._stack,
+            id='AthenaWorkGroupName',
+            description='Name of the Athena work group that contains sample queries',
+            export_name=f"{self._application_name}:AthenaWorkGroup",
+            value=self._athena_work_group.name)
 
     def _create_athena_queries(self) -> None:
         """
@@ -96,9 +107,9 @@ class BatchAnalytics:
             ),
             athena.CfnNamedQuery(
                 self._stack,
-                id='NamedQuery-NewUsersLastMonth',
+                id='NamedQuery-LoginLastMonth',
                 name=resource_name_sanitizer.sanitize_resource_name(
-                    f'{self._stack.stack_name}-NamedQuery-NewUsersLastMonth', 'athena_named_query'),
+                    f'{self._stack.stack_name}-NamedQuery-LoginLastMonth', 'athena_named_query'),
                 database=self._events_database_name,
                 query_string="WITH detail AS ("
                              "SELECT date_trunc('month', date(date_parse(CONCAT(year, '-', month, '-', day), '%Y-%m-%d'))) as event_month, * "
@@ -107,14 +118,16 @@ class BatchAnalytics:
                              "date_trunc('month', event_month) as month, "
                              "count(*) as new_accounts "
                              "FROM detail "
-                             "WHERE event_name = 'user_registration' "
+                             "WHERE event_name = 'login' "
                              "GROUP BY date_trunc('month', event_month)",
-                description='New users over the last month',
+                description='Total number of login events over the last month',
                 work_group=self._athena_work_group.name
             )
         ]
 
+        for named_query in self._named_queries:
+            named_query.node.add_dependency(self._athena_work_group)
+
     @property
     def athena_work_group_name(self) -> athena.CfnWorkGroup.name:
         return self._athena_work_group.name
-

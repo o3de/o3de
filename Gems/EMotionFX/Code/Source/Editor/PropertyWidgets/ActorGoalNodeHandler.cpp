@@ -18,8 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodePicker, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodeHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodePicker, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorGoalNodeHandler, EditorAllocator)
 
     ActorGoalNodePicker::ActorGoalNodePicker(QWidget* parent)
         : QWidget(parent)
@@ -131,7 +131,7 @@ namespace EMotionFX
             if (newSelection.size() == 1)
             {
                 AZStd::string selectedNodeName = newSelection[0].GetNodeName();
-                AZ::u32 selectedActorInstanceId = newSelection[0].mActorInstanceID;
+                AZ::u32 selectedActorInstanceId = newSelection[0].m_actorInstanceId;
 
                 const auto parentDepth = AZStd::find(begin(actorInstanceIDs), end(actorInstanceIDs), selectedActorInstanceId);
                 AZ_Assert(parentDepth != end(actorInstanceIDs), "Cannot get parent depth. The selected actor instance was not shown in the selection window.");
@@ -158,7 +158,8 @@ namespace EMotionFX
 
         connect(picker, &ActorGoalNodePicker::SelectionChanged, this, [picker]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
         });
 
         return picker;

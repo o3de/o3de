@@ -34,7 +34,7 @@ struct OrderedTicker : public TickBus::Handler
 };
 
 
-class OrderedTickBus : public UnitTest::AllocatorsFixture
+class OrderedTickBus : public UnitTest::LeakDetectionFixture
 {};
 
 TEST_F(OrderedTickBus, OnTick_HandlersFireInSortedOrder)
@@ -49,8 +49,7 @@ TEST_F(OrderedTickBus, OnTick_HandlersFireInSortedOrder)
     AZStd::list<OrderedTicker> tickers;
     for (int order : unsortedHandlerOrder)
     {
-        tickers.push_back();
-        OrderedTicker& ticker = tickers.back();
+        OrderedTicker& ticker = tickers.emplace_back();
         ticker.m_order = order;
         ticker.m_targetList = &actualTickOrder;
         ticker.TickBus::Handler::BusConnect();

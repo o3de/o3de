@@ -6,8 +6,6 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <aws/core/utils/memory/stl/AWSStringStream.h>
 
 #include <TestFramework/AWSCoreFixture.h>
@@ -18,7 +16,7 @@ using OBJECT_TYPE = TestObject<AZStd::string>;
 using ARRAY_TYPE = AZStd::vector<AZStd::string>;
 using ARRAY_OF_ARRAY_TYPE = AZStd::vector<AZStd::vector<AZStd::string>>;
 using ARRAY_OF_OBJECT_TYPE = AZStd::vector<TestObject<AZStd::string>>;
-using JsonReaderTest = UnitTest::ScopedAllocatorSetupFixture;
+using JsonReaderTest = AWSCoreFixture;
 
 template<class ValueType>
 void TestJsonReaderSuccess(const ValueType& expectedValue, const char* valueString)

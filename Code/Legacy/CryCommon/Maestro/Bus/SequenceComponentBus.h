@@ -7,10 +7,9 @@
  */
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Vector3.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -44,9 +43,9 @@ namespace Maestro
             const AZStd::string& GetVirtualPropertyName() const { return m_virtualPropertyName; }
             AZ::ComponentId      GetComponentId() const { return m_componentId; }
 
-            bool operator== (const AnimatablePropertyAddress& rhs) const 
-            { 
-                return (m_componentId == rhs.m_componentId && m_virtualPropertyName == rhs.m_virtualPropertyName); 
+            bool operator== (const AnimatablePropertyAddress& rhs) const
+            {
+                return (m_componentId == rhs.m_componentId && m_virtualPropertyName == rhs.m_virtualPropertyName);
             }
 
         private:
@@ -75,7 +74,7 @@ namespace Maestro
             virtual ~AnimatedValue() {};
 
             // Query the type of the value
-            virtual const AZ::Uuid& GetTypeId() const = 0;
+            virtual AZ::TypeId GetTypeId() const = 0;
 
             void GetValue(AZ::Vector3& vector3Value) const
             {
@@ -143,7 +142,7 @@ namespace Maestro
             AnimatedFloatValue(float value = .0f) { m_value = value; }
             ~AnimatedFloatValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<float>::Uuid();
             }
@@ -252,7 +251,7 @@ namespace Maestro
             AnimatedVector3Value(const AZ::Vector3& value) { m_value = value; }
             ~AnimatedVector3Value() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::Vector3::TYPEINFO_Uuid();
             }
@@ -362,7 +361,7 @@ namespace Maestro
             AnimatedQuaternionValue(const AZ::Quaternion value) { m_value = value; }
             ~AnimatedQuaternionValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::Quaternion::TYPEINFO_Uuid();
             }
@@ -379,7 +378,7 @@ namespace Maestro
             float GetFloatValue() const override
             {
                 // return the length of the quat
-                return m_value.GetLength(); 
+                return m_value.GetLength();
             }
             bool GetBoolValue() const override
             {
@@ -474,7 +473,7 @@ namespace Maestro
             AnimatedBoolValue(bool value) { m_value = value; }
             ~AnimatedBoolValue() {}
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<bool>::Uuid();
             }
@@ -584,7 +583,7 @@ namespace Maestro
             AnimatedAssetIdValue() { m_value.SetInvalid(); }
             AnimatedAssetIdValue(const AZ::Data::AssetId& value) { m_value = value; }
 
-            const AZ::Uuid& GetTypeId() const override
+            AZ::TypeId GetTypeId() const override
             {
                 return AZ::AzTypeInfo<AZ::Data::AssetId>::Uuid();
             }
@@ -688,7 +687,7 @@ namespace Maestro
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;  // Only one component on a entity can implement the events
         //////////////////////////////////////////////////////////////////////////
 
-        /** 
+        /**
          * Set a value for an animated property at the given address on the given entity.
          * @param animatedEntityId the entity Id of the entity containing the animatedAddress
          * @param animatedAddress identifies the component and property to be set

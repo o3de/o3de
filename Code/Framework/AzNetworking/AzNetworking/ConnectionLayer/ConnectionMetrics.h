@@ -19,7 +19,7 @@ namespace AzNetworking
     {
         DatarateAtom() = default;
 
-        AZ::TimeMs m_timeAccumulatorMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_timeAccumulatorMs = AZ::Time::ZeroTimeMs;
         uint32_t m_bytesTransmitted = 0;
         uint32_t m_packetsSent = 0;
         uint32_t m_packetsLost = 0;
@@ -78,7 +78,7 @@ namespace AzNetworking
         ConnectionPacketEntry(PacketId packetId, AZ::TimeMs sendTimeMs);
 
         PacketId m_packetId = InvalidPacketId;
-        AZ::TimeMs m_sendTimeMs = AZ::TimeMs{0};
+        AZ::TimeMs m_sendTimeMs = AZ::Time::ZeroTimeMs;
     };
 
     //! @class ConnectionComputeRtt

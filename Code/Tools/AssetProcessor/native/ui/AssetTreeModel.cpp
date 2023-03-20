@@ -16,9 +16,12 @@ namespace AssetProcessor
 
     AssetTreeModel::AssetTreeModel(AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> sharedDbConnection, QObject *parent) :
         QAbstractItemModel(parent),
-        m_sharedDbConnection(sharedDbConnection),
-        m_errorIcon(QStringLiteral(":/stylesheet/img/logging/error.svg"))
+        m_sharedDbConnection(sharedDbConnection)
+        , m_errorIcon(QStringLiteral(":/stylesheet/img/logging/error.svg"))
+        , m_folderIcon(QIcon(QStringLiteral(":/Gallery/Asset_Folder.svg")))
+        , m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
     {
+        m_folderIcon.addFile(QStringLiteral(":/Gallery/Asset_Folder.svg"), QSize(), QIcon::Selected);
         ApplicationManagerNotifications::Bus::Handler::BusConnect();
         AzToolsFramework::AssetDatabase::AssetDatabaseNotificationBus::Handler::BusConnect();
     }
@@ -40,7 +43,7 @@ namespace AssetProcessor
     void AssetTreeModel::Reset()
     {
         beginResetModel();
-        m_root.reset(new AssetTreeItem(AZStd::make_shared<AssetTreeItemData>("", "", true, AZ::Uuid::CreateNull()), m_errorIcon));
+        m_root.reset(new AssetTreeItem(AZStd::make_shared<AssetTreeItemData>("", "", true, AZ::Uuid::CreateNull()), m_errorIcon, m_folderIcon, m_fileIcon));
 
         ResetModel();
 
@@ -168,7 +171,9 @@ namespace AssetProcessor
 
         if (childItem)
         {
-            return createIndex(row, column, childItem);
+            QModelIndex index = createIndex(row, column, childItem);
+            Q_ASSERT(checkIndex(index));
+            return index;
         }
         return QModelIndex();
     }
@@ -197,7 +202,9 @@ namespace AssetProcessor
         {
             return QModelIndex();
         }
-        return createIndex(parentItem->GetRow(), 0, parentItem);
+        QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+        Q_ASSERT(checkIndex(parentIndex));
+        return parentIndex;
     }
 
     bool AssetTreeModel::hasChildren(const QModelIndex &parent) const

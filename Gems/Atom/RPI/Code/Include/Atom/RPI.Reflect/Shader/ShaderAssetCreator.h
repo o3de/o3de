@@ -14,6 +14,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ShaderPlatformInterface;
+    }
+
     namespace RPI
     {
         class ShaderAssetCreator
@@ -36,6 +41,9 @@ namespace AZ
             //! [Required] Assigns the layout used to construct and parse shader options packed into shader variant keys.
             //! Requires that the keys assigned to shader variants were constructed using the same layout.
             void SetShaderOptionGroupLayout(const Ptr<ShaderOptionGroupLayout>& shaderOptionGroupLayout);
+
+            //! [Optional] Sets the default value for one shader option, overriding any default that was specified in the shader code.
+            void SetShaderOptionDefaultValue(const Name& optionName, const Name& optionValue);
 
             //! Begins the shader creation for a specific RHI API.
             //! Begin must be called before the BeginAPI function is called.
@@ -75,11 +83,21 @@ namespace AZ
 
             bool End(Data::Asset<ShaderAsset>& shaderAsset);
 
-            //! Clones an existing ShaderAsset nd replaces the referenced Srg and Variant assets
-            using ShaderRootVariantAssets = AZStd::vector<AZStd::pair<AZ::Crc32, Data::Asset<RPI::ShaderVariantAsset>>>;
+            //! Clones an existing ShaderAsset and replaces the ShaderVariant assets
+            using ShaderRootVariantAssetPair = AZStd::pair<AZ::Crc32, Data::Asset<RPI::ShaderVariantAsset>>;
+            using ShaderRootVariantAssets = AZStd::vector<ShaderRootVariantAssetPair>;
+
+            struct ShaderSupervariant
+            {
+                AZ::Name m_name;
+                ShaderRootVariantAssets m_rootVariantAssets;
+            };
+            using ShaderSupervariants = AZStd::vector<ShaderSupervariant>;
+
             void Clone(const Data::AssetId& assetId,
                        const ShaderAsset& sourceShaderAsset,
-                       const ShaderRootVariantAssets& rootVariantAssets);
+                       const ShaderSupervariants& supervariants,
+                       const AZStd::vector<RHI::ShaderPlatformInterface*>& platformInterfaces);
 
         private:
 
@@ -90,6 +108,7 @@ namespace AZ
             // construction. Additionally, prevents BeginSupervariant to be called more than once before calling EndSupervariant.
             ShaderAsset::Supervariant* m_currentSupervariant = nullptr;
 
+            ShaderOptionGroup m_defaultShaderOptionGroup;
         };
     } // namespace RPI
 } // namespace AZ

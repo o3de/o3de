@@ -14,7 +14,7 @@ namespace JsonSerializationTests
 {
     inline void BaseJsonSerializerFixture::SetUp()
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
 
         auto reportCallback = [](AZStd::string_view /*message*/, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view /*target*/)->
             AZ::JsonSerializationResult::ResultCode
@@ -77,7 +77,7 @@ namespace JsonSerializationTests
         m_jsonRegistrationContext.reset();
         m_serializeContext.reset();
 
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     inline void BaseJsonSerializerFixture::AddSystemComponentDescriptors(ComponentContainer& systemComponents)

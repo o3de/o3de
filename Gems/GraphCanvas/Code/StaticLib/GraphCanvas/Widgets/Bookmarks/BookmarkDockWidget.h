@@ -43,7 +43,7 @@ namespace GraphCanvas
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(BookmarkDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BookmarkDockWidget, AZ::SystemAllocator);
 
         BookmarkDockWidget(EditorId editorId, QWidget* parent = nullptr);
         ~BookmarkDockWidget();
@@ -57,7 +57,7 @@ namespace GraphCanvas
         ////
 
         // GraphCanvas::SceneNotifications
-        void OnSelectionChanged();
+        void OnSelectionChanged() override;
         ////
 
     public Q_SLOTS:

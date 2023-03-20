@@ -16,6 +16,7 @@ namespace AZ
 {
     namespace
     {
+        static const AZStd::string m_emptyValue;
         // helper utility to return a lower version of the string without altering the original.
         // regular to_lower operates directly on the input.
         AZStd::string ToLower(AZStd::string_view inStr)
@@ -157,13 +158,25 @@ namespace AZ
         {
             if (argv[i])
             {
-                AZStd::string currentArg = argv[i]; // this eats the / or -
+                AZStd::string_view currentArg = argv[i]; // this eats the / or -
                 AddArgument(currentArg, currentSwitch);
             }
         }
     }
 
     void CommandLine::Parse(const ParamContainer& commandLine)
+    {
+        m_allValues.clear();
+
+        // This version of Parse does not skip over 0th index
+        AZStd::string currentSwitch;
+        for (int i = 0; i < commandLine.size(); ++i)
+        {
+            AddArgument(commandLine[i], currentSwitch);
+        }
+    }
+
+    void CommandLine::Parse(AZStd::span<const AZStd::string_view> commandLine)
     {
         m_allValues.clear();
 
@@ -204,6 +217,12 @@ namespace AZ
     {
         return AZStd::count_if(m_allValues.begin(), m_allValues.end(),
             [optionName = ToLower(switchName)](const CommandArgument& argument) { return argument.m_option == optionName; });
+    }
+
+    const AZStd::string& CommandLine::GetSwitchValue(AZStd::string_view switchName) const
+    {
+        const AZStd::size_t switchCount = GetNumSwitchValues(switchName);
+        return switchCount > 0 ? GetSwitchValue(switchName, switchCount - 1) : m_emptyValue;
     }
 
     const AZStd::string& CommandLine::GetSwitchValue(AZStd::string_view switchName, AZStd::size_t index) const

@@ -16,7 +16,6 @@
 
 #include <GraphCanvas/Types/Endpoint.h>
 #include <GraphCanvas/Types/Types.h>
-#include <GraphCanvas/Types/TranslationTypes.h>
 
 class QGraphicsLayoutItem;
 
@@ -83,14 +82,15 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(SlotConfiguration, "{E080FC05-EEB6-47A6-B939-F62A45C2B1D2}");
-        AZ_CLASS_ALLOCATOR(SlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotConfiguration, AZ::SystemAllocator);
 
         virtual ~SlotConfiguration() = default;
 
         ConnectionType m_connectionType = ConnectionType::CT_Invalid;
 
-        TranslationKeyedString m_tooltip = TranslationKeyedString();
-        TranslationKeyedString m_name = TranslationKeyedString();
+        AZStd::string m_tooltip;
+        AZStd::string m_name;
+
         SlotGroup m_slotGroup = SlotGroups::Invalid;
 
         AZStd::string m_textDecoration;
@@ -102,7 +102,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(ExecutionSlotConfiguration, "{1129A6DE-CF46-4E87-947F-D2EB432EEA2E}", SlotConfiguration);
-        AZ_CLASS_ALLOCATOR(ExecutionSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionSlotConfiguration, AZ::SystemAllocator);
 
         ExecutionSlotConfiguration() = default;
 
@@ -116,7 +116,7 @@ namespace GraphCanvas
     {
     public:
         AZ_TYPE_INFO(SlotGroupConfiguration, "{88F7AB93-9F26-4059-BD37-FFBD41E38AF6}");
-        AZ_CLASS_ALLOCATOR(SlotGroupConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotGroupConfiguration, AZ::SystemAllocator);
 
         struct ExtendabilityConfig
         {
@@ -209,21 +209,18 @@ namespace GraphCanvas
         //! Get the name, or label, of the slot.
         //! These generally appear as a label against \ref Input or \ref Output slots.
         virtual const AZStd::string GetName() const = 0;
+
         //! Set the slot's name.
         virtual void SetName(const AZStd::string&) = 0;
 
-        //! Get and set the keys used for slot name translation.
-        virtual TranslationKeyedString GetTranslationKeyedName() const = 0;
-        virtual void SetTranslationKeyedName(const TranslationKeyedString&) = 0;
+        //! Set the slot's name & tooltip.
+        virtual void SetDetails(const AZStd::string& name, const AZStd::string& tooltip) = 0;
 
         //! Get the tooltip for the slot.
         virtual const AZStd::string GetTooltip() const = 0;
+
         //! Set the tooltip this slot should display.
         virtual void SetTooltip(const AZStd::string&) = 0;
-
-        //! Get and set the keys used for slot tooltip translation.
-        virtual TranslationKeyedString GetTranslationKeyedTooltip() const = 0;
-        virtual void SetTranslationKeyedTooltip(const TranslationKeyedString&) = 0;
 
         //! Get the group of the slot
         virtual SlotGroup GetSlotGroup() const = 0;
@@ -370,9 +367,10 @@ namespace GraphCanvas
         using BusIdType = SlotId;
 
         //! When the name of the slot changes, the new name is signaled.
-        virtual void OnNameChanged(const TranslationKeyedString&) {}
+        virtual void OnNameChanged(const AZStd::string&) {}
+
         //! When the tooltip of the slot changes, the new tooltip value is emitted.
-        virtual void OnTooltipChanged(const TranslationKeyedString&) {}
+        virtual void OnTooltipChanged(const AZStd::string&) {}
 
         virtual void OnRegisteredToNode(const AZ::EntityId&) {}
         
@@ -409,3 +407,5 @@ namespace GraphCanvas
 
     using SlotLayoutRequestBus = AZ::EBus<SlotLayoutRequests>;
 }
+
+DECLARE_EBUS_EXTERN(GraphCanvas::SlotRequests);

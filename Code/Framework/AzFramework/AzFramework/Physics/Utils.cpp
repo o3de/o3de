@@ -6,16 +6,13 @@
  *
  */
 
-
-#include "Utils.h"
-#include "Material.h"
-#include "Shape.h"
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/CharacterBus.h>
 #include <AzFramework/Physics/Character.h>
 #include <AzFramework/Physics/Ragdoll.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzCore/Serialization/EditContext.h>
 #include <AzFramework/Physics/CollisionBus.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/WindBus.h>
@@ -31,6 +28,8 @@
 #include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/Common/PhysicsJoint.h>
+#include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/Utils.h>
 
 namespace Physics
 {
@@ -43,7 +42,7 @@ namespace Physics
                 behaviorContext->EBus<AzPhysics::SimulatedBodyComponentRequestsBus>("SimulatedBodyComponentRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Event("EnablePhysics", &AzPhysics::SimulatedBodyComponentRequests::EnablePhysics)
                     ->Event("DisablePhysics", &AzPhysics::SimulatedBodyComponentRequests::DisablePhysics)
                     ->Event("IsPhysicsEnabled", &AzPhysics::SimulatedBodyComponentRequests::IsPhysicsEnabled)
@@ -63,7 +62,7 @@ namespace Physics
                 behaviorContext->EBus<WindRequestsBus>("WindRequestsBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Script::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Script::Attributes::Category, "Physics")
                     ->Event("GetGlobalWind", &WindRequests::GetGlobalWind)
                     ->Event("GetWindAtPosition", static_cast<WindPositionFuncPtr>(&WindRequests::GetWind))
                     ->Event("GetWindInsideAabb", static_cast<WindAabbFuncPtr>(&WindRequests::GetWind))
@@ -78,7 +77,7 @@ namespace Physics
                 behaviorContext->EBus<CharacterRequestBus>("CharacterControllerRequestBus")
                     ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                     ->Attribute(AZ::Script::Attributes::Module, "physics")
-                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::Category, "Physics")
                     ->Event("GetBasePosition", &CharacterRequests::GetBasePosition, "Get Base Position")
                     ->Event("SetBasePosition", &CharacterRequests::SetBasePosition, "Set Base Position")
                     ->Event("GetCenterPosition", &CharacterRequests::GetCenterPosition, "Get Center Position")
@@ -91,7 +90,11 @@ namespace Physics
                     ->Event("SetMaximumSpeed", &CharacterRequests::SetMaximumSpeed, "Set Maximum Speed")
                     ->Event("GetVelocity", &CharacterRequests::GetVelocity, "Get Velocity")
                     ->Event("AddVelocity", &CharacterRequests::AddVelocity, "Add Velocity")
-                    ;
+                    ->Event("AddVelocityForTick", &CharacterRequests::AddVelocityForTick, "Add Velocity For Tick")
+                    ->Event(
+                        "AddVelocityForPhysicsTimestep",
+                        &CharacterRequests::AddVelocityForPhysicsTimestep,
+                        "Add Velocity For Physics Timestep");
             }
         }
 
@@ -105,6 +108,7 @@ namespace Physics
             PhysicsAssetShapeConfiguration::Reflect(context);
             NativeShapeConfiguration::Reflect(context);
             CookedMeshShapeConfiguration::Reflect(context);
+            HeightfieldShapeConfiguration::Reflect(context);
             AzPhysics::SystemInterface::Reflect(context);
             AzPhysics::Scene::Reflect(context);
             AzPhysics::CollisionLayer::Reflect(context);
@@ -115,10 +119,6 @@ namespace Physics
             AzPhysics::CollisionEvent::Reflect(context);
             AzPhysics::TriggerEvent::Reflect(context);
             AzPhysics::SceneConfiguration::Reflect(context);
-            MaterialConfiguration::Reflect(context);
-            DefaultMaterialConfiguration::Reflect(context);
-            MaterialLibraryAsset::Reflect(context);
-            MaterialInfoReflectionWrapper::Reflect(context);
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
             AzPhysics::JointConfiguration::Reflect(context);

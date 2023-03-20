@@ -6,14 +6,25 @@
  *
  */
 
+#include <AzCore/std/limits.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
 #include <AzNetworking/Utilities/QuantizedValues.h>
 
 namespace AzNetworking
 {
     // This gives us a hash sensitivity of around 1/512th of a unit, and will detect errors within a range of -4,194,304 to +4,194,304
-    static const int32_t FloatHashMinValue = (INT_MIN >> 9);
-    static const int32_t FloatHashMaxValue = (INT_MAX >> 9);
+    static constexpr int32_t FloatHashMinValue = (AZStd::numeric_limits<int>::min() >> 9);
+    static constexpr int32_t FloatHashMaxValue = (AZStd::numeric_limits<int>::max() >> 9);
+
+    HashSerializer::HashSerializer()
+    {
+        ;
+    }
+
+    HashSerializer::~HashSerializer()
+    {
+        ;
+    }
 
     AZ::HashValue32 HashSerializer::GetHash() const
     {
@@ -113,12 +124,12 @@ namespace AzNetworking
         return true;
     }
 
-    bool HashSerializer::BeginObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool HashSerializer::BeginObject([[maybe_unused]] const char* name)
     {
         return true;
     }
 
-    bool HashSerializer::EndObject([[maybe_unused]] const char* name, [[maybe_unused]] const char* typeName)
+    bool HashSerializer::EndObject([[maybe_unused]] const char* name)
     {
         return true;
     }

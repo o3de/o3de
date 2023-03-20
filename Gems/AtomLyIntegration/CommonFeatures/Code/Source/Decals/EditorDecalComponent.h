@@ -56,7 +56,11 @@ namespace AZ
 
         private:
 
-            AZ::Transform GetTransform() const;
+            // Returns the component transform which includes uniform-scale, rotation and translation
+            AZ::Transform GetWorldTransform() const;
+
+            // Returns the full transform, including both the uniform scale and non-uniform scale along with rotation and translation
+            AZ::Matrix3x4 GetWorldTransformWithNonUniformScale() const;
 
             //! EditorRenderComponentAdapter overrides ...
             u32 OnConfigurationChanged() override;

@@ -18,8 +18,6 @@
 //////////////////////////////////////////////////////////////////////////
 void CGizmoManager::Display(DisplayContext& dc)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     AABB bbox;
     std::vector<CGizmo*> todelete;
     for (Gizmos::iterator it = m_gizmos.begin(); it != m_gizmos.end(); ++it)

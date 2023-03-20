@@ -8,18 +8,27 @@
 
 #include <EditorViewportSettings.h>
 
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
+
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/string/string_view.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 
 namespace SandboxEditor
 {
+    constexpr AZStd::string_view AssetBrowserMaxItemsShownInSearchSetting = "/Amazon/Preferences/Editor/AssetBrowser/MaxItemsShowInSearch";
     constexpr AZStd::string_view GridSnappingSetting = "/Amazon/Preferences/Editor/GridSnapping";
     constexpr AZStd::string_view GridSizeSetting = "/Amazon/Preferences/Editor/GridSize";
     constexpr AZStd::string_view AngleSnappingSetting = "/Amazon/Preferences/Editor/AngleSnapping";
     constexpr AZStd::string_view AngleSizeSetting = "/Amazon/Preferences/Editor/AngleSize";
     constexpr AZStd::string_view ShowGridSetting = "/Amazon/Preferences/Editor/ShowGrid";
+    constexpr AZStd::string_view StickySelectSetting = "/Amazon/Preferences/Editor/StickySelect";
+    constexpr AZStd::string_view ManipulatorLineBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/LineBoundWidth";
+    constexpr AZStd::string_view ManipulatorCircleBoundWidthSetting = "/Amazon/Preferences/Editor/Manipulator/CircleBoundWidth";
+    constexpr AZStd::string_view CameraSpeedScaleSetting = "/Amazon/Preferences/Editor/Camera/SpeedScale";
     constexpr AZStd::string_view CameraTranslateSpeedSetting = "/Amazon/Preferences/Editor/Camera/TranslateSpeed";
     constexpr AZStd::string_view CameraBoostMultiplierSetting = "/Amazon/Preferences/Editor/Camera/BoostMultiplier";
     constexpr AZStd::string_view CameraRotateSpeedSetting = "/Amazon/Preferences/Editor/Camera/RotateSpeed";
@@ -31,6 +40,10 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraPanSpeedSetting = "/Amazon/Preferences/Editor/Camera/PanSpeed";
     constexpr AZStd::string_view CameraRotateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothness";
     constexpr AZStd::string_view CameraTranslateSmoothnessSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothness";
+    constexpr AZStd::string_view CameraTranslateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/TranslateSmoothing";
+    constexpr AZStd::string_view CameraRotateSmoothingSetting = "/Amazon/Preferences/Editor/Camera/RotateSmoothing";
+    constexpr AZStd::string_view CameraCaptureCursorLookSetting = "/Amazon/Preferences/Editor/Camera/CaptureCursorLook";
+    constexpr AZStd::string_view CameraDefaultOrbitDistanceSetting = "/Amazon/Preferences/Editor/Camera/DefaultOrbitDistance";
     constexpr AZStd::string_view CameraTranslateForwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateForwardId";
     constexpr AZStd::string_view CameraTranslateBackwardIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateBackwardId";
     constexpr AZStd::string_view CameraTranslateLeftIdSetting = "/Amazon/Preferences/Editor/Camera/CameraTranslateLeftId";
@@ -44,27 +57,17 @@ namespace SandboxEditor
     constexpr AZStd::string_view CameraOrbitLookIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitLookId";
     constexpr AZStd::string_view CameraOrbitDollyIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitDollyId";
     constexpr AZStd::string_view CameraOrbitPanIdSetting = "/Amazon/Preferences/Editor/Camera/OrbitPanId";
-
-    template<typename T>
-    void SetRegistry(const AZStd::string_view setting, T&& value)
-    {
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Set(setting, AZStd::forward<T>(value));
-        }
-    }
-
-    template<typename T>
-    AZStd::remove_cvref_t<T> GetRegistry(const AZStd::string_view setting, T&& defaultValue)
-    {
-        AZStd::remove_cvref_t<T> value = AZStd::forward<T>(defaultValue);
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(value, setting);
-        }
-
-        return value;
-    }
+    constexpr AZStd::string_view CameraFocusIdSetting = "/Amazon/Preferences/Editor/Camera/FocusId";
+    constexpr AZStd::string_view CameraDefaultStartingPositionX = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/x";
+    constexpr AZStd::string_view CameraDefaultStartingPositionY = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/y";
+    constexpr AZStd::string_view CameraDefaultStartingPositionZ = "/Amazon/Preferences/Editor/Camera/DefaultStartingPosition/z";
+    constexpr AZStd::string_view CameraDefaultStartingPitch = "/Amazon/Preferences/Editor/Camera/DefaultStartingPitch";
+    constexpr AZStd::string_view CameraDefaultStartingYaw = "/Amazon/Preferences/Editor/Camera/DefaultStartingYaw";
+    constexpr AZStd::string_view CameraNearPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/NearPlaneDistance";
+    constexpr AZStd::string_view CameraFarPlaneDistanceSetting = "/Amazon/Preferences/Editor/Camera/FarPlaneDistance";
+    constexpr AZStd::string_view CameraFovDegreesSetting = "/Amazon/Preferences/Editor/Camera/FovDegrees";
+    constexpr AZStd::string_view CameraGoToPositionInstantlySetting = "/Amazon/Preferences/Editor/Camera/GoToPositionInstantly";
+    constexpr AZStd::string_view CameraGoToPositionDurationSetting = "/Amazon/Preferences/Editor/Camera/GoToPositionDuration";
 
     struct EditorViewportSettingsCallbacksImpl : public EditorViewportSettingsCallbacks
     {
@@ -74,15 +77,81 @@ namespace SandboxEditor
             {
                 using AZ::SettingsRegistryMergeUtils::IsPathAncestorDescendantOrEqual;
 
-                m_notifyEventHandler = registry->RegisterNotifier(
-                    [this](const AZStd::string_view path, [[maybe_unused]] const AZ::SettingsRegistryInterface::Type type)
+                m_angleSnappingNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
                     {
-                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, path))
+                        if (IsPathAncestorDescendantOrEqual(AngleSnappingSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_angleSnappingChanged.Signal(AngleSnappingEnabled());
+                        }
+                    }
+                );
+
+                m_cameraSpeedScaleNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraSpeedScaleSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_cameraSpeedScaleChanged.Signal(CameraSpeedScale());
+                        }
+                    }
+                );
+
+                m_gridSnappingNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(GridSnappingSetting, notifyEventArgs.m_jsonKeyPath))
                         {
                             m_gridSnappingChanged.Signal(GridSnappingEnabled());
                         }
-                    });
+                    }
+                );
+
+                m_farPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraFarPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_farPlaneChanged.Signal(CameraDefaultFarPlaneDistance());
+                        }
+                    }
+                );
+
+                m_nearPlaneDistanceNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraNearPlaneDistanceSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_nearPlaneChanged.Signal(CameraDefaultNearPlaneDistance());
+                        }
+                    }
+                );
+
+                m_perspectiveNotifyEventHandler = registry->RegisterNotifier(
+                    [this](const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
+                    {
+                        if (IsPathAncestorDescendantOrEqual(CameraFovDegreesSetting, notifyEventArgs.m_jsonKeyPath))
+                        {
+                            m_perspectiveChanged.Signal(CameraDefaultFovRadians());
+                        }
+                    }
+                );
             }
+        }
+
+        void SetAngleSnappingChangedEvent(AngleSnappingChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_angleSnappingChanged);
+        }
+
+        void SetCameraSpeedScaleChangedEvent(CameraSpeedScaleChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_cameraSpeedScaleChanged);
+        }
+
+        void SetGridShowingChangedEvent(GridShowingChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_gridShowingChanged);
         }
 
         void SetGridSnappingChangedEvent(GridSnappingChangedEvent::Handler& handler) override
@@ -90,8 +159,35 @@ namespace SandboxEditor
             handler.Connect(m_gridSnappingChanged);
         }
 
+        void SetFarPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_farPlaneChanged);
+        }
+
+        void SetNearPlaneDistanceChangedEvent(NearFarPlaneChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_nearPlaneChanged);
+        }
+
+        void SetPerspectiveChangedEvent(PerspectiveChangedEvent::Handler& handler) override
+        {
+            handler.Connect(m_perspectiveChanged);
+        }
+
+        AngleSnappingChangedEvent m_angleSnappingChanged;
+        CameraSpeedScaleChangedEvent m_cameraSpeedScaleChanged;
+        GridSnappingChangedEvent m_gridShowingChanged;
         GridSnappingChangedEvent m_gridSnappingChanged;
-        AZ::SettingsRegistryInterface::NotifyEventHandler m_notifyEventHandler;
+        PerspectiveChangedEvent m_perspectiveChanged;
+        NearFarPlaneChangedEvent m_farPlaneChanged;
+        NearFarPlaneChangedEvent m_nearPlaneChanged;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_angleSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_cameraSpeedScaleNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_farPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_gridShowingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_gridSnappingNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_nearPlaneDistanceNotifyEventHandler;
+        AZ::SettingsRegistryInterface::NotifyEventHandler m_perspectiveNotifyEventHandler;
     };
 
     AZStd::unique_ptr<EditorViewportSettingsCallbacks> CreateEditorViewportSettingsCallbacks()
@@ -99,297 +195,688 @@ namespace SandboxEditor
         return AZStd::make_unique<EditorViewportSettingsCallbacksImpl>();
     }
 
+    AZ::Vector3 CameraDefaultEditorPosition()
+    {
+        return AZ::Vector3(
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPositionX, 0.0)),
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPositionY, -10.0)),
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPositionZ, 4.0)));
+    }
+
+    void SetCameraDefaultEditorPosition(const AZ::Vector3& position)
+    {
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionX, position.GetX());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionY, position.GetY());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPositionZ, position.GetZ());
+    }
+
+    AZ::Vector2 CameraDefaultEditorOrientation()
+    {
+        return AZ::Vector2(
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingPitch, 0.0)),
+            aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultStartingYaw, 0.0)));
+    }
+
+    void SetCameraDefaultEditorOrientation(const AZ::Vector2& pitchYaw)
+    {
+        AzToolsFramework::SetRegistry(CameraDefaultStartingPitch, pitchYaw.GetX());
+        AzToolsFramework::SetRegistry(CameraDefaultStartingYaw, pitchYaw.GetY());
+    }
+
+    AZ::u64 MaxItemsShownInAssetBrowserSearch()
+    {
+        return AzToolsFramework::GetRegistry(AssetBrowserMaxItemsShownInSearchSetting, aznumeric_cast<AZ::u64>(50));
+    }
+
+    void SetMaxItemsShownInAssetBrowserSearch(const AZ::u64 numberOfItemsShown)
+    {
+        AzToolsFramework::SetRegistry(AssetBrowserMaxItemsShownInSearchSetting, numberOfItemsShown);
+    }
+
     bool GridSnappingEnabled()
     {
-        return GetRegistry(GridSnappingSetting, false);
+        return AzToolsFramework::GetRegistry(GridSnappingSetting, false);
     }
 
     void SetGridSnapping(const bool enabled)
     {
-        SetRegistry(GridSnappingSetting, enabled);
+        AzToolsFramework::SetRegistry(GridSnappingSetting, enabled);
     }
 
     float GridSnappingSize()
     {
-        return aznumeric_cast<float>(GetRegistry(GridSizeSetting, 0.1));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(GridSizeSetting, 0.1));
     }
 
     void SetGridSnappingSize(const float size)
     {
-        SetRegistry(GridSizeSetting, size);
+        AzToolsFramework::SetRegistry(GridSizeSetting, size);
     }
 
     bool AngleSnappingEnabled()
     {
-        return GetRegistry(AngleSnappingSetting, false);
+        return AzToolsFramework::GetRegistry(AngleSnappingSetting, false);
     }
 
     void SetAngleSnapping(const bool enabled)
     {
-        SetRegistry(AngleSnappingSetting, enabled);
+        AzToolsFramework::SetRegistry(AngleSnappingSetting, enabled);
     }
 
     float AngleSnappingSize()
     {
-        return aznumeric_cast<float>(GetRegistry(AngleSizeSetting, 5.0));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(AngleSizeSetting, 5.0));
     }
 
     void SetAngleSnappingSize(const float size)
     {
-        SetRegistry(AngleSizeSetting, size);
+        AzToolsFramework::SetRegistry(AngleSizeSetting, size);
     }
 
     bool ShowingGrid()
     {
-        return GetRegistry(ShowGridSetting, false);
+        return AzToolsFramework::GetRegistry(ShowGridSetting, false);
     }
 
     void SetShowingGrid(const bool showing)
     {
-        SetRegistry(ShowGridSetting, showing);
+        AzToolsFramework::SetRegistry(ShowGridSetting, showing);
+    }
+
+    bool StickySelectEnabled()
+    {
+        return AzToolsFramework::GetRegistry(StickySelectSetting, false);
+    }
+
+    void SetStickySelectEnabled(const bool enabled)
+    {
+        AzToolsFramework::SetRegistry(StickySelectSetting, enabled);
+    }
+
+    float ManipulatorLineBoundWidth()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(ManipulatorLineBoundWidthSetting, 0.1));
+    }
+
+    void SetManipulatorLineBoundWidth(const float lineBoundWidth)
+    {
+        AzToolsFramework::SetRegistry(ManipulatorLineBoundWidthSetting, lineBoundWidth);
+    }
+
+    float ManipulatorCircleBoundWidth()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(ManipulatorCircleBoundWidthSetting, 0.1));
+    }
+
+    void SetManipulatorCircleBoundWidth(const float circleBoundWidth)
+    {
+        AzToolsFramework::SetRegistry(ManipulatorCircleBoundWidthSetting, circleBoundWidth);
+    }
+
+    float CameraSpeedScale()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraSpeedScaleSetting, 1.0));
+    }
+
+    void SetCameraSpeedScale(float speedScale)
+    {
+        AzToolsFramework::SetRegistry(CameraSpeedScaleSetting, speedScale);
     }
 
     float CameraTranslateSpeed()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraTranslateSpeedSetting, 10.0));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTranslateSpeedSetting, 10.0));
+    }
+
+    float CameraTranslateSpeedScaled()
+    {
+        return CameraTranslateSpeed() * CameraSpeedScale();
     }
 
     void SetCameraTranslateSpeed(const float speed)
     {
-        SetRegistry(CameraTranslateSpeedSetting, speed);
+        AzToolsFramework::SetRegistry(CameraTranslateSpeedSetting, speed);
     }
 
     float CameraBoostMultiplier()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraBoostMultiplierSetting, 3.0));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraBoostMultiplierSetting, 3.0));
     }
 
     void SetCameraBoostMultiplier(const float multiplier)
     {
-        SetRegistry(CameraBoostMultiplierSetting, multiplier);
+        AzToolsFramework::SetRegistry(CameraBoostMultiplierSetting, multiplier);
     }
 
     float CameraRotateSpeed()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraRotateSpeedSetting, 0.005));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraRotateSpeedSetting, 0.005));
     }
 
     void SetCameraRotateSpeed(const float speed)
     {
-        SetRegistry(CameraRotateSpeedSetting, speed);
+        AzToolsFramework::SetRegistry(CameraRotateSpeedSetting, speed);
     }
 
     float CameraScrollSpeed()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraScrollSpeedSetting, 0.02));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraScrollSpeedSetting, 0.02));
+    }
+
+    float CameraScrollSpeedScaled()
+    {
+        return CameraScrollSpeed() * CameraSpeedScale();
     }
 
     void SetCameraScrollSpeed(const float speed)
     {
-        SetRegistry(CameraScrollSpeedSetting, speed);
+        AzToolsFramework::SetRegistry(CameraScrollSpeedSetting, speed);
     }
 
     float CameraDollyMotionSpeed()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraDollyMotionSpeedSetting, 0.01));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDollyMotionSpeedSetting, 0.01));
+    }
+
+    float CameraDollyMotionSpeedScaled()
+    {
+        return CameraDollyMotionSpeed() * CameraSpeedScale();
     }
 
     void SetCameraDollyMotionSpeed(const float speed)
     {
-        SetRegistry(CameraDollyMotionSpeedSetting, speed);
+        AzToolsFramework::SetRegistry(CameraDollyMotionSpeedSetting, speed);
     }
 
     bool CameraOrbitYawRotationInverted()
     {
-        return GetRegistry(CameraOrbitYawRotationInvertedSetting, false);
+        return AzToolsFramework::GetRegistry(CameraOrbitYawRotationInvertedSetting, false);
     }
 
     void SetCameraOrbitYawRotationInverted(const bool inverted)
     {
-        SetRegistry(CameraOrbitYawRotationInvertedSetting, inverted);
+        AzToolsFramework::SetRegistry(CameraOrbitYawRotationInvertedSetting, inverted);
     }
 
     bool CameraPanInvertedX()
     {
-        return GetRegistry(CameraPanInvertedXSetting, true);
+        return AzToolsFramework::GetRegistry(CameraPanInvertedXSetting, true);
     }
 
     void SetCameraPanInvertedX(const bool inverted)
     {
-        SetRegistry(CameraPanInvertedXSetting, inverted);
+        AzToolsFramework::SetRegistry(CameraPanInvertedXSetting, inverted);
     }
 
     bool CameraPanInvertedY()
     {
-        return GetRegistry(CameraPanInvertedYSetting, true);
+        return AzToolsFramework::GetRegistry(CameraPanInvertedYSetting, true);
     }
 
     void SetCameraPanInvertedY(const bool inverted)
     {
-        SetRegistry(CameraPanInvertedYSetting, inverted);
+        AzToolsFramework::SetRegistry(CameraPanInvertedYSetting, inverted);
     }
 
     float CameraPanSpeed()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraPanSpeedSetting, 0.01));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraPanSpeedSetting, 0.01));
+    }
+
+    float CameraPanSpeedScaled()
+    {
+        return CameraPanSpeed() * CameraSpeedScale();
     }
 
     void SetCameraPanSpeed(float speed)
     {
-        SetRegistry(CameraPanSpeedSetting, speed);
+        AzToolsFramework::SetRegistry(CameraPanSpeedSetting, speed);
     }
 
     float CameraRotateSmoothness()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraRotateSmoothnessSetting, 5.0));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraRotateSmoothnessSetting, 5.0));
     }
 
     void SetCameraRotateSmoothness(const float smoothness)
     {
-        SetRegistry(CameraRotateSmoothnessSetting, smoothness);
+        AzToolsFramework::SetRegistry(CameraRotateSmoothnessSetting, smoothness);
     }
 
     float CameraTranslateSmoothness()
     {
-        return aznumeric_cast<float>(GetRegistry(CameraTranslateSmoothnessSetting, 5.0));
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraTranslateSmoothnessSetting, 5.0));
     }
 
     void SetCameraTranslateSmoothness(const float smoothness)
     {
-        SetRegistry(CameraTranslateSmoothnessSetting, smoothness);
+        AzToolsFramework::SetRegistry(CameraTranslateSmoothnessSetting, smoothness);
+    }
+
+    bool CameraRotateSmoothingEnabled()
+    {
+        return AzToolsFramework::GetRegistry(CameraRotateSmoothingSetting, true);
+    }
+
+    void SetCameraRotateSmoothingEnabled(const bool enabled)
+    {
+        AzToolsFramework::SetRegistry(CameraRotateSmoothingSetting, enabled);
+    }
+
+    bool CameraTranslateSmoothingEnabled()
+    {
+        return AzToolsFramework::GetRegistry(CameraTranslateSmoothingSetting, true);
+    }
+
+    void SetCameraTranslateSmoothingEnabled(const bool enabled)
+    {
+        AzToolsFramework::SetRegistry(CameraTranslateSmoothingSetting, enabled);
+    }
+
+    bool CameraCaptureCursorForLook()
+    {
+        return AzToolsFramework::GetRegistry(CameraCaptureCursorLookSetting, true);
+    }
+
+    void SetCameraCaptureCursorForLook(const bool capture)
+    {
+        AzToolsFramework::SetRegistry(CameraCaptureCursorLookSetting, capture);
+    }
+
+    float CameraDefaultOrbitDistance()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraDefaultOrbitDistanceSetting, 20.0));
+    }
+
+    void SetCameraDefaultOrbitDistance(const float distance)
+    {
+        AzToolsFramework::SetRegistry(CameraDefaultOrbitDistanceSetting, distance);
+    }
+
+    bool CameraGoToPositionInstantlyEnabled()
+    {
+        return AzToolsFramework::GetRegistry(CameraGoToPositionInstantlySetting, false);
+    }
+
+    void SetCameraGoToPositionInstantlyEnabled(const bool instant)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionInstantlySetting, instant);
+    }
+
+    float CameraGoToPositionDuration()
+    {
+        return aznumeric_cast<float>(AzToolsFramework::GetRegistry(CameraGoToPositionDurationSetting, 1.0));
+    }
+
+    void SetCameraGoToPositionDuration(const float duration)
+    {
+        AzToolsFramework::SetRegistry(CameraGoToPositionDurationSetting, duration);
     }
 
     AzFramework::InputChannelId CameraTranslateForwardChannelId()
     {
         return AzFramework::InputChannelId(
-            GetRegistry(CameraTranslateForwardIdSetting, AZStd::string("keyboard_key_alphanumeric_W")).c_str());
+            AzToolsFramework::GetRegistry(CameraTranslateForwardIdSetting, AZStd::string("keyboard_key_alphanumeric_W")).c_str());
     }
 
     void SetCameraTranslateForwardChannelId(AZStd::string_view cameraTranslateForwardId)
     {
-        SetRegistry(CameraTranslateForwardIdSetting, cameraTranslateForwardId);
+        AzToolsFramework::SetRegistry(CameraTranslateForwardIdSetting, cameraTranslateForwardId);
     }
 
     AzFramework::InputChannelId CameraTranslateBackwardChannelId()
     {
         return AzFramework::InputChannelId(
-            GetRegistry(CameraTranslateBackwardIdSetting, AZStd::string("keyboard_key_alphanumeric_S")).c_str());
+            AzToolsFramework::GetRegistry(CameraTranslateBackwardIdSetting, AZStd::string("keyboard_key_alphanumeric_S")).c_str());
     }
 
     void SetCameraTranslateBackwardChannelId(AZStd::string_view cameraTranslateBackwardId)
     {
-        SetRegistry(CameraTranslateBackwardIdSetting, cameraTranslateBackwardId);
+        AzToolsFramework::SetRegistry(CameraTranslateBackwardIdSetting, cameraTranslateBackwardId);
     }
 
     AzFramework::InputChannelId CameraTranslateLeftChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraTranslateLeftIdSetting, AZStd::string("keyboard_key_alphanumeric_A")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraTranslateLeftIdSetting, AZStd::string("keyboard_key_alphanumeric_A")).c_str());
     }
 
     void SetCameraTranslateLeftChannelId(AZStd::string_view cameraTranslateLeftId)
     {
-        SetRegistry(CameraTranslateLeftIdSetting, cameraTranslateLeftId);
+        AzToolsFramework::SetRegistry(CameraTranslateLeftIdSetting, cameraTranslateLeftId);
     }
 
     AzFramework::InputChannelId CameraTranslateRightChannelId()
     {
         return AzFramework::InputChannelId(
-            GetRegistry(CameraTranslateRightIdSetting, AZStd::string("keyboard_key_alphanumeric_D")).c_str());
+            AzToolsFramework::GetRegistry(CameraTranslateRightIdSetting, AZStd::string("keyboard_key_alphanumeric_D")).c_str());
     }
 
     void SetCameraTranslateRightChannelId(AZStd::string_view cameraTranslateRightId)
     {
-        SetRegistry(CameraTranslateRightIdSetting, cameraTranslateRightId);
+        AzToolsFramework::SetRegistry(CameraTranslateRightIdSetting, cameraTranslateRightId);
     }
 
     AzFramework::InputChannelId CameraTranslateUpChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraTranslateUpIdSetting, AZStd::string("keyboard_key_alphanumeric_E")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraTranslateUpIdSetting, AZStd::string("keyboard_key_alphanumeric_E")).c_str());
     }
 
     void SetCameraTranslateUpChannelId(AZStd::string_view cameraTranslateUpId)
     {
-        SetRegistry(CameraTranslateUpIdSetting, cameraTranslateUpId);
+        AzToolsFramework::SetRegistry(CameraTranslateUpIdSetting, cameraTranslateUpId);
     }
 
     AzFramework::InputChannelId CameraTranslateDownChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraTranslateDownIdSetting, AZStd::string("keyboard_key_alphanumeric_Q")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraTranslateDownIdSetting, AZStd::string("keyboard_key_alphanumeric_Q")).c_str());
     }
 
     void SetCameraTranslateDownChannelId(AZStd::string_view cameraTranslateDownId)
     {
-        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateDownId);
+        AzToolsFramework::SetRegistry(CameraTranslateDownIdSetting, cameraTranslateDownId);
     }
 
     AzFramework::InputChannelId CameraTranslateBoostChannelId()
     {
         return AzFramework::InputChannelId(
-            GetRegistry(CameraTranslateBoostIdSetting, AZStd::string("keyboard_key_modifier_shift_l")).c_str());
+            AzToolsFramework::GetRegistry(CameraTranslateBoostIdSetting, AZStd::string("keyboard_key_modifier_shift_l")).c_str());
     }
 
     void SetCameraTranslateBoostChannelId(AZStd::string_view cameraTranslateBoostId)
     {
-        SetRegistry(CameraTranslateDownIdSetting, cameraTranslateBoostId);
+        AzToolsFramework::SetRegistry(CameraTranslateBoostIdSetting, cameraTranslateBoostId);
     }
 
     AzFramework::InputChannelId CameraOrbitChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraOrbitIdSetting, AZStd::string("keyboard_key_modifier_alt_l")).c_str());
     }
 
-    void SetCameraOrbitChannelChannelId(AZStd::string_view cameraOrbitId)
+    void SetCameraOrbitChannelId(AZStd::string_view cameraOrbitId)
     {
-        SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
+        AzToolsFramework::SetRegistry(CameraOrbitIdSetting, cameraOrbitId);
     }
 
     AzFramework::InputChannelId CameraFreeLookChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraFreeLookIdSetting, AZStd::string("mouse_button_right")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraFreeLookIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
     void SetCameraFreeLookChannelId(AZStd::string_view cameraFreeLookId)
     {
-        SetRegistry(CameraFreeLookIdSetting, cameraFreeLookId);
+        AzToolsFramework::SetRegistry(CameraFreeLookIdSetting, cameraFreeLookId);
     }
 
     AzFramework::InputChannelId CameraFreePanChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraFreePanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraFreePanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
     void SetCameraFreePanChannelId(AZStd::string_view cameraFreePanId)
     {
-        SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
+        AzToolsFramework::SetRegistry(CameraFreePanIdSetting, cameraFreePanId);
     }
 
     AzFramework::InputChannelId CameraOrbitLookChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraOrbitLookIdSetting, AZStd::string("mouse_button_left")).c_str());
     }
 
     void SetCameraOrbitLookChannelId(AZStd::string_view cameraOrbitLookId)
     {
-        SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
+        AzToolsFramework::SetRegistry(CameraOrbitLookIdSetting, cameraOrbitLookId);
     }
 
     AzFramework::InputChannelId CameraOrbitDollyChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraOrbitDollyIdSetting, AZStd::string("mouse_button_right")).c_str());
     }
 
     void SetCameraOrbitDollyChannelId(AZStd::string_view cameraOrbitDollyId)
     {
-        SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
+        AzToolsFramework::SetRegistry(CameraOrbitDollyIdSetting, cameraOrbitDollyId);
     }
 
     AzFramework::InputChannelId CameraOrbitPanChannelId()
     {
-        return AzFramework::InputChannelId(GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraOrbitPanIdSetting, AZStd::string("mouse_button_middle")).c_str());
     }
 
     void SetCameraOrbitPanChannelId(AZStd::string_view cameraOrbitPanId)
     {
-        SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
+        AzToolsFramework::SetRegistry(CameraOrbitPanIdSetting, cameraOrbitPanId);
+    }
+
+    AzFramework::InputChannelId CameraFocusChannelId()
+    {
+        return AzFramework::InputChannelId(
+            AzToolsFramework::GetRegistry(CameraFocusIdSetting, AZStd::string("keyboard_key_alphanumeric_X")).c_str());
+    }
+
+    void SetCameraFocusChannelId(AZStd::string_view cameraFocusId)
+    {
+        AzToolsFramework::SetRegistry(CameraFocusIdSetting, cameraFocusId);
+    }
+
+    float CameraDefaultNearPlaneDistance()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraNearPlaneDistanceSetting, 0.1));
+    }
+
+    void SetCameraDefaultNearPlaneDistance(const float distance)
+    {
+        AzToolsFramework::SetRegistry(CameraNearPlaneDistanceSetting, aznumeric_cast<double>(distance));
+    }
+
+    float CameraDefaultFarPlaneDistance()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFarPlaneDistanceSetting, 100.0));
+    }
+
+    void SetCameraDefaultFarPlaneDistance(const float distance)
+    {
+        AzToolsFramework::SetRegistry(CameraFarPlaneDistanceSetting, aznumeric_cast<double>(distance));
+    }
+
+    float CameraDefaultFovRadians()
+    {
+        return AZ::DegToRad(CameraDefaultFovDegrees());
+    }
+
+    void SetCameraDefaultFovRadians(const float fovRadians)
+    {
+        SetCameraDefaultFovDegrees(AZ::RadToDeg(fovRadians));
+    }
+
+    float CameraDefaultFovDegrees()
+    {
+        return aznumeric_caster(AzToolsFramework::GetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(60.0)));
+    }
+
+    void SetCameraDefaultFovDegrees(const float fovDegrees)
+    {
+        AzToolsFramework::SetRegistry(CameraFovDegreesSetting, aznumeric_cast<double>(fovDegrees));
+    }
+
+    void ResetCameraSpeedScale()
+    {
+        AzToolsFramework::ClearRegistry(CameraSpeedScaleSetting);
+    }
+
+    void ResetCameraTranslateSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateSpeedSetting);
+    }
+
+    void ResetCameraRotateSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraRotateSpeedSetting);
+    }
+
+    void ResetCameraBoostMultiplier()
+    {
+        AzToolsFramework::ClearRegistry(CameraBoostMultiplierSetting);
+    }
+
+    void ResetCameraScrollSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraScrollSpeedSetting);
+    }
+
+    void ResetCameraDollyMotionSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraDollyMotionSpeedSetting);
+    }
+
+    void ResetCameraPanSpeed()
+    {
+        AzToolsFramework::ClearRegistry(CameraPanSpeedSetting);
+    }
+
+    void ResetCameraRotateSmoothness()
+    {
+        AzToolsFramework::ClearRegistry(CameraRotateSmoothnessSetting);
+    }
+
+    void ResetCameraRotateSmoothingEnabled()
+    {
+        AzToolsFramework::ClearRegistry(CameraRotateSmoothingSetting);
+    }
+
+    void ResetCameraTranslateSmoothness()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateSmoothnessSetting);
+    }
+
+    void ResetCameraTranslateSmoothingEnabled()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateSmoothingSetting);
+    }
+
+    void ResetCameraCaptureCursorForLook()
+    {
+        AzToolsFramework::ClearRegistry(CameraCaptureCursorLookSetting);
+    }
+
+    void ResetCameraOrbitYawRotationInverted()
+    {
+        AzToolsFramework::ClearRegistry(CameraOrbitYawRotationInvertedSetting);
+    }
+
+    void ResetCameraPanInvertedX()
+    {
+        AzToolsFramework::ClearRegistry(CameraPanInvertedXSetting);
+    }
+
+    void ResetCameraPanInvertedY()
+    {
+        AzToolsFramework::ClearRegistry(CameraPanInvertedYSetting);
+    }
+
+    void ResetCameraDefaultEditorPosition()
+    {
+        AzToolsFramework::ClearRegistry(CameraDefaultStartingPositionX);
+        AzToolsFramework::ClearRegistry(CameraDefaultStartingPositionY);
+        AzToolsFramework::ClearRegistry(CameraDefaultStartingPositionZ);
+    }
+
+    void ResetCameraDefaultOrbitDistance()
+    {
+        AzToolsFramework::ClearRegistry(CameraDefaultOrbitDistanceSetting);
+    }
+
+    void ResetCameraDefaultEditorOrientation()
+    {
+        AzToolsFramework::ClearRegistry(CameraDefaultStartingPitch);
+        AzToolsFramework::ClearRegistry(CameraDefaultStartingYaw);
+    }
+
+    void ResetCameraGoToPositionInstantlyEnabled()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionInstantlySetting);
+    }
+
+    void ResetCameraGoToPositionDuration()
+    {
+        AzToolsFramework::ClearRegistry(CameraGoToPositionDurationSetting);
+    }
+
+    void ResetCameraTranslateForwardChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateForwardIdSetting);
+    }
+
+    void ResetCameraTranslateBackwardChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateBackwardIdSetting);
+    }
+
+    void ResetCameraTranslateLeftChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateLeftIdSetting);
+    }
+
+    void ResetCameraTranslateRightChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateRightIdSetting);
+    }
+
+    void ResetCameraTranslateUpChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateUpIdSetting);
+    }
+
+    void ResetCameraTranslateDownChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateDownIdSetting);
+    }
+
+    void ResetCameraTranslateBoostChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraTranslateBoostIdSetting);
+    }
+
+    void ResetCameraOrbitChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraOrbitIdSetting);
+    }
+
+    void ResetCameraFreeLookChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraFreeLookIdSetting);
+    }
+
+    void ResetCameraFreePanChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraFreePanIdSetting);
+    }
+
+    void ResetCameraOrbitLookChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraOrbitLookIdSetting);
+    }
+
+    void ResetCameraOrbitDollyChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraOrbitDollyIdSetting);
+    }
+
+    void ResetCameraOrbitPanChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraOrbitPanIdSetting);
+    }
+
+    void ResetCameraFocusChannelId()
+    {
+        AzToolsFramework::ClearRegistry(CameraFocusIdSetting);
     }
 } // namespace SandboxEditor

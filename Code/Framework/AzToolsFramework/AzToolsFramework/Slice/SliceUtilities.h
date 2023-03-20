@@ -487,7 +487,7 @@ namespace AzToolsFramework
             : public AZ::UserSettings
         {
         public:
-            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SliceUserSettings, AZ::SystemAllocator);
             AZ_RTTI(SliceUserSettings, "{56EC1A8F-1ADB-4CC7-A3C3-3F462750C31F}", AZ::UserSettings);
 
             AZStd::string m_saveLocation;
@@ -600,12 +600,12 @@ namespace AzToolsFramework
             const AZ::Data::Asset<AZ::SliceAsset>& targetSlice,
             WillPushEntityCallback willPushEntityCallback);
 
-        static const char* splitterColor = "black";
-        static const char* detachMenuItemHoverColor = "#4285F4";
-        static const char* detachMenuItemDefaultColor = "#ffffff";
-        static const char* detailWidgetBackgroundColor = "#303030";
-        static const char* unsavableChangesTextColor = "#ff3f3f";
-        static const char* conflictedChangesTextColor = "red";
+        static constexpr const char* splitterColor = "black";
+        static constexpr const char* detachMenuItemHoverColor = "#4285F4";
+        static constexpr const char* detachMenuItemDefaultColor = "#ffffff";
+        static constexpr const char* detailWidgetBackgroundColor = "#303030";
+        static constexpr const char* unsavableChangesTextColor = "#ff3f3f";
+        static constexpr const char* conflictedChangesTextColor = "red";
 
     } // namespace SliceUtilities
 

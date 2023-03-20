@@ -14,6 +14,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/sort.h>
 
@@ -38,7 +39,6 @@ namespace AZ
                 {
                     ec->Class<FactoryManagerSystemComponent>("Atom RHI Manager", "Atom Renderer")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &FactoryManagerSystemComponent::m_factoriesPriority, "RHI Priority list", "Priorities for RHI Implementations")
                         ->DataElement(AZ::Edit::UIHandlers::ComboBox, &FactoryManagerSystemComponent::m_validationMode, "Validation Layer Mode", "Set the validation mode for the RHI. It only applies for non release builds")
@@ -94,6 +94,8 @@ namespace AZ
                 if (Factory::IsReady() && factory == &Factory::Get())
                 {
                     Factory::Unregister(factory);
+
+                    FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryUnregistered);
                 }
             }
             else
@@ -118,6 +120,8 @@ namespace AZ
             AZ_Assert(factory, "Could not select factory");
 
             Factory::Register(factory);
+
+            FactoryManagerNotificationBus::Broadcast(&FactoryManagerNotification::FactoryRegistered);
         }
 
         Factory* FactoryManagerSystemComponent::GetFactoryFromCommandLine()
@@ -149,6 +153,18 @@ namespace AZ
             // If there's more that one factory registered then we need to decide which one to use.
             if (m_registeredFactories.size() > 1)
             {
+                // Load factories priority list from the settings registry
+                if (auto* registry = AZ::SettingsRegistry::Get(); registry != nullptr)
+                {
+                    m_factoriesPriority.clear();
+                    if (registry->GetObject(m_factoriesPriority, "/O3DE/Atom/RHI/FactoryManager/factoriesPriority"))
+                    {
+                        AZ_Printf(
+                            "FactoryManagerSystemComponent",
+                            "User has provided a list of factories priority. This will override the default priorities");
+                    }
+                }
+
                 // Build a hash table to quickly check the user defined priority for a factory.
                 AZStd::unordered_map<RHI::APIType, size_t> factoryToPriorityMap;
                 for (size_t i = 0; i < m_factoriesPriority.size(); ++i)
@@ -188,14 +204,7 @@ namespace AZ
 
         void FactoryManagerSystemComponent::UpdateValidationModeFromCommandline()
         {
-#if defined(_RELEASE)
-            m_validationMode = ValidationMode::Disabled;
-#else
-            if (auto commandLineValidation = AZ::RHI::ReadValidationModeFromCommandArgs())
-            {
-                m_validationMode = *commandLineValidation;
-            }
-#endif        
+            m_validationMode = AZ::RHI::ReadValidationMode();
         }
 
     } // namespace RHI

@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public CommentContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditCommentMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditCommentMenuAction, AZ::SystemAllocator);
 
         EditCommentMenuAction(QObject* parent);
         virtual ~EditCommentMenuAction() = default;
@@ -25,6 +25,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using CommentContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

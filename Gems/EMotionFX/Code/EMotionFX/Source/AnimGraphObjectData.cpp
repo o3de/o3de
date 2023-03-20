@@ -15,14 +15,14 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObjectData, AnimGraphObjectDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphObjectData, AnimGraphObjectDataAllocator)
 
     AnimGraphObjectData::AnimGraphObjectData(AnimGraphObject* object, AnimGraphInstance* animGraphInstance)
         : BaseObject()
     {
-        mObject             = object;
-        mAnimGraphInstance = animGraphInstance;
-        mObjectFlags        = 0;
+        m_object             = object;
+        m_animGraphInstance = animGraphInstance;
+        m_objectFlags        = 0;
     }
 
     AnimGraphObjectData::~AnimGraphObjectData()

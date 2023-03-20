@@ -9,6 +9,8 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Asset/AssetSerializer.h>
+#include <AzFramework/Asset/GenericAssetHandler.h>
 
 namespace physx
 {
@@ -21,13 +23,13 @@ namespace PhysX
     {
 
         /// Represents a PhysX height field asset.
-        class HeightFieldAsset
+        class HeightFieldAsset final
             : public AZ::Data::AssetData
         {
         public:
             friend class HeightFieldAssetHandler;
 
-            AZ_CLASS_ALLOCATOR(HeightFieldAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(HeightFieldAsset, AZ::SystemAllocator);
             AZ_RTTI(HeightFieldAsset, "{B61189FE-B2D7-4AF1-8951-CB5C0F7834FC}", AZ::Data::AssetData);
 
             ~HeightFieldAsset();

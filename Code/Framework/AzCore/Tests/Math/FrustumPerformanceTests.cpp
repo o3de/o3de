@@ -19,8 +19,7 @@ namespace Benchmark
     class BM_MathFrustum
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_testFrustum = AZ::Frustum(AZ::ViewFrustumAttributes(AZ::Transform::CreateIdentity(), 1.0f, 2.0f * atanf(0.5f), 10.0f, 90.0f));
 
@@ -40,6 +39,15 @@ namespace Benchmark
                 return data;
             });
         }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
 
         struct Data
         {
@@ -55,7 +63,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathFrustum, SphereIntersect)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& data : m_dataArray)
             {
@@ -67,7 +75,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathFrustum, AabbIntersect)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& data : m_dataArray)
             {

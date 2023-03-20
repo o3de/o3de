@@ -61,13 +61,13 @@ namespace GraphCanvas
         ////
 
         // AZ::Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // NodeNotification
-        void OnNodeActivated();
+        void OnNodeActivated() override;
         ////
 
         void UpdateLayoutParameters();

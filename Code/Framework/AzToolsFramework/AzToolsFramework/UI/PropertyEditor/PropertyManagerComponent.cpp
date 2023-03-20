@@ -9,6 +9,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorEntityIdContainer.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyAudioCtrlTypes.h>
 #include <AzToolsFramework/UI/PropertyEditor/GenericComboBoxCtrl.h>
 
@@ -16,6 +17,7 @@ namespace AzToolsFramework
 {
     void RegisterIntSpinBoxHandlers();
     void RegisterIntSliderHandlers();
+    void RegisterFilePathHandler();
     void RegisterDoubleSpinBoxHandlers();
     void RegisterDoubleSliderHandlers();
     void RegisterColorPropertyHandlers();
@@ -33,6 +35,8 @@ namespace AzToolsFramework
     void RegisterMultiLineEditHandler();
     void RegisterCrcHandler();
     void ReflectPropertyEditor(AZ::ReflectContext* context);
+    void RegisterExeSelectPropertyHandler();
+    void RegisterLabelHandler();
 
     namespace Components
     {
@@ -50,6 +54,8 @@ namespace AzToolsFramework
         void PropertyManagerComponent::Activate()
         {
             PropertyTypeRegistrationMessages::Bus::Handler::BusConnect();
+            PropertyEditorGUIMessages::Bus::Handler::BusConnect();
+            m_dpeSystem = AZStd::make_unique<PropertyEditorToolsSystem>();
 
             CreateBuiltInHandlers();
         }
@@ -90,6 +96,8 @@ namespace AzToolsFramework
             m_Handlers.clear();
             m_DefaultHandlers.clear();
 
+            m_dpeSystem.reset();
+            PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
             PropertyTypeRegistrationMessages::Bus::Handler::BusDisconnect();
         }
 
@@ -109,6 +117,13 @@ namespace AzToolsFramework
                 ++it;
             }
     #endif
+            pHandler->RegisterDpeHandler();
+
+            auto propertyEditorSystemInterface = AZ::Interface<AZ::DocumentPropertyEditor::PropertyEditorSystemInterface>::Get();
+            AZ_Assert(propertyEditorSystemInterface,
+                "PropertyEditorSystemInterface was nullptr when attempting to register property handler adapter elements");
+            pHandler->RegisterWithPropertySystem(propertyEditorSystemInterface);
+
             m_Handlers.insert(AZStd::make_pair(pHandler->GetHandlerName(), pHandler));
 
             if (pHandler->IsDefaultHandler())
@@ -124,6 +139,8 @@ namespace AzToolsFramework
 
         void PropertyManagerComponent::UnregisterPropertyType(PropertyHandlerBase* pHandler)
         {
+            pHandler->UnregisterDpeHandler();
+
             bool foundIt = false;
             auto it = m_Handlers.find(pHandler->GetHandlerName());
             while ((it != m_Handlers.end()) && (it->first == pHandler->GetHandlerName()))
@@ -164,12 +181,32 @@ namespace AzToolsFramework
             }
         }
 
+        void PropertyManagerComponent::RequestWrite(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit);
+        }
+
+        void PropertyManagerComponent::OnEditingFinished(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnValueChanged,
+                AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit);
+        }
+
+        void PropertyManagerComponent::RequestPropertyNotify(QWidget* editorGUI)
+        {
+            IndividualPropertyHandlerEditNotifications::Bus::Event(
+                editorGUI, &IndividualPropertyHandlerEditNotifications::Bus::Events::OnRequestPropertyNotify);
+        }
 
         void PropertyManagerComponent::CreateBuiltInHandlers()
         {
             RegisterCrcHandler();
             RegisterIntSpinBoxHandlers();
             RegisterIntSliderHandlers();
+            RegisterFilePathHandler();
             RegisterDoubleSpinBoxHandlers();
             RegisterDoubleSliderHandlers();
             RegisterColorPropertyHandlers();
@@ -185,6 +222,8 @@ namespace AzToolsFramework
             RegisterVectorHandlers();
             RegisterButtonPropertyHandlers();
             RegisterMultiLineEditHandler();
+            RegisterExeSelectPropertyHandler();
+            RegisterLabelHandler();
 
             // GenericComboBoxHandlers
             RegisterGenericComboBoxHandler<AZ::Crc32>();
@@ -198,7 +237,9 @@ namespace AzToolsFramework
             PropertyHandlerBase* pHandlerFound = nullptr;
             while ((it != m_Handlers.end()) && (it->first == handlerName))
             {
-                if ((it->second->Priority() > highestPriorityFound) && (it->second->HandlesType(handlerType)))
+                // Don't need to check against the handlerType if its null, which would only happen
+                // for non-data elements (e.g. UIElement) where the handler was requested specifically by name
+                if ((it->second->Priority() > highestPriorityFound) && (handlerType.IsNull() || it->second->HandlesType(handlerType)))
                 {
                     highestPriorityFound = it->second->Priority();
                     pHandlerFound = it->second;
@@ -225,8 +266,8 @@ namespace AzToolsFramework
             if (!pHandlerFound)
             {
                 // does a base class have a handler?
-                AZ::SerializeContext* sc = NULL;
-                EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::SerializeContext* sc = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZStd::vector<const AZ::SerializeContext::ClassData*> classes;
 
                 sc->EnumerateBase(
@@ -240,19 +281,19 @@ namespace AzToolsFramework
                         return true;
                     },
                     handlerType);
-                if (classes.empty())
+                for (auto cls = classes.begin(); cls != classes.end(); ++cls)
                 {
-                    return pHandlerFound;
-                }
-                else
-                {
-                    for (auto cls = classes.begin(); cls != classes.end(); ++cls)
+                    pHandlerFound = ResolvePropertyHandler(handlerName, (*cls)->m_typeId);
+                    if (pHandlerFound)
                     {
-                        pHandlerFound = ResolvePropertyHandler(handlerName, (*cls)->m_typeId);
-                        if (pHandlerFound)
-                        {
-                            return pHandlerFound;
-                        }
+                        return pHandlerFound;
+                    }
+                }
+                if (const auto* genericInfo = sc->FindGenericClassInfo(handlerType))
+                {
+                    if (genericInfo->GetGenericTypeId() != handlerType)
+                    {
+                        return ResolvePropertyHandler(handlerName, genericInfo->GetGenericTypeId());
                     }
                 }
             }
@@ -266,6 +307,8 @@ namespace AzToolsFramework
             AzToolsFramework::CReflectedVarAudioControl::Reflect(context);
             ReflectPropertyEditor(context);
 
+            DocumentPropertyEditorSettings::Reflect(context);
+
             // reflect data for script, serialization, editing...
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
@@ -278,7 +321,6 @@ namespace AzToolsFramework
                         "Property Manager", "Provides services for registration of property editors")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                            ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ;
                 }
             }

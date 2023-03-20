@@ -14,18 +14,21 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Components/NonUniformScaleComponent.h>
 #include <AzFramework/Components/AzFrameworkConfigurationSystemComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
+#include <AzFramework/Input/Contexts/InputContextComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
+#include <AzFramework/PaintBrush/PaintBrushSystemComponent.h>
 #include <AzFramework/Render/GameIntersectorComponent.h>
 #include <AzFramework/Scene/SceneSystemComponent.h>
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/Script/ScriptRemoteDebugging.h>
 #include <AzFramework/Spawnable/SpawnableSystemComponent.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <AzFramework/StreamingInstall/StreamingInstall.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 #include <AzFramework/Visibility/OctreeSystemComponent.h>
+
+AZ_DEFINE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -40,13 +43,11 @@ namespace AzFramework
             AzFramework::NonUniformScaleComponent::CreateDescriptor(),
             AzFramework::GameEntityContextComponent::CreateDescriptor(),
             AzFramework::RenderGeometry::GameIntersectorComponent::CreateDescriptor(),
-    #if !defined(_RELEASE)
-            AzFramework::TargetManagementComponent::CreateDescriptor(),
-    #endif
             AzFramework::CreateScriptDebugAgentFactory(),
             AzFramework::AssetSystem::AssetSystemComponent::CreateDescriptor(),
             AzFramework::InputSystemComponent::CreateDescriptor(),
-            AzFramework::DrillerNetworkAgentComponent::CreateDescriptor(),
+            AzFramework::InputContextComponent::CreateDescriptor(),
+            AzFramework::PaintBrushSystemComponent::CreateDescriptor(),
 
     #if !defined(AZCORE_EXCLUDE_LUA)
             AzFramework::ScriptComponent::CreateDescriptor(),
@@ -57,6 +58,7 @@ namespace AzFramework
 
             AzFramework::OctreeSystemComponent::CreateDescriptor(),
             AzFramework::SpawnableSystemComponent::CreateDescriptor(),
+            Physics::MaterialSystemComponent::CreateDescriptor(),
         });
     }
 

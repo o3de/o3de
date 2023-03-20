@@ -6,8 +6,9 @@
  *
  */
 
-#include <ImageLoader/ImageLoaders.h>
 #include <Atom/ImageProcessing/ImageObject.h>
+
+#include <ImageLoader/ImageLoaders.h>
 #include <ImageBuilderBaseType.h>
 
 //  warning C4251: class QT_Type needs to have dll-interface to be used by clients of class 'QT_Type'
@@ -28,7 +29,8 @@ namespace ImageProcessingAtom
             QImage qimage(filename.c_str());
             if (qimage.isNull())
             {
-                return NULL;
+                AZ_Warning("ImageProcessing", false, "Failed to load [%s] via QImage", filename.c_str());
+                return nullptr;
             }
 
             //convert to format which compatiable our pixel format
@@ -67,9 +69,7 @@ namespace ImageProcessingAtom
                     return true;
                 }
             }
-
             return false;
         }
     }//namespace QtImageLoader
 } //namespace ImageProcessingAtom
-

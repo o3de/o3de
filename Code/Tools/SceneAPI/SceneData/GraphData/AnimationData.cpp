@@ -29,6 +29,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IAnimationData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("GetKeyFrameCount", &SceneAPI::DataTypes::IAnimationData::GetKeyFrameCount)
@@ -97,6 +98,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeAnimationData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("GetBlendShapeName", &SceneAPI::DataTypes::IBlendShapeAnimationData::GetBlendShapeName)

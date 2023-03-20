@@ -39,7 +39,7 @@ namespace ImageProcessingAtomEditor
         Q_OBJECT
     public:
 
-        AZ_CLASS_ALLOCATOR(ResolutionSettingItemWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ResolutionSettingItemWidget, AZ::SystemAllocator);
         explicit ResolutionSettingItemWidget(ResoultionWidgetType type, QWidget* parent = nullptr);
         ~ResolutionSettingItemWidget();
         void Init(AZStd::string platform, EditorTextureSetting* editorTextureSetting);
@@ -60,7 +60,7 @@ namespace ImageProcessingAtomEditor
         void SetupFormatComboBox();
         void SetupResolutionInfo();
         void RefreshUI();
-        QString GetFinalFormat(const AZ::Uuid& presetId);
+        QString GetFinalFormat(const ImageProcessingAtom::PresetName& preset);
 
         QScopedPointer<Ui::ResolutionSettingItemWidget> m_ui;
         ResoultionWidgetType m_type;

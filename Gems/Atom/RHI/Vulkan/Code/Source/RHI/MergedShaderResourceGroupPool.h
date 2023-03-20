@@ -33,12 +33,12 @@ namespace AZ
             using Base = ShaderResourceGroupPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroupPool, AZ::SystemAllocator);
             AZ_RTTI(MergedShaderResourceGroupPool, "{9CBCF750-0BE7-410E-9828-ACA55ED828AD}", Base);
 
             static RHI::Ptr<MergedShaderResourceGroupPool> Create();
 
-            using ShaderResourceGroupList = AZStd::vector<const ShaderResourceGroup*>;
+            using ShaderResourceGroupList = AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax>;
             //! Finds or create a new instance of a MergedShaderResourceGroup.
             //! @param shaderResourceGroupList The list of ShaderResourceGroups that are being merged.
             MergedShaderResourceGroup* FindOrCreate(const ShaderResourceGroupList& shaderResourceGroupList);

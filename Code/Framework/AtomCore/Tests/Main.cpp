@@ -7,7 +7,6 @@
  */
 
 
-#include <AzCore/Debug/Timer.h>
 #include <AzCore/Debug/TraceMessageBus.h>
 #include <AzCore/std/typetraits/typetraits.h>
 #include <AzCore/UnitTest/TestTypes.h>
@@ -38,25 +37,21 @@ namespace AZ
 using namespace AZ;
 
 // Handle asserts
-class TraceDrillerHook
+class TestEnvironmentHook
     : public AZ::Test::ITestEnvironment
     , public UnitTest::TraceBusRedirector
 {
 public:
     void SetupEnvironment() override
     {
-        AllocatorInstance<OSAllocator>::Create(); // used by the bus
-
         BusConnect();
     }
 
     void TeardownEnvironment() override
     {
         BusDisconnect();
-
-        AllocatorInstance<OSAllocator>::Destroy(); // used by the bus
     }
 };
 
-AZ_UNIT_TEST_HOOK(new TraceDrillerHook());
+AZ_UNIT_TEST_HOOK(new TestEnvironmentHook());
 

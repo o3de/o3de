@@ -27,7 +27,7 @@
 
 namespace ScriptEventsBuilder
 {
-    static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
+    [[maybe_unused]] static const char* s_scriptEventsBuilder = "ScriptEventsBuilder";
 
     Worker::Worker()
     {
@@ -144,7 +144,7 @@ namespace ScriptEventsBuilder
             AZ::Data::AssetManager::Instance().GetHandler(azrtti_typeid<ScriptEvents::ScriptEventsAsset>()));
         if (!editorAssetHandler)
         {
-            AZ_Error(s_scriptEventsBuilder, false, R"(Exporting of .ScriptEvents for "%s" file failed as no editor asset handler was registered for scrit events. The ScriptEvents Gem might not be enabled.)", fullPath.data());
+            AZ_Error(s_scriptEventsBuilder, false, R"(Exporting of .ScriptEvents for "%s" file failed as no editor asset handler was registered for ScriptEvents. The ScriptEvents Gem might not be enabled.)", fullPath.data());
             return;
         }
 

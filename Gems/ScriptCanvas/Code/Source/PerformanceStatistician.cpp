@@ -104,8 +104,7 @@ namespace ScriptCanvas
         void PerformanceStatistician::OnStartTrackingRequested()
         {
             m_accumulatedStats.tickCount = 0;
-            m_accumulatedTickCountRemaining;
-            m_accumulatedStartTime = AZStd::chrono::system_clock::now();
+            m_accumulatedStartTime = AZStd::chrono::steady_clock::now();
         }
 
         void PerformanceStatistician::OnSystemTick()
@@ -186,7 +185,7 @@ namespace ScriptCanvas
             if (m_trackingState != TrackingState::PerFrameInProgress)
             {
                 m_trackingState = TrackingState::PerFrameStartRequested;
-                ConnectToSystemTickBus();                
+                ConnectToSystemTickBus();
             }
         }
 
@@ -208,7 +207,7 @@ namespace ScriptCanvas
 
         void PerformanceStatistician::UpdateAccumulatedTime()
         {
-            m_accumulatedStats.duration = AZStd::chrono::microseconds(AZStd::chrono::system_clock::now() - m_accumulatedStartTime).count();
+            m_accumulatedStats.duration = AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - m_accumulatedStartTime).count();
         }
 
         void PerformanceStatistician::UpdateStatisticsFromTracker()

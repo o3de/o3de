@@ -47,35 +47,27 @@ namespace LmbrCentral
          * AudioProxyComponentRequestBus::Handler
          * Required Interface
          */
-        bool ExecuteSourceTrigger(
-            const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo,
-            const Audio::SAudioSourceInfo& sourceInfo
+        bool ExecuteTrigger(
+            const Audio::TAudioControlID triggerID
         ) override;
 
-        bool ExecuteTrigger(
+        bool ExecuteSourceTrigger(
             const Audio::TAudioControlID triggerID,
-            const Audio::SAudioCallBackInfos& callbackInfo
+            const Audio::SAudioSourceInfo& sourceInfo
         ) override;
 
         void KillTrigger(const Audio::TAudioControlID triggerID) override;
         void KillAllTriggers() override;
 
         void SetRtpcValue(const Audio::TAudioControlID rtpcID, float value) override;
-
         void SetSwitchState(const Audio::TAudioControlID switchID, const Audio::TAudioSwitchStateID stateID) override;
-
         void SetEnvironmentAmount(const Audio::TAudioEnvironmentID environmentID, float amount) override;
-
         void SetMovesWithEntity(bool shouldTrackEntity) override
         {
             m_tracksEntityPosition = shouldTrackEntity;
         }
-
-        void SetObstructionCalcType(const Audio::EAudioObjectObstructionCalcType type) override;
-
+        void SetObstructionCalcType(const Audio::ObstructionType type) override;
         void SetPosition(const Audio::SATLWorldPosition& position) override;
-
         void SetMultiplePositions(const Audio::MultiPositionParams& params) override;
 
     protected:

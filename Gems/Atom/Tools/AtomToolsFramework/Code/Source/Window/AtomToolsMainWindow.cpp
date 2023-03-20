@@ -6,14 +6,36 @@
  *
  */
 
+#include <Atom/RHI/Factory.h>
+#include <AtomToolsFramework/PerformanceMonitor/PerformanceMonitorRequestBus.h>
+#include <AtomToolsFramework/Util/Util.h>
 #include <AtomToolsFramework/Window/AtomToolsMainWindow.h>
+#include <AzCore/Name/Name.h>
+#include <AzCore/Utils/Utils.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/sort.h>
+#include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
+#include <AzToolsFramework/PythonTerminal/ScriptTermDialog.h>
+
+#include <QClipboard>
+#include <QCloseEvent>
+#include <QFileDialog>
+#include <QInputDialog>
+#include <QMenu>
+#include <QMenuBar>
+#include <QMessageBox>
+#include <QStatusBar>
+#include <QVBoxLayout>
 
 namespace AtomToolsFramework
 {
-    AtomToolsMainWindow::AtomToolsMainWindow(QWidget* parent)
-        : AzQtComponents::DockMainWindow(parent)
+    AtomToolsMainWindow::AtomToolsMainWindow(const AZ::Crc32& toolId, const QString& objectName, QWidget* parent)
+        : Base(parent)
+        , m_toolId(toolId)
+        , m_advancedDockManager(new AzQtComponents::FancyDocking(this, objectName.toUtf8().constData()))
+        , m_mainWindowWrapper(new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionAutoTitleBarButtons))
     {
-        m_advancedDockManager = new AzQtComponents::FancyDocking(this);
+        setObjectName(objectName);
 
         setDockNestingEnabled(true);
         setCorner(Qt::TopLeftCorner, Qt::LeftDockWidgetArea);
@@ -21,72 +43,135 @@ namespace AtomToolsFramework
         setCorner(Qt::TopRightCorner, Qt::RightDockWidgetArea);
         setCorner(Qt::BottomRightCorner, Qt::RightDockWidgetArea);
 
-        m_statusBar = new QStatusBar(this);
-        m_statusBar->setObjectName("StatusBar");
-        statusBar()->addPermanentWidget(m_statusBar, 1);
+        m_statusMessage = new QLabel(statusBar());
+        statusBar()->addPermanentWidget(m_statusMessage, 1);
 
-        m_centralWidget = new QWidget(this);
+        auto centralWidget = new QWidget(this);
+        auto centralWidgetLayout = new QVBoxLayout(centralWidget);
+        centralWidgetLayout->setMargin(0);
+        centralWidgetLayout->setContentsMargins(0, 0, 0, 0);
+        centralWidget->setLayout(centralWidgetLayout);
+        setCentralWidget(centralWidget);
 
-        AtomToolsMainWindowRequestBus::Handler::BusConnect();
+        m_assetBrowser = new AtomToolsAssetBrowser(this);
+        AddDockWidget("Asset Browser", m_assetBrowser, Qt::BottomDockWidgetArea);
+
+        AddDockWidget("Python Terminal", new AzToolsFramework::CScriptTermDialog, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Python Terminal", false);
+
+        m_logPanel = new AzToolsFramework::LogPanel::TracePrintFLogPanel(this);
+        m_logPanel->AddLogTab(AzToolsFramework::LogPanel::TabSettings("Log", "", ""));
+        AddDockWidget("Logging", m_logPanel, Qt::BottomDockWidgetArea);
+        SetDockWidgetVisible("Logging", false);
+
+        SetupMetrics();
+        UpdateWindowTitle();
+
+        resize(1280, 1024);
+
+        // Manage saving window geometry, restoring state window is shown for the first time
+        m_mainWindowWrapper->setGuest(this);
+        m_mainWindowWrapper->enableSaveRestoreGeometry(
+            QApplication::organizationName(), QApplication::applicationName(), "mainWindowGeometry");
+
+        AtomToolsMainWindowRequestBus::Handler::BusConnect(m_toolId);
+        AtomToolsMainMenuRequestBus::Handler::BusConnect(m_toolId);
+        QueueUpdateMenus(true);
     }
 
     AtomToolsMainWindow::~AtomToolsMainWindow()
     {
+        PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, false);
         AtomToolsMainWindowRequestBus::Handler::BusDisconnect();
+        AtomToolsMainMenuRequestBus::Handler::BusDisconnect();
     }
 
     void AtomToolsMainWindow::ActivateWindow()
     {
-        activateWindow();
+        show();
         raise();
+        activateWindow();
     }
 
-    bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area, uint32_t orientation)
+    bool AtomToolsMainWindow::AddDockWidget(const AZStd::string& name, QWidget* widget, uint32_t area)
     {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end() || !widget)
+        auto dockWidget = qobject_cast<QDockWidget*>(widget);
+        if (!dockWidget)
         {
-            return false;
+            // If the widget being added is not already dockable then add a container dock widget for it
+            dockWidget = new AzQtComponents::StyledDockWidget(name.c_str(), this);
+            dockWidget->setWidget(widget);
+            widget->setWindowTitle(name.c_str());
+            widget->setObjectName(QString("%1_Widget").arg(name.c_str()));
+            widget->setMinimumSize(QSize(300, 300));
+            widget->setParent(dockWidget);
+            widget->setVisible(true);
         }
 
-        auto dockWidget = new AzQtComponents::StyledDockWidget(name.c_str());
+        // Rename, resize, and reparent the dock widget for this main window
+        dockWidget->setWindowTitle(name.c_str());
         dockWidget->setObjectName(QString("%1_DockWidget").arg(name.c_str()));
         dockWidget->setFeatures(QDockWidget::DockWidgetClosable | QDockWidget::DockWidgetFloatable | QDockWidget::DockWidgetMovable);
-        widget->setObjectName(name.c_str());
-        widget->setParent(dockWidget);
-        widget->setMinimumSize(QSize(300, 300));
-        dockWidget->setWidget(widget);
+        dockWidget->setMinimumSize(QSize(300, 300));
+        dockWidget->setParent(this);
+        dockWidget->setVisible(true);
+
         addDockWidget(aznumeric_cast<Qt::DockWidgetArea>(area), dockWidget);
-        resizeDocks({ dockWidget }, { 400 }, aznumeric_cast<Qt::Orientation>(orientation));
-        m_dockWidgets[name] = dockWidget;
+        resizeDocks({ dockWidget }, { 400 }, Qt::Horizontal);
+        resizeDocks({ dockWidget }, { 400 }, Qt::Vertical);
+        QueueUpdateMenus(true);
         return true;
     }
 
     void AtomToolsMainWindow::RemoveDockWidget(const AZStd::string& name)
     {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
+        for (auto dockWidget : findChildren<QDockWidget*>())
         {
-            delete dockWidgetItr->second;
-            m_dockWidgets.erase(dockWidgetItr);
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                delete dockWidget;
+                QueueUpdateMenus(true);
+                break;
+            }
         }
     }
 
     void AtomToolsMainWindow::SetDockWidgetVisible(const AZStd::string& name, bool visible)
     {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
+        for (auto dockWidget : findChildren<QDockWidget*>())
         {
-            dockWidgetItr->second->setVisible(visible);
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                if (auto tabWidget = AzQtComponents::DockTabWidget::ParentTabWidget(dockWidget))
+                {
+                    // If the dock widget is tabbed, then set it as the active tab
+                    int index = tabWidget->indexOf(dockWidget);
+                    if (visible)
+                    {
+                        tabWidget->setCurrentIndex(index);
+                    }
+                    tabWidget->setTabVisible(index, visible);
+                }
+                else
+                {
+                    // Otherwise just show the widget
+                    m_advancedDockManager->restoreDockWidget(dockWidget);
+                }
+
+                dockWidget->setVisible(visible);
+                break;
+            }
         }
     }
 
     bool AtomToolsMainWindow::IsDockWidgetVisible(const AZStd::string& name) const
     {
-        auto dockWidgetItr = m_dockWidgets.find(name);
-        if (dockWidgetItr != m_dockWidgets.end())
+        for (auto dockWidget : findChildren<QDockWidget*>())
         {
-            return dockWidgetItr->second->isVisible();
+            if (dockWidget->windowTitle().compare(name.c_str(), Qt::CaseInsensitive) == 0)
+            {
+                return dockWidget->isVisible();
+            }
         }
         return false;
     }
@@ -94,146 +179,438 @@ namespace AtomToolsFramework
     AZStd::vector<AZStd::string> AtomToolsMainWindow::GetDockWidgetNames() const
     {
         AZStd::vector<AZStd::string> names;
-        names.reserve(m_dockWidgets.size());
-        for (const auto& dockWidgetPair : m_dockWidgets)
+        names.reserve(children().size());
+        for (auto dockWidget : findChildren<QDockWidget*>())
         {
-            names.push_back(dockWidgetPair.first);
+            names.push_back(dockWidget->windowTitle().toUtf8().constData());
         }
+        AZStd::sort(names.begin(), names.end());
         return names;
     }
 
-    void AtomToolsMainWindow::CreateMenu()
+    void AtomToolsMainWindow::SetStatusMessage(const AZStd::string& message)
     {
-        m_menuBar = new QMenuBar(this);
-        m_menuBar->setObjectName("MenuBar");
-        setMenuBar(m_menuBar);
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message.c_str()));
     }
 
-    void AtomToolsMainWindow::CreateTabBar()
+    void AtomToolsMainWindow::SetStatusWarning(const AZStd::string& message)
     {
-        m_tabWidget = new AzQtComponents::TabWidget(m_centralWidget);
-        m_tabWidget->setObjectName("TabWidget");
-        m_tabWidget->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
-        m_tabWidget->setContentsMargins(0, 0, 0, 0);
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message.c_str()));
+    }
 
-        // The tab bar should only be visible if it has active documents
-        m_tabWidget->setVisible(false);
-        m_tabWidget->setTabBarAutoHide(false);
-        m_tabWidget->setMovable(true);
-        m_tabWidget->setTabsClosable(true);
-        m_tabWidget->setUsesScrollButtons(true);
+    void AtomToolsMainWindow::SetStatusError(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message.c_str()));
+    }
 
-        // Add context menu for right-clicking on tabs
-        m_tabWidget->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
-        connect(
-            m_tabWidget, &QWidget::customContextMenuRequested, this,
-            [this]()
+    void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)
+    {
+        m_rebuildMenus = m_rebuildMenus || rebuildMenus;
+        if (!m_updateMenus)
+        {
+            m_updateMenus = true;
+            QTimer::singleShot(0, this, [this]() {
+                if (m_rebuildMenus)
+                {
+                    // Clearing all actions that were added directly to the menu bar
+                    menuBar()->clear();
+
+                    // Instead of destroying and recreating the menu bar, destroying the individual child menus to prevent the UI from
+                    // popping when the menu bar is recreated
+                    for (auto menu : menuBar()->findChildren<QMenu*>(QString(), Qt::FindDirectChildrenOnly))
+                    {
+                        delete menu;
+                    }
+
+                    AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::CreateMenus, menuBar());
+                }
+
+                AtomToolsMainMenuRequestBus::Event(m_toolId, &AtomToolsMainMenuRequestBus::Events::UpdateMenus, menuBar());
+                m_updateMenus = false;
+                m_rebuildMenus = false;
+            });
+        }
+    }
+
+    void AtomToolsMainWindow::CreateMenus(QMenuBar* menuBar)
+    {
+        m_menuFile = menuBar->addMenu("&File");
+        m_menuFile->setObjectName("menuFile");
+        m_menuEdit = menuBar->addMenu("&Edit");
+        m_menuEdit->setObjectName("menuEdit");
+        m_menuView = menuBar->addMenu("&View");
+        m_menuView->setObjectName("menuView");
+        m_menuTools = menuBar->addMenu("&Tools");
+        m_menuTools->setObjectName("menuTools");
+        m_menuHelp = menuBar->addMenu("&Help");
+        m_menuHelp->setObjectName("menuHelp");
+
+        BuildScriptsMenu();
+        m_menuFile->addSeparator();
+
+        m_menuFile->addAction(tr("E&xit"), [this]() {
+            close();
+        }, QKeySequence::Quit);
+
+        BuildDockingMenu();
+        m_menuTools->addSeparator();
+
+        BuildLayoutsMenu();
+        m_menuView->addSeparator();
+
+        m_menuTools->addAction(tr("&Settings..."), [this]() {
+            OpenSettingsDialog();
+        }, QKeySequence::Preferences);
+
+        m_menuHelp->addAction(tr("&Help..."), [this]() {
+            OpenHelpDialog();
+        }, QKeySequence::HelpContents);
+
+        m_menuHelp->addAction(tr("&About..."), [this]() {
+            OpenAboutDialog();
+        });
+
+        connect(m_menuEdit, &QMenu::aboutToShow, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+
+        connect(QApplication::clipboard(), &QClipboard::dataChanged, menuBar, [toolId = m_toolId](){
+            AtomToolsMainWindowRequestBus::Event(toolId, &AtomToolsMainWindowRequestBus::Events::QueueUpdateMenus, false);
+        });
+    }
+
+    void AtomToolsMainWindow::UpdateMenus([[maybe_unused]] QMenuBar* menuBar)
+    {
+    }
+
+    void AtomToolsMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
+    {
+        m_applicationSettingsGroup = CreateSettingsPropertyGroup(
+            "Application Settings",
+            "Application Settings",
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/ClearLogOnStart",
+                  "Clear Log On Start",
+                  "Clear the application log on startup",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/EnableSourceControl",
+                  "Enable Source Control",
+                  "Enable source control for the application if it is available",
+                  false),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
+                  "Update Interval When Active",
+                  "Minimum delay between ticks (in milliseconds) when the application has focus",
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
+                  "Update Interval When Not Active",
+                  "Minimum delay between ticks (in milliseconds) when the application does not have focus",
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
+                  "Allow Multiple Instances",
+                  "Allow multiple instances of the application to run",
+                  false) });
+
+        inspector->AddGroup(
+            m_applicationSettingsGroup->m_name,
+            m_applicationSettingsGroup->m_displayName,
+            m_applicationSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_applicationSettingsGroup.get(), m_applicationSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
+
+        m_assetBrowserSettingsGroup = CreateSettingsPropertyGroup(
+            "Asset Browser Settings",
+            "Asset Browser Settings",
+            { CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFiles",
+                  "Prompt To Open Multiple Files",
+                  "Confirm before opening multiple files",
+                  true),
+              CreateSettingsPropertyValue(
+                  "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
+                  "Prompt To Open Multiple Files Threshold",
+                  "Maximum number of files that can be selected before prompting for confirmation",
+                  aznumeric_cast<AZ::s64>(10),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(100)) });
+
+        inspector->AddGroup(
+            m_assetBrowserSettingsGroup->m_name,
+            m_assetBrowserSettingsGroup->m_displayName,
+            m_assetBrowserSettingsGroup->m_description,
+            new InspectorPropertyGroupWidget(
+                m_assetBrowserSettingsGroup.get(), m_assetBrowserSettingsGroup.get(), azrtti_typeid<DynamicPropertyGroup>()));
+    }
+
+    void AtomToolsMainWindow::OpenSettingsDialog()
+    {
+        SettingsDialog dialog(this);
+
+        dialog.GetInspector()->AddGroupsBegin();
+        PopulateSettingsInspector(dialog.GetInspector());
+        dialog.GetInspector()->AddGroupsEnd();
+
+        // Temporarily forcing fixed size to prevent the dialog size from being overridden after being shown
+        dialog.setFixedSize(800, 400);
+        dialog.show();
+        dialog.setMinimumSize(0, 0);
+        dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+        dialog.exec();
+
+        OnSettingsDialogClosed();
+    }
+
+    void AtomToolsMainWindow::OnSettingsDialogClosed()
+    {
+    }
+
+    AZStd::string AtomToolsMainWindow::GetHelpDialogText() const
+    {
+        return AZStd::string();
+    }
+
+    void AtomToolsMainWindow::OpenHelpDialog()
+    {
+        QMessageBox::information(this, windowTitle(), GetHelpDialogText().c_str());
+    }
+
+    void AtomToolsMainWindow::OpenAboutDialog()
+    {
+        QMessageBox::about(this, windowTitle(), QApplication::applicationName());
+    }
+
+    void AtomToolsMainWindow::showEvent(QShowEvent* showEvent)
+    {
+        if (!m_shownBefore)
+        {
+            m_shownBefore = true;
+            m_defaultWindowState = m_advancedDockManager->saveState();
+            m_mainWindowWrapper->showFromSettings();
+            RestoreSavedLayout();
+        }
+
+        Base::showEvent(showEvent);
+    }
+
+    void AtomToolsMainWindow::closeEvent(QCloseEvent* closeEvent)
+    {
+        if (closeEvent->isAccepted())
+        {
+            const QByteArray windowState = m_advancedDockManager->saveState();
+            SetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string(windowState.begin(), windowState.end()));
+        }
+
+        Base::closeEvent(closeEvent);
+    }
+
+    void AtomToolsMainWindow::BuildDockingMenu()
+    {
+        auto dockWidgets = findChildren<QDockWidget*>();
+        AZStd::sort(
+            dockWidgets.begin(),
+            dockWidgets.end(),
+            [](QDockWidget* a, QDockWidget* b)
             {
-                OpenTabContextMenu();
+                return a->windowTitle() < b->windowTitle();
+            });
+
+        for (auto dockWidget : dockWidgets)
+        {
+            const auto dockWidgetName = dockWidget->windowTitle();
+            if (!dockWidgetName.isEmpty())
+            {
+                auto dockAction = m_menuTools->addAction(
+                    dockWidgetName,
+                    [this, dockWidgetName](const bool checked)
+                    {
+                        SetDockWidgetVisible(dockWidgetName.toUtf8().constData(), checked);
+                    });
+
+                dockAction->setCheckable(true);
+                dockAction->setChecked(dockWidget->isVisible());
+                connect(dockWidget, &QDockWidget::visibilityChanged, dockAction, &QAction::setChecked);
+            }
+        }
+    }
+
+    void AtomToolsMainWindow::BuildLayoutsMenu()
+    {
+        QMenu* layoutSettingsMenu = m_menuView->addMenu(tr("Layouts"));
+        connect(
+            layoutSettingsMenu,
+            &QMenu::aboutToShow,
+            this,
+            [this, layoutSettingsMenu]()
+            {
+                // Delete all previously registered menu actions before it is repopulated from settings.
+                layoutSettingsMenu->clear();
+
+                // Register actions for all non deletable, predefined, system layouts declared in the registry.
+                for (const auto& layoutPair : GetSettingsObject(ToolLayoutSettingsKey, LayoutSettingsMap()))
+                {
+                    const auto& layoutName = layoutPair.first;
+                    const auto& windowState = layoutPair.second;
+                    if (!layoutName.empty() && layoutName != "Default" && !windowState.empty())
+                    {
+                        layoutSettingsMenu->addAction(
+                            layoutName.c_str(),
+                            [this, layoutName, windowState]()
+                            {
+                                m_advancedDockManager->restoreState(
+                                    QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+                            });
+                    }
+                }
+
+                layoutSettingsMenu->addSeparator();
+
+                // Register actions for all of the layouts that were previously saved from within the application.
+                for (const auto& layoutPair : GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap()))
+                {
+                    const auto& layoutName = layoutPair.first;
+                    const auto& windowState = layoutPair.second;
+                    if (!layoutName.empty() && layoutName != "Default" && !windowState.empty())
+                    {
+                        QMenu* layoutMenu = layoutSettingsMenu->addMenu(layoutName.c_str());
+
+                        // Since these layouts were created and saved by the user, give them the option to restore and delete them.
+                        layoutMenu->addAction(
+                            tr("Load"),
+                            [this, layoutName, windowState]()
+                            {
+                                m_advancedDockManager->restoreState(
+                                    QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+                            });
+
+                        layoutMenu->addAction(
+                            tr("Delete"),
+                            [layoutName]()
+                            {
+                                auto userLayoutSettings = GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap());
+                                userLayoutSettings.erase(layoutName);
+                                SetSettingsObject(UserLayoutSettingsKey, userLayoutSettings);
+                            });
+                    }
+                }
+
+                // Saving layouts prompts the user for a layout name then appends that layout to the existing settings which will be
+                // saved on shut down. The layout name is reformatted as a display name, so that the casing is consistent for all
+                // layouts.
+                layoutSettingsMenu->addAction(
+                    tr("Save Layout..."),
+                    [this]()
+                    {
+                        const AZStd::string layoutName =
+                            GetDisplayNameFromText(QInputDialog::getText(this, tr("Layout Name"), QString()).toUtf8().constData());
+                        if (!layoutName.empty() && layoutName != "Default")
+                        {
+                            auto userLayoutSettings = GetSettingsObject(UserLayoutSettingsKey, LayoutSettingsMap());
+                            const QByteArray windowState = m_advancedDockManager->saveState();
+                            userLayoutSettings[layoutName] = AZStd::string(windowState.begin(), windowState.end());
+                            SetSettingsObject(UserLayoutSettingsKey, userLayoutSettings);
+                        }
+                    });
+
+                layoutSettingsMenu->addSeparator();
+
+                layoutSettingsMenu->addAction(
+                    tr("Restore Default Layout"),
+                    [this]()
+                    {
+                        RestoreDefaultLayout();
+                    });
             });
     }
 
-    void AtomToolsMainWindow::AddTabForDocumentId(
-        const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, AZStd::function<QWidget*()> widgetCreator)
+    void AtomToolsMainWindow::BuildScriptsMenu()
     {
-        // Blocking signals from the tab bar so the currentChanged signal is not sent while a document is already being opened.
-        // This prevents the OnDocumentOpened notification from being sent recursively.
-        const QSignalBlocker blocker(m_tabWidget);
+        QMenu* scriptsMenu = m_menuFile->addMenu(tr("Python Scripts"));
+        connect(scriptsMenu, &QMenu::aboutToShow, this, [scriptsMenu]() {
+            scriptsMenu->clear();
+            AddRegisteredScriptToMenu(scriptsMenu, "/O3DE/AtomToolsFramework/MainWindow/FileMenuScripts", {});
+        });
+    }
 
-        // If a tab for this document already exists then select it instead of creating a new one
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
+    void AtomToolsMainWindow::RestoreDefaultLayout()
+    {
+        // Search all user and system layout settings for a data-driven default state before applying the hard-coded initial layout.
+        // Settings are being used for a data-driven default state because it was simply easier to configure the layout in the running
+        // application, save it, and restore it instead of attempting to achieve the desired layout through code.
+        const auto& toolLayoutSettings = GetSettingsObject(ToolLayoutSettingsKey, LayoutSettingsMap());
+        if (const auto it = toolLayoutSettings.find("Default"); it != toolLayoutSettings.end())
         {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->setCurrentIndex(tabIndex);
-                m_tabWidget->repaint();
-                return;
-            }
+            const auto& windowState = it->second;
+            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+            return;
         }
 
-        const int tabIndex = m_tabWidget->addTab(widgetCreator(), label.c_str());
-
-        // The user can manually reorder tabs which will invalidate any association by index.
-        // We need to store the document ID with the tab using the tab instead of a separate mapping.
-        m_tabWidget->tabBar()->setTabData(tabIndex, QVariant(documentId.ToString<QString>()));
-        m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
-        m_tabWidget->setCurrentIndex(tabIndex);
-        m_tabWidget->setVisible(true);
-        m_tabWidget->repaint();
+        m_advancedDockManager->restoreState(m_defaultWindowState);
     }
 
-    void AtomToolsMainWindow::RemoveTabForDocumentId(const AZ::Uuid& documentId)
+    void AtomToolsMainWindow::RestoreSavedLayout()
     {
-        // We are not blocking signals here because we want closing tabs to close the associated document
-        // and automatically select the next document.
-        for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
+        // Attempt to restore the layout that was saved the last time the application was closed. 
+        const AZStd::string windowState = GetSettingsObject("/O3DE/AtomToolsFramework/MainWindow/WindowState", AZStd::string());
+        if (!windowState.empty())
         {
-            if (documentId == GetDocumentIdFromTab(tabIndex))
-            {
-                m_tabWidget->removeTab(tabIndex);
-                m_tabWidget->setVisible(m_tabWidget->count() > 0);
-                m_tabWidget->repaint();
-                break;
-            }
+            m_advancedDockManager->restoreState(QByteArray(windowState.data(), aznumeric_cast<int>(windowState.size())));
+            return;
         }
+
+        // If there are no settings for the last saved layout then attempt to restore the default layout from settings or the initial
+        // hardcoded layout.
+        RestoreDefaultLayout();
     }
 
-    void AtomToolsMainWindow::UpdateTabForDocumentId(
-        const AZ::Uuid& documentId, const AZStd::string& label, const AZStd::string& toolTip, bool isModified)
+    void AtomToolsMainWindow::SetupMetrics()
     {
-        // Whenever a document is opened, saved, or modified we need to update the tab label
-        if (!documentId.IsNull())
+        m_statusBarCpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarCpuTime);
+        m_statusBarGpuTime = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarGpuTime);
+        m_statusBarFps = new QLabel(this);
+        statusBar()->addPermanentWidget(m_statusBarFps);
+
+        static constexpr int UpdateIntervalMs = 1000;
+        m_metricsTimer.setInterval(UpdateIntervalMs);
+        m_metricsTimer.start();
+        connect(&m_metricsTimer, &QTimer::timeout, this, &AtomToolsMainWindow::UpdateMetrics);
+
+        PerformanceMonitorRequestBus::Broadcast(&PerformanceMonitorRequestBus::Handler::SetProfilerEnabled, true);
+
+        UpdateMetrics();
+    }
+
+    void AtomToolsMainWindow::UpdateMetrics()
+    {
+        PerformanceMetrics metrics = {};
+        PerformanceMonitorRequestBus::BroadcastResult(metrics, &PerformanceMonitorRequestBus::Handler::GetMetrics);
+
+        m_statusBarCpuTime->setText(tr("CPU Time %1 ms").arg(QString::number(metrics.m_cpuFrameTimeMs, 'f', 2)));
+        m_statusBarGpuTime->setText(tr("GPU Time %1 ms").arg(QString::number(metrics.m_gpuFrameTimeMs, 'f', 2)));
+        int frameRate = metrics.m_cpuFrameTimeMs > 0 ? aznumeric_cast<int>(1000 / metrics.m_cpuFrameTimeMs) : 0;
+        m_statusBarFps->setText(tr("FPS %1").arg(QString::number(frameRate)));
+    }
+
+    void AtomToolsMainWindow::UpdateWindowTitle()
+    {
+        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+        if (!apiName.IsEmpty())
         {
-            // Because tab order and indexes can change from user interactions, we cannot store a map
-            // between a tab index and document ID.
-            // We must iterate over all of the tabs to find the one associated with this document.
-            for (int tabIndex = 0; tabIndex < m_tabWidget->count(); ++tabIndex)
-            {
-                if (documentId == GetDocumentIdFromTab(tabIndex))
-                {
-                    // We use an asterisk appended to the file name to denote modified document
-                    const AZStd::string modifiedLabel = isModified ? label + " *" : label;
-                    m_tabWidget->setTabText(tabIndex, modifiedLabel.c_str());
-                    m_tabWidget->setTabToolTip(tabIndex, toolTip.c_str());
-                    m_tabWidget->repaint();
-                    break;
-                }
-            }
+            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
+            setWindowTitle(title);
         }
-    }
-
-    AZ::Uuid AtomToolsMainWindow::GetDocumentIdFromTab(const int tabIndex) const
-    {
-        const QVariant tabData = m_tabWidget->tabBar()->tabData(tabIndex);
-        if (!tabData.isNull())
+        else
         {
-            // We need to be able to convert between a UUID and a string to store and retrieve a document ID from the tab bar
-            const QString documentIdString = tabData.toString();
-            const QByteArray documentIdBytes = documentIdString.toUtf8();
-            const AZ::Uuid documentId(documentIdBytes.data(), documentIdBytes.size());
-            return documentId;
-        }
-        return AZ::Uuid::CreateNull();
-    }
-
-    void AtomToolsMainWindow::OpenTabContextMenu()
-    {
-    }
-    
-    void AtomToolsMainWindow::SelectPreviousTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            // Adding count to wrap around when index <= 0
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + m_tabWidget->count() - 1) % m_tabWidget->count());
-        }
-    }
-
-    void AtomToolsMainWindow::SelectNextTab()
-    {
-        if (m_tabWidget->count() > 1)
-        {
-            m_tabWidget->setCurrentIndex((m_tabWidget->currentIndex() + 1) % m_tabWidget->count());
+            AZ_Assert(false, "Render API name not found");
+            setWindowTitle(QApplication::applicationName());
         }
     }
 } // namespace AtomToolsFramework

@@ -34,6 +34,22 @@ namespace AZ::Render
             float m_farPlaneDistance = 10000.0f;
             float m_aspectRatio = 1.0f;
             float m_fieldOfViewYRadians = DegToRad(90.0f);
+            bool m_isStatic = false;
+            
+            bool operator==(const ProjectedShadowDescriptor & rhs) const
+            {
+                return m_transform == rhs.m_transform &&
+                    m_nearPlaneDistance == rhs.m_nearPlaneDistance &&
+                    m_farPlaneDistance == rhs.m_farPlaneDistance &&
+                    m_aspectRatio == rhs.m_aspectRatio &&
+                    m_fieldOfViewYRadians == rhs.m_fieldOfViewYRadians &&
+                    m_isStatic == rhs.m_isStatic;
+            }
+
+            bool operator!=(const ProjectedShadowDescriptor & rhs) const
+            {
+                return !(*this == rhs);
+            }
         };
 
         //! Creates a new projected shadow and returns a handle that can be used to reference it later.
@@ -48,21 +64,25 @@ namespace AZ::Render
         virtual void SetAspectRatio(ShadowId id, float aspectRatio) = 0;
         //! Sets the field of view for the shadow in radians in the Y direction.
         virtual void SetFieldOfViewY(ShadowId id, float fieldOfView) = 0;
-        //! Sets the maximum resolution of the shadow map
+        //! Sets the maximum resolution of the shadow map.
         virtual void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) = 0;
-        //! Sets the shadow bias
+        //! Sets the shadow bias.
         virtual void SetShadowBias(ShadowId id, float bias) = 0;
-        //! Sets the shadowmap Pcf method.
-        virtual void SetPcfMethod(ShadowId id, PcfMethod method) = 0;
-        //! Sets the shadow filter method
+        //! Sets the normal shadow bias.
+        virtual void SetNormalShadowBias(ShadowId id, float normalShadowBias) = 0;
+        //! Sets the shadow filter method.
         virtual void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) = 0;
-        //! Sets the width of boundary between shadowed area and lit area.
-        virtual void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) = 0;
-        //! Sets the sample count to predict the boundary of the shadow. Max 16, should be less than filtering sample count.
-        virtual void SetPredictionSampleCount(ShadowId id, uint16_t count) = 0;
         //! Sets the sample count for filtering of the shadow boundary, max 64.
         virtual void SetFilteringSampleCount(ShadowId id, uint16_t count) = 0;
-        //! Sets all of the shadow properites in one call
+        //! Sets if this shadow should be rendered every frame or only when it detects a change.
+        //! Changes are detected by the presence of a flag on the view which tracks if any of the draws 
+        //! submitted to it contained that flag. The mesh feature processor sets this flag on any cullable that
+        //! moves, and it is combined with all other flags for draws submitted to each view.
+        //! See MeshCommon::MeshMovedName for the name of the flag used to track movement
+        //! See RPI::Scene::GetViewTagBitRegistry() for where the flag bits are determined
+        //! See RPI::View::GetOrFlags() for how the bits are retrieved
+        virtual void SetUseCachedShadows(ShadowId id, bool useCachedShadows) = 0;
+        //! Sets all of the shadow properties in one call
         virtual void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) = 0;
         //! Gets the current shadow properties. Useful for updating several properties at once in SetShadowProperties() without having to set every property.
         virtual const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) = 0;

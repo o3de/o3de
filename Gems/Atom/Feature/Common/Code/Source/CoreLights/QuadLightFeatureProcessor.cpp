@@ -9,14 +9,13 @@
 #include <CoreLights/QuadLightFeatureProcessor.h>
 #include <CoreLights/LtcCommon.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/Factory.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
@@ -36,7 +35,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<QuadLightFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -57,19 +56,26 @@ namespace AZ
             m_lightBufferHandler = GpuBufferHandler(desc);
 
             Interface<ILtcCommon>::Get()->LoadMatricesForSrg(GetParentScene()->GetShaderResourceGroup());
+
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_lightLtcMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableQuadLightLTC"));
+                m_lightApproxMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableQuadLightApprox"));
+            }
         }
 
         void QuadLightFeatureProcessor::Deactivate()
         {
-            m_quadLightData.Clear();
+            m_lightData.Clear();
             m_lightBufferHandler.Release();
         }
 
         QuadLightFeatureProcessor::LightHandle QuadLightFeatureProcessor::AcquireLight()
         {
-            uint16_t id = m_quadLightData.GetFreeSlotIndex();
+            uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == m_quadLightData.NoFreeSlot)
+            if (id == m_lightData.NoFreeSlot)
             {
                 return LightHandle::Null;
             }
@@ -84,7 +90,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_quadLightData.RemoveIndex(handle.GetIndex());
+                m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
                 return true;
@@ -99,7 +105,8 @@ namespace AZ
             LightHandle handle = AcquireLight();
             if (handle.IsValid())
             {
-                m_quadLightData.GetData(handle.GetIndex()) = m_quadLightData.GetData(sourceLightHandle.GetIndex());
+                m_lightData.GetData<0>(handle.GetIndex()) = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
+                m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -107,19 +114,36 @@ namespace AZ
 
         void QuadLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_quadLightData.GetDataVector());
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
+            }
+
+            if (r_enablePerMeshShaderOptionFlags)
+            {
+                auto usesLtc = [&](const MeshCommon::BoundsVariant& bounds) -> bool
+                {
+                    LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
+                    return (m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) == 0;
+                };
+                auto usesFastApproximation = [&](const MeshCommon::BoundsVariant& bounds) -> bool
+                {
+                    LightHandle::IndexType index = m_lightData.GetIndexForData<1>(&bounds);
+                    return (m_lightData.GetData<0>(index).m_flags & QuadLightFlag::UseFastApproximation) > 0;
+                };
+
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightLtcMeshFlag.GetIndex(), usesLtc);
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightApproxMeshFlag.GetIndex(), usesFastApproximation);
             }
         }
 
         void QuadLightFeatureProcessor::Render(const QuadLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "QuadLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "QuadLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -133,7 +157,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            AZStd::array<float, 3>& rgbIntensity = m_quadLightData.GetData(handle.GetIndex()).m_rgbIntensityNits;
+            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensityNits;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -145,8 +169,10 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetPosition().");
 
-            AZStd::array<float, 3>& position = m_quadLightData.GetData(handle.GetIndex()).m_position;
+            AZStd::array<float, 3>& position = m_lightData.GetData<0>(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
+
+            UpdateBounds(handle);
 
             m_deviceBufferNeedsUpdate = true;
         }
@@ -155,9 +181,12 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetOrientation().");
 
-            QuadLightData& data = m_quadLightData.GetData(handle.GetIndex());
+            QuadLightData& data = m_lightData.GetData<0>(handle.GetIndex());
             orientation.TransformVector(Vector3::CreateAxisX()).StoreToFloat3(data.m_leftDir.data());
             orientation.TransformVector(Vector3::CreateAxisY()).StoreToFloat3(data.m_upDir.data());
+
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -165,7 +194,10 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetLightEmitsBothDirections().");
 
-            m_quadLightData.GetData(handle.GetIndex()).SetFlag(QuadLightFlag::EmitBothDirections, lightEmitsBothDirections);
+            m_lightData.GetData<0>(handle.GetIndex()).SetFlag(QuadLightFlag::EmitBothDirections, lightEmitsBothDirections);
+
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -173,7 +205,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetLightEmitsBothDirections().");
 
-            m_quadLightData.GetData(handle.GetIndex()).SetFlag(QuadLightFlag::UseFastApproximation, useFastApproximation);
+            m_lightData.GetData<0>(handle.GetIndex()).SetFlag(QuadLightFlag::UseFastApproximation, useFastApproximation);
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -182,7 +214,10 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAttenuationRadius().");
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            m_quadLightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_lightData.GetData<0>(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -190,9 +225,28 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetQuadDimensions().");
 
-            QuadLightData& data = m_quadLightData.GetData(handle.GetIndex());
+            QuadLightData& data = m_lightData.GetData<0>(handle.GetIndex());
             data.m_halfWidth = width * 0.5f;
             data.m_halfHeight = height * 0.5f;
+
+            UpdateBounds(handle);
+
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGI().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void QuadLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -200,7 +254,10 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to QuadLightFeatureProcessor::SetQuadData().");
 
-            m_quadLightData.GetData(handle.GetIndex()) = data;
+            m_lightData.GetData<0>(handle.GetIndex()) = data;
+
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -212,6 +269,25 @@ namespace AZ
         uint32_t QuadLightFeatureProcessor::GetLightCount() const
         {
             return m_lightBufferHandler.GetElementCount();
+        }
+
+        void QuadLightFeatureProcessor::UpdateBounds(LightHandle handle)
+        {
+            const QuadLightData& data = m_lightData.GetData<0>(handle.GetIndex());
+            MeshCommon::BoundsVariant& bounds = m_lightData.GetData<1>(handle.GetIndex());
+
+            AZ::Vector3 position = AZ::Vector3::CreateFromFloat3(data.m_position.data());
+            float radius = LightCommon::GetRadiusFromInvRadiusSquared(data.m_invAttenuationRadiusSquared);
+
+            if ((data.m_flags & QuadLightFlag::EmitBothDirections) > 0)
+            {
+                bounds.emplace<Sphere>(AZ::Sphere(position, radius));
+            }
+            else
+            {
+                AZ::Vector3 normal = AZ::Vector3::CreateFromFloat3(data.m_upDir.data());
+                bounds.emplace<Hemisphere>(AZ::Hemisphere(position, radius, normal));
+            }
         }
 
     } // namespace Render

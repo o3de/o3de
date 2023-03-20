@@ -11,6 +11,7 @@
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <AzFramework/FileTag/FileTagBus.h>
 
 namespace AzFramework
@@ -40,7 +41,7 @@ namespace AzFramework
         {
         public:
             AZ_TYPE_INFO(FileTagManager, "{049234E0-9EC8-4527-AEAF-BF6D4833BF07}");
-            AZ_CLASS_ALLOCATOR(FileTagManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTagManager, AZ::SystemAllocator);
 
             FileTagManager();
             ~FileTagManager();
@@ -73,7 +74,7 @@ namespace AzFramework
         {
         public:
             AZ_TYPE_INFO(FileTagQueryManager, "{082E821D-D207-4974-9322-76DE01A5704F}");
-            AZ_CLASS_ALLOCATOR(FileTagQueryManager, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileTagQueryManager, AZ::SystemAllocator);
 
             FileTagQueryManager(FileTagType fileTagType);
             ~FileTagQueryManager();
@@ -88,7 +89,7 @@ namespace AzFramework
 
             /////////////////////////////////////////////////////////////////////////
 
-            static AZStd::string GetDefaultFileTagFilePath(FileTagType fileTagType);
+            static AZ::IO::Path GetDefaultFileTagFilePath(FileTagType fileTagType);
 
         protected:
 

@@ -37,8 +37,6 @@ namespace UnitTest
         : public AZ::Test::ITestEnvironment
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(WwiseTestEnvironment)
-
         WwiseTestEnvironment() = default;
         ~WwiseTestEnvironment() override = default;
 
@@ -46,54 +44,24 @@ namespace UnitTest
 
         struct MockHolder
         {
-            AZ_TEST_CLASS_ALLOCATOR(MockHolder)
-
             NiceMock<ConsoleMock> m_console;
             NiceMock<SystemMock> m_system;
         };
 
         void SetupEnvironment() override
         {
-            // Create AZ::SystemAllocator
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-            }
-
             // Setup Mocks on a stub environment
             m_mocks = new MockHolder();
 
             m_stubEnv.pConsole = &m_mocks->m_console;
             m_stubEnv.pSystem = &m_mocks->m_system;
             gEnv = &m_stubEnv;
-
-            // Create AudioImplAllocator (used by Wwise)
-            if (!AZ::AllocatorInstance<AudioImplAllocator>::IsReady())
-            {
-                AudioImplAllocator::Descriptor allocDesc;
-                allocDesc.m_allocationRecords = false;
-                allocDesc.m_heap.m_numFixedMemoryBlocks = 1;
-                allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = 8 << 20;
-                allocDesc.m_heap.m_fixedMemoryBlocks[0] = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0], allocDesc.m_heap.m_memoryBlockAlignment);
-
-                AZ::AllocatorInstance<AudioImplAllocator>::Create(allocDesc);
-            }
         }
 
         void TeardownEnvironment() override
         {
-            if (AZ::AllocatorInstance<AudioImplAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AudioImplAllocator>::Destroy();
-            }
-
             delete m_mocks;
             m_mocks = nullptr;
-
-            if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-            }
         }
 
     private:
@@ -104,9 +72,6 @@ namespace UnitTest
     class AudioSystemImplWwiseTests
         : public ::testing::Test
     {
-    public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImplWwiseTests)
-
     protected:
         AudioSystemImplWwiseTests()
             : m_wwiseImpl("")
@@ -164,7 +129,7 @@ namespace UnitTest
         params.m_type = MultiPositionBehaviorType::Blended;
 
         auto result = m_wwiseImpl.SetMultiplePositions(&wwiseObject, params);
-        EXPECT_EQ(result, eARS_SUCCESS);
+        EXPECT_EQ(result, EAudioRequestStatus::Success);
     }
 
 #if AZ_TRAIT_AUDIOENGINEWWISE_DISABLE_MULTIPOSITION_TESTS
@@ -178,7 +143,7 @@ namespace UnitTest
         params.m_type = MultiPositionBehaviorType::Separate;
 
         auto result = m_wwiseImpl.SetMultiplePositions(nullptr, params);
-        EXPECT_EQ(result, eARS_FAILURE);
+        EXPECT_EQ(result, EAudioRequestStatus::Failure);
     }
 
 #if AZ_TRAIT_DISABLE_FAILED_AUDIO_WWISE_TESTS
@@ -190,7 +155,7 @@ namespace UnitTest
         SATLAudioObjectData_wwise wwiseObject(1, true);
         MultiPositionParams params;
         auto result = m_wwiseImpl.SetMultiplePositions(&wwiseObject, params);
-        EXPECT_EQ(result, eARS_SUCCESS);
+        EXPECT_EQ(result, EAudioRequestStatus::Success);
     }
 
 
@@ -198,8 +163,6 @@ namespace UnitTest
         : public CAudioSystemImpl_wwise
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImpl_wwise_Test)
-
         explicit AudioSystemImpl_wwise_Test(const char* assetPlatform)
             : CAudioSystemImpl_wwise(assetPlatform)
         {}
@@ -217,9 +180,6 @@ namespace UnitTest
     class AudioSystemImplWwiseConfigTests
         : public ::testing::Test
     {
-    public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioSystemImplWwiseConfigTests)
-
     protected:
         AudioSystemImplWwiseConfigTests()
             : m_wwiseImpl("")
@@ -231,7 +191,7 @@ namespace UnitTest
             m_app.Start(AZ::ComponentApplication::Descriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
@@ -253,10 +213,10 @@ namespace UnitTest
             AZ_TEST_ASSERT(serializeContext != nullptr);
             Audio::Wwise::ConfigurationSettings::Reflect(serializeContext);
 
-            // Set the @assets@ alias to the path where *this* cpp file lives.
+            // Set the @products@ alias to the path where *this* cpp file lives.
             AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
             AZ::StringFunc::Path::Join(rootFolder.c_str(), "Test.Assets/Gems/AudioEngineWwise", rootFolder);
-            m_fileIO->SetAlias("@assets@", rootFolder.c_str());
+            m_fileIO->SetAlias("@products@", rootFolder.c_str());
 
             // So we don't have to compute it in each test...
             AZStd::string defaultBanksPath(Audio::Wwise::DefaultBanksPath);
@@ -303,26 +263,12 @@ namespace UnitTest
         m_mapEntry.m_bankSubPath = "soundbanks";
         config.m_platformMappings.push_back(m_mapEntry);
 
-        // Unfortunately we are writing to the config file that is simulated to be in the @assets@ subfolder
-        // This will cause an issue during save. Since 'm_configFilePath' is an absolute path, we need to
-        // reset the @assets@ alias to a meaningful assets path that does not contain any root of the m_configFilePath
-        // in order to write to the config file and proceed
-        //AZStd::string rootFolder(AZ::Test::GetCurrentExecutablePath());
-        //AZ::IO::Path tempAssetPath(rootFolder);
-        //tempAssetPath /= "Cache";
-
-        //AZStd::string previousAlias = m_fileIO->GetAlias("@assets@");
-        //m_fileIO->SetAlias("@assets@", tempAssetPath.c_str());
-
         config.Save(m_configFilePath);
 
-        //m_fileIO->SetAlias("@assets@", previousAlias.c_str());
         m_wwiseImpl.SetBankPaths();
 
-        //m_fileIO->SetAlias("@assets@", tempAssetPath.c_str());
         m_fileIO->Remove(m_configFilePath.c_str());
 
-        //m_fileIO->SetAlias("@assets@", previousAlias.c_str());
         EXPECT_STREQ(m_wwiseImpl.m_soundbankFolder.c_str(), "sounds/wwise/soundbanks/");
     }
 

@@ -49,7 +49,7 @@ public:
     }
     void Undo(bool bUndo) override
     {
-        for (int i = m_undoSteps.size() - 1; i >= 0; i--)
+        for (int i = static_cast<int>(m_undoSteps.size()) - 1; i >= 0; i--)
         {
             m_undoSteps[i]->Undo(bUndo);
         }
@@ -60,17 +60,6 @@ public:
         {
             m_undoSteps[i]->Redo();
         }
-    }
-
-    // to get memory statistics
-    void GetMemoryUsage(ICrySizer* pSizer)
-    {
-        for (int i = 0; i < m_undoSteps.size(); i++)
-        {
-            m_undoSteps[i]->GetMemoryUsage(pSizer);
-        }
-
-        pSizer->Add(*this);
     }
 
 private:
@@ -335,6 +324,13 @@ void CUndoManager::Redo(int numSteps)
             m_bRedoing = true;
             CUndoStep* redo = m_redoStack.back();
             redo->Redo();
+
+            GetIEditor()->GetLogFile()->FormatLine(
+                "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                redo->GetName().toUtf8().constData());
+
             m_redoStack.pop_back();
             // Push undo object to redo stack.
             m_undoStack.push_back(redo);
@@ -346,7 +342,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Redo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
     GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
@@ -390,6 +385,13 @@ void CUndoManager::Undo(int numSteps)
             m_bUndoing = true;
             CUndoStep* undo = m_undoStack.back();
             undo->Undo(true);
+
+            GetIEditor()->GetLogFile()->FormatLine(
+                "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                undo->GetName().toUtf8().constData());
+
             m_undoStack.pop_back();
             // Push undo object to redo stack.
             m_redoStack.push_back(undo);
@@ -402,7 +404,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Undo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
     GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;
@@ -624,13 +625,13 @@ void CUndoManager::SuperCancel()
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetUndoStackLen() const
 {
-    return m_undoStack.size();
+    return static_cast<int>(m_undoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
 int CUndoManager::GetRedoStackLen() const
 {
-    return m_redoStack.size();
+    return static_cast<int>(m_redoStack.size());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -746,31 +747,6 @@ int CUndoManager::GetMaxUndoStep() const
     return GetIEditor()->GetEditorSettings()->undoLevels;
 }
 
-void CUndoManager::GetMemoryUsage(ICrySizer* pSizer)
-{
-    if (m_currentUndo)
-    {
-        m_currentUndo->GetMemoryUsage(pSizer);
-    }
-
-    if (m_superUndo)
-    {
-        m_superUndo->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_undoStack.begin(); it != m_undoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    for (std::list<CUndoStep*>::const_iterator it = m_redoStack.begin(); it != m_redoStack.end(); it++)
-    {
-        (*it)->GetMemoryUsage(pSizer);
-    }
-
-    pSizer->Add(*this);
-}
-
 void CUndoManager::AddListener(IUndoManagerListener* pListener)
 {
     stl::push_back_unique(m_listeners, pListener);
@@ -817,7 +793,7 @@ void CUndoManager::SignalNumUndoRedoToListeners()
 {
     for (IUndoManagerListener* listener : m_listeners)
     {
-        listener->SignalNumUndoRedo(m_undoStack.size(), m_redoStack.size());
+        listener->SignalNumUndoRedo(static_cast<unsigned int>(m_undoStack.size()), static_cast<unsigned int>(m_redoStack.size()));
     }
 }
 
@@ -837,4 +813,14 @@ bool CUndoManager::IsUndoRecording() const
 bool CUndoManager::IsUndoSuspended() const
 {
     return m_suspendCount != 0;
+}
+
+CScopedSuspendUndo::CScopedSuspendUndo()
+{
+    GetIEditor()->SuspendUndo();
+}
+
+CScopedSuspendUndo::~CScopedSuspendUndo()
+{
+    GetIEditor()->ResumeUndo();
 }

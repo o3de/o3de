@@ -40,7 +40,7 @@ namespace UnitTest
             : public AZ::RHI::PhysicalDevice
         {
         public:
-            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
             static AZ::RHI::PhysicalDeviceList Enumerate();
 
         private:
@@ -51,32 +51,38 @@ namespace UnitTest
             : public AZ::RHI::Device
         {
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
+            Device();
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::PhysicalDevice&) override { return AZ::RHI::ResultCode::Success; }
-            AZ::RHI::ResultCode PostInitInternal(const AZ::RHI::DeviceDescriptor&) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            void BeginFrameInternal() override {}
+            AZ::RHI::ResultCode BeginFrameInternal() override { return AZ::RHI::ResultCode::Success;}
             void EndFrameInternal() override {}
             void WaitForIdleInternal() override {}
             void CompileMemoryStatisticsInternal(AZ::RHI::MemoryStatisticsBuilder&) override {}
-            void UpdateCpuTimingStatisticsInternal([[maybe_unused]] AZ::RHI::CpuTimingStatistics& cpuTimingStatistics) const override {}
+            void UpdateCpuTimingStatisticsInternal() const override {}
             AZStd::chrono::microseconds GpuTimestampToMicroseconds([[maybe_unused]] uint64_t gpuTimestamp, [[maybe_unused]] AZ::RHI::HardwareQueueClass queueClass) const override
             {
                 return AZStd::chrono::microseconds();
             }
             void FillFormatsCapabilitiesInternal([[maybe_unused]] FormatCapabilitiesList& formatsCapabilities) override {}
+            AZ::RHI::ResultCode InitializeLimits() override { return AZ::RHI::ResultCode::Success; }
             void PreShutdown() override {}
-            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
-            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
+            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::ImageDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
+            AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) override { return AZ::RHI::ResourceMemoryRequirements{}; };
+            void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+            AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
+            {
+                return AZ::RHI::ShadingRateImageValue{};
+            }
         };
 
         class ImageView
             : public AZ::RHI::ImageView
         {
         public:
-            AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageView, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override { return AZ::RHI::ResultCode::Success; }
@@ -88,17 +94,18 @@ namespace UnitTest
             : public AZ::RHI::Image
         {
         public:
-            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Image, AZ::SystemAllocator);
 
         private:
-            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayoutPlaced*, size_t*) const override {}
+            void GetSubresourceLayoutsInternal(const AZ::RHI::ImageSubresourceRange&, AZ::RHI::ImageSubresourceLayout*, size_t*) const override {}
+            bool IsStreamableInternal() const override {return true;};
         };
 
         class BufferView
             : public AZ::RHI::BufferView
         {
         public:
-            AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferView, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::Resource&) override { return AZ::RHI::ResultCode::Success; }
@@ -111,7 +118,7 @@ namespace UnitTest
         {
             friend class BufferPool;
         public:
-            AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Buffer, AZ::SystemAllocator);
 
             bool IsMapped() const  { return m_isMapped; }
 
@@ -130,7 +137,7 @@ namespace UnitTest
             {
                 return m_data;
             }
-                       
+
         private:
             bool m_isMapped = false;
             AZStd::vector<uint8_t> m_data;
@@ -140,11 +147,11 @@ namespace UnitTest
             : public AZ::RHI::BufferPool
         {
         public:
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::BufferPoolDescriptor&) override { return AZ::RHI::ResultCode::Success;}
-            
+
             AZ::RHI::ResultCode InitBufferInternal(AZ::RHI::Buffer& bufferBase, const AZ::RHI::BufferDescriptor& descriptor) override
             {
                 AZ_Assert(IsInitialized(), "Buffer Pool is not initialized");
@@ -176,13 +183,14 @@ namespace UnitTest
 
             AZ::RHI::ResultCode OrphanBufferInternal(AZ::RHI::Buffer&) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode StreamBufferInternal([[maybe_unused]] const AZ::RHI::BufferStreamRequest& request) override { return AZ::RHI::ResultCode::Success; }
+            void ComputeFragmentation() const override {}
         };
 
         class ImagePool
             : public AZ::RHI::ImagePool
         {
         public:
-            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImagePool, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ImagePoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
@@ -196,7 +204,9 @@ namespace UnitTest
             : public AZ::RHI::StreamingImagePool
         {
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
+
+            void ComputeFragmentation() const override {}
 
         private:
             AZ::RHI::ResultCode InitImageInternal([[maybe_unused]] const AZ::RHI::StreamingImageInitRequest& request) override { return AZ::RHI::ResultCode::Success; }
@@ -210,7 +220,7 @@ namespace UnitTest
             : public AZ::RHI::SwapChain
         {
         public:
-            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SwapChain, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::SwapChainDescriptor&, [[maybe_unused]] AZ::RHI::SwapChainDimensions* outNativeDimensions) override { return AZ::RHI::ResultCode::Success; }
@@ -223,22 +233,22 @@ namespace UnitTest
             : public AZ::RHI::Fence
         {
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
         private:
-            virtual AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
-            virtual void ShutdownInternal() override {}
-            virtual void SignalOnCpuInternal() override {}
-            virtual void WaitOnCpuInternal() const override {};
-            virtual void ResetInternal() override {}
-            virtual AZ::RHI::FenceState GetFenceStateInternal() const override { return AZ::RHI::FenceState::Reset; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, AZ::RHI::FenceState) override { return AZ::RHI::ResultCode::Success; }
+            void ShutdownInternal() override {}
+            void SignalOnCpuInternal() override {}
+            void WaitOnCpuInternal() const override {};
+            void ResetInternal() override {}
+            AZ::RHI::FenceState GetFenceStateInternal() const override { return AZ::RHI::FenceState::Reset; }
         };
 
         class ShaderResourceGroupPool
             : public AZ::RHI::ShaderResourceGroupPool
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupPool, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::ShaderResourceGroupPoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
@@ -250,20 +260,21 @@ namespace UnitTest
             : public AZ::RHI::ShaderResourceGroup
         {
         public:
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroup, AZ::SystemAllocator);
         };
 
         class PipelineLibrary
             : public AZ::RHI::PipelineLibrary
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
 
         private:
-            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineLibraryData*) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, [[maybe_unused]] const AZ::RHI::PipelineLibraryDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             void ShutdownInternal() override {}
-            AZ::RHI::ResultCode MergeIntoInternal(AZStd::array_view<const AZ::RHI::PipelineLibrary*>) override { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode MergeIntoInternal(AZStd::span<const AZ::RHI::PipelineLibrary* const>) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ConstPtr<AZ::RHI::PipelineLibraryData> GetSerializedDataInternal() const override { return nullptr; }
+            bool SaveSerializedDataInternal([[maybe_unused]] const AZStd::string& filePath) const { return true;}
         };
 
         class ShaderStageFunction
@@ -271,17 +282,17 @@ namespace UnitTest
         {
         public:
             AZ_RTTI(ShaderStageFunction, "{644DBC98-C864-488C-BBA8-0137C210C1E2}", AZ::RHI::ShaderStageFunction);
-            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator);
 
         private:
-            virtual AZ::RHI::ResultCode FinalizeInternal() { return AZ::RHI::ResultCode::Success; }
+            AZ::RHI::ResultCode FinalizeInternal() override { return AZ::RHI::ResultCode::Success; }
         };
 
         class PipelineState
             : public AZ::RHI::PipelineState
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineState, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::PipelineStateDescriptorForDraw&, AZ::RHI::PipelineLibrary*) override { return AZ::RHI::ResultCode::Success; }
@@ -294,7 +305,7 @@ namespace UnitTest
             : public AZ::RHI::Scope
         {
         public:
-            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Scope, AZ::SystemAllocator);
 
         private:
             void InitInternal() override {}
@@ -308,7 +319,7 @@ namespace UnitTest
             : public AZ::RHI::FrameGraphCompiler
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&) override { return AZ::RHI::ResultCode::Success; }
@@ -320,7 +331,7 @@ namespace UnitTest
             : public AZ::RHI::FrameGraphExecuter
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(const AZ::RHI::FrameGraphExecuterDescriptor&) override { return AZ::RHI::ResultCode::Success; }
@@ -334,7 +345,7 @@ namespace UnitTest
             : public AZ::RHI::TransientAttachmentPool
         {
         public:
-            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TransientAttachmentPool, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal(AZ::RHI::Device&, const AZ::RHI::TransientAttachmentPoolDescriptor&) override { return AZ::RHI::ResultCode::Success; }
@@ -352,7 +363,7 @@ namespace UnitTest
         {
             friend class QueryPool;
         public:
-            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode BeginInternal([[maybe_unused]] AZ::RHI::CommandList& commandList, [[maybe_unused]] AZ::RHI::QueryControlFlags flags) override { return AZ::RHI::ResultCode::Success; }
@@ -364,17 +375,17 @@ namespace UnitTest
             : public AZ::RHI::QueryPool
         {
         public:
-            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] const AZ::RHI::QueryPoolDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode InitQueryInternal([[maybe_unused]] AZ::RHI::Query& query) override { return AZ::RHI::ResultCode::Success; }
             AZ::RHI::ResultCode GetResultsInternal(
-                [[maybe_unused]] uint32_t startIndex, 
-                [[maybe_unused]] uint32_t queryCount, 
-                [[maybe_unused]] uint64_t* results, 
-                [[maybe_unused]] uint32_t resultsCount, 
-                [[maybe_unused]] AZ::RHI::QueryResultFlagBits flags) override 
+                [[maybe_unused]] uint32_t startIndex,
+                [[maybe_unused]] uint32_t queryCount,
+                [[maybe_unused]] uint64_t* results,
+                [[maybe_unused]] uint32_t resultsCount,
+                [[maybe_unused]] AZ::RHI::QueryResultFlagBits flags) override
             { return AZ::RHI::ResultCode::Success; }
         };
 
@@ -382,7 +393,7 @@ namespace UnitTest
             : public AZ::RHI::IndirectBufferWriter
         {
         public:
-            AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferWriter, AZ::ThreadPoolAllocator);
 
         private:
             void SetVertexViewInternal([[maybe_unused]] AZ::RHI::IndirectCommandIndex index, [[maybe_unused]] const AZ::RHI::StreamBufferView& view) override {}
@@ -397,7 +408,7 @@ namespace UnitTest
             : public AZ::RHI::IndirectBufferSignature
         {
         public:
-            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IndirectBufferSignature, AZ::ThreadPoolAllocator);
 
         private:
             AZ::RHI::ResultCode InitInternal([[maybe_unused]] AZ::RHI::Device& device, [[maybe_unused]] const AZ::RHI::IndirectBufferSignatureDescriptor& descriptor) override { return AZ::RHI::ResultCode::Success; }

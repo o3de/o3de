@@ -19,8 +19,6 @@ namespace AZ
         {
             size_t skinnedMeshRenderProxyCount = 0;
             size_t dispatchItemCount = 0;
-            size_t readOnlyBufferViewCount = 0;
-            size_t writableBufferViewCount = 0;
             size_t boneCount = 0;
             size_t vertexCount = 0;
         };

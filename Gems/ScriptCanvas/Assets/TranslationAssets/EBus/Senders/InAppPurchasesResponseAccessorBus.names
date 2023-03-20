@@ -1,0 +1,534 @@
+{
+    "entries": [
+        {
+            "base": "InAppPurchasesResponseAccessorBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "In App Purchases Response Accessor"
+            },
+            "methods": [
+                {
+                    "base": "RestoredOrderId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Restored Order Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Restored Order Id is invoked"
+                    },
+                    "details": {
+                        "name": "Restored Order Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProductDescription",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Description"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Description is invoked"
+                    },
+                    "details": {
+                        "name": "Product Description"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PurchaseToken",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchase Token"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchase Token is invoked"
+                    },
+                    "details": {
+                        "name": "Purchase Token"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ResetIndices",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset Indices"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset Indices is invoked"
+                    },
+                    "details": {
+                        "name": "Reset Indices"
+                    }
+                },
+                {
+                    "base": "ProductTitle",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Title"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Title is invoked"
+                    },
+                    "details": {
+                        "name": "Product Title"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProductPrice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Price"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Price is invoked"
+                    },
+                    "details": {
+                        "name": "Product Price"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsAutoRenewing",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Auto Renewing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Auto Renewing is invoked"
+                    },
+                    "details": {
+                        "name": "Is Auto Renewing"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProductId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Id is invoked"
+                    },
+                    "details": {
+                        "name": "Product Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProductPriceMicro",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Price Micro"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Price Micro is invoked"
+                    },
+                    "details": {
+                        "name": "Product Price Micro"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PurchasedProductId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchased Product Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchased Product Id is invoked"
+                    },
+                    "details": {
+                        "name": "Purchased Product Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PurchaseTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchase Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchase Time is invoked"
+                    },
+                    "details": {
+                        "name": "Purchase Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SubscriptionExpirationTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Subscription Expiration Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Subscription Expiration Time is invoked"
+                    },
+                    "details": {
+                        "name": "Subscription Expiration Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RestoredPurchaseTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Restored Purchase Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Restored Purchase Time is invoked"
+                    },
+                    "details": {
+                        "name": "Restored Purchase Time"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "AZ::u 64"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PreviousPurchasedProduct",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Previous Purchased Product"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Previous Purchased Product is invoked"
+                    },
+                    "details": {
+                        "name": "Previous Purchased Product"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeveloperPayload",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Developer Payload"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Developer Payload is invoked"
+                    },
+                    "details": {
+                        "name": "Developer Payload"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PackageName",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Package Name"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Package Name is invoked"
+                    },
+                    "details": {
+                        "name": "Package Name"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PreviousProduct",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Previous Product"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Previous Product is invoked"
+                    },
+                    "details": {
+                        "name": "Previous Product"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "NextPurchasedProduct",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Next Purchased Product"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Next Purchased Product is invoked"
+                    },
+                    "details": {
+                        "name": "Next Purchased Product"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ProductCurrencyCode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Product Currency Code"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Product Currency Code is invoked"
+                    },
+                    "details": {
+                        "name": "Product Currency Code"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasDownloads",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Has Downloads"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Has Downloads is invoked"
+                    },
+                    "details": {
+                        "name": "Has Downloads"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "NextProduct",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Next Product"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Next Product is invoked"
+                    },
+                    "details": {
+                        "name": "Next Product"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OrderId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Order Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Order Id is invoked"
+                    },
+                    "details": {
+                        "name": "Order Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "PurchaseSignature",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Purchase Signature"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Purchase Signature is invoked"
+                    },
+                    "details": {
+                        "name": "Purchase Signature"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZ Std::string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsProductOwned",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Product Owned"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Product Owned is invoked"
+                    },
+                    "details": {
+                        "name": "Is Product Owned"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

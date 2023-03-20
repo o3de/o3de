@@ -35,7 +35,7 @@ namespace AZ
 
         public:
             AZ_RTTI(EyeAdaptationPass, "{CC66CFD9-3266-4FD7-A5A8-ACA3753BDF4A}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(EyeAdaptationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EyeAdaptationPass, SystemAllocator);
             ~EyeAdaptationPass() = default;
 
             // Creates a EyeAdaptationPass
@@ -52,6 +52,7 @@ namespace AZ
             struct ExposureCalculationData
             {
                 float   m_exposureValue = 1.0f;
+                float   m_setValueTime = 0;
             };
 
             void BuildInternal() override;

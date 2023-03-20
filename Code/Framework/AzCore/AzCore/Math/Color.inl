@@ -309,6 +309,10 @@ namespace AZ
         return IsClose(CreateZero(), tolerance);
     }
 
+    AZ_MATH_INLINE bool Color::IsFinite() const
+    {
+        return m_color.IsFinite();
+    }
 
     AZ_MATH_INLINE bool Color::operator==(const Color& rhs) const
     {
@@ -370,6 +374,15 @@ namespace AZ
         *this = GammaToLinear();
     }
 
+    AZ_MATH_INLINE float Color::ConvertSrgbGammaToLinear(float x)
+    {
+        return x <= 0.04045 ? (x / 12.92f) : static_cast<float>(pow((static_cast<double>(x) + 0.055) / 1.055, 2.4));
+    }
+
+    AZ_MATH_INLINE float Color::ConvertSrgbLinearToGamma(float x)
+    {
+        return x <= 0.0031308 ? 12.92f * x : static_cast<float>(1.055 * pow(static_cast<double>(x), 1.0 / 2.4) - 0.055);
+    }
 
     AZ_MATH_INLINE Color Color::LinearToGamma() const
     {
@@ -377,9 +390,9 @@ namespace AZ
         float g = GetG();
         float b = GetB();
 
-        r = (r <= 0.0031308 ? 12.92f * r : static_cast<float>(1.055 * pow(static_cast<double>(r), 1.0 / 2.4) - 0.055));
-        g = (g <= 0.0031308 ? 12.92f * g : static_cast<float>(1.055 * pow(static_cast<double>(g), 1.0 / 2.4) - 0.055));
-        b = (b <= 0.0031308 ? 12.92f * b : static_cast<float>(1.055 * pow(static_cast<double>(b), 1.0 / 2.4) - 0.055));
+        r = ConvertSrgbLinearToGamma(r);
+        g = ConvertSrgbLinearToGamma(g);
+        b = ConvertSrgbLinearToGamma(b);
 
         return Color(r,g,b,GetA());
     }
@@ -391,9 +404,9 @@ namespace AZ
         float g = GetG();
         float b = GetB();
 
-        return Color(r <= 0.04045 ? (r / 12.92f) : static_cast<float>(pow((static_cast<double>(r) + 0.055) / 1.055, 2.4)),
-                     g <= 0.04045 ? (g / 12.92f) : static_cast<float>(pow((static_cast<double>(g) + 0.055) / 1.055, 2.4)),
-                     b <= 0.04045 ? (b / 12.92f) : static_cast<float>(pow((static_cast<double>(b) + 0.055) / 1.055, 2.4)), GetA());
+        return Color(ConvertSrgbGammaToLinear(r),
+                     ConvertSrgbGammaToLinear(g),
+                     ConvertSrgbGammaToLinear(b), GetA());
     }
 
 

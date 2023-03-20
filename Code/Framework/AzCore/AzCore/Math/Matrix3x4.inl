@@ -203,6 +203,16 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Matrix3x4 Matrix3x4::UnsafeCreateFromMatrix4x4(const Matrix4x4& matrix4x4)
+    {
+        Matrix3x4 result;
+        result.SetRow(0, matrix4x4.GetRow(0));
+        result.SetRow(1, matrix4x4.GetRow(1));
+        result.SetRow(2, matrix4x4.GetRow(2));
+        return result;
+    }
+
+
     AZ_MATH_INLINE Matrix3x4 Matrix3x4::CreateScale(const Vector3& scale)
     {
         return CreateDiagonal(scale);
@@ -606,6 +616,12 @@ namespace AZ
     AZ_MATH_INLINE Vector3 Matrix3x4::TransformVector(const Vector3& rhs) const
     {
         return Multiply3x3(rhs);
+    }
+
+
+    AZ_MATH_INLINE Vector3 Matrix3x4::TransformPoint(const Vector3& rhs) const
+    {
+        return Multiply3x3(rhs) + GetTranslation();
     }
 
 

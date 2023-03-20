@@ -1,0 +1,183 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftPlayer",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Player",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetLatencyInMs",
+                    "details": {
+                        "name": "Get Latency In Ms"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3F80885A-9011-5172-8D94-87108B31D950}",
+                            "details": {
+                                "name": "Latency In Ms"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLatencyInMs",
+                    "details": {
+                        "name": "Set Latency In Ms"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        },
+                        {
+                            "typeid": "{3F80885A-9011-5172-8D94-87108B31D950}",
+                            "details": {
+                                "name": "Latency In Ms"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPlayerAttributes",
+                    "details": {
+                        "name": "Get Player Attributes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Player Attributes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlayerAttributes",
+                    "details": {
+                        "name": "Set Player Attributes"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        },
+                        {
+                            "typeid": "{F8A7460C-2CC2-5755-AFDA-49B1109A751E}",
+                            "details": {
+                                "name": "Player Attributes"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPlayerId",
+                    "details": {
+                        "name": "Get Player Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPlayerId",
+                    "details": {
+                        "name": "Set Player Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTeam",
+                    "details": {
+                        "name": "Get Team"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Team"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTeam",
+                    "details": {
+                        "name": "Set Team"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{B62C118E-C55D-4903-8ECB-E58E8CA613C4}",
+                            "details": {
+                                "name": "AWS Game Lift Player"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Team"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

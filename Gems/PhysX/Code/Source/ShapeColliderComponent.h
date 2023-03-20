@@ -20,16 +20,17 @@ namespace PhysX
     namespace Utils
     {
         Physics::CapsuleShapeConfiguration ConvertFromLmbrCentralCapsuleConfig(
-            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig);
+            const LmbrCentral::CapsuleShapeConfig& inputCapsuleConfig, const AZ::Vector3& scale = Physics::ShapeConstants::DefaultScale);
     } // namespace Utils
 
     namespace ShapeConstants
     {
-        static const AZ::Crc32 Box = AZ_CRC("Box", 0x08a9483a);
-        static const AZ::Crc32 Capsule = AZ_CRC("Capsule", 0xc268a183);
-        static const AZ::Crc32 Sphere = AZ_CRC("Sphere", 0x55f96687);
-        static const AZ::Crc32 PolygonPrism = AZ_CRC("PolygonPrism", 0xd6b50036);
-        static const AZ::Crc32 Cylinder = AZ_CRC("Cylinder", 0x9b045bea);
+        static const AZ::Crc32 Box = AZ_CRC_CE("Box");
+        static const AZ::Crc32 Capsule = AZ_CRC_CE("Capsule");
+        static const AZ::Crc32 Sphere = AZ_CRC_CE("Sphere");
+        static const AZ::Crc32 PolygonPrism = AZ_CRC_CE("PolygonPrism");
+        static const AZ::Crc32 Cylinder = AZ_CRC_CE("Cylinder");
+        static const AZ::Crc32 Quad = AZ_CRC_CE("QuadShape");
     } // namespace ShapeConstants
 
     /// Component that provides a collider based on geometry from a shape component.
@@ -41,6 +42,10 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         ShapeColliderComponent() = default;
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
         // BaseColliderComponent
         void UpdateScaleForShapeConfigs() override;

@@ -126,6 +126,7 @@ unsigned int ConnectionManager::internalAddConnection(bool isUserConnection, qin
     connect(connection, SIGNAL(DisconnectConnection(unsigned int)), this, SIGNAL(ConnectionDisconnected(unsigned int)));
     connect(connection, SIGNAL(ConnectionDestroyed(unsigned int)), this, SLOT(RemoveConnectionFromMap(unsigned int)));
     connect(connection, SIGNAL(Error(unsigned int, QString)), this, SIGNAL(ConnectionError(unsigned int, QString)));
+    connect(connection, &Connection::ConnectionReady, this, &ConnectionManager::ConnectionReady);
 
     m_connectionMap.insert(connectionId, connection);
     Q_EMIT connectionAdded(connectionId, connection);
@@ -184,7 +185,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
 
             if (priorCount == 0)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
             }
         }
     }
@@ -197,7 +199,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
             m_platformsConnected[thisPlatform] = priorCount - 1;
             if (priorCount == 1)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
             }
         }
     }

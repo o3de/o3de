@@ -64,6 +64,8 @@ namespace AzToolsFramework
             //////////////////////////////////////////////////////////////////////////
 
             void LaunchLuaEditor(const AZ::Data::AssetId&, const AZ::Data::AssetType&);
+            // make sure internal script (m_scriptComponent.m_script) is set before loading
+            void LoadScript();
 
         protected:
             ScriptEditorComponent(const ScriptEditorComponent&) = delete;
@@ -77,8 +79,6 @@ namespace AzToolsFramework
             };
 
             void LoadProperties();
-            // make sure internal script (m_scriptComponent.m_script) is set before loading
-            void LoadScript();
             void LoadProperties(AZ::ScriptDataContext& sdc, AzFramework::ScriptPropertyGroup& group);
             void RemovedOldProperties(AzFramework::ScriptPropertyGroup& group);
             void SortProperties(AzFramework::ScriptPropertyGroup& group);

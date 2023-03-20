@@ -77,7 +77,12 @@ void UiSliceManager::InstantiateSlice(const AZ::Data::AssetId& assetId, AZ::Vect
     AZ::Data::Asset<AZ::SliceAsset> sliceAsset;
     sliceAsset.Create(assetId, true);
 
-    EBUS_EVENT_ID(m_entityContextId, UiEditorEntityContextRequestBus, InstantiateEditorSliceAtChildIndex, sliceAsset, viewportPosition, childIndex);
+    UiEditorEntityContextRequestBus::Event(
+        m_entityContextId,
+        &UiEditorEntityContextRequestBus::Events::InstantiateEditorSliceAtChildIndex,
+        sliceAsset,
+        viewportPosition,
+        childIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -124,7 +129,7 @@ bool UiSliceManager::IsRootEntity([[maybe_unused]] const AZ::Entity& entity) con
 AZ::SliceComponent* UiSliceManager::GetRootSlice() const
 {
     AZ::SliceComponent* rootSlice = nullptr;
-    EBUS_EVENT_ID_RESULT(rootSlice, m_entityContextId, UiEditorEntityContextRequestBus, GetUiRootSlice);
+    UiEditorEntityContextRequestBus::EventResult(rootSlice, m_entityContextId, &UiEditorEntityContextRequestBus::Events::GetUiRootSlice);
     return rootSlice;
 }
 
@@ -138,7 +143,7 @@ void UiSliceManager::MakeSliceFromEntities(AzToolsFramework::EntityIdList& entit
     // expand the list of entities to include all child entities
     AzToolsFramework::EntityIdSet entitiesAndDescendants = GatherEntitiesAndAllDescendents(entities);
 
-    const AZStd::string slicesAssetsPath = "@devassets@/UI/Slices";
+    const AZStd::string slicesAssetsPath = "@projectroot@/UI/Slices";
 
     if (!gEnv->pFileIO->Exists(slicesAssetsPath.c_str()))
     {
@@ -158,7 +163,7 @@ bool UiSliceManager::MakeNewSlice(
     bool inheritSlices,
     AZ::SerializeContext* serializeContext)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+    AZ_PROFILE_FUNCTION(AzToolsFramework);
 
     if (entities.empty())
     {
@@ -167,7 +172,7 @@ bool UiSliceManager::MakeNewSlice(
 
     if (!serializeContext)
     {
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Failed to retrieve application serialize context.");
     }
 
@@ -240,7 +245,7 @@ bool UiSliceManager::MakeNewSlice(
     // Setup and execute transaction for the new slice.
     //
     {
-        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
+        AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction");
 
         using AzToolsFramework::SliceUtilities::SliceTransaction;
 
@@ -249,7 +254,7 @@ bool UiSliceManager::MakeNewSlice(
             [this, &entitiesToInclude, &commonParent, &insertBefore]
         (SliceTransaction::TransactionPtr transaction, const char* fullPath, const SliceTransaction::SliceAssetPtr& /*asset*/) -> void
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:PostSaveCallback");
             // Once the asset is processed and ready, we can replace the source entities with an instance of the new slice.
             UiEditorEntityContextRequestBus::Event(m_entityContextId,
                 &UiEditorEntityContextRequestBus::Events::QueueSliceReplacement,
@@ -260,7 +265,7 @@ bool UiSliceManager::MakeNewSlice(
 
         // Add entities
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "UiSliceManager::MakeNewSlice:SetupAndExecuteTransaction:AddEntities");
             for (const AZ::EntityId& entityId : orderedEntityList)
             {
                 SliceTransaction::Result addResult = transaction->AddEntity(entityId, !inheritSlices ? SliceTransaction::SliceAddEntityFlags::DiscardSliceAncestry : 0);
@@ -300,7 +305,7 @@ void UiSliceManager::GetTopLevelEntities(const AZ::SliceComponent::EntityList& e
     {
         // if this entities parent is not in the set then it is a top-level
         AZ::Entity* parentElement = nullptr;
-        EBUS_EVENT_ID_RESULT(parentElement, entity->GetId(), UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, entity->GetId(), &UiElementBus::Events::GetParent);
 
         if (parentElement)
         {
@@ -325,7 +330,7 @@ AzToolsFramework::EntityIdSet UiSliceManager::GatherEntitiesAndAllDescendents(co
         output.insert(id);
 
         LyShine::EntityArray descendants;
-        EBUS_EVENT_ID(id, UiElementBus, FindDescendantElements, [](const AZ::Entity*) { return true; }, descendants);
+        UiElementBus::Event(id, &UiElementBus::Events::FindDescendantElements, [](const AZ::Entity*) { return true; }, descendants);
 
         for (auto descendant : descendants)
         {
@@ -348,7 +353,7 @@ AzToolsFramework::SliceUtilities::SliceTransaction::Result SlicePreSaveCallbackF
     [[maybe_unused]] const char* fullPath,
     AzToolsFramework::SliceUtilities::SliceTransaction::SliceAssetPtr& asset)
 {
-    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
+    AZ_PROFILE_SCOPE(AzToolsFramework, "SlicePreSaveCallbackForUiEntities");
 
     // we want to ensure that "bad" data never gets pushed to a slice
     // This mostly relates to the m_childEntityIdOrder array since this is something that
@@ -481,7 +486,8 @@ AzToolsFramework::SliceUtilities::SliceTransaction::Result SlicePreSaveCallbackF
 
             // see if the entity has been deleted
             AZ::Entity* referencedEntity = nullptr;
-            EBUS_EVENT_RESULT(referencedEntity, AZ::ComponentApplicationBus, FindEntity, referencedEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(
+                referencedEntity, &AZ::ComponentApplicationBus::Events::FindEntity, referencedEntityId);
 
             if (referencedEntity)
             {
@@ -551,7 +557,8 @@ void UiSliceManager::PushEntitiesModal(const AzToolsFramework::EntityIdList& ent
     config->m_postSaveCB = nullptr;
     config->m_deleteEntitiesCB = [this](const AzToolsFramework::EntityIdList& entitiesToRemove) -> void
     {
-        EBUS_EVENT_ID(this->GetEntityContextId(), UiEditorEntityContextRequestBus, DeleteElements, entitiesToRemove);
+        UiEditorEntityContextRequestBus::Event(
+            this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesToRemove);
     };
     config->m_isRootEntityCB = [this](const AZ::Entity* entity) -> bool
     {
@@ -608,7 +615,8 @@ void UiSliceManager::DetachSliceEntities(const AzToolsFramework::EntityIdList& e
 
         if (ConfirmDialog_Detach(title, body))
         {
-            EBUS_EVENT_ID(m_entityContextId, UiEditorEntityContextRequestBus, DetachSliceEntities, entities);
+            UiEditorEntityContextRequestBus::Event(
+                m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entities);
         }
     }
 }
@@ -667,7 +675,8 @@ void UiSliceManager::DetachSliceInstances(const AzToolsFramework::EntityIdList& 
             }
 
             // Detach the entities
-            EBUS_EVENT_ID(m_entityContextId, UiEditorEntityContextRequestBus, DetachSliceEntities, entitiesToDetach);
+            UiEditorEntityContextRequestBus::Event(
+                m_entityContextId, &UiEditorEntityContextRequestBus::Events::DetachSliceEntities, entitiesToDetach);
         }
     }
 }
@@ -683,7 +692,7 @@ AZ::Entity* UiSliceManager::ValidateSingleRootAndGenerateOrderedEntityList(const
     for (auto entity : liveEntities)
     {
         AZ::Entity* parentElement = nullptr;
-        EBUS_EVENT_ID_RESULT(parentElement, entity, UiElementBus, GetParent);
+        UiElementBus::EventResult(parentElement, entity, &UiElementBus::Events::GetParent);
 
         if (parentElement)
         {
@@ -725,7 +734,7 @@ AZ::Entity* UiSliceManager::ValidateSingleRootAndGenerateOrderedEntityList(const
     outOrderedEntityList.clear();
 
     LyShine::EntityArray allChildrenOfCommonParent;
-    EBUS_EVENT_ID_RESULT(allChildrenOfCommonParent, commonParent->GetId(), UiElementBus, GetChildElements);
+    UiElementBus::EventResult(allChildrenOfCommonParent, commonParent->GetId(), &UiElementBus::Events::GetChildElements);
 
     bool justFound = false;
     for (auto entity : allChildrenOfCommonParent)
@@ -969,7 +978,8 @@ AZ::Outcome<void, AZStd::string> UiSliceManager::QuickPushSliceInstance(const AZ
         {
             // Successful commit
             // Remove any entities that were succesfully pushed into a slice (since they'll be brought to life through slice reloading)
-            EBUS_EVENT_ID(this->GetEntityContextId(), UiEditorEntityContextRequestBus, DeleteElements, entitiesBeingAdded);
+            UiEditorEntityContextRequestBus::Event(
+                this->GetEntityContextId(), &UiEditorEntityContextRequestBus::Events::DeleteElements, entitiesBeingAdded);
         }
         else
         {
@@ -991,13 +1001,13 @@ AZStd::string UiSliceManager::MakeTemporaryFilePathForSave(const char* targetFil
     AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
     AZ_Assert(fileIO, "File IO is not initialized.");
 
-    AZStd::string devAssetPath = fileIO->GetAlias("@devassets@");
+    AZStd::string devAssetPath = fileIO->GetAlias("@projectroot@");
     AZStd::string userPath = fileIO->GetAlias("@user@");
     AZStd::string tempPath = targetFilename;
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, devAssetPath);
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, userPath);
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, tempPath);
-    AzFramework::StringFunc::Replace(tempPath, "@devassets@", devAssetPath.c_str());
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, devAssetPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, userPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, tempPath);
+    AzFramework::StringFunc::Replace(tempPath, "@projectroot@", devAssetPath.c_str());
     AzFramework::StringFunc::Replace(tempPath, devAssetPath.c_str(), userPath.c_str());
     tempPath.append(".slicetemp");
 

@@ -1,5 +1,5 @@
 {
-    "Source" : "DepthOfFieldBlurBokeh",
+    "Source" : "DepthOfFieldBlurBokeh.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

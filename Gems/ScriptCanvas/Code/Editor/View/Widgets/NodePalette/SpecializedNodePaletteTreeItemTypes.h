@@ -18,14 +18,14 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateCommentNodeMimeEvent, "{AF5BB1C0-E5CF-40B1-A037-1500C2BAC787}", SpecializedCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCommentNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateCommentNodeMimeEvent() = default;
         ~CreateCommentNodeMimeEvent() = default;
 
-        NodeIdPair ConstructNode(const AZ::EntityId& sceneId, const AZ::Vector2& scenePosition);
+        NodeIdPair ConstructNode(const AZ::EntityId& sceneId, const AZ::Vector2& scenePosition) override;
         bool ExecuteEvent(const AZ::Vector2& mousePosition, AZ::Vector2& sceneDropPosition, const AZ::EntityId& sceneId) override;
     };
 
@@ -33,7 +33,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(CommentNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentNodePaletteTreeItem, AZ::SystemAllocator);
         CommentNodePaletteTreeItem(AZStd::string_view nodeName, const QString& iconPath);
         ~CommentNodePaletteTreeItem() = default;
 
@@ -47,14 +47,14 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateNodeGroupMimeEvent, "{FD969A58-404E-4B97-8A62-57C2B5EAC686}", SpecializedCreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateNodeGroupMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateNodeGroupMimeEvent() = default;
         ~CreateNodeGroupMimeEvent() = default;
 
-        NodeIdPair ConstructNode(const GraphCanvas::GraphId& sceneId, const AZ::Vector2& scenePosition);
+        NodeIdPair ConstructNode(const GraphCanvas::GraphId& sceneId, const AZ::Vector2& scenePosition) override;
         bool ExecuteEvent(const AZ::Vector2& mousePosition, AZ::Vector2& sceneDropPosition, const GraphCanvas::GraphId& sceneId) override;
     };
 
@@ -62,7 +62,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(NodeGroupNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupNodePaletteTreeItem, AZ::SystemAllocator);
         NodeGroupNodePaletteTreeItem(AZStd::string_view nodeName, const QString& iconPath);
         ~NodeGroupNodePaletteTreeItem() = default;
 

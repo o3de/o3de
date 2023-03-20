@@ -16,6 +16,7 @@ AZ_PUSH_DISABLE_WARNING(,"-Wdelete-non-virtual-dtor")
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/Streamer/Streamer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
@@ -30,7 +31,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceUpgradeTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceUpgradeTest_MockCatalog, AZ::SystemAllocator);
 
         SliceUpgradeTest_MockCatalog()
         {
@@ -99,7 +100,7 @@ namespace UnitTest
     };
 
     class SliceUpgradeTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -114,9 +115,6 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_streamer = AZStd::make_unique<AZ::IO::Streamer>(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack());
             AZ::Interface<AZ::IO::IStreamer>::Register(m_streamer.get());
 
@@ -158,9 +156,6 @@ namespace UnitTest
 
             AZ::Interface<AZ::IO::IStreamer>::Unregister(m_streamer.get());
             m_streamer.reset();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void SaveSliceAssetToStream(AZ::Data::AssetId sliceAssetId)
@@ -573,7 +568,7 @@ namespace UnitTest
         AZ::Entity* entity = aznew AZ::Entity();
         entity->CreateComponent<TestComponentD_V1>();
         // Supply a specific Asset Guid to help with debugging
-        AZ::Data::AssetId sliceAssetId = SaveAsSlice(entity, "{10000000-0000-0000-0000-000000000000}", "datapatch_base.slice");
+        AZ::Data::AssetId sliceAssetId = SaveAsSlice(entity, AZ::Uuid{ "{10000000-0000-0000-0000-000000000000}" }, "datapatch_base.slice");
         entity = nullptr;
 
         AZ::Entity* instantiatedSliceEntity = InstantiateSlice(sliceAssetId);
@@ -587,7 +582,7 @@ namespace UnitTest
         testComponent->m_firstData = Value1_Override;
         testComponent->m_secondData = Value2_Override;
         testComponent->m_asset = AssetPath_Override;
-        AZ::Data::AssetId nestedSliceAssetId = SaveAsSlice(instantiatedSliceEntity,"{20000000-0000-0000-0000-000000000000}", "datapatch_nested.slice");
+        AZ::Data::AssetId nestedSliceAssetId = SaveAsSlice(instantiatedSliceEntity, AZ::Uuid{ "{20000000-0000-0000-0000-000000000000}" }, "datapatch_nested.slice");
         m_rootSliceComponent->RemoveEntity(instantiatedSliceEntity, true, true);
         instantiatedSliceEntity = nullptr;
 

@@ -173,16 +173,11 @@ namespace GraphModelIntegrationTest
         };
         GraphModel::NodePtrList retrievedNodes;
         GraphModelIntegration::GraphControllerRequestBus::EventResult(retrievedNodes, m_sceneId, &GraphModelIntegration::GraphControllerRequests::GetNodesFromGraphNodeIds, nodeIds);
-        EXPECT_EQ(nodeIds.size(), retrievedNodes.size());
+        // Test that only one node was found.
+        EXPECT_EQ(retrievedNodes.size(), 1);
 
         // Test the first node in the list should be our valid test node
         EXPECT_EQ(retrievedNodes[0], testNode);
-
-        // Test the second node should be a nullptr since it was an invalid NodeId
-        EXPECT_EQ(retrievedNodes[1], nullptr);
-
-        // Test the third node should also be a nullptr since it was a valid NodeId but one that doesn't exist in the scene
-        EXPECT_EQ(retrievedNodes[2], nullptr);
     }
 
     TEST_F(GraphModelIntegrationTests, ExtendableSlotsWithDifferentMinimumValues)
@@ -215,28 +210,6 @@ namespace GraphModelIntegrationTest
         // The output event extendable slot has a minimum of 3 slots
         extendableSlots = testNode->GetExtendableSlots(TEST_EVENT_OUTPUT_ID);
         EXPECT_EQ(extendableSlots.size(), 3);
-    }
-
-    TEST_F(GraphModelIntegrationTests, ExtendableSlotWithInvalidConfiguration)
-    {
-        // Create a node with extendable slots
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        GraphModel::NodePtr testNode = AZStd::make_shared<BadNode>(m_graph, m_graphContext);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-        EXPECT_TRUE(testNode != nullptr);
-
-        // Add our test node to the scene
-        AZ::Vector2 offset;
-        GraphCanvas::NodeId nodeId;
-        GraphModelIntegration::GraphControllerRequestBus::EventResult(nodeId, m_sceneId, &GraphModelIntegration::GraphControllerRequests::AddNode, testNode, offset);
-
-        // The input string extendable slot has a minimum of 5 and a maximum of 1,
-        // which is an invalid configuration, so there will be no extendable
-        // slots created for this slot
-        auto extendableSlots = testNode->GetExtendableSlots(TEST_STRING_INPUT_ID);
-        int numExtendableSlots = testNode->GetExtendableSlotCount(TEST_STRING_INPUT_ID);
-        EXPECT_EQ(extendableSlots.size(), 0);
-        EXPECT_EQ(numExtendableSlots, -1);
     }
 
     TEST_F(GraphModelIntegrationTests, AddingExtendableSlotsPastMaximum)

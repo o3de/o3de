@@ -19,12 +19,10 @@ namespace Maestro
 {
     void MaestroAllocatorComponent::Activate()
     {
-        MaestroAllocatorScope::ActivateAllocators();
     }
 
     void MaestroAllocatorComponent::Deactivate()
     {
-        MaestroAllocatorScope::DeactivateAllocators();
     }
 
     void MaestroAllocatorComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -55,7 +53,6 @@ namespace Maestro
                 ec->Class<MaestroSystemComponent>("Maestro", "Provides the Open 3D Engine Cinematics Service")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -88,7 +85,6 @@ namespace Maestro
 
     void MaestroSystemComponent::Activate()
     {
-        MaestroAllocatorScope::ActivateAllocators();
         MaestroRequestBus::Handler::BusConnect();
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -97,7 +93,6 @@ namespace Maestro
     {
         MaestroRequestBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
-        MaestroAllocatorScope::DeactivateAllocators();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////

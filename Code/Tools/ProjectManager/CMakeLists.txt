@@ -34,6 +34,7 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            Platform/${PAL_PLATFORM_NAME}
     BUILD_DEPENDENCIES
         PRIVATE
             3rdParty::Qt::Core
@@ -43,7 +44,7 @@ ly_add_target(
             3rdParty::pybind11
             AZ::AzCore
             AZ::AzFramework
-            AZ::AzQtComponents
+            AZ::AzToolsFramework
 )
 
 ly_add_target(
@@ -91,12 +92,14 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzTest
                 AZ::AzFramework
                 AZ::AzFrameworkTestShared
+                AZ::AzQtComponents
                 AZ::ProjectManager.Static
     )
 
     ly_add_googletest(
         NAME AZ::ProjectManager.Tests
         TEST_COMMAND $<TARGET_FILE:AZ::ProjectManager.Tests> --unittest
+        LABELS REQUIRES_tiaf
     )
 
 endif()

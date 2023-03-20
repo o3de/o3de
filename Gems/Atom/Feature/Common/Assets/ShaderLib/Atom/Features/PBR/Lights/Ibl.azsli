@@ -11,10 +11,12 @@
 // --- Static Options Available ---
 // FORCE_IBL_IN_FORWARD_PASS - forces IBL lighting to be run in the forward pass, used in pipelines that don't have a reflection pass
 
+#include <Atom/Features/Debug.azsli>
 #include <Atom/Features/PBR/LightingOptions.azsli>
 
 #include <Atom/RPI/Math.azsli>
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
 
 float3 GetIblDiffuse(
@@ -34,7 +36,9 @@ float3 GetIblSpecular(
     float3 specularF0, 
     float roughnessLinear, 
     float3 dirToCamera, 
-    float2 brdf)
+    float2 brdf,
+    ReflectionProbeData reflectionProbe,
+    TextureCube reflectionProbeCubemap)
 {
     float3 reflectDir = reflect(-dirToCamera, normal);
     reflectDir = MultiplyVectorQuaternion(reflectDir, SceneSrg::m_iblOrientation);    
@@ -44,27 +48,25 @@ float3 GetIblSpecular(
     outSpecular *= (specularF0 * brdf.x + brdf.y);
     
     // reflection probe
-    if (ObjectSrg::m_reflectionProbeData.m_useReflectionProbe)
+    if (reflectionProbe.m_useReflectionProbe)
     {
-        if (ObjectSrg::m_reflectionProbeData.m_useParallaxCorrection)
+        if (reflectionProbe.m_useParallaxCorrection)
         {
-            reflectDir = ApplyParallaxCorrection(
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMin,
-                ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
-                ObjectSrg::m_reflectionProbeData.m_aabbPos,
+            reflectDir = ApplyParallaxCorrectionOBB(
+                GetReflectionProbeWorldMatrixInverse(reflectionProbe),
+                reflectionProbe.m_outerObbHalfLengths,
                 position,
                 reflectDir);
         }
     
-        float3 probeSpecular = ObjectSrg::m_reflectionProbeCubeMap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
+        float3 probeSpecular = reflectionProbeCubemap.SampleLevel(SceneSrg::m_samplerEnv, GetCubemapCoords(reflectDir), GetRoughnessMip(roughnessLinear)).rgb;
         probeSpecular *= (specularF0 * brdf.x + brdf.y);
     
         // compute blend amount based on world position in the reflection probe volume
-        float blendAmount = ComputeLerpBetweenInnerOuterAABBs(
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMin,
-            ObjectSrg::m_reflectionProbeData.m_innerAabbMax,
-            ObjectSrg::m_reflectionProbeData.m_outerAabbMax,
-            ObjectSrg::m_reflectionProbeData.m_aabbPos,
+        float blendAmount = ComputeLerpBetweenInnerOuterOBBs(
+            (float3x4)GetReflectionProbeWorldMatrixInverse(reflectionProbe),
+            reflectionProbe.m_innerObbHalfLengths,
+            reflectionProbe.m_outerObbHalfLengths,
             position);
     
         outSpecular = lerp(outSpecular, probeSpecular, blendAmount);
@@ -72,34 +74,26 @@ float3 GetIblSpecular(
     return outSpecular;
 }
 
-void ApplyIBL(Surface surface, inout LightingData lightingData)
+void ApplyIBL(Surface surface, inout LightingData lightingData, bool useDiffuseIbl, bool useSpecularIbl, ReflectionProbeData reflectionProbe, TextureCube reflectionProbeCubemap)
 {
-#ifdef FORCE_IBL_IN_FORWARD_PASS
-    bool useDiffuseIbl = true;
-    bool useSpecularIbl = true;
-    bool useIbl = o_enableIBL;
-#else
-    bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
-    bool useDiffuseIbl = isTransparent;
-    bool useSpecularIbl = (isTransparent || o_meshUseForwardPassIBLSpecular || o_materialUseForwardPassIBLSpecular);
-    bool useIbl = o_enableIBL && (useDiffuseIbl || useSpecularIbl);
-#endif
+    bool useIbl = IsIndirectLightingEnabled() && (useDiffuseIbl || useSpecularIbl);
 
     if(useIbl)
     {
-        float iblExposureFactor = pow(2.0, SceneSrg::m_iblExposure);
+        float globalIblExposure = pow(2.0, SceneSrg::m_iblExposure);
         
         if(useDiffuseIbl)
         {
             float3 iblDiffuse = GetIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse);
-            lightingData.diffuseLighting += (iblDiffuse * iblExposureFactor * lightingData.diffuseAmbientOcclusion);
+            lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
         }
 
         if(useSpecularIbl)
         {
-            float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf);
+            float3 iblSpecular = GetIblSpecular(surface.position, surface.normal, surface.specularF0, surface.roughnessLinear, lightingData.dirToCamera, lightingData.brdf, reflectionProbe, reflectionProbeCubemap);
             iblSpecular *= lightingData.multiScatterCompensation;
 
+#if ENABLE_CLEAR_COAT
             if (o_clearCoat_feature_enabled && surface.clearCoat.factor > 0.0f)
             {
                 float clearCoatNdotV = saturate(dot(surface.clearCoat.normal, lightingData.dirToCamera));
@@ -109,7 +103,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 // clear coat uses fixed IOR = 1.5 represents polyurethane which is the most common material for gloss clear coat
                 // coat layer assumed to be dielectric thus don't need multiple scattering compensation
                 float3 clearCoatSpecularF0 = float3(0.04f, 0.04f, 0.04f);
-                float3 clearCoatIblSpecular = GetIblSpecular(surface.position, surface.clearCoat.normal, clearCoatSpecularF0, surface.clearCoat.roughness, lightingData.dirToCamera, clearCoatBrdf);
+                float3 clearCoatIblSpecular = GetIblSpecular(surface.position, surface.clearCoat.normal, clearCoatSpecularF0, surface.clearCoat.roughness, lightingData.dirToCamera, clearCoatBrdf, reflectionProbe, reflectionProbeCubemap);
 
                 clearCoatIblSpecular *= surface.clearCoat.factor;
         
@@ -117,9 +111,10 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
                 float3 clearCoatResponse = FresnelSchlickWithRoughness(clearCoatNdotV, clearCoatSpecularF0, surface.clearCoat.roughness) * surface.clearCoat.factor;
                 iblSpecular = iblSpecular * (1.0 - clearCoatResponse) * (1.0 - clearCoatResponse) + clearCoatIblSpecular;
             }
+#endif
 
-            lightingData.specularLighting += (iblSpecular * iblExposureFactor);
+            float exposure = reflectionProbe.m_useReflectionProbe ? pow(2.0, reflectionProbe.m_exposure) : globalIblExposure;
+            lightingData.specularLighting += (iblSpecular * exposure);
         }
     }
 }
-

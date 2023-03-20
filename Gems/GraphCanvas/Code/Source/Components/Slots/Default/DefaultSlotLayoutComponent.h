@@ -29,7 +29,7 @@ namespace GraphCanvas
         , public SceneMemberNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(DefaultSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultSlotLayout, AZ::SystemAllocator);
 
         DefaultSlotLayout(DefaultSlotLayoutComponent& owner);
         ~DefaultSlotLayout();
@@ -43,7 +43,7 @@ namespace GraphCanvas
         ////
 
         // StyleNotificationBus
-        void OnStyleChanged();
+        void OnStyleChanged() override;
         ////        
 
     private:

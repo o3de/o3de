@@ -24,6 +24,22 @@ namespace PhysX
     class RigidBodyComponent;
     class Shape;
 
+    //! PhysX-specific settings which are not generic enough to be stored in the AzPhysics rigid body configuration.
+    class RigidBodyConfiguration
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(RigidBodyConfiguration, AZ::SystemAllocator);
+        AZ_RTTI(PhysX::RigidBodyConfiguration, "{006A06B1-E2E9-47DF-A49D-C60CAB3727C4}");
+
+        RigidBodyConfiguration() = default;
+        virtual ~RigidBodyConfiguration() = default;
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::u8 m_solverPositionIterations = 4; //!< Higher values can improve stability at the cost of performance.
+        AZ::u8 m_solverVelocityIterations = 1; //!< Higher values can improve stability at the cost of performance.
+    };
+
     AZ_PUSH_DISABLE_WARNING(4996, "-Wdeprecated-declarations")
 
     /// PhysX specific implementation of generic physics API RigidBody class.
@@ -33,7 +49,7 @@ namespace PhysX
     public:
         friend class RigidBodyComponent;
 
-        AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RigidBody, AZ::SystemAllocator);
         AZ_RTTI(PhysX::RigidBody, "{30CD41DD-9783-47A1-B935-9E5634238F45}", AzPhysics::RigidBody);
 
         RigidBody() = default;
@@ -42,12 +58,15 @@ namespace PhysX
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::u32 GetShapeCount() override;
+        AZ::u32 GetShapeCount() const override;
         AZStd::shared_ptr<Physics::Shape> GetShape(AZ::u32 index) override;
+        AZStd::shared_ptr<const Physics::Shape> GetShape(AZ::u32 index) const override;
 
         AZ::Vector3 GetCenterOfMassWorld() const override;
         AZ::Vector3 GetCenterOfMassLocal() const override;
 
+        AZ::Matrix3x3 GetInertiaWorld() const override;
+        AZ::Matrix3x3 GetInertiaLocal() const override;
         AZ::Matrix3x3 GetInverseInertiaWorld() const override;
         AZ::Matrix3x3 GetInverseInertiaLocal() const override;
 
@@ -109,17 +128,15 @@ namespace PhysX
         void RemoveShape(AZStd::shared_ptr<Physics::Shape> shape) override;
 
         void UpdateMassProperties(AzPhysics::MassComputeFlags flags = AzPhysics::MassComputeFlags::DEFAULT,
-            const AZ::Vector3* centerOfMassOffsetOverride = nullptr,
-            const AZ::Matrix3x3* inertiaTensorOverride = nullptr,
-            const float* massOverride = nullptr) override;
+            const AZ::Vector3& centerOfMassOffsetOverride = AZ::Vector3::CreateZero(),
+            const AZ::Matrix3x3& inertiaTensorOverride = AZ::Matrix3x3::CreateIdentity(),
+            const float massOverride = 1.0f) override;
 
     private:
         void CreatePhysXActor(const AzPhysics::RigidBodyConfiguration& configuration);
 
-        void UpdateComputedCenterOfMass();
-        void ComputeInertia();
+        void UpdateCenterOfMass(bool includeAllShapesInMassCalculation);
         void SetInertia(const AZ::Matrix3x3& inertia);
-        void SetZeroCenterOfMass();
 
         AZStd::shared_ptr<physx::PxRigidDynamic> m_pxRigidActor;
         AZStd::vector<AZStd::shared_ptr<PhysX::Shape>> m_shapes;

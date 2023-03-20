@@ -12,30 +12,23 @@
 
 namespace AzToolsFramework
 {
-    EntityManipulatorCommand::State::State(
-        const AZ::u8 pivotOverride, const AZ::Transform& transform, const AZ::EntityId entityId)
-        : m_transform(transform), m_entityId(entityId), m_pivotOverride(pivotOverride)
+    EntityManipulatorCommand::State::State(const AZ::u8 pivotOverride, const AZ::Transform& transform)
+        : m_transform(transform)
+        , m_pivotOverride(pivotOverride)
     {
     }
 
-    bool operator==(
-        const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs)
+    bool operator==(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs)
     {
-        return lhs.m_pivotOverride == rhs.m_pivotOverride
-            && lhs.m_entityId == rhs.m_entityId
-            && lhs.m_transform.IsClose(rhs.m_transform);
+        return lhs.m_pivotOverride == rhs.m_pivotOverride && lhs.m_transform.IsClose(rhs.m_transform);
     }
 
-    bool operator!=(
-        const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs)
+    bool operator!=(const EntityManipulatorCommand::State& lhs, const EntityManipulatorCommand::State& rhs)
     {
-        return lhs.m_pivotOverride != rhs.m_pivotOverride
-            || lhs.m_entityId != rhs.m_entityId
-            || !lhs.m_transform.IsClose(rhs.m_transform);
+        return !(lhs == rhs);
     }
 
-    EntityManipulatorCommand::EntityManipulatorCommand(
-        const State& stateBefore, const AZStd::string& friendlyName)
+    EntityManipulatorCommand::EntityManipulatorCommand(const State& stateBefore, const AZStd::string& friendlyName)
         : URSequencePoint(friendlyName)
         , m_stateBefore(stateBefore)
         , m_stateAfter(stateBefore) // default to the same as before in case it does not move
@@ -46,14 +39,14 @@ namespace AzToolsFramework
     {
         EditorManipulatorCommandUndoRedoRequestBus::Event(
             GetEntityContextId(), &EditorManipulatorCommandUndoRedoRequests::UndoRedoEntityManipulatorCommand,
-            m_stateBefore.m_pivotOverride, m_stateBefore.m_transform, m_stateBefore.m_entityId);
+            m_stateBefore.m_pivotOverride, m_stateBefore.m_transform);
     }
 
     void EntityManipulatorCommand::Redo()
     {
         EditorManipulatorCommandUndoRedoRequestBus::Event(
-            GetEntityContextId(), &EditorManipulatorCommandUndoRedoRequests::UndoRedoEntityManipulatorCommand,
-            m_stateAfter.m_pivotOverride, m_stateAfter.m_transform, m_stateAfter.m_entityId);
+            GetEntityContextId(), &EditorManipulatorCommandUndoRedoRequests::UndoRedoEntityManipulatorCommand, m_stateAfter.m_pivotOverride,
+            m_stateAfter.m_transform);
     }
 
     void EntityManipulatorCommand::SetManipulatorAfter(const State& stateAfter)
@@ -68,8 +61,7 @@ namespace AzToolsFramework
         return m_stateBefore != m_stateAfter;
     }
 
-    AZ::u8 BuildPivotOverride(
-        const bool translationOverride, const bool orientationOverride)
+    AZ::u8 BuildPivotOverride(const bool translationOverride, const bool orientationOverride)
     {
         AZ::u8 pivotOverride = EntityManipulatorCommand::PivotOverride::None;
 
@@ -100,5 +92,4 @@ namespace AzToolsFramework
     {
         return PivotHasTranslationOverride(pivotOverride) || PivotHasOrientationOverride(pivotOverride);
     }
-
 } // namespace AzToolsFramework

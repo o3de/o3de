@@ -53,7 +53,6 @@ namespace LyShineEditor
                 auto editInfo = ec->Class<LyShineEditorSystemComponent>("UI Canvas Editor", "UI Canvas Editor System Component");
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -103,6 +102,7 @@ namespace LyShineEditor
     void LyShineEditorSystemComponent::Activate()
     {
         AzToolsFramework::EditorEventsBus::Handler::BusConnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         LyShine::LyShineRequestBus::Handler::BusConnect();
     }
 
@@ -118,6 +118,7 @@ namespace LyShineEditor
         }
         LyShine::LyShineRequestBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
+        AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -148,7 +149,14 @@ namespace LyShineEditor
             AzToolsFramework::ViewPaneOptions opt;
             opt.isPreview = true;
             opt.paneRect = QRect(x, y, (int)editorWidth, (int)editorHeight);
-            opt.isDeletable = true; // we're in a plugin; make sure we can be deleted
+#if defined(AZ_PLATFORM_LINUX)
+            // Work-around for issue on Linux where closing (and destroying) the window and re-opening causes the Editor
+            // to hang or crash. So instead of closing this window, replicate the action of unchecking UI Editor from the
+            // Editor toolbar by hiding the parent view pane instead
+            opt.isDeletable = false;
+#else
+            opt.isDeletable = true;
+#endif
             opt.showOnToolsToolbar = true;
             opt.toolbarIcon = ":/Menu/ui_editor.svg";
             // opt.canHaveMultipleInstances = true; // uncomment this when CUiAnimViewSequenceManager::CanvasUnloading supports multiple canvases
@@ -202,6 +210,16 @@ namespace LyShineEditor
         {
             QString absoluteName = stringPath.c_str();
             UiEditorDLLBus::Broadcast(&UiEditorDLLInterface::OpenSourceCanvasFile, absoluteName);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////
+    void LyShineEditorSystemComponent::OnStopPlayInEditor()
+    {
+        // reset UI system
+        if (AZ::Interface<ILyShine>::Get())
+        {
+            AZ::Interface<ILyShine>::Get()->Reset();
         }
     }
 }

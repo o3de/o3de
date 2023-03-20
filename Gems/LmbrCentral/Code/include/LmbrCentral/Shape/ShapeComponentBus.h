@@ -7,12 +7,14 @@
  */
 #pragma once
 
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/EBus/EBusSharedDispatchTraits.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
-#include <AzCore/Component/ComponentBus.h>
-
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 
 namespace AZ
@@ -39,16 +41,29 @@ namespace LmbrCentral
         /// @brief Updates the intersection data cache to reflect the current state of the shape.
         /// @param currentTransform The current Transform of the entity.
         /// @param configuration The specific configuration of a shape.
+        /// @param sharedMutex Optional pointer to a shared_mutex for the shape that is expected to be lock_shared on both entry and exit.
+        ///        It will be promoted to a unique lock temporarily if the cache currently needs to be updated.
         /// @param currentNonUniformScale (Optional) The current non-uniform scale of the entity (if supported by the shape).
         void UpdateIntersectionParams(
             const AZ::Transform& currentTransform, const ShapeConfiguration& configuration,
+            AZStd::shared_mutex* sharedMutex,
             [[maybe_unused]] const AZ::Vector3& currentNonUniformScale = AZ::Vector3::CreateOne())
         {
             // does the cache need updating
             if (m_cacheStatus > ShapeCacheStatus::Current)
             {
+                if (sharedMutex)
+                {
+                    sharedMutex->unlock_shared();
+                    sharedMutex->lock();
+                }
                 UpdateIntersectionParamsImpl(currentTransform, configuration, currentNonUniformScale); // shape specific cache update
                 m_cacheStatus = ShapeCacheStatus::Current; // mark cache as up to date
+                if (sharedMutex)
+                {
+                    sharedMutex->unlock();
+                    sharedMutex->lock_shared();
+                }
             }
         }
 
@@ -105,11 +120,11 @@ namespace LmbrCentral
     };
 
     /// Services provided by the Shape Component
-    class ShapeComponentRequests : public AZ::ComponentBus
+    class ShapeComponentRequests : public AZ::EBusSharedDispatchTraits<ShapeComponentRequests>
     {
     public:
-        /// allows multiple threads to call shape requests
-        using MutexType = AZStd::recursive_mutex;
+        static constexpr AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        using BusIdType = AZ::EntityId;
 
         /// @brief Returns the type of shape that this component holds
         /// @return Crc32 indicating the type of shape
@@ -159,6 +174,19 @@ namespace LmbrCentral
             return false;
         }
 
+        /// Get the translation offset for the shape relative to its entity.
+        virtual AZ::Vector3 GetTranslationOffset() const
+        {
+            AZ_WarningOnce("ShapeComponentRequests", false, "GetTranslationOffset not implemented");
+            return AZ::Vector3::CreateZero();
+        }
+
+        /// Set the translation offset for the shape relative to its entity.
+        virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+        {
+            AZ_WarningOnce("ShapeComponentRequests", false, "SetTranslationOffset not implemented");
+        }
+
         virtual ~ShapeComponentRequests() = default;
     };
 
@@ -200,7 +228,7 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator);
         AZ_RTTI(ShapeComponentConfig, "{32683353-0EF5-4FBC-ACA7-E220C58F60F5}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

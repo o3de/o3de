@@ -32,15 +32,13 @@ namespace EMotionFX
                     this->m_animGraphInstance->SetAutoReleaseRefDatas(false);
                     this->m_animGraphInstance->SetAutoReleasePoses(false);
                 },
-                /*postCallback*/[this](AnimGraphInstance*){},
-                /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int){},
+                /*postCallback*/[](AnimGraphInstance*){},
+                /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int){},
                 /*postUpdateCallback*/[this](AnimGraphInstance*, float, float, int)
                 {
-                    const uint32 threadIndex = this->m_actorInstance->GetThreadIndex();
-
                     // Check if data and pose ref counts are back to 0 for all nodes.
-                    const uint32 numNodes = this->m_animGraph->GetNumNodes();
-                    for (uint32 i = 0; i < numNodes; ++i)
+                    const size_t numNodes = this->m_animGraph->GetNumNodes();
+                    for (size_t i = 0; i < numNodes; ++i)
                     {
                         const AnimGraphNode* node = this->m_animGraph->GetNode(i);
 
@@ -92,7 +90,7 @@ namespace EMotionFX
             for (int i = 0; i < param.m_numStates; ++i)
             {
                 AnimGraphBindPoseNode* state = aznew AnimGraphBindPoseNode();
-                state->SetName(AZStd::string(1, startChar + i).c_str());
+                state->SetName(AZStd::string(1, static_cast<char>(startChar + i)).c_str());
                 m_rootStateMachine->AddChildNode(state);
                 AddTransitionWithTimeCondition(prevState, state, /*blendTime*/param.m_blendTime, /*countDownTime*/param.m_countDownTime);
                 prevState = state;

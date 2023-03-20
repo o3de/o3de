@@ -20,12 +20,12 @@ namespace PhysX
         : public Physics::RagdollNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(RagdollNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RagdollNode, AZ::SystemAllocator);
         AZ_RTTI(RagdollNode, "{6AB5AB45-6DE3-4F97-B7C7-CEEB1FEEE721}", Physics::RagdollNode);
         static void Reflect(AZ::ReflectContext* context);
 
         RagdollNode() = default;
-        explicit RagdollNode(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
+        explicit RagdollNode(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig);
         ~RagdollNode();
 
         void SetJoint(AzPhysics::Joint* joint);
@@ -54,7 +54,7 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle GetRigidBodyHandle() const;
 
     private:
-        void CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, Physics::RagdollNodeConfiguration& nodeConfig);
+        void CreatePhysicsBody(AzPhysics::SceneHandle sceneHandle, const Physics::RagdollNodeConfiguration& nodeConfig);
         void DestroyPhysicsBody();
         void DestroyJoint();
 

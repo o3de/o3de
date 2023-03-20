@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2Node, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2Node, AnimGraphAllocator)
 
 
     BlendTreeBlend2Node::BlendTreeBlend2Node()
@@ -45,7 +45,9 @@ namespace EMotionFX
 
     void BlendTreeBlend2Node::Update(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (mDisabled)
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeBlend2Node::Update");
+
+        if (m_disabled)
         {
             AnimGraphNodeData* uniqueData = FindOrCreateUniqueNodeData(animGraphInstance);
             uniqueData->Clear();
@@ -88,10 +90,11 @@ namespace EMotionFX
         }
     }
 
-
     void BlendTreeBlend2Node::Output(AnimGraphInstance* animGraphInstance)
     {
-        if (mDisabled)
+        AZ_PROFILE_SCOPE(Animation, "BlendTreeBlend2Node::Output");
+
+        if (m_disabled)
         {
             RequestPoses(animGraphInstance);
             AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
@@ -108,7 +111,7 @@ namespace EMotionFX
             OutputIncomingNode(animGraphInstance, weightNode);
         }
 
-        const size_t numNodes = uniqueData->mMask.size();
+        const size_t numNodes = uniqueData->m_mask.size();
         if (numNodes == 0)
         {
             OutputNoFeathering(animGraphInstance);
@@ -121,7 +124,7 @@ namespace EMotionFX
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
             AnimGraphPose* outputPose = GetOutputPose(animGraphInstance, OUTPUTPORT_POSE)->GetValue();
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 
@@ -210,14 +213,14 @@ namespace EMotionFX
         *outputPose = *nodeA->GetMainOutputPose(animGraphInstance);
         Pose& outputLocalPose = outputPose->GetPose();
 
-        const size_t numNodes = uniqueData->mMask.size();
+        const size_t numNodes = uniqueData->m_mask.size();
         if (numNodes > 0)
         {
             Transform transform;
             for (size_t n = 0; n < numNodes; ++n)
             {
-                const float finalWeight = blendWeight /* * uniqueData->mWeights[n]*/;
-                const uint32 nodeIndex = uniqueData->mMask[n];
+                const float finalWeight = blendWeight /* * uniqueData->m_weights[n]*/;
+                const size_t nodeIndex = uniqueData->m_mask[n];
                 transform = outputLocalPose.GetLocalSpaceTransform(nodeIndex);
                 transform.Blend(localMaskPose.GetLocalSpaceTransform(nodeIndex), finalWeight);
                 outputLocalPose.SetLocalSpaceTransform(nodeIndex, transform);
@@ -244,7 +247,7 @@ namespace EMotionFX
 
         Transform delta = Transform::CreateIdentityWithZeroScale();
         Transform deltaMirrored = Transform::CreateIdentityWithZeroScale();
-        const bool hasMotionExtractionNodeInMask = (uniqueData->mMask.size() == 0) || (uniqueData->mMask.size() > 0 && AZStd::find(uniqueData->mMask.begin(), uniqueData->mMask.end(), actor->GetMotionExtractionNodeIndex()) != uniqueData->mMask.end());
+        const bool hasMotionExtractionNodeInMask = (uniqueData->m_mask.size() == 0) || (uniqueData->m_mask.size() > 0 && AZStd::find(uniqueData->m_mask.begin(), uniqueData->m_mask.end(), actor->GetMotionExtractionNodeIndex()) != uniqueData->m_mask.end());
         CalculateMotionExtractionDelta(m_extractionMode, nodeAData, nodeBData, weight, hasMotionExtractionNodeInMask, delta, deltaMirrored);
 
         data->SetTrajectoryDelta(delta);
@@ -254,19 +257,19 @@ namespace EMotionFX
 
     void BlendTreeBlend2Node::TopDownUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (mDisabled)
+        if (m_disabled)
         {
             return;
         }
 
         UniqueData* uniqueData = static_cast<BlendTreeBlend2Node::UniqueData*>(animGraphInstance->FindOrCreateUniqueObjectData(this));
-        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).mConnection;
+        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).m_connection;
         if (con)
         {
             AnimGraphNodeData* sourceNodeUniqueData = con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance);
             sourceNodeUniqueData->SetGlobalWeight(uniqueData->GetGlobalWeight());
             sourceNodeUniqueData->SetLocalWeight(1.0f);
-            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -287,7 +290,7 @@ namespace EMotionFX
 
         if (m_syncMode != SYNCMODE_DISABLED)
         {
-            const bool resync = (uniqueData->mSyncTrackNode != nodeA);
+            const bool resync = (uniqueData->m_syncTrackNode != nodeA);
             if (resync)
             {
                 nodeA->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_RESYNC, true);
@@ -296,20 +299,20 @@ namespace EMotionFX
                     nodeB->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_RESYNC, true);
                 }
 
-                uniqueData->mSyncTrackNode = nodeA;
+                uniqueData->m_syncTrackNode = nodeA;
             }
 
             nodeA->AutoSync(animGraphInstance, this, 0.0f, SYNCMODE_TRACKBASED, false);
 
             for (uint32 i = 0; i < 2; ++i)
             {
-                BlendTreeConnection* connection = mInputPorts[INPUTPORT_POSE_A + i].mConnection;
+                BlendTreeConnection* connection = m_inputPorts[INPUTPORT_POSE_A + i].m_connection;
                 if (!connection)
                 {
                     continue;
                 }
 
-                if (animGraphInstance->GetIsObjectFlagEnabled(mObjectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
+                if (animGraphInstance->GetIsObjectFlagEnabled(m_objectIndex, AnimGraphInstance::OBJECTFLAGS_SYNCED) == false)
                 {
                     connection->GetSourceNode()->RecursiveSetUniqueDataFlag(animGraphInstance, AnimGraphInstance::OBJECTFLAGS_SYNCED, true);
                 }
@@ -351,16 +354,16 @@ namespace EMotionFX
                 AnimGraphNodeData* uniqueDataNodeB = nodeWeightUpdateB->FindOrCreateUniqueNodeData(animGraphInstance);
                 uniqueDataNodeB->SetGlobalWeight(uniqueData->GetGlobalWeight() * weight);
                 uniqueDataNodeB->SetLocalWeight(weight);
-                nodeWeightUpdateB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateB, timePassedInSeconds);
             }
         }
-        nodeWeightUpdateA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+        TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateA, timePassedInSeconds);
     }
 
 
     void BlendTreeBlend2Node::PostUpdate(AnimGraphInstance* animGraphInstance, float timePassedInSeconds)
     {
-        if (mDisabled)
+        if (m_disabled)
         {
             RequestRefDatas(animGraphInstance);
             UniqueData* uniqueData = static_cast<UniqueData*>(FindOrCreateUniqueNodeData(animGraphInstance));
@@ -370,10 +373,10 @@ namespace EMotionFX
             return;
         }
 
-        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).mConnection;
+        const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).m_connection;
         if (con)
         {
-            con->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -391,10 +394,10 @@ namespace EMotionFX
             return;
         }
 
-        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
 
         RequestRefDatas(animGraphInstance);
@@ -405,7 +408,7 @@ namespace EMotionFX
 
         FilterEvents(animGraphInstance, m_eventMode, nodeA, nodeB, weight, data);
 
-        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != MCORE_INVALIDINDEX32)
+        if (animGraphInstance->GetActorInstance()->GetActor()->GetMotionExtractionNodeIndex() != InvalidIndex)
         {
             UpdateMotionExtraction(animGraphInstance, nodeA, nodeB, weight, uniqueData);
         }

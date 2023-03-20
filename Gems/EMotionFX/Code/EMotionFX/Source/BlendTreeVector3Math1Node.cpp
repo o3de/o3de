@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeVector3Math1Node, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeVector3Math1Node, AnimGraphAllocator)
 
 
     BlendTreeVector3Math1Node::BlendTreeVector3Math1Node()
@@ -30,7 +30,7 @@ namespace EMotionFX
         SetupOutputPort("Vector3", OUTPUTPORT_RESULT_VECTOR3, MCore::AttributeVector3::TYPE_ID, PORTID_OUTPUT_VECTOR3);
         SetupOutputPort("Float", OUTPUTPORT_RESULT_FLOAT, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_FLOAT);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -153,7 +153,7 @@ namespace EMotionFX
     void BlendTreeVector3Math1Node::SetMathFunction(EMathFunction func)
     {
         m_mathFunction = func;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

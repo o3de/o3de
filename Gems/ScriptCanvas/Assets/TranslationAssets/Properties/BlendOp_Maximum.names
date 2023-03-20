@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "BlendOp_Maximum",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Maximum",
+                "category": "Constants/Blend Operation"
+            },
+            "methods": [
+                {
+                    "base": "GetBlendOp_Maximum",
+                    "details": {
+                        "name": "Get Maximum"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

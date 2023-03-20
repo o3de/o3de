@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/PlatformIncl.h>
+#include <AzCore/Module/Environment.h>
 #include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>
 #include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #include <AzFramework/Input/Buses/Requests/InputSystemCursorRequestBus.h>
@@ -43,12 +44,12 @@ namespace AzFramework
     {
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Count of the number instances of this class that have been created
-        static int s_instanceCount;
+        static AZ::EnvironmentVariable<int> s_instanceCount;
 
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceMouseWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceMouseWindows, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -96,6 +97,9 @@ namespace AzFramework
         //! Refresh system cursor viibility
         void RefreshSystemCursorVisibility();
 
+        //! Return the size of the client window constrained to the desktop work area.
+        RECT GetConstrainedClientRect(HWND focusWindow) const;
+
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! The current system cursor state
         SystemCursorState m_systemCursorState;
@@ -125,7 +129,7 @@ namespace AzFramework
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
-    int InputDeviceMouseWindows::s_instanceCount = 0;
+    AZ::EnvironmentVariable<int> InputDeviceMouseWindows::s_instanceCount = nullptr;
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
     InputDeviceMouseWindows::InputDeviceMouseWindows(InputDeviceMouse& inputDevice)
@@ -137,17 +141,25 @@ namespace AzFramework
     {
         memset(&m_lastClientRect, 0, sizeof(m_lastClientRect));
 
-        if (s_instanceCount++ == 0)
+        static const char* s_mouseCountEnvironmentVarName = "InputDeviceMouseInstanceCount";
+        s_instanceCount = AZ::Environment::FindVariable<int>(s_mouseCountEnvironmentVarName);
+        if (!s_instanceCount)
         {
+            s_instanceCount = AZ::Environment::CreateVariable<int>(s_mouseCountEnvironmentVarName, 1);
+
             // Register for raw mouse input
             RAWINPUTDEVICE rawInputDevice;
             rawInputDevice.usUsagePage = RAW_INPUT_MOUSE_USAGE_PAGE;
-            rawInputDevice.usUsage     = RAW_INPUT_MOUSE_USAGE;
-            rawInputDevice.dwFlags     = 0;
-            rawInputDevice.hwndTarget  = 0;
+            rawInputDevice.usUsage = RAW_INPUT_MOUSE_USAGE;
+            rawInputDevice.dwFlags = 0;
+            rawInputDevice.hwndTarget = 0;
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to register raw input device: mouse");
             AZ_UNUSED(result);
+        }
+        else
+        {
+            s_instanceCount.Set(s_instanceCount.Get() + 1);
         }
 
         RawInputNotificationBusWindows::Handler::BusConnect();
@@ -161,7 +173,8 @@ namespace AzFramework
         // Cleanup system cursor visibility and constraint
         SetSystemCursorState(SystemCursorState::Unknown);
 
-        if (--s_instanceCount == 0)
+        int instanceCount = s_instanceCount.Get();
+        if (--instanceCount == 0)
         {
             // Deregister from raw mouse input
             RAWINPUTDEVICE rawInputDevice;
@@ -172,6 +185,12 @@ namespace AzFramework
             const BOOL result = RegisterRawInputDevices(&rawInputDevice, 1, sizeof(rawInputDevice));
             AZ_Assert(result, "Failed to deregister raw input device: mouse");
             AZ_UNUSED(result);
+
+            s_instanceCount.Reset();
+        }
+        else
+        {
+            s_instanceCount.Set(instanceCount);
         }
     }
 
@@ -225,9 +244,8 @@ namespace AzFramework
             return;
         }
 
-        // Get the content (client) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
+        // Get the content (client) rect of the focus window in screen coordinates, excluding the system taskbar
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
         const float clientWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientHeight = static_cast<float>(clientRect.bottom - clientRect.top);
 
@@ -254,16 +272,15 @@ namespace AzFramework
         ::ScreenToClient(focusWindow, &cursorPos);
 
         // Get the content (client) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
 
-        // Normalize the cursor position relative to the content (client rect) fo the focus window
+        // Normalize the cursor position relative to the content (client rect) of the focus window
         const float clientRectWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientRectHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-        const float normalizedCursorPostionX = static_cast<float>(cursorPos.x) / clientRectWidth;
-        const float normalizedCursorPostionY = static_cast<float>(cursorPos.y) / clientRectHeight;
+        const float normalizedCursorPositionX = static_cast<float>(cursorPos.x) / clientRectWidth;
+        const float normalizedCursorPositionY = static_cast<float>(cursorPos.y) / clientRectHeight;
 
-        return AZ::Vector2(normalizedCursorPostionX, normalizedCursorPostionY);
+        return AZ::Vector2(normalizedCursorPositionX, normalizedCursorPositionY);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -424,10 +441,7 @@ namespace AzFramework
         }
 
         // Constrain the cursor to the client (content) rect of the focus window
-        RECT clientRect;
-        ::GetClientRect(focusWindow, &clientRect);
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left);  // Converts the top-left point
-        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
+        RECT clientRect = GetConstrainedClientRect(focusWindow);
         ::ClipCursor(&clientRect);
     }
 
@@ -449,4 +463,26 @@ namespace AzFramework
             while (::ShowCursor(true) < 0) {}
         }
     }
+
+    RECT InputDeviceMouseWindows::GetConstrainedClientRect(HWND focusWindow) const
+    {
+        // Get the client rect of the focus window in screen coordinates
+        RECT clientRect;
+        ::GetClientRect(focusWindow, &clientRect);
+        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.left); // Converts the top-left point
+        ::ClientToScreen(focusWindow, (LPPOINT)&clientRect.right); // Converts the bottom-right point
+
+        // Get the desktop "work area" (i.e. area not including system taskbar) in screen coordinates
+        RECT workRect;
+        ::SystemParametersInfoW(SPI_GETWORKAREA, 0, &workRect, 0);
+
+        // Clip the client rect to the desktop work area
+        clientRect.left = AZStd::max(clientRect.left, workRect.left);
+        clientRect.right = AZStd::min(clientRect.right, workRect.right);
+        clientRect.top = AZStd::max(clientRect.top, workRect.top);
+        clientRect.bottom = AZStd::min(clientRect.bottom, workRect.bottom);
+
+        return clientRect;
+    }
+
 } // namespace AzFramework

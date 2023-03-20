@@ -206,7 +206,7 @@ namespace Vegetation
 
     bool SpawnerComponent::PrepareToClaim(EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -259,7 +259,7 @@ namespace Vegetation
 
     bool SpawnerComponent::CreateInstance([[maybe_unused]] const ClaimPoint &point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         instanceData.m_instanceId = InvalidInstanceId;
         if (instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->IsSpawnable())
@@ -279,7 +279,7 @@ namespace Vegetation
 
     bool SpawnerComponent::EvaluateFilters(EntityIdStack& processedIds, InstanceData& instanceData, const FilterStage intendedStage) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         bool accepted = true;
         for (const auto& id : processedIds)
@@ -302,7 +302,7 @@ namespace Vegetation
 
     bool SpawnerComponent::ProcessInstance(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData, DescriptorPtr descriptorPtr)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!descriptorPtr)
         {
@@ -353,7 +353,7 @@ namespace Vegetation
 
     bool SpawnerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
 #if VEG_SPAWNER_ENABLE_CACHING
         {
@@ -413,12 +413,12 @@ namespace Vegetation
 
     void SpawnerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         //reject entire spawner if there are inclusion tags to consider that don't exist in the context
-        if (SurfaceData::HasValidTags(context.m_masks) &&
+        if (context.m_masks.HasValidTags() &&
             SurfaceData::HasValidTags(m_inclusiveTagsToConsider) &&
-            !SurfaceData::HasMatchingTags(context.m_masks, m_inclusiveTagsToConsider))
+            !context.m_masks.HasAnyMatchingTags(m_inclusiveTagsToConsider))
         {
             VEG_PROFILE_METHOD(DebugNotificationBus::TryQueueBroadcast(&DebugNotificationBus::Events::MarkAreaRejectedByMask, GetEntityId()));
             return;
@@ -497,7 +497,7 @@ namespace Vegetation
 
     void SpawnerComponent::UnclaimPosition(const ClaimHandle handle)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         InstanceId instanceId = InvalidInstanceId;
         {
@@ -518,7 +518,7 @@ namespace Vegetation
 
     AZ::Aabb SpawnerComponent::GetEncompassingAabb() const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZ::Aabb bounds = AZ::Aabb::CreateNull();
         LmbrCentral::ShapeComponentRequestsBus::EventResult(bounds, GetEntityId(), &LmbrCentral::ShapeComponentRequestsBus::Events::GetEncompassingAabb);
@@ -533,7 +533,7 @@ namespace Vegetation
 
     void SpawnerComponent::OnCompositionChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
         AreaComponentBase::OnCompositionChanged();
 
 #if VEG_SPAWNER_ENABLE_CACHING
@@ -546,7 +546,7 @@ namespace Vegetation
 
     void SpawnerComponent::DestroyAllInstances()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         ClaimInstanceMapping claimInstanceMapping;
         {

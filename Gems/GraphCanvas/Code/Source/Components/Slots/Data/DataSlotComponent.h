@@ -29,9 +29,9 @@ namespace GraphCanvas
         ~DataSlotComponent();
         
         // Component
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // SlotRequestBus
@@ -47,8 +47,8 @@ namespace GraphCanvas
         ////
 
         // DataSlotRequestBus
-        bool ConvertToReference() override;
-        bool CanConvertToReference() const override;
+        bool ConvertToReference(bool isNewSlot = false) override;
+        bool CanConvertToReference(bool isNewSlot = false) const override;
 
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;

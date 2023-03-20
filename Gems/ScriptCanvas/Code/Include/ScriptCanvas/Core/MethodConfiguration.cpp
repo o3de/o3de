@@ -13,6 +13,7 @@
 
 #include <ScriptCanvas/Core/Contracts/MethodOverloadContract.h>
 #include <ScriptCanvas/Libraries/Core/Method.h>
+#include "../../GraphCanvas/Code/Source/Translation/TranslationBus.h"
 
 namespace ScriptCanvas
 {
@@ -22,17 +23,38 @@ namespace ScriptCanvas
         {
             if (const AZ::BehaviorParameter * argument = method.GetArgument(argIndex))
             {
-                const AZStd::string argumentTypeName = replaceTypeName.empty()
-                    ? AZ::BehaviorContextHelper::IsStringParameter(*argument)
-                    ? Data::GetName(Data::Type::String())
-                    : Data::GetName(Data::FromAZType(argument->m_typeId))
-                    : AZStd::string(replaceTypeName);
-
                 const AZStd::string* argumentNamePtr = method.GetArgumentName(argIndex);
+                // Use name from behavior context metadata if available
+                if (argumentNamePtr && !argumentNamePtr->empty())
+                {
+                    return *argumentNamePtr;
+                }
+                else
+                {
+                    AZStd::string argumentTypeName = replaceTypeName;
+                    if (argumentTypeName.empty())
+                    {
+                        if (AZ::BehaviorContextHelper::IsStringParameter(*argument))
+                        {
+                            argumentTypeName = Data::GetName(Data::Type::String());
+                        }
+                        else
+                        {
+                            argumentTypeName = Data::GetName(Data::FromAZType(argument->m_typeId));
+                        }
+                    }
 
-                return argumentNamePtr && !argumentNamePtr->empty()
-                    ? *argumentNamePtr
-                    : (AZStd::string::format("%s:%2zu", argumentTypeName.data(), argIndex));
+                    size_t argumentNum = method.GetNumArguments();
+                    // Provide default argument name based on index if there is more than one argument
+                    if (argumentNum == 1)
+                    {
+                        return argumentTypeName;
+                    }
+                    else
+                    {
+                        return AZStd::string::format("%s:%2zu", argumentTypeName.c_str(), argIndex);
+                    }
+                }
             }
 
             return {};
@@ -50,18 +72,31 @@ namespace ScriptCanvas
             const AZ::BehaviorMethod& method = outputConfig.config.m_method;
             const AZ::BehaviorParameter* result = method.GetResult();
             AZStd::vector<AZ::TypeId> unpackedTypes = BehaviorContextUtils::GetUnpackedTypes(result->m_typeId);
+            size_t resultNum = unpackedTypes.size();
 
-            for (size_t resultIndex = 0; resultIndex < unpackedTypes.size(); ++resultIndex)
+            for (size_t resultIndex = 0; resultIndex < resultNum; ++resultIndex)
             {
-                const Data::Type outputType = (unpackedTypes.size() == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result)) ? Data::Type::String() : Data::FromAZType(unpackedTypes[resultIndex]);
+                const Data::Type outputType = (resultNum == 1 && AZ::BehaviorContextHelper::IsStringParameter(*result))
+                    ? Data::Type::String()
+                    : Data::FromAZType(unpackedTypes[resultIndex]);
 
-                const AZStd::string resultSlotName(AZStd::string::format("Result: %s", Data::GetName(outputType).data()));
+                AZStd::string resultSlotName(Data::GetName(outputType));
+                if (resultNum != 1)
+                {
+                    resultSlotName = AZStd::string::format("%s:%2zu", resultSlotName.c_str(), resultIndex);
+                }
+
+                AZStd::string className = outputConfig.config.m_className ? *outputConfig.config.m_className : "";
+                if (className.empty())
+                {
+                    className = outputConfig.config.m_prettyClassName;
+                }
+
                 SlotId addedSlotId;
 
                 if (outputConfig.isReturnValueOverloaded)
                 {
                     DynamicDataSlotConfiguration slotConfiguration;
-                    //slotConfiguration.m_name = outputConfig.outputNamePrefix + resultSlotName;
 
                     slotConfiguration.m_dynamicDataType = outputConfig.methodNode->GetOverloadedOutputType(resultIndex);
 

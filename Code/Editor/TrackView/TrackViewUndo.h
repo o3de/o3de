@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWUNDO_H
-#define CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWUNDO_H
 #pragma once
 
 #include "TrackViewTrack.h"
@@ -27,11 +24,10 @@ public:
     CUndoComponentEntityTrackObject(CTrackViewTrack* track);
 
 protected:
-    virtual int GetSize() override { return sizeof(*this); }
-    virtual QString GetDescription() override { return "Undo Component Entity Track Modify"; };
+    int GetSize() override { return sizeof(*this); }
 
-    virtual void Undo(bool bUndo) override;
-    virtual void Redo() override;
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 private:
 
@@ -50,5 +46,3 @@ private:
     CTrackViewTrackMemento m_undo;
     CTrackViewTrackMemento m_redo;
 };
-
-#endif // CRYINCLUDE_EDITOR_TRACKVIEW_TRACKVIEWUNDO_H

@@ -9,7 +9,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/Filters.h>

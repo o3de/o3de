@@ -35,6 +35,6 @@ namespace AZ::SceneGenerationComponents
         SceneEvents::ProcessingResultCombiner result;
         TangentGenerateContext tangentGenerateContext(context.GetScene());
         result += SceneEvents::Process<TangentGenerateContext>(tangentGenerateContext);
-        return SceneEvents::ProcessingResult::Success;
+        return result.GetResult();
     }
 } // namespace AZ::SceneGenerationComponents

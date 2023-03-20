@@ -17,65 +17,65 @@ namespace LegacyFramework
 {
     const char* appName()
     {
-        const char* result = NULL;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationName);
+        const char* result = nullptr;
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::GetApplicationName);
         return result;
     }
 
     const char* appModule()
     {
-        const char* result = NULL;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationModule);
+        const char* result = nullptr;
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::GetApplicationModule);
         return result;
     }
 
     const char* appDir()
     {
-        const char* result = NULL;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetApplicationDirectory);
+        const char* result = nullptr;
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::GetApplicationDirectory);
         return result;
     }
 
     bool RequiresGameProject()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, RequiresGameProject);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::RequiresGameProject);
         return result;
     }
 
     bool IsGUIMode()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, IsRunningInGUIMode);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode);
         return result;
     }
 
     bool appAbortRequested()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, GetAbortRequested);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::GetAbortRequested);
         return result;
     }
 
     bool isPrimary()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, IsPrimary);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::IsPrimary);
         return result;
     }
 
     bool IsAppConfigWritable()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, IsAppConfigWritable);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::IsAppConfigWritable);
         return result;
     }
 
     // helper function which retrieves the serialize context and asserts if its not found.
     AZ::SerializeContext* GetSerializeContext()
     {
-        AZ::SerializeContext* serializeContext = NULL;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "No serialize context");
         return serializeContext;
     }
@@ -91,7 +91,7 @@ namespace LegacyFramework
     bool ShouldRunAssetProcessor()
     {
         bool result = false;
-        EBUS_EVENT_RESULT(result, FrameworkApplicationMessages::Bus, ShouldRunAssetProcessor);
+        FrameworkApplicationMessages::Bus::BroadcastResult(result, &FrameworkApplicationMessages::Bus::Events::ShouldRunAssetProcessor);
         return result;
     }
 }

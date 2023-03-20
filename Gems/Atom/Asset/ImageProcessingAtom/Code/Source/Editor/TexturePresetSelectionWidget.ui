@@ -1,91 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TexturePresetSelectionWidget</class>
- <widget class="QWidget" name="TexturePresetSelectionWidget">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>624</width>
-    <height>118</height>
-   </rect>
-  </property>
-  <property name="windowTitle">
-   <string>Form</string>
-  </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="2" column="1">
-    <widget class="QLabel" name="conventionLabel">
-     <property name="text">
-      <string/>
-     </property>
+    <class>TexturePresetSelectionWidget</class>
+    <widget class="QWidget" name="TexturePresetSelectionWidget">
+        <layout class="QGridLayout" name="gridLayout" columnminimumwidth="124,292,16,20">
+            <property name="leftMargin">
+                <number>5</number>
+            </property>
+            <property name="topMargin">
+                <number>8</number>
+            </property>
+            <property name="rightMargin">
+                <number>7</number>
+            </property>
+            <property name="bottomMargin">
+                <number>0</number>
+            </property>
+            <property name="horizontalSpacing">
+                <number>0</number>
+            </property>
+            <property name="verticalSpacing">
+                <number>2</number>
+            </property>
+<!-- Texture Preset -->
+            <item row="0" column="0">
+                <widget class="QLabel" name="activePresetLabel">
+                    <property name="text">
+                        <string>Preset</string>
+                    </property>
+                </widget>
+            </item>
+<!-- Preset Selector -->
+            <item row="0" column="1">
+                <widget class="QComboBox" name="presetComboBox">
+                </widget>
+            </item>
+<!-- Info -->
+            <item row="0" column="2">
+                <widget class="QToolButton" name="infoBtn">
+                    <property name="text">
+                        <string/>
+                    </property>
+                    <property name="icon">
+                        <iconset>
+                            <normalon>:/info.svg</normalon>
+                        </iconset>
+                    </property>
+                    <property name="iconSize">
+                        <size>
+                            <width>16</width>
+                            <height>16</height>
+                        </size>
+                    </property>
+                </widget>
+            </item>
+<!-- Reset -->
+            <item row="0" column="3">
+                <widget class="QToolButton" name="resetBtn">
+                    <property name="text">
+                        <string/>
+                    </property>
+                    <property name="icon">
+                        <iconset>
+                            <normalon>:/refresh-active.svg</normalon>
+                        </iconset>
+                    </property>
+                    <property name="iconSize">
+                        <size>
+                            <width>20</width>
+                            <height>20</height>
+                        </size>
+                    </property>
+                </widget>
+            </item>
+<!-- Use Full Res -->
+            <item row="1" column="0">
+                <widget class="QLabel" name="maxResLabel">
+                    <property name="text">
+                        <string>Use Max Res</string>
+                    </property>
+                </widget>
+            </item>
+            <item row="1" column="1">
+                <widget class="QCheckBox" name="serCheckBox">
+                </widget>
+            </item>
+        </layout>
     </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="activeFileConventionLabel">
-     <property name="text">
-      <string>Active file conventions</string>
-     </property>
-    </widget>
-   </item>
-   <item row="0" column="0">
-    <widget class="QLabel" name="titleLabel">
-     <property name="text">
-      <string>Texture presets</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QComboBox" name="presetComboBox"/>
-   </item>
-   <item row="1" column="0">
-    <widget class="QLabel" name="activePresetLabel">
-     <property name="text">
-      <string>Active preset</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="2">
-    <widget class="QToolButton" name="resetBtn">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/Reset.png</normalon>
-      </iconset>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0">
-    <widget class="QCheckBox" name="serCheckBox">
-     <property name="text">
-      <string>Suppress spec reduction</string>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="3">
-    <widget class="QToolButton" name="infoBtn">
-     <property name="text">
-      <string/>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normalon>:/info.png</normalon>
-      </iconset>
-     </property>
-     <property name="iconSize">
-      <size>
-       <width>16</width>
-       <height>16</height>
-      </size>
-     </property>
-    </widget>
-   </item>
-  </layout>
- </widget>
- <resources>
-  <include location="../../../Assets/Editor/Resources.qrc"/>
- </resources>
- <connections/>
+    <resources>
+        <include location="./ImageProcessing.qrc"/>
+    </resources>
+    <connections/>
 </ui>

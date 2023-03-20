@@ -1,6 +1,0 @@
-<download name="C4925577_PhysXMaterials_MaterialAssignedToTerrain" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="8594" md5="cbc2bfad4f0eafd98d047e1e65ddaea9"/>
- </files>
-</download>

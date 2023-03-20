@@ -39,6 +39,10 @@ namespace AZ
                 virtual AZStd::vector<AZ::Color> ExtractClothData(const Containers::SceneGraph& graph, const size_t numVertices) const = 0;
 
                 /// Finds the cloth rule affecting a mesh node and extracts cloth data.
+                /// @param graph The scene graph
+                /// @param meshNodeIndex The index of the original, unoptimized mesh node
+                /// @param numVertices The vertex count used when extracting the cloth data
+                /// @param rules The rules for the scene, which may include the cloth rule
                 static AZStd::vector<AZ::Color> FindClothData(
                     const AZ::SceneAPI::Containers::SceneGraph& graph,
                     const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& meshNodeIndex,
@@ -47,12 +51,9 @@ namespace AZ
                 {
                     AZStd::vector<AZ::Color> clothData;
 
+                    // Note: it is important the original mesh node index is used, not a generated optimized mesh node,
+                    // because the cloth rule tracks the mesh node based on the original node paths
                     AZStd::string_view meshNodeName = graph.GetNodeName(meshNodeIndex).GetPath();
-
-                    if (meshNodeName.ends_with(Utilities::OptimizedMeshSuffix))
-                    {
-                        meshNodeName.remove_suffix(Utilities::OptimizedMeshSuffix.size());
-                    }
 
                     for (size_t ruleIndex = 0; ruleIndex < rules.GetRuleCount(); ++ruleIndex)
                     {

@@ -38,6 +38,9 @@ namespace AzToolsFramework
             /// The type of the underlying Component this mode is for.
             virtual AZ::Uuid GetComponentType() const = 0;
 
+            /// The type of the Component Mode.
+            virtual AZ::Uuid GetComponentModeType() const = 0;
+
             /// The Id of the underlying Component this mode is associated with.
             virtual AZ::ComponentId GetComponentId() const = 0;
 
@@ -52,7 +55,7 @@ namespace AzToolsFramework
             virtual AZStd::vector<ViewportUi::ClusterId> PopulateViewportUi() = 0;
 
             /// The name for the ComponentMode to be displayed.
-            virtual AZStd::string GetComponentModeName() const { return "Edit Mode"; }
+            virtual AZStd::string GetComponentModeName() const = 0;
         };
 
         /// Alias for builder/factory function that is responsible for creating a new ComponentMode.
@@ -141,6 +144,9 @@ namespace AzToolsFramework
             /// If the user has a multiple selection where each entity in the selection
             /// has the same Component on it, move all Components into ComponentMode.
             virtual void AddSelectedComponentModesOfType(const AZ::Uuid& componentType) = 0;
+
+            /// Switches to the ComponentMode of input component type immediately.
+            virtual void ChangeComponentMode(const AZ::Uuid& componentType) = 0;
 
             /// Move to the next active ComponentMode so the Actions for that mode
             /// become available (it is now 'selected').
@@ -238,12 +244,6 @@ namespace AzToolsFramework
             using BusIdType = AzFramework::EntityContextId;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
 
-            /// Called when Editor enters ComponentMode - pass the list of all Component types (usually one).
-            virtual void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) = 0;
-
-            /// Called when Editor leaves ComponentMode - pass the list of all Component types (usually one).
-            virtual void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentTypes) = 0;
-
             /// Called when Tab is pressed to cycle the 'selected' ComponentMode (which shortcuts/actions are active).
             /// Also called when directly selecting a Component in the EntityOutliner.
             virtual void ActiveComponentModeChanged(const AZ::Uuid& /*componentType*/) {}
@@ -255,42 +255,6 @@ namespace AzToolsFramework
         /// Type to inherit to implement EditorComponentModeNotifications.
         using EditorComponentModeNotificationBus = AZ::EBus<EditorComponentModeNotifications>;
 
-        /// Helper for EditorComponentModeNotifications to be used
-        /// as a member instead of inheriting from EBus directly.
-        class EditorComponentModeNotificationBusImpl
-            : public EditorComponentModeNotificationBus::Handler
-        {
-        public:
-            /// Set the function to be called when entering ComponentMode.
-            void SetEnteredComponentModeFunc(
-                const AZStd::function<void(const AZStd::vector<AZ::Uuid>&)>& enteredComponentModeFunc)
-            {
-                m_enteredComponentModeFunc = enteredComponentModeFunc;
-            }
-
-            /// Set the function to be called when leaving ComponentMode.
-            void SetLeftComponentModeFunc(
-                const AZStd::function<void(const AZStd::vector<AZ::Uuid>&)>& leftComponentModeFunc)
-            {
-                m_leftComponentModeFunc = leftComponentModeFunc;
-            }
-
-        private:
-            // EditorComponentModeNotificationBus
-            void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override
-            {
-                m_enteredComponentModeFunc(componentModeTypes);
-            }
-
-            void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override
-            {
-                m_leftComponentModeFunc(componentModeTypes);
-            }
-
-            AZStd::function<void(const AZStd::vector<AZ::Uuid>&)> m_enteredComponentModeFunc; ///< Function to call when entering ComponentMode.
-            AZStd::function<void(const AZStd::vector<AZ::Uuid>&)> m_leftComponentModeFunc; ///< Function to call when leaving ComponentMode.
-        };
-
         /// Helper to answer if the Editor is in ComponentMode or not.
         inline bool InComponentMode()
         {
@@ -300,6 +264,8 @@ namespace AzToolsFramework
 
             return inComponentMode;
         }
-
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)

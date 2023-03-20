@@ -12,7 +12,6 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Sphere.h>
-#include <AzCore/Math/ToString.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -95,7 +94,7 @@ namespace AZ
         auto printElement = [&os, &mat](int64_t row, int64_t col) -> std::ostream&
         {
             const std::streamsize width = 10;
-            os << std::setw(width) << std::fixed << mat.GetElement(row, col);
+            os << std::setw(width) << std::fixed << mat.GetElement(static_cast<int32_t>(row), static_cast<int32_t>(col));
             return os;
         };
 

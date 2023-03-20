@@ -70,6 +70,8 @@ namespace ImGui
     public:
         AZ_RTTI(IImGuiManager, "{F5A0F08B-F2DA-43B7-8CD2-C6FC71E1A712}");
 
+        virtual ~IImGuiManager() = default;
+
         static const char* GetUniqueName() { return "IImGuiManager"; }
 
         virtual DisplayState GetEditorWindowState() const = 0;
@@ -89,6 +91,7 @@ namespace ImGui
         virtual void OverrideRenderWindowSize(uint32_t width, uint32_t height) = 0;
         virtual void RestoreRenderWindowSizeToDefault() = 0;
         virtual void ToggleThroughImGuiVisibleState() = 0;
+        virtual void ToggleToImGuiVisibleState(DisplayState state) = 0;
         virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
         virtual float GetDpiScalingFactor() const = 0;
         virtual void Render() = 0;

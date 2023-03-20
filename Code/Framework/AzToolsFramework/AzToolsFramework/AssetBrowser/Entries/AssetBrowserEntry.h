@@ -12,6 +12,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/Uuid.h>
+#include <AzCore/Math/Vector3.h>
 
 #include <AzToolsFramework/Thumbnails/Thumbnail.h>
 
@@ -20,11 +21,6 @@
 #endif
 
 class QMimeData;
-
-namespace AZ
-{
-    class ReflectContext;
-}
 
 namespace AzToolsFramework
 {
@@ -43,7 +39,6 @@ namespace AzToolsFramework
         {
             friend class AssetBrowserModel;
             friend class AssetBrowserFilterModel;
-            friend class AssetBrowserEntry;
             friend class RootAssetBrowserEntry;
             friend class FolderAssetBrowserEntry;
             friend class SourceAssetBrowserEntry;
@@ -76,6 +71,11 @@ namespace AzToolsFramework
                 AssetType,
                 ClassID,
                 DisplayName,
+                Type,
+                DiskSize,
+                Vertices,
+                ApproxSize,
+                SourceControlStatus,
                 Count
             };
 
@@ -91,20 +91,35 @@ namespace AzToolsFramework
 
             virtual QVariant data(int column) const;
             int row() const;
-            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<AssetBrowserEntry*>& entries);
-            void AddToMimeData(QMimeData* mimeData) const;
+
+            //! @deprecated: Use "AssetBrowserEntryUtils::FromMimeData" instead
+            static bool FromMimeData(const QMimeData* mimeData, AZStd::vector<const AssetBrowserEntry*>& entries);
+           
             static QString GetMimeType();
-            static void Reflect(AZ::ReflectContext* context);
+
             virtual AssetEntryType GetEntryType() const = 0;
 
             //! Actual name of the asset or folder
             const AZStd::string& GetName() const;
             //! Display name represents how entry is shown in asset browser
             const QString& GetDisplayName() const;
+
+            //! Display name represents how the path to the file is shown in the asset browser.
+            //! It does not include the file name of the entry.
+            const QString& GetDisplayPath() const;
             //! Return path relative to scan folder
             const AZStd::string& GetRelativePath() const;
-            //! Return absolute path. If called on product, return source absolute path
-            const AZStd::string& GetFullPath() const;
+            //! Return path visible to asset browser
+            const AZStd::string& GetVisiblePath() const;
+            //! Return absolute path to this file. Note that this decodes it to native slashes and resolves
+            //! any aliases.
+            const AZStd::string GetFullPath() const;
+            //! Return the size on disk of the asset
+            const size_t GetDiskSize() const;
+            //! Returns the dimension of the model
+            const AZ::Vector3& GetDimension() const;
+            //! Returns the number of vertices in the model
+            const uint32_t GetNumVertices() const;
 
             //! Get immediate children of specific type
             template<typename EntryType>
@@ -135,7 +150,11 @@ namespace AzToolsFramework
             QString m_displayName;
             QString m_displayPath;
             AZ::IO::Path m_relativePath;
+            AZ::IO::Path m_visiblePath;
             AZ::IO::Path m_fullPath;
+            size_t m_diskSize;
+            AZ::Vector3 m_dimension{ NAN, NAN, NAN };
+            uint32_t m_vertices{ 0 };
             AZStd::vector<AssetBrowserEntry*> m_children;
             AssetBrowserEntry* m_parentAssetEntry = nullptr;
 

@@ -17,14 +17,16 @@ namespace AZ
     namespace AssImpSDKWrapper
     {
         AssImpNodeWrapper::AssImpNodeWrapper(aiNode* sourceNode)
-            :SDKNode::NodeWrapper(sourceNode)
+            : m_assImpNode(sourceNode)
         {
             AZ_Assert(m_assImpNode, "Asset Importer Node cannot be null");
         }
 
-        AssImpNodeWrapper::~AssImpNodeWrapper()
+        aiNode* AssImpNodeWrapper::GetAssImpNode() const
         {
+            return m_assImpNode;
         }
+
         const char* AssImpNodeWrapper::GetName() const
         {
             return m_assImpNode->mName.C_Str();
@@ -38,7 +40,7 @@ namespace AZ
             AZStd::string extraInformation = AZStd::string::format("%i%i", m_assImpNode->mNumChildren, m_assImpNode->mNumMeshes);
             fingerprintString.append(extraInformation);
             AZ::Sha1 sha;
-            sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+            sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
             AZ::u32 digest[5]; //sha1 populate a 5 element array of AZ:u32
             sha.GetDigest(digest);
             return (static_cast<AZ::u64>(digest[0]) << 32) | digest[1];

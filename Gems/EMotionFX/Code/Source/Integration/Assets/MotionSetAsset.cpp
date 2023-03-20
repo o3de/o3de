@@ -9,6 +9,7 @@
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <Integration/Assets/MotionSetAsset.h>
 #include <EMotionFX/Source/MotionSet.h>
@@ -19,8 +20,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(MotionSetAssetHandler, EMotionFXAllocator)
 
         /**
          * Custom callback registered with EMotion FX for the purpose of intercepting
@@ -31,7 +32,7 @@ namespace EMotionFX
             : public EMotionFX::MotionSetCallback
         {
         public:
-            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CustomMotionSetCallback, EMotionFXAllocator);
 
             CustomMotionSetCallback(const AZ::Data::Asset<MotionSetAsset>& asset)
                 : MotionSetCallback(asset.Get()->m_emfxMotionSet.get())
@@ -45,8 +46,13 @@ namespace EMotionFX
                 // It should already be loaded through a motion set.
                 const char* motionFile = entry->GetFilename();
                 AZ::Data::AssetId motionAssetId;
-                EBUS_EVENT_RESULT(motionAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, motionFile, azrtti_typeid<MotionAsset>(), false);
-                
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    motionAssetId,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    motionFile,
+                    azrtti_typeid<MotionAsset>(),
+                    false);
+
                 // if it failed to find it, it might be still compiling - try forcing an immediate compile:
                 if (!motionAssetId.IsValid())
                 {
@@ -148,15 +154,13 @@ namespace EMotionFX
             // The following code is required to be set so the FileManager detects changes to the files loaded
             // through this method. Once EMotionFX is integrated to the asset system this can go away.
             AZStd::string assetFilename;
-            EBUS_EVENT_RESULT(assetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
-            const char* devAssetsPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
-            if (devAssetsPath)
-            {
-                AZStd::string assetSourcePath = devAssetsPath;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
 
-                AZ::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
-                AZStd::string filename;
-                AZ::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), assetFilename.c_str(), filename);
+            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            if (!projectPath.empty())
+            {
+                AZ::IO::FixedMaxPathString filename{ (projectPath / assetFilename).LexicallyNormal().FixedMaxPathStringAsPosix() };
 
                 assetData->m_emfxMotionSet->SetFilename(filename.c_str());
             }
@@ -164,11 +168,11 @@ namespace EMotionFX
             {
                 if (GetEMotionFX().GetIsInEditorMode())
                 {
-                    AZ_Warning("EMotionFX", false, "Failed to retrieve asset source path with alias '@devassets@'. Cannot set absolute filename for '%s'", assetFilename.c_str());
+                    AZ_Warning("EMotionFX", false, "Failed to retrieve project root path . Cannot set absolute filename for '%s'", assetFilename.c_str());
                 }
                 assetData->m_emfxMotionSet->SetFilename(assetFilename.c_str());
             }
-            
+
             // now load them in:
             const EMotionFX::MotionSet::MotionEntries& motionEntries = assetData->m_emfxMotionSet->GetMotionEntries();
             // Get the motions in the motion set.  Escalate them to the top of the build queue first so that they can be done in parallel.
@@ -179,7 +183,7 @@ namespace EMotionFX
                 const char* motionFilename = motionEntry->GetFilename();
                 AzFramework::AssetSystemRequestBus::Broadcast(&AzFramework::AssetSystem::AssetSystemRequests::EscalateAssetBySearchTerm, motionFilename);
             }
-            
+
             // now that they're all escalated, the asset processor will be processing them across all threads, and we can request them one by one:
             for (const auto& item : motionEntries)
             {
@@ -189,7 +193,12 @@ namespace EMotionFX
                 // Find motion file in catalog and grab the asset.
                 // Jump on the AssetBus for the asset, and queue load.
                 AZ::Data::AssetId motionAssetId;
-                EBUS_EVENT_RESULT(motionAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, motionFilename, AZ::Data::s_invalidAssetType, false);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    motionAssetId,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    motionFilename,
+                    AZ::Data::s_invalidAssetType,
+                    false);
 
                 // if it failed to find it, it might be still compiling - try forcing an immediate compile.  CompileAssetSync
                 // will block until the compilation completes AND the catalog is up to date.

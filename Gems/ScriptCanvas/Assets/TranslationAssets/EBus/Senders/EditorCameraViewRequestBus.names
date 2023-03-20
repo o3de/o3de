@@ -1,0 +1,28 @@
+{
+    "entries": [
+        {
+            "base": "EditorCameraViewRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Editor Camera View"
+            },
+            "methods": [
+                {
+                    "base": "ToggleCameraAsActiveView",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ToggleCameraAsActiveView"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ToggleCameraAsActiveView is invoked"
+                    },
+                    "details": {
+                        "name": "ToggleCameraAsActiveView"
+                    }
+                }
+            ]
+        }
+    ]
+}

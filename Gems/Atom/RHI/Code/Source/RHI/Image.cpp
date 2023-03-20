@@ -29,7 +29,7 @@ namespace AZ
     
         void Image::GetSubresourceLayouts(
             const ImageSubresourceRange& subresourceRange,
-            ImageSubresourceLayoutPlaced* subresourceLayouts,
+            ImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -61,8 +61,9 @@ namespace AZ
             imageStats->m_bindFlags = descriptor.m_bindFlags;
 
             ImageSubresourceRange subresourceRange;
-            subresourceRange.m_mipSliceMin = GetResidentMipLevel();
+            subresourceRange.m_mipSliceMin = static_cast<uint16_t>(GetResidentMipLevel());
             GetSubresourceLayouts(subresourceRange, nullptr, &imageStats->m_sizeInBytes);
+            imageStats->m_minimumSizeInBytes = imageStats->m_minimumSizeInBytes;
         }
     
         Ptr<ImageView> Image::GetImageView(const ImageViewDescriptor& imageViewDescriptor)
@@ -73,6 +74,21 @@ namespace AZ
         ImageAspectFlags Image::GetAspectFlags() const
         {
             return m_aspectFlags;
+        }
+
+        const HashValue64 Image::GetHash() const
+        {
+            HashValue64 hash = HashValue64{ 0 };
+            hash = m_descriptor.GetHash();
+            hash = TypeHash64(m_supportedQueueMask, hash);
+            hash = TypeHash64(m_residentMipLevel, hash);
+            hash = TypeHash64(m_aspectFlags, hash);
+            return hash;
+        }
+
+        bool Image::IsStreamable() const
+        {
+            return IsStreamableInternal();
         }
     }
 }

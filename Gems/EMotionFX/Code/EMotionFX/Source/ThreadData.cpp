@@ -13,20 +13,20 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ThreadData, ThreadDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ThreadData, ThreadDataAllocator)
 
     // default constructor
     ThreadData::ThreadData()
         : BaseObject()
     {
-        mThreadIndex    = MCORE_INVALIDINDEX32;
+        m_threadIndex    = MCORE_INVALIDINDEX32;
     }
 
 
     // constructor
     ThreadData::ThreadData(uint32 threadIndex)
     {
-        mThreadIndex    = threadIndex;
+        m_threadIndex    = threadIndex;
     }
 
 
@@ -52,12 +52,12 @@ namespace EMotionFX
 
     void ThreadData::SetThreadIndex(uint32 index)
     {
-        mThreadIndex = index;
+        m_threadIndex = index;
     }
 
 
     uint32 ThreadData::GetThreadIndex() const
     {
-        return mThreadIndex;
+        return m_threadIndex;
     }
 }   // namespace EMotionFX

@@ -1,5 +1,5 @@
 { 
-    "Source" : "ReflectionProbeStencil",
+    "Source" : "ReflectionProbeStencil.azsl",
 
     "RasterState" :
     {
@@ -53,8 +53,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

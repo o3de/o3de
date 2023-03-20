@@ -153,5 +153,16 @@ namespace AZ
                 m_depthSliceMax == other.m_depthSliceMax &&
                 m_aspectFlags == other.m_aspectFlags;
         }
+    
+        bool ImageViewDescriptor::operator==(const ImageViewDescriptor& other) const
+        {
+            return
+                IsSameSubResource(other) &&
+                m_overrideFormat == other.m_overrideFormat &&
+                m_overrideBindFlags == other.m_overrideBindFlags &&
+                m_isCubemap == other.m_isCubemap &&
+                m_isArray == other.m_isArray;
+            
+        }
     }
 }

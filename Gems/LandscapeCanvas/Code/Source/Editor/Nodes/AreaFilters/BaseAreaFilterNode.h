@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class BaseAreaFilterNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseAreaFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseAreaFilterNode, AZ::SystemAllocator);
         AZ_RTTI(BaseAreaFilterNode, "{53A10ED3-5ECF-421B-B824-84D4C052E92B}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,13 +33,6 @@ namespace LandscapeCanvas
         const BaseNodeType GetBaseNodeType() const override
         {
             return BaseNode::VegetationAreaFilter;
-        }
-
-        const bool ShouldShowEntityName() const override
-        {
-            // Don't show the entity name for Area Filters since they will
-            // be wrapped on a Vegetation Area it would be redundant
-            return false;
         }
     };
 }

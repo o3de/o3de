@@ -20,7 +20,7 @@ namespace AZ
         {
             using Base = RHI::StreamingImagePool;
         public:
-            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StreamingImagePool, AZ::SystemAllocator);
             AZ_RTTI(StreamingImagePool, "{15688218-739F-40B2-9753-70AD2A432C3A}", Base);
             static RHI::Ptr<StreamingImagePool> Create();
             
@@ -39,6 +39,7 @@ namespace AZ
             // RHI::ResourcePool
             void ShutdownInternal() override {}
             void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resourceBase) override {}
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
         };
     }

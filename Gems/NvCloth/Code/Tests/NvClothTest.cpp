@@ -87,7 +87,7 @@ namespace UnitTest
         {
             AZ::TickBus::Broadcast(&AZ::TickEvents::OnTick,
                 timeOneFrameSeconds,
-                AZ::ScriptTimePoint(AZStd::chrono::system_clock::now()));
+                AZ::ScriptTimePoint(AZStd::chrono::steady_clock::now()));
 
             if (tickCount == tickBefore)
             {
@@ -144,10 +144,7 @@ namespace UnitTest
     {
         m_cloth->GetClothConfigurator()->SetTransform(m_clothTransform);
 
-        static float time = 0.0f;
-        static float velocity = 1.0f;
-
-        time += deltaTime;
+        constexpr float velocity = 1.0f;
 
         for (auto& sphere : m_sphereColliders)
         {

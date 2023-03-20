@@ -17,7 +17,9 @@ partial ShaderResourceGroup SceneSrg
         float3 m_direction;
         float m_angularRadius;
         float3 m_rgbIntensityLux;
-        float padding2; // explicit padding between float3s, can use this for other data later.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
 
     StructuredBuffer<DirectionalLight> m_directionalLights;
@@ -30,11 +32,30 @@ partial ShaderResourceGroup SceneSrg
     // Hardware PCF comparison sampler that is used when sampling the shadow maps
     SamplerComparisonState m_hwPcfSampler
     {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
         MagFilter = Linear;
         MinFilter = Linear;
         MipFilter = Point;
         ComparisonFunc = Less;
         MaxAnisotropy = 16;
         ReductionType = Comparison;
+    };
+
+    Sampler LtcSampler
+    {
+#if AZ_TRAIT_DOWNGRADE_LINEAR_SAMPLE 
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+#else
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+#endif
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
     };    
 }

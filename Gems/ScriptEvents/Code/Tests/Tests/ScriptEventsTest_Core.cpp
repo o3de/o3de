@@ -161,7 +161,7 @@ namespace ScriptEventsTests
     {
     public:
 
-        static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorValueParameter* result, int numParameters, AZ::BehaviorValueParameter* parameters)
+        static void OnEventGenericHook(void* userData, const char* eventName, int eventIndex, AZ::BehaviorArgument* result, int numParameters, AZ::BehaviorArgument* parameters)
         {
             ScriptEventHandlerHook* handler(reinterpret_cast<ScriptEventHandlerHook*>(userData));
             handler->OnEvent(eventName, eventIndex, result, numParameters, parameters);
@@ -169,7 +169,7 @@ namespace ScriptEventsTests
         }
 
         // This is the actual handler that will be called if the event is sent or broadcast
-        void OnEvent(const char* eventName, const int eventIndex, [[maybe_unused]] AZ::BehaviorValueParameter* result, const int numParameters, AZ::BehaviorValueParameter* parameters)
+        void OnEvent(const char* eventName, const int eventIndex, [[maybe_unused]] AZ::BehaviorArgument* result, const int numParameters, AZ::BehaviorArgument* parameters)
         {
             EXPECT_EQ(eventIndex, 0);
             EXPECT_EQ(numParameters, 1);
@@ -347,7 +347,7 @@ namespace ScriptEventsTests
         EXPECT_TRUE(handler->InstallGenericHook(method0.GetName().data(), &ScriptEventHandlerHook::OnEventGenericHook, &scriptEventHandler));
 
         // Randomly chosen address using EntityId as address type
-        AZ::BehaviorValueParameter addressParameter;
+        AZ::BehaviorArgument addressParameter;
         AZ::EntityId address = AZ::EntityId(0x12345);
         addressParameter.Set(&address);
 
@@ -367,9 +367,9 @@ namespace ScriptEventsTests
                 EXPECT_EQ(argument->m_typeId, azrtti_typeid<AZ::EntityId>());
             }
 
-            AZStd::array<AZ::BehaviorValueParameter, 2> params;
-            AZ::BehaviorValueParameter* paramFirst(params.begin());
-            AZ::BehaviorValueParameter* paramIter = paramFirst;
+            AZStd::array<AZ::BehaviorArgument, 2> params;
+            AZ::BehaviorArgument* paramFirst(params.begin());
+            AZ::BehaviorArgument* paramIter = paramFirst;
 
             // Set the values
             AZ::EntityId value = AZ::EntityId(0x12345);
@@ -405,26 +405,6 @@ namespace ScriptEventsTests
         systemTickBus->BusDisconnect();
 
         EXPECT_TRUE(behaviorEbus->m_destroyHandler->Invoke(handler));
-
-        auto onReady = [&assetData, &scriptEventName]() {
-            const char* renamedMethod = "__METHOD__1__";
-
-            ScriptEvents::ScriptEventsAsset* loadedScriptAsset = assetData.GetAs<ScriptEvents::ScriptEventsAsset>();
-            EXPECT_TRUE(loadedScriptAsset);
-
-            const ScriptEvents::ScriptEvent& loadedDefinition = loadedScriptAsset->m_definition;
-
-            EXPECT_EQ(loadedDefinition.GetVersion(), 0);
-            EXPECT_STREQ(loadedDefinition.GetName().data(), scriptEventName.c_str());
-
-
-            ScriptEvents::Method method;
-            bool foundMethod = loadedDefinition.FindMethod(renamedMethod, method);
-            EXPECT_TRUE(foundMethod);
-            EXPECT_EQ(method.GetNameProperty().GetVersion(), 1);
-
-            assetData = {};
-        };
 
         AssetEventHandler assetHandler2(assetId, []() {}, []() {});
         assetHandler2.BusConnect(assetId);

@@ -34,7 +34,7 @@ public:
         CANCEL = QDialog::Rejected
     };
 
-    CCheckOutDialog(const QString& file, QWidget* pParent = NULL);   // standard constructor
+    CCheckOutDialog(const QString& file, QWidget* pParent = nullptr);   // standard constructor
     virtual ~CCheckOutDialog();
 
     // Dialog Data

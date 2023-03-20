@@ -57,11 +57,11 @@ namespace ScriptCanvasEditor
             : public GraphCanvas::NodePaletteTreeItem
             , AzFramework::AssetCatalogEventBus::Handler
             , AZ::Data::AssetBus::MultiHandler
-            , UpgradeNotifications::Bus::Handler
+            , UpgradeNotificationsBus::Handler
             , AZ::SystemTickBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptCanvasRootPaletteTreeItem, AZ::SystemAllocator);
             ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel);
             ~ScriptCanvasRootPaletteTreeItem();
 
@@ -92,7 +92,6 @@ namespace ScriptCanvasEditor
 
             // UpgradeNotifications::Bus
             void OnUpgradeStart() override;
-            void OnUpgradeComplete() override;
             void OnUpgradeCancelled() override;
             ////
 
@@ -114,7 +113,6 @@ namespace ScriptCanvasEditor
 
             void RequestBuildChildrenFromSubgraphInterface(NodePaletteTreeItem* item, AZ::Data::Asset<AZ::Data::AssetData> asset);
 
-            const NodePaletteModel& m_nodePaletteModel;
             AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* m_assetModel;
 
             GraphCanvas::GraphCanvasTreeCategorizer m_categorizer;
@@ -176,7 +174,7 @@ namespace ScriptCanvasEditor
             , public GraphCanvas::SceneNotificationBus::Handler
         {
         public:
-            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodePaletteDockWidget, AZ::SystemAllocator);
 
             static const char* GetMimeType() { return "scriptcanvas/node-palette-mime-event"; }
 
@@ -194,8 +192,6 @@ namespace ScriptCanvasEditor
             void OnSelectionChanged() override;
             ////
 
-            
-
         protected:
 
             GraphCanvas::GraphCanvasTreeItem* CreatePaletteRoot() const override;
@@ -210,6 +206,9 @@ namespace ScriptCanvasEditor
         private:
 
             void HandleTreeItemDoubleClicked(GraphCanvas::GraphCanvasTreeItem* treeItem);
+            void OpenTranslationData();
+            void GenerateTranslation();
+            void NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem*);
 
             void ConfigureHelper();
             void ParseCycleTargets(GraphCanvas::GraphCanvasTreeItem* treeItem);
@@ -226,6 +225,10 @@ namespace ScriptCanvasEditor
             QAction* m_previousCycleAction;
 
             bool     m_ignoreSelectionChanged;
+
+            QMenu* m_contextMenu;
+            QAction* m_openTranslationData;
+            QAction* m_generateTranslation;
         };
     }    
 }

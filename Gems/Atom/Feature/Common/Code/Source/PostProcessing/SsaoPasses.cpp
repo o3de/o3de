@@ -34,7 +34,32 @@ namespace AZ
 
         bool SsaoParentPass::IsEnabled() const
         {
-            return ParentPass::IsEnabled();
+            if (!ParentPass::IsEnabled())
+            {
+                return false;
+            }
+            const RPI::Scene* scene = GetScene();
+            if (!scene)
+            {
+                return false;
+            }
+            PostProcessFeatureProcessor* fp = scene->GetFeatureProcessor<PostProcessFeatureProcessor>();
+            const RPI::ViewPtr view = GetRenderPipeline()->GetDefaultView();
+            if (!fp)
+            {
+                return true;
+            }
+            PostProcessSettings* postProcessSettings = fp->GetLevelSettingsFromView(view);
+            if (!postProcessSettings)
+            {
+                return true;
+            }
+            const SsaoSettings* ssaoSettings = postProcessSettings->GetSsaoSettings();
+            if (!ssaoSettings)
+            {
+                return true;
+            }
+            return ssaoSettings->GetEnabled();
         }
 
         void SsaoParentPass::InitializeInternal()
@@ -152,7 +177,7 @@ namespace AZ
             }
 
             AZ_Assert(GetOutputCount() > 0, "SsaoComputePass: No output bindings!");
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(outputAttachment != nullptr, "SsaoComputePass: Output binding has no attachment!");
             RHI::Size size = outputAttachment->m_descriptor.m_image.m_size;

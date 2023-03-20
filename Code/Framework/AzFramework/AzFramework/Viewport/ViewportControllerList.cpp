@@ -132,7 +132,7 @@ namespace AzFramework
         // If our event priority is "custom", we should dispatch at all priority levels in reverse order
         // Reverse order lets high priority controllers get the last say in viewport update operations
         using AzFramework::ViewportControllerPriority;
-        if (event.m_priority == AzFramework::ViewportControllerPriority::DispatchToAllPriorities)
+        if (event.m_priority == ViewportControllerPriority::DispatchToAllPriorities)
         {
             AzFramework::ViewportControllerUpdateEvent syntheticEvent = event;
             for (const auto priority : {

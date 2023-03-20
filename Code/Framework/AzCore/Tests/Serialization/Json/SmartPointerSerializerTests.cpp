@@ -33,6 +33,7 @@ namespace JsonSerializationTests
             return AZStd::make_shared<SmartPointer>();
         }
 
+        using JsonSerializerConformityTestDescriptor<SmartPointer>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<SmartPointer>();
@@ -102,6 +103,7 @@ namespace JsonSerializationTests
             return *lhs == *rhs;
         }
 
+        using Base::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleClass::Reflect(context, true);
@@ -176,6 +178,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using SmartPointerBaseTestDescription<T<BaseClass>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             SimpleInheritence::Reflect(context, true);
@@ -340,6 +343,7 @@ namespace JsonSerializationTests
             features.m_supportsPartialInitialization = true;
         }
 
+        using SmartPointerBaseTestDescription<T<BaseClass2>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             MultipleInheritence::Reflect(context, true);
@@ -460,11 +464,11 @@ namespace JsonSerializationTests
         SmartPointerComplexDerivedClassWithDerivedInstanceTestDescription<AZStd::intrusive_ptr>
     >;
 
-    INSTANTIATE_TYPED_TEST_CASE_P(SmartPointerSerializer, JsonSerializerConformityTests, SmartPointerSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(SmartPointerSerializer, JsonSerializerConformityTests, SmartPointerSerializerConformityTestTypes));
 
     struct SimpleInheritenceAlt : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(SimpleInheritenceAlt, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleInheritenceAlt, AZ::SystemAllocator);
         AZ_RTTI(SimpleInheritenceAlt, "{5513DF52-E3C2-4849-BBFF-13E00F3E3EDA}", BaseClass);
 
         ~SimpleInheritenceAlt() override = default;
@@ -482,7 +486,7 @@ namespace JsonSerializationTests
 
     struct AbstractClass : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(AbstractClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AbstractClass, AZ::SystemAllocator);
         AZ_RTTI(AbstractClass, "{D065A72E-E49B-4E23-9E4E-A4E08D344FC2}", BaseClass);
 
         ~AbstractClass() override = default;
@@ -497,7 +501,7 @@ namespace JsonSerializationTests
 
     struct UnregisteredClass : BaseClass
     {
-        AZ_CLASS_ALLOCATOR(UnregisteredClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UnregisteredClass, AZ::SystemAllocator);
         AZ_RTTI(UnregisteredClass, "{9163CBB9-0B7F-450E-B93E-A3EC32E5229A}", BaseClass);
 
         ~UnregisteredClass() override = default;
@@ -513,7 +517,8 @@ namespace JsonSerializationTests
     public:
         using SmartPointer = typename SmartPointerSimpleDerivedClassTestDescription<AZStd::shared_ptr>::SmartPointer;
         using InstanceSmartPointer = AZStd::shared_ptr<SimpleInheritence>;
-        
+
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             m_description.Reflect(context);

@@ -30,6 +30,11 @@ namespace AZ
                 MultiSampleGeneral2D,
                 MultiSampleReadOnly2D,
 
+                // 2d image arrays
+                GeneralArray2D,
+                ReadOnlyArray2D,
+                StorageArray2D,
+
                 // cube images
                 GeneralCube,
                 ReadOnlyCube,
@@ -41,7 +46,7 @@ namespace AZ
                 Count,
             };
 
-            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NullDescriptorManager, SystemAllocator);
 
             static RHI::Ptr<NullDescriptorManager> Create();
 

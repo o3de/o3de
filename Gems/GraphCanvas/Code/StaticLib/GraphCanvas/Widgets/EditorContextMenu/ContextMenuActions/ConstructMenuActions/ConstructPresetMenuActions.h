@@ -21,13 +21,14 @@ namespace GraphCanvas
         AddPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset, AZStd::string_view subMenuPath);
 
     public:
-        AZ_CLASS_ALLOCATOR(AddPresetMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddPresetMenuAction, AZ::SystemAllocator);
         
         virtual ~AddPresetMenuAction() = default;
         
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -44,7 +45,7 @@ namespace GraphCanvas
         : public ConstructContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ApplyPresetMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplyPresetMenuAction, AZ::SystemAllocator);
 
         ApplyPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset, AZStd::string_view subMenuPath);
         virtual ~ApplyPresetMenuAction() = default;
@@ -52,6 +53,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -64,11 +66,12 @@ namespace GraphCanvas
         : public ContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreatePresetFromSelection, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreatePresetFromSelection, AZ::SystemAllocator);
 
         CreatePresetFromSelection(QObject* parent = nullptr);
         virtual ~CreatePresetFromSelection();
 
+        using ContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
         static ActionGroupId GetCreateConstructContextMenuActionGroupId()
@@ -138,7 +141,7 @@ namespace GraphCanvas
         : public AddPresetMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddCommentPresetMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddCommentPresetMenuAction, AZ::SystemAllocator);
         AddCommentPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset);
 
     private:
@@ -150,7 +153,7 @@ namespace GraphCanvas
         : public PresetsMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateCommentPresetMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCommentPresetMenuActionGroup, AZ::SystemAllocator);
 
         CreateCommentPresetMenuActionGroup();
 
@@ -161,7 +164,7 @@ namespace GraphCanvas
         : public ApplyPresetMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(ApplyCommentPresetMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplyCommentPresetMenuActionGroup, AZ::SystemAllocator);
 
         ApplyCommentPresetMenuActionGroup()
             : ApplyPresetMenuActionGroup(ConstructType::CommentNode)
@@ -177,7 +180,7 @@ namespace GraphCanvas
         : public AddPresetMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddNodeGroupPresetMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddNodeGroupPresetMenuAction, AZ::SystemAllocator);
         AddNodeGroupPresetMenuAction(EditorContextMenu* contextMenu, AZStd::shared_ptr<ConstructPreset> preset);
 
     private:
@@ -189,7 +192,7 @@ namespace GraphCanvas
         : public PresetsMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNodeGroupPresetMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupPresetMenuActionGroup, AZ::SystemAllocator);
 
         CreateNodeGroupPresetMenuActionGroup();
 
@@ -200,7 +203,7 @@ namespace GraphCanvas
         : public ApplyPresetMenuActionGroup
     {
     public:
-        AZ_CLASS_ALLOCATOR(ApplyNodeGroupPresetMenuActionGroup, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ApplyNodeGroupPresetMenuActionGroup, AZ::SystemAllocator);
 
         ApplyNodeGroupPresetMenuActionGroup()
             : ApplyPresetMenuActionGroup(ConstructType::NodeGroup)

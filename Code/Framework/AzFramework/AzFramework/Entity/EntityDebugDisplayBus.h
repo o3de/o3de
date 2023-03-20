@@ -9,11 +9,13 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
+#include <AzCore/Math/Matrix3x4.h>
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/Component/ComponentBus.h>
@@ -42,15 +44,20 @@ namespace AzFramework
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
 
-        virtual void SetColor(float r, float g, float b, float a = 1.f) { (void)r; (void)g; (void)b; (void)a; }
         virtual void SetColor(const AZ::Color& color) { (void)color; }
-        virtual void SetColor(const AZ::Vector4& color) { (void)color; }
         virtual void SetAlpha(float a) { (void)a; }
         virtual void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
-        virtual void DrawQuad(float width, float height) { (void)width; (void)height; }
+        virtual void DrawQuad(float width, float height, bool drawShaded = true) { (void)width; (void)height; (void)drawShaded; }
         virtual void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) { (void)p1; (void)p2; (void)p3; (void)p4; }
         virtual void DrawWireQuad(float width, float height) { (void)width; (void)height; }
         virtual void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) { (void)p1; (void)p2; (void)p3; (void)p4; (void)firstColor; (void)secondColor; }
+
+        /// Draws a 2D quad with gradient to the viewport. 
+        /// @param p1 p2 p3 p4 Normalized screen coordinates of the 4 points on the quad. <0, 0> is the upper-left corner of the viewport, <1,1> is the lower-right corner of the viewport.
+        /// @param z Depth value. Useful when rendering multiple 2d quads on screen and you want them to stack in a particular order.
+        /// @param firstColor. Vertex color applied to p1 p2.
+        /// @param secondColor. Vertex color applied to p3 p4.
+        virtual void DrawQuad2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, const AZ::Vector2& p3, const AZ::Vector2& p4, float z, const AZ::Color& firstColor, const AZ::Color& secondColor) { (void)p1; (void)p2; (void)p3; (void)p4; (void)z; (void)firstColor; (void)secondColor; }
         virtual void DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3) { (void)p1; (void)p2; (void)p3; }
         virtual void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) { (void)vertices; (void)color; }
         virtual void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) { (void)vertices; (void)indices, (void)color; }
@@ -63,6 +70,7 @@ namespace AzFramework
         virtual void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) { (void)p1; (void)p2; (void)col1; (void)col2; }
         virtual void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) { (void)lines; (void)color; }
         virtual void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled = true) { (void)pnts; (void)numPoints; (void)cycled; }
+        virtual void DrawPolyLine(AZStd::span<const AZ::Vector3> points, bool cycled = true) { (void)points; (void)cycled; }
         virtual void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) { (void)p1; (void)p2; (void)z; }
         virtual void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) { (void)p1; (void)p2; (void)z; }
         virtual void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) { (void)p1; (void)p2; (void)z; (void)firstColor; (void)secondColor; }
@@ -75,12 +83,15 @@ namespace AzFramework
         virtual void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded = true) { (void)pos; (void)dir; (void)radius; (void)height; (void)drawShaded; }
         virtual void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) { (void)center; (void)axis; (void)radius; (void)height; }
         virtual void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded = true) { (void)center; (void)axis; (void)radius; (void)height; (void)drawShaded; }
+        virtual void DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) { (void)center; (void)axis; (void)radius; (void)height; }
+        virtual void DrawSolidCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded = true) { (void)center; (void)axis; (void)radius; (void)height; (void)drawShaded; }
         virtual void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) { (void)center; (void)axis; (void)radius; (void)heightStraightSection; }
         virtual void DrawWireSphere(const AZ::Vector3& pos, float radius) { (void)pos; (void)radius; }
         virtual void DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius) { (void)pos; (void)radius; }
+        virtual void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) { (void)pos; (void)axis; (void)radius; }
         virtual void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
         virtual void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded = true) { (void)pos; (void)radius; (void)drawShaded; }
-        virtual void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) { (void)pos; (void)dir; (void)radius; }
+        virtual void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded = true) { (void)pos; (void)dir; (void)radius; (void)drawShaded; }
         virtual void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float fHeadScale = 1, bool b2SidedArrow = false) { (void)src; (void)trg; (void)fHeadScale; (void)b2SidedArrow; }
         virtual void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) { (void)pos; (void)size; (void)text; (void)bCenter; (void)srcOffsetX; (void)srcOffsetY; }
         virtual void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) { (void)x; (void)y; (void)size; (void)text; (void)bCenter; }
@@ -97,12 +108,19 @@ namespace AzFramework
         virtual void CullOn() {}
         virtual bool SetDrawInFrontMode(bool bOn) { (void)bOn; return false; }
         virtual AZ::u32 GetState() { return 0; }
+
+        /// Sets the render state which will affect proceeding draw calls.
+        /// For example, if you want draws to happen in 2D screen-space, you can turn off the e_Mode3D flag and turn on the e_Mode2D flag.
+        /// @param state is the bit field used to set render attributes. See CryCommon/IRenderAuxGeom.h for available bit flags.
+        /// @return the current state
         virtual AZ::u32 SetState(AZ::u32 state) { (void)state; return 0; }
         virtual void PushMatrix(const AZ::Transform& tm) { (void)tm; }
         virtual void PopMatrix() {}
+        virtual void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) { (void)matrix; }
+        virtual AZ::Matrix3x4 PopPremultipliedMatrix() { return AZ::Matrix3x4::CreateIdentity(); }
 
     protected:
-        ~DebugDisplayRequests() = default;
+        virtual ~DebugDisplayRequests() = default;
     };
 
     /// Inherit from DebugDisplayRequestBus::Handler to implement the DebugDisplayRequests interface.

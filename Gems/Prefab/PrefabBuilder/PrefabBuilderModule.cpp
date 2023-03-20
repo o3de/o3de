@@ -8,6 +8,7 @@
 
 #include <AzCore/Module/Module.h>
 #include <PrefabBuilderComponent.h>
+#include <PrefabGroup/PrefabGroupBehavior.h>
 
 namespace AZ::Prefab
 {
@@ -16,13 +17,14 @@ namespace AZ::Prefab
     {
     public:
         AZ_RTTI(AZ::Prefab::PrefabBuilderModule, "{088B2BA8-9F19-469C-A0B5-1DD523879C70}", Module);
-        AZ_CLASS_ALLOCATOR(PrefabBuilderModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabBuilderModule, AZ::SystemAllocator);
 
         PrefabBuilderModule()
             : Module()
         {
             m_descriptors.insert(m_descriptors.end(), {
-                PrefabBuilderComponent::CreateDescriptor()
+                PrefabBuilderComponent::CreateDescriptor(),
+                AZ::SceneAPI::Behaviors::PrefabGroupBehavior::CreateDescriptor()
             });
         }
     };

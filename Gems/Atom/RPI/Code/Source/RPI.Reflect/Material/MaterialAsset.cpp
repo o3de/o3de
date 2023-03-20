@@ -9,9 +9,11 @@
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
 #include <Atom/RPI.Reflect/Material/MaterialFunctor.h>
+#include <Atom/RPI.Reflect/Material/MaterialVersionUpdate.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Public/Shader/ShaderReloadDebugTracker.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/TickBus.h>
@@ -20,6 +22,8 @@ namespace AZ
 {
     namespace RPI
     {
+        const char* MaterialAsset::s_debugTraceName = "MaterialAsset";
+
         const char* MaterialAsset::DisplayName = "MaterialAsset";
         const char* MaterialAsset::Group = "Material";
         const char* MaterialAsset::Extension = "azmaterial";
@@ -29,8 +33,9 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<MaterialAsset, AZ::Data::AssetData>()
-                    ->Version(9)
+                    ->Version(15) // Forcing materials to be fully baked by builder
                     ->Field("materialTypeAsset", &MaterialAsset::m_materialTypeAsset)
+                    ->Field("materialTypeVersion", &MaterialAsset::m_materialTypeVersion)
                     ->Field("propertyValues", &MaterialAsset::m_propertyValues)
                     ;
             }
@@ -42,8 +47,6 @@ namespace AZ
 
         MaterialAsset::~MaterialAsset()
         {
-            MaterialReloadNotificationBus::Handler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
             AssetInitBus::Handler::BusDisconnect();
         }
 
@@ -52,14 +55,19 @@ namespace AZ
             return m_materialTypeAsset;
         }
 
-        const ShaderCollection& MaterialAsset::GetShaderCollection() const
+        const ShaderCollection& MaterialAsset::GetGeneralShaderCollection() const
         {
-            return m_materialTypeAsset->GetShaderCollection();
+            return m_materialTypeAsset->GetGeneralShaderCollection();
         }
 
         const MaterialFunctorList& MaterialAsset::GetMaterialFunctors() const
         {
             return m_materialTypeAsset->GetMaterialFunctors();
+        }
+
+        const MaterialTypeAsset::MaterialPipelineMap& MaterialAsset::GetMaterialPipelinePayloads() const
+        {
+            return m_materialTypeAsset->GetMaterialPipelinePayloads();
         }
 
         const RHI::Ptr<RHI::ShaderResourceGroupLayout>& MaterialAsset::GetMaterialSrgLayout(const SupervariantIndex& supervariantIndex) const
@@ -96,9 +104,90 @@ namespace AZ
         {
             return m_materialTypeAsset->GetMaterialPropertiesLayout();
         }
-
-        AZStd::array_view<MaterialPropertyValue> MaterialAsset::GetPropertyValues() const
+        
+        void MaterialAsset::Finalize(AZStd::function<void(const char*)> reportWarning, AZStd::function<void(const char*)> reportError)
         {
+            if (!reportWarning)
+            {
+                reportWarning = []([[maybe_unused]] const char* message)
+                {
+                    AZ_Warning(s_debugTraceName, false, "%s", message);
+                };
+            }
+            
+            if (!reportError)
+            {
+                reportError = []([[maybe_unused]] const char* message)
+                {
+                    AZ_Error(s_debugTraceName, false, "%s", message);
+                };
+            }
+
+            // It is possible that the material type has had some properties renamed or otherwise updated. If that's the case,
+            // and this material is still referencing the old property layout, we need to apply any auto updates to rename those
+            // properties before using them to realign the property values.
+            ApplyVersionUpdates(reportError);
+
+            const MaterialPropertiesLayout* propertyLayout = GetMaterialPropertiesLayout();
+
+            AZStd::vector<MaterialPropertyValue> finalizedPropertyValues(m_materialTypeAsset->GetDefaultPropertyValues().begin(), m_materialTypeAsset->GetDefaultPropertyValues().end());
+
+            for (const auto& [name, value] : m_rawPropertyValues)
+            {
+                const MaterialPropertyIndex propertyIndex = propertyLayout->FindPropertyIndex(name);
+                if (propertyIndex.IsValid())
+                {
+                    const MaterialPropertyDescriptor* propertyDescriptor = propertyLayout->GetPropertyDescriptor(propertyIndex);
+
+                    if (value.Is<AZStd::string>() && propertyDescriptor->GetDataType() == MaterialPropertyDataType::Enum)
+                    {
+                        AZ::Name enumName = AZ::Name(value.GetValue<AZStd::string>());
+                        uint32_t enumValue = propertyDescriptor->GetEnumValue(enumName);
+                        if (enumValue == MaterialPropertyDescriptor::InvalidEnumValue)
+                        {
+                            reportWarning(AZStd::string::format("Material property name \"%s\" has invalid enum value \"%s\".", name.GetCStr(), enumName.GetCStr()).c_str());
+                        }
+                        else
+                        {
+                            finalizedPropertyValues[propertyIndex.GetIndex()] = enumValue;
+                        }
+                    }
+                    else if (value.Is<AZStd::string>() && propertyDescriptor->GetDataType() == MaterialPropertyDataType::Image)
+                    {
+                        // Here we assume that the material asset builder resolved any image source file paths to an ImageAsset reference.
+                        // So the only way a string could be present is if it's an empty image path reference, meaning no image should be bound.
+                        AZ_Assert(value.GetValue<AZStd::string>().empty(), "Material property '%s' references in image '%s'. Image file paths must be resolved by the material asset builder.");
+
+                        finalizedPropertyValues[propertyIndex.GetIndex()] = Data::Asset<ImageAsset>{};
+                    }
+                    else
+                    {
+                        // The material asset could be finalized sometime after the original JSON is loaded, and the material type might not have been available
+                        // at that time, so the data type would not be known for each property. So each raw property's type was based on what appeared in the JSON
+                        // and here we have the first opportunity to resolve that value with the actual type. For example, a float property could have been specified in
+                        // the JSON as 7 instead of 7.0, which is valid. Similarly, a Color and a Vector3 can both be specified as "[0.0,0.0,0.0]" in the JSON file.
+
+                        MaterialPropertyValue finalValue = value.CastToType(propertyDescriptor->GetStorageDataTypeId());
+
+                        if (ValidateMaterialPropertyDataType(finalValue.GetTypeId(), propertyDescriptor, reportError))
+                        {
+                            finalizedPropertyValues[propertyIndex.GetIndex()] = finalValue;
+                        }
+                    }
+                }
+                else
+                {
+                    reportWarning(AZStd::string::format("Material property name \"%s\" is not found in the material properties layout and will not be used.", name.GetCStr()).c_str());
+                }
+            }
+
+            m_propertyValues.swap(finalizedPropertyValues);
+        }
+
+        const AZStd::vector<MaterialPropertyValue>& MaterialAsset::GetPropertyValues() const
+        {
+            AZ_Assert(GetMaterialPropertiesLayout() && m_propertyValues.size() == GetMaterialPropertiesLayout()->GetPropertyCount(), "MaterialAsset should be finalized but does not have the right number of property values.");
+        
             return m_propertyValues;
         }
 
@@ -106,73 +195,54 @@ namespace AZ
         {
             m_status = AssetStatus::Ready;
 
-            // If this was created dynamically using MaterialAssetCreator (which is what calls SetReady()),
-            // we need to connect to the AssetBus for reloads.
             PostLoadInit();
         }
 
         bool MaterialAsset::PostLoadInit()
         {
-            if (!m_materialTypeAsset.Get())
-            {
-                AssetInitBus::Handler::BusDisconnect();
+            AssetInitBus::Handler::BusDisconnect();
 
-                // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
-                return false;
-            }
-            else
-            {
-                Data::AssetBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                MaterialReloadNotificationBus::Handler::BusConnect(m_materialTypeAsset.GetId());
-                
-                AssetInitBus::Handler::BusDisconnect();
-
-                return true;
-            }
+            // Any MaterialAsset with invalid MaterialTypeAsset is not a successfully-loaded asset.
+            return m_materialTypeAsset.IsReady();
         }
 
-        void MaterialAsset::OnMaterialTypeAssetReinitialized(const Data::Asset<MaterialTypeAsset>& materialTypeAsset)
+        void MaterialAsset::ApplyVersionUpdates(AZStd::function<void(const char*)> reportError)
         {
-            // When reloads occur, it's possible for old Asset objects to hang around and report reinitialization,
-            // so we can reduce unnecessary reinitialization in that case.
-            if (materialTypeAsset.Get() == m_materialTypeAsset.Get())
+            if (m_materialTypeVersion == m_materialTypeAsset->GetVersion())
             {
-                ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnMaterialTypeAssetReinitialized %s", this, materialTypeAsset.GetHint().c_str());
-
-                // MaterialAsset doesn't need to reinitialize any of its own data when MaterialTypeAsset reinitializes,
-                // because all it depends on is the MaterialTypeAsset reference, rather than the data inside it.
-                // Ultimately it's the Material that cares about these changes, so we just forward any signal we get.
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+                return;
             }
-        }
-        
-        void MaterialAsset::ReinitializeMaterialTypeAsset(Data::Asset<Data::AssetData> asset)
-        {
-            Data::Asset<MaterialTypeAsset> newMaterialTypeAsset = { asset.GetAs<MaterialTypeAsset>(), AZ::Data::AssetLoadBehavior::PreLoad };
+            [[maybe_unused]] const uint32_t originalVersion = m_materialTypeVersion;
 
-            if (newMaterialTypeAsset)
+            [[maybe_unused]] bool changesWereApplied =
+                m_materialTypeAsset->GetMaterialVersionUpdates().ApplyVersionUpdates(*this, reportError);
+
+#if AZ_ENABLE_TRACING
+            if (changesWereApplied)
             {
-                // The order of asset reloads is non-deterministic. If the MaterialAsset reloads before the
-                // MaterialTypeAsset, this will make sure the MaterialAsset gets update with latest one.
-                // This also covers the case where just the MaterialTypeAsset is reloaded and not the MaterialAsset.
-                m_materialTypeAsset = newMaterialTypeAsset;
+                const AZStd::string versionString = (originalVersion == UnspecifiedMaterialTypeVersion) ?
+                    "<Unspecified>" : AZStd::string::format("'%u'", originalVersion);
 
-                // Notify interested parties that this MaterialAsset is changed and may require other data to reinitialize as well
-                MaterialReloadNotificationBus::Event(GetId(), &MaterialReloadNotifications::OnMaterialAssetReinitialized, Data::Asset<MaterialAsset>{this, AZ::Data::AssetLoadBehavior::PreLoad});
+                AZStd::string assetString = GetId().ToString<AZStd::string>().c_str();
+
+                AZ::Data::AssetInfo assetInfo;
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetInfo,
+                    &AZ::Data::AssetCatalogRequestBus::Events::GetAssetInfoById, GetId());
+                if (assetInfo.m_assetId.IsValid())
+                {
+                    assetString += " (" + assetInfo.m_relativePath + ")";
+                }
+
+                AZ_Warning(
+                    "MaterialAsset", false,
+                    "This material is based on version %s of %s, and the material type is now at version '%u'. "
+                    "Automatic updates have been applied. Consider updating the .material source file for %s.",
+                    versionString.c_str(), m_materialTypeAsset.ToString<AZStd::string>().c_str(),
+                    m_materialTypeAsset->GetVersion(), assetString.c_str());
             }
-        }
+#endif
 
-        void MaterialAsset::OnAssetReloaded(Data::Asset<Data::AssetData> asset)
-        {
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReloaded %s", this, asset.GetHint().c_str());
-            ReinitializeMaterialTypeAsset(asset);
-        }
-
-        void MaterialAsset::OnAssetReady(Data::Asset<Data::AssetData> asset)
-        {
-            // Regarding why we listen to both OnAssetReloaded and OnAssetReady, see explanation in ShaderAsset::OnAssetReady.
-            ShaderReloadDebugTracker::ScopedSection reloadSection("{%p}->MaterialAsset::OnAssetReady %s", this, asset.GetHint().c_str());
-            ReinitializeMaterialTypeAsset(asset);
+            m_materialTypeVersion = m_materialTypeAsset->GetVersion();
         }
 
         Data::AssetHandler::LoadResult MaterialAssetHandler::LoadAssetData(

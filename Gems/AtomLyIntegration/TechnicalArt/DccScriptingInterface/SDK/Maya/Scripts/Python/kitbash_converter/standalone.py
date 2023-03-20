@@ -18,14 +18,14 @@ import site
 _MODULE_PATH = os.path.abspath(__file__)
 
 _DCCSIG_REL_PATH = "../../../.."
-_DCCSIG_PATH = os.path.join(_MODULE_PATH, _DCCSIG_REL_PATH)
-_DCCSIG_PATH = os.path.normpath(_DCCSIG_PATH)
+_PATH_DCCSIG = os.path.join(_MODULE_PATH, _DCCSIG_REL_PATH)
+_PATH_DCCSIG = os.path.normpath(_PATH_DCCSIG)
 
-_DCCSIG_PATH = os.getenv('DCCSIG_PATH',
-                         os.path.abspath(_DCCSIG_PATH))
+_PATH_DCCSIG = os.getenv('PATH_DCCSIG',
+                         os.path.abspath(_PATH_DCCSIG))
 
 # we don't have access yet to the DCCsi Lib\site-packages
-site.addsitedir(_DCCSIG_PATH)  # PYTHONPATH
+site.addsitedir(_PATH_DCCSIG)  # PYTHONPATH
 
 # azpy bootstrapping and extensions
 import azpy.config_utils

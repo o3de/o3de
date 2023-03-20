@@ -85,8 +85,7 @@ namespace PhysX::Benchmarks
     class PhysXCharactersBenchmarkFixture
         : public PhysX::Benchmarks::PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -95,10 +94,29 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, CharacterConstants::TerrainSize, CharacterConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -209,7 +227,7 @@ namespace PhysX::Benchmarks
         };
         AZStd::vector<Physics::Character*> controllers = Utils::CreateCharacterControllers(numCharacters,
             static_cast<CharacterConstants::CharacterSettings::ColliderType>(state.range(1)), m_testSceneHandle, &posGenerator);
-        
+
         //setup the sub tick tracker
         PhysX::Benchmarks::Utils::PrePostSimulationEventHandler subTickTracker;
         subTickTracker.Start(m_defaultScene);
@@ -217,15 +235,15 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < CharacterConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -276,11 +294,11 @@ namespace PhysX::Benchmarks
 
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < CharacterConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 //update the movement of all the characters controllers
                 for (auto& controller : controllers)
                 {
@@ -291,7 +309,7 @@ namespace PhysX::Benchmarks
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -343,7 +361,7 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(CharacterConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             //run each simulation part, and change direction each time
             for (AZ::u32 i = 0; i < numDirectionChanges; i++)
@@ -359,7 +377,7 @@ namespace PhysX::Benchmarks
 
                 for (AZ::u32 j = 0; j < numFramesPreDirection; j++)
                 {
-                    auto start = AZStd::chrono::system_clock::now();
+                    auto start = AZStd::chrono::steady_clock::now();
                     //update the movement of all the characters controllers
                     for (auto& controllerMovementPair : targetMoveAndControllers)
                     {
@@ -370,7 +388,7 @@ namespace PhysX::Benchmarks
                     StepScene1Tick(DefaultTimeStep);
 
                     //time each physics tick and store it to analyze
-                    auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                    auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                     tickTimes.emplace_back(tickElapsedMilliseconds.count());
                 }
             }

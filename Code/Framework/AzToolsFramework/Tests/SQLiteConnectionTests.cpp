@@ -23,19 +23,19 @@ namespace UnitTest
     static int s_numTrialsToPerform = 10500;
    
     class SQLiteTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         SQLiteTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
-        ~SQLiteTest() = default;
+        ~SQLiteTest() override = default;
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_database.reset(aznew SQLite::Connection()); 
             m_randomDatabaseFileName = AZStd::string::format("%s_temp.sqlite", AZ::Uuid::CreateRandom().ToString<AZStd::string>().c_str());
             m_database->Open(m_randomDatabaseFileName.c_str(), false);
@@ -47,7 +47,7 @@ namespace UnitTest
             m_database.reset();
             AZ::IO::SystemFile::Delete(m_randomDatabaseFileName.c_str());
             m_randomDatabaseFileName.set_capacity(0);
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::string m_randomDatabaseFileName;

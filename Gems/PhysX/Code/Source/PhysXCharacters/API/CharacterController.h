@@ -30,7 +30,7 @@ namespace PhysX
         : public Physics::CharacterConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterControllerConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterControllerConfiguration, AZ::SystemAllocator);
         AZ_RTTI(CharacterControllerConfiguration, "{23A8DFD6-7DA4-4CB3-BBD3-7FB58DEE6F9D}", Physics::CharacterConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -51,7 +51,7 @@ namespace PhysX
         , public physx::PxControllerBehaviorCallback
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterControllerCallbackManager, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterControllerCallbackManager, AZ::SystemAllocator);
         AZ_TYPE_INFO(CharacterControllerCallbackManager, "93C7DEA8-98E6-4C07-96B7-D215800D0ECB");
 
         /// Determines whether this controller should be obstructed by other controllers or able to move through them.
@@ -124,6 +124,15 @@ namespace PhysX
         // physx::PxQueryFilterCallback
         physx::PxQueryHitType::Enum preFilter(const physx::PxFilterData& filterData, const physx::PxShape* shape,
             const physx::PxRigidActor* actor, physx::PxHitFlags& queryFlags) override;
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        physx::PxQueryHitType::Enum postFilter(
+            const physx::PxFilterData& filterData,
+            const physx::PxQueryHit& hit,
+            const physx::PxShape* shape,
+            const physx::PxRigidActor* actor) override;
+#endif
+
         physx::PxQueryHitType::Enum postFilter(const physx::PxFilterData& filterData, const physx::PxQueryHit& hit) override;
 
         // physx::PxUserControllerHitReport
@@ -152,7 +161,7 @@ namespace PhysX
         : public Physics::Character
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterController, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterController, AZ::SystemAllocator);
         AZ_RTTI(PhysX::CharacterController, "{A75A7D19-BC21-4F7E-A3D9-05031D2DFC94}", Physics::Character);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -191,7 +200,11 @@ namespace PhysX
         void SetCollisionLayer(const AzPhysics::CollisionLayer& layer) override;
         void SetCollisionGroup(const AzPhysics::CollisionGroup& group) override;
         AZ::Crc32 GetColliderTag() const override;
-        void AddVelocity(const AZ::Vector3& velocity) override;
+        void AddVelocityForTick(const AZ::Vector3& velocity) override;
+        void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) override;
+        void ResetRequestedVelocityForTick() override;
+        void ResetRequestedVelocityForPhysicsTimestep() override;
+        void Move(const AZ::Vector3& requestedMovement, float deltaTime) override;
         void ApplyRequestedVelocity(float deltaTime) override;
         void SetRotation(const AZ::Quaternion& rotation) override;
         void AttachShape(AZStd::shared_ptr<Physics::Shape> shape) override;
@@ -232,12 +245,13 @@ namespace PhysX
 
         physx::PxController* m_pxController = nullptr; ///< The underlying PhysX controller.
         float m_minimumMovementDistance = 0.0f; ///< To avoid jittering, the controller will not attempt to move distances below this.
-        AZ::Vector3 m_requestedVelocity = AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests during a tick.
+        AZ::Vector3 m_requestedVelocityForTick = AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests which last for a tick.
+        AZ::Vector3 m_requestedVelocityForPhysicsTimestep =
+            AZ::Vector3::CreateZero(); ///< Used to accumulate velocity requests which last for a physics timestep.
         AZ::Vector3 m_observedVelocity = AZ::Vector3::CreateZero(); ///< Velocity observed in the simulation, may not match desired.
         PhysX::ActorData m_actorUserData; ///< Used to populate the user data on the PxActor associated with the controller.
         physx::PxFilterData m_filterData; ///< Controls filtering for collisions with other objects and scene queries.
         physx::PxControllerFilters m_pxControllerFilters; ///< Controls which objects the controller interacts with when moving.
-        AZStd::shared_ptr<Physics::Material> m_material; ///< The generic physics API material for the controller.
         AZStd::shared_ptr<Physics::Shape> m_shape; ///< The generic physics API shape associated with the controller.
         AzPhysics::RigidBody* m_shadowBody = nullptr; ///< A kinematic-synchronised rigid body used to store additional colliders.
         AzPhysics::SimulatedBodyHandle m_shadowBodyHandle = AzPhysics::InvalidSimulatedBodyHandle; //!<A handle to the shadow body.
@@ -247,4 +261,16 @@ namespace PhysX
         AZStd::unique_ptr<CharacterControllerCallbackManager>
             m_callbackManager; ///< Manages callbacks for collision filtering, collision notifications, and handling riding on objects.
     };
+
+    //! Example implementation of controller-controller filtering callback.
+    //! This example causes controllers to impede each other's movement based on their collision filters.
+    bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB);
+
+    //! Example implementation of controller-object filtering callback.
+    //! This example causes static and kinematic bodies to impede the character based on collision layers.
+    physx::PxQueryHitType::Enum CollisionLayerBasedObjectPreFilter(
+        const physx::PxFilterData& filterData,
+        const physx::PxShape* shape,
+        const physx::PxRigidActor* actor,
+        [[maybe_unused]] physx::PxHitFlags& queryFlags);
 } // namespace PhysX

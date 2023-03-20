@@ -16,6 +16,7 @@
 
 #include <Integration/ActorComponentBus.h>
 #include <Integration/Assets/ActorAsset.h>
+#include <Integration/Rendering/RenderFlag.h>
 
 namespace EMotionFX
 {
@@ -33,16 +34,7 @@ namespace EMotionFX
             virtual ~RenderActorInstance() = default;
 
             virtual void OnTick(float timeDelta) = 0;
-
-            struct DebugOptions
-            {
-                bool m_drawAABB = false;
-                bool m_drawSkeleton = false;
-                bool m_drawRootTransform = false;
-                AZ::Transform m_rootWorldTransform = AZ::Transform::CreateIdentity();
-                bool m_emfxDebugDraw = false;
-            };
-            virtual void DebugDraw(const DebugOptions& debugOptions) = 0;
+            virtual void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags) = 0;
 
             SkinningMethod GetSkinningMethod() const;
             virtual void SetSkinningMethod(SkinningMethod skinningMethod);
@@ -54,10 +46,6 @@ namespace EMotionFX
             bool IsVisible() const;
             virtual void SetIsVisible(bool isVisible);
             virtual bool IsInCameraFrustum() const;
-
-            virtual void SetMaterials(const ActorAsset::MaterialList& materialsPerLOD) = 0;
-            typedef AZStd::function<void(const AZStd::string& materialName)> MaterialChangedFunction;
-            void SetOnMaterialChangedCallback(MaterialChangedFunction callback);
 
             Actor* GetActor() const;
 
@@ -71,7 +59,6 @@ namespace EMotionFX
 
             bool m_isVisible = true;
             SkinningMethod m_skinningMethod = SkinningMethod::DualQuat;
-            MaterialChangedFunction m_onMaterialChangedCallback;
         };
     } // namespace Integration
 } // namespace EMotionFX

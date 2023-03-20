@@ -159,7 +159,7 @@ namespace AZ
 
         void LightCullingPass::ResetInternal()
         {
-            m_tileDataIndex = -1;
+            m_tileDataIndex = std::numeric_limits<uint32_t>::max();
             m_constantDataIndex.Reset();
 
             for (auto& elem : m_lightdata)
@@ -192,12 +192,12 @@ namespace AZ
 
         AZ::RHI::Size LightCullingPass::GetDepthBufferResolution()
         {
-            const RPI::PassAttachment* tileBuffer = GetInputBinding(m_tileDataIndex).m_attachment.get();
+            const RPI::PassAttachment* tileBuffer = GetInputBinding(m_tileDataIndex).GetAttachment().get();
             // TileData is a texture that is built from taking the depth buffer and dividing it into tiles
             // We will use this attachment to work our way backwards and grab the original depth buffer so we can read the resolution off of it
             // The sizeSource contains the original depth buffer
             const RPI::PassAttachmentBinding* sizeSource = tileBuffer->m_sizeSource;
-            const RHI::UnifiedAttachmentDescriptor& depthBufferDescriptor = sizeSource->m_attachment->m_descriptor;
+            const RHI::UnifiedAttachmentDescriptor& depthBufferDescriptor = sizeSource->GetAttachment()->m_descriptor;
             return depthBufferDescriptor.m_image.m_size;
         }
 
@@ -234,12 +234,12 @@ namespace AZ
                     return i;
                 }
             }
-            return -1;
+            return std::numeric_limits<uint32_t>::max();
         }
 
         AZ::RHI::Size LightCullingPass::GetTileDataBufferResolution()
         {
-            auto binding = GetInputBinding(m_tileDataIndex).m_attachment.get();
+            auto binding = GetInputBinding(m_tileDataIndex).GetAttachment().get();
             return binding->m_descriptor.m_image.m_size;
         }
 

@@ -1,0 +1,80 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{B49B9177-73FD-4ADF-B9BC-489A3E1EA0DB}",
+        "category": "Math Functions",
+        "title": "Float4 From Values",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Construct a float4 from input values",
+        "slotDataTypeGroups": [
+            "inX|inY|inZ|inW",
+            "outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inZ",
+                "displayName": "Z",
+                "description": "Z",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inW",
+                "displayName": "W",
+                "description": "W",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = {(float)inX, (float)inY, (float)inZ, (float)inW};"
+                    ]
+                }
+            }
+        ]
+    }
+}

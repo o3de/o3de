@@ -10,34 +10,16 @@
 #include <AzCore/PlatformDef.h> // for AZ_COMMAND_LINE_LEN
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/Memory/Memory.h>
 #include <CryCommon/platform.h>
 
 struct IOutputPrintSink;
 
-namespace O3DELauncher
-{
-    struct CryAllocatorsRAII
-    {
-        CryAllocatorsRAII()
-        {
-            AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-            AZ_Assert(!AZ::AllocatorInstance<CryStringAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-            AZ::AllocatorInstance<CryStringAllocator>::Create();
-        }
-
-        ~CryAllocatorsRAII()
-        {
-            AZ::AllocatorInstance<CryStringAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-        }
-    };
-
-
 #define COMMAND_LINE_ARG_COUNT_LIMIT (AZ_COMMAND_LINE_LEN+1) / 2        // Assume that the limit to how many arguments we can maintain is the max buffer size divided by 2
                                                                         // to account for an argument and a spec in between each argument (with the worse case scenario being
-                                                                    
+
+namespace O3DELauncher
+{
     struct PlatformMainInfo
     {
         typedef bool (*ResourceLimitUpdater)();
@@ -63,7 +45,6 @@ namespace O3DELauncher
 
         ResourceLimitUpdater m_updateResourceLimits = nullptr; //!< callback for updating system resources, if necessary
         OnPostApplicationStart m_onPostAppStart = nullptr;  //!< callback notifying the platform specific entry point that AzGameFramework::GameApplication::Start has been called
-        AZ::IAllocatorAllocate* m_allocator = nullptr; //!< Used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap. If null, OSAllocator will be used
 
         const char* m_appResourcesPath = "."; //!< Path to the device specific assets, default is equivalent to blank path in ParseEngineConfig
         const char* m_appWriteStoragePath = nullptr; //!< Path to writeable storage if different than assets path, used to override userPath and logPath
@@ -72,7 +53,7 @@ namespace O3DELauncher
 
         void* m_window = nullptr; //!< maps to \ref SSystemInitParams::hWnd
         void* m_instance = nullptr; //!< maps to \ref SSystemInitParams::hInstance
-        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync 
+        IOutputPrintSink* m_printSink = nullptr; //!< maps to \ref SSystemInitParams::pPrintSync
     };
 
     enum class ReturnCode : unsigned char

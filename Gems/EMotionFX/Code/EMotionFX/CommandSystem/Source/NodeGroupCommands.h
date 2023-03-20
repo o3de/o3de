@@ -63,7 +63,7 @@ namespace CommandSystem
         const char* GetDescription() const override;
         MCore::Command* Create() override
         {
-            return new CommandAdjustNodeGroup(this);
+            return aznew CommandAdjustNodeGroup(this);
         }
 
     private:
@@ -79,14 +79,14 @@ namespace CommandSystem
 
     // add node group
     MCORE_DEFINECOMMAND_START(CommandAddNodeGroup, "Add node group", true)
-    bool                    mOldDirtyFlag;
+    bool                    m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 
     // remove a node group
     MCORE_DEFINECOMMAND_START(CommandRemoveNodeGroup, "Remove node group", true)
-    EMotionFX::NodeGroup *   mOldNodeGroup;
-    bool                    mOldDirtyFlag;
+    EMotionFX::NodeGroup *   m_oldNodeGroup;
+    bool                    m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 

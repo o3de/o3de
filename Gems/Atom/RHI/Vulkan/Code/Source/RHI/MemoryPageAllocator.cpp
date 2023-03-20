@@ -7,9 +7,7 @@
  */
 #include <RHI/MemoryPageAllocator.h>
 #include <RHI/Device.h>
-#include <RHI/Conversion.h>
-#include <AzCore/Debug/EventTrace.h>
-
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 namespace AZ
 {
     namespace Vulkan
@@ -30,25 +28,20 @@ namespace AZ
         RHI::Ptr<Memory> MemoryPageFactory::CreateObject(size_t sizeInBytes)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(sizeInBytes))
+            if (!heapMemoryUsage.CanAllocate(sizeInBytes))
             {
                 return nullptr;
             }
 
-            AZ_TRACE_METHOD_NAME("Create Memory Page");
+            AZ_PROFILE_SCOPE(RHI, "Create Memory Page");
 
             const VkMemoryPropertyFlags flags = ConvertHeapMemoryLevel(m_descriptor.m_heapMemoryLevel) | m_descriptor.m_additionalMemoryPropertyFlags;
             RHI::Ptr<Memory> memory = GetDevice().AllocateMemory(sizeInBytes, m_descriptor.m_memoryTypeBits, flags);
 
             if (memory)
             {
-                heapMemoryUsage.m_residentInBytes += sizeInBytes;
-
+                heapMemoryUsage.m_totalResidentInBytes += sizeInBytes;
                 memory->SetName(m_debugName);
-            }
-            else
-            {
-                heapMemoryUsage.m_reservedInBytes -= sizeInBytes;
             }
 
             return memory;
@@ -57,8 +50,8 @@ namespace AZ
         void MemoryPageFactory::ShutdownObject(Memory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= memory.GetDescriptor().m_sizeInBytes;
-            heapMemoryUsage.m_reservedInBytes -= memory.GetDescriptor().m_sizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= memory.GetDescriptor().m_sizeInBytes;
+            heapMemoryUsage.Validate();
 
             if (isPoolShutdown)
             {

@@ -69,7 +69,7 @@ namespace Twitch
     {
         AZStd::string url( BuildBaseURL("users", friendID) + "/friends/notifications");
         
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& /*json*/, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt](const Aws::Utils::Json::JsonView& /*json*/, Aws::Http::HttpResponseCode httpCode)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -87,7 +87,7 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users", friendID) + "/friends/notifications");
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt, this](const Aws::Utils::Json::JsonView& json, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_GET, GetDefaultHeaders(), [receipt](const Aws::Utils::Json::JsonView& json, Aws::Http::HttpResponseCode httpCode)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
             AZ::s64 count = 0;
@@ -203,7 +203,7 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/relationships/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt, this]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -265,7 +265,7 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/requests/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt, this]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_PUT, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 
@@ -282,7 +282,7 @@ namespace Twitch
     {
         AZStd::string url(BuildBaseURL("users") + "/friends/requests/" + friendID);
 
-        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt, this]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
+        AddHTTPRequest(url, Aws::Http::HttpMethod::HTTP_DELETE, GetDefaultHeaders(), [receipt]([[maybe_unused]] const Aws::Utils::Json::JsonView& jsonDoc, Aws::Http::HttpResponseCode httpCode)
         {
             ResultCode rc(ResultCode::TwitchRESTError);
 

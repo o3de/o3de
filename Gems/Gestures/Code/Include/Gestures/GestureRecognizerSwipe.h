@@ -8,8 +8,8 @@
 #pragma once
 
 #include "IGestureRecognizer.h"
-
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -25,7 +25,7 @@ namespace Gestures
 
         struct Config
         {
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
             AZ_RTTI(Config, "{60CC943E-9973-4046-B0AE-32A5B8B5F7A5}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -44,7 +44,7 @@ namespace Gestures
         };
        static const Config& GetDefaultConfig() { static Config s_cfg; return s_cfg; }
 
-        AZ_CLASS_ALLOCATOR(RecognizerSwipe, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecognizerSwipe, AZ::SystemAllocator);
         AZ_RTTI(RecognizerSwipe, "{3030E923-531F-4CE6-BC8E-84238FA47AB9}", RecognizerDiscrete);
 
        explicit RecognizerSwipe(const Config& config = GetDefaultConfig());
@@ -66,7 +66,7 @@ namespace Gestures
        AZ::Vector2 GetDirection() const { return GetDelta().GetNormalized(); }
 
        float GetDistance() const { return GetEndPosition().GetDistance(GetStartPosition()); }
-       float GetDuration() const { return CTimeValue(m_endTime).GetDifferenceInSeconds(m_startTime); }
+       float GetDuration() const { return AZ::TimeMsToSeconds(m_endTime - m_startTime); }
        float GetVelocity() const { return GetDistance() / GetDuration(); }
 
     private:
@@ -81,8 +81,8 @@ namespace Gestures
         ScreenPosition m_startPosition;
         ScreenPosition m_endPosition;
 
-        int64 m_startTime;
-        int64 m_endTime;
+        AZ::TimeMs m_startTime;
+        AZ::TimeMs m_endTime;
 
         State m_currentState;
     };

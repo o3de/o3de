@@ -193,6 +193,7 @@ namespace AzToolsFramework
             , private ComponentModeActionSignalRequestBus::Handler
         {
         public:
+            AZ_RTTI(PlaceHolderComponentMode, "{B4C7F635-852E-4D68-AE12-5AD281A0266F}", EditorBaseComponentMode);
             AZ_CLASS_ALLOCATOR_DECL
 
             PlaceHolderComponentMode(
@@ -206,6 +207,8 @@ namespace AzToolsFramework
             // EditorBaseComponentMode ...
             void Refresh() override {}
             AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
+            AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
 
             // ComponentModeActionSignalRequestBus ...
             void SetComponentModeActionNotificationBusToNotify(int busId) override;
@@ -218,6 +221,7 @@ namespace AzToolsFramework
             : public EditorBaseComponentMode
         {
         public:
+            AZ_RTTI(AnotherPlaceHolderComponentMode, "{8F8C6D75-0696-488B-A15A-822085A94D4A}", EditorBaseComponentMode);
             AZ_CLASS_ALLOCATOR_DECL
 
             AnotherPlaceHolderComponentMode(
@@ -230,6 +234,8 @@ namespace AzToolsFramework
 
             // EditorBaseComponentMode ...
             void Refresh() override {}
+            AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
         };
 
         // ComponentMode which overrides mouse events
@@ -238,12 +244,15 @@ namespace AzToolsFramework
             , public AzToolsFramework::ViewportInteraction::ViewportSelectionRequests
         {
         public:
+            AZ_RTTI(OverrideMouseInteractionComponentMode, "{3398C51E-F4C8-4EFD-BCA2-7681718C44FE}", EditorBaseComponentMode);
             AZ_CLASS_ALLOCATOR_DECL
 
             OverrideMouseInteractionComponentMode(const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
 
             // EditorBaseComponentMode ...
             void Refresh() override {}
+            AZStd::string GetComponentModeName() const override;
+            AZ::Uuid GetComponentModeType() const override;
 
         private:
             /// AzToolsFramework::ViewportInteraction::ViewportSelectionRequests ...

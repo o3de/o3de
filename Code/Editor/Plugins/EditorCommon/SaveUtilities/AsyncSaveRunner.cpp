@@ -76,6 +76,7 @@ namespace AZ
                     else if (info.m_status == AzToolsFramework::SourceControlStatus::SCS_ProviderIsDown)
                     {
                         message = "Failed to put entries/dependencies into source control as the provider is not available.\n";
+                        reportAsWarning = true;
                     }
                     else if (info.m_status == AzToolsFramework::SourceControlStatus::SCS_CertificateInvalid)
                     {

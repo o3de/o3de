@@ -1,0 +1,52 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{8D4D0169-2E25-565E-B7BD-D7FFB09598FE}",
+                "subId": 1000
+            },
+            "assetHint": "testdata/lightingpresets/urban_street_02_2k_skyboxcm.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{3E0EDB16-C65C-5A22-B6DE-63FDC907C65F}",
+                "subId": 2000
+            },
+            "assetHint": "testdata/lightingpresets/urban_street_02_1k_iblspecularcm.exr.streamingimage"
+        },
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{D433ABA1-55D1-5F5F-80EB-C2DF0383D605}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/urban_street_02_512p_ibldiffusecm.exr.streamingimage"
+        },
+        "iblExposure": 0.0,
+        "skyboxExposure": 0.0,
+        "lights": [
+            {
+                "direction": [
+                    0.15000000596046449,
+                    0.15000000596046449,
+                    -1.0
+                ],
+                "color": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ],
+                "intensity": 1.0,
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowFarClipDistance": 20.0,
+                "shadowmapSize": "Size2048",
+                "enableShadowDebugColoring": false
+            }
+        ],
+        "shadowCatcherOpacity": 0.25
+    }
+}

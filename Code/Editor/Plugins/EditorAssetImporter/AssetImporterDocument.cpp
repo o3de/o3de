@@ -7,10 +7,7 @@
  */
 
 #include <AssetImporterDocument.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <Util/PathUtil.h>
-#include <GFxFramework/MaterialIO/IMaterial.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/FilterIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
@@ -31,6 +28,7 @@
 #include <QMessageBox>
 #include <QPushButton>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -43,9 +41,9 @@ AssetImporterDocument::AssetImporterDocument()
 
 bool AssetImporterDocument::LoadScene(const AZStd::string& sceneFullPath)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
     namespace SceneEvents = AZ::SceneAPI::Events;
-    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull());
+    SceneEvents::SceneSerializationBus::BroadcastResult(m_scene, &SceneEvents::SceneSerializationBus::Events::LoadScene, sceneFullPath, AZ::Uuid::CreateNull(), "");
     return !!m_scene;
 }
 
@@ -65,6 +63,13 @@ void AssetImporterDocument::SaveScene(AZStd::shared_ptr<AZ::ActionOutput>& outpu
 
         return;
     }
+
+    // If a save is requested, the user is going to want to see the asset re-processed, even if they didn't actually make a change.
+    bool fingerprintCleared = false;
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetManifestFilename());
+    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+        fingerprintCleared, &AzToolsFramework::AssetSystemRequestBus::Events::ClearFingerprintForAsset, m_scene->GetSourceFilename());
 
     m_saveRunner = AZStd::make_shared<AZ::AsyncSaveRunner>();
 

@@ -61,7 +61,7 @@ namespace JsonSerializationTests
         DoubleSerializerTestDescription<double, AZ::JsonDoubleSerializer>,
         DoubleSerializerTestDescription<float, AZ::JsonFloatSerializer>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonDoubleSerializer, JsonSerializerConformityTests, DoubleSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonDoubleSerializer, JsonSerializerConformityTests, DoubleSerializerConformityTestTypes));
 
     class JsonDoubleSerializerTests
         : public BaseJsonSerializerFixture
@@ -95,6 +95,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->Class<DoublePointerWrapper>()

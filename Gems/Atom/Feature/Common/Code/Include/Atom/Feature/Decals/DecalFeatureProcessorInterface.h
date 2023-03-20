@@ -35,23 +35,22 @@ namespace AZ
                 { 0.5f, 0.5f, 0.5f }
             };
             float m_angleAttenuation = 1.0f;
+            float m_normalMapOpacity = 1.0f;
             // Decals with a larger sort key appear over top of smaller sort keys.
             uint8_t m_sortKey = 0;
-            uint8_t m_padding0[3];
             uint32_t m_textureArrayIndex = UnusedIndex;
             uint32_t m_textureIndex = UnusedIndex;
-            uint32_t m_padding1[1];
 
             static constexpr uint32_t UnusedIndex = std::numeric_limits< uint32_t>::max();
         };
 
         //! DecalFeatureProcessorInterface provides an interface to acquire, release, and update a decal. This is necessary for code outside of
-        //! the Atom features gem to communicate with the DecalFeatureProcessor.
+        //! the Atom features gem to communicate with the DecalTextureArrayFeatureProcessor.
         class DecalFeatureProcessorInterface
             : public RPI::FeatureProcessor
         {
         public:
-            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", RPI::FeatureProcessor);
+            AZ_RTTI(AZ::Render::DecalFeatureProcessorInterface, "{4A64E427-7F9F-4AF7-B414-69EA91323827}", AZ::RPI::FeatureProcessor);
 
             using DecalHandle = RHI::Handle<uint16_t, class Decal>;
 
@@ -81,6 +80,9 @@ namespace AZ
 
             //! Sets the opacity of the decal
             virtual void SetDecalOpacity(DecalHandle handle, float opacity) = 0;
+
+            //! Sets the opacity of the decal normal map
+            virtual void SetDecalNormalMapOpacity(DecalHandle handle, float opacity) = 0;
 
             //! Sets the transform of the decal
             //! Equivalent to calling SetDecalPosition() + SetDecalOrientation() + SetDecalHalfSize()

@@ -274,7 +274,7 @@ namespace AzToolsFramework
      */
     SliceCompilationResult CompileEditorSlice(const AZ::Data::Asset<AZ::SliceAsset>& sourceSliceAsset, const AZ::PlatformTagSet& platformTags, AZ::SerializeContext& serializeContext, const EditorOnlyEntityHandlers& editorOnlyEntityHandlers)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (!sourceSliceAsset)
         {
             return AZ::Failure(AZStd::string("Source slice is invalid."));
@@ -317,7 +317,7 @@ namespace AzToolsFramework
         // entity's components, targeting a separate entity for export.
         for (AZ::Entity* sourceEntity : sourceEntities)
         {
-            AZ::Entity* exportEntity = aznew AZ::Entity(sourceEntity->GetId(), sourceEntity->GetName().c_str());
+            auto exportEntity = AZStd::make_unique<AZ::Entity>(sourceEntity->GetId(), sourceEntity->GetName().c_str());
             exportEntity->SetRuntimeActiveByDefault(sourceEntity->IsRuntimeActiveByDefault());
 
             bool isEditorOnly = false;
@@ -381,7 +381,7 @@ namespace AzToolsFramework
                     if (asEditorComponent) // BEGIN BuildGameEntity compatibility path for editor components not using the newer RuntimeExportCallback functionality.
                     {
                         const size_t oldComponentCount = exportEntity->GetComponents().size();
-                        asEditorComponent->BuildGameEntity(exportEntity);
+                        asEditorComponent->BuildGameEntity(exportEntity.get());
                         AZ::ComponentId newID = asEditorComponent->GetId();
                         for (auto i = oldComponentCount ; i < exportEntity->GetComponents().size(); ++i)
                         {
@@ -482,7 +482,7 @@ namespace AzToolsFramework
                     sortOutcome.GetError().m_message.c_str()));
             }
 
-            exportSliceData->AddEntity(exportEntity);
+            exportSliceData->AddEntity(exportEntity.release());
         }
 
         {
@@ -657,7 +657,7 @@ namespace AzToolsFramework
     // tolerate ALL possible input errors (looping parents, invalid IDs, etc).
     void SortTransformParentsBeforeChildren(AZStd::vector<AZ::Entity*>& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // IDs of those present in 'entities'. Does not include parent ID if parent not found in 'entities'
         AZStd::unordered_set<AZ::EntityId> existingEntityIds;

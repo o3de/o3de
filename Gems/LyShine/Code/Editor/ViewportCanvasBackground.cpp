@@ -58,5 +58,5 @@ void ViewportCanvasBackground::Draw(Draw2dHelper& draw2d, const AZ::Vector2& can
         verts[i].uv = uvs[i];
     }
 
-    m_canvasBackground->DrawImageTiled(draw2d, verts, 1.0f);
+    m_canvasBackground->DrawImageTiled(draw2d, verts);
 }

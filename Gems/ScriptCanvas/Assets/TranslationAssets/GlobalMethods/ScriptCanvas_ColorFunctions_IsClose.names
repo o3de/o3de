@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_ColorFunctions_IsClose",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Close",
+                "category": "Math/Color"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_ColorFunctions_IsClose",
+                    "details": {
+                        "name": "Is Close",
+                        "tooltip": "Returns true if A is within Tolerance of B, else false."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "B"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Tolerance"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

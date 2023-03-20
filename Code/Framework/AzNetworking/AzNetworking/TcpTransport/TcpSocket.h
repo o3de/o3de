@@ -43,8 +43,9 @@ namespace AzNetworking
 
         //! Opens the TCP socket and connects to the requested remote address.
         //! @param address the remote endpoint to connect to
+        //! @param localPort the local port to open a connection from, 0 binds to any available port
         //! @return boolean true on success
-        virtual bool Connect(const IpAddress& address);
+        virtual bool Connect(const IpAddress& address, uint16_t localPort);
 
         //! Closes an open socket.
         virtual void Close();
@@ -81,7 +82,7 @@ namespace AzNetworking
         virtual int32_t ReceiveInternal(uint8_t* outData, uint32_t size) const;
 
         bool BindSocketForListenInternal(uint16_t port);
-        bool BindSocketForConnectInternal(const IpAddress& address);
+        bool BindSocketForConnectInternal(const IpAddress& address, uint16_t localPort);
         bool SocketCreateInternal();
 
         SocketFd m_socketFd;

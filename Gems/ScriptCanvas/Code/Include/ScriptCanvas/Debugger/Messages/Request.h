@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
+#include <AzFramework/Network/IRemoteTools.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Debugger/APIArguments.h>
 #include <ScriptCanvas/Debugger/API.h>
@@ -22,17 +22,13 @@ namespace ScriptCanvas
             class RequestVisitor;
 
             class Request
-                : public AzFramework::TmMsg
+                : public AzFramework::RemoteToolsMessage
             {
             public:
-                AZ_CLASS_ALLOCATOR(Request, AZ::SystemAllocator, 0);
-                AZ_RTTI(Request, "{0283335F-E3FF-4292-99BA-36A289DFED87}", AzFramework::TmMsg);
+                AZ_CLASS_ALLOCATOR(Request, AZ::SystemAllocator);
+                AZ_RTTI(Request, "{0283335F-E3FF-4292-99BA-36A289DFED87}", AzFramework::RemoteToolsMessage);
 
-                Request()
-                    : AzFramework::TmMsg(k_clientRequestsMsgSlotId)
-                {
-                    SetImmediateSelfDispatchEnabled(true);
-                }
+                Request() : AzFramework::RemoteToolsMessage(k_clientRequestsMsgSlotId) {}
 
                 virtual void Visit(RequestVisitor& visitor) = 0;
             };
@@ -42,8 +38,8 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(TaggedRequest<t_Tag>, AZ::SystemAllocator, 0);
-                AZ_RTTI(((TaggedRequest<t_Tag>), "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
+                AZ_CLASS_ALLOCATOR(TaggedRequest<t_Tag>, AZ::SystemAllocator);
+                AZ_RTTI((TaggedRequest, "{DFFD8D88-1C50-457C-B0D0-C0640D78FB76}", t_Tag), Request);
 
                 TaggedRequest() = default;
 
@@ -96,7 +92,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(AddBreakpointRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(AddBreakpointRequest, AZ::SystemAllocator);
                 AZ_RTTI(AddBreakpointRequest, "{F9D606B4-47EB-4B40-BF8E-01C65208A291}", Request);
 
                 Breakpoint m_breakpoint;
@@ -115,7 +111,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(ConnectRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(ConnectRequest, AZ::SystemAllocator);
                 AZ_RTTI(ConnectRequest, "{8EC1A888-C853-4AE6-A053-01CCACD9F6BC}", Request);
 
                 ScriptTarget m_target;
@@ -133,7 +129,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(DisconnectRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(DisconnectRequest, AZ::SystemAllocator);
                 AZ_RTTI(DisconnectRequest, "{CD4E75F7-277B-45FB-A95F-EB804BE1D3B4}", Request);
 
                 DisconnectRequest() = default;
@@ -145,7 +141,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(StartLoggingRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(StartLoggingRequest, AZ::SystemAllocator);
                 AZ_RTTI(StartLoggingRequest, "{066F8954-52BF-495C-8EEE-6FF43A4822F8}", Request);
 
                 ScriptTarget m_initialTargets;
@@ -164,7 +160,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(StopLoggingRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(StopLoggingRequest, AZ::SystemAllocator);
                 AZ_RTTI(StopLoggingRequest, "{37BF039D-A7E8-4BEE-B0E9-B411F566CBB4}", Request);
 
                 StopLoggingRequest() = default;
@@ -176,7 +172,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(AddTargetsRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(AddTargetsRequest, AZ::SystemAllocator);
                 AZ_RTTI(AddTargetsRequest, "{7A3469C5-C562-4B11-8AB5-BB4A50FD01F0}", Request);
 
                 ScriptTarget m_addTargets;
@@ -195,7 +191,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(RemoveTargetsRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(RemoveTargetsRequest, AZ::SystemAllocator);
                 AZ_RTTI(RemoveTargetsRequest, "{9FCC465D-EB4E-4B5B-B2DE-C4DFF0C193FC}", Request);
 
                 ScriptTarget m_removeTargets;
@@ -214,7 +210,7 @@ namespace ScriptCanvas
                 : public Request
             {
             public:
-                AZ_CLASS_ALLOCATOR(RemoveBreakpointRequest, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(RemoveBreakpointRequest, AZ::SystemAllocator);
                 AZ_RTTI(RemoveBreakpointRequest, "{E50ADBD5-8B36-445A-ACB4-A7E091CE06EA}", Request);
 
                 Breakpoint m_breakpoint;

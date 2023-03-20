@@ -17,6 +17,8 @@
 #include <PostProcess/ExposureControl/ExposureControlSettings.h>
 #include <PostProcess/Ssao/SsaoSettings.h>
 #include <PostProcess/LookModification/LookModificationSettings.h>
+#include <PostProcess/ColorGrading/HDRColorGradingSettings.h>
+#include <PostProcess/ChromaticAberration/ChromaticAberrationSettings.h>
 #include <ScreenSpace/DeferredFogSettings.h>
 
 namespace AZ
@@ -35,7 +37,7 @@ namespace AZ
         public:
             AZ_RTTI(AZ::Render::PostProcessSettings, "{B4DE4B9F-83D2-4FD8-AD58-C0D1D4AEA23F}",
                 AZ::Render::PostProcessSettingsInterface, AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PostProcessSettings, SystemAllocator);
 
             PostProcessSettings(PostProcessFeatureProcessor* featureProcessor);
 
@@ -52,7 +54,7 @@ namespace AZ
 #undef POST_PROCESS_MEMBER
 
             // Auto-gen getter and setter functions for post process members...
-#include <Atom/Feature/ParamMacros/StartParamFunctions.inl>
+#include <Atom/Feature/ParamMacros/StartParamFunctionsOverrideImpl.inl>
 #include <Atom/Feature/PostProcess/PostProcessParams.inl>
 #include <Atom/Feature/ParamMacros/EndParams.inl>
 

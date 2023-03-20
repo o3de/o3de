@@ -36,20 +36,19 @@ set(FILES
     Source/CoreLights/SimpleSpotLightDelegate.cpp
     Source/CoreLights/SphereLightDelegate.h
     Source/CoreLights/SphereLightDelegate.cpp
+    Source/CubeMapCapture/CubeMapCaptureComponent.h
+    Source/CubeMapCapture/CubeMapCaptureComponent.cpp
+    Source/CubeMapCapture/CubeMapCaptureComponentController.h
+    Source/CubeMapCapture/CubeMapCaptureComponentController.cpp
+    Source/Debug/RenderDebugComponent.cpp
+    Source/Debug/RenderDebugComponent.h
+    Source/Debug/RenderDebugComponentConfig.cpp
+    Source/Debug/RenderDebugComponentController.cpp
+    Source/Debug/RenderDebugComponentController.h
     Source/Decals/DecalComponent.h
     Source/Decals/DecalComponent.cpp
     Source/Decals/DecalComponentController.h
     Source/Decals/DecalComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseProbeGridComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponent.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentController.cpp
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.h
-    Source/DiffuseGlobalIllumination/DiffuseGlobalIlluminationComponentConfig.cpp
     Source/Grid/GridComponent.h
     Source/Grid/GridComponent.cpp
     Source/Grid/GridComponentConfig.cpp
@@ -60,6 +59,8 @@ set(FILES
     Source/ImageBasedLights/ImageBasedLightComponentConfig.cpp
     Source/ImageBasedLights/ImageBasedLightComponentController.cpp
     Source/ImageBasedLights/ImageBasedLightComponentController.h
+    Source/Material/MaterialAssignment.cpp
+    Source/Material/MaterialAssignmentId.cpp
     Source/Material/MaterialComponent.cpp
     Source/Material/MaterialComponent.h
     Source/Material/MaterialComponentConfig.cpp
@@ -83,6 +84,16 @@ set(FILES
     Source/PostProcess/Bloom/BloomComponentConfig.cpp
     Source/PostProcess/Bloom/BloomComponentController.cpp
     Source/PostProcess/Bloom/BloomComponentController.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponent.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponent.h
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentConfig.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.cpp
+    Source/PostProcess/ChromaticAberration/ChromaticAberrationComponentController.h
+    Source/PostProcess/ColorGrading/HDRColorGradingComponent.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponent.h
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentConfig.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentController.cpp
+    Source/PostProcess/ColorGrading/HDRColorGradingComponentController.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.cpp
     Source/PostProcess/DepthOfField/DepthOfFieldComponent.h
     Source/PostProcess/DepthOfField/DepthOfFieldComponentConfig.cpp
@@ -132,6 +143,17 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeComponent.cpp
     Source/ReflectionProbe/ReflectionProbeComponentController.h
     Source/ReflectionProbe/ReflectionProbeComponentController.cpp
+    Source/SpecularReflections/SpecularReflectionsComponent.h
+    Source/SpecularReflections/SpecularReflectionsComponent.cpp
+    Source/SpecularReflections/SpecularReflectionsComponentConfig.h
+    Source/SpecularReflections/SpecularReflectionsComponentConfig.cpp
+    Source/SpecularReflections/SpecularReflectionsComponentController.h
+    Source/SpecularReflections/SpecularReflectionsComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentConfig.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponentController.h
+    Source/SkyAtmosphere/SkyAtmosphereComponent.cpp
+    Source/SkyAtmosphere/SkyAtmosphereComponent.h
     Source/SkyBox/HDRiSkyboxComponentConfig.cpp
     Source/SkyBox/HDRiSkyboxComponentController.cpp
     Source/SkyBox/HDRiSkyboxComponentController.h

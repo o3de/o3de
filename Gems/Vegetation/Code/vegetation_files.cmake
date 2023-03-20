@@ -11,7 +11,6 @@ set(FILES
     Include/Vegetation/Descriptor.h
     Include/Vegetation/InstanceData.h
     Include/Vegetation/InstanceSpawner.h
-    Include/Vegetation/DynamicSliceInstanceSpawner.h
     Include/Vegetation/EmptyInstanceSpawner.h
     Include/Vegetation/PrefabInstanceSpawner.h
     Include/Vegetation/AreaComponentBase.h
@@ -24,7 +23,6 @@ set(FILES
     Include/Vegetation/Ebuses/DebugNotificationBus.h
     Include/Vegetation/Ebuses/DebugRequestsBus.h
     Include/Vegetation/Ebuses/DebugSystemDataBus.h
-    Include/Vegetation/Ebuses/DependencyRequestBus.h
     Include/Vegetation/Ebuses/DescriptorNotificationBus.h
     Include/Vegetation/Ebuses/DescriptorProviderRequestBus.h
     Include/Vegetation/Ebuses/DescriptorSelectorRequestBus.h
@@ -46,7 +44,6 @@ set(FILES
     Include/Vegetation/Ebuses/AreaBlenderRequestBus.h
     Include/Vegetation/Ebuses/BlockerRequestBus.h
     Include/Vegetation/Ebuses/DescriptorListCombinerRequestBus.h
-    Include/Vegetation/Ebuses/ReferenceShapeRequestBus.h
     Include/Vegetation/Ebuses/MeshBlockerRequestBus.h
     Include/Vegetation/Ebuses/SpawnerRequestBus.h
     Include/Vegetation/Ebuses/DescriptorListRequestBus.h
@@ -71,8 +68,6 @@ set(FILES
     Source/Components/MeshBlockerComponent.h
     Source/Components/PositionModifierComponent.cpp
     Source/Components/PositionModifierComponent.h
-    Source/Components/ReferenceShapeComponent.cpp
-    Source/Components/ReferenceShapeComponent.h
     Source/Components/RotationModifierComponent.cpp
     Source/Components/RotationModifierComponent.h
     Source/Components/ScaleModifierComponent.cpp
@@ -91,15 +86,12 @@ set(FILES
     Source/Components/SurfaceMaskFilterComponent.h
     Source/Components/SurfaceSlopeFilterComponent.cpp
     Source/Components/SurfaceSlopeFilterComponent.h
-    Source/Util/ConcurrentQueue.h
-    Source/Util/ProducerConsumerQueue.h
     Source/Debugger/AreaDebugComponent.cpp
     Source/Debugger/AreaDebugComponent.h
     Source/Debugger/DebugComponent.cpp
     Source/Debugger/DebugComponent.h
     Source/DescriptorListAsset.cpp
     Source/Descriptor.cpp
-    Source/DynamicSliceInstanceSpawner.cpp
     Source/EmptyInstanceSpawner.cpp
     Source/PrefabInstanceSpawner.cpp
     Source/VegetationSystemComponent.cpp

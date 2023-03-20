@@ -22,7 +22,6 @@ namespace ProjectSettingsTool
         static const AZ::Crc32 Obfuscated = AZ_CRC("ObfuscatedText");
         // Used as a tooltip and for distinguising linked properties
         static const AZ::Crc32 PropertyIdentfier = AZ_CRC("PropertyIdentfier");
-        static const AZ::Crc32 LinkedProperty = AZ_CRC("LinkedProperty");
         static const AZ::Crc32 DefaultPath = AZ_CRC("DefaultPath");
         static const AZ::Crc32 DefaultImagePreview = AZ_CRC("DefaultImagePreview");
         static const AZ::Crc32 ObfuscatedText = AZ_CRC("ObfuscatedText");
@@ -41,20 +40,20 @@ namespace ProjectSettingsTool
 
     namespace Identfiers
     {
-        static const char* ProjectName = "Base - Project Name";
-        static const char* ProductName = "Base - Product Name";
-        static const char* ExecutableName = "Base - Executable Name";
+        static constexpr const char* ProjectName = "Base - Project Name";
+        static constexpr const char* ProductName = "Base - Product Name";
+        static constexpr const char* ExecutableName = "Base - Executable Name";
 
-        static const char* AndroidPackageName = "Android - Package Name";
-        static const char* AndroidVersionName = "Android - Version Name";
-        static const char* AndroidIconDefault = "Android - Icon Default";
-        static const char* AndroidLandDefault = "Android - Land Default";
-        static const char* AndroidPortDefault = "Android - Port Default";
+        static constexpr const char* AndroidPackageName = "Android - Package Name";
+        static constexpr const char* AndroidVersionName = "Android - Version Name";
+        static constexpr const char* AndroidIconDefault = "Android - Icon Default";
+        static constexpr const char* AndroidLandDefault = "Android - Land Default";
+        static constexpr const char* AndroidPortDefault = "Android - Port Default";
 
-        static const char* IosBundleName = "iOS - Bundle Name";
-        static const char* IosDisplayName = "iOS - Display Name";
-        static const char* IosExecutableName = "iOS - Executable Name";
-        static const char* IosBundleIdentifer = "iOS - Bundle Identifer";
-        static const char* IosVersionName = "iOS - Version Name";
+        static constexpr const char* IosBundleName = "iOS - Bundle Name";
+        static constexpr const char* IosDisplayName = "iOS - Display Name";
+        static constexpr const char* IosExecutableName = "iOS - Executable Name";
+        static constexpr const char* IosBundleIdentifer = "iOS - Bundle Identifer";
+        static constexpr const char* IosVersionName = "iOS - Version Name";
     } // namespace Identfiers
 } // namespace ProjectSettingsTool

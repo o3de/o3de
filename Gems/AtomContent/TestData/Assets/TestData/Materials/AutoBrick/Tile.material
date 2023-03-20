@@ -1,0 +1,27 @@
+{
+    "materialType": "../Types/AutoBrick.materialtype",
+    "materialTypeVersion": 3,
+    "propertyValues": {
+        "appearance.ao": 0.010100999847054482,
+        "appearance.brickColor": [
+            0.4612802267074585,
+            0.6926985383033752,
+            0.6798046827316284,
+            1.0
+        ],
+        "appearance.brickColorBleed": 0.5050504803657532,
+        "appearance.brickColorNoise": 0.05000000074505806,
+        "appearance.lineColor": [
+            1.0,
+            1.0,
+            1.0,
+            1.0
+        ],
+        "appearance.lineColorNoise": 0.0,
+        "shape.brickHeight": 0.16660000383853912,
+        "shape.brickOffset": 0.0,
+        "shape.brickWidth": 0.16660000383853912,
+        "shape.lineDepth": 0.0012121000327169895,
+        "shape.lineWidth": 0.01030299998819828
+    }
+}

@@ -56,11 +56,16 @@ namespace MultiplayerCompression
         AZ_Warning("Multiplayer Compressor", compDataSize >= compWorstCaseSize, "Outbuffer size (%lu B) passed to Compress() is less than estimated worst case (%lu B)", compDataSize, compWorstCaseSize);
 
         // Note that this returns a non-negative int so we are narrowing into a size_t here
-        compSize = LZ4_compressHC(reinterpret_cast<const char*>(uncompData), reinterpret_cast<char*>(compData), static_cast<int>(uncompSize));
+        compSize = LZ4_compress_HC(
+            reinterpret_cast<const char*>(uncompData), 
+            reinterpret_cast<char*>(compData), 
+            static_cast<int>(uncompSize),
+            static_cast<int>(compDataSize),
+            0);
 
         if (compSize == 0)
         {
-            // LZ4_compressHC returns a zero value for corrupt data and insufficient buffer
+            // LZ4_compress_HC returns a zero value for corrupt data and insufficient buffer
             AZ_Warning("Multiplayer Compressor", false, "Compression failed for uncompSize:(%lu B) compDataSize:(%lu B) compSize:(%lu B)", uncompSize, compDataSize, compSize);
             return AzNetworking::CompressorError::CorruptData;
         }

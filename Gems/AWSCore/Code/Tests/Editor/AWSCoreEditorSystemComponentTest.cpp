@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -13,8 +14,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 
 #include <AWSCoreEditorSystemComponent.h>
-#include <Editor/AWSCoreEditorManager.h>
-#include <Editor/UI/AWSCoreEditorMenu.h>
+
 #include <Editor/UI/AWSCoreEditorUIFixture.h>
 #include <TestFramework/AWSCoreFixture.h>
 
@@ -71,23 +71,3 @@ private:
     AZStd::unique_ptr<AZ::BehaviorContext> m_behaviorContext;
     AZStd::unique_ptr<AZ::ComponentDescriptor> m_componentDescriptor;
 };
-
-TEST_F(AWSCoreEditorSystemComponentTest, NotifyMainWindowInitialized_HaveDummyMenuInMenuBar_ExpectedMenuGetsAppended)
-{
-    QMainWindow testMainWindow;
-    auto testMenuBar = testMainWindow.menuBar();
-    testMenuBar->addMenu("dummy menu");
-    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, &testMainWindow);
-    EXPECT_TRUE(testMenuBar->actions().size() == 2);
-    EXPECT_TRUE(QString::compare(testMenuBar->actions()[1]->text(), AWSCoreEditorManager::AWS_MENU_TEXT) == 0);
-}
-
-TEST_F(AWSCoreEditorSystemComponentTest, NotifyMainWindowInitialized_HaveHelpMenuInMenuBar_ExpectedMenuGetsAddedAtFront)
-{
-    QMainWindow testMainWindow;
-    auto testMenuBar = testMainWindow.menuBar();
-    testMenuBar->addMenu(AWSCoreEditorSystemComponent::EDITOR_HELP_MENU_TEXT);
-    AzToolsFramework::EditorEvents::Bus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, &testMainWindow);
-    EXPECT_TRUE(testMenuBar->actions().size() == 2);
-    EXPECT_TRUE(QString::compare(testMenuBar->actions()[0]->text(), AWSCoreEditorManager::AWS_MENU_TEXT) == 0);
-}

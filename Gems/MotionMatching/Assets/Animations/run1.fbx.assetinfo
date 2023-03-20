@@ -1,0 +1,41 @@
+{
+    "values": [
+        {
+            "$type": "MotionGroup",
+            "name": "run1",
+            "selectedRootBone": "RootNode.root",
+            "id": "{12953346-AF3A-5481-A54F-9119523C4538}",
+            "rules": {
+                "rules": [
+                    {
+                        "$type": "EMotionFX::Pipeline::Rule::MotionMetaDataRule",
+                        "data": {
+                            "motionEventTable": {
+                                "tracks": [
+                                    {
+                                        "name": "Sync",
+                                        "deletable": false,
+                                        "events": [
+                                            {
+                                                "eventDatas": [
+                                                    {
+                                                        "$type": "DiscardFrameEventData"
+                                                    }
+                                                ],
+                                                "startTime": 23.600000381469727,
+                                                "endTime": 27.933334350585938
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "$type": "MotionSamplingRule"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -19,7 +19,7 @@
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <Atom/RPI.Edit/Common/ConvertibleSource.h>
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
@@ -30,7 +30,7 @@ namespace AZ
     {
         namespace
         {
-            const char* AnyAssetBuilderName = "AnyAssetBuilder";
+            [[maybe_unused]] const char* AnyAssetBuilderName = "AnyAssetBuilder";
             const char* AnyAssetBuilderJobKey = "Any Asset Builder";
             const char* AnyAssetBuilderDefaultExtension = "azasset";
             const char* AnyAssetSourceExtensions[] =
@@ -60,7 +60,7 @@ namespace AZ
                 AZStd::placeholders::_1, AZStd::placeholders::_2);
             builderDescriptor.m_processJobFunction = AZStd::bind(&AnyAssetBuilder::ProcessJob, this,
                 AZStd::placeholders::_1, AZStd::placeholders::_2);
-            builderDescriptor.m_version = 9;
+            builderDescriptor.m_version = 10;
 
             BusConnect(builderDescriptor.m_busId);
 

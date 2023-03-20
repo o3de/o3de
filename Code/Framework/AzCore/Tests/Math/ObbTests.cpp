@@ -6,16 +6,16 @@
  *
  */
 
-#include <AzCore/Math/Obb.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Obb.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 using namespace AZ;
 
-namespace UnitTest
+namespace UnitTest::ObbTests
 {
     const Vector3 position(1.0f, 2.0f, 3.0f);
     const Quaternion rotation = Quaternion::CreateRotationZ(Constants::QuarterPi);
@@ -151,4 +151,4 @@ namespace UnitTest
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(2.4f, 0.5f, 1.5f)), 0.5532f, 1e-3f);
         EXPECT_NEAR(obb.GetDistanceSq(Vector3(1.1f, 7.3f, 5.8f)), 1.3612f, 1e-3f);
     }
-}
+} // namespace UnitTest::ObbTests

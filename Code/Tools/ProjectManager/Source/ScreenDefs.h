@@ -20,10 +20,16 @@ namespace O3DE::ProjectManager
         CreateProject,
         NewProjectSettings,
         GemCatalog,
+        ProjectGemCatalog,
         Projects,
         UpdateProject,
         UpdateProjectSettings,
-        EngineSettings
+        Engine,
+        EngineSettings,
+        GemRepos,
+        GemsGemRepos,
+        CreateGem,
+        EditGem
     };
 
     static QHash<QString, ProjectManagerScreen> s_ProjectManagerStringNames = {
@@ -31,10 +37,16 @@ namespace O3DE::ProjectManager
         { "CreateProject", ProjectManagerScreen::CreateProject},
         { "NewProjectSettings", ProjectManagerScreen::NewProjectSettings},
         { "GemCatalog", ProjectManagerScreen::GemCatalog},
+        { "ProjectGemCatalog", ProjectManagerScreen::ProjectGemCatalog},
         { "Projects", ProjectManagerScreen::Projects},
         { "UpdateProject", ProjectManagerScreen::UpdateProject},
         { "UpdateProjectSettings", ProjectManagerScreen::UpdateProjectSettings},
-        { "EngineSettings", ProjectManagerScreen::EngineSettings}
+        { "Engine", ProjectManagerScreen::Engine},
+        { "EngineSettings", ProjectManagerScreen::EngineSettings},
+        { "GemRepos", ProjectManagerScreen::GemRepos},
+        { "GemsGemRepos", ProjectManagerScreen::GemsGemRepos},
+        { "CreateGem", ProjectManagerScreen::CreateGem },
+        { "EditGem", ProjectManagerScreen::EditGem }
     };
 
     // need to define qHash for ProjectManagerScreen when using scoped enums

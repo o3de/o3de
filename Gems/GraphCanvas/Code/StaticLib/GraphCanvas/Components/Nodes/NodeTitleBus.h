@@ -11,7 +11,6 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
 
-#include <GraphCanvas/Types/TranslationTypes.h>
 #include <GraphCanvas/Components/StyleBus.h>
 
 #include <GraphCanvas/Types/SceneMemberComponentSaveData.h>
@@ -38,18 +37,17 @@ namespace GraphCanvas
 
         virtual QGraphicsWidget* GetGraphicsWidget() = 0;
 
+        //! Set the node's details, title, subtitle, tooltip
+        virtual void SetDetails(const AZStd::string& title, const AZStd::string& subtitle) = 0;
+
         //! Set the Node's title.
         virtual void SetTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's title.
         virtual AZStd::string GetTitle() const = 0;
 
         //! Set the Node's sub-title.
         virtual void SetSubTitle(const AZStd::string& value) = 0;
-
-        virtual void SetTranslationKeyedSubTitle(const TranslationKeyedString& value) = 0;
 
         //! Get the Node's sub-title.
         virtual AZStd::string GetSubTitle() const = 0;
@@ -83,12 +81,15 @@ namespace GraphCanvas
 
     using NodeTitleNotificationsBus = AZ::EBus<NodeTitleNotifications>;
 
+    class GeneralNodeTitleComponentSaveData;
+    AZ_TYPE_INFO_SPECIALIZE(GeneralNodeTitleComponentSaveData, "{328FF15C-C302-458F-A43D-E1794DE0904E}");
+
     class GeneralNodeTitleComponentSaveData
         : public SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>
     {
     public:
-        AZ_RTTI(GeneralNodeTitleComponentSaveData, "{328FF15C-C302-458F-A43D-E1794DE0904E}", SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
-        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator, 0);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR(GeneralNodeTitleComponentSaveData, AZ::SystemAllocator);
 
         GeneralNodeTitleComponentSaveData() = default;
         ~GeneralNodeTitleComponentSaveData() = default;

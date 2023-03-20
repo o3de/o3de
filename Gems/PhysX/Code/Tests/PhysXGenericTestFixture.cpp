@@ -21,7 +21,6 @@
 
 #include <Tests/PhysXTestCommon.h>
 
-#include <Material.h>
 #include <BoxColliderComponent.h>
 #include <CapsuleColliderComponent.h>
 #include <RigidBodyComponent.h>
@@ -68,7 +67,6 @@ namespace PhysX
 
     void GenericPhysicsFixture::TearDownInternal()
     {
-        MaterialManagerRequestsBus::Broadcast(&MaterialManagerRequestsBus::Events::ReleaseAllMaterials);
         Physics::DefaultWorldBus::Handler::BusDisconnect();
         m_defaultScene = nullptr;
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())

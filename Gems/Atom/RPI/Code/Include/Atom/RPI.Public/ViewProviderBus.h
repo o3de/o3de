@@ -19,6 +19,18 @@ namespace AZ
 {
     namespace RPI
     {
+        //! Enum to describe view type
+        enum class ViewType : uint32_t
+        {
+            Default = 0,
+            XrLeft,
+            XrRight,
+            Count
+        };
+
+        static constexpr uint32_t DefaultViewType = static_cast<uint32_t>(ViewType::Default);
+        static constexpr uint32_t MaxViewTypes = static_cast<uint32_t>(ViewType::Count);
+
         //! Interface for component which may provide a RPI view. 
         class ViewProvider
             : public AZ::EBusTraits
@@ -30,6 +42,7 @@ namespace AZ
             using BusIdType = AZ::EntityId;
 
             virtual ViewPtr GetView() const = 0;
+            virtual ViewPtr GetStereoscopicView(RPI::ViewType viewType) const = 0;
         };
 
         using ViewProviderBus = AZ::EBus<ViewProvider>;

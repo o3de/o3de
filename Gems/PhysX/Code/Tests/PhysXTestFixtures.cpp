@@ -41,16 +41,12 @@ namespace PhysX
         }
 
         Physics::DefaultWorldBus::Handler::BusConnect();
-
-        m_dummyTerrainComponentDescriptor = DummyTestTerrainComponent::CreateDescriptor();
     }
 
     void PhysXDefaultWorldTest::TearDown()
     {
         Physics::DefaultWorldBus::Handler::BusDisconnect();
         m_defaultScene = nullptr;
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
 
         //Clean up the Test scene
         if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())

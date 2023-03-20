@@ -1,0 +1,68 @@
+{
+    "entries": [
+        {
+            "base": "AudioEnvironmentComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio Environment",
+                "category": "Audio"
+            },
+            "methods": [
+                {
+                    "base": "SetAmount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Amount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Amount is invoked"
+                    },
+                    "details": {
+                        "name": "Set Amount",
+                        "tooltip": "Sets the amount of environmental 'send' to apply to the default environment, if set."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Amount"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEnvironmentAmount",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Environment Amount"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Environment Amount is invoked"
+                    },
+                    "details": {
+                        "name": "Set Environment Amount",
+                        "tooltip": "Sets the amount of envrionmental 'send' to apply to the specified envrionment"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "Envrionment",
+                                "tooltip": "The name of the ATL Envrionment to set an amount on"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Amount"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

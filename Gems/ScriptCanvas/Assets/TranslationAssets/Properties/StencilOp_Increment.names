@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "StencilOp_Increment",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Increment",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Increment",
+                    "details": {
+                        "name": "Increment"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

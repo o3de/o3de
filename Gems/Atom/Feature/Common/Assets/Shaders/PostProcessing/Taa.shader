@@ -1,5 +1,5 @@
 {
-    "Source": "Taa",
+    "Source": "Taa.azsl",
     "ProgramSettings": {
         "EntryPoints": [
             {

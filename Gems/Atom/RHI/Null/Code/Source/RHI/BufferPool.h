@@ -19,7 +19,7 @@ namespace AZ
             using Base = RHI::BufferPool;
         public:
             AZ_RTTI(BufferPool, "{5F02ECA6-135C-4C96-895E-514E273EEFC2}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             virtual ~BufferPool() = default;
             
             static RHI::Ptr<BufferPool> Create();
@@ -39,9 +39,11 @@ namespace AZ
             RHI::ResultCode InitBufferInternal([[maybe_unused]] RHI::Buffer& buffer, [[maybe_unused]] const RHI::BufferDescriptor& rhiDescriptor) override{ return RHI::ResultCode::Success;}
             void ShutdownResourceInternal([[maybe_unused]] RHI::Resource& resource) override {}
             RHI::ResultCode OrphanBufferInternal([[maybe_unused]] RHI::Buffer& buffer) override { return RHI::ResultCode::Success;}
-            RHI::ResultCode MapBufferInternal([[maybe_unused]] const RHI::BufferMapRequest& mapRequest, [[maybe_unused]] RHI::BufferMapResponse& response) override { return RHI::ResultCode::Unimplemented;}
+            RHI::ResultCode MapBufferInternal([[maybe_unused]] const RHI::BufferMapRequest& mapRequest, [[maybe_unused]] RHI::BufferMapResponse& response) override { return RHI::ResultCode::Success;}
             void UnmapBufferInternal([[maybe_unused]] RHI::Buffer& buffer) override {}
             RHI::ResultCode StreamBufferInternal([[maybe_unused]] const RHI::BufferStreamRequest& request) override { return RHI::ResultCode::Success;}
+            void BufferCopy([[maybe_unused]] void* destination, [[maybe_unused]] const void* source, [[maybe_unused]] size_t num) override {}
+            void ComputeFragmentation() const override {}
             //////////////////////////////////////////////////////////////////////////
 
         };

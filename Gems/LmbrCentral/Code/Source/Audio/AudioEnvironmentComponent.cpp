@@ -75,7 +75,10 @@ namespace LmbrCentral
         Audio::TAudioEnvironmentID environmentID = INVALID_AUDIO_ENVIRONMENT_ID;
         if (environmentName && environmentName[0] != '\0')
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(environmentID, &Audio::AudioSystemRequestBus::Events::GetAudioEnvironmentID, environmentName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                environmentID = audioSystem->GetAudioEnvironmentID(environmentName);
+            }
         }
 
         if (environmentID != INVALID_AUDIO_ENVIRONMENT_ID)
@@ -90,7 +93,10 @@ namespace LmbrCentral
         m_defaultEnvironmentID = INVALID_AUDIO_ENVIRONMENT_ID;
         if (!m_defaultEnvironmentName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultEnvironmentID, &Audio::AudioSystemRequestBus::Events::GetAudioEnvironmentID, m_defaultEnvironmentName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultEnvironmentID = audioSystem->GetAudioEnvironmentID(m_defaultEnvironmentName.c_str());
+            }
         }
     }
 

@@ -124,6 +124,8 @@ namespace AssetProcessor
         virtual void OnAssetFailed(const AZStd::string& /*sourceFileName*/) {}
         // Notifies listener about a general error
         virtual void OnErrorMessage([[maybe_unused]] const char* error) {}
+        // Notifies listener about a builder registration failure
+        virtual void OnBuilderRegistrationFailure() {};
     };
 
     using MessageInfoBus = AZ::EBus<MessageInfoBusTraits>;
@@ -138,6 +140,7 @@ namespace AssetProcessor
     public:
         static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+        using MutexType = AZStd::recursive_mutex;
 
         virtual ~AssetBuilderInfoBusTraits() {}
 
@@ -149,7 +152,7 @@ namespace AssetProcessor
 
     using  AssetBuilderInfoBus = AZ::EBus<AssetBuilderInfoBusTraits>;
 
-    // This EBUS is used to broadcast information about the currently processing job 
+    // This EBUS is used to broadcast information about the currently processing job
     class ProcessingJobInfoBusTraits
         : public AZ::EBusTraits
     {
@@ -160,8 +163,8 @@ namespace AssetProcessor
 
         virtual ~ProcessingJobInfoBusTraits() {}
 
-        // Will notify other systems a product is about to be updated in the cache. This can mean that 
-        // it will be created, overwritten with new data or deleted. BeginCacheFileUpdate is pared with 
+        // Will notify other systems a product is about to be updated in the cache. This can mean that
+        // it will be created, overwritten with new data or deleted. BeginCacheFileUpdate is pared with
         // EndCacheFileUpdate.
         virtual void BeginCacheFileUpdate(const char* /*productPath*/) {};
         // Will notify other systems that a file in the cache has been updated along with status of whether it
@@ -184,7 +187,7 @@ namespace AssetProcessor
         // This function will either return the registry version of the next registry save or of the current one, if it is in progress
         // It will not put another save registry event in the event pump if we are currently in the process of saving the registry
         virtual int SaveRegistry() = 0;
-        
+
         // This method checks for cyclic preload dependency for all the currently processed assets.
         virtual void ValidatePreLoadDependency() = 0;
     };
@@ -207,22 +210,23 @@ namespace AssetProcessor
     using AssetRegistryNotificationBus = AZ::EBus<AssetRegistryNotifications>;
 
     // This EBUS is used to check if there is sufficient disk space
-    class DiskSpaceInfoBusTraits
-        : public AZ::EBusTraits
+    class IDiskSpaceInfo
     {
     public:
-        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
-        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
-        typedef AZStd::recursive_mutex MutexType;
+        AZ_RTTI(IDiskSpaceInfo, "{0A324878-9871-49DA-8F34-AE3B1D43B7C0}");
 
-        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space at the specified path
-        // savePath must be a folder path, not a file path
+        // Returns true if there is at least `requiredSpace` bytes plus 256kb free disk space in the project cache folder
         // If shutdownIfInsufficient is true, an error will be displayed and the application will be shutdown
-        virtual bool CheckSufficientDiskSpace(const QString& /*savePath*/, qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
+        virtual bool CheckSufficientDiskSpace(qint64 /*requiredSpace*/, bool /*shutdownIfInsufficient*/) { return true; }
     };
 
-    using DiskSpaceInfoBus = AZ::EBus<DiskSpaceInfoBusTraits>;
-
+    //! Defines the modes the Asset Cache Server mode setting for the Asset Processor (AP).
+    enum class AssetServerMode
+    {
+        Inactive, //! This mode means the AP is offline; only processing the assets locally
+        Server, //! This mode means the AP is writing out the asset products to a remote location
+        Client //! This mode means the AP is attempting to retrieve asset products from a remote location
+    };
     // This EBUS is used to perform Asset Server related tasks.
     class AssetServerBusTraits
         : public AZ::EBusTraits
@@ -235,17 +239,54 @@ namespace AssetProcessor
         //! This will return true if we were able to verify the server address as being valid, otherwise return false.
         virtual bool IsServerAddressValid() = 0;
         //! StoreJobResult should store all the files in the temp folder provided by the builderParams to the server
-        //! As well as any outputProducts which are outside the temp folder intended to be copied directly to the 
+        //! As well as any outputProducts which are outside the temp folder intended to be copied directly to the
         //! Cache without going through the temp folder
         //! It should associate those files with the server key provided by the builderParams because
         //! it will be send the same server key to retrieve these files by the client.
         //! This will return true if it was able to save all the relevant job data to the server, otherwise return false.
         virtual bool StoreJobResult(const AssetProcessor::BuilderParams& builderParams, AZStd::vector<AZStd::string>& sourceFileList) = 0;
-        //! RetrieveJobResult should retrieve all the files associated with the server key provided in the builderParams 
+        //! RetrieveJobResult should retrieve all the files associated with the server key provided in the builderParams
         //! and put them in the temporary directory provided by the builderParam.
-        //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false. 
+        //! This will return true if it was able to retrieve all the relevant job data from the server, otherwise return false.
         virtual bool RetrieveJobResult(const AssetProcessor::BuilderParams& builderParams) = 0;
+        //! Retrieve the current mode for shared caching
+        virtual AssetServerMode GetRemoteCachingMode() const = 0;
+        //! Store the shared caching mode
+        virtual void SetRemoteCachingMode(AssetServerMode mode) = 0;
+        //! Retrieve the remote folder location for the shared cache 
+        virtual const AZStd::string& GetServerAddress() const = 0;
+        //! Store the remote folder location for the shared cache 
+        virtual bool SetServerAddress(const AZStd::string& address) = 0;
+    };
+    using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
+
+    // This EBUS has notify listeners when Asset Server state(s) changes.
+    class AssetServerNotifications
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple; // multi listener
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; //single bus
+        typedef AZStd::recursive_mutex MutexType;
+
+        //! This emits when the mode of the Asset Server Cache mode has changed.
+        virtual void OnRemoteCachingModeChanged([[maybe_unused]] AssetServerMode mode) {}
+    };
+    using AssetServerNotificationBus = AZ::EBus<AssetServerNotifications>;
+
+    // This EBUS is used to retrieve asset server information
+    class AssetServerInfoBusTraits
+        : public AZ::EBusTraits
+    {
+    public:
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single; // single listener
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single; // single bus
+        using MutexType = AZStd::recursive_mutex;
+
+        virtual ~AssetServerInfoBusTraits() = default;
+
+        virtual const AZStd::string& ComputeArchiveFilePath(const AssetProcessor::BuilderParams& builderParams) = 0;
     };
 
-    using AssetServerBus = AZ::EBus<AssetServerBusTraits>;
+    using  AssetServerInfoBus = AZ::EBus<AssetServerInfoBusTraits>;
 } // namespace AssetProcessor

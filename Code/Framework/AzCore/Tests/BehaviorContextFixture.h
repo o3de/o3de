@@ -16,13 +16,13 @@ namespace UnitTest
 {
     // Basic fixture for managing a BehaviorContext
     class BehaviorContextFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behaviorContext = aznew AZ::BehaviorContext();
 
@@ -39,7 +39,7 @@ namespace UnitTest
             delete m_behaviorContext;
             m_behaviorContext = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         // ComponentApplicationBus
@@ -59,10 +59,8 @@ namespace UnitTest
         AZ::SerializeContext* GetSerializeContext() override { return nullptr; }
         AZ::BehaviorContext*  GetBehaviorContext() override { return m_behaviorContext; }
         AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         ////

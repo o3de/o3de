@@ -28,13 +28,17 @@ namespace SceneLoggingExample
 
         ~LoggingGroupBehavior() override = default;
 
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         static void Reflect(AZ::ReflectContext* context);
 
         void GetCategoryAssignments(CategoryRegistrationList& categories, const AZ::SceneAPI::Containers::Scene& scene) override;
         AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, 
             ManifestAction action, RequestingApplication requester) override;
         void InitializeObject(const AZ::SceneAPI::Containers::Scene& scene, AZ::SceneAPI::DataTypes::IManifestObject& target) override;
+        void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "LoggingGroupBehavior";
+        }
     };
 } // namespace SceneLoggingExample

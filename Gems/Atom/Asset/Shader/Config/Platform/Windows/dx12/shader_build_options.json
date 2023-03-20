@@ -1,0 +1,10 @@
+{
+    "AddBuildArguments": {
+        "debug": false,
+        "preprocessor": [],
+        "azslc": ["--namespace=dx"
+        ],
+        "dxc": ["-enable-16bit-types"
+        ]
+    }
+}

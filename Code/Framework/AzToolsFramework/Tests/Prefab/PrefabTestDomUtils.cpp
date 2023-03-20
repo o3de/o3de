@@ -56,7 +56,7 @@ namespace UnitTest
         }
 
         void ValidateInstances(
-            const TemplateId& templateId,
+            TemplateId templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
             bool isContentAnInstance,
@@ -132,7 +132,7 @@ namespace UnitTest
                     PrefabDomUtils::FindPrefabDomValue(valueADom, PrefabDomUtils::LinkIdName);
                 PrefabDomValueConstReference expectedNestedInstanceDomLinkId =
                     PrefabDomUtils::FindPrefabDomValue(valueBDom, PrefabDomUtils::LinkIdName);
-                ComparePrefabDomValues(actualNestedInstanceDomLinkId, actualNestedInstanceDomLinkId);
+                ComparePrefabDomValues(actualNestedInstanceDomLinkId, expectedNestedInstanceDomLinkId);
             }
 
             if (shouldCompareContainerEntities)
@@ -204,7 +204,7 @@ namespace UnitTest
         }
 
         void ValidateEntitiesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<EntityAlias>& entityAliases)
         {
@@ -219,7 +219,7 @@ namespace UnitTest
         }
 
         void ValidateNestedInstancesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases)
         {

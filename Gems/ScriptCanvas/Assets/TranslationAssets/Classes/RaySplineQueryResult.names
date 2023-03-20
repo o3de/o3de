@@ -1,0 +1,93 @@
+{
+    "entries": [
+        {
+            "base": "RaySplineQueryResult",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Ray Spline Query Result",
+                "category": "Physics"
+            },
+            "methods": [
+                {
+                    "base": "GetsplineAddress",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Spline Address",
+                        "tooltip": "Get the segment of the spline and the proportion along that segment"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FE862126-C838-4999-9B7B-4AEEA5507A49}",
+                            "details": {
+                                "name": "Ray Spline Query Result",
+                                "tooltip": "Result from querying a position on a spline using a ray"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{865BA2EC-43C5-4E1F-9B6F-2D63F6DC2E70}",
+                            "details": {
+                                "name": "Spline Address",
+                                "tooltip": "The segment of the spline and the proportion along that segment"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetdistanceSq",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Distance Squared",
+                        "tooltip": "Get the square of the shortest distance from the ray to the spline"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FE862126-C838-4999-9B7B-4AEEA5507A49}",
+                            "details": {
+                                "name": "Ray Spline Query Result",
+                                "tooltip": "Result from querying a position on a spline using a ray"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Distance Squared",
+                                "tooltip": "The square of the shortest distance from the ray to the spline"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetrayDistance",
+                    "context": "Getter",
+                    "details": {
+                        "name": "Get Ray Distance",
+                        "tooltip": "Get the distance along the ray the point closest to the spline is"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{FE862126-C838-4999-9B7B-4AEEA5507A49}",
+                            "details": {
+                                "name": "Ray Spline Query Result",
+                                "tooltip": "Result from querying a position on a spline using a ray"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Ray Distance",
+                                "tooltip": "The distance along the ray the point closest to the spline is"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

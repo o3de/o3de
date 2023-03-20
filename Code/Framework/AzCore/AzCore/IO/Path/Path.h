@@ -9,8 +9,83 @@
 #pragma once
 
 #include <AzCore/IO/Path/Path_fwd.h>
+#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string.h>
+
+namespace AZ::IO
+{
+    //! Path iterator that allows traversal of the path elements
+    //! Example iterations of path can be seen in the PathIteratorFixture in the PathTests.
+    //! For example the following path with a R"(\\server\share\users\abcdef\AppData\Local\Temp)", with a path separator of '\\',
+    //! Iterates the following elements {R"(\\server)", R"(\)", "share", "users", "abcdef", "AppData", "Local", "Temp"} },
+    template <typename PathType>
+    class PathIterator
+    {
+    public:
+        enum ParserState : uint8_t
+        {
+            Singular,
+            BeforeBegin,
+            InRootName,
+            InRootDir,
+            InFilenames,
+            AtEnd
+        };
+
+        friend PathType;
+
+        using iterator_category = AZStd::bidirectional_iterator_tag;
+        using value_type = AZStd::remove_cv_t<PathType>;
+        using difference_type = ptrdiff_t;
+        using pointer = const value_type*;
+        using reference = const value_type&;
+
+        using stashing_iterator_tag = void; // A reverse_iterator cannot be used with a stashing iterator
+        // As PathView::iterator stores the current path view within it, undefined behavior occurs
+        // when a reverse iterator is used
+
+        constexpr PathIterator() = default;
+        constexpr PathIterator(const PathIterator&) = default;
+        constexpr PathIterator(PathIterator&&) noexcept = default;
+        constexpr PathIterator& operator=(const PathIterator&) = default;
+        constexpr PathIterator& operator=(PathIterator&&) noexcept = default;
+
+        constexpr reference operator*() const;
+
+        constexpr pointer operator->() const
+        {
+            return &m_stashed_elem;
+        }
+
+        constexpr PathIterator& operator++();
+
+        constexpr PathIterator operator++(int);
+
+        constexpr PathIterator& operator--();
+
+        constexpr PathIterator operator--(int);
+
+    private:
+        template <typename PathType1>
+        friend constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+        template <typename PathType1>
+        friend constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+
+        constexpr PathIterator& increment();
+        constexpr PathIterator& decrement();
+
+        value_type m_stashed_elem;
+        const value_type* m_path_ref{};
+        AZStd::string_view m_path_entry_view;
+        ParserState m_state{ Singular };
+    };
+
+    template <typename PathType>
+    constexpr bool operator==(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+    template <typename PathType>
+    constexpr bool operator!=(const PathIterator<PathType>& lhs, const PathIterator<PathType>& rhs);
+}
 
 namespace AZ::IO
 {
@@ -42,9 +117,9 @@ namespace AZ::IO
     public:
         using string_view_type = AZStd::string_view;
         using value_type = char;
-        using const_iterator = const PathIterator<PathView>;
+        using const_iterator = PathIterator<const PathView>;
         using iterator = const_iterator;
-        friend PathIterator<PathView>;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr PathView() = default;
@@ -77,7 +152,8 @@ namespace AZ::IO
 
         // native format observers
         //! Returns string_view stored within the PathView
-        constexpr AZStd::string_view Native() const noexcept;
+        constexpr const AZStd::string_view& Native() const noexcept;
+        constexpr AZStd::string_view& Native() noexcept;
         //! Conversion operator to retrieve string_view stored within the PathView
         constexpr explicit operator AZStd::string_view() const noexcept;
 
@@ -91,11 +167,30 @@ namespace AZ::IO
         constexpr int Compare(AZStd::string_view pathString) const noexcept;
         constexpr int Compare(const value_type* pathString) const noexcept;
 
+        // string conversion
+        //! The string and wstring functions cannot be constexpr until AZStd::basic_string is made constexpr.
+        //! This cannot occur until C++20 as operator new/delete cannot be used within constexpr functions
+        //! Returns a new instance of an AZStd::string made from the internal string
+        AZStd::string String() const;
+
         // Extension for fixed strings
         //! extension: fixed string types with MaxPathLength capacity
         //! Returns a new instance of an AZStd::fixed_string with capacity of MaxPathLength
         //! made from the internal string
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathString() const noexcept;
+
+        // as_posix
+        //! Replicates the behavior of the Python pathlib as_posix method
+        //! by replacing the Windows Path Separator with the Posix Path Seperator
+        constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
+        AZStd::string StringAsPosix() const;
+
+        // as_uri
+        //! Models the Python pathlib as_uri method
+        //! Percent encodes the path and appends file: to the front
+        AZStd::fixed_string<MaxPathLength> AsUri() const noexcept;
+        AZStd::string StringAsUri() const;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
 
         // decomposition
         //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
@@ -156,7 +251,7 @@ namespace AZ::IO
         //!    ^            ^
         //! root part    relative part
         [[nodiscard]] constexpr bool HasRelativePath() const;
-        //! checks whether the path has a parent path that  empty
+        //! checks whether the path has a parent path that is empty
         [[nodiscard]] constexpr bool HasParentPath() const;
         //! Checks whether the filename is empty
         [[nodiscard]] constexpr bool HasFilename() const;
@@ -174,10 +269,13 @@ namespace AZ::IO
         //! Check whether the path is relative to the base path
         [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
+        //! Returns the preferred separator for this instance
+        constexpr const char PreferredSeparator() const noexcept;
+
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
         //! # Path parts of "." are collapsed to nothing empty
-        //! # Paths parts of ".." are removed if there is a preceding directory 
+        //! # Paths parts of ".." are removed if there is a preceding directory
         //! The preceding directory is also removed
         //! # Runs of Two or more path separators are collapsed into one path separator
         //! unless the path begins with two path separators
@@ -237,7 +335,7 @@ namespace AZ::IO
 
         // iterators
         //! Returns an iterator to the beginning of the path that can be used to traverse the path
-        //! according to the following 
+        //! according to the following
         //! 1. Root name - (0 or 1)
         //! 2. Root directory - (0 or 1)
         //! 3. Filename - (0 or more)
@@ -252,16 +350,29 @@ namespace AZ::IO
         template <typename StringType>
         friend class BasicPath;
         friend struct AZStd::hash<PathView>;
+        struct PathIterable;
 
-        template <typename PathResultType>
-        static constexpr void MakeRelativeTo(PathResultType& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base);
-        template <typename PathResultType>
-        static constexpr void LexicallyNormalInplace(PathResultType& pathResult, const AZ::IO::PathView& path);
+        static constexpr void MakeRelativeTo(PathIterable& pathResult, const AZ::IO::PathView& path, const AZ::IO::PathView& base) noexcept;
 
-        constexpr int compare_string_view(AZStd::string_view other) const;
+        //! Returns a structure that provides a view of the path parts which can be used for iteration
+        //! Only the path parts that correspond to creating an normalized path is returned
+        //! This function is useful for returning a "view" into a normalized path without the need
+        //! to allocate memory for the heap
+        static constexpr PathIterable GetNormalPathParts(const AZ::IO::PathView& path) noexcept;
+        //! joins the input path to the Path Iterable structure using similiar logic to Path::Append
+        //! If the input path is absolute it will replace the current PathIterable otherwise
+        //! the input path will be appended to the Path Iterable structure
+        //! For example a PathIterable with parts = ['C:', '/', 'foo']
+        //! If the path input = 'bar', then the new PathIterable parts = [C:', '/', 'foo', 'bar']
+        //! If the path input = 'C:/bar', then the new PathIterable parts = [C:', '/', 'bar']
+        //! If the path input = 'C:bar', then the new PathIterable parts = [C:', '/', 'foo', 'bar' ]
+        //! If the path input = 'D:bar', then the new PathIterable parts = [D:, 'bar' ]
+        static constexpr void AppendNormalPathParts(PathIterable& pathIterableResult, const AZ::IO::PathView& path) noexcept;
+
+        constexpr int ComparePathView(const PathView& other) const;
         constexpr AZStd::string_view root_name_view() const;
         constexpr AZStd::string_view root_directory_view() const;
-        constexpr AZStd::string_view root_path_raw_view() const;
+        constexpr AZStd::string_view root_path_view() const;
         constexpr AZStd::string_view relative_path_view() const;
         constexpr AZStd::string_view parent_path_view() const;
         constexpr AZStd::string_view filename_view() const;
@@ -278,7 +389,7 @@ namespace AZ::IO
     //! then their hash values are also equal
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
-    size_t hash_value(const PathView& pathToHash) noexcept;
+    constexpr size_t hash_value(const PathView& pathToHash) noexcept;
 
     // path.comparison
     constexpr bool operator==(const PathView& lhs, const PathView& rhs) noexcept;
@@ -299,10 +410,9 @@ namespace AZ::IO
         using value_type = typename StringType::value_type;
         using traits_type = typename StringType::traits_type;
         using string_view_type = AZStd::string_view;
-        using const_iterator = const PathIterator<BasicPath>;
+        using const_iterator = PathIterator<const BasicPath>;
         using iterator = const_iterator;
-        friend PathIterator<BasicPath>;
-        friend struct PathReflection;
+        friend const_iterator;
 
         // constructors and destructor
         constexpr BasicPath() = default;
@@ -310,32 +420,32 @@ namespace AZ::IO
         constexpr BasicPath(BasicPath&& other) = default;
 
         // Conversion constructor for other types of BasicPath instantiations
-        constexpr BasicPath(const PathView& other);
+        constexpr BasicPath(const PathView& other) noexcept;
 
         // String constructors
         //! Constructs a Path by copying the pathString to its internal string
         //! The preferred separator is to the OS default path separator
         constexpr BasicPath(const string_type& pathString) noexcept;
         //! Constructs a Path by copying the pathString to its internal string
-        //! The preferred separator it set to the parameter
+        //! The preferred separator is set to the parameter
         constexpr BasicPath(const string_type& pathString, const char preferredSeparator) noexcept;
         //! Constructs a Path by moving the pathString to its internal string
         //! The preferred separator is to the OS default path separator
         constexpr BasicPath(string_type&& pathString) noexcept;
         //! Constructs a Path by copying the pathString to its internal string
-        //! The preferred separator it set to the parameter
+        //! The preferred separator is set to the parameter
         constexpr BasicPath(string_type&& pathString, const char preferredSeparator) noexcept;
         //! Constructs a Path by constructing it's internal out of a string_view
         //! The preferred separator is to the OS default path separator
         constexpr BasicPath(AZStd::string_view src) noexcept;
         //! Constructs a Path by constructing it's internal out of a string_view
-        //! The preferred separators it set to the parameter
+        //! The preferred separator is set to the parameter
         constexpr BasicPath(AZStd::string_view src, const char preferredSeparator) noexcept;
         //! Constructs a Path by constructing it's internal out of a value_type*
         //! The preferred separator is to the OS default path separator
         constexpr BasicPath(const value_type* pathString) noexcept;
         //! Constructs a Path by constructing it's internal out of a value_type*
-        //! The preferred separator it set to the parameter
+        //! The preferred separator is set to the parameter
         constexpr BasicPath(const value_type* pathString, const char preferredSeparator) noexcept;
         //! Constructs a empty Path with the preferred separator set to the parameter
         explicit constexpr BasicPath(const char preferredSeparator) noexcept;
@@ -356,7 +466,7 @@ namespace AZ::IO
         constexpr BasicPath& operator=(BasicPath&& other) = default;
 
         // conversion assignment operator
-        constexpr BasicPath& operator=(const PathView& pathView);
+        constexpr BasicPath& operator=(const PathView& pathView) noexcept;
         constexpr BasicPath& operator=(const string_type& str) noexcept;
         constexpr BasicPath& operator=(string_type&& str) noexcept;
         constexpr BasicPath& operator=(AZStd::string_view str) noexcept;
@@ -441,14 +551,15 @@ namespace AZ::IO
         constexpr void swap(BasicPath& rhs) noexcept;
 
         // native format observers
-        constexpr const string_type& Native() const noexcept;
+        constexpr const string_type& Native() const& noexcept;
+        constexpr const string_type&& Native() const&& noexcept;
         constexpr const value_type* c_str() const noexcept;
         constexpr explicit operator string_type() const;
 
         // Adds support for retrieving a modifiable copy of the underlying string
         // Any modifications to the string invalidates existing PathIterators
-        constexpr string_type& Native() noexcept;
-        constexpr explicit operator string_type&() noexcept;
+        constexpr string_type& Native() & noexcept;
+        constexpr string_type&& Native() && noexcept;
 
         //! The string and wstring functions cannot be constexpr until AZStd::basic_string is made constexpr.
         //! This cannot occur until C++20 as operator new/delete cannot be used within constexpr functions
@@ -461,9 +572,25 @@ namespace AZ::IO
         //! made from the internal string
         constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathString() const;
 
+        // as_posix
+        //! Replicates the behavior of the Python pathlib as_posix method
+        //! by replacing the Windows Path Separator with the Posix Path Separator
+        constexpr string_type AsPosix() const;
+        AZStd::string StringAsPosix() const;
+        constexpr AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsPosix() const noexcept;
+
+        // as_uri
+        //! Models the Python pathlib as_uri method
+        //! Percent encodes the path and appends file: to the front
+        string_type AsUri() const;
+        AZStd::string StringAsUri() const;
+        AZStd::fixed_string<MaxPathLength> FixedMaxPathStringAsUri() const noexcept;
+
         // compare
         //! Performs a compare of each of the path parts for equivalence
         //! Each part of the path is compare using string comparison
+        //! If both *this path and the input path uses the WindowsPathSeparator
+        //! then a non-case sensitive compare is performed
         //! Ex: Comparing "test/foo" against "test/fop" returns -1;
         //! Path separators of the contained path string aren't compared
         //! Ex. Comparing "C:/test\foo" against C:\test/foo" returns 0;
@@ -545,18 +672,14 @@ namespace AZ::IO
         //! Check whether the path is relative to the base path
         [[nodiscard]] constexpr bool IsRelativeTo(const PathView& base) const;
 
-        // decomposition
-        //! Given a windows path of "C:\O3DE\foo\bar\name.txt" and a posix path of
-        //! "/O3DE/foo/bar/name.txt"
-        //! The following functions return the following
-
-        // query
+        //! Returns the preferred separator for this instance
+        constexpr const char PreferredSeparator() const noexcept;
 
         // relative paths
         //! Normalizes a path in a purely lexical manner.
         //! # Path separators are converted to their preferred path separator
         //! # Path parts of "." are collapsed to nothing empty
-        //! # Paths parts of ".." are removed if there is a preceding directory 
+        //! # Paths parts of ".." are removed if there is a preceding directory
         //! The preceding directory is also removed
         //! # Runs of Two or more path separators are collapsed into one path separator
         //! unless the path begins with two path separators
@@ -598,7 +721,7 @@ namespace AZ::IO
 
         // iterators
         //! Returns an iterator to the beginning of the path that can be used to traverse the path
-        //! according to the following 
+        //! according to the following
         //! 1. Root name - (0 or 1)
         //! 2. Root directory - (0 or 1)
         //! 3. Filename - (0 or more)
@@ -623,7 +746,7 @@ namespace AZ::IO
     //! For example : path "a//b" equals  "a/b", the
     //! hash value of "a//b" would also equal the hash value of "a/b"
     template <typename StringType>
-    size_t hash_value(const BasicPath<StringType>& pathToHash);
+    constexpr size_t hash_value(const BasicPath<StringType>& pathToHash);
 
     // path.append
     template <typename StringType>
@@ -636,77 +759,9 @@ namespace AZ::IO
 
 namespace AZ
 {
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::PathView, "{A3F81F4A-F87C-4CD6-8328-7E9C9C83D131}");
     AZ_TYPE_INFO_SPECIALIZE(AZ::IO::Path, "{88E0A40F-3085-4CAB-8B11-EF5A2659C71A}");
-}
-
-namespace AZ::IO
-{
-    //! Path iterator that allows traversal of the path elements
-    //! Example iterations of path can be seen in the PathIteratorFixture in the PathTests.
-    //! For example the following path with a R"(\\server\share\users\abcdef\AppData\Local\Temp)", with a path separator of '\\',
-    //! Iterates the following elements {R"(\\server)", R"(\)", "share", "users", "abcdef", "AppData", "Local", "Temp"} },
-    template <typename PathType>
-    class PathIterator
-    {
-    public:
-        enum ParserState : uint8_t
-        {
-            Singular,
-            BeforeBegin,
-            InRootName,
-            InRootDir,
-            InFilenames,
-            AtEnd
-        };
-
-        friend PathType;
-
-        using iterator_category = AZStd::bidirectional_iterator_tag;
-        using value_type = PathType;
-        using difference_type = ptrdiff_t;
-        using pointer = const value_type*;
-        using reference = const value_type&;
-
-        using stashing_iterator_tag = void; // A reverse_iterator cannot be used with a stashing iterator
-        // As PathView::iterator stores the current path view within it, undefined behavior occurs
-        // when a reverse iterator is used
-
-        constexpr PathIterator() = default;
-        constexpr PathIterator(const PathIterator&) = default;
-
-        constexpr PathIterator& operator=(const PathIterator&) = default;
-
-        constexpr reference operator*() const;
-
-        constexpr pointer operator->() const;
-
-        constexpr PathIterator& operator++();
-
-        constexpr PathIterator operator++(int);
-
-        constexpr PathIterator& operator--();
-
-        constexpr PathIterator operator--(int);
-
-    private:
-        template <typename PathType1>
-        friend constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-        template <typename PathType1>
-        friend constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-
-        constexpr PathIterator& increment();
-        constexpr PathIterator& decrement();
-
-        value_type m_stashed_elem;
-        const value_type* m_path_ref{};
-        AZStd::string_view m_path_entry_view;
-        ParserState m_state{ Singular };
-    };
-
-    template <typename PathType1>
-    constexpr bool operator==(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
-    template <typename PathType1>
-    constexpr bool operator!=(const PathIterator<PathType1>& lhs, const PathIterator<PathType1>& rhs);
+    AZ_TYPE_INFO_SPECIALIZE(AZ::IO::FixedMaxPath, "{FA6CA49F-376A-417C-9767-DD50744DF203}");
 }
 
 #include <AzCore/IO/Path/Path.inl>

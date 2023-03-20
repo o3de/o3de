@@ -1,0 +1,15 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "propertyValues": {
+        "subsurfaceScattering.enableSubsurfaceScattering": true,
+        "subsurfaceScattering.influenceMap": "../../Textures/checker8x8_512.png",
+        "subsurfaceScattering.scatterColor": [
+            1.0,
+            0.20000000298023224,
+            0.07058823853731155,
+            1.0
+        ],
+        "subsurfaceScattering.scatterDistance": 40.0
+    }
+}

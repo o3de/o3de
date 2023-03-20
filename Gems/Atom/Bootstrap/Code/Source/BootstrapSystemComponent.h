@@ -8,10 +8,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/Scene/Scene.h>
 #include <AzFramework/Scene/SceneSystemInterface.h>
 #include <AzFramework/Windowing/NativeWindow.h>
@@ -29,7 +29,6 @@
 #include <Atom/Bootstrap/DefaultWindowBus.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
-
 namespace AZ
 {
     namespace Render
@@ -40,7 +39,6 @@ namespace AZ
                 : public Component
                 , public TickBus::Handler
                 , public AzFramework::WindowNotificationBus::Handler
-                , public AzFramework::AssetCatalogEventBus::Handler
                 , public AzFramework::WindowSystemNotificationBus::Handler
                 , public AzFramework::WindowSystemRequestBus::Handler
                 , public Render::Bootstrap::DefaultWindowBus::Handler
@@ -82,19 +80,26 @@ namespace AZ
                 void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
                 int GetTickOrder() override;
 
-                // AzFramework::AssetCatalogEventBus::Handler overrides ...
-                void OnCatalogLoaded(const char* catalogFile) override;
-
                 // AzFramework::WindowSystemNotificationBus::Handler overrides ...
                 void OnWindowCreated(AzFramework::NativeWindowHandle windowHandle) override;
 
             private:
+                void Initialize();
+
                 void CreateDefaultRenderPipeline();
                 void CreateDefaultScene();
                 void DestroyDefaultScene();
                 void RemoveRenderPipeline();
 
-                void CreateWindowContext();
+                void CreateViewportContext();
+
+                //! Load a render pipeline from disk and add it to the scene
+                RPI::RenderPipelinePtr LoadPipeline(
+                    const AZ::RPI::ScenePtr scene,
+                    const AZ::RPI::ViewportContextPtr viewportContext,
+                    AZStd::string_view xrPipelineName,
+                    AZ::RPI::ViewType viewType,
+                    AZ::RHI::MultisampleState& multisampleState);
 
                 AzFramework::Scene::RemovalEvent::Handler m_sceneRemovalHandler;
 
@@ -105,26 +110,25 @@ namespace AZ
                 RPI::ScenePtr m_defaultScene = nullptr;
                 AZStd::shared_ptr<AzFramework::Scene> m_defaultFrameworkScene = nullptr;
 
-                float m_simulateTime = 0;
-                float m_deltaTime = 0.016f;
-
-                bool m_isAssetCatalogLoaded = false;
+                bool m_isInitialized = false;
 
                 // The id of the render pipeline created by this component
                 RPI::RenderPipelineId m_renderPipelineId;
-
-                // Variables which are system component configuration
-                AZStd::string m_defaultPipelineAssetPath = "passes/MainRenderPipeline.azasset";
-
+                
                 // Save a reference to the image created by the BRDF pipeline so it doesn't get auto deleted if it's ref count goes to zero
                 // For example, if we delete all the passes, we won't have to recreate the BRDF pipeline to recreate the BRDF texture
                 Data::Instance<RPI::AttachmentImage> m_brdfTexture;
+
+                // Save a reference to the image used for variable rate shading in XR so it doesn't get auto deleted if it's ref count goes to zero
+                Data::Instance<RPI::AttachmentImage> m_xrVrsTexture;
 
                 bool m_createDefaultScene = true;
                 bool m_defaultSceneReady = false;
 
                 // Maps AZ scenes to RPI scene weak pointers to allow looking up a ScenePtr instead of a raw Scene*
                 AZStd::unordered_map<AzFramework::Scene*, AZStd::weak_ptr<AZ::RPI::Scene>> m_azSceneToAtomSceneMap;
+
+                AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
             };
         } // namespace Bootstrap
     } // namespace Render

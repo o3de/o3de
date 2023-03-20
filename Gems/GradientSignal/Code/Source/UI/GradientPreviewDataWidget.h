@@ -62,11 +62,11 @@ namespace GradientSignal
         : public AzToolsFramework::GenericPropertyHandler<GradientPreviewDataWidget>
     {
     public:
-        AZ_CLASS_ALLOCATOR(GradientPreviewDataWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GradientPreviewDataWidgetHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override;
         bool ReadValueIntoGUI(size_t index, GradientPreviewDataWidget* GUI, void* value, const AZ::Uuid& propertyType) override;
-        void ConsumeAttribute(GradientPreviewDataWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName);
+        void ConsumeAttribute(GradientPreviewDataWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         QWidget* CreateGUI(QWidget* pParent) override;
         void PreventRefresh(QWidget* widget, bool shouldPrevent) override;
 

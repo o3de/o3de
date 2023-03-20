@@ -35,19 +35,22 @@ namespace AZ
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value); // {value.x, value.x, value.x, value.x}
         }
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec2(Vec2::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec2 the last 2 elements could be garbage.
+            return Sse::ReplaceFourth(Sse::ReplaceThird(value, 0.0f), 0.0f); // {value.x, value.x, 0.0f, 0.0f}
         }
 
 
         AZ_MATH_INLINE Vec4::FloatType Vec4::FromVec3(Vec3::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec3 the last element could be garbage.
+            return Sse::ReplaceFourth(value, 0.0f); // {value.x, value.y, value.z, 0.0f}
         }
 
 
@@ -455,31 +458,32 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec4::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0xFFFF);
+            // Check the first four bits for Vector4
+            return Sse::CmpAllEq(arg1, arg2, 0b1111);
         }
 
 
         AZ_MATH_INLINE bool Vec4::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLt(arg1, arg2, 0xFFFF);
+            return Sse::CmpAllLt(arg1, arg2, 0b1111);
         }
 
 
         AZ_MATH_INLINE bool Vec4::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLtEq(arg1, arg2, 0xFFFF);
+            return Sse::CmpAllLtEq(arg1, arg2, 0b1111);
         }
 
 
         AZ_MATH_INLINE bool Vec4::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGt(arg1, arg2, 0xFFFF);
+            return Sse::CmpAllGt(arg1, arg2, 0b1111);
         }
 
 
         AZ_MATH_INLINE bool Vec4::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGtEq(arg1, arg2, 0xFFFF);
+            return Sse::CmpAllGtEq(arg1, arg2, 0b1111);
         }
 
 
@@ -521,7 +525,7 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec4::CmpAllEq(Int32ArgType arg1, Int32ArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0xFFFF);
+            return Sse::CmpAllEq(arg1, arg2, 0b1111);
         }
 
 

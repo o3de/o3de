@@ -42,19 +42,21 @@ namespace JsonSerializationTests
     struct InstanceWithoutDefaults
     {
         AZStd::unique_ptr<T> m_instance;
-        const char* m_json;
+        const char* m_jsonWithStrippedDefaults;
+        const char* m_jsonWithKeptDefaults;
 
-        InstanceWithoutDefaults(AZStd::unique_ptr<T>&& instance, const char* json)
+        InstanceWithoutDefaults(AZStd::unique_ptr<T>&& instance, const char* jsonWithStrippedDefaults, const char* jsonWithKeptDefaults)
             : m_instance(AZStd::move(instance))
-            , m_json(json)
+            , m_jsonWithStrippedDefaults(jsonWithStrippedDefaults)
+            , m_jsonWithKeptDefaults(jsonWithKeptDefaults)
         {
         }
     };
 
     template<typename T>
-    InstanceWithoutDefaults<T> MakeInstanceWithoutDefaults(AZStd::unique_ptr<T> instance, const char* json)
+    InstanceWithoutDefaults<T> MakeInstanceWithoutDefaults(AZStd::unique_ptr<T> instance, const char* jsonWithStrippedDefaults, const char* jsonWithKeptDefaults = "")
     {
-        return InstanceWithoutDefaults<T>(AZStd::move(instance), json);
+        return InstanceWithoutDefaults<T>(AZStd::move(instance), jsonWithStrippedDefaults, !AZStd::string_view(jsonWithKeptDefaults).empty() ? jsonWithKeptDefaults : jsonWithStrippedDefaults);
     }
 
     struct BaseClass
@@ -62,7 +64,7 @@ namespace JsonSerializationTests
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
 
-        AZ_CLASS_ALLOCATOR(BaseClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseClass, AZ::SystemAllocator);
         AZ_RTTI(BaseClass, "{E0A66EB6-1AC5-4C73-B1A7-6367A47EC026}");
 
         virtual ~BaseClass() = default;
@@ -70,6 +72,7 @@ namespace JsonSerializationTests
         virtual void add_ref();
         virtual void release();
 
+        virtual BaseClass* Clone() const;
         bool Equals(const BaseClass& rhs, bool) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context);
 
@@ -82,7 +85,7 @@ namespace JsonSerializationTests
         template<class T>
         friend struct AZStd::IntrusivePtrCountPolicy;
 
-        AZ_CLASS_ALLOCATOR(BaseClass2, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseClass2, AZ::SystemAllocator);
         AZ_RTTI(BaseClass2, "{F9D704C1-04AF-463C-B47A-02C28805AAEE}");
 
         virtual ~BaseClass2() = default;
@@ -90,6 +93,7 @@ namespace JsonSerializationTests
         virtual void add_ref();
         virtual void release();
 
+        virtual BaseClass2* Clone() const;
         bool Equals(const BaseClass2& rhs, bool) const;
         static void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context);
 

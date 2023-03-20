@@ -74,6 +74,9 @@ namespace AZ
                 /// The scope id used for all the contexts in this group (one context for each command list).
                 ScopeId m_scopeId;
 
+                /// The submit count for the scope
+                uint32_t m_submitCount = 0;
+
                 /// The ordered array of command lists in the group. This can be null if the user wishes to
                 /// assign command lists at context begin time.
                 CommandList* const * m_commandLists = nullptr;
@@ -98,10 +101,16 @@ namespace AZ
                 /// user wishes to fill in the command list at context creation time.
                 CommandList* m_commandList = nullptr;
 
-                /// An ordered list of scope ids in the group.
-                const ScopeId* m_scopeIds = nullptr;
+                struct ScopeEntry
+                {
+                    ScopeId m_scopeId;
+                    uint32_t m_submitCount = 0;
+                };
 
-                /// The number of scopes in the scope id array.
+                /// An ordered list of scope ids and submit counts in the group.
+                const ScopeEntry* m_scopeEntries = nullptr;
+
+                /// The number of scopes in the ScopeEntry array.
                 uint32_t m_scopeCount = 0;
             };
 

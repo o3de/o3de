@@ -14,17 +14,12 @@
 
 namespace AZ
 {
-    namespace RHI
-    {
-        struct CpuTimingStatistics;
-    }
-
     namespace DX12
     {
         class CommandQueueContext
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
 
             CommandQueueContext() = default;
 
@@ -49,10 +44,16 @@ namespace AZ
                 RHI::HardwareQueueClass hardwareQueueClass,
                 const ExecuteWorkRequest& request);
 
-            void UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const;
+            void UpdateCpuTimingStatistics() const;
             
             // Fences across all queues that are compiled by the frame graph compilation phase
             const FenceSet& GetCompiledFences();
+
+            // Get frame fences for the specified frame
+            const FenceSet& GetFrameFences(size_t frameIndex) const;
+
+            // Get the frame index of the last executed frame
+            size_t GetLastFrameIndex() const;
             
         private:
             void CalibrateClocks();
@@ -62,6 +63,7 @@ namespace AZ
             FenceSet m_compiledFences;
             AZStd::vector<FenceSet> m_frameFences;
             uint32_t m_currentFrameIndex = 0;
+            Device* m_device = nullptr;
         };
     }
 }

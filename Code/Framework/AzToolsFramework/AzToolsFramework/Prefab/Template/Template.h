@@ -28,7 +28,7 @@ namespace AzToolsFramework
         class Template
         {
         public:
-            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Template, AZ::SystemAllocator);
             AZ_RTTI(Template, "{F6B7DC7B-386A-42DD-BA8B-919A4D024D7C}");
 
             using Links = AZStd::unordered_set<LinkId>;
@@ -40,6 +40,8 @@ namespace AzToolsFramework
 
             Template(Template&& other) noexcept;
             Template& operator=(Template&& other) noexcept;
+
+            void GarbageCollect();
 
             virtual ~Template() noexcept = default;
 
@@ -63,6 +65,10 @@ namespace AzToolsFramework
             PrefabDomValueConstReference GetInstancesValue() const;
 
             const AZ::IO::Path& GetFilePath() const;
+            void SetFilePath(const AZ::IO::PathView& path);
+
+            // To tell if this Template was created from an product asset
+            bool IsProcedural() const;
 
         private:
             // Container for keeping links representing the Template's nested instances.
@@ -79,6 +85,9 @@ namespace AzToolsFramework
 
             // Flag to tell if this Template has changes that have yet to be saved to file.
             bool m_isDirty = false;
+
+            // Flag to tell if this Template was generated outside the Editor
+            mutable AZStd::optional<bool> m_isProcedural;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -1,6 +1,0 @@
-<download name="C4976195_RigidBodies_InitialLinearVelocity" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39212" md5="6faa347817a5b5404731a115d22fefbe"/>
- </files>
-</download>

@@ -21,12 +21,13 @@ namespace AZ
             : public RHI::RayTracingTlas
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingTlas, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingTlas> Create();
             
             // RHI::RayTracingTlas overrides...
-            virtual const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return nullptr; }
+            const RHI::Ptr<RHI::Buffer> GetTlasBuffer() const override { return nullptr; }
+            const RHI::Ptr<RHI::Buffer> GetTlasInstancesBuffer() const override { return nullptr; }
 
         private:
             RayTracingTlas() = default;

@@ -70,20 +70,23 @@ namespace AZ::Render
                 ->Event("SetEnableShadow", &AreaLightRequestBus::Events::SetEnableShadow)
                 ->Event("GetShadowBias", &AreaLightRequestBus::Events::GetShadowBias)
                 ->Event("SetShadowBias", &AreaLightRequestBus::Events::SetShadowBias)
+                ->Event("GetNormalShadowBias", &AreaLightRequestBus::Events::GetNormalShadowBias)
+                ->Event("SetNormalShadowBias", &AreaLightRequestBus::Events::SetNormalShadowBias)
                 ->Event("GetShadowmapMaxSize", &AreaLightRequestBus::Events::GetShadowmapMaxSize)
                 ->Event("SetShadowmapMaxSize", &AreaLightRequestBus::Events::SetShadowmapMaxSize)
                 ->Event("GetShadowFilterMethod", &AreaLightRequestBus::Events::GetShadowFilterMethod)
                 ->Event("SetShadowFilterMethod", &AreaLightRequestBus::Events::SetShadowFilterMethod)
-                ->Event("GetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::GetSofteningBoundaryWidthAngle)
-                ->Event("SetSofteningBoundaryWidthAngle", &AreaLightRequestBus::Events::SetSofteningBoundaryWidthAngle)
-                ->Event("GetPredictionSampleCount", &AreaLightRequestBus::Events::GetPredictionSampleCount)
-                ->Event("SetPredictionSampleCount", &AreaLightRequestBus::Events::SetPredictionSampleCount)
                 ->Event("GetFilteringSampleCount", &AreaLightRequestBus::Events::GetFilteringSampleCount)
                 ->Event("SetFilteringSampleCount", &AreaLightRequestBus::Events::SetFilteringSampleCount)
-                ->Event("GetPcfMethod", &AreaLightRequestBus::Events::GetPcfMethod)
-                ->Event("SetPcfMethod", &AreaLightRequestBus::Events::SetPcfMethod)
                 ->Event("GetEsmExponent", &AreaLightRequestBus::Events::GetEsmExponent)
                 ->Event("SetEsmExponent", &AreaLightRequestBus::Events::SetEsmExponent)
+                ->Event("GetShadowCachingMode", &AreaLightRequestBus::Events::GetShadowCachingMode)
+                ->Event("SetShadowCachingMode", &AreaLightRequestBus::Events::SetShadowCachingMode)
+
+                ->Event("GetAffectsGI", &AreaLightRequestBus::Events::GetAffectsGI)
+                ->Event("SetAffectsGI", &AreaLightRequestBus::Events::SetAffectsGI)
+                ->Event("GetAffectsGIFactor", &AreaLightRequestBus::Events::GetAffectsGIFactor)
+                ->Event("SetAffectsGIFactor", &AreaLightRequestBus::Events::SetAffectsGIFactor)
 
                 ->VirtualProperty("AttenuationRadius", "GetAttenuationRadius", "SetAttenuationRadius")
                 ->VirtualProperty("Color", "GetColor", "SetColor")
@@ -97,14 +100,15 @@ namespace AZ::Render
 
                 ->VirtualProperty("ShadowsEnabled", "GetEnableShadow", "SetEnableShadow")
                 ->VirtualProperty("ShadowBias", "GetShadowBias", "SetShadowBias")
+                ->VirtualProperty("NormalShadowBias", "GetNormalShadowBias", "SetNormalShadowBias")
                 ->VirtualProperty("ShadowmapMaxSize", "GetShadowmapMaxSize", "SetShadowmapMaxSize")
                 ->VirtualProperty("ShadowFilterMethod", "GetShadowFilterMethod", "SetShadowFilterMethod")
-                ->VirtualProperty("SofteningBoundaryWidthAngle", "GetSofteningBoundaryWidthAngle", "SetSofteningBoundaryWidthAngle")
-                ->VirtualProperty("PredictionSampleCount", "GetPredictionSampleCount", "SetPredictionSampleCount")
                 ->VirtualProperty("FilteringSampleCount", "GetFilteringSampleCount", "SetFilteringSampleCount")
-                ->VirtualProperty("PcfMethod", "GetPcfMethod", "SetPcfMethod")
-                ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent");
-            ;
+                ->VirtualProperty("EsmExponent", "GetEsmExponent", "SetEsmExponent")
+                ->VirtualProperty("ShadowCachingMode", "GetShadowCachingMode", "SetShadowCachingMode")
+
+                ->VirtualProperty("AffectsGI", "GetAffectsGI", "SetAffectsGI")
+                ->VirtualProperty("AffectsGIFactor", "GetAffectsGIFactor", "SetAffectsGIFactor");
         }
     }
 
@@ -158,12 +162,14 @@ namespace AZ::Render
     void AreaLightComponentController::SetConfiguration(const AreaLightComponentConfig& config)
     {
         m_configuration = config;
+
         VerifyLightTypeAndShapeComponent();
         ConfigurationChanged();
     }
 
     const AreaLightComponentConfig& AreaLightComponentController::GetConfiguration() const
     {
+        m_configuration.m_cacheShadows = m_configuration.m_shadowCachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange;
         return m_configuration;
     }
 
@@ -245,6 +251,10 @@ namespace AZ::Render
 
     void AreaLightComponentController::ConfigurationChanged()
     {
+        m_configuration.m_shadowCachingMode = m_configuration.m_cacheShadows
+            ? AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange
+            : AreaLightComponentConfig::ShadowCachingMode::NoCaching;
+
         ChromaChanged();
         IntensityChanged();
         AttenuationRadiusChanged();
@@ -255,6 +265,8 @@ namespace AZ::Render
         {
             m_lightShapeDelegate->SetLightEmitsBothDirections(m_configuration.m_lightEmitsBothDirections);
             m_lightShapeDelegate->SetUseFastApproximation(m_configuration.m_useFastApproximation);
+            m_lightShapeDelegate->SetAffectsGI(m_configuration.m_affectsGI);
+            m_lightShapeDelegate->SetAffectsGIFactor(m_configuration.m_affectsGIFactor);
         }
     }
 
@@ -266,6 +278,11 @@ namespace AZ::Render
         {
             m_lightShapeDelegate->SetPhotometricUnit(m_configuration.m_intensityMode);
             m_lightShapeDelegate->SetIntensity(m_configuration.m_intensity);
+        }
+
+        if (m_configuration.m_attenuationRadiusMode == LightAttenuationRadiusMode::Automatic)
+        {
+            AttenuationRadiusChanged();
         }
     }
 
@@ -311,13 +328,12 @@ namespace AZ::Render
             if (m_configuration.m_enableShadow)
             {
                 m_lightShapeDelegate->SetShadowBias(m_configuration.m_bias);
+                m_lightShapeDelegate->SetNormalShadowBias(m_configuration.m_normalShadowBias);
                 m_lightShapeDelegate->SetShadowmapMaxSize(m_configuration.m_shadowmapMaxSize);
                 m_lightShapeDelegate->SetShadowFilterMethod(m_configuration.m_shadowFilterMethod);
-                m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(m_configuration.m_boundaryWidthInDegrees);
-                m_lightShapeDelegate->SetPredictionSampleCount(m_configuration.m_predictionSampleCount);
                 m_lightShapeDelegate->SetFilteringSampleCount(m_configuration.m_filteringSampleCount);
-                m_lightShapeDelegate->SetPcfMethod(m_configuration.m_pcfMethod);
                 m_lightShapeDelegate->SetEsmExponent(m_configuration.m_esmExponent);
+                m_lightShapeDelegate->SetShadowCachingMode(m_configuration.m_shadowCachingMode);
             }
         }
     }
@@ -415,6 +431,11 @@ namespace AZ::Render
             m_configuration.m_intensity = m_lightShapeDelegate->SetPhotometricUnit(intensityMode);
         }
     }
+
+    float AreaLightComponentController::GetSurfaceArea() const
+    {
+        return m_lightShapeDelegate ? m_lightShapeDelegate->GetSurfaceArea() : 0.0f;
+    }
     
     bool AreaLightComponentController::GetEnableShutters() const
     {
@@ -486,6 +507,20 @@ namespace AZ::Render
         }
     }
 
+    void AreaLightComponentController::SetNormalShadowBias(float bias)
+    {
+        m_configuration.m_normalShadowBias = bias;
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetNormalShadowBias(bias);
+        }
+    }
+
+    float AreaLightComponentController::GetNormalShadowBias() const
+    {
+        return m_configuration.m_normalShadowBias;
+    }
+
     ShadowmapSize AreaLightComponentController::GetShadowmapMaxSize() const
     {
         return m_configuration.m_shadowmapMaxSize;
@@ -514,34 +549,6 @@ namespace AZ::Render
         }
     }
 
-    float AreaLightComponentController::GetSofteningBoundaryWidthAngle() const
-    {
-        return m_configuration.m_boundaryWidthInDegrees;
-    }
-
-    void AreaLightComponentController::SetSofteningBoundaryWidthAngle(float width)
-    {
-        m_configuration.m_boundaryWidthInDegrees = width;
-        if (m_lightShapeDelegate)
-        {
-            m_lightShapeDelegate->SetSofteningBoundaryWidthAngle(width);
-        }
-    }
-
-    uint32_t AreaLightComponentController::GetPredictionSampleCount() const
-    {
-        return m_configuration.m_predictionSampleCount;
-    }
-
-    void AreaLightComponentController::SetPredictionSampleCount(uint32_t count)
-    {
-        m_configuration.m_predictionSampleCount = count;
-        if (m_lightShapeDelegate)
-        {
-            m_lightShapeDelegate->SetPredictionSampleCount(count);
-        }
-    }
-
     uint32_t AreaLightComponentController::GetFilteringSampleCount() const
     {
         return m_configuration.m_filteringSampleCount;
@@ -549,7 +556,7 @@ namespace AZ::Render
 
     void AreaLightComponentController::SetFilteringSampleCount(uint32_t count)
     {
-        m_configuration.m_filteringSampleCount = count;
+        m_configuration.m_filteringSampleCount = static_cast<uint16_t>(count);
         if (m_lightShapeDelegate)
         {
             m_lightShapeDelegate->SetFilteringSampleCount(count);
@@ -563,23 +570,15 @@ namespace AZ::Render
     {
         Transform transform = Transform::CreateIdentity();
         TransformBus::EventResult(transform, m_entityId, &TransformBus::Events::GetWorldTM);
-        if (m_lightShapeDelegate)
-        {
-            m_lightShapeDelegate->DrawDebugDisplay(transform, m_configuration.m_color, debugDisplay, isSelected);
-        }
-    }
-    
-    PcfMethod AreaLightComponentController::GetPcfMethod() const
-    {
-        return m_configuration.m_pcfMethod;
-    }
 
-    void AreaLightComponentController::SetPcfMethod(PcfMethod method)
-    {
-        m_configuration.m_pcfMethod = method;
+        AZ::Vector3 translationOffset = AZ::Vector3::CreateZero();
+        LmbrCentral::ShapeComponentRequestsBus::EventResult(
+            translationOffset, m_entityId, &LmbrCentral::ShapeComponentRequests::GetTranslationOffset);
+
         if (m_lightShapeDelegate)
         {
-            m_lightShapeDelegate->SetPcfMethod(method);
+            m_lightShapeDelegate->DrawDebugDisplay(
+                transform * AZ::Transform::CreateTranslation(translationOffset), m_configuration.m_color, debugDisplay, isSelected);
         }
     }
 
@@ -595,6 +594,54 @@ namespace AZ::Render
         {
             m_lightShapeDelegate->SetEsmExponent(esmExponent);
         }
+    }
+
+    AreaLightComponentConfig::ShadowCachingMode AreaLightComponentController::GetShadowCachingMode() const
+    {
+        return m_configuration.m_shadowCachingMode;
+    }
+
+    void AreaLightComponentController::SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode)
+    {
+        m_configuration.m_shadowCachingMode = cachingMode;
+        m_configuration.m_cacheShadows = m_configuration.m_shadowCachingMode == AreaLightComponentConfig::ShadowCachingMode::UpdateOnChange;
+
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetShadowCachingMode(cachingMode);
+        }
+    }
+
+    bool AreaLightComponentController::GetAffectsGI() const
+    {
+        return m_configuration.m_affectsGI;
+    }
+
+    void AreaLightComponentController::SetAffectsGI(bool affectsGI) const
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetAffectsGI(affectsGI);
+        }
+    }
+
+    float AreaLightComponentController::GetAffectsGIFactor() const
+    {
+        return m_configuration.m_affectsGIFactor;
+    }
+
+    void AreaLightComponentController::SetAffectsGIFactor(float affectsGIFactor) const
+    {
+        if (m_lightShapeDelegate)
+        {
+            m_lightShapeDelegate->SetAffectsGIFactor(affectsGIFactor);
+        }
+    }
+
+    AZ::Aabb AreaLightComponentController::GetLocalVisualizationBounds() const
+    {
+        return m_lightShapeDelegate ? m_lightShapeDelegate->GetLocalVisualizationBounds()
+                                    : AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
     }
 
     void AreaLightComponentController::CreateLightShapeDelegate()

@@ -10,7 +10,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/Physics/MaterialBus.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/Utils.h>
 
@@ -20,7 +19,7 @@ namespace PhysX
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->ClassDeprecate("MeshColliderComponent", "{87A02711-8D7F-4966-87E1-77001EB6B29E}");
+            serializeContext->ClassDeprecate("MeshColliderComponent", AZ::Uuid("{87A02711-8D7F-4966-87E1-77001EB6B29E}"));
             serializeContext->Class<MeshColliderComponent, BaseColliderComponent>()
                 ->Version(1)
             ;
@@ -48,7 +47,7 @@ namespace PhysX
             m_shapeConfiguration = static_cast<Physics::PhysicsAssetShapeConfiguration*>(m_shapeConfigList[0].second.get());
             UpdateMeshAsset();
             MeshColliderComponentRequestsBus::Handler::BusConnect(GetEntityId());
-            BaseColliderComponent::Activate();
+            BaseColliderComponent::Activate(); // Calling Activate() of parent class will create the shapes.
         }
     }
 
@@ -68,20 +67,10 @@ namespace PhysX
             AZ::Data::AssetLoadBehavior::Default);
     }
 
-    Physics::MaterialId MeshColliderComponent::GetMaterialId() const
-    {
-        return m_colliderConfiguration->m_materialSelection.GetMaterialId();
-    }
-
     void MeshColliderComponent::SetMeshAsset(const AZ::Data::AssetId& id)
     {
         m_shapeConfiguration->m_asset.Create(id);
         UpdateMeshAsset();
-    }
-
-    void MeshColliderComponent::SetMaterialId(const Physics::MaterialId& id)
-    {
-        m_colliderConfiguration->m_materialSelection.SetMaterialId(id);
     }
 
     void MeshColliderComponent::UpdateMeshAsset()
@@ -90,6 +79,11 @@ namespace PhysX
         {
             AZ::Data::AssetBus::MultiHandler::BusConnect(m_shapeConfiguration->m_asset.GetId());
             m_shapeConfiguration->m_asset.QueueLoad();
+
+            // The asset loading must be completed because the shapes are required to be ready
+            // at activation time, so the rigid body can query them when OnEntityActivated
+            // event is called.
+            m_shapeConfiguration->m_asset.BlockUntilLoadComplete();
         }
     }
 
@@ -100,10 +94,7 @@ namespace PhysX
         {
             m_shapeConfiguration->m_asset = asset;
 
-            Physics::PhysicsMaterialRequestBus::Broadcast(
-                &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
-                *m_shapeConfiguration,
-                m_colliderConfiguration->m_materialSelection);
+            Utils::SetMaterialsFromPhysicsAssetShape(*m_shapeConfiguration, m_colliderConfiguration->m_materialSlots);
         }
     }
 
@@ -113,10 +104,7 @@ namespace PhysX
         {
             m_shapeConfiguration->m_asset = asset;
 
-            Physics::PhysicsMaterialRequestBus::Broadcast(
-                &Physics::PhysicsMaterialRequestBus::Events::UpdateMaterialSelectionFromPhysicsAsset,
-                *m_shapeConfiguration,
-                m_colliderConfiguration->m_materialSelection);
+            Utils::SetMaterialsFromPhysicsAssetShape(*m_shapeConfiguration, m_colliderConfiguration->m_materialSlots);
         }
     }
 

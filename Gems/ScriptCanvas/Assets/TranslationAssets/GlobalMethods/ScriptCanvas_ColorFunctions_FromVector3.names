@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_ColorFunctions_FromVector3",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Vector3",
+                "category": "Math/Color"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_ColorFunctions_FromVector3",
+                    "details": {
+                        "name": "From Vector3",
+                        "tooltip": "Returns a Color with R, G, B set to X, Y, Z values of RGB, respectively. A is set to 1.0."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Color"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

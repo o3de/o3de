@@ -6,10 +6,9 @@
 #
 #
 
-ly_get_list_relative_pal_filename(core_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-
-ly_get_list_relative_pal_filename(editor_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(editor_common_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/Common)
+o3de_pal_dir(core_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+o3de_pal_dir(editor_pal_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(editor_common_dir ${CMAKE_CURRENT_LIST_DIR}/Editor/Platform/Common)
 
 ly_add_target(
     NAME EMotionFXStaticLib STATIC
@@ -36,10 +35,12 @@ ly_add_target(
         PUBLIC
             AZ::AtomCore
             Gem::Atom_RPI.Public
+            Gem::AtomLyIntegration_CommonFeatures.Static
             Gem::LmbrCentral
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
+            EMFX_ANIMGRAPH_PROFILER_ENABLED
 )
 
 ly_add_target(
@@ -67,6 +68,7 @@ ly_add_target(
 # Clients and servers use the above EMotionFX module
 ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
 ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
+ly_create_alias(NAME EMotionFX.Unified NAMESPACE Gem TARGETS EMotionFX)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -81,8 +83,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             MysticQt/mysticqt_files.cmake
             EMotionFX/Tools/EMotionStudio/EMStudioSDK/emstudiosdk_files.cmake
             EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/standardplugins_files.cmake
-            EMotionFX/Tools/EMotionStudio/Plugins/RenderPlugins/renderplugins_files.cmake
-            EMotionFX/Rendering/rendering_files.cmake
             EMotionFX/Pipeline/SceneAPIExt/sceneapi_ext_files.cmake
             EMotionFX/Pipeline/RCExt/rc_ext_files.cmake
             EMotionFX/Pipeline/EMotionFXBuilder/emotionfxbuilder_files.cmake
@@ -101,13 +101,15 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 3rdParty::Qt::Widgets
                 AZ::AssetBuilderSDK
                 AZ::AzQtComponents
-                AZ::GFxFramework
                 AZ::SceneCore
                 AZ::SceneData
                 AZ::SceneUI
                 AZ::AzToolsFramework
                 Legacy::Editor.Headers
                 3rdParty::OpenGLInterface
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
+                Gem::GraphCanvasWidgets
         COMPILE_DEFINITIONS
             PUBLIC
                 EMFX_EMSTUDIOLYEMBEDDED
@@ -170,6 +172,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 Legacy::CryCommon
                 AZ::AzTest
                 AZ::AzFramework
+                AZ::AzTestShared
                 Gem::EMotionFX.Static
                 Gem::EMotionFX.Tests.Static
     )
@@ -202,7 +205,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Test
                     3rdParty::Qt::Concurrent
                     Gem::EMotionFX.Editor.Static
-                    Gem::EMotionFX.Tests.Static
         )
         ly_add_googletest(
             NAME Gem::EMotionFX.Editor.Tests

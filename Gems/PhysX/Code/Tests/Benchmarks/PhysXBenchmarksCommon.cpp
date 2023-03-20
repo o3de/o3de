@@ -9,19 +9,12 @@
 #ifdef HAVE_BENCHMARK
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
-#include <Material.h>
 #include <PhysXTestUtil.h>
 #include <PhysXTestCommon.h>
+#include <Scene/PhysXScene.h>
 
 namespace PhysX::Benchmarks
 {
-    PhysXBenchmarkEnvironment::~PhysXBenchmarkEnvironment()
-    {
-        //within our scene queries we use thread_locals, as a result the allocator needs to be around until the module is cleaned up.
-        //having the allocator cleaned up here rather then in TeardownInternal() allows it to be around long enough to clean up resource nicely.
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-
     void PhysXBenchmarkEnvironment::SetUpBenchmark()
     {
         PhysX::Environment::SetupInternal();
@@ -51,6 +44,7 @@ namespace PhysX::Benchmarks
     {
         m_defaultScene->StartSimulation(timeStep);
         m_defaultScene->FinishSimulation();
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
     }
 
     void PhysXBaseBenchmarkFixture::SetUpInternal()
@@ -61,14 +55,11 @@ namespace PhysX::Benchmarks
             m_defaultScene = physicsSystem->GetScene(m_testSceneHandle);
         }
 
-        m_dummyTerrainComponentDescriptor = DummyTestTerrainComponent::CreateDescriptor();
         Physics::DefaultWorldBus::Handler::BusConnect();
     }
 
     void PhysXBaseBenchmarkFixture::TearDownInternal()
     {
-        //cleanup materials in case some where created
-        PhysX::MaterialManagerRequestsBus::Broadcast(&PhysX::MaterialManagerRequestsBus::Events::ReleaseAllMaterials);
         Physics::DefaultWorldBus::Handler::BusDisconnect();
 
         //Clean up the test scene
@@ -80,9 +71,6 @@ namespace PhysX::Benchmarks
         m_testSceneHandle = AzPhysics::InvalidSceneHandle;
 
         TestUtils::ResetPhysXSystem();
-        
-        m_dummyTerrainComponentDescriptor->ReleaseDescriptor();
-        m_dummyTerrainComponentDescriptor = nullptr;
     }
 
     AzPhysics::SceneHandle PhysXBaseBenchmarkFixture::CreateDefaultTestScene()

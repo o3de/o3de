@@ -7,12 +7,15 @@
  */
 #pragma once
 
+// NOTE: We are careful to include platform headers *before* we include AzCore/Debug/Profiler.h to ensure that d3d12 symbols
+// are defined prior to the inclusion of the pix3 runtime.
+#include <RHI/DX12.h>
+
 #include <Atom/RHI/Fence.h>
 #include <Atom/RHI/Scope.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
-#include <RHI/DX12.h>
 
 namespace AZ
 {
@@ -46,7 +49,7 @@ namespace AZ
         class Fence final
         {
         public:
-            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Fence, AZ::SystemAllocator);
 
             RHI::ResultCode Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState);
 
@@ -109,7 +112,7 @@ namespace AZ
             : public RHI::Fence
         {
         public:
-            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FenceImpl, AZ::SystemAllocator);
 
             static RHI::Ptr<FenceImpl> Create();
 

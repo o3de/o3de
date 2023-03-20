@@ -7,11 +7,14 @@
  */
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/intrusive_ptr.h>
 
 #include <Atom/RHI.Reflect/Base.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace UnitTest
 {
@@ -59,6 +62,7 @@ namespace AZ
             static constexpr uint32_t Pass = 4;
             static constexpr uint32_t View = 5;
             static constexpr uint32_t Scene = 6;
+            static constexpr uint32_t Bindless = 7;
         };
     }
 }

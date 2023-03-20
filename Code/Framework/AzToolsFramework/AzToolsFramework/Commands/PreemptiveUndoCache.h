@@ -30,11 +30,11 @@ namespace AzToolsFramework
         : UndoSystem::UndoCacheInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(PreemptiveUndoCache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PreemptiveUndoCache, AZ::SystemAllocator);
 
         static PreemptiveUndoCache* Get();
         PreemptiveUndoCache();
-        ~PreemptiveUndoCache();
+        virtual ~PreemptiveUndoCache();
 
         void RegisterToUndoCacheInterface();
 

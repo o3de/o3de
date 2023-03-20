@@ -45,7 +45,7 @@ public:
     };
 
     AssetCatalogEntry() {}
-    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogEntry, AZ::SystemAllocator);
 
     bool operator<(const QStandardItem& other) const override;
 
@@ -63,7 +63,7 @@ class AssetCatalogModel
     Q_OBJECT
 
 public:
-    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetCatalogModel, AZ::SystemAllocator);
 
     AssetCatalogModel(QObject* parent = 0);
     ~AssetCatalogModel() override;
@@ -110,7 +110,7 @@ protected:
     void SetFilterRegExp(const AZStd::string& filterType, const QRegExp& regExp);
     void ClearFilterRegExp(const AZStd::string& filterType = AZStd::string());
 
-    AZ::Data::AssetType GetAssetType(QString filename) const;
+    AZ::Data::AssetType GetAssetType(const QString &filename) const;
     QStandardItem* GetPath(QString& path, bool createIfNeeded, QStandardItem* parent = nullptr);
 
     void ApplyFilter(QStandardItem* parent);

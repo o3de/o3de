@@ -110,7 +110,6 @@ namespace AssetBundler
     const char RestrictedDirectoryName[] = "restricted";
     const char PlatformsDirectoryName[] = "Platforms";
     const char GemsDirectoryName[] = "Gems";
-    const char GemsAssetsDirectoryName[] = "Assets";
     const char GemsSeedFileName[] = "seedList";
     const char EngineSeedFileName[] = "SeedAssetList";
 
@@ -352,12 +351,13 @@ namespace AssetBundler
             return true;
         }
 
+        AZ::IO::Path seedAbsolutePath{seedAbsoluteFilePath};
         for (const AzFramework::GemInfo& gemInfo : gemInfoList)
         {
             for (const AZ::IO::Path& gemAbsoluteSourcePath : gemInfo.m_absoluteSourcePaths)
             {
                 // We want to check the path before going through the effort of creating the default Seed List file map
-                if (!AzFramework::StringFunc::StartsWith(seedAbsoluteFilePath, gemAbsoluteSourcePath.Native()))
+                if (!seedAbsolutePath.IsRelativeTo(gemAbsoluteSourcePath.LexicallyNormal()))
                 {
                     continue;
                 }
@@ -378,7 +378,6 @@ namespace AssetBundler
 
     AzFramework::PlatformFlags GetEnabledPlatformFlags(
         AZStd::string_view engineRoot,
-        AZStd::string_view assetRoot,
         AZStd::string_view projectPath)
     {
         auto settingsRegistry = AZ::SettingsRegistry::Get();
@@ -388,7 +387,7 @@ namespace AssetBundler
             return AzFramework::PlatformFlags::Platform_NONE;
         }
 
-        auto configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(engineRoot, assetRoot, projectPath, true, true, settingsRegistry);
+        auto configFiles = AzToolsFramework::AssetUtils::GetConfigFiles(engineRoot, projectPath, true, true, settingsRegistry);
         auto enabledPlatformList = AzToolsFramework::AssetUtils::GetEnabledPlatforms(*settingsRegistry, configFiles);
         AzFramework::PlatformFlags platformFlags = AzFramework::PlatformFlags::Platform_NONE;
         for (const auto& enabledPlatform : enabledPlatformList)
@@ -685,8 +684,7 @@ namespace AssetBundler
 
     void ScopedTraceHandler::ClearErrors()
     {
-        m_errors.clear();
-        m_errors.swap(AZStd::vector<AZStd::string>());
+        m_errors = {};
     }
 
     AZ::Outcome<AzToolsFramework::AssetFileInfoListComparison::ComparisonType, AZStd::string> ParseComparisonType(

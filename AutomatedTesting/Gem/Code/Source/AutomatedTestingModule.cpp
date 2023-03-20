@@ -8,6 +8,7 @@
 
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Module/Module.h>
+#include <Source/AutoGen/AutoComponentTypes.h>
 
 #include <AutomatedTestingSystemComponent.h>
 
@@ -18,7 +19,7 @@ namespace AutomatedTesting
     {
     public:
         AZ_RTTI(AutomatedTestingModule, "{3D6F59F6-013F-46F8-A840-5C2C43FA6AFB}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AutomatedTestingModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AutomatedTestingModule, AZ::SystemAllocator);
 
         AutomatedTestingModule()
             : AZ::Module()
@@ -27,6 +28,8 @@ namespace AutomatedTesting
             m_descriptors.insert(m_descriptors.end(), {
                 AutomatedTestingSystemComponent::CreateDescriptor(),
             });
+
+            CreateComponentDescriptors(m_descriptors); //< Register multiplayer components
         }
 
         /**

@@ -68,7 +68,7 @@ namespace GraphCanvas
         ////
 
         // NodeNotifications
-        void OnNodeActivated();
+        void OnNodeActivated() override;
 
         void OnNodeWrapped(const AZ::EntityId& wrappingNode) override;
         void OnNodeUnwrapped(const AZ::EntityId& wrappingNode) override;
@@ -88,12 +88,12 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(GeneralNodeFrameGraphicsWidget, "{15200183-8316-4A7D-985E-5C3257CD2463}", NodeFrameGraphicsWidget);
-        AZ_CLASS_ALLOCATOR(GeneralNodeFrameGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeneralNodeFrameGraphicsWidget, AZ::SystemAllocator);
 
         // Do not allow Serialization of Graphics Ui classes
         static void Reflect(AZ::ReflectContext*) = delete;
 
-        GeneralNodeFrameGraphicsWidget(const AZ::EntityId& nodeVisual);
+        explicit GeneralNodeFrameGraphicsWidget(const AZ::EntityId& nodeVisual);
         ~GeneralNodeFrameGraphicsWidget() override = default;
 
         // SceneMemberUIRequestBus

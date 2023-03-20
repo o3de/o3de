@@ -11,11 +11,12 @@
 
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/any.h>
+#include <AzCore/std/containers/unordered_set.h>
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationAction.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationModelIds.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         ActionRunner that will manage the editor automation stack, and handle pushing the precondition elements into the queue.
@@ -99,7 +100,7 @@ namespace ScriptCanvasDeveloper
         static constexpr int EXIT_STATE_ID = (-1);
 
         AZ_TYPE_INFO(EditorAutomationState, "{B18A0531-E3C2-4209-8A9E-1B0195C28443}");
-        AZ_CLASS_ALLOCATOR(EditorAutomationState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAutomationState, AZ::SystemAllocator);
 
         virtual ~EditorAutomationState() = default;
 
@@ -188,6 +189,7 @@ namespace ScriptCanvasDeveloper
     class NamedAutomationState : public EditorAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(NamedAutomationState, AZ::SystemAllocator)
 
         AZ_TYPE_INFO(NamedAutomationState, "{62DD037C-D80F-4B1B-9F3E-9F05400ABA24}");
 
@@ -260,7 +262,7 @@ namespace ScriptCanvasDeveloper
         , public StateModel
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorAutomationTest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorAutomationTest, AZ::SystemAllocator);
         AZ_RTTI(EditorAutomationTest, "{C46081C5-E7E9-47C7-96D4-29E7D1C4D403}");
 
         ~EditorAutomationTest();

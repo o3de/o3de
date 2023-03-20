@@ -16,7 +16,7 @@ namespace AZ
 {
     using namespace UnitTest;
 
-    using StringFuncTest = AllocatorsFixture;
+    using StringFuncTest = LeakDetectionFixture;
 
     TEST_F(StringFuncTest, Equal_CaseSensitive_OnNonNullTerminatedStringView_Success)
     {
@@ -196,6 +196,19 @@ namespace AZ
         ASSERT_EQ(joinResult, expectedResult);
     }
 
+    TEST_F(StringFuncTest, Join_NonPathJoin_CanJoinRange)
+    {
+        AZStd::string result;
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, '/');
+        EXPECT_EQ("1/2/3/4/3", result);
+
+        result.clear();
+
+        // Try joining with a string literal instead of a char literal
+        AZ::StringFunc::Join(result, AZStd::initializer_list<const char*>{ "1", "2", "3", "4", "3" }, "/");
+        EXPECT_EQ("1/2/3/4/3", result);
+    }
+
     TEST_F(StringFuncTest, Tokenize_SingleDelimeter_Empty)
     {
         AZStd::string input = "";
@@ -363,7 +376,10 @@ namespace AZ
     {
         constexpr AZStd::array visitTokens = { "Hello", "World", "", "More", "", "", "Tokens" };
         size_t visitIndex{};
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto visitor = [&visitIndex, &visitTokens](AZStd::string_view token)
+        AZ_POP_DISABLE_WARNING
         {
             if (visitIndex > visitTokens.size())
             {
@@ -389,7 +405,10 @@ namespace AZ
     {
         constexpr AZStd::array visitTokens = { "Hello", "World", "", "More", "", "", "Tokens" };
         size_t visitIndex = visitTokens.size() - 1;
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         auto visitor = [&visitIndex, &visitTokens](AZStd::string_view token)
+        AZ_POP_DISABLE_WARNING
         {
             if (visitIndex > visitTokens.size())
             {
@@ -865,7 +884,7 @@ namespace AZ
     }
 
 
-    using StringFuncPathTest = AllocatorsFixture;
+    using StringFuncPathTest = LeakDetectionFixture;
 
     TEST_F(StringFuncPathTest, GetParentDir_InvokedOnAbsoluteDirectory_ReturnsSameDirectory)
     {
@@ -947,6 +966,34 @@ namespace AZ
 #endif
     }
 
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithoutDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_WithDot)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, ".xml");
+        EXPECT_STREQ("D:\\p4\\some.xml", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Empty)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, "");
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
+    TEST_F(StringFuncPathTest, ReplaceExtension_Null)
+    {
+        AZStd::string s = "D:\\p4\\some.file";
+        AZ::StringFunc::Path::ReplaceExtension(s, nullptr);
+        EXPECT_STREQ("D:\\p4\\some", s.c_str());
+    }
+
     class TestPathStringArgs
     {
     public:
@@ -966,7 +1013,7 @@ namespace AZ
     {
     public:
         StringPathFuncTest() = default;
-        virtual ~StringPathFuncTest() = default;
+        ~StringPathFuncTest() override = default;
     };
 
 
@@ -981,7 +1028,6 @@ namespace AZ
         EXPECT_TRUE(result);
         EXPECT_STREQ(input.c_str(), expected.c_str());
     }
-
 
 #if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
 

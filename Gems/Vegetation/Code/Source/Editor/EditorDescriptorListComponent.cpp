@@ -40,7 +40,7 @@ namespace Vegetation
     {
         if (m_configuration.m_descriptors.empty())
         {
-            m_configuration.m_descriptors.push_back();
+            m_configuration.m_descriptors.emplace_back();
             SetDirty();
         }
     }

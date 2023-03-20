@@ -19,10 +19,26 @@ namespace AZStd
     struct is_invocable_r : Internal::invocable_r<R, Fn, ArgTypes...>::type {};
 
     template <class Fn, class... ArgTypes>
+    struct is_nothrow_invocable
+        : bool_constant<noexcept(Internal::invocable<Fn, ArgTypes...>::value)>
+    {};
+
+    template <class R, class Fn, class... ArgTypes>
+    struct is_nothrow_invocable_r
+        : bool_constant<noexcept(Internal::invocable_r<R, Fn, ArgTypes...>::value)>
+    {};
+
+    template <class Fn, class... ArgTypes>
     constexpr bool is_invocable_v = is_invocable<Fn, ArgTypes...>::value;
 
     template <class R, class Fn, class ...ArgTypes>
     constexpr bool is_invocable_r_v = is_invocable_r<R, Fn, ArgTypes...>::value;
+
+    template <class Fn, class... ArgTypes>
+    constexpr bool is_nothrow_invocable_v = is_nothrow_invocable<Fn, ArgTypes...>::value;
+
+    template <class R, class Fn, class ...ArgTypes>
+    constexpr bool is_nothrow_invocable_r_v = is_nothrow_invocable_r<R, Fn, ArgTypes...>::value;
 
     template<class Fn, class... ArgTypes>
     struct invoke_result
@@ -37,4 +53,12 @@ namespace AZStd
     {
         return Internal::INVOKE(Internal::InvokeTraits::forward<F>(f), Internal::InvokeTraits::forward<Args>(args)...);
     }
+
+    // models the invocable concept
+    template <class F, class... Args>
+    /*concept*/ constexpr bool invocable = is_invocable_v<F, Args...>;
+
+    // models the regular_invocable concept
+    template <class F, class... Args>
+    /*concept*/ constexpr bool regular_invocable = invocable<F, Args...>;
 }

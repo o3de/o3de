@@ -10,7 +10,6 @@
 #include "VariablePropertyType.h"
 
 #include "Variable.h"
-#include "UIEnumsDatabase.h"
 #include "IEditor.h"
 
 namespace Prop
@@ -37,17 +36,12 @@ namespace Prop
         { IVariable::DT_CURVE | IVariable::DT_PERCENT, "FloatCurve", ePropertyFloatCurve, 13 },
         { IVariable::DT_CURVE | IVariable::DT_COLOR, "ColorCurve", ePropertyColorCurve, 1 },
         { IVariable::DT_ANGLE, "Angle", ePropertyAngle, 0 },
-        { IVariable::DT_FILE, "File", ePropertyFile, 7 },
         { IVariable::DT_TEXTURE, "Texture", ePropertyTexture, 4 },
-        { IVariable::DT_ANIMATION, "Animation", ePropertyAnimation, -1 },
         { IVariable::DT_MOTION, "Motion", ePropertyMotion, -1 },
-        { IVariable::DT_OBJECT, "Model", ePropertyModel, 5 },
         { IVariable::DT_SIMPLE, "Selection", ePropertySelection, -1 },
         { IVariable::DT_SIMPLE, "List", ePropertyList, -1 },
         { IVariable::DT_SHADER, "Shader", ePropertyShader, 9 },
-        { IVariable::DT_DEPRECATED0, "DEPRECATED", ePropertyDeprecated2, -1 },
         { IVariable::DT_EQUIP, "Equip", ePropertyEquip, 11 },
-        { IVariable::DT_REVERBPRESET, "ReverbPreset", ePropertyReverbPreset, 11 },
         { IVariable::DT_LOCAL_STRING, "LocalString", ePropertyLocalString, 3 },
         { IVariable::DT_SEQUENCE, "Sequence", ePropertySequence, -1 },
         { IVariable::DT_MISSIONOBJ, "Mission Objective", ePropertyMissionObj, -1 },
@@ -55,7 +49,6 @@ namespace Prop
         { IVariable::DT_SEQUENCE_ID, "SequenceId", ePropertySequenceId, -1 },
         { IVariable::DT_LIGHT_ANIMATION, "LightAnimation", ePropertyLightAnimation, -1 },
         { IVariable::DT_PARTICLE_EFFECT, "ParticleEffect", ePropertyParticleName, 3 },
-        { IVariable::DT_GEOM_CACHE, "Geometry Cache", ePropertyGeomCache, 5 },
         { IVariable::DT_AUDIO_TRIGGER, "Audio Trigger", ePropertyAudioTrigger, 6 },
         { IVariable::DT_AUDIO_SWITCH, "Audio Switch", ePropertyAudioSwitch, 6 },
         { IVariable::DT_AUDIO_SWITCH_STATE, "Audio Switch", ePropertyAudioSwitchState, 6 },
@@ -78,7 +71,6 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(nullptr)
     {
     }
 
@@ -92,7 +84,6 @@ namespace Prop
         , m_bHardMin(false)
         , m_bHardMax(false)
         , m_valueMultiplier(1)
-        , m_pEnumDBItem(nullptr)
     {
         if (!pVar)
         {
@@ -166,18 +157,13 @@ namespace Prop
             m_rangeMin = max(-360.0f, m_rangeMin);
             m_rangeMax = min(360.0f, m_rangeMax);
         }
-        else if (type == IVariable::DT_UIENUM)
-        {
-            m_pEnumDBItem = GetIEditor()->GetUIEnumsDatabase()->FindEnum(m_name);
-        }
-
 
         const bool useExplicitStep = (pVar->GetFlags() & IVariable::UI_EXPLICIT_STEP);
         if (!useExplicitStep)
         {
             // Limit step size to 1000.
             int nPrec = max(3 - int(log(m_rangeMax - m_rangeMin) / log(10.f)), 0);
-            m_step = max(m_step, powf(10.f, -nPrec));
+            m_step = max<float>(m_step, powf(10.f, static_cast<float>(-nPrec)));
         }
     }
 
@@ -300,32 +286,5 @@ namespace Prop
         }
 
         return -1;
-    }
-
-    const char* GetPropertyTypeToResourceType(PropertyType type)
-    {
-        // The strings below are names used together with
-        // REGISTER_RESOURCE_SELECTOR. See IResourceSelector.h.
-        switch (type)
-        {
-        case ePropertyModel:
-            return "Model";
-        case ePropertyGeomCache:
-            return "GeomCache";
-        case ePropertyAudioTrigger:
-            return "AudioTrigger";
-        case ePropertyAudioSwitch:
-            return "AudioSwitch";
-        case ePropertyAudioSwitchState:
-            return "AudioSwitchState";
-        case ePropertyAudioRTPC:
-            return "AudioRTPC";
-        case ePropertyAudioEnvironment:
-            return "AudioEnvironment";
-        case ePropertyAudioPreloadRequest:
-            return "AudioPreloadRequest";
-        default:
-            return nullptr;
-        }
     }
 }

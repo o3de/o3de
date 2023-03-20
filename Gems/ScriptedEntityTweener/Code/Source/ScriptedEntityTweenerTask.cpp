@@ -15,7 +15,7 @@ namespace ScriptedEntityTweener
     const AZStd::any ScriptedEntityTweenerTask::QueuedSubtaskInfo::m_emptyInitialValue;
 
     const float AnimationProperties::UninitializedParamFloat = FLT_MIN;
-    const unsigned int AnimationProperties::InvalidCallbackId = 0;
+    const int AnimationProperties::InvalidCallbackId = 0;
     const unsigned int AnimationProperties::InvalidTimelineId = 0;
 
     ScriptedEntityTweenerTask::ScriptedEntityTweenerTask(AZ::EntityId id)

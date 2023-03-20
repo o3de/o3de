@@ -1,5 +1,5 @@
 {
-    "Source" : "DepthOfFieldPrepare",
+    "Source" : "DepthOfFieldPrepare.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

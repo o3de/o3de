@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MorphSetupInstance, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MorphSetupInstance, DeformerAllocator)
 
 
     // default constructor
@@ -61,41 +61,35 @@ namespace EMotionFX
         }
 
         // allocate the number of morph targets
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        mMorphTargets.resize(numMorphTargets);
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        m_morphTargets.resize(numMorphTargets);
 
         // update the ID values
         for (uint32 i = 0; i < numMorphTargets; ++i)
         {
-            mMorphTargets[i].SetID(morphSetup->GetMorphTarget(i)->GetID());
+            m_morphTargets[i].SetID(morphSetup->GetMorphTarget(i)->GetID());
         }
     }
 
 
     // try to locate the morph target by ID
-    uint32 MorphSetupInstance::FindMorphTargetIndexByID(uint32 id) const
+    size_t MorphSetupInstance::FindMorphTargetIndexByID(uint32 id) const
     {
         // try to locate the morph target with the given ID
-        const uint32 numTargets = mMorphTargets.size();
-        for (uint32 i = 0; i < numTargets; ++i)
+        const auto foundElement = AZStd::find_if(m_morphTargets.begin(), m_morphTargets.end(), [id](const MorphTarget& morphTarget)
         {
-            if (mMorphTargets[i].GetID() == id)
-            {
-                return i;
-            }
-        }
-
-        // there is no such morph target with the given ID
-        return MCORE_INVALIDINDEX32;
+            return morphTarget.GetID() == id;
+        });
+        return foundElement != m_morphTargets.end() ? AZStd::distance(m_morphTargets.begin(), foundElement) : InvalidIndex;
     }
 
 
     MorphSetupInstance::MorphTarget* MorphSetupInstance::FindMorphTargetByID(uint32 id)
     {
-        const uint32 index = FindMorphTargetIndexByID(id);
-        if (index != MCORE_INVALIDINDEX32)
+        const size_t index = FindMorphTargetIndexByID(id);
+        if (index != InvalidIndex)
         {
-            return &mMorphTargets[index];
+            return &m_morphTargets[index];
         }
         else
         {

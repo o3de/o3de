@@ -10,20 +10,18 @@
 
 // Component includes
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Serialization/Json/JsonSystemComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzCore/Slice/SliceMetadataInfoComponent.h>
-#include <AzCore/Statistics/StatisticalProfilerProxySystemComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <AzCore/Time/TimeSystemComponent.h>
 #include <AzCore/Console/LoggerSystemComponent.h>
 #include <AzCore/EBus/EventSchedulerSystemComponent.h>
+#include <AzCore/Task/TaskGraphSystemComponent.h>
+#include <AzCore/Statistics/StatisticalProfilerProxySystemComponent.h>
 
 namespace AZ
 {
@@ -31,23 +29,22 @@ namespace AZ
         : AZ::Module()
     {
         m_descriptors.insert(m_descriptors.end(), {
-            MemoryComponent::CreateDescriptor(),
             StreamerComponent::CreateDescriptor(),
             JobManagerComponent::CreateDescriptor(),
             JsonSystemComponent::CreateDescriptor(),
             AssetManagerComponent::CreateDescriptor(),
             UserSettingsComponent::CreateDescriptor(),
-            Debug::FrameProfilerComponent::CreateDescriptor(),
             SliceComponent::CreateDescriptor(),
             SliceSystemComponent::CreateDescriptor(),
             SliceMetadataInfoComponent::CreateDescriptor(),
-            TimeSystemComponent::CreateDescriptor(),
             LoggerSystemComponent::CreateDescriptor(),
             EventSchedulerSystemComponent::CreateDescriptor(),
+            TaskGraphSystemComponent::CreateDescriptor(),
 
 #if !defined(_RELEASE)
             Statistics::StatisticalProfilerProxySystemComponent::CreateDescriptor(),
-#endif // #if !defined(_RELEASE)
+#endif
+
 #if !defined(AZCORE_EXCLUDE_LUA)
             ScriptSystemComponent::CreateDescriptor(),
 #endif // #if !defined(AZCORE_EXCLUDE_LUA)
@@ -58,13 +55,13 @@ namespace AZ
     {
         return AZ::ComponentTypeList
         {
-            azrtti_typeid<TimeSystemComponent>(),
             azrtti_typeid<LoggerSystemComponent>(),
             azrtti_typeid<EventSchedulerSystemComponent>(),
+            azrtti_typeid<TaskGraphSystemComponent>(),
 
 #if !defined(_RELEASE)
-            azrtti_typeid<AZ::Statistics::StatisticalProfilerProxySystemComponent>(),
-#endif // #if !defined(_RELEASE)
+            azrtti_typeid<Statistics::StatisticalProfilerProxySystemComponent>(),
+#endif
         };
     }
 }

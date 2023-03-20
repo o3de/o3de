@@ -68,7 +68,7 @@ namespace GraphCanvas
             : public QGraphicsWidget
         {
         public:
-            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeLayout, AZ::SystemAllocator);
             WrappedNodeLayout(WrapperNodeLayoutComponent& wrapperLayoutComponent);
             ~WrappedNodeLayout();
             
@@ -96,7 +96,7 @@ namespace GraphCanvas
                 HasElements,
             };
 
-            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(WrappedNodeActionGraphicsWidget, AZ::SystemAllocator);
             WrappedNodeActionGraphicsWidget(WrapperNodeLayoutComponent& wrapperLayoutComponent);
 
             void OnAddedToScene();
@@ -155,9 +155,9 @@ namespace GraphCanvas
             required.push_back(AZ_CRC("GraphCanvas_StyledGraphicItemService", 0xeae4cdf4));
         }
 
-        void Init();
-        void Activate();
-        void Deactivate();
+        void Init() override;
+        void Activate() override;
+        void Deactivate() override;
         ////
         
         // WrapperNodeRequestBus

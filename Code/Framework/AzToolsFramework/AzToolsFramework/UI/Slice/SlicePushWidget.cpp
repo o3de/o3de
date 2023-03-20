@@ -909,7 +909,8 @@ namespace AzToolsFramework
     {
         // Slice has changed underneath us, transaction invalidated
         AZStd::string sliceAssetPath;
-        EBUS_EVENT_RESULT(sliceAssetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            sliceAssetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
 
         QMessageBox::warning(this, QStringLiteral("Push to Slice Aborting"), 
             QString("Slice asset changed on disk during push configuration, transaction canceled.\r\n\r\nAsset:\r\n%1").arg(sliceAssetPath.c_str()), 
@@ -1033,7 +1034,7 @@ namespace AzToolsFramework
 
         if (!m_serializeContext)
         {
-            EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         }
 
         PopulateFieldTree(entities);
@@ -1053,7 +1054,8 @@ namespace AzToolsFramework
                     item->m_selectedAsset = validSliceAssets.back().GetId();
 
                     AZStd::string sliceAssetPath;
-                    EBUS_EVENT_RESULT(sliceAssetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, item->m_selectedAsset);
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        sliceAssetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, item->m_selectedAsset);
 
                     SetFieldIcon(item);
 
@@ -1201,8 +1203,6 @@ namespace AzToolsFramework
                     .arg((item->parent() == nullptr) ? item->m_entity->GetName().c_str() : GetNodeDisplayName(*item->m_node).c_str()));
             }
 
-            SliceTargetTreeItem* parent = nullptr;
-
             AZStd::vector<SliceAssetPtr> validSliceAssets = GetValidTargetAssetsForField(*item);
 
             // For the selected item populate the tree of all valid slice targets.
@@ -1213,7 +1213,8 @@ namespace AzToolsFramework
 
                 AZStd::string assetPath;
                 AZStd::string itemText;
-                EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, sliceAssetId);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, sliceAssetId);
                 AzFramework::StringFunc::Path::GetFullFileName(assetPath.c_str(), itemText);
                 if (itemText.empty())
                 {
@@ -1274,7 +1275,6 @@ namespace AzToolsFramework
                     selectButton->setChecked(true);
                 }
 
-                parent = sliceItem;
                 ++level;
             }
         }
@@ -1605,7 +1605,8 @@ namespace AzToolsFramework
                     item->m_selectedAsset = assetId;
 
                     AZStd::string assetPath;
-                    EBUS_EVENT_RESULT(assetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, assetId);
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        assetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, assetId);
 
                     item->setText(1, assetPath.c_str());
 
@@ -1867,7 +1868,7 @@ namespace AzToolsFramework
         for (const AZ::EntityId& entityId : processEntityIds)
         {
             AZ::Entity* entity = nullptr;
-            EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
 
             if (entity)
             {
@@ -2525,11 +2526,11 @@ namespace AzToolsFramework
     {
         // This is an approximate measurement of how much this slice proliferates within the currently-loaded level.
         // Down the line we'll actually query the asset DB's dependency tree, summing up instances.
-
+        AZ_UNUSED(levelSlice); // Prevent unused warning in release builds
         AZ_Warning("SlicePush", levelSlice, "SlicePushWidget::CalculateReferenceCount could not find root slice, displayed counts will be inaccurate!");
         size_t instanceCount = 0;
         AZ::Data::AssetBus::EnumerateHandlersId(assetId,
-            [&instanceCount, assetId, levelSlice] (AZ::Data::AssetEvents* handler) -> bool
+            [&instanceCount, assetId] (AZ::Data::AssetEvents* handler) -> bool
             {
                 AZ::SliceComponent* component = azrtti_cast<AZ::SliceComponent*>(handler);
                 if (component)
@@ -2727,7 +2728,8 @@ namespace AzToolsFramework
             {
                 // Unsuccessful commit
                 AZStd::string sliceAssetPath;
-                EBUS_EVENT_RESULT(sliceAssetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, transactionPair.first);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    sliceAssetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, transactionPair.first);
                 if (sliceAssetPath.empty())
                 {
                     sliceAssetPath = transactionPair.first.ToString<AZStd::string>();
@@ -2794,7 +2796,8 @@ namespace AzToolsFramework
                     }
 
                     AZStd::string sliceAssetPath;
-                    EBUS_EVENT_RESULT(sliceAssetPath, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
+                    AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                        sliceAssetPath, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
 
                     if (sliceAssetPath.empty())
                     {
@@ -2808,7 +2811,10 @@ namespace AzToolsFramework
                     assets[asset.GetId()] = asset;
 
                     AZStd::string assetFullPath;
-                    EBUS_EVENT(AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, sliceAssetPath, assetFullPath);
+                    AzToolsFramework::AssetSystemRequestBus::Broadcast(
+                        &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                        sliceAssetPath,
+                        assetFullPath);
                     if (fileIO->IsReadOnly(assetFullPath.c_str()))
                     {
                         // Issue checkout order for each affected slice.
@@ -2888,8 +2894,7 @@ namespace AzToolsFramework
     //=========================================================================
     void SlicePushWidget::AddStatusMessage(StatusMessageType messageType, const QString& messageText)
     {
-        m_statusMessages.push_back();
-        AzToolsFramework::SlicePushWidget::StatusMessage& newMessage = m_statusMessages.back();
+        AzToolsFramework::SlicePushWidget::StatusMessage& newMessage = m_statusMessages.emplace_back();
         newMessage.m_type = messageType;
         newMessage.m_text = messageText;
     }

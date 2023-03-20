@@ -17,7 +17,6 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/ProductThumbnail.h>
 #include <AzToolsFramework/AssetBrowser/Thumbnails/SourceThumbnail.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 #include <ImageLoader/ImageLoaders.h>
 #include <Processing/ImageConvert.h>
 #include <Processing/ImageToProcess.h>
@@ -40,7 +39,6 @@ namespace ImageProcessingAtom
                 {
                     ec->Class<ImageThumbnailSystemComponent>("ImageThumbnailSystemComponent", "System component for image thumbnails.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
                 }
             }
@@ -84,18 +82,15 @@ namespace ImageProcessingAtom
         {
             using namespace AzToolsFramework::Thumbnailer;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ImageThumbnailCache),
-                ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(&ThumbnailerRequests::RegisterThumbnailProvider, MAKE_TCACHE(Thumbnails::ImageThumbnailCache));
         }
 
         void ImageThumbnailSystemComponent::TeardownThumbnails()
         {
             using namespace AzToolsFramework::Thumbnailer;
 
-            ThumbnailerRequestsBus::Broadcast(
-                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ImageThumbnailCache::ProviderName,
-                ThumbnailContext::DefaultContext);
+            ThumbnailerRequestBus::Broadcast(
+                &ThumbnailerRequests::UnregisterThumbnailProvider, Thumbnails::ImageThumbnailCache::ProviderName);
         }
 
         void ImageThumbnailSystemComponent::OnApplicationAboutToStop()
@@ -180,7 +175,7 @@ namespace ImageProcessingAtom
                 // Dispatch event on main thread
                 AZ::SystemTickBus::QueueFunction(
                 [
-                    thumbnailKey, thumbnailSize,
+                    thumbnailKey,
                     pixmap = QPixmap::fromImage(image.scaled(QSize(thumbnailSize, thumbnailSize), Qt::KeepAspectRatio, Qt::SmoothTransformation))
                 ]() mutable
                 {

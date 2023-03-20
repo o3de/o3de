@@ -93,6 +93,8 @@ namespace AssetProcessor
             "    SubID          INTEGER NOT NULL, "
             "    AssetType      BLOB NOT NULL, "
             "    LegacyGuid     BLOB NOT NULL, "
+            "    Hash           INTEGER NOT NULL, "
+            "    Flags          INTEGER NOT NULL DEFAULT 1, "
             "    FOREIGN KEY (JobPK) REFERENCES "
             "       Jobs(JobID) ON DELETE CASCADE);";
 
@@ -114,8 +116,9 @@ namespace AssetProcessor
             "CREATE TABLE IF NOT EXISTS SourceDependency("
             "    SourceDependencyID            INTEGER PRIMARY KEY AUTOINCREMENT, "
             "    BuilderGuid                   BLOB NOT NULL, "
-            "    Source                        TEXT NOT NULL collate nocase, "
+            "    SourceGuid                    BLOB NOT NULL, "
             "    DependsOnSource               TEXT NOT NULL collate nocase, "
+            "    SubIds                        TEXT NOT NULL collate nocase, "
             "    TypeOfDependency              INTEGER NOT NULL DEFAULT 0,"
             "    FromAssetId                   INTEGER NOT NULL DEFAULT 0 "
             "); ";
@@ -163,6 +166,14 @@ namespace AssetProcessor
             "    FOREIGN KEY (ScanFolderPK) REFERENCES "
             "       ScanFolders(ScanFolderID) ON DELETE CASCADE);";
 
+        static const char* CREATE_STATS_TABLE = "AssetProcessor::CreateStatsTable";
+        static const char* CREATE_STATS_TABLE_STATEMENT =
+            "CREATE TABLE IF NOT EXISTS Stats( "
+            "    StatName       TEXT PRIMARY KEY collate nocase, "
+            "    StatValue      INTEGER NOT NULL, "
+            "    LastLogTime    INTEGER NOT NULL "
+            ");";
+
         //////////////////////////////////////////////////////////////////////////
         //indices
         static const char* CREATEINDEX_DEPENDSONSOURCE_SOURCEDEPENDENCY = "AssetProcesser::CreateIndexDependsOnSource_SourceDependency";
@@ -170,16 +181,10 @@ namespace AssetProcessor
             "CREATE INDEX IF NOT EXISTS DependsOnSource_SourceDependency ON SourceDependency (DependsOnSource);";
         static const char* CREATEINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::CreateIndexBuilderGuid_Source_SourceDependency";
         static const char* CREATEINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
-            "CREATE INDEX IF NOT EXISTS BuilderGuid_Source_SourceDependency ON SourceDependency (BuilderGuid, Source);";
+            "CREATE INDEX IF NOT EXISTS BuilderGuid_Source_SourceDependency ON SourceDependency (BuilderGuid, SourceGuid);";
         static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY = "AssetProcessor::CreateIndexTypeOfDependency_SourceDependency";
-        static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY_STATEMENT = 
+        static const char* CREATEINDEX_TYPEOFDEPENDENCY_SOURCEDEPENDENCY_STATEMENT =
             "CREATE INDEX IF NOT EXISTS TypeOfDependency_SourceDependency ON SourceDependency (TypeOfDependency);";
-        
-        static const char* CREATEINDEX_SCANFOLDERS_SOURCES = "AssetProcesser::CreateIndexScanFoldersSources";
-        static const char* CREATEINDEX_SCANFOLDERS_SOURCES_STATEMENT =
-            "CREATE INDEX IF NOT EXISTS ScanFolders_Sources ON Sources (ScanFolderPK);";
-        static const char* DROPINDEX_SCANFOLDERS_SOURCES_STATEMENT =
-            "DROP INDEX IF EXISTS ScanFolders_Sources_idx;";
 
         static const char* CREATEINDEX_SCANFOLDERS_SOURCES_SCANFOLDER = "AssetProcesser::CreateIndexScanFoldersSourcesScanFolder";
         static const char* CREATEINDEX_SCANFOLDERS_SOURCES_SCANFOLDER_STATEMENT =
@@ -188,20 +193,14 @@ namespace AssetProcessor
         static const char* CREATEINDEX_SOURCES_JOBS = "AssetProcesser::CreateIndexSourcesJobs";
         static const char* CREATEINDEX_SOURCES_JOBS_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Sources_Jobs ON Jobs (SourcePK);";
-        static const char* DROPINDEX_SOURCES_JOBS_STATEMENT =
-            "DROP INDEX IF EXISTS Sources_Jobs_idx;";
 
         static const char* CREATEINDEX_JOBS_PRODUCTS = "AssetProcesser::CreateIndexJobsProducts";
         static const char* CREATEINDEX_JOBS_PRODUCTS_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Jobs_Products ON Products (JobPK);";
-        static const char* DROPINDEX_JOBS_PRODUCTS_STATEMENT =
-            "DROP INDEX IF EXISTS Jobs_Products_idx;";
 
         static const char* CREATEINDEX_SOURCE_NAME = "AssetProcessor::CreateIndexSourceName";
         static const char* CREATEINDEX_SOURCE_NAME_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Sources_SourceName ON Sources (SourceName);";
-        static const char* DROPINDEX_SOURCE_NAME_STATEMENT =
-            "DROP INDEX IF EXISTS Sources_SourceName_idx;";
 
         static const char* CREATEINDEX_SOURCE_GUID = "AssetProcessor::CreateIndexSourceGuid";
         static const char* CREATEINDEX_SOURCE_GUID_STATEMENT =
@@ -210,8 +209,6 @@ namespace AssetProcessor
         static const char* CREATEINDEX_PRODUCT_NAME = "AssetProcessor::CreateIndexProductName";
         static const char* CREATEINDEX_PRODUCT_NAME_STATEMENT =
             "CREATE INDEX IF NOT EXISTS Products_ProductName ON Products (ProductName);";
-        static const char* DROPINDEX_PRODUCT_NAME_STATEMENT =
-            "DROP INDEX IF EXISTS Products_ProductName_idx;";
 
         static const char* CREATEINDEX_PRODUCT_SUBID = "AssetProcessor::CreateIndexProductSubID";
         static const char* CREATEINDEX_PRODUCT_SUBID_STATEMENT =
@@ -398,6 +395,18 @@ namespace AssetProcessor
             SqlParam<AZ::s64>(":jobid")
         );
 
+        static const char* UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID = "AssetProcessor::SetJobFingerprintsBySourceID";
+        static const char* UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID_STATEMENT =
+            "UPDATE Jobs SET "
+            "Fingerprint = :fingerprint "
+            "WHERE SourcePK = :sourceid;";
+        static const auto s_SetJobFingerprintsBySourceIDQuery = MakeSqlQuery(
+            UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID,
+            UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID_STATEMENT,
+            LOG_NAME,
+            SqlParam<AZ::u64>(":fingerprint"),
+            SqlParam<AZ::s64>(":sourceid"));      
+
         static const char* DELETE_JOB = "AssetProcessor::DeleteJob";
         static const char* DELETE_JOB_STATEMENT =
             "DELETE FROM Jobs WHERE "
@@ -408,15 +417,17 @@ namespace AssetProcessor
 
         static const char* INSERT_PRODUCT = "AssetProcessor::InsertProduct";
         static const char* INSERT_PRODUCT_STATEMENT =
-            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid) "
-            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid);";
+            "INSERT INTO Products (JobPK, SubID, ProductName, AssetType, LegacyGuid, Hash, Flags) "
+            "VALUES (:jobid, :subid, :productname, :assettype, :legacyguid, :hash, :flags);";
 
         static const auto s_InsertProductQuery = MakeSqlQuery(INSERT_PRODUCT, INSERT_PRODUCT_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":jobid"),
             SqlParam<AZ::u32>(":subid"),
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
-            SqlParam<AZ::Uuid>(":legacyguid"));
+            SqlParam<AZ::Uuid>(":legacyguid"),
+            SqlParam<AZ::u64>(":hash"),
+            SqlParam<AZ::u64>(":flags"));
 
         static const char* UPDATE_PRODUCT = "AssetProcessor::UpdateProduct";
         static const char* UPDATE_PRODUCT_STATEMENT =
@@ -425,8 +436,10 @@ namespace AssetProcessor
             "SubID = :subid, "
             "ProductName = :productname, "
             "AssetType = :assettype, "
-            "LegacyGuid = :legacyguid WHERE "
-            "ProductID = :productid;";
+            "LegacyGuid = :legacyguid, "
+            "Hash = :hash, "
+            "Flags = :flags "
+            "WHERE ProductID = :productid;";
 
         static const auto s_UpdateProductQuery = MakeSqlQuery(UPDATE_PRODUCT, UPDATE_PRODUCT_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":jobid"),
@@ -434,7 +447,9 @@ namespace AssetProcessor
             SqlParam<const char*>(":productname"),
             SqlParam<AZ::Uuid>(":assettype"),
             SqlParam<AZ::Uuid>(":legacyguid"),
-            SqlParam<AZ::s64>(":productid"));
+            SqlParam<AZ::u64>(":flags"),
+            SqlParam<AZ::s64>(":productid"),
+            SqlParam<AZ::u64>(":hash"));
 
         static const char* DELETE_PRODUCT = "AssetProcessor::DeleteProduct";
         static const char* DELETE_PRODUCT_STATEMENT =
@@ -478,14 +493,15 @@ namespace AssetProcessor
 
         static const char* INSERT_SOURCE_DEPENDENCY = "AssetProcessor::InsertSourceDependency";
         static const char* INSERT_SOURCE_DEPENDENCY_STATEMENT =
-            "INSERT INTO SourceDependency (BuilderGuid, Source, DependsOnSource, TypeOfDependency, FromAssetId) "
-            "VALUES (:builderGuid, :source, :dependsOnSource, :typeofdependency, :fromAssetId);";
+            "INSERT INTO SourceDependency (BuilderGuid, SourceGuid, DependsOnSource, TypeOfDependency, FromAssetId, SubIds) "
+            "VALUES (:builderGuid, :source, :dependsOnSource, :typeofdependency, :fromAssetId, :subIds);";
         static const auto s_InsertSourceDependencyQuery = MakeSqlQuery(INSERT_SOURCE_DEPENDENCY, INSERT_SOURCE_DEPENDENCY_STATEMENT, LOG_NAME,
             SqlParam<AZ::Uuid>(":builderGuid"),
-            SqlParam<const char*>(":source"),
-            SqlParam<const char*>(":dependsOnSource"),
+            SqlParam<AZ::Uuid>(":source"),
+            SqlParam<PathOrUuid>(":dependsOnSource"),
             SqlParam<AZ::s32>(":typeofdependency"),
-            SqlParam<AZ::s32>(":fromAssetId"));
+            SqlParam<AZ::s32>(":fromAssetId"),
+            SqlParam<const char*>(":subIds"));
 
         static const char* DELETE_SOURCE_DEPENDENCY_SOURCEDEPENDENCYID = "AssetProcessor::DeleteSourceDependencBySourceDependencyId";
         static const char* DELETE_SOURCE_DEPENDENCY_SOURCEDEPENDENCYID_STATEMENT =
@@ -625,7 +641,7 @@ namespace AssetProcessor
             SqlParam<const char*>(":missingDependencyString"),
             SqlParam<const char*>(":lastScanTime"),
             SqlParam<AZ::u64>(":scanTimeSecondsSinceEpoch"));
-        
+
 
         static const auto s_DeleteMissingProductDependencyByProductIdQuery = MakeSqlQuery(
             DELETE_MISSING_PRODUCT_DEPENDENCY_BY_PRODUCTID,
@@ -657,7 +673,7 @@ namespace AssetProcessor
             SqlParam<const char*>(":analysisFingerprint"));
 
         static const char* INSERT_COLUMN_ANALYSISFINGERPRINT = "AssetProcessor::AddColumnAnalysisFingerprint";
-        static const char* INSERT_COLUMN_ANALYSISFINGERPRINT_STATEMENT = 
+        static const char* INSERT_COLUMN_ANALYSISFINGERPRINT_STATEMENT =
             "ALTER TABLE Sources "
             "ADD AnalysisFingerprint TEXT NOT NULL collate nocase default('');";
 
@@ -667,7 +683,7 @@ namespace AssetProcessor
             "ADD TypeOfDependency INTEGER NOT NULL DEFAULT 0;";
 
         static const char* INSERT_COLUMN_FILE_MODTIME = "AssetProcessor::AddFiles_ModTime";
-        static const char* INSERT_COLUMN_FILE_MODTIME_STATEMENT = 
+        static const char* INSERT_COLUMN_FILE_MODTIME_STATEMENT =
             "ALTER TABLE Files "
             "ADD ModTime INTEGER NOT NULL DEFAULT 0;";
 
@@ -687,7 +703,7 @@ namespace AssetProcessor
             "ADD UnresolvedDependencyType INTEGER NOT NULL DEFAULT 0;";
 
         static const char* INSERT_COLUMN_PRODUCTDEPENDENCY_PLATFORM = "AssetProcessor::AddProductDependency_Platform";
-        static const char* INSERT_COLUMN_PRODUCTDEPENDENCY_PLATFORM_STATEMENT = 
+        static const char* INSERT_COLUMN_PRODUCTDEPENDENCY_PLATFORM_STATEMENT =
             "ALTER TABLE ProductDependencies "
             "ADD Platform TEXT NOT NULL collate nocase default('');";
 
@@ -735,7 +751,7 @@ namespace AssetProcessor
             SqlParam<AZ::s64>(":isfolder"),
             SqlParam<AZ::u64>(":modtime"),
             SqlParam<AZ::u64>(":hash"));
-        
+
         static const char* UPDATE_FILE = "AssetProcessor::UpdateFile";
         static const char* UPDATE_FILE_STATEMENT =
             "UPDATE Files SET "
@@ -765,6 +781,20 @@ namespace AssetProcessor
             SqlParam<AZ::u64>(":hash"),
             SqlParam<const char*>(":filename"),
             SqlParam<AZ::s64>(":scanfolderpk"));
+        
+        static const char* UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID = "AssetProcessor::UpdateFileHashByFileNameScanFolderId";
+        static const char* UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID_STATEMENT =
+            "UPDATE Files SET "
+            "Hash = :hash "
+            "WHERE FileName = :filename "
+            "AND ScanFolderPK = :scanfolderpk;";
+        static const auto s_UpdateFileHashByFileNameScanFolderIdQuery = MakeSqlQuery(
+            UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID,
+            UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID_STATEMENT,
+            LOG_NAME,
+            SqlParam<AZ::u64>(":hash"),
+            SqlParam<const char*>(":filename"),
+            SqlParam<AZ::s64>(":scanfolderpk"));        
 
         static const char* DELETE_FILE = "AssetProcessor::DeleteFile";
         static const char* DELETE_FILE_STATEMENT =
@@ -772,6 +802,43 @@ namespace AssetProcessor
             "FileID = :fileid;";
         static const auto s_DeleteFileQuery = MakeSqlQuery(DELETE_FILE, DELETE_FILE_STATEMENT, LOG_NAME,
             SqlParam<AZ::s64>(":fileid"));
+
+        static const char* REPLACE_STAT = "AssetProcessor::ReplaceStat";
+        static const char* REPLACE_STAT_STATEMENT = "REPLACE INTO Stats VALUES (:statname, :statvalue, :lastlogtime);";
+        static const auto s_ReplaceStatQuery = MakeSqlQuery(
+            REPLACE_STAT,
+            REPLACE_STAT_STATEMENT,
+            LOG_NAME,
+            SqlParam<const char*>(":statname"),
+            SqlParam<AZ::s64>(":statvalue"),
+            SqlParam<AZ::s64>(":lastlogtime"));
+
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE = "AssetProcesser::CreateIndexSourceSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS Source_SourceDependency ON SourceDependency (Source);";
+
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY = "AssetProcesser::DropIndexBuilderGuid_Source_SourceDependency";
+        static const char* DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT =
+            "DROP INDEX IF EXISTS BuilderGuid_Source_SourceDependency;";
+
+        static const char* INSERT_COLUMN_PRODUCT_HASH = "AssetProcessor::InsertColumnsProductsHash";
+        static const char* INSERT_COLUMN_PRODUCT_HASH_STATEMENT =
+            "ALTER TABLE PRODUCTS "
+            "ADD Hash INTEGER NOT NULL DEFAULT 0;";
+
+        static const char* INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS = "AssetProcessor::InsertColumnsSourceDependenciesSubIds";
+        static const char* INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS_STATEMENT =
+            "ALTER TABLE SourceDependency "
+            "ADD SubIds TEXT NOT NULL collate nocase default('');";
+
+        static const char* INSERT_COLUMN_PRODUCTS_FLAGS = "AssetProcessor::InsertColumnProductsFlags";
+        static const char* INSERT_COLUMN_PRODUCTS_FLAGS_STATEMENT =
+            "ALTER TABLE Products "
+            "ADD Flags INTEGER NOT NULL DEFAULT 1;";
+
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID = "AssetProcessor::CreateIndexSourceGuidSourceDependency";
+        static const char* CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS SourceGuid_SourceDependency ON SourceDependency (SourceGuid);";
     }
 
     AssetDatabaseConnection::AssetDatabaseConnection()
@@ -818,7 +885,7 @@ namespace AssetProcessor
     }
 
 
-    bool AssetDatabaseConnection::PostOpenDatabase()
+    bool AssetDatabaseConnection::PostOpenDatabase(bool ignoreFutureAssetDBVersionError)
     {
         DatabaseVersion foundVersion = DatabaseVersion::DatabaseDoesNotExist;
 
@@ -831,10 +898,31 @@ namespace AssetProcessor
         // if its a future version, we don't want to drop tables and blow up, we'd rather just inform the user, and move on:
         if (foundVersion > CurrentDatabaseVersion())
         {
-            AZ_Error(AssetProcessor::ConsoleChannel, false,
-                "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
-                "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
-            return false;
+            if (!ignoreFutureAssetDBVersionError)
+            {
+                AZ_Error(
+                    AssetProcessor::ConsoleChannel,
+                    false,
+                    "The database in the Cache folder appears to be from a NEWER version of Asset Processor than this one.\n"
+                    "To prevent loss of data in the cache for the newer version, this Asset Processor will close.\n");
+                return false;
+            }
+            else
+            {
+                // This will erase the Asset Database. A future version can't be fully resolved,
+                // so if the flag is set to ignore the error, this will erase the Asset Database and create a new one at the current version.
+                // This flag should only be used with automated builds that use the same asset cache across builds of different branches.
+                // This should not be used for individual builds. If an individual finds themselves running into this issue often, the team should
+                // examine their workflows to determine why that individual frequently encounters future Asset Database versions.
+                AZ_TracePrintf(
+                    AssetProcessor::ConsoleChannel,
+                    "The Asset Database in the Cache folder is from a newer version of the Asset Processor (%i) than this one (expected: %i).\n"
+                    "The existing Asset Database will be deleted and a new Asset Database will be constructed.\n",
+                    foundVersion,
+                    CurrentDatabaseVersion()
+                    );
+                dropAllTables = true;
+            }
         }
 
         if (foundVersion == DatabaseVersion::AddedOutputPrefixToScanFolders)
@@ -967,7 +1055,7 @@ namespace AssetProcessor
                 AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedTypeOfDependencyIndex)\n", foundVersion)
             }
         }
-        
+
         if (foundVersion == AssetDatabase::DatabaseVersion::AddedTypeOfDependencyIndex)
         {
             if (m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_PRODUCTDEPENDENCY_PLATFORM))
@@ -1047,6 +1135,51 @@ namespace AssetProcessor
         // sqlite doesn't not support altering a table to remove a column
         // This is fine as the extra OutputPrefix column will not be queried
 
+        if (foundVersion == AssetDatabase::DatabaseVersion::RemoveOutputPrefixFromScanFolders)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY) && m_databaseConnection->ExecuteOneOffStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedSourceIndexForSourceDependencyTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedSourceIndexForSourceDependencyTable)\n", foundVersion)
+            }
+        }
+
+        if (foundVersion == AssetDatabase::DatabaseVersion::AddedSourceIndexForSourceDependencyTable)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_PRODUCT_HASH) && m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedSourceDependencySubIdsAndProductHashes;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedSourceDependencySubIdsAndProductHashes)\n", foundVersion);
+            }
+        }
+
+        if(foundVersion == AssetDatabase::DatabaseVersion::AddedSourceDependencySubIdsAndProductHashes)
+        {
+            if(m_databaseConnection->ExecuteOneOffStatement(INSERT_COLUMN_PRODUCTS_FLAGS))
+            {
+                foundVersion = AssetDatabase::DatabaseVersion::AddedFlagsColumnToProductTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedFlagsColumnToProductTable)\n", foundVersion);
+            }
+        }
+
+        if (foundVersion == DatabaseVersion::AddedFlagsColumnToProductTable)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(CREATE_STATS_TABLE))
+            {
+                foundVersion = DatabaseVersion::AddedStatsTable;
+                AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedStatsTable)\n", foundVersion);
+            }
+        }
+
+        if(foundVersion == DatabaseVersion::AddedStatsTable)
+        {
+            // Version update - change SourceDependency Source to SourceGuid column
+            // Do nothing so the whole database is dropped.
+            // Unfortunately we have to reprocess all assets because of the way the fingerprinting algorithm works,
+            // changing from storing the path to the UUID changes the fingerprint, resulting in all assets reprocessing anyway
+            AZ_TracePrintf(AssetProcessor::ConsoleChannel, "Asset database version updated to ChangedSourceDependencySourceColumn, database will be cleared as migration is not possible for this update\n", foundVersion);
+        }
+
         if (foundVersion == CurrentDatabaseVersion())
         {
             dropAllTables = false;
@@ -1096,7 +1229,7 @@ namespace AssetProcessor
         // now that the database matches the schema, update it:
         SetDatabaseVersion(CurrentDatabaseVersion());
 
-        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase();
+        return AzToolsFramework::AssetDatabase::AssetDatabaseConnection::PostOpenDatabase(ignoreFutureAssetDBVersionError);
     }
 
 
@@ -1169,13 +1302,14 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(CREATE_JOBS_TABLE, CREATE_JOBS_TABLE_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMNS_JOB_WARNING_COUNT, INSERT_COLUMNS_JOB_WARNING_COUNT_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMNS_JOB_ERROR_COUNT, INSERT_COLUMNS_JOB_ERROR_COUNT_STATEMENT);
+        m_databaseConnection->AddStatement(UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID, UPDATE_JOB_FINGERPRINT_BY_SOURCE_ID_STATEMENT);
         m_createStatements.push_back(CREATE_JOBS_TABLE);
 
         AddStatement(m_databaseConnection, s_GetHighestJobrunkeyQuery);
         AddStatement(m_databaseConnection, s_InsertJobQuery);
         AddStatement(m_databaseConnection, s_UpdateJobQuery);
         AddStatement(m_databaseConnection, s_DeleteJobQuery);
-        
+
         // ---------------------------------------------------------------------------------------------
         //                  Builder Info Table
         // ---------------------------------------------------------------------------------------------
@@ -1189,6 +1323,8 @@ namespace AssetProcessor
         //                   Products table
         // ---------------------------------------------------------------------------------------------
         m_databaseConnection->AddStatement(CREATE_PRODUCT_TABLE, CREATE_PRODUCT_TABLE_STATEMENT);
+        m_databaseConnection->AddStatement(INSERT_COLUMN_PRODUCT_HASH, INSERT_COLUMN_PRODUCT_HASH_STATEMENT);
+        m_databaseConnection->AddStatement(INSERT_COLUMN_PRODUCTS_FLAGS, INSERT_COLUMN_PRODUCTS_FLAGS_STATEMENT);
         m_createStatements.push_back(CREATE_PRODUCT_TABLE);
 
         AddStatement(m_databaseConnection, s_InsertProductQuery);
@@ -1204,7 +1340,8 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(CREATE_SOURCE_DEPENDENCY_TABLE, CREATE_SOURCE_DEPENDENCY_TABLE_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_SOURCEDEPENDENCY_TYPEOFDEPENDENCY, INSERT_COLUMN_SOURCEDEPENDENCY_TYPEOFDEPENDENCY_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMNS_SOURCEDEPENDENCY_FROM_ASSETID, INSERT_COLUMNS_SOURCEDEPENDENCY_FROM_ASSETID_STATEMENT);
-        
+        m_databaseConnection->AddStatement(INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS, INSERT_COLUMN_SOURCEDEPENDENCY_SUBIDS_STATEMENT);
+
         m_createStatements.push_back(CREATE_SOURCE_DEPENDENCY_TABLE);
 
         AddStatement(m_databaseConnection, s_InsertSourceDependencyQuery);
@@ -1239,7 +1376,7 @@ namespace AssetProcessor
         AddStatement(m_databaseConnection, s_InsertProductDependencyQuery);
         AddStatement(m_databaseConnection, s_UpdateProductDependencyQuery);
         AddStatement(m_databaseConnection, s_DeleteProductDependencyByProductIdQuery);
-        
+
         // ---------------------------------------------------------------------------------------------
         //                   Missing Product Dependency table
         // ---------------------------------------------------------------------------------------------
@@ -1250,7 +1387,7 @@ namespace AssetProcessor
         AddStatement(m_databaseConnection, s_InsertMissingProductDependencyQuery);
         AddStatement(m_databaseConnection, s_UpdateMissingProductDependencyQuery);
         AddStatement(m_databaseConnection, s_DeleteMissingProductDependencyByProductIdQuery);
-        
+
         // ---------------------------------------------------------------------------------------------
         //                  Files table
         // ---------------------------------------------------------------------------------------------
@@ -1260,11 +1397,21 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(INSERT_FILE, INSERT_FILE_STATEMENT);
         m_databaseConnection->AddStatement(UPDATE_FILE, UPDATE_FILE_STATEMENT);
         m_databaseConnection->AddStatement(UPDATE_FILE_MODTIME_AND_HASH_BY_FILENAME_SCANFOLDER_ID, UPDATE_FILE_MODTIME_AND_HASH_BY_FILENAME_SCANFOLDER_ID_STATEMENT);
+        m_databaseConnection->AddStatement(UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID, UPDATE_FILE_HASH_BY_FILENAME_SCANFOLDER_ID_STATEMENT);
         m_databaseConnection->AddStatement(DELETE_FILE, DELETE_FILE_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_FILE_MODTIME, INSERT_COLUMN_FILE_MODTIME_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_FILE_HASH, INSERT_COLUMN_FILE_HASH_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_LAST_SCAN, INSERT_COLUMN_LAST_SCAN_STATEMENT);
         m_databaseConnection->AddStatement(INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH, INSERT_COLUMN_SCAN_TIME_SECONDS_SINCE_EPOCH_STATEMENT);
+
+        // ---------------------------------------------------------------------------------------------
+        //                  Stats table
+        // ---------------------------------------------------------------------------------------------
+        m_databaseConnection->AddStatement(CREATE_STATS_TABLE, CREATE_STATS_TABLE_STATEMENT);
+        m_createStatements.push_back(CREATE_STATS_TABLE);
+
+        m_databaseConnection->AddStatement(REPLACE_STAT, REPLACE_STAT_STATEMENT);
+
         // ---------------------------------------------------------------------------------------------
         //                   Indices
         // ---------------------------------------------------------------------------------------------
@@ -1320,6 +1467,14 @@ namespace AssetProcessor
         m_databaseConnection->AddStatement(CREATEINDEX_SCANFOLDERS_FILES, CREATEINDEX_SCANFOLDERS_FILES_STATEMENT);
         m_createStatements.push_back(CREATEINDEX_SCANFOLDERS_FILES);
 
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCE, CREATEINDEX_SOURCEDEPENDENCY_SOURCE_STATEMENT);
+
+        m_databaseConnection->AddStatement(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY, DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY_STATEMENT);
+        m_createStatements.push_back(DROPINDEX_BUILDERGUID_SOURCE_SOURCEDEPENDENCY);
+
+        m_databaseConnection->AddStatement(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID, CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID);
+
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
     }
 
@@ -1335,7 +1490,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetScanFolderByScanFolderID(AZ::s64 scanfolderID, ScanFolderDatabaseEntry& entry)
     {
         bool found = false;
-        QueryScanFolderByScanFolderID( scanfolderID, 
+        QueryScanFolderByScanFolderID( scanfolderID,
             [&](ScanFolderDatabaseEntry& scanFolderEntry)
             {
                 entry = scanFolderEntry;
@@ -1348,7 +1503,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetScanFolderBySourceID(AZ::s64 sourceID, ScanFolderDatabaseEntry& entry)
     {
         bool found = false;
-        QueryScanFolderBySourceID( sourceID, 
+        QueryScanFolderBySourceID( sourceID,
             [&](ScanFolderDatabaseEntry& scanFolderEntry)
         {
             entry = scanFolderEntry;
@@ -1361,7 +1516,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetScanFolderByJobID(AZ::s64 jobID, ScanFolderDatabaseEntry& entry)
     {
         bool found = false;
-        QueryScanFolderByJobID( jobID, 
+        QueryScanFolderByJobID( jobID,
             [&](ScanFolderDatabaseEntry& scanFolderEntry)
         {
             entry = scanFolderEntry;
@@ -1374,7 +1529,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetScanFolderByProductID(AZ::s64 productID, ScanFolderDatabaseEntry& entry)
     {
         bool found = false;
-        QueryScanFolderByProductID( productID, 
+        QueryScanFolderByProductID( productID,
             [&](ScanFolderDatabaseEntry& scanFolderEntry)
         {
             entry = scanFolderEntry;
@@ -1404,8 +1559,7 @@ namespace AssetProcessor
             [&](ScanFolderDatabaseEntry& scanFolder)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(scanFolder);
+                container.emplace_back() = AZStd::move(scanFolder);
                 return true;  // return true to collect more rows since we are filling a container
             });
         return found && succeeded;
@@ -1506,7 +1660,7 @@ namespace AssetProcessor
         {
             found = true;
             entry = AZStd::move(source);
-            return false;  // return false in order to stop iterating any further - we are only populating one entry.
+            return false; // return false in order to stop iterating any further - we are only populating one entry.
         });
         return found;
     }
@@ -1518,53 +1672,38 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(source);
+                container.emplace_back() = AZStd::move(source);
                 return true; // return true to continue iterating over additional results, we are populating a container
             });
         return  found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceBySourceName(QString exactSourceName, SourceDatabaseEntry& entry)
-    {
-        bool found = false;
-       QuerySourceBySourceName(AssetUtilities::NormalizeFilePath(exactSourceName).toUtf8().constData(),
-            [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
-        return found;
-    }
-
-    bool AssetDatabaseConnection::GetSourcesBySourceName(QString exactSourceName, SourceDatabaseEntryContainer& container)
-    {
-        bool found = false;
-        bool succeeded = QuerySourceBySourceName(AssetUtilities::NormalizeFilePath(exactSourceName).toUtf8().constData(),
-            [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            container.push_back();
-            container.back() = AZStd::move(source);
-            return true;  // return true to continue iterating over additional results, we are populating a container
-        });
-        return  found && succeeded;
-    }
-
-    bool AssetDatabaseConnection::GetSourcesBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, SourceDatabaseEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanFolderID, AzToolsFramework::AssetDatabase::SourceDatabaseEntry& entry)
     {
         bool found = false;
         bool succeeded = QuerySourceBySourceNameScanFolderID(exactSourceName.toUtf8().constData(),
             scanFolderID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            container.push_back();
-            container.back() = AZStd::move(source);
-            return true;  // return true to continue iterating over additional results, we are populating a container
-        });
+            {
+                found = true;
+                entry = AZStd::move(source);
+                return false; // return false in order to stop iterating any further - we are only populating one entry.
+            });
         return  found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetSourcesBySourceName(QString exactSourceName, SourceDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QuerySourceBySourceName(
+            exactSourceName.toUtf8().constData(),
+            [&](SourceDatabaseEntry& source)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(source);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
     }
 
     bool AssetDatabaseConnection::GetSourcesLikeSourceName(QString likeSourceName, LikeType likeType, SourceDatabaseEntryContainer& container)
@@ -1579,11 +1718,33 @@ namespace AssetProcessor
             [&](SourceDatabaseEntry& source)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(source);
+                container.emplace_back() = AZStd::move(source);
                 return true;  // return true to continue iterating over additional results, we are populating a container
             });
         return  found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetSourcesLikeSourceNameScanFolderId(
+        QString likeSourceName,
+        AZ::s64 scanFolderID,
+        LikeType likeType,
+        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer& container)
+    {
+        if (likeSourceName.isEmpty())
+        {
+            return false;
+        }
+
+        bool found = false;
+        bool succeeded = QuerySourceLikeSourceNameScanFolderID(
+            likeSourceName.toUtf8().constData(), scanFolderID, likeType,
+            [&](SourceDatabaseEntry& source)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(source);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
     }
 
     bool AssetDatabaseConnection::GetSourceByJobID(AZ::s64 jobID, SourceDatabaseEntry& entry)
@@ -1591,11 +1752,11 @@ namespace AssetProcessor
         bool found = false;
         QuerySourceByJobID( jobID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
+            {
+                found = true;
+                entry = AZStd::move(source);
+                return false; // stop after the first result
+            });
         return found;
     }
 
@@ -1604,11 +1765,11 @@ namespace AssetProcessor
         bool found = false;
         QuerySourceByProductID( productID,
             [&](SourceDatabaseEntry& source)
-        {
-            found = true;
-            entry = AZStd::move(source);
-            return false; // stop after the first result
-        });
+            {
+                found = true;
+                entry = AZStd::move(source);
+                return false; // stop after the first result
+            });
         return found;
     }
 
@@ -1616,13 +1777,12 @@ namespace AssetProcessor
     {
         bool found = false;
         bool succeeded = QueryCombinedByProductName(exactProductName.toUtf8().constData(),
-                [&](CombinedDatabaseEntry& combined)
-                {
-                    found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(combined);
-                    return true; // return true to continue collecting all
-                });
+            [&](CombinedDatabaseEntry& combined)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(combined);
+                return true; // return true to continue collecting all
+            });
         return found && succeeded;
     }
 
@@ -1630,13 +1790,12 @@ namespace AssetProcessor
     {
         bool found = false;
         bool succeeded = QueryCombinedLikeProductName(likeProductName.toUtf8().constData(), likeType,
-                [&](CombinedDatabaseEntry& combined)
-                {
-                    found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(combined);
-                    return true;//all
-                });
+            [&](CombinedDatabaseEntry& combined)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(combined);
+                return true;//all
+            });
         return found && succeeded;
     }
 
@@ -1783,8 +1942,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
                 {
                     found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(job);
+                    container.emplace_back() = AZStd::move(job);
                     return true;//all
                 },  builderGuid,
                 jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1826,8 +1984,7 @@ namespace AssetProcessor
             [&](JobDatabaseEntry& job)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(job);
+            container.emplace_back() = AZStd::move(job);
             return true; // continue to fetch more rows.
         },  builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1836,18 +1993,17 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetJobsBySourceName(QString exactSourceName, JobDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    bool AssetDatabaseConnection::GetJobsBySourceName(const SourceAssetReference& sourceAsset, JobDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QuerySourceBySourceName(exactSourceName.toUtf8().constData(),
+        bool succeeded = QuerySourceBySourceNameScanFolderID(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(),
             [&](SourceDatabaseEntry& source)
         {
             succeeded = QueryJobBySourceID(source.m_sourceID,
                 [&](JobDatabaseEntry& job)
                 {
                     found = true;
-                    container.push_back();
-                    container.back() = AZStd::move(job);
+                    container.emplace_back() = AZStd::move(job);
                     return true;//all
                 },  builderGuid,
                     jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1873,8 +2029,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true;//all
             },  builderGuid,
                 jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -1895,8 +2050,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true;//all
             });
             return true; // continue to fetch more rows.
@@ -1917,8 +2071,7 @@ namespace AssetProcessor
                 [&](JobDatabaseEntry& job)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(job);
+                container.emplace_back() = AZStd::move(job);
                 return true; // continue to fetch more rows for the QueryJobByProductId call
             });
             return true; // continue to fetch more rows for the QueryProductLikeProductName call
@@ -2005,6 +2158,16 @@ namespace AssetProcessor
         }
     }
 
+    bool AssetDatabaseConnection::SetJobFingerprintsBySourceID(AZ::s64 sourceID, AZ::u64 hash)
+    {
+        if (!s_SetJobFingerprintsBySourceIDQuery.BindAndStep(*m_databaseConnection, hash, sourceID))
+        {
+            return false;
+        }
+
+        return m_databaseConnection->GetNumAffectedRows() > 0;
+    }
+
     // this must actually delete the job
     bool AssetDatabaseConnection::RemoveJob(AZ::s64 jobID)
     {
@@ -2066,8 +2229,7 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2083,8 +2245,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& product)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(product);
+            container.emplace_back() = AZStd::move(product);
             return true; // continue fetching more results.
         }, builderGuid,
            jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2096,7 +2257,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetProductsLikeProductName(QString likeProductName, LikeType likeType, ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        
+
         if (likeProductName.isEmpty())
         {
             return false;
@@ -2106,8 +2267,7 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2123,8 +2283,23 @@ namespace AssetProcessor
                 [&](ProductDatabaseEntry& product)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(product);
+                container.emplace_back() = AZStd::move(product);
+                return true; // continue fetching more results.
+            }, builderGuid,
+               jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
+               platform.isEmpty() ? nullptr : platform.toUtf8().constData(),
+               status);
+        return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetProductsBySourceNameScanFolderID(QString exactSourceName, AZ::s64 scanFolderId, ProductDatabaseEntryContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    {
+        bool found = false;
+        bool succeeded = QueryProductBySourceNameScanFolderID(exactSourceName.toUtf8().constData(), scanFolderId,
+                [&](ProductDatabaseEntry& product)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(product);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2145,8 +2320,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& product)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(product);
+            container.emplace_back() = AZStd::move(product);
             return true; // continue fetching more results.
         }, builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2162,8 +2336,7 @@ namespace AssetProcessor
             [&](CombinedDatabaseEntry& combined)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(combined);
+                container.emplace_back() = AZStd::move(combined);
                 return true; // continue fetching more results.
             }, builderGuid,
                jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2179,8 +2352,7 @@ namespace AssetProcessor
             [&](CombinedDatabaseEntry& combined)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(combined);
+                container.emplace_back() = AZStd::move(combined);
                 return true; // continue fetching more results.
             });
         return found && succeeded;
@@ -2189,7 +2361,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetProductByJobIDSubId(AZ::s64 jobID, AZ::u32 subID, AzToolsFramework::AssetDatabase::ProductDatabaseEntry& result)
     {
         bool found = false;
-        QueryProductByJobIDSubID(jobID, subID, 
+        QueryProductByJobIDSubID(jobID, subID,
             [&](ProductDatabaseEntry& resultFromDB)
         {
             found = true;
@@ -2261,7 +2433,7 @@ namespace AssetProcessor
             if (wasAlreadyInDatabase)
             {
                 // it was already in the database, so use the "UPDATE" version
-                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_productID))
+                if (!s_UpdateProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_flags.to_ullong(), entry.m_productID, entry.m_hash))
                 {
                     return false;
                 }
@@ -2269,7 +2441,7 @@ namespace AssetProcessor
             else
             {
                 // it wasn't in the database, so use the "INSERT" version
-                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid))
+                if (!s_InsertProductQuery.Bind(*m_databaseConnection, autoFinalizer, entry.m_jobPK, entry.m_subID, entry.m_productName.c_str(), entry.m_assetType, entry.m_legacyGuid, entry.m_hash, entry.m_flags.to_ullong()))
                 {
                     return false;
                 }
@@ -2303,13 +2475,19 @@ namespace AssetProcessor
         {
             return false;
         }
-        
-        bool succeeded = true;
+
+        ScopedTransaction transaction(m_databaseConnection);
+
         for (auto& entry : container)
         {
-            succeeded &= SetProduct(entry);
+            if(!SetProduct(entry))
+            {
+                return false;
+            }
         }
-        return succeeded;
+
+        transaction.Commit();
+        return true;
     }
 
     //! Clear the products for a given source.  This removes the entry entirely, not just sets it to empty.
@@ -2398,7 +2576,7 @@ namespace AssetProcessor
         if(!platform.isEmpty())
         {
             AZStd::string platformStr = platform.toUtf8().constData();
-            
+
             if (!s_DeleteProductsBySourceidPlatformQuery.BindAndStep(*m_databaseConnection, sourceID, platformStr.c_str()))
             {
                 return false;
@@ -2443,8 +2621,7 @@ namespace AssetProcessor
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2458,22 +2635,20 @@ namespace AssetProcessor
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetJobInfoBySourceName(QString exactSourceName, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
+    bool AssetDatabaseConnection::GetJobInfoBySourceNameScanFolderId(QString exactSourceName, AZ::s64 scanfolderId, JobInfoContainer& container, AZ::Uuid builderGuid, QString jobKey, QString platform, JobStatus status)
     {
         bool found = false;
-        bool succeeded = QueryJobInfoBySourceName(exactSourceName.toUtf8().constData(),
+        bool succeeded = QueryJobInfoBySourceNameScanFolderId(exactSourceName.toUtf8().constData(), scanfolderId,
             [&](JobInfo& jobInfo)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(jobInfo);
+            container.emplace_back() = AZStd::move(jobInfo);
             return true; // return true to keep iterating over further rows.
         }, builderGuid,
             jobKey.isEmpty() ? nullptr : jobKey.toUtf8().constData(),
@@ -2495,7 +2670,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::SetSourceFileDependency(SourceFileDependencyEntry& entry)
     {
         //first make sure its not already in the database
-        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_source.c_str(), entry.m_dependsOnSource.c_str(), entry.m_typeOfDependency, entry.m_fromAssetId))
+        if (!s_InsertSourceDependencyQuery.BindAndStep(*m_databaseConnection, entry.m_builderGuid, entry.m_sourceGuid, entry.m_dependsOnSource, entry.m_typeOfDependency, entry.m_fromAssetId, entry.m_subIds.c_str()))
         {
             return false;
         }
@@ -2512,7 +2687,7 @@ namespace AssetProcessor
         {
             succeeded = succeeded && RemoveSourceFileDependency(entry);
         }
-        
+
         if (succeeded)
         {
             transaction.Commit();
@@ -2536,49 +2711,46 @@ namespace AssetProcessor
         return s_DeleteSourceDependencySourcedependencyidQuery.BindAndStep(*m_databaseConnection, sourceFileDependencyId);
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, const char* source, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByBuilderGUIDAndSource(const AZ::Uuid& builderGuid, AZ::Uuid sourceGuid, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(source, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceGuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             if (builderGuid == entry.m_builderGuid)
             {
                 found = true;
-                container.push_back();
-                container.back() = AZStd::move(entry);
+                container.emplace_back() = AZStd::move(entry);
             }
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(const QString& dependsOnSource, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
+    bool AssetDatabaseConnection::GetSourceFileDependenciesByDependsOnSource(AZ::Uuid sourceGuid, const char* sourceName, const char* absolutePath, AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency, SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QuerySourceDependencyByDependsOnSource(dependsOnSource.toUtf8().constData(), nullptr, typeOfDependency,
+        bool succeeded = QuerySourceDependencyByDependsOnSource(sourceGuid, sourceName, absolutePath,typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
     }
 
     bool AssetDatabaseConnection::GetDependsOnSourceBySource(
-        const char* source, 
+        AZ::Uuid sourceUuid,
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency typeOfDependency,
         AzToolsFramework::AssetDatabase::SourceFileDependencyEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryDependsOnSourceBySourceDependency(source, nullptr, typeOfDependency,
+        bool succeeded = QueryDependsOnSourceBySourceDependency(sourceUuid, typeOfDependency,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2587,7 +2759,7 @@ namespace AssetProcessor
     bool AssetDatabaseConnection::GetSourceFileDependencyBySourceDependencyId(AZ::s64 sourceDependencyId, SourceFileDependencyEntry& sourceDependencyEntry)
     {
         bool found = false;
-        QuerySourceDependencyBySourceDependencyId(sourceDependencyId, 
+        QuerySourceDependencyBySourceDependencyId(sourceDependencyId,
             [&](SourceFileDependencyEntry& entry)
         {
             found = true;
@@ -2601,14 +2773,7 @@ namespace AssetProcessor
     {
         ScopedTransaction transaction(m_databaseConnection);
 
-        const char* statementName = INSERT_NEW_LEGACYSUBID;
-
         bool creatingNew = entry.m_subIDsEntryID == InvalidEntryId;
-
-        if (!creatingNew)
-        {
-            statementName = OVERWRITE_EXISTING_LEGACYSUBID;
-        }
 
         if (creatingNew)
         {
@@ -2622,7 +2787,7 @@ namespace AssetProcessor
             return false;
         }
 
-        
+
         if (creatingNew)
         {
             AZ::s64 rowID = m_databaseConnection->GetLastRowID();
@@ -2677,8 +2842,7 @@ namespace AssetProcessor
         bool succeeded = QueryProductDependenciesTable([&](AZ::Data::AssetId& /*assetId*/, ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2704,8 +2868,7 @@ namespace AssetProcessor
             [&](ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2718,8 +2881,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2732,11 +2894,21 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true;
         });
         return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetDirectReverseProductDependenciesBySourceGuidAllPlatforms(AZ::Uuid dependencySourceGuid, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& container)
+    {
+        bool succeeded = QueryDirectReverseProductDependenciesBySourceGuidAllPlatforms(dependencySourceGuid, [&container](ProductDependencyDatabaseEntry entry)
+        {
+            container.emplace_back(AZStd::move(entry));
+            return true;
+        });
+
+        return succeeded;
     }
 
     bool AssetDatabaseConnection::GetAllProductDependencies(AZ::s64 productID, AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& container)
@@ -2746,8 +2918,7 @@ namespace AssetProcessor
             [&](ProductDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2761,8 +2932,7 @@ namespace AssetProcessor
             [&](ProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2930,8 +3100,7 @@ namespace AssetProcessor
             [&](MissingProductDependencyDatabaseEntry& entry)
         {
             found = true;
-            container.push_back();
-            container.back() = AZStd::move(entry);
+            container.emplace_back() = AZStd::move(entry);
             return true; // return true to keep iterating over further rows.
         });
         return found && succeeded;
@@ -2956,9 +3125,25 @@ namespace AssetProcessor
 
         for(auto& entry : container)
         {
-            if(!SetProductDependency(entry))
+            if(entry.m_productDependencyID == InvalidEntryId)
             {
-                return false;
+                if (!s_InsertProductDependencyQuery.BindAndStep(
+                        *m_databaseConnection, entry.m_productPK, entry.m_dependencySourceGuid, entry.m_dependencySubID,
+                        entry.m_dependencyFlags.to_ullong(), entry.m_platform.c_str(), entry.m_unresolvedPath.c_str(),
+                        entry.m_dependencyType, entry.m_fromAssetId))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if(!s_UpdateProductDependencyQuery.BindAndStep(
+                    *m_databaseConnection, entry.m_productPK, entry.m_dependencySourceGuid, entry.m_dependencySubID,
+                    entry.m_dependencyFlags.to_ullong(), entry.m_platform.c_str(), entry.m_unresolvedPath.c_str(),
+                    entry.m_productDependencyID, entry.m_dependencyType, entry.m_fromAssetId))
+                {
+                    return false;
+                }
             }
         }
 
@@ -2987,7 +3172,7 @@ namespace AssetProcessor
         }
 
         // now insert the new ones since we know there's no collisions:
-                
+
         for (auto& entry : container)
         {
 
@@ -3041,10 +3226,10 @@ namespace AssetProcessor
         return found && succeeded;
     }
 
-    bool AssetDatabaseConnection::GetFilesLikeFileName(QString likeFileName, LikeType likeType, FileDatabaseEntryContainer& container)
+    bool AssetDatabaseConnection::GetFilesLikeFileNameScanFolderId(QString likeFileName, LikeType likeType, AZ::s64 scanFolderId, FileDatabaseEntryContainer& container)
     {
         bool found = false;
-        bool succeeded = QueryFilesLikeFileName(likeFileName.toUtf8().constData(), likeType,
+        bool succeeded = QueryFilesLikeFileNameAndScanFolderID(likeFileName.toUtf8().constData(), likeType, scanFolderId,
             [&](FileDatabaseEntry& file)
         {
             found = true;
@@ -3056,6 +3241,11 @@ namespace AssetProcessor
 
     bool AssetDatabaseConnection::InsertFiles(FileDatabaseEntryContainer& entries)
     {
+        // Skip creating and committing a scoped transaction, if the entry list is empty.
+        if (entries.empty())
+        {
+            return true;
+        }
         ScopedTransaction transaction(m_databaseConnection);
 
         for (auto& entry : entries)
@@ -3107,7 +3297,7 @@ namespace AssetProcessor
             }
 
             Statement* statement = autoFinal.Get();
-            
+
             if (statement->Step() == Statement::SqlError)
             {
                 AZ_Warning(LOG_NAME, false, "Failed to write the new source into the database. %s", entry.m_fileName.c_str());
@@ -3124,7 +3314,7 @@ namespace AssetProcessor
         return UpdateFile(entry, entryAlreadyExists);
     }
 
-    bool AssetDatabaseConnection::UpdateFile(FileDatabaseEntry& entry, bool& entryAlreadyExists) 
+    bool AssetDatabaseConnection::UpdateFile(FileDatabaseEntry& entry, bool& entryAlreadyExists)
     {
         entryAlreadyExists = false;
 
@@ -3168,9 +3358,53 @@ namespace AssetProcessor
         return m_databaseConnection->GetNumAffectedRows() > 0;
     }
 
+    bool AssetDatabaseConnection::UpdateFileHashByFileNameAndScanFolderId(QString fileName, AZ::s64 scanFolderId, AZ::u64 hash)
+    {
+        if (!s_UpdateFileHashByFileNameScanFolderIdQuery.BindAndStep(
+                *m_databaseConnection, hash, fileName.toUtf8().constData(), scanFolderId))
+        {
+            return false;
+        }
+
+        return m_databaseConnection->GetNumAffectedRows() > 0;
+    }
+
     bool AssetDatabaseConnection::RemoveFile(AZ::s64 fileID)
     {
         return s_DeleteFileQuery.BindAndStep(*m_databaseConnection, fileID);
+    }
+
+    bool AssetDatabaseConnection::GetStatByStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatByStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::GetStatLikeStatName(QString statName, StatDatabaseEntryContainer& container)
+    {
+        bool found = false;
+        bool succeeded = QueryStatLikeStatName(
+            statName.toUtf8().constData(),
+            [&](StatDatabaseEntry& stat)
+            {
+                found = true;
+                container.emplace_back() = AZStd::move(stat);
+                return true; // return true to continue iterating over additional results, we are populating a container
+            });
+        return found && succeeded;
+    }
+
+    bool AssetDatabaseConnection::ReplaceStat(AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
+    {
+        return s_ReplaceStatQuery.BindAndStep(*m_databaseConnection, stat.m_statName.c_str(), stat.m_statValue, stat.m_lastLogTime);
     }
 
     bool AssetDatabaseConnection::SetBuilderInfoTable(AzToolsFramework::AssetDatabase::BuilderInfoEntryContainer& newEntries)

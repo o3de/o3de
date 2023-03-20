@@ -10,8 +10,18 @@
 
 namespace AZ::Utils
 {
-    AZ::IO::FixedMaxPathString GetHomeDirectory()
+    AZ::IO::FixedMaxPathString GetHomeDirectory(AZ::SettingsRegistryInterface*)
     {
         return {};
+    }
+
+    bool SetEnv([[maybe_unused]] const char* envname, [[maybe_unused]] const char* envvalue, [[maybe_unused]] bool overwrite)
+    {
+        return false;
+    }
+
+    bool UnsetEnv([[maybe_unused]] const char* envname)
+    {
+        return false;
     }
 } // namespace AZ::Utils

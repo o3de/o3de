@@ -13,9 +13,13 @@ namespace AZ
     namespace DX12
     {
         FenceEvent::FenceEvent(const char* name)
-            : m_EventHandle(CreateEvent(nullptr, false, false, name))
+            : m_EventHandle(nullptr)
             , m_name(name)
-        {}
+        {
+            AZStd::wstring nameW;
+            AZStd::to_wstring(nameW, name);
+            m_EventHandle = CreateEvent(nullptr, false, false, nameW.c_str());
+        }
 
         FenceEvent::~FenceEvent()
         {
@@ -30,7 +34,7 @@ namespace AZ
         RHI::ResultCode Fence::Init(ID3D12DeviceX* dx12Device, RHI::FenceState initialState)
         {
             Microsoft::WRL::ComPtr<ID3D12Fence> fencePtr;
-            if (FAILED(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
+            if (!AssertSuccess(dx12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_GRAPHICS_PPV_ARGS(fencePtr.GetAddressOf()))))
             {
                 AZ_Error("Fence", false, "Failed to initialize ID3D12Fence.");
                 return RHI::ResultCode::Fail;
@@ -56,7 +60,7 @@ namespace AZ
         {
             if (fenceValue > GetCompletedValue())
             {
-                AZ_PROFILE_SCOPE_IDLE_DYNAMIC(AZ::Debug::ProfileCategory::AzRender, "Fence Wait: %s", fenceEvent.GetName());
+                AZ_PROFILE_SCOPE(RHI, "Fence Wait: %s", fenceEvent.GetName());
                 m_fence->SetEventOnCompletion(fenceValue, fenceEvent.m_EventHandle);
                 WaitForSingleObject(fenceEvent.m_EventHandle, INFINITE);
             }

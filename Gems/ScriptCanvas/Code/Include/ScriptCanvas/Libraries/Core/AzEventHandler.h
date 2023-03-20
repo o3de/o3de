@@ -15,6 +15,8 @@
 
 namespace ScriptCanvas::Nodes::Core
 {
+    class AzEventEntrySerializer;
+
     struct AzEventEntry
     {
         static void Reflect(AZ::ReflectContext* context);
@@ -30,6 +32,8 @@ namespace ScriptCanvas::Nodes::Core
     class AzEventHandler
         : public Node
     {
+        friend class AzEventEntrySerializer;
+
     public:
         SCRIPTCANVAS_NODE(AzEventHandler);
         
@@ -49,9 +53,7 @@ namespace ScriptCanvas::Nodes::Core
         void CollectVariableReferences(AZStd::unordered_set<ScriptCanvas::VariableId>& variableIds) const override;
         bool ContainsReferencesToVariables(const AZStd::unordered_set<ScriptCanvas::VariableId>& variableIds) const override;
 
-        size_t GenerateFingerprint() const override;
-
-        
+        size_t GenerateFingerprint() const override;        
 
         AZ::Outcome<Grammar::LexicalScope, void> GetFunctionCallLexicalScope(const Slot* slot) const override;
 

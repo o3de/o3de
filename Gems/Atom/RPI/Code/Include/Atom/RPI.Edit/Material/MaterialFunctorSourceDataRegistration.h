@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Name/Name.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -23,7 +24,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(MaterialFunctorSourceDataRegistration, "{20D1E55A-737B-43AF-B1F5-054574DCF400}");
-            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceDataRegistration, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialFunctorSourceDataRegistration, AZ::SystemAllocator);
 
             MaterialFunctorSourceDataRegistration() = default;
             virtual ~MaterialFunctorSourceDataRegistration() = default;

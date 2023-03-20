@@ -10,10 +10,8 @@
 #include "native/utilities/assetUtils.h"
 #include <AzCore/std/smart_ptr/make_shared.h>
 
-AZ_PUSH_DISABLE_WARNING(4127 4251 4800 4244, "-Wunknown-warning-option")
 #include <QDir>
 #include <QStack>
-AZ_POP_DISABLE_WARNING
 
 namespace AssetProcessor
 {

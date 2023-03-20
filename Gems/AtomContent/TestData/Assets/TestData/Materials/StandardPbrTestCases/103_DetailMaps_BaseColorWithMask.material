@@ -1,0 +1,10 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "parentMaterial": "103_DetailMaps_BaseColor.material",
+    "propertyValues": {
+        "detailLayerGroup.baseColorDetailBlend": 1.0,
+        "detailLayerGroup.blendDetailMask": "../../Textures/checker8x8_flip_512.png",
+        "detailLayerGroup.blendDetailMaskUv": "Unwrapped"
+    }
+}

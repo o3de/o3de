@@ -16,7 +16,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Android, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Android, AZ::SystemAllocator);
         NativeWindowImpl_Android() = default;
         ~NativeWindowImpl_Android() override = default;
 
@@ -25,7 +25,7 @@ namespace AzFramework
                         const WindowGeometry& geometry,
                         const WindowStyleMasks& styleMasks) override;
         NativeWindowHandle GetWindowHandle() const override;
-
+        uint32_t GetDisplayRefreshRate() const override;
     private:
         ANativeWindow* m_nativeWindow = nullptr;
     };
@@ -41,8 +41,19 @@ namespace AzFramework
     {
         m_nativeWindow = AZ::Android::Utils::GetWindow();
 
-        m_width = geometry.m_width;
-        m_height = geometry.m_height;
+        int windowWidth = 0;
+        int windowHeight = 0;
+        if (AZ::Android::Utils::GetWindowSize(windowWidth, windowHeight))
+        {
+            // Use native window size from the device if available
+            m_width = static_cast<uint32_t>(windowWidth);
+            m_height = static_cast<uint32_t>(windowHeight);
+        }
+        else
+        {
+            m_width = geometry.m_width;
+            m_height = geometry.m_height;
+        }
 
         if (m_nativeWindow)
         {
@@ -55,4 +66,10 @@ namespace AzFramework
         return reinterpret_cast<NativeWindowHandle>(m_nativeWindow);
     }
 
+    uint32_t NativeWindowImpl_Android::GetDisplayRefreshRate() const
+    {
+        // [GFX TODO][GHI - 2678]
+        // Using 60 for now until proper support is added
+        return 60;
+    }
 } // namespace AzFramework

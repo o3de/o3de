@@ -8,12 +8,16 @@
 #pragma once
 
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/string/string.h>
 
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Utils/StateControllers/StateController.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace GraphCanvas
 {
@@ -27,7 +31,6 @@ namespace GraphCanvas
     {
     public:
         AZ_COMPONENT(SlotComponent, "{EACFC8FB-C75B-4ABA-988D-89C964B9A4E4}");
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static void Reflect(AZ::ReflectContext* context);
         static AZ::Entity* CreateCoreSlotEntity();
 
@@ -72,19 +75,15 @@ namespace GraphCanvas
         const AZ::EntityId& GetNode() const override;
         void SetNode(const AZ::EntityId&) override;
 
-        Endpoint GetEndpoint() const;
+        Endpoint GetEndpoint() const override;
 
-        const AZStd::string GetName() const  override { return m_slotConfiguration.m_name.GetDisplayString(); }
+        const AZStd::string GetName() const override { return m_slotConfiguration.m_name; }
         void SetName(const AZStd::string& name) override;
 
-        TranslationKeyedString GetTranslationKeyedName() const override { return m_slotConfiguration.m_name; }
-        void SetTranslationKeyedName(const TranslationKeyedString&) override;
+        void SetDetails(const AZStd::string& name, const AZStd::string& tooltip) override;
 
-        const AZStd::string GetTooltip() const override { return m_slotConfiguration.m_tooltip.GetDisplayString(); }
+        const AZStd::string GetTooltip() const override { return m_slotConfiguration.m_tooltip; }
         void SetTooltip(const AZStd::string& tooltip)  override;
-
-        TranslationKeyedString GetTranslationKeyedTooltip() const override { return m_slotConfiguration.m_tooltip; }
-        void SetTranslationKeyedTooltip(const TranslationKeyedString&) override;
 
         void DisplayProposedConnection(const AZ::EntityId& connectionId, const Endpoint& endpoint) override;
         void RemoveProposedConnection(const AZ::EntityId& connectionId, const Endpoint& endpoint) override;

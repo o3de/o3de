@@ -23,7 +23,7 @@ def returnStubDir(stub):
                 break
             if (len(tail) == 0):
                 path = ""
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     print('~ Debug Message:  I was not able to find the '
                           'path to that file (stub) in a walk-up from currnet path')
                 break

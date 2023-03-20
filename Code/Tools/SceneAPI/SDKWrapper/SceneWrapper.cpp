@@ -13,12 +13,6 @@ namespace AZ
    {
       const char* SceneWrapperBase::s_defaultSceneName = "myScene";
 
-      SceneWrapperBase::SceneWrapperBase(aiScene* aiScene)
-          : m_assImpScene(aiScene)
-      {
-      }
-
-
       bool SceneWrapperBase::LoadSceneFromFile([[maybe_unused]] const char* fileName)
       {
           return false;
@@ -40,12 +34,5 @@ namespace AZ
       void SceneWrapperBase::Clear()
       {
       }
-
-      const aiScene* SceneWrapperBase::GetAssImpScene() const
-      {
-          return m_assImpScene;
-      }
-
-
    } //namespace Scene
 }// namespace AZ

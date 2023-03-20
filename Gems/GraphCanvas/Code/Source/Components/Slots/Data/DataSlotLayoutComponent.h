@@ -10,6 +10,7 @@
 #include <QGraphicsLinearLayout>
 #include <QTimer>
 
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <Components/Slots/SlotLayoutComponent.h>
 #include <GraphCanvas/Components/SceneBus.h>
 #include <GraphCanvas/Components/Slots/SlotBus.h>
@@ -44,7 +45,7 @@ namespace GraphCanvas
             : public DataSlotDragDropInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataTypeConversionDataSlotDragDropInterface, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataTypeConversionDataSlotDragDropInterface, AZ::SystemAllocator);
 
             DataTypeConversionDataSlotDragDropInterface(const SlotId& slotId);
 
@@ -58,14 +59,14 @@ namespace GraphCanvas
             SlotId m_slotId;
 
             ViewId  m_viewId;
-            ToastId m_toastId;
+            AzToolsFramework::ToastId m_toastId;
         };
 
         class DoubleClickSceneEventFilter
             : public SceneEventFilter
         {
         public:
-            AZ_CLASS_ALLOCATOR(DoubleClickSceneEventFilter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DoubleClickSceneEventFilter, AZ::SystemAllocator);
 
             DoubleClickSceneEventFilter(DataSlotLayout& dataSlotLayout)
                 : SceneEventFilter(nullptr)
@@ -99,7 +100,7 @@ namespace GraphCanvas
         friend class DoubleClickSceneEventFilter;
 
     public:
-        AZ_CLASS_ALLOCATOR(DataSlotLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotLayout, AZ::SystemAllocator);
 
         DataSlotLayout(DataSlotLayoutComponent& owner);
         ~DataSlotLayout();
@@ -119,8 +120,8 @@ namespace GraphCanvas
         // SlotNotificationBus
         void OnRegisteredToNode(const AZ::EntityId& nodeId) override;
 
-        void OnNameChanged(const TranslationKeyedString&) override;
-        void OnTooltipChanged(const TranslationKeyedString&) override;
+        void OnNameChanged(const AZStd::string&) override;
+        void OnTooltipChanged(const AZStd::string&) override;
         ////
 
         // StyleNotificationBus

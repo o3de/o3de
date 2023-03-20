@@ -6,12 +6,9 @@
  *
  */
 
-#ifndef __MYSTICQT_DIALOGSTACK_H
-#define __MYSTICQT_DIALOGSTACK_H
+#pragma once
 
-//
 #if !defined(Q_MOC_RUN)
-#include <AzCore/std/smart_ptr/unique_ptr.h>
 #include "MysticQtConfig.h"
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QScrollArea>
@@ -26,17 +23,19 @@ QT_FORWARD_DECLARE_CLASS(QMouseEvent)
 QT_FORWARD_DECLARE_CLASS(QResizeEvent)
 QT_FORWARD_DECLARE_CLASS(QSplitter)
 
+namespace AzQtComponents
+{
+    class CardHeader;
+}
 
 namespace MysticQt
 {
-    /**
-     *
-     *
-     */
+    class DialogStackSplitter;
+
     class MYSTICQT_API DialogStack
         : public QScrollArea
     {
-        Q_OBJECT
+        Q_OBJECT // AUTOMOC
 
     public:
         DialogStack(QWidget* parent = nullptr);
@@ -56,37 +55,35 @@ namespace MysticQt
         void resizeEvent(QResizeEvent* event) override;
 
     protected slots:
-        void OnHeaderButton();
+        void OnExpandedChanged(bool expanded);
 
     private:
         struct Dialog
         {
-            QPushButton*    mButton = nullptr;
-            QWidget*        mFrame = nullptr;
-            QWidget*        mWidget = nullptr;
-            AZStd::unique_ptr<QWidget> mDialogWidget = nullptr;
-            QSplitter*      mSplitter = nullptr;
-            bool            mClosable = true;
-            bool            mMaximizeSize = false;
-            bool            mStretchWhenMaximize = false;
-            int             mMinimumHeightBeforeClose = 0;
-            int             mMaximumHeightBeforeClose = 0;
-            QLayout*        mLayout = nullptr;
-            QLayout*        mDialogLayout = nullptr;
+            AzQtComponents::CardHeader* m_header = nullptr;
+            QWidget*        m_frame = nullptr;
+            QWidget*        m_widget = nullptr;
+            QWidget*        m_dialogWidget = nullptr;
+            DialogStackSplitter* m_splitter = nullptr;
+            bool            m_closable = true;
+            bool            m_maximizeSize = false;
+            bool            m_stretchWhenMaximize = false;
+            int             m_minimumHeightBeforeClose = 0;
+            int             m_maximumHeightBeforeClose = 0;
+            QLayout*        m_layout = nullptr;
+            QLayout*        m_dialogLayout = nullptr;
         };
 
     private:
-        uint32 FindDialog(QPushButton* pushButton);
-        void Open(QPushButton* button);
-        void Close(QPushButton* button);
+        size_t FindDialog(AzQtComponents::CardHeader* header);
+        void Open(AzQtComponents::CardHeader* header);
+        void Close(AzQtComponents::CardHeader* button);
         void UpdateScrollBars();
 
     private:
-        QSplitter*              mRootSplitter;
-        AZStd::vector<Dialog>    mDialogs;
-        int32                   mPrevMouseX;
-        int32                   mPrevMouseY;
+        DialogStackSplitter*    m_rootSplitter;
+        AZStd::vector<Dialog>   m_dialogs;
+        int32                   m_prevMouseX;
+        int32                   m_prevMouseY;
     };
 }   // namespace MysticQt
-
-#endif

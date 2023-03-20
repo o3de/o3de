@@ -11,13 +11,13 @@
 
 function GetMaterialPropertyDependencies()
     return {
-        "detailLayerGroup.enableDetailLayer", 
-        "detailLayerGroup.blendDetailMask", 
-        "detailLayerGroup.enableDetailMaskTexture", 
-        "detailLayerGroup.enableBaseColor", 
-        "detailLayerGroup.baseColorDetailMap", 
-        "detailLayerGroup.enableNormals", 
-        "detailLayerGroup.normalDetailMap"
+        "enableDetailLayer", 
+        "blendDetailMask", 
+        "enableDetailMaskTexture", 
+        "enableBaseColor", 
+        "baseColorDetailMap", 
+        "enableNormals", 
+        "normalDetailMap"
         }
 end
 
@@ -30,42 +30,42 @@ function GetShaderOptionDependencies()
 end
 
 function Process(context)
-    local isFeatureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailLayer")
+    local isFeatureEnabled = context:GetMaterialPropertyValue_bool("enableDetailLayer")
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
-    local blendMaskTextureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailMaskTexture")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("blendDetailMask")
+    local blendMaskTextureEnabled = context:GetMaterialPropertyValue_bool("enableDetailMaskTexture")
     context:SetShaderOptionValue_bool("o_detail_blendMask_useTexture", isFeatureEnabled and blendMaskTextureEnabled and blendMaskTexture ~= nil)
 
-    local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableBaseColor")
-    local baseColorDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.baseColorDetailMap")
+    local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("enableBaseColor")
+    local baseColorDetailTexture = context:GetMaterialPropertyValue_Image("baseColorDetailMap")
     context:SetShaderOptionValue_bool("o_detail_baseColor_useTexture", isFeatureEnabled and baseColorDetailEnabled and baseColorDetailTexture ~= nil)
     
-    local normalDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableNormals")
-    local normalDetailTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.normalDetailMap")
+    local normalDetailEnabled = context:GetMaterialPropertyValue_bool("enableNormals")
+    local normalDetailTexture = context:GetMaterialPropertyValue_Image("normalDetailMap")
     context:SetShaderOptionValue_bool("o_detail_normal_useTexture", isFeatureEnabled and normalDetailEnabled and normalDetailTexture ~= nil)
 end
 
 function ProcessEditor(context)
-    local isFeatureEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableDetailLayer")
+    local isFeatureEnabled = context:GetMaterialPropertyValue_bool("enableDetailLayer")
     
     mainVisibility = MaterialPropertyVisibility_Enabled
     if(not isFeatureEnabled) then
         mainVisibility = MaterialPropertyVisibility_Hidden
     end
 
-    context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailFactor", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailMask", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.enableDetailMaskTexture", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailMaskUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.textureMapUv", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.enableBaseColor", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.baseColorDetailMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.baseColorDetailBlend", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.enableNormals", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailStrength", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailMap", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailFlipX", mainVisibility)
-    context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailFlipY", mainVisibility)
+    context:SetMaterialPropertyVisibility("blendDetailFactor", mainVisibility)
+    context:SetMaterialPropertyVisibility("blendDetailMask", mainVisibility)
+    context:SetMaterialPropertyVisibility("enableDetailMaskTexture", mainVisibility)
+    context:SetMaterialPropertyVisibility("blendDetailMaskUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("textureMapUv", mainVisibility)
+    context:SetMaterialPropertyVisibility("enableBaseColor", mainVisibility)
+    context:SetMaterialPropertyVisibility("baseColorDetailMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("baseColorDetailBlend", mainVisibility)
+    context:SetMaterialPropertyVisibility("enableNormals", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalDetailStrength", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalDetailMap", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalDetailFlipX", mainVisibility)
+    context:SetMaterialPropertyVisibility("normalDetailFlipY", mainVisibility)
         
     context:SetMaterialPropertyVisibility("detailUV.center", mainVisibility)
     context:SetMaterialPropertyVisibility("detailUV.tileU", mainVisibility)
@@ -75,24 +75,24 @@ function ProcessEditor(context)
     context:SetMaterialPropertyVisibility("detailUV.rotateDegrees", mainVisibility)
     context:SetMaterialPropertyVisibility("detailUV.scale", mainVisibility)
     
-    local blendMaskTexture = context:GetMaterialPropertyValue_Image("detailLayerGroup.blendDetailMask")
+    local blendMaskTexture = context:GetMaterialPropertyValue_Image("blendDetailMask")
     if(nil == blendMaskTexture) then
-        context:SetMaterialPropertyVisibility("detailLayerGroup.enableDetailMaskTexture", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("detailLayerGroup.blendDetailMaskUv", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("enableDetailMaskTexture", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("blendDetailMaskUv", MaterialPropertyVisibility_Hidden)
     end
     
-    local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableBaseColor")
+    local baseColorDetailEnabled = context:GetMaterialPropertyValue_bool("enableBaseColor")
     if(not baseColorDetailEnabled) then
-        context:SetMaterialPropertyVisibility("detailLayerGroup.baseColorDetailMap", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("detailLayerGroup.baseColorDetailBlend", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("baseColorDetailMap", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("baseColorDetailBlend", MaterialPropertyVisibility_Hidden)
     end
     
-    local normalDetailEnabled = context:GetMaterialPropertyValue_bool("detailLayerGroup.enableNormals")
+    local normalDetailEnabled = context:GetMaterialPropertyValue_bool("enableNormals")
     if(not normalDetailEnabled) then
-        context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailStrength", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailMap", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailFlipX", MaterialPropertyVisibility_Hidden)
-        context:SetMaterialPropertyVisibility("detailLayerGroup.normalDetailFlipY", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("normalDetailStrength", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("normalDetailMap", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("normalDetailFlipX", MaterialPropertyVisibility_Hidden)
+        context:SetMaterialPropertyVisibility("normalDetailFlipY", MaterialPropertyVisibility_Hidden)
     end
 
 end

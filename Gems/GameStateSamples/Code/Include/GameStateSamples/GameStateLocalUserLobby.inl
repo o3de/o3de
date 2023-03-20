@@ -223,7 +223,7 @@ namespace GameStateSamples
     ////////////////////////////////////////////////////////////////////////////////////////////////
     inline const char* GameStateLocalUserLobby::GetSignedInUserOverlayCanvasAssetPath()
     {
-        return "@assets@/ui/canvases/defaultsignedinusersoverlay.uicanvas";
+        return "@products@/ui/canvases/defaultsignedinusersoverlay.uicanvas";
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -282,7 +282,7 @@ namespace GameStateSamples
         }
 
         // ...sort them by index and then go through to check whether they have been
-        // assigned a local user id. If so, auto-assign their local user id into the 
+        // assigned a local user id. If so, auto-assign their local user id into the
         // first available local player slot (unless they've already been assigned).
         AZStd::sort(gamepadInputDevices.begin(), gamepadInputDevices.end(),
             [](const AzFramework::InputDevice* lhs, const AzFramework::InputDevice* rhs)

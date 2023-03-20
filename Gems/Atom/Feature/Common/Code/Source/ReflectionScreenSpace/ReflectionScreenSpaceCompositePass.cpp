@@ -10,6 +10,9 @@
 #include "ReflectionScreenSpaceBlurPass.h"
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <Atom/RPI.Public/Pass/PassFilter.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/Scene.h>
+#include <Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h>
 
 namespace AZ
 {
@@ -33,20 +36,20 @@ namespace AZ
                 return;
             }
 
-            RPI::PassHierarchyFilter passFilter(AZ::Name("ReflectionScreenSpaceBlurPass"));
-            const AZStd::vector<RPI::Pass*>& passes = RPI::PassSystemInterface::Get()->FindPasses(passFilter);
-            if (!passes.empty())
-            {
-                Render::ReflectionScreenSpaceBlurPass* blurPass = azrtti_cast<ReflectionScreenSpaceBlurPass*>(passes.front());
+            RPI::Scene* scene = m_pipeline->GetScene();
+            SpecularReflectionsFeatureProcessorInterface* specularReflectionsFeatureProcessor = scene->GetFeatureProcessor<SpecularReflectionsFeatureProcessorInterface>();
+            AZ_Assert(specularReflectionsFeatureProcessor, "ReflectionScreenSpaceCompositePass requires the SpecularReflectionsFeatureProcessor");
 
-                // compute the max mip level based on the available mips in the previous frame image, and capping it
-                // to stay within a range that has reasonable data
-                const uint32_t MaxNumRoughnessMips = 8;
-                uint32_t maxMipLevel = AZStd::min(MaxNumRoughnessMips, blurPass->GetNumBlurMips()) - 1;
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
+            AZ_Assert(outputAttachment, "ReflectionScreenSpaceCompositePass: Output binding has no attachment!");
+            RHI::Size outputImageSize = outputAttachment->m_descriptor.m_image.m_size;
 
-                auto constantIndex = m_shaderResourceGroup->FindShaderInputConstantIndex(Name("m_maxMipLevel"));
-                m_shaderResourceGroup->SetConstant(constantIndex, maxMipLevel);
-            }
+            const SSROptions& ssrOptions = specularReflectionsFeatureProcessor->GetSSROptions();
+
+            m_shaderResourceGroup->SetConstant(m_outputScaleNameIndex, ssrOptions.GetOutputScale());
+            m_shaderResourceGroup->SetConstant(m_outputWidthNameIndex, outputImageSize.m_width);
+            m_shaderResourceGroup->SetConstant(m_outputHeightNameIndex, outputImageSize.m_height);
+            m_shaderResourceGroup->SetConstant(m_maxRoughnessNameIndex, ssrOptions.m_maxRoughness);
 
             FullscreenTrianglePass::CompileResources(context);
         }

@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class SurfaceMaskFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskFilterNode, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskFilterNode, "{FCF18A51-A09D-488A-A909-BDD68E3C59E8}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         SurfaceMaskFilterNode() = default;
         explicit SurfaceMaskFilterNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
     };
 }

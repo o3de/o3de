@@ -8,13 +8,8 @@
 
 
 // Description : Gathers level information. Loads a level.
-
-
-#ifndef CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H
-#define CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H
 #pragma once
 
-#include <CrySizer.h>
 #include <IXml.h>
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -37,6 +32,7 @@ struct ILevelInfo
 
 
 /*!
+ * @deprecated. Deprecated, use AzFramework::LevelSystemLifecycleNotificationBus instead
  * Extend this class and call ILevelSystem::AddListener() to receive level system related events.
  */
 struct ILevelSystemListener
@@ -56,8 +52,6 @@ struct ILevelSystemListener
     virtual void OnLoadingProgress([[maybe_unused]] const char* levelName, [[maybe_unused]] int progressAmount) {}
     //! Called after a level is unloaded, before the data is freed.
     virtual void OnUnloadComplete([[maybe_unused]] const char* levelName) {}
-
-    void GetMemoryUsage([[maybe_unused]] ICrySizer* pSizer) const { }
 };
 
 struct ILevelSystem
@@ -71,7 +65,15 @@ struct ILevelSystem
 
     virtual bool LoadLevel(const char* levelName) = 0;
     virtual void UnloadLevel() = 0;
-    virtual bool IsLevelLoaded() = 0;
+
+    //! Deprecated.
+    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->IsLevelLoaded instead.
+    //! O3DE_DEPRECATION_NOTICE(GHI-12715)
+    virtual bool IsLevelLoaded() const = 0;
+
+    //! Deprecated.
+    //! @deprecated ILevelSystem is part of the legacy CryCommon module, please use AzFramework::LevelSystemLifecycleInterface::Get()->GetCurrentLevelName instead.
+    //! O3DE_DEPRECATION_NOTICE(GHI-12715)
     virtual const char* GetCurrentLevelName() const = 0;
 
     // If the level load failed then we need to have a different shutdown procedure vs when a level is naturally unloaded
@@ -95,5 +97,3 @@ protected:
 
     static constexpr const char* LevelsDirectoryName = "levels";
 };
-
-#endif // CRYINCLUDE_CRYACTION_ILEVELSYSTEM_H

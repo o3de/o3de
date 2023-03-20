@@ -20,7 +20,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(ScaleManipulators, "{C6350CE0-7B7A-46F8-B65F-D4A54DD9A7D9}")
-        AZ_CLASS_ALLOCATOR(ScaleManipulators, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScaleManipulators, AZ::SystemAllocator)
 
         explicit ScaleManipulators(const AZ::Transform& worldFromLocal);
 
@@ -41,13 +41,16 @@ namespace AzToolsFramework
 
         void ConfigureView(float axisLength, const AZ::Color& axis1Color, const AZ::Color& axis2Color, const AZ::Color& axis3Color);
 
+        //! Sets the bound width to use for the line/axis of a linear manipulator.
+        void SetLineBoundWidth(float lineBoundWidth);
+
+        void ProcessManipulators(const ManipulatorVisitCallback&) override;
+
     private:
         AZ_DISABLE_COPY_MOVE(ScaleManipulators)
 
-        // Manipulators
-        void ProcessManipulators(const AZStd::function<void(BaseManipulator*)>&) override;
-
         AZStd::array<AZStd::shared_ptr<LinearManipulator>, 3> m_axisScaleManipulators;
         AZStd::shared_ptr<LinearManipulator> m_uniformScaleManipulator;
+        float m_lineBoundWidth = 0.01f; //!< The default line bound width for the linear manipulator axis.
     };
 } // namespace AzToolsFramework

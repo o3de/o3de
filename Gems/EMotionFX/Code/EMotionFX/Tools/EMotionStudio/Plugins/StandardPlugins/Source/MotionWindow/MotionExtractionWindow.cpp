@@ -6,98 +6,80 @@
  *
  */
 
-// include required headers
-#include "MotionExtractionWindow.h"
-#include "MotionWindowPlugin.h"
-#include "../SceneManager/ActorPropertiesWindow.h"
-#include "../../../../EMStudioSDK/Source/EMStudioManager.h"
-#include <QPushButton>
-#include <QLabel>
-#include <QVBoxLayout>
-#include <QIcon>
-#include <QCheckBox>
-#include <MCore/Source/LogManager.h>
-#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
-#include <EMotionFX/Source/MotionSystem.h>
-#include <EMotionFX/Source/Motion.h>
-#include <EMotionFX/Source/ActorManager.h>
-#include <EMotionFX/Source/MotionManager.h>
+#include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/MotionExtractionWindow.h>
+#include <EMotionStudio/EMStudioSDK/Source/FileManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/Plugins/StandardPlugins/Source/SceneManager/ActorPropertiesWindow.h>
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
-
+#include <EMotionFX/CommandSystem/Source/MotionCommands.h>
+#include <EMotionFX/Source/ActorManager.h>
+#include <EMotionFX/Source/Motion.h>
+#include <EMotionFX/Source/MotionManager.h>
+#include <EMotionFX/Source/MotionSystem.h>
+#include <EMotionFX/Source/MotionData/RootMotionExtractionData.h>
+#include <MCore/Source/LogManager.h>
+#include <QCheckBox>
+#include <QIcon>
+#include <QLabel>
+#include <QPushButton>
+#include <QVBoxLayout>
 
 namespace EMStudio
 {
-    // constructor
-    MotionExtractionWindow::MotionExtractionWindow(QWidget* parent, MotionWindowPlugin* motionWindowPlugin)
+    MotionExtractionWindow::MotionExtractionWindow(QWidget* parent)
         : QWidget(parent)
     {
-        mMotionWindowPlugin                 = motionWindowPlugin;
-        mSelectCallback                     = nullptr;
-        mUnselectCallback                   = nullptr;
-        mClearSelectionCallback             = nullptr;
-        mWarningWidget                      = nullptr;
-        mMainVerticalLayout                 = nullptr;
-        mChildVerticalLayout                = nullptr;
-        mMotionExtractionNodeSelectionWindow= nullptr;
-        mWarningSelectNodeLink              = nullptr;
-        mAdjustActorCallback                = nullptr;
-        mCaptureHeight                      = nullptr;
-        mWarningShowed                      = false;
     }
 
-
-    // destructor
     MotionExtractionWindow::~MotionExtractionWindow()
     {
-        GetCommandManager()->RemoveCommandCallback(mSelectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mUnselectCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mClearSelectionCallback, false);
-        GetCommandManager()->RemoveCommandCallback(mAdjustActorCallback, false);
-        delete mAdjustActorCallback;
-        delete mSelectCallback;
-        delete mUnselectCallback;
-        delete mClearSelectionCallback;
+        for (MCore::Command::Callback* callback : m_commandCallbacks)
+        {
+            GetCommandManager()->RemoveCommandCallback(callback, false);
+            delete callback;
+        }
     }
-
 
 #define MOTIONEXTRACTIONWINDOW_HEIGHT 54
 
     // Create the flags widget.
     void MotionExtractionWindow::CreateFlagsWidget()
     {
-        mFlagsWidget = new QWidget();
+        m_flagsWidget = new QWidget();
 
-        mCaptureHeight = new QCheckBox();
-        AzQtComponents::CheckBox::applyToggleSwitchStyle(mCaptureHeight);
-        connect(mCaptureHeight, &QCheckBox::clicked, this, &MotionExtractionWindow::OnMotionExtractionFlagsUpdated);
+        m_captureHeight = new QCheckBox();
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_captureHeight);
+        connect(m_captureHeight, &QCheckBox::clicked, this, &MotionExtractionWindow::OnMotionExtractionFlagsUpdated);
 
         QGridLayout* layout = new QGridLayout();
         layout->setAlignment(Qt::AlignTop);
         layout->setSpacing(3);
         layout->addWidget(new QLabel(tr("Capture Height Changes")), 0, 0);
-        layout->addWidget(mCaptureHeight, 0, 1);
+        layout->addWidget(m_captureHeight, 0, 1);
         layout->setContentsMargins(0, 0, 0, 0);
-        mFlagsWidget->setLayout(layout);
+        m_flagsWidget->setLayout(layout);
 
-        mChildVerticalLayout->addWidget(mFlagsWidget);
+        m_childVerticalLayout->addWidget(m_flagsWidget);
     }
-
 
     // create the warning widget
     void MotionExtractionWindow::CreateWarningWidget()
     {
         // create the warning widget
-        mWarningWidget = new QWidget();
-        mWarningWidget->setMinimumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
-        mWarningWidget->setMaximumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
+        m_warningWidget = new QWidget();
+        m_warningWidget->setMinimumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
+        m_warningWidget->setMaximumHeight(MOTIONEXTRACTIONWINDOW_HEIGHT);
 
         QLabel* warningLabel = new QLabel("<qt>No node has been selected yet to enable Motion Extraction.</qt>");
         warningLabel->setWordWrap(true);
         warningLabel->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
 
-        mWarningSelectNodeLink = new AzQtComponents::BrowseEdit(mWarningWidget);
-        mWarningSelectNodeLink->setPlaceholderText("Click here to setup the Motion Extraction node");
-        connect(mWarningSelectNodeLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &MotionExtractionWindow::OnSelectMotionExtractionNode);
+        m_warningSelectNodeLink = new AzQtComponents::BrowseEdit(m_warningWidget);
+        m_warningSelectNodeLink->setPlaceholderText("Click here to setup the Motion Extraction node");
+        connect(
+            m_warningSelectNodeLink, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this,
+            &MotionExtractionWindow::OnSelectMotionExtractionNode);
 
         // create and fill the layout
         QVBoxLayout* layout = new QVBoxLayout();
@@ -106,38 +88,81 @@ namespace EMStudio
         layout->setContentsMargins(0, 0, 0, 0);
 
         layout->addWidget(warningLabel);
-        layout->addWidget(mWarningSelectNodeLink);
+        layout->addWidget(m_warningSelectNodeLink);
 
-        mWarningWidget->setLayout(layout);
+        m_warningWidget->setLayout(layout);
 
         // add it to our main layout
-        mChildVerticalLayout->addWidget(mWarningWidget);
+        m_childVerticalLayout->addWidget(m_warningWidget);
     }
 
+    void MotionExtractionWindow::CreateRootMotionWidgets()
+    {
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+        if (!serializeContext)
+        {
+            AZ_Error("MotionExtractionWindow", false, "Can't get serialize context from component application.");
+            return;
+        }
+
+        // Create the checkbox that enables the root motion extraction options.
+        m_extractRootMotionCheck = new QCheckBox();
+        AzQtComponents::CheckBox::applyToggleSwitchStyle(m_extractRootMotionCheck);
+        connect(m_extractRootMotionCheck, &QCheckBox::clicked, this, &MotionExtractionWindow::OnRootMotionCheckboxClicked);
+
+        QWidget* exractRootMotionWidget = new QWidget();
+        QGridLayout* layout = new QGridLayout();
+        layout->setAlignment(Qt::AlignTop);
+        layout->setSpacing(3);
+        layout->addWidget(new QLabel(tr("Extract Root Motion")), 0, 0);
+        layout->addWidget(m_extractRootMotionCheck, 0, 1);
+        layout->setContentsMargins(0, 0, 0, 0);
+        exractRootMotionWidget->setLayout(layout);
+        m_childVerticalLayout->addWidget(exractRootMotionWidget);
+
+        // Create the reflection widget.
+        m_rootMotionExtractionWidget = aznew AzToolsFramework::ReflectedPropertyEditor(this);
+        m_rootMotionExtractionWidget->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+        m_rootMotionExtractionWidget->setObjectName("RootMotionExtractionWidget");
+        m_rootMotionExtractionWidget->Setup(serializeContext, nullptr, false /*enableScrollbars*/, 100);
+        m_rootMotionExtractionWidget->SetSizeHintOffset(QSize(0, 0));
+        m_rootMotionExtractionWidget->SetAutoResizeLabels(false);
+        m_rootMotionExtractionWidget->SetLeafIndentation(0);
+        m_rootMotionExtractionWidget->setStyleSheet("QFrame, .QWidget, QSlider, QCheckBox { background-color: transparent }");
+        m_childVerticalLayout->addWidget(m_rootMotionExtractionWidget);
+
+        // Create the save motion button.
+        m_saveMotionButton = new QPushButton("Save Motion");
+        m_saveMotionButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        connect(m_saveMotionButton, &QPushButton::clicked, this, &MotionExtractionWindow::OnSaveMotion);
+        m_childVerticalLayout->addWidget(m_saveMotionButton);
+    }
 
     // init after the parent dock window has been created
     void MotionExtractionWindow::Init()
     {
-        // create and register the command callbacks
-        mSelectCallback         = new CommandSelectCallback(false);
-        mUnselectCallback       = new CommandUnselectCallback(false);
-        mClearSelectionCallback = new CommandClearSelectionCallback(false);
-        mAdjustActorCallback    = new CommandAdjustActorCallback(false);
-        GetCommandManager()->RegisterCommandCallback("AdjustActor", mAdjustActorCallback);
-        GetCommandManager()->RegisterCommandCallback("Select", mSelectCallback);
-        GetCommandManager()->RegisterCommandCallback("Unselect", mUnselectCallback);
-        GetCommandManager()->RegisterCommandCallback("ClearSelection", mClearSelectionCallback);
+        m_commandCallbacks.emplace_back(new SelectActorCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("Select", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new SelectActorCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("Unselect", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new UpdateMotionExtractionWindowCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("ClearSelection", m_commandCallbacks.back());
+        m_commandCallbacks.emplace_back(new UpdateMotionExtractionWindowCallback(this));
+        CommandSystem::GetCommandManager()->RegisterCommandCallback("AdjustActor", m_commandCallbacks.back());
 
         // create the node selection windows
-        mMotionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
-        connect(mMotionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &MotionExtractionWindow::OnMotionExtractionNodeSelected);
+        m_motionExtractionNodeSelectionWindow = new NodeSelectionWindow(this, true);
+        connect(
+            m_motionExtractionNodeSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this,
+            &MotionExtractionWindow::OnMotionExtractionNodeSelected);
 
         // set some layout for our window
-        mMainVerticalLayout = new QVBoxLayout();
-        mMainVerticalLayout->setSpacing(0);
-        setLayout(mMainVerticalLayout);
+        m_mainVerticalLayout = new QVBoxLayout();
+        m_mainVerticalLayout->setSpacing(0);
+        setLayout(m_mainVerticalLayout);
 
-        QCheckBox* checkBox = new QCheckBox(tr("Motion extraction"));
+        QCheckBox* checkBox = new QCheckBox(tr("Motion Extraction"));
         checkBox->setChecked(true);
         checkBox->setStyleSheet("QCheckBox::indicator\
                 {\
@@ -160,108 +185,110 @@ namespace EMStudio
                 {\
                     image: url(:/Cards/img/UI20/Cards/caret-right.svg);\
                 }");
-        mMainVerticalLayout->addWidget(checkBox);
+        m_mainVerticalLayout->addWidget(checkBox);
         QWidget* childWidget = new QWidget(this);
-        mMainVerticalLayout->addWidget(childWidget);
+        m_mainVerticalLayout->addWidget(childWidget);
 
-        mChildVerticalLayout = new QVBoxLayout(childWidget);
-        mChildVerticalLayout->setContentsMargins(28,0,0,0);
+        m_childVerticalLayout = new QVBoxLayout(childWidget);
+        m_childVerticalLayout->setContentsMargins(28, 0, 0, 0);
         connect(checkBox, &QCheckBox::toggled, childWidget, &QWidget::setVisible);
 
-        // default create the warning widget (this is needed else we're getting a crash when switching layouts as the widget and the flag might be out of sync)
+        // default create the warning widget (this is needed else we're getting a crash when switching layouts as the widget and the flag
+        // might be out of sync)
         CreateWarningWidget();
-        mWarningShowed = true;
+        m_warningShowed = true;
+
+        CreateRootMotionWidgets();
 
         // update interface
         UpdateInterface();
     }
-
 
     void MotionExtractionWindow::UpdateInterface()
     {
         const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
 
         // Check if there actually is any motion selected.
-        const uint32 numSelectedMotions = selectionList.GetNumSelectedMotions();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
         const bool isEnabled = (numSelectedMotions != 0);
 
         EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
 
         // Get the motion extraction and the trajectory node.
-        EMotionFX::Actor*   actor          = nullptr;
-        EMotionFX::Node*    extractionNode = nullptr;
+        EMotionFX::Actor* actor = nullptr;
+        EMotionFX::Node* extractionNode = nullptr;
 
-        if (mCaptureHeight)
+        if (m_captureHeight)
         {
-            mCaptureHeight->setEnabled( isEnabled );
+            m_captureHeight->setEnabled(isEnabled);
         }
 
         if (actorInstance)
         {
-            actor           = actorInstance->GetActor();
-            extractionNode  = actor->GetMotionExtractionNode();
+            actor = actorInstance->GetActor();
+            extractionNode = actor->GetMotionExtractionNode();
         }
 
         if (extractionNode == nullptr)
         {
             // Check if we already show the warning widget, if yes, do nothing.
-            if (mWarningShowed == false)
+            if (m_warningShowed == false)
             {
                 CreateWarningWidget();
 
-                if (mFlagsWidget)
+                if (m_flagsWidget)
                 {
-                    mFlagsWidget->hide();
-                    mFlagsWidget->deleteLater();
-                    mFlagsWidget = nullptr;
-                    mCaptureHeight = nullptr;
+                    m_flagsWidget->hide();
+                    m_flagsWidget->deleteLater();
+                    m_flagsWidget = nullptr;
+                    m_captureHeight = nullptr;
                 }
             }
 
             // Disable the link in case no actor is selected.
             if (actorInstance == nullptr)
             {
-                mWarningSelectNodeLink->setEnabled(false);
+                m_warningSelectNodeLink->setEnabled(false);
             }
             else
             {
-                mWarningSelectNodeLink->setEnabled(true);
+                m_warningSelectNodeLink->setEnabled(true);
             }
 
             // Return directly in case we show the warning widget.
-            mWarningShowed = true;
+            m_warningShowed = true;
             return;
         }
         else
         {
             // Check if we already show the motion extraction flags widget, if yes, do nothing.
-            if (mWarningShowed)
+            if (m_warningShowed)
             {
-                if (mWarningWidget)
+                if (m_warningWidget)
                 {
-                    mWarningWidget->hide();
-                    mWarningWidget->deleteLater();
-                    mWarningWidget = nullptr;
+                    m_warningWidget->hide();
+                    m_warningWidget->deleteLater();
+                    m_warningWidget = nullptr;
                 }
 
                 CreateFlagsWidget();
             }
 
-            if (mCaptureHeight)
+            if (m_captureHeight)
             {
-                mCaptureHeight->setEnabled( isEnabled );
+                m_captureHeight->setEnabled(isEnabled);
             }
 
             // Figure out if all selected motions use the same settings.
             bool allCaptureHeightEqual = true;
-            uint32 numCaptureHeight = 0;
-            const uint32 numMotions = selectionList.GetNumSelectedMotions();
+            size_t numCaptureHeight = 0;
+            const size_t numMotions = selectionList.GetNumSelectedMotions();
             bool curCaptureHeight = false;
 
-            for (uint32 i = 0; i < numMotions; ++i)
+            for (size_t i = 0; i < numMotions; ++i)
             {
                 EMotionFX::Motion* curMotion = selectionList.GetMotion(i);
-                EMotionFX::Motion* prevMotion = (i>0) ? selectionList.GetMotion(i-1) : nullptr;
+                EMotionFX::Motion* prevMotion = (i > 0) ? selectionList.GetMotion(i - 1) : nullptr;
                 curCaptureHeight = (curMotion->GetMotionExtractionFlags() & EMotionFX::MOTIONEXTRACT_CAPTURE_Z);
 
                 if (curCaptureHeight)
@@ -280,53 +307,78 @@ namespace EMStudio
 
             // Adjust the height capture checkbox, based on the selected motions.
             const bool triState = (numMotions > 1) && !allCaptureHeightEqual;
-            mCaptureHeight->setTristate( triState );
+            m_captureHeight->setTristate(triState);
             if (numMotions > 1)
             {
                 if (!allCaptureHeightEqual)
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::PartiallyChecked );
+                    m_captureHeight->setCheckState(Qt::CheckState::PartiallyChecked);
                 }
                 else
                 {
-                    mCaptureHeight->setChecked( curCaptureHeight );
+                    m_captureHeight->setChecked(curCaptureHeight);
                 }
             }
             else
             {
                 if (numCaptureHeight > 0)
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::Checked );
+                    m_captureHeight->setCheckState(Qt::CheckState::Checked);
                 }
                 else
                 {
-                    mCaptureHeight->setCheckState( Qt::CheckState::Unchecked );
+                    m_captureHeight->setCheckState(Qt::CheckState::Unchecked);
                 }
             }
 
-            mWarningShowed = false;
+            m_warningShowed = false;
+
+            m_rootMotionExtractionWidget->ClearInstances();
+            m_extractRootMotionCheck->setChecked(false);
+
+            // When multi selection, use the first motion in the selection list to build the reflection widget.
+            if (numMotions >= 1)
+            {
+                const EMotionFX::Motion* curMotion = selectionList.GetMotion(0);
+
+                const auto& rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
+                if (rootMotionDataPtr)
+                {
+                    // Add the reflection widget for root motion extraction modifier
+                    EMotionFX::RootMotionExtractionData* rootMotionData = rootMotionDataPtr.get();
+                    const AZ::TypeId& typeId = azrtti_typeid(rootMotionData);
+                    m_rootMotionExtractionWidget->AddInstance(rootMotionData, typeId);
+                    m_rootMotionExtractionWidget->show();
+                    m_rootMotionExtractionWidget->ExpandAll();
+
+                    m_extractRootMotionCheck->setChecked(true);
+                }
+                else
+                {
+                    m_extractRootMotionCheck->setChecked(false);
+                }
+            }
+            m_rootMotionExtractionWidget->InvalidateAll();
         }
     }
 
-    
     // The the currently set motion extraction flags from the interface.
     EMotionFX::EMotionExtractionFlags MotionExtractionWindow::GetMotionExtractionFlags() const
     {
         int flags = 0;
-        
-        if (mCaptureHeight->checkState() == Qt::CheckState::Checked)
+
+        if (m_captureHeight->checkState() == Qt::CheckState::Checked)
             flags |= EMotionFX::MOTIONEXTRACT_CAPTURE_Z;
 
         return static_cast<EMotionFX::EMotionExtractionFlags>(flags);
     }
-    
-    
+
     // Called when any of the motion extraction flags buttons got pressed.
     void MotionExtractionWindow::OnMotionExtractionFlagsUpdated()
     {
-        const CommandSystem::SelectionList& selectionList       = GetCommandManager()->GetCurrentSelection();
-        const uint32                        numSelectedMotions  = selectionList.GetNumSelectedMotions();
-        EMotionFX::ActorInstance*           actorInstance       = selectionList.GetSingleActorInstance();
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+        EMotionFX::ActorInstance* actorInstance = selectionList.GetSingleActorInstance();
 
         // Check if there is at least one motion selected and exactly one actor instance.
         if (!actorInstance || numSelectedMotions == 0)
@@ -353,13 +405,14 @@ namespace EMStudio
 
         // Iterate through all selected motions.
         AZStd::string command;
-        for (uint32 i = 0; i < numSelectedMotions; ++i)
+        for (size_t i = 0; i < numSelectedMotions; ++i)
         {
             // Get the current selected motion, check if it is a skeletal motion, skip directly elsewise.
             EMotionFX::Motion* motion = selectionList.GetMotion(i);
 
             // Prepare the command and add it to the command group.
-            command = AZStd::string::format("AdjustMotion -motionID %i -motionExtractionFlags %i", motion->GetID(), static_cast<uint8>(extractionFlags));
+            command = AZStd::string::format(
+                "AdjustMotion -motionID %i -motionExtractionFlags %i", motion->GetID(), static_cast<uint8>(extractionFlags));
             commandGroup.AddCommandString(command.c_str());
         }
 
@@ -376,7 +429,62 @@ namespace EMStudio
             }
         }
     }
-    
+
+    void MotionExtractionWindow::OnRootMotionCheckboxClicked()
+    {
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+
+        for (size_t motionIndex = 0; motionIndex < numSelectedMotions; ++motionIndex)
+        {
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(motionIndex);
+            AZStd::shared_ptr<EMotionFX::RootMotionExtractionData> rootMotionDataPtr = curMotion->GetRootMotionExtractionData();
+            if (!rootMotionDataPtr && m_extractRootMotionCheck->isChecked())
+            {
+                rootMotionDataPtr = AZStd::make_shared<EMotionFX::RootMotionExtractionData>();
+                EMotionFX::ActorInstance* actorInstance = GetCommandManager()->GetCurrentSelection().GetSingleActorInstance();
+                if (actorInstance)
+                {
+                    rootMotionDataPtr->FindBestMatchedJoints(actorInstance->GetActor());
+                }
+                curMotion->SetRootMotionExtractionData(rootMotionDataPtr);
+            }
+
+            if (rootMotionDataPtr && !m_extractRootMotionCheck->isChecked())
+            {
+                curMotion->SetRootMotionExtractionData(nullptr);
+            }
+
+            curMotion->SetDirtyFlag(true);
+        }
+
+        UpdateInterface();
+    }
+
+    void MotionExtractionWindow::OnSaveMotion()
+    {
+        const CommandSystem::SelectionList& selectionList = GetCommandManager()->GetCurrentSelection();
+        const size_t numSelectedMotions = selectionList.GetNumSelectedMotions();
+        EMotionFX::RootMotionExtractionData* firstMotionRootExtractionData = nullptr;
+
+        for (size_t motionIndex = 0; motionIndex < numSelectedMotions; ++motionIndex)
+        {
+            EMotionFX::Motion* curMotion = selectionList.GetMotion(motionIndex);
+
+            // When multi selected, take the first motion's root motion data and copy it to other selected motions.
+            if (motionIndex == 0)
+            {
+                firstMotionRootExtractionData = curMotion->GetRootMotionExtractionData().get();
+            }
+            else
+            {
+                auto curMotionRootExtractionData =
+                    firstMotionRootExtractionData ? AZStd::make_shared<EMotionFX::RootMotionExtractionData>(*firstMotionRootExtractionData) : nullptr;
+                curMotion->SetRootMotionExtractionData(curMotionRootExtractionData);
+            }
+            GetMainWindow()->GetFileManager()->SaveMotion(curMotion->GetID());
+        }
+    }
 
     // open node selection window so that we can select a motion extraction node
     void MotionExtractionWindow::OnSelectMotionExtractionNode()
@@ -388,10 +496,9 @@ namespace EMStudio
             return;
         }
 
-        mMotionExtractionNodeSelectionWindow->Update(actorInstance->GetID());
-        mMotionExtractionNodeSelectionWindow->show();
+        m_motionExtractionNodeSelectionWindow->Update(actorInstance->GetID());
+        m_motionExtractionNodeSelectionWindow->show();
     }
-
 
     void MotionExtractionWindow::OnMotionExtractionNodeSelected(AZStd::vector<SelectionItem> selection)
     {
@@ -404,7 +511,8 @@ namespace EMStudio
         MCore::CommandGroup commandGroup("Adjust motion extraction node");
 
         // adjust the actor
-        commandGroup.AddCommandString(AZStd::string::format("AdjustActor -actorID %i -motionExtractionNodeName \"%s\"", actorID, nodeName.c_str()).c_str());
+        commandGroup.AddCommandString(
+            AZStd::string::format("AdjustActor -actorID %i -motionExtractionNodeName \"%s\"", actorID, nodeName.c_str()).c_str());
 
         // execute the command group
         AZStd::string outResult;
@@ -418,68 +526,51 @@ namespace EMStudio
     // command callbacks
     //-----------------------------------------------------------------------------------------
 
-    bool UpdateInterfaceMotionExtractionWindow()
+    MotionExtractionWindow::SelectActorCallback::SelectActorCallback(MotionExtractionWindow* motionExtractionWindow)
+        : MCore::Command::Callback(false)
+        , m_motionExtractionWindow(motionExtractionWindow)
     {
-        EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(MotionWindowPlugin::CLASS_ID);
-        if (plugin == nullptr)
+    }
+
+    bool MotionExtractionWindow::SelectActorCallback::Execute(
+        [[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
+    {
+        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
-            return false;
+            return true;
         }
-
-        MotionWindowPlugin* motionWindowPlugin = (MotionWindowPlugin*)plugin;
-        MotionExtractionWindow* motionExtractionWindow = motionWindowPlugin->GetMotionExtractionWindow();
-
-        // is the plugin visible? only update it if it is visible
-        //if (motionExtractionWindow->visibleRegion().isEmpty() == false) // TODO: enable this again. problem is we need some callback when it gets visible again and as this is not related to the window plugin but a stack dialog we first need to add some callback for "OnHeaderButtonPressed" inside the dialog stack...also let's not forget to add it to the plugin's VisibilityChanged callback then!
-        motionExtractionWindow->UpdateInterface();
-
+        m_motionExtractionWindow->UpdateInterface();
         return true;
     }
 
-    bool MotionExtractionWindow::CommandSelectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::SelectActorCallback::Undo([[maybe_unused]] MCore::Command* command, const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
         if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
         {
             return true;
         }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
 
-    bool MotionExtractionWindow::CommandSelectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    MotionExtractionWindow::UpdateMotionExtractionWindowCallback::UpdateMotionExtractionWindowCallback(
+        MotionExtractionWindow* motionExtractionWindow)
+        : MCore::Command::Callback(false)
+        , m_motionExtractionWindow(motionExtractionWindow)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
     }
 
-    bool MotionExtractionWindow::CommandUnselectCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::UpdateMotionExtractionWindowCallback::Execute(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
 
-    bool MotionExtractionWindow::CommandUnselectCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)
+    bool MotionExtractionWindow::UpdateMotionExtractionWindowCallback::Undo(
+        [[maybe_unused]] MCore::Command* command, [[maybe_unused]] const MCore::CommandLine& commandLine)
     {
-        MCORE_UNUSED(command);
-        if (CommandSystem::CheckIfHasActorSelectionParameter(commandLine) == false)
-        {
-            return true;
-        }
-        return UpdateInterfaceMotionExtractionWindow();
+        m_motionExtractionWindow->UpdateInterface();
+        return true;
     }
-
-    bool MotionExtractionWindow::CommandClearSelectionCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine) { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandClearSelectionCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)    { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandAdjustActorCallback::Execute(MCore::Command* command, const MCore::CommandLine& commandLine)    { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
-    bool MotionExtractionWindow::CommandAdjustActorCallback::Undo(MCore::Command* command, const MCore::CommandLine& commandLine)       { MCORE_UNUSED(command); MCORE_UNUSED(commandLine); return UpdateInterfaceMotionExtractionWindow(); }
 } // namespace EMStudio
-
-#include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/MotionWindow/moc_MotionExtractionWindow.cpp>

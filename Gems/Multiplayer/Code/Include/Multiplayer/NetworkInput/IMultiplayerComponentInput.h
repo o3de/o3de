@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayerDebug.h>
 #include <Multiplayer/MultiplayerTypes.h>
 #include <AzNetworking/DataStructures/FixedSizeBitset.h>
 #include <AzCore/std/containers/vector.h>
@@ -26,6 +27,7 @@ namespace Multiplayer
         virtual ~IMultiplayerComponentInput() = default;
         virtual NetComponentId GetNetComponentId() const = 0;
         virtual bool Serialize(AzNetworking::ISerializer& serializer) = 0;
+        virtual MultiplayerAuditingElement GetInputDeltaLog() const = 0;
         virtual IMultiplayerComponentInput& operator= (const IMultiplayerComponentInput&) { return *this; }
     };
 

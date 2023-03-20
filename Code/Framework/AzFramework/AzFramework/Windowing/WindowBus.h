@@ -32,6 +32,13 @@ namespace AzFramework
         uint32_t m_height = 0;
     };
 
+    //! Options for resizing and moving the window.
+    struct WindowPosOptions
+    {
+        //! This flag will allow the window to be resized bigger than the screen width or height.
+        bool m_ignoreScreenSizeLimit = false;
+    };
+
     //! Bus for sending requests to any kind of window.
     //! It could be a NativeWindow or an Editor window.
     class WindowRequests
@@ -53,7 +60,13 @@ namespace AzFramework
         virtual WindowSize GetClientAreaSize() const = 0;
 
         //! Set the client area size. This is the size that can be rendered to.
-        virtual void ResizeClientArea(WindowSize clientAreaSize) = 0;
+        //! \param[in] clientAreaSize Size of the client area in pixels
+        //! \param[in] options Options for resizing and moving the window.
+        virtual void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) = 0;
+
+        //! Does this platform support window resizing.
+        //! Generally desktop platforms support resizing, mobile platforms don't.
+        virtual bool SupportsClientAreaResize() const = 0;
 
         //! Get the full screen state of the window.
         //! \return True if the window is currently in full screen, false otherwise.
@@ -74,6 +87,16 @@ namespace AzFramework
         //! to a "standard" value of 96, the default for Windows in a DPI unaware setting. This can
         //! be used to scale user interface elements to ensure legibility on high density displays.
         virtual float GetDpiScaleFactor() const = 0;
+
+        //! Returns the sync interval which tells the drivers the number of v-blanks to synchronize with
+        virtual uint32_t GetSyncInterval() const = 0;
+
+        //! Sets the sync interval which tells the drivers the number of v-blanks to synchronize with
+        //! Returns if the sync interval was successfully set
+        virtual bool SetSyncInterval(uint32_t newSyncInterval) = 0;
+
+        //! Returns the refresh rate of the main display
+        virtual uint32_t GetDisplayRefreshRate() const = 0;
     };
     using WindowRequestBus = AZ::EBus<WindowRequests>;
 
@@ -101,6 +124,9 @@ namespace AzFramework
 
         //! This is called when vsync interval is changed.
         virtual void OnVsyncIntervalChanged(uint32_t interval) { AZ_UNUSED(interval); };
+
+        //! This is called if the main display's refresh rate changes
+        virtual void OnRefreshRateChanged([[maybe_unused]] uint32_t refreshRate) {}
     };
     using WindowNotificationBus = AZ::EBus<WindowNotifications>;
 

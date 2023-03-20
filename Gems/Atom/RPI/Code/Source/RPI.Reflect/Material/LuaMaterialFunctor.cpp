@@ -8,7 +8,9 @@
 
 #include <Atom/RPI.Reflect/Material/LuaMaterialFunctor.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertiesLayout.h>
+#include <Atom/RPI.Reflect/Material/LuaScriptUtilities.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Script/ScriptAsset.h>
@@ -17,7 +19,6 @@
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
 #include <AzCore/Math/Color.h>
-#include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
 {
@@ -30,9 +31,7 @@ namespace AZ
                 serializeContext->Class<LuaMaterialFunctor, RPI::MaterialFunctor>()
                     ->Version(1)
                     ->Field("scriptAsset", &LuaMaterialFunctor::m_scriptAsset)
-                    ->Field("propertyNamePrefix", &LuaMaterialFunctor::m_propertyNamePrefix)
-                    ->Field("srgNamePrefix", &LuaMaterialFunctor::m_srgNamePrefix)
-                    ->Field("optionsNamePrefix", &LuaMaterialFunctor::m_optionsNamePrefix)
+                    ->Field("materialNameContext", &LuaMaterialFunctor::m_materialNameContext)
                     ;
             }
         }
@@ -42,7 +41,7 @@ namespace AZ
             // [GFX TODO][ATOM-13648] Add local system allocator to material system
             // ScriptContext creates a new allocator if null (default) is passed in.
             // Temporarily using system allocator for preventing hitting the max allocator number.
-            m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(ScriptContextIds::DefaultScriptContextId, &AZ::AllocatorInstance<AZ::SystemAllocator>::Get());
+            m_scriptContext = AZStd::make_unique<AZ::ScriptContext>(AZ_CRC_CE("MaterialFunctor"), &AZ::AllocatorInstance<AZ::SystemAllocator>::Get());
             m_sriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
 
             ReflectScriptContext(m_sriptBehaviorContext.get());
@@ -61,11 +60,12 @@ namespace AZ
             MaterialPropertyDescriptor::Reflect(behaviorContext);
             ReflectMaterialDynamicMetadata(behaviorContext);
 
-            LuaMaterialFunctorRenderStates::Reflect(behaviorContext);
-            LuaMaterialFunctorShaderItem::Reflect(behaviorContext);
-            LuaMaterialFunctorUtilities::Reflect(behaviorContext);
-            LuaMaterialFunctorRuntimeContext::Reflect(behaviorContext);
-            LuaMaterialFunctorEditorContext::Reflect(behaviorContext);
+            LuaMaterialFunctorAPI::RenderStates::Reflect(behaviorContext);
+            LuaMaterialFunctorAPI::ShaderItem::Reflect(behaviorContext);
+            LuaScriptUtilities::Reflect(behaviorContext);
+            LuaMaterialFunctorAPI::RuntimeContext::Reflect(behaviorContext);
+            LuaMaterialFunctorAPI::PipelineRuntimeContext::Reflect(behaviorContext);
+            LuaMaterialFunctorAPI::EditorContext::Reflect(behaviorContext);
         }
 
         const AZStd::vector<char>& LuaMaterialFunctor::GetScriptBuffer() const
@@ -77,7 +77,7 @@ namespace AZ
             }
             else if (m_scriptAsset.IsReady())
             {
-                return m_scriptAsset->GetScriptBuffer();
+                return m_scriptAsset->m_data.GetScriptBuffer();
             }
             else
             {
@@ -110,7 +110,7 @@ namespace AZ
 
                 if (!m_scriptContext->Execute(scriptBuffer.data(), GetScriptDescription(), scriptBuffer.size()))
                 {
-                    AZ_Error(LuaMaterialFunctorUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
+                    AZ_Error(LuaScriptUtilities::DebugName, false, "Error initializing script '%s'.", m_scriptAsset.ToString<AZStd::string>().c_str());
                     m_scriptStatus = ScriptStatus::Error;
                 }
                 else
@@ -120,15 +120,15 @@ namespace AZ
             }
         }
 
-        void LuaMaterialFunctor::Process(RuntimeContext& context)
+        void LuaMaterialFunctor::Process(MaterialFunctorAPI::RuntimeContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
-                LuaMaterialFunctorRuntimeContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
+                LuaMaterialFunctorAPI::RuntimeContext luaContext{&context, &GetMaterialPropertyDependencies(), &m_materialNameContext};
                 AZ::ScriptDataContext call;
                 if (m_scriptContext->Call("Process", call))
                 {
@@ -138,15 +138,33 @@ namespace AZ
             }
         }
 
-        void LuaMaterialFunctor::Process(EditorContext& context)
+        void LuaMaterialFunctor::Process(MaterialFunctorAPI::PipelineRuntimeContext& context)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             InitScriptContext();
 
             if (m_scriptStatus == ScriptStatus::Ready)
             {
-                LuaMaterialFunctorEditorContext luaContext{&context, m_propertyNamePrefix, m_srgNamePrefix, m_optionsNamePrefix};
+                LuaMaterialFunctorAPI::PipelineRuntimeContext luaContext{&context, &GetMaterialPropertyDependencies(), &m_materialNameContext};
+                AZ::ScriptDataContext call;
+                if (m_scriptContext->Call("Process", call))
+                {
+                    call.PushArg(luaContext);
+                    call.CallExecute();
+                }
+            }
+        }
+
+        void LuaMaterialFunctor::Process(MaterialFunctorAPI::EditorContext& context)
+        {
+            AZ_PROFILE_FUNCTION(RPI);
+
+            InitScriptContext();
+
+            if (m_scriptStatus == ScriptStatus::Ready)
+            {
+                LuaMaterialFunctorAPI::EditorContext luaContext{&context, &m_materialNameContext};
                 AZ::ScriptDataContext call;
                 if (m_scriptContext->Call("ProcessEditor", call))
                 {
@@ -156,75 +174,95 @@ namespace AZ
             }
         }
 
-        LuaMaterialFunctorCommonContext::LuaMaterialFunctorCommonContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
-            const AZStd::string& propertyNamePrefix,
-            const AZStd::string& srgNamePrefix,
-            const AZStd::string& optionsNamePrefix)
-            : m_runtimeContextImpl(runtimeContextImpl)
-            , m_propertyNamePrefix(propertyNamePrefix)
-            , m_srgNamePrefix(srgNamePrefix)
-            , m_optionsNamePrefix(optionsNamePrefix)
+        LuaMaterialFunctorAPI::CommonRuntimeConfiguration::CommonRuntimeConfiguration(
+            MaterialPropertyPsoHandling psoHandling,
+            const MaterialPropertyFlags* materialPropertyDependencies,
+            const MaterialPropertiesLayout* materialPropertiesLayout)
+            : m_psoHandling(psoHandling)
+            , m_materialPropertyDependencies(materialPropertyDependencies)
+            , m_materialPropertiesLayout(materialPropertiesLayout)
         {
         }
 
-        LuaMaterialFunctorCommonContext::LuaMaterialFunctorCommonContext(MaterialFunctor::EditorContext* editorContextImpl,
-            const AZStd::string& propertyNamePrefix,
-            const AZStd::string& srgNamePrefix,
-            const AZStd::string& optionsNamePrefix)
-            : m_editorContextImpl(editorContextImpl)
-            , m_propertyNamePrefix(propertyNamePrefix)
-            , m_srgNamePrefix(srgNamePrefix)
-            , m_optionsNamePrefix(optionsNamePrefix)
+        AZStd::string LuaMaterialFunctorAPI::CommonRuntimeConfiguration::GetMaterialPropertyDependenciesString() const
+        {
+            AZStd::vector<AZStd::string> propertyList;
+            for (size_t i = 0; i < m_materialPropertyDependencies->size(); ++i)
+            {
+                if ((*m_materialPropertyDependencies)[i])
+                {
+                    propertyList.push_back(m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{i})->GetName().GetStringView());
+                }
+            }
+
+            AZStd::string propertyListString;
+            AzFramework::StringFunc::Join(propertyListString, propertyList.begin(), propertyList.end(), ", ");
+
+            return propertyListString;
+        }
+
+        bool LuaMaterialFunctorAPI::CommonRuntimeConfiguration::CheckPsoChangesAllowed()
+        {
+            if (m_psoHandling == MaterialPropertyPsoHandling::Error)
+            {
+                if (!m_psoChangesReported)
+                {
+                    LuaScriptUtilities::Error(
+                        AZStd::string::format(
+                            "The following material properties must not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
+                    
+                    m_psoChangesReported = true;
+                }
+
+                return false;
+            }
+            else if (m_psoHandling == MaterialPropertyPsoHandling::Warning)
+            {
+                if (!m_psoChangesReported)
+                {
+                    LuaScriptUtilities::Warning(
+                        AZStd::string::format(
+                            "The following material properties should not be changed at runtime because they impact Pipeline State Objects: %s", GetMaterialPropertyDependenciesString().c_str()));
+                    
+                    m_psoChangesReported = true;
+                }
+            }
+
+            return true;
+        }
+
+        LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReadMaterialPropertyValues(
+            MaterialFunctorAPI::ReadMaterialPropertyValues* underlyingApi,
+            const MaterialNameContext* materialNameContext)
+            : m_underlyingApi(underlyingApi)
+            , m_materialNameContext(materialNameContext)
         {
         }
 
-        MaterialPropertyIndex LuaMaterialFunctorCommonContext::GetMaterialPropertyIndex(const char* name, const char* functionName) const
+        MaterialPropertyIndex LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyIndex(const char* name, const char* functionName) const
         {
             MaterialPropertyIndex propertyIndex;
 
-            Name propertyFullName{m_propertyNamePrefix + name};
-
-            if (m_runtimeContextImpl)
-            {
-                propertyIndex = m_runtimeContextImpl->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
-            }
-            else if (m_editorContextImpl)
-            {
-                propertyIndex = m_editorContextImpl->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
-            }
-            else
-            {
-                AZ_Assert(false, "Context not initialized properly");
-            }
+            Name propertyFullName{name};
+            m_materialNameContext->ContextualizeProperty(propertyFullName);
+            
+            propertyIndex = m_underlyingApi->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
 
             if (!propertyIndex.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("%s() could not find property '%s'", functionName, propertyFullName.GetCStr()));
+                LuaScriptUtilities::Error(AZStd::string::format("%s() could not find property '%s'", functionName, propertyFullName.GetCStr()));
             }
 
             return propertyIndex;
         }
 
-        const MaterialPropertyValue& LuaMaterialFunctorCommonContext::GetMaterialPropertyValue(MaterialPropertyIndex propertyIndex) const
+        const MaterialPropertyValue& LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(MaterialPropertyIndex propertyIndex) const
         {
-            if (m_runtimeContextImpl)
-            {
-                return m_runtimeContextImpl->GetMaterialPropertyValue(propertyIndex);
-            }
-            else if (m_editorContextImpl)
-            {
-                return m_editorContextImpl->GetMaterialPropertyValue(propertyIndex);
-            }
-            else
-            {
-                AZ_Assert(false, "Context not initialized properly");
-                static MaterialPropertyValue defaultValue;
-                return defaultValue;
-            }
+            return m_underlyingApi->GetMaterialPropertyValue(propertyIndex);
         }
 
         template<typename Type>
-        Type LuaMaterialFunctorCommonContext::GetMaterialPropertyValue(const char* name) const
+        Type LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const char* name) const
         {
             MaterialPropertyIndex index = GetMaterialPropertyIndex(name, "GetMaterialPropertyValue");
 
@@ -237,13 +275,13 @@ namespace AZ
 
             if (!value.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetMaterialPropertyValue() got invalid value for property '%s'", name));
+                LuaScriptUtilities::Error(AZStd::string::format("GetMaterialPropertyValue() got invalid value for property '%s'", name));
                 return {};
             }
 
             if (!value.Is<Type>())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetMaterialPropertyValue() accessed property '%s' using the wrong data type.", name));
+                LuaScriptUtilities::Error(AZStd::string::format("GetMaterialPropertyValue() accessed property '%s' using the wrong data type.", name));
                 return {};
             }
 
@@ -254,227 +292,328 @@ namespace AZ
         // The script can then check the result for nil without calling "get()".
         // For example, "GetMaterialPropertyValue_Image(name) == nil" rather than "GetMaterialPropertyValue_Image(name):get() == nil"
         template<>
-        Image* LuaMaterialFunctorCommonContext::GetMaterialPropertyValue(const char* name) const
+        Image* LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue(const char* name) const
         {
             return GetMaterialPropertyValue<Data::Instance<Image>>(name).get();
         }
 
-        // Explicit specialization must be declared before expanding it in LuaMaterialFunctorRuntimeContext::Reflect()
-        template<>
-        bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValue(const char* name, const char* value);
-
-        void LuaMaterialFunctorRuntimeContext::Reflect(BehaviorContext* behaviorContext)
+        template<typename LuaApiClass>
+        void LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass(BehaviorContext::ClassBuilder<LuaApiClass>* subclassBuilder)
         {
-            behaviorContext->Class<LuaMaterialFunctorRuntimeContext>()
-                ->Method("GetMaterialPropertyValue_bool", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<bool>)
-                ->Method("GetMaterialPropertyValue_int", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<int32_t>)
-                ->Method("GetMaterialPropertyValue_uint", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<uint32_t>)
-                ->Method("GetMaterialPropertyValue_enum", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<uint32_t>)
-                ->Method("GetMaterialPropertyValue_float", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<float>)
-                ->Method("GetMaterialPropertyValue_Vector2", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector2>)
-                ->Method("GetMaterialPropertyValue_Vector3", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector3>)
-                ->Method("GetMaterialPropertyValue_Vector4", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Vector4>)
-                ->Method("GetMaterialPropertyValue_Color", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Color>)
-                ->Method("GetMaterialPropertyValue_Image", &LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue<Image*>)
-                ->Method("SetShaderConstant_bool", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<bool>)
-                ->Method("SetShaderConstant_int", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<int32_t>)
-                ->Method("SetShaderConstant_uint", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<uint32_t>)
-                ->Method("SetShaderConstant_float", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<float>)
-                ->Method("SetShaderConstant_Vector2", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Vector2>)
-                ->Method("SetShaderConstant_Vector3", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Vector3>)
-                ->Method("SetShaderConstant_Vector4", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Vector4>)
-                ->Method("SetShaderConstant_Color", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Color>)
-                ->Method("SetShaderConstant_Matrix3x3", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Matrix3x3>)
-                ->Method("SetShaderConstant_Matrix4x4", &LuaMaterialFunctorRuntimeContext::SetShaderConstant<Matrix4x4>)
-                ->Method("SetShaderOptionValue_bool", &LuaMaterialFunctorRuntimeContext::SetShaderOptionValue<bool>)
-                ->Method("SetShaderOptionValue_uint", &LuaMaterialFunctorRuntimeContext::SetShaderOptionValue<uint32_t>)
-                ->Method("SetShaderOptionValue_enum", &LuaMaterialFunctorRuntimeContext::SetShaderOptionValue<const char*>)
-                ->Method("GetShaderCount", &LuaMaterialFunctorRuntimeContext::GetShaderCount)
-                ->Method("GetShader", &LuaMaterialFunctorRuntimeContext::GetShader)
-                ->Method("GetShaderByTag", &LuaMaterialFunctorRuntimeContext::GetShaderByTag)
-                ->Method("HasShaderWithTag", &LuaMaterialFunctorRuntimeContext::HasShaderWithTag)
+            subclassBuilder
+                ->Method("GetMaterialPropertyValue_bool", &LuaApiClass::template GetMaterialPropertyValue<bool>)
+                ->Method("GetMaterialPropertyValue_int", &LuaApiClass::template GetMaterialPropertyValue<int32_t>)
+                ->Method("GetMaterialPropertyValue_uint", &LuaApiClass::template GetMaterialPropertyValue<uint32_t>)
+                ->Method("GetMaterialPropertyValue_enum", &LuaApiClass::template GetMaterialPropertyValue<uint32_t>)
+                ->Method("GetMaterialPropertyValue_float", &LuaApiClass::template GetMaterialPropertyValue<float>)
+                ->Method("GetMaterialPropertyValue_Vector2", &LuaApiClass::template GetMaterialPropertyValue<Vector2>)
+                ->Method("GetMaterialPropertyValue_Vector3", &LuaApiClass::template GetMaterialPropertyValue<Vector3>)
+                ->Method("GetMaterialPropertyValue_Vector4", &LuaApiClass::template GetMaterialPropertyValue<Vector4>)
+                ->Method("GetMaterialPropertyValue_Color", &LuaApiClass::template GetMaterialPropertyValue<Color>)
+                ->Method("GetMaterialPropertyValue_Image", &LuaApiClass::template GetMaterialPropertyValue<Image*>)
+                ->Method("HasMaterialProperty", &LuaApiClass::HasMaterialValue)
                 ;
         }
 
-        LuaMaterialFunctorRuntimeContext::LuaMaterialFunctorRuntimeContext(MaterialFunctor::RuntimeContext* runtimeContextImpl,
-            const AZStd::string& propertyNamePrefix,
-            const AZStd::string& srgNamePrefix,
-            const AZStd::string& optionsNamePrefix)
-            : LuaMaterialFunctorCommonContext(runtimeContextImpl, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
-            , m_runtimeContextImpl(runtimeContextImpl)
+        void LuaMaterialFunctorAPI::RuntimeContext::Reflect(BehaviorContext* behaviorContext)
+        {
+            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::RuntimeContext>()
+                ->Method("SetShaderConstant_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<bool>)
+                ->Method("SetShaderConstant_int", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<int32_t>)
+                ->Method("SetShaderConstant_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<uint32_t>)
+                ->Method("SetShaderConstant_float", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<float>)
+                ->Method("SetShaderConstant_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector2>)
+                ->Method("SetShaderConstant_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector3>)
+                ->Method("SetShaderConstant_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Vector4>)
+                ->Method("SetShaderConstant_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Color>)
+                ->Method("SetShaderConstant_Matrix3x3", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Matrix3x3>)
+                ->Method("SetShaderConstant_Matrix4x4", &LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant<Matrix4x4>)
+                ->Method("SetInternalMaterialPropertyValue_bool", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<bool>)
+                ->Method("SetInternalMaterialPropertyValue_int", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<int32_t>)
+                ->Method("SetInternalMaterialPropertyValue_uint", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
+                ->Method("SetInternalMaterialPropertyValue_enum", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<uint32_t>)
+                ->Method("SetInternalMaterialPropertyValue_float", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<float>)
+                // I'm not really sure what use case there might be for passing these data types to the material pipeline, but we might as well provide
+                // them to remain consistent with the types that are supported by the GetMaterialPropertyValue function above.
+                ->Method("SetInternalMaterialPropertyValue_Vector2", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector2>)
+                ->Method("SetInternalMaterialPropertyValue_Vector3", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector3>)
+                ->Method("SetInternalMaterialPropertyValue_Vector4", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Vector4>)
+                ->Method("SetInternalMaterialPropertyValue_Color", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Color>)
+                ->Method("SetInternalMaterialPropertyValue_Image", &LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue<Image*>)
+                ;
+
+            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(builder);
+            LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass<LuaMaterialFunctorAPI::RuntimeContext>(builder);
+        }
+
+        template<typename LuaApiClass>
+        void LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass(BehaviorContext::ClassBuilder<LuaApiClass>* subclassBuilder)
+        {
+            subclassBuilder
+                ->Method("SetShaderOptionValue_bool", &LuaApiClass::template SetShaderOptionValue<bool>)
+                ->Method("SetShaderOptionValue_uint", &LuaApiClass::template SetShaderOptionValue<uint32_t>)
+                ->Method("SetShaderOptionValue_enum", &LuaApiClass::template SetShaderOptionValue<const char*>)
+                ->Method("GetShaderCount", &LuaApiClass::GetShaderCount)
+                ->Method("GetShader", &LuaApiClass::GetShader)
+                ->Method("GetShaderByTag", &LuaApiClass::GetShaderByTag)
+                ->Method("HasShaderWithTag", &LuaApiClass::HasShaderWithTag)
+                ;
+        }
+
+        LuaMaterialFunctorAPI::ConfigureShaders::ConfigureShaders(
+            MaterialFunctorAPI::ConfigureShaders* underlyingApi,
+            const MaterialNameContext* materialNameContext,
+            CommonRuntimeConfiguration* commonRuntimeConfiguration)
+            : m_underlyingApi(underlyingApi)
+            , m_materialNameContext(materialNameContext)
+            , m_commonRuntimeConfiguration(commonRuntimeConfiguration)
         {
         }
 
-        template<typename Type>
-        Type LuaMaterialFunctorRuntimeContext::GetMaterialPropertyValue(const char* name) const
+        bool LuaMaterialFunctorAPI::ReadMaterialPropertyValues::HasMaterialValue(const char* name) const
         {
-            return LuaMaterialFunctorCommonContext::GetMaterialPropertyValue<Type>(name);
-        }
+            Name propertyFullName{name};
+            m_materialNameContext->ContextualizeProperty(propertyFullName);
 
-        bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValueHelper(const char* name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand)
-        {
-            bool didSetOne = false;
-
-            Name fullOptionName{m_optionsNamePrefix + name};
-
-            for (AZStd::size_t i = 0; i < m_runtimeContextImpl->m_shaderCollection->size(); ++i)
-            {
-                ShaderCollection::Item& shaderItem = (*m_runtimeContextImpl->m_shaderCollection)[i];
-                ShaderOptionGroup* shaderOptionGroup = shaderItem.GetShaderOptions();
-                const ShaderOptionGroupLayout* layout = shaderOptionGroup->GetShaderOptionLayout();
-
-                ShaderOptionIndex optionIndex = layout->FindShaderOptionIndex(fullOptionName);
-                if (!optionIndex.IsValid())
-                {
-                    continue;
-                }
-
-                if (!shaderItem.MaterialOwnsShaderOption(optionIndex))
-                {
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("Shader option '%s' is not owned by this material.", fullOptionName.GetCStr()).c_str());
-                    break;
-                }
-
-                if (setValueCommand(shaderOptionGroup, optionIndex))
-                {
-                    didSetOne = true;
-                }
-            }
-
-            return didSetOne;
+            MaterialPropertyIndex propertyIndex = m_underlyingApi->GetMaterialPropertiesLayout()->FindPropertyIndex(propertyFullName);
+            return propertyIndex.IsValid();
         }
 
         template<>
-        bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValue(const char* name, const char* value)
+        bool LuaMaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(const char* name, const char* value)
         {
-            return SetShaderOptionValueHelper(name, [value](ShaderOptionGroup* optionGroup, ShaderOptionIndex optionIndex)
-                {
-                    return optionGroup->SetValue(optionIndex, Name{value});
-                });
+            Name optionName{name};
+            m_materialNameContext->ContextualizeShaderOption(optionName);
+            return m_underlyingApi->SetShaderOptionValue(optionName, Name{value});
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorRuntimeContext::SetShaderOptionValue(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(const char* name, Type value)
         {
-            return SetShaderOptionValueHelper(name, [value](ShaderOptionGroup* optionGroup, ShaderOptionIndex optionIndex)
-                {
-                    return optionGroup->SetValue(optionIndex, ShaderOptionValue{value});
-                });
+            Name optionName{name};
+            m_materialNameContext->ContextualizeShaderOption(optionName);
+            return m_underlyingApi->SetShaderOptionValue(optionName, ShaderOptionValue{value});
         }
 
-
-        RHI::ShaderInputConstantIndex LuaMaterialFunctorRuntimeContext::GetShaderInputConstantIndex(const char* name, const char* functionName) const
+        RHI::ShaderInputConstantIndex LuaMaterialFunctorAPI::RuntimeContext::GetShaderInputConstantIndex(const char* name, const char* functionName) const
         {
-            Name fullInputName{m_srgNamePrefix + name};
+            Name fullInputName{name};
+            m_materialNameContext->ContextualizeSrgInput(fullInputName);
 
-            RHI::ShaderInputConstantIndex index = m_runtimeContextImpl->m_shaderResourceGroup->FindShaderInputConstantIndex(fullInputName);
+            RHI::ShaderInputConstantIndex index = m_runtimeContextImpl->GetShaderResourceGroup()->FindShaderInputConstantIndex(fullInputName);
 
             if (!index.IsValid())
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("%s() could not find shader input '%s'", functionName, fullInputName.GetCStr()));
+                LuaScriptUtilities::Error(AZStd::string::format("%s() could not find shader input '%s'", functionName, fullInputName.GetCStr()));
             }
 
             return index;
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorRuntimeContext::SetShaderConstant(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::RuntimeContext::SetShaderConstant(const char* name, Type value)
         {
             RHI::ShaderInputConstantIndex index = GetShaderInputConstantIndex(name, "SetShaderConstant");
             if (index.IsValid())
             {
-                return m_runtimeContextImpl->m_shaderResourceGroup->SetConstant(index, value);
+                return m_runtimeContextImpl->GetShaderResourceGroup()->SetConstant(index, value);
             }
 
             return false;
         }
 
-        AZStd::size_t LuaMaterialFunctorRuntimeContext::GetShaderCount() const
+        AZStd::size_t LuaMaterialFunctorAPI::ConfigureShaders::GetShaderCount() const
         {
-            return m_runtimeContextImpl->GetShaderCount();
+            return m_underlyingApi->GetShaderCount();
         }
 
-        LuaMaterialFunctorShaderItem LuaMaterialFunctorRuntimeContext::GetShader(AZStd::size_t index)
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::ConfigureShaders::GetShader(AZStd::size_t index)
         {
             if (index < GetShaderCount())
             {
-                return LuaMaterialFunctorShaderItem{&(*m_runtimeContextImpl->m_shaderCollection)[index]};
+                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[index], m_commonRuntimeConfiguration};
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("GetShader(%zu) is invalid.", index));
-                return LuaMaterialFunctorShaderItem{nullptr};
+                LuaScriptUtilities::Error(AZStd::string::format("GetShader(%zu) is invalid.", index));
+                return {};
             }
         }
 
-        LuaMaterialFunctorShaderItem LuaMaterialFunctorRuntimeContext::GetShaderByTag(const char* shaderTag)
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::ConfigureShaders::GetShaderByTag(const char* shaderTag)
         {
             const AZ::Name tag{shaderTag};
-            if (m_runtimeContextImpl->m_shaderCollection->HasShaderTag(tag))
+            if (m_underlyingApi->m_localShaderCollection->HasShaderTag(tag))
             {
-                return LuaMaterialFunctorShaderItem{&(*m_runtimeContextImpl->m_shaderCollection)[tag]};
+                return LuaMaterialFunctorAPI::ShaderItem{&(*m_underlyingApi->m_localShaderCollection)[tag], m_commonRuntimeConfiguration};
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(
+                LuaScriptUtilities::Error(AZStd::string::format(
                     "GetShaderByTag('%s') is invalid: Could not find a shader with the tag '%s'.", tag.GetCStr(), tag.GetCStr()));
-                return LuaMaterialFunctorShaderItem{nullptr};
+                return {};
             }
         }
+
+        bool LuaMaterialFunctorAPI::ConfigureShaders::HasShaderWithTag(const char* shaderTag)
+        {
+            return m_underlyingApi->m_localShaderCollection->HasShaderTag(AZ::Name{shaderTag});
+        }
+
+        LuaMaterialFunctorAPI::RuntimeContext::RuntimeContext(
+            MaterialFunctorAPI::RuntimeContext* runtimeContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
+            const MaterialNameContext* materialNameContext)
+            : LuaMaterialFunctorAPI::CommonRuntimeConfiguration(runtimeContextImpl->GetMaterialPropertyPsoHandling(), materialPropertyDependencies, runtimeContextImpl->GetMaterialPropertiesLayout())
+            , LuaMaterialFunctorAPI::ReadMaterialPropertyValues(runtimeContextImpl, materialNameContext)
+            , LuaMaterialFunctorAPI::ConfigureShaders(runtimeContextImpl, materialNameContext, this)
+            , m_runtimeContextImpl(runtimeContextImpl)
+            , m_materialNameContext(materialNameContext)
+        {
+        }
+
+        template<typename Type>
+        Type LuaMaterialFunctorAPI::RuntimeContext::GetMaterialPropertyValue(const char* name) const
+        {
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Type>(name);
+        }
+
+        bool LuaMaterialFunctorAPI::RuntimeContext::HasMaterialValue(const char* name) const
+        {
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::HasMaterialValue(name);
+        }
+
+        template<typename Type>
+        bool LuaMaterialFunctorAPI::RuntimeContext::SetShaderOptionValue(const char* name, Type value)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(name, value);
+        }
+
+        AZStd::size_t LuaMaterialFunctorAPI::RuntimeContext::GetShaderCount() const
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShaderCount();
+        }
+
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::RuntimeContext::GetShader(AZStd::size_t index)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShader(index);
+        }
+
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::RuntimeContext::GetShaderByTag(const char* shaderTag)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShaderByTag(shaderTag);
+        }
         
-        bool LuaMaterialFunctorRuntimeContext::HasShaderWithTag(const char* shaderTag)
+        bool LuaMaterialFunctorAPI::RuntimeContext::HasShaderWithTag(const char* shaderTag)
         {
-            return m_runtimeContextImpl->m_shaderCollection->HasShaderTag(AZ::Name{shaderTag});
+            return LuaMaterialFunctorAPI::ConfigureShaders::HasShaderWithTag(shaderTag);
         }
 
-        void LuaMaterialFunctorEditorContext::LuaMaterialFunctorEditorContext::Reflect(BehaviorContext* behaviorContext)
+        template<typename T>
+        bool LuaMaterialFunctorAPI::RuntimeContext::SetInternalMaterialPropertyValue(const char* name, T value)
         {
-            behaviorContext->Class<LuaMaterialFunctorEditorContext>()
-                ->Method("GetMaterialPropertyValue_bool", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<bool>)
-                ->Method("GetMaterialPropertyValue_int", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<int32_t>)
-                ->Method("GetMaterialPropertyValue_uint", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<uint32_t>)
-                ->Method("GetMaterialPropertyValue_enum", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<uint32_t>)
-                ->Method("GetMaterialPropertyValue_float", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<float>)
-                ->Method("GetMaterialPropertyValue_Vector2", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Vector2>)
-                ->Method("GetMaterialPropertyValue_Vector3", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Vector3>)
-                ->Method("GetMaterialPropertyValue_Vector4", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Vector4>)
-                ->Method("GetMaterialPropertyValue_Color", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Color>)
-                ->Method("GetMaterialPropertyValue_Image", &LuaMaterialFunctorEditorContext::GetMaterialPropertyValue<Image*>)
-                ->Method("SetMaterialPropertyVisibility", &LuaMaterialFunctorEditorContext::SetMaterialPropertyVisibility)
-                ->Method("SetMaterialPropertyDescription", &LuaMaterialFunctorEditorContext::SetMaterialPropertyDescription)
-                ->Method("SetMaterialPropertyMinValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMinValue<int32_t>)
-                ->Method("SetMaterialPropertyMinValue_uint", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMinValue<uint32_t>)
-                ->Method("SetMaterialPropertyMinValue_float", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMinValue<float>)
-                ->Method("SetMaterialPropertyMaxValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMaxValue<int32_t>)
-                ->Method("SetMaterialPropertyMaxValue_uint", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMaxValue<uint32_t>)
-                ->Method("SetMaterialPropertyMaxValue_float", &LuaMaterialFunctorEditorContext::SetMaterialPropertyMaxValue<float>)
-                ->Method("SetMaterialPropertySoftMinValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMinValue<int32_t>)
-                ->Method("SetMaterialPropertySoftMinValue_uint", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMinValue<uint32_t>)
-                ->Method("SetMaterialPropertySoftMinValue_float", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMinValue<float>)
-                ->Method("SetMaterialPropertySoftMaxValue_int", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<int32_t>)
-                ->Method("SetMaterialPropertySoftMaxValue_uint", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<uint32_t>)
-                ->Method("SetMaterialPropertySoftMaxValue_float", &LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue<float>)
-                ->Method("SetMaterialPropertyGroupVisibility", &LuaMaterialFunctorEditorContext::SetMaterialPropertyGroupVisibility)
+            return m_runtimeContextImpl->SetInternalMaterialPropertyValue(AZ::Name{name}, value);
+        }
+
+        void LuaMaterialFunctorAPI::PipelineRuntimeContext::Reflect(BehaviorContext* behaviorContext)
+        {
+            auto builder = behaviorContext->Class<PipelineRuntimeContext>();
+            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::PipelineRuntimeContext>(&builder);
+            LuaMaterialFunctorAPI::ConfigureShaders::ReflectSubclass<LuaMaterialFunctorAPI::PipelineRuntimeContext>(&builder);
+        }
+
+        LuaMaterialFunctorAPI::PipelineRuntimeContext::PipelineRuntimeContext(
+            MaterialFunctorAPI::PipelineRuntimeContext* runtimeContextImpl,
+            const MaterialPropertyFlags* materialPropertyDependencies,
+            const MaterialNameContext* materialNameContext)
+            : LuaMaterialFunctorAPI::CommonRuntimeConfiguration(runtimeContextImpl->GetMaterialPropertyPsoHandling(), materialPropertyDependencies, runtimeContextImpl->GetMaterialPropertiesLayout())
+            , LuaMaterialFunctorAPI::ReadMaterialPropertyValues(runtimeContextImpl, materialNameContext)
+            , LuaMaterialFunctorAPI::ConfigureShaders(runtimeContextImpl, materialNameContext, this)
+        {
+        }
+
+        template<typename Type>
+        Type LuaMaterialFunctorAPI::PipelineRuntimeContext::GetMaterialPropertyValue(const char* name) const
+        {
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Type>(name);
+        }
+
+        bool LuaMaterialFunctorAPI::PipelineRuntimeContext::HasMaterialValue(const char* name) const
+        {
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::HasMaterialValue(name);
+        }
+
+        template<typename Type>
+        bool LuaMaterialFunctorAPI::PipelineRuntimeContext::SetShaderOptionValue(const char* name, Type value)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::SetShaderOptionValue(name, value);
+        }
+
+        AZStd::size_t LuaMaterialFunctorAPI::PipelineRuntimeContext::GetShaderCount() const
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShaderCount();
+        }
+
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::PipelineRuntimeContext::GetShader(AZStd::size_t index)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShader(index);
+        }
+
+        LuaMaterialFunctorAPI::ShaderItem LuaMaterialFunctorAPI::PipelineRuntimeContext::GetShaderByTag(const char* shaderTag)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::GetShaderByTag(shaderTag);
+        }
+
+        bool LuaMaterialFunctorAPI::PipelineRuntimeContext::HasShaderWithTag(const char* shaderTag)
+        {
+            return LuaMaterialFunctorAPI::ConfigureShaders::HasShaderWithTag(shaderTag);
+        }
+
+        void LuaMaterialFunctorAPI::EditorContext::EditorContext::Reflect(BehaviorContext* behaviorContext)
+        {
+            auto builder = behaviorContext->Class<LuaMaterialFunctorAPI::EditorContext>()
+                ->Method("SetMaterialPropertyVisibility", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyVisibility)
+                ->Method("SetMaterialPropertyDescription", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyDescription)
+                ->Method("SetMaterialPropertyMinValue_int", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue<int32_t>)
+                ->Method("SetMaterialPropertyMinValue_uint", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue<uint32_t>)
+                ->Method("SetMaterialPropertyMinValue_float", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue<float>)
+                ->Method("SetMaterialPropertyMaxValue_int", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue<int32_t>)
+                ->Method("SetMaterialPropertyMaxValue_uint", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue<uint32_t>)
+                ->Method("SetMaterialPropertyMaxValue_float", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue<float>)
+                ->Method("SetMaterialPropertySoftMinValue_int", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue<int32_t>)
+                ->Method("SetMaterialPropertySoftMinValue_uint", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue<uint32_t>)
+                ->Method("SetMaterialPropertySoftMinValue_float", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue<float>)
+                ->Method("SetMaterialPropertySoftMaxValue_int", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue<int32_t>)
+                ->Method("SetMaterialPropertySoftMaxValue_uint", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue<uint32_t>)
+                ->Method("SetMaterialPropertySoftMaxValue_float", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue<float>)
+                ->Method("SetMaterialPropertyGroupVisibility", &LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyGroupVisibility)
                 ;
+
+            LuaMaterialFunctorAPI::ReadMaterialPropertyValues::ReflectSubclass<LuaMaterialFunctorAPI::EditorContext>(builder);
         }
 
-        LuaMaterialFunctorEditorContext::LuaMaterialFunctorEditorContext(MaterialFunctor::EditorContext* editorContextImpl,
-            const AZStd::string& propertyNamePrefix,
-            const AZStd::string& srgNamePrefix,
-            const AZStd::string& optionsNamePrefix)
-            : LuaMaterialFunctorCommonContext(editorContextImpl, propertyNamePrefix, srgNamePrefix, optionsNamePrefix)
+        LuaMaterialFunctorAPI::EditorContext::EditorContext(
+            MaterialFunctorAPI::EditorContext* editorContextImpl,
+            const MaterialNameContext* materialNameContext)
+            : LuaMaterialFunctorAPI::ReadMaterialPropertyValues(editorContextImpl, materialNameContext)
             , m_editorContextImpl(editorContextImpl)
+            , m_materialNameContext(materialNameContext)
         {
         }
 
         template<typename Type>
-        Type LuaMaterialFunctorEditorContext::GetMaterialPropertyValue(const char* name) const
+        Type LuaMaterialFunctorAPI::EditorContext::GetMaterialPropertyValue(const char* name) const
         {
-            return LuaMaterialFunctorCommonContext::GetMaterialPropertyValue<Type>(name);
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::GetMaterialPropertyValue<Type>(name);
+        }
+
+        bool LuaMaterialFunctorAPI::EditorContext::HasMaterialValue(const char* name) const
+        {
+            return LuaMaterialFunctorAPI::ReadMaterialPropertyValues::HasMaterialValue(name);
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyMinValue(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMinValue(const char* name, Type value)
         {
             const char* functionName = "SetMaterialPropertyMinValue";
 
@@ -488,7 +627,7 @@ namespace AZ
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyMaxValue(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyMaxValue(const char* name, Type value)
         {
             const char* functionName = "SetMaterialPropertyMaxValue";
 
@@ -502,7 +641,7 @@ namespace AZ
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMinValue(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMinValue(const char* name, Type value)
         {
             const char* functionName = "SetMaterialPropertySoftMinValue";
 
@@ -516,7 +655,7 @@ namespace AZ
         }
 
         template<typename Type>
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertySoftMaxValue(const char* name, Type value)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertySoftMaxValue(const char* name, Type value)
         {
             const char* functionName = "SetMaterialPropertySoftMaxValue";
 
@@ -529,84 +668,68 @@ namespace AZ
             return m_editorContextImpl->SetMaterialPropertySoftMaxValue(index, value);
         }
         
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyGroupVisibility(const char* name, MaterialPropertyGroupVisibility visibility)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyGroupVisibility(const char* name, MaterialPropertyGroupVisibility visibility)
         {
             if (m_editorContextImpl)
             {
-                return m_editorContextImpl->SetMaterialPropertyGroupVisibility(Name{m_propertyNamePrefix + name}, visibility);
+                Name fullName{name};
+                m_materialNameContext->ContextualizeProperty(fullName);
+                return m_editorContextImpl->SetMaterialPropertyGroupVisibility(fullName, visibility);
             }
             return false;
         }
 
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyVisibility(const char* name, MaterialPropertyVisibility visibility)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyVisibility(const char* name, MaterialPropertyVisibility visibility)
         {
             if (m_editorContextImpl)
             {
-                return m_editorContextImpl->SetMaterialPropertyVisibility(Name{m_propertyNamePrefix + name}, visibility);
+                Name fullName{name};
+                m_materialNameContext->ContextualizeProperty(fullName);
+                return m_editorContextImpl->SetMaterialPropertyVisibility(fullName, visibility);
             }
             return false;
         }
 
-        bool LuaMaterialFunctorEditorContext::SetMaterialPropertyDescription(const char* name, const char* description)
+        bool LuaMaterialFunctorAPI::EditorContext::SetMaterialPropertyDescription(const char* name, const char* description)
         {
             if (m_editorContextImpl)
             {
-                return m_editorContextImpl->SetMaterialPropertyDescription(Name{m_propertyNamePrefix + name}, description);
+                Name fullName{name};
+                m_materialNameContext->ContextualizeProperty(fullName);
+                return m_editorContextImpl->SetMaterialPropertyDescription(fullName, description);
             }
             return false;
-        }
-
-        void LuaMaterialFunctorUtilities::Reflect(AZ::BehaviorContext* behaviorContext)
-        {
-            behaviorContext->Method("Error", &Script_Error);
-            behaviorContext->Method("Warning", &Script_Warning);
-            behaviorContext->Method("Print", &Script_Print);
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Error([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_Error(DebugName, false, "LuaMaterialFunctor: %s", message.c_str());
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Warning([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_Warning(DebugName, false, "LuaMaterialFunctor: %s", message.c_str());
-        }
-
-        void LuaMaterialFunctorUtilities::Script_Print([[maybe_unused]] const AZStd::string& message)
-        {
-            AZ_TracePrintf(DebugName, "LuaMaterialFunctor: %s\n", message.c_str());
         }
 
         template<>
-        void LuaMaterialFunctorShaderItem::SetShaderOptionValue(const char* name, const char* value);
+        void LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue(const char* name, const char* value);
 
-        void LuaMaterialFunctorShaderItem::Reflect(AZ::BehaviorContext* behaviorContext)
+        void LuaMaterialFunctorAPI::ShaderItem::Reflect(AZ::BehaviorContext* behaviorContext)
         {
-            behaviorContext->Class<LuaMaterialFunctorShaderItem>()
-                ->Method("GetRenderStatesOverride", &LuaMaterialFunctorShaderItem::GetRenderStatesOverride)
-                ->Method("SetEnabled", &LuaMaterialFunctorShaderItem::SetEnabled)
-                ->Method("SetDrawListTagOverride", &LuaMaterialFunctorShaderItem::SetDrawListTagOverride)
-                ->Method("SetShaderOptionValue_bool", &LuaMaterialFunctorShaderItem::SetShaderOptionValue<bool>)
-                ->Method("SetShaderOptionValue_uint", &LuaMaterialFunctorShaderItem::SetShaderOptionValue<uint32_t>)
-                ->Method("SetShaderOptionValue_enum", &LuaMaterialFunctorShaderItem::SetShaderOptionValue<const char*>)
+            behaviorContext->Class<LuaMaterialFunctorAPI::ShaderItem>()
+                ->Method("GetRenderStatesOverride", &LuaMaterialFunctorAPI::ShaderItem::GetRenderStatesOverride)
+                ->Method("SetEnabled", &LuaMaterialFunctorAPI::ShaderItem::SetEnabled)
+                ->Method("SetDrawListTagOverride", &LuaMaterialFunctorAPI::ShaderItem::SetDrawListTagOverride)
+                ->Method("SetShaderOptionValue_bool", &LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue<bool>)
+                ->Method("SetShaderOptionValue_uint", &LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue<uint32_t>)
+                ->Method("SetShaderOptionValue_enum", &LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue<const char*>)
                 ;
         }
 
-        LuaMaterialFunctorRenderStates LuaMaterialFunctorShaderItem::GetRenderStatesOverride()
+        LuaMaterialFunctorAPI::RenderStates LuaMaterialFunctorAPI::ShaderItem::GetRenderStatesOverride()
         {
-            if (m_shaderItem)
+            if (m_commonRuntimeConfiguration->CheckPsoChangesAllowed() && m_shaderItem)
             {
-                return LuaMaterialFunctorRenderStates{m_shaderItem->GetRenderStatesOverlay()};
+                return LuaMaterialFunctorAPI::RenderStates{m_shaderItem->GetRenderStatesOverlay()};
             }
             else
             {
                 static RHI::RenderStates dummyRenderStates;
-                return LuaMaterialFunctorRenderStates{&dummyRenderStates};
+                return LuaMaterialFunctorAPI::RenderStates{&dummyRenderStates};
             }
         }
 
-        void LuaMaterialFunctorShaderItem::SetEnabled(bool enable)
+        void LuaMaterialFunctorAPI::ShaderItem::SetEnabled(bool enable)
         {
             if (m_shaderItem)
             {
@@ -614,7 +737,7 @@ namespace AZ
             }
         }
 
-        void LuaMaterialFunctorShaderItem::SetDrawListTagOverride(const char* drawListTag)
+        void LuaMaterialFunctorAPI::ShaderItem::SetDrawListTagOverride(const char* drawListTag)
         {
             if (m_shaderItem)
             {
@@ -622,7 +745,7 @@ namespace AZ
             }
         }
 
-        void LuaMaterialFunctorShaderItem::SetShaderOptionValue(
+        void LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue(
             const Name& name, AZStd::function<bool(ShaderOptionGroup*, ShaderOptionIndex)> setValueCommand)
         {
             ShaderOptionGroup* shaderOptionGroup = m_shaderItem->GetShaderOptions();
@@ -636,10 +759,9 @@ namespace AZ
 
             if (!m_shaderItem->MaterialOwnsShaderOption(optionIndex))
             {
-                LuaMaterialFunctorUtilities::Script_Error(
+                LuaScriptUtilities::Error(
                     AZStd::string::format(
-                        "Shader option '%s' is not owned by the shader '%s'.", name.GetCStr(), m_shaderItem->GetShaderTag().GetCStr())
-                        .c_str());
+                        "Shader option '%s' is not owned by the shader '%s'.", name.GetCStr(), m_shaderItem->GetShaderTag().GetCStr()));
                 return;
             }
 
@@ -647,7 +769,7 @@ namespace AZ
         }
 
         template<>
-        void LuaMaterialFunctorShaderItem::SetShaderOptionValue(const char* name, const char* value)
+        void LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue(const char* name, const char* value)
         {
             if (m_shaderItem)
             {
@@ -658,7 +780,7 @@ namespace AZ
         }
 
         template<typename Type>
-        void LuaMaterialFunctorShaderItem::SetShaderOptionValue(const char* name, Type value)
+        void LuaMaterialFunctorAPI::ShaderItem::SetShaderOptionValue(const char* name, Type value)
         {
             if (m_shaderItem)
             {
@@ -668,15 +790,15 @@ namespace AZ
             }
         }
 
-        void LuaMaterialFunctorRenderStates::Reflect(AZ::BehaviorContext* behaviorContext)
+        void LuaMaterialFunctorAPI::RenderStates::Reflect(AZ::BehaviorContext* behaviorContext)
         {
             RHI::ReflectRenderStateEnums(behaviorContext);
 
-            auto classBuilder = behaviorContext->Class<LuaMaterialFunctorRenderStates>();
+            auto classBuilder = behaviorContext->Class<LuaMaterialFunctorAPI::RenderStates>();
 
             #define TEMP_REFLECT_RENDERSTATE_METHODS(PropertyName) \
-                classBuilder->Method("Set" AZ_STRINGIZE(PropertyName), AZ_JOIN(&LuaMaterialFunctorRenderStates::Set, PropertyName)); \
-                classBuilder->Method("Clear" AZ_STRINGIZE(PropertyName), AZ_JOIN(&LuaMaterialFunctorRenderStates::Clear, PropertyName));
+                classBuilder->Method("Set" AZ_STRINGIZE(PropertyName), AZ_JOIN(&LuaMaterialFunctorAPI::RenderStates::Set, PropertyName)); \
+                classBuilder->Method("Clear" AZ_STRINGIZE(PropertyName), AZ_JOIN(&LuaMaterialFunctorAPI::RenderStates::Clear, PropertyName));
 
             TEMP_REFLECT_RENDERSTATE_METHODS(MultisampleCustomPosition)
             TEMP_REFLECT_RENDERSTATE_METHODS(MultisampleCustomPositionCount)
@@ -720,17 +842,17 @@ namespace AZ
         }
 
         #define TEMP_DEFINE_RENDERSTATE_METHODS_COMMON(PropertyName, DataType, Field, InvalidValue) \
-            void AZ_JOIN(LuaMaterialFunctorRenderStates::Set, PropertyName)(DataType value)         \
+            void AZ_JOIN(LuaMaterialFunctorAPI::RenderStates::Set, PropertyName)(DataType value)         \
             {                                                                                       \
                 Field = value;                                                                      \
             }                                                                                       \
-            void AZ_JOIN(LuaMaterialFunctorRenderStates::Clear, PropertyName)()                     \
+            void AZ_JOIN(LuaMaterialFunctorAPI::RenderStates::Clear, PropertyName)()                     \
             {                                                                                       \
                 Field = InvalidValue;                                                               \
             }
 
         #define TEMP_DEFINE_RENDERSTATE_METHODS_BLENDSTATETARGET(PropertyName, DataType, Field, InvalidValue)           \
-            void AZ_JOIN(LuaMaterialFunctorRenderStates::Set, PropertyName)(AZStd::size_t targetIndex, DataType value)  \
+            void AZ_JOIN(LuaMaterialFunctorAPI::RenderStates::Set, PropertyName)(AZStd::size_t targetIndex, DataType value)  \
             {                                                                                                           \
                 if (targetIndex < RHI::Limits::Pipeline::AttachmentColorCountMax)                                       \
                 {                                                                                                       \
@@ -738,12 +860,12 @@ namespace AZ
                 }                                                                                                       \
                 else                                                                                                    \
                 {                                                                                                       \
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(                                    \
+                    LuaScriptUtilities::Error(AZStd::string::format(                                    \
                         "Set" AZ_STRINGIZE(PropertyName) "(%zu,...) index is out of range. Must be less than %u.",      \
                         targetIndex, RHI::Limits::Pipeline::AttachmentColorCountMax));                                  \
                 }                                                                                                       \
             }                                                                                                           \
-            void AZ_JOIN(LuaMaterialFunctorRenderStates::Clear, PropertyName)(AZStd::size_t targetIndex)                \
+            void AZ_JOIN(LuaMaterialFunctorAPI::RenderStates::Clear, PropertyName)(AZStd::size_t targetIndex)                \
             {                                                                                                           \
                 if (targetIndex < RHI::Limits::Pipeline::AttachmentColorCountMax)                                       \
                 {                                                                                                       \
@@ -751,13 +873,13 @@ namespace AZ
                 }                                                                                                       \
                 else                                                                                                    \
                 {                                                                                                       \
-                    LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format(                                    \
+                    LuaScriptUtilities::Error(AZStd::string::format(                                    \
                         "Clear" AZ_STRINGIZE(PropertyName) "(%zu,...) index is out of range. Must be less than %u.",    \
                         targetIndex, RHI::Limits::Pipeline::AttachmentColorCountMax));                                  \
                 }                                                                                                       \
             }
 
-        void LuaMaterialFunctorRenderStates::SetMultisampleCustomPosition(AZStd::size_t multisampleCustomLocationIndex, uint8_t x, uint8_t y)
+        void LuaMaterialFunctorAPI::RenderStates::SetMultisampleCustomPosition(AZStd::size_t multisampleCustomLocationIndex, uint8_t x, uint8_t y)
         {
             if (multisampleCustomLocationIndex < RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax)
             {
@@ -766,12 +888,12 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("SetMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("SetMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
                     multisampleCustomLocationIndex, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
 
-        void LuaMaterialFunctorRenderStates::ClearMultisampleCustomPosition(AZStd::size_t multisampleCustomLocationIndex)
+        void LuaMaterialFunctorAPI::RenderStates::ClearMultisampleCustomPosition(AZStd::size_t multisampleCustomLocationIndex)
         {
             if (multisampleCustomLocationIndex < RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax)
             {
@@ -780,12 +902,12 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("ClearMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("ClearMultisampleCustomPosition(%zu,...) index is out of range. Must be less than %u.",
                     multisampleCustomLocationIndex, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
 
-        void LuaMaterialFunctorRenderStates::SetMultisampleCustomPositionCount(uint32_t value)
+        void LuaMaterialFunctorAPI::RenderStates::SetMultisampleCustomPositionCount(uint32_t value)
         {
             if (value == RHI::RenderStates_InvalidUInt || value < RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax)
             {
@@ -793,12 +915,12 @@ namespace AZ
             }
             else
             {
-                LuaMaterialFunctorUtilities::Script_Error(AZStd::string::format("SetMultisampleCustomPositionCount(%u) value is out of range. Must be less than %u.",
+                LuaScriptUtilities::Error(AZStd::string::format("SetMultisampleCustomPositionCount(%u) value is out of range. Must be less than %u.",
                     value, RHI::Limits::Pipeline::MultiSampleCustomLocationsCountMax));
             }
         }
 
-        void LuaMaterialFunctorRenderStates::ClearMultisampleCustomPositionCount()
+        void LuaMaterialFunctorAPI::RenderStates::ClearMultisampleCustomPositionCount()
         {                                                                                      
             m_renderStates->m_multisampleState.m_customPositionsCount = RHI::RenderStates_InvalidUInt;
         }
@@ -842,5 +964,5 @@ namespace AZ
         #undef TEMP_DEFINE_RENDERSTATE_METHODS_COMMON
         #undef TEMP_DEFINE_RENDERSTATE_METHODS_BLENDSTATETARGET
 
-    } // namespace Render
+    } // namespace RPI
 } // namespace AZ

@@ -7,9 +7,11 @@
  */
 #include "SpriteBorderEditorCommon.h"
 
+#include <AzCore/Interface/Interface.h>
 #include <QMessageBox>
 #include <QApplication>
 #include <Util/PathUtil.h>
+#include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
 //-------------------------------------------------------------------------------
 
 namespace
@@ -35,8 +37,8 @@ SpriteBorderEditor::SpriteBorderEditor(const char* path, QWidget* parent)
     setWindowFlags(Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowTitleHint | Qt::MSWindowsFixedSizeDialogHint);
 
     // Make sure the sprite can load and be displayed before continuing
-    m_sprite = gEnv->pLyShine->LoadSprite(m_spritePath.toLatin1().constData());
-    QString fullPath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
+    m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePath.toLatin1().constData());
+    QString fullPath = Path::GamePathToFullPath((m_sprite->GetTexturePathname() + "." + AZ::RPI::StreamingImageAsset::Extension).c_str());
     const bool imageWontLoad = !m_sprite || QPixmap(fullPath).isNull();
     if (imageWontLoad)
     {
@@ -191,9 +193,9 @@ void SpriteBorderEditor::UpdateSpriteSheetCellInfo(int newNumRows, int newNumCol
 
     // Calculate uniformly sized sprite-sheet cell UVs based on the given
     // row and column cell configuration.
-    for (int row = 0; row < m_numRows; ++row)
+    for (unsigned int row = 0; row < m_numRows; ++row)
     {
-        for (int col = 0; col < m_numCols; ++col)
+        for (unsigned int col = 0; col < m_numCols; ++col)
         {
             AZ::Vector2 min(col / floatNumCols, row / floatNumRows);
             AZ::Vector2 max((col + 1) / floatNumCols, (row + 1) / floatNumRows);
@@ -227,7 +229,6 @@ void SpriteBorderEditor::DisplaySelectedCell(AZ::u32 cellIndex)
     // Determine how much we need to scale the view to fit the cell 
     // contents to the displayed properties image.
     const AZ::Vector2 cellSize = m_sprite->GetCellSize(cellIndex);
-    const AZ::Vector2 cellScale = AZ::Vector2(m_unscaledSpriteSheet.size().width() / cellSize.GetX(), m_unscaledSpriteSheet.size().height() / cellSize.GetY());
 
     // Scale-to-fit, while preserving aspect ratio.
     QRect croppedRect = m_unscaledSpriteSheet.rect();
@@ -310,7 +311,7 @@ void SpriteBorderEditor::AddConfigureSection(QGridLayout* gridLayout, int& rowNu
             int newNumCols = numColsLineEdit->text().toInt(&colConversionSuccess);
 
             const bool positiveInputs = newNumRows > 0 && newNumCols > 0;
-            const bool valueChanged = m_numRows != newNumRows || m_numCols != newNumCols;
+            const bool valueChanged = m_numRows != static_cast<uint>(newNumRows) || m_numCols != static_cast<uint>(newNumCols);
 
             // This number of cells is just nearly unusable in the sprite editor UI. Supporting
             // more would likely require reworking of UX/UI and even implementation.
@@ -403,7 +404,8 @@ void SpriteBorderEditor::AddSelectCellSection(QGridLayout* gridLayout, int& rowN
     // Load the full spritesheet image and scale it to fit the view
     QPixmap scaledPixmap;
     {
-        QString fullPath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
+        QString fullPath =
+            Path::GamePathToFullPath((m_sprite->GetTexturePathname() + "." + AZ::RPI::StreamingImageAsset::Extension).c_str());
         m_unscaledSpriteSheet = QPixmap(fullPath);
         if ((m_unscaledSpriteSheet.height() <= 0) &&
             (m_unscaledSpriteSheet.width() <= 0))
@@ -665,7 +667,8 @@ void SpriteBorderEditor::AddPropertiesSection(QGridLayout* gridLayout, int& rowN
     QSize unscaledPixmapSize;
     QSize scaledPixmapSize;
     {
-        QString fullPath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
+        QString fullPath =
+            Path::GamePathToFullPath((m_sprite->GetTexturePathname() + "." + AZ::RPI::StreamingImageAsset::Extension).c_str());
         m_unscaledSpriteSheet = QPixmap(fullPath);
         if ((m_unscaledSpriteSheet.size().height() <= 0) &&
             (m_unscaledSpriteSheet.size().width() <= 0))
@@ -919,9 +922,10 @@ void SpriteBorderEditor::AddButtonsSection(QGridLayout* gridLayout, int& rowNum)
                 // the sprite file may not exist yet. If it does not then GamePathToFullPath
                 // will give a path in the project even if the texture is in a gem.
                 // The texture is guaranteed to exist so use that to get the full path.
-                QString fullTexturePath = Path::GamePathToFullPath(m_sprite->GetTexturePathname().c_str());
+                QString fullTexturePath =
+                    Path::GamePathToFullPath((m_sprite->GetTexturePathname() + "." + AZ::RPI::StreamingImageAsset::Extension).c_str());
                 const char* const spriteExtension = "sprite";
-                string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
+                AZStd::string fullSpritePath = PathUtil::ReplaceExtension(fullTexturePath.toUtf8().data(), spriteExtension);
 
                 FileHelpers::SourceControlAddOrEdit(fullSpritePath.c_str(), QApplication::activeWindow());
 

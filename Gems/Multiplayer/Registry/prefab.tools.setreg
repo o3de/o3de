@@ -10,17 +10,21 @@
                     "Stack":
                     {
                         "PlayInEditor":
-                        [
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
-                            { "$type": "Multiplayer::NetworkPrefabProcessor" },
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
-                        ],
+                        {
+                            "Network": 
+                            { 
+                                "$type": "Multiplayer::NetworkPrefabProcessor",
+                                "$stack_before": "Prefab catchment"
+                            }
+                        },
                         "GameObjectCreation":
-                        [
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover" },
-                            { "$type": "Multiplayer::NetworkPrefabProcessor" },
-                            { "$type": "AzToolsFramework::Prefab::PrefabConversionUtils::PrefabCatchmentProcessor" }
-                        ]
+                        {
+                            "Network": 
+                            { 
+                                "$type": "Multiplayer::NetworkPrefabProcessor",
+                                "$stack_before": "Prefab catchment"
+                            }
+                        }
                     }
                 }
             }

@@ -21,6 +21,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(LookModificationComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::LookModificationComponentConfig, "{604D14B8-6374-4FE0-8F31-03A37B238429}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);
@@ -39,6 +40,11 @@ namespace AZ
             void CopySettingsTo(LookModificationSettingsInterface* settings);
 
             bool ArePropertiesReadOnly() const { return !m_enabled; }
+
+            bool IsUsingCustomShaper() const {
+                return m_shaperPresetType == ShaperPresetType::LinearCustomRange
+                    || m_shaperPresetType == ShaperPresetType::Log2CustomRange;
+            }
         };
     }
 }

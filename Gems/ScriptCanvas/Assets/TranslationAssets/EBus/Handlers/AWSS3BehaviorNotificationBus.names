@@ -1,0 +1,71 @@
+{
+    "entries": [
+        {
+            "base": "AWSS3BehaviorNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "AWS S3",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "OnHeadObjectSuccess",
+                    "details": {
+                        "name": "On Head Object Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnHeadObjectError",
+                    "details": {
+                        "name": "On Head Object Error"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnGetObjectSuccess",
+                    "details": {
+                        "name": "On Get Object Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnGetObjectError",
+                    "details": {
+                        "name": "On Get Object Error"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

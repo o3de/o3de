@@ -14,11 +14,12 @@
 #include <AzFramework/Components/TransformComponent.h>
 #include <Shape/CylinderShapeComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <ShapeThreadsafeTest.h>
 
 namespace UnitTest
 {
     class CylinderShapeTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -27,7 +28,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -41,7 +42,7 @@ namespace UnitTest
             m_transformComponentDescriptor.reset();
             m_cylinderShapeComponentDescriptor.reset();
             m_serializeContext.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -544,4 +545,30 @@ namespace UnitTest
         CylinderShapeDistanceFromPointTest,
         ::testing::ValuesIn(CylinderShapeDistanceFromPointTest::ShouldPass)
     );
-}
+
+    TEST_F(CylinderShapeTest, ShapeHasThreadsafeGetSetCalls)
+    {
+        // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
+        // correct, consistent results.
+
+        // Create our cylinder centered at 0 with our height and a starting radius.
+        AZ::Entity entity;
+        CreateCylinder(
+            AZ::Transform::CreateTranslation(AZ::Vector3::CreateZero()), ShapeThreadsafeTest::MinDimension,
+            ShapeThreadsafeTest::ShapeHeight, entity);
+
+        // Define the function for setting unimportant dimensions on the shape while queries take place.
+        auto setDimensionFn = [](AZ::EntityId shapeEntityId, float minDimension, uint32_t dimensionVariance, [[maybe_unused]] float height)
+        {
+            float radius = minDimension + aznumeric_cast<float>(rand() % dimensionVariance);
+            LmbrCentral::CylinderShapeComponentRequestsBus::Event(
+                shapeEntityId, &LmbrCentral::CylinderShapeComponentRequestsBus::Events::SetRadius, radius);
+        };
+
+        // Run the test, which will run multiple queries in parallel with each other and with the dimension-setting function.
+        // The number of iterations is arbitrary - it's set high enough to catch most failures, but low enough to keep the test
+        // time to a minimum.
+        const int numIterations = 30000;
+        ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
+    }
+} // namespace UnitTest

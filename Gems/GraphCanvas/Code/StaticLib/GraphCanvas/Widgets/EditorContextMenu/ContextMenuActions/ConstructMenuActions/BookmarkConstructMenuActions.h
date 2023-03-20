@@ -15,11 +15,12 @@ namespace GraphCanvas
         : public ConstructContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddBookmarkMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddBookmarkMenuAction, AZ::SystemAllocator);
 
         AddBookmarkMenuAction(QObject* parent);
         virtual ~AddBookmarkMenuAction() = default;
 
+        using ConstructContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

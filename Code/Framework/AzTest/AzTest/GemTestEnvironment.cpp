@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
+#include <AzCore/Memory/AllocatorManager.h>
 
 namespace AZ
 {
@@ -52,7 +52,6 @@ namespace AZ
 
         GemTestEnvironment::GemTestEnvironment()
         {
-            m_parameters = new Parameters;
         }
 
         void GemTestEnvironment::AddDynamicModulePaths(const AZStd::vector<AZStd::string>& dynamicModulePaths)
@@ -80,9 +79,14 @@ namespace AZ
 
         void GemTestEnvironment::SetupEnvironment()
         {
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+
             UnitTest::TraceBusHook::SetupEnvironment();
 
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
+            m_parameters = new Parameters;
 
             AddGemsAndComponents();
             PreCreateApplication();
@@ -91,7 +95,6 @@ namespace AZ
             m_application = CreateApplicationInstance();
             AZ::ComponentApplication::Descriptor appDesc;
             appDesc.m_useExistingAllocator = true;
-            appDesc.m_enableDrilling = false;
 
             // Set up gems for loading.
             for (const AZStd::string& dynamicModulePath : m_parameters->m_dynamicModulePaths)
@@ -113,7 +116,6 @@ namespace AZ
 
             // Some applications (e.g. ToolsApplication) already add some of these components
             // So making sure we don't duplicate them on the system entity.
-            AddComponentIfNotPresent<AZ::MemoryComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::AssetManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::JobManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::StreamerComponent>(m_systemEntity);
@@ -136,10 +138,17 @@ namespace AZ
             {
                 m_gemEntity->ActivateComponent(*component);
             }
+
+            AZ::AllocatorManager::Instance().GarbageCollect();
         }
 
         void GemTestEnvironment::TeardownEnvironment()
         {
+            for (AZ::ComponentDescriptor* descriptor : m_parameters->m_componentDescriptors)
+            {
+                m_application->UnregisterComponentDescriptor(descriptor);
+            }
+
             const AZ::Entity::ComponentArrayType& components = m_gemEntity->GetComponents();
             for (auto itComponent = components.rbegin(); itComponent != components.rend(); ++itComponent)
             {
@@ -157,9 +166,14 @@ namespace AZ
             delete m_parameters;
             m_parameters = nullptr;
 
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
+            AZ::GetCurrentSerializeContextModule().Cleanup();
 
             UnitTest::TraceBusHook::TeardownEnvironment();
+
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     } // namespace Test
 } // namespace AZ

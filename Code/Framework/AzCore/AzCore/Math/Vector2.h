@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Math/Internal/MathTypes.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace AZ
 {
@@ -30,7 +30,7 @@ namespace AZ
 
         Vector2() = default;
 
-        Vector2(const Vector2& v);
+        Vector2(const Vector2& v) = default;
 
         //! Constructs vector with all components set to the same specified value.
         explicit Vector2(float x);
@@ -180,6 +180,13 @@ namespace AZ
         bool IsGreaterEqualThan(const Vector2& v) const;
         //! @}
 
+        //! Floor/Ceil/Round functions, operate on each component individually, result will be a new Vector2.
+        //! @{
+        Vector2 GetFloor() const;
+        Vector2 GetCeil() const;
+        Vector2 GetRound() const; // Ties to even (banker's rounding)
+        //! @}
+
         //! Min/Max functions, operate on each component individually, result will be a new Vector2.
         //! @{
         Vector2 GetMin(const Vector2& v) const;
@@ -281,10 +288,6 @@ namespace AZ
 
     private:
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable:4201) // anonymous union
-#endif
         union
         {
             Simd::Vec2::FloatType m_value;
@@ -296,9 +299,6 @@ namespace AZ
                 float m_y;
             };
         };
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
     };
 
     //! Allows pre-multiplying by a float.

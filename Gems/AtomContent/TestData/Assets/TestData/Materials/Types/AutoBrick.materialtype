@@ -1,0 +1,194 @@
+{
+    "description": "This is an example of a custom material type using Atom's PBR shading model: procedurally generated brick or tile.",
+    "version": 3,
+    "propertyLayout": {
+        "groups": [
+            {
+                "name": "shape",
+                "displayName": "Shape",
+                "description": "Properties for configuring size, shape, and position of the bricks."
+            },
+            {
+                "name": "appearance",
+                "displayName": "Appearance",
+                "description": "Properties for configuring the appearance of the bricks and grout lines."
+            }
+        ],
+        "properties": {
+            "shape": [
+                {
+                    "name": "brickWidth",
+                    "displayName": "Brick Width",
+                    "description": "The width of each brick.",
+                    "type": "Float",
+                    "defaultValue": 0.1,
+                    "min": 0.0,
+                    "softMax": 0.2,
+                    "step": 0.001,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickWidth"
+                    }
+                },
+                {
+                    "name": "brickHeight",
+                    "displayName": "Brick Height",
+                    "description": "The height of each brick.",
+                    "type": "Float",
+                    "defaultValue": 0.05,
+                    "min": 0.0,
+                    "softMax": 0.2,
+                    "step": 0.001,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickHeight"
+                    }
+                },
+                {
+                    "name": "brickOffset",
+                    "displayName": "Offset",
+                    "description": "The offset of each stack of bricks as a percentage of brick width.",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickOffset"
+                    }
+                },
+                {
+                    "name": "lineWidth",
+                    "displayName": "Line Width",
+                    "description": "The width of the grout lines.",
+                    "type": "Float",
+                    "defaultValue": 0.01,
+                    "min": 0.0,
+                    "softMax": 0.02,
+                    "step": 0.0001, 
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_lineWidth"
+                    }
+                },
+                {
+                    "name": "lineDepth",
+                    "displayName": "Line Depth",
+                    "description": "The depth of the grout lines.",
+                    "type": "Float",
+                    "defaultValue": 0.01,
+                    "min": 0.0,
+                    "softMax": 0.02,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_lineDepth"
+                    }
+                }
+            ],
+            "appearance": [
+                {
+                    "name": "noiseTexture",
+                    "type": "Image",
+                    "defaultValue": "TestData/Textures/noise512.png",
+                    "visibility": "Hidden",
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_noise"
+                    }
+                }, 
+                {
+                    "name": "brickColor",
+                    "displayName": "Brick Color",
+                    "description": "The color of the bricks.",
+                    "type": "Color",
+                    "defaultValue": [1.0,1.0,1.0],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickColor"
+                    }
+                },
+                {
+                    "name": "brickColorNoise",
+                    "displayName": "Brick Color Noise",
+                    "description": "Scale the variation of brick color.",
+                    "type": "Float",
+                    "defaultValue": 0.25,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickNoiseFactor"
+                    }
+                }, 
+                {
+                    "name": "lineColor",
+                    "displayName": "Line Color",
+                    "description": "The color of the grout lines.",
+                    "type": "Color",
+                    "defaultValue": [0.5,0.5,0.5],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_lineColor"
+                    }
+                },
+                {
+                    "name": "lineColorNoise",
+                    "displayName": "Line Color Noise",
+                    "description": "Scale the variation of grout line color.",
+                    "type": "Float",
+                    "defaultValue": 0.25,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_lineNoiseFactor"
+                    }
+                },
+                {
+                    "name": "brickColorBleed",
+                    "displayName": "Brick Color Bleed",
+                    "description": "Distance into the grout line that the brick color will continue.",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_brickColorBleed"
+                    }
+                },
+                {
+                    "name": "ao",
+                    "displayName": "Ambient Occlusion",
+                    "description": "The strength of baked ambient occlusion in the grout lines.",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_aoFactor"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "./AutoBrick_ForwardPass.shader",
+            "options": {
+                "o_parallax_algorithm": "ParallaxAlgorithm::POM",
+                "o_parallax_quality": "ParallaxQuality::Medium"
+            }
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader"
+        }
+    ],
+    "functors": [
+    ]
+}
+

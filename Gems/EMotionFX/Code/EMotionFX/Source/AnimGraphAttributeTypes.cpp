@@ -18,8 +18,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AttributePose, MCore::AttributeAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AttributeMotionInstance, MCore::AttributeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributePose, MCore::AttributeAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributeMotionInstance, MCore::AttributeAllocator)
 
     // static create
     AttributePose* AttributePose::Create()
@@ -53,7 +53,7 @@ namespace EMotionFX
 
     //---------------------------------------------------------------------------------------------------------------------
 
-    void AnimGraphPropertyUtils::ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<AZ::u32>& outJointIndices)
+    void AnimGraphPropertyUtils::ReinitJointIndices(const Actor* actor, const AZStd::vector<AZStd::string>& jointNames, AZStd::vector<size_t>& outJointIndices)
     {
         const Skeleton* skeleton = actor->GetSkeleton();
         const size_t jointCount = jointNames.size();

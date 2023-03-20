@@ -29,6 +29,7 @@
 #   include <SceneAPIExt/Behaviors/MorphTargetRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/LodRuleBehavior.h>
 #   include <SceneAPIExt/Behaviors/SkeletonOptimizationRuleBehavior.h>
+#   include <SceneAPIExt/Behaviors/RootMotionExtractionRuleBehavior.h>
 #   include <RCExt/Actor/ActorExporter.h>
 #   include <RCExt/Actor/ActorGroupExporter.h>
 #   include <RCExt/Actor/ActorBuilder.h>
@@ -50,6 +51,7 @@ namespace EMotionFX
             : public CryHooksModule
         {
         public:
+            AZ_CLASS_ALLOCATOR(EMotionFXIntegrationModule, AZ::SystemAllocator)
             AZ_RTTI(EMotionFXIntegrationModule, "{02533EDC-F2AA-4076-86E9-5E3702202E15}", CryHooksModule);
 
             EMotionFXIntegrationModule()
@@ -94,6 +96,7 @@ namespace EMotionFX
                     // Motion
                     EMotionFX::Pipeline::Behavior::MotionGroupBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::Behavior::MotionRangeRuleBehavior::CreateDescriptor(),
+                    EMotionFX::Pipeline::Behavior::RootMotionExtractionRuleBehavior::CreateDescriptor(),
                     EMotionFX::Pipeline::MotionExporter::CreateDescriptor(),
                     EMotionFX::Pipeline::MotionGroupExporter::CreateDescriptor(),
                     EMotionFX::Pipeline::MotionDataBuilder::CreateDescriptor()

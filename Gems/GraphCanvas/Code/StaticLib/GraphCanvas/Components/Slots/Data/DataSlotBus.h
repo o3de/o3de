@@ -45,7 +45,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(DataSlotConfiguration, "{76933814-A77A-4877-B72D-5DB0F541EDA5}", SlotConfiguration);
-        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataSlotConfiguration, AZ::SystemAllocator);
 
         DataSlotConfiguration() = default;
 
@@ -70,8 +70,8 @@ namespace GraphCanvas
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
         using BusIdType = AZ::EntityId;
 
-        virtual bool ConvertToReference() = 0;
-        virtual bool CanConvertToReference() const = 0;
+        virtual bool ConvertToReference(bool isNewSlot = false) = 0;
+        virtual bool CanConvertToReference(bool isNewSlot = false) const = 0;
 
         virtual bool ConvertToValue() = 0;
         virtual bool CanConvertToValue() const = 0;

@@ -21,9 +21,7 @@ public:
     ~ModalWindowDismisser();
 
 private:
-    void DismissWindows();
     bool eventFilter(QObject* object, QEvent* event) override;
 
     std::vector<QDialog*> m_windows;
-    bool m_dissmiss = false;
 };

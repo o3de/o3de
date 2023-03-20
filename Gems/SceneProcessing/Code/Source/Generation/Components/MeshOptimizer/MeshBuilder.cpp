@@ -20,7 +20,7 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilder, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilder, AZ::SystemAllocator)
 
     MeshBuilder::MeshBuilder(size_t numOrgVerts, bool optimizeDuplicates)
         : MeshBuilder(numOrgVerts, s_defaultMaxBonesPerSubMesh, s_defaultMaxSubMeshVertices, optimizeDuplicates)
@@ -250,7 +250,7 @@ namespace AZ::MeshBuilder
             AZ::JobContext* jobContext = nullptr;
             AZ::Job* job = AZ::CreateJobFunction([&subMesh]()
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
+                AZ_PROFILE_SCOPE(Animation, "MeshBuilder::GenerateSubMeshVertexOrders::SubMeshJob");
                 subMesh->GenerateVertexOrder();
             }, true, jobContext);
 

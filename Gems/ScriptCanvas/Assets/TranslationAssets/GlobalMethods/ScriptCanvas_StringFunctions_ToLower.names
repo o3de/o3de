@@ -1,0 +1,40 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_ToLower",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Lower",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_ToLower",
+                    "details": {
+                        "name": "To Lower",
+                        "tooltip": "Convert source string to its lowercase equivalent string."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "Source string to be converted to lower case."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "The lowercase equivalent to source string, if any."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

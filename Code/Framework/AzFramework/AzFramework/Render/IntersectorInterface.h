@@ -24,7 +24,7 @@ namespace AzFramework
         //!    IntersectorBus::EventResult(result, editorContextId, &IntersectorInterface::RayIntersect, ray);
         //!
         //! Raycast against all entities
-        //!    RayResultAggregator rayResult;
+        //!    AZ::EBusReduceResult<RayResult, RayResultClosestAggregator> rayResult;
         //!    IntersectorBus::BroadCastResult(rayResult, &IntersectorInterface::RayIntersect, ray);
         //
         class IntersectorInterface

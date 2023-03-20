@@ -78,7 +78,7 @@ protected:
         m_splineEntries.resize(m_splineEntries.size() + 1);
         SplineEntry& entry = m_splineEntries.back();
         ISplineSet* pSplineSet = (pCtrl ? pCtrl->m_pSplineSet : 0);
-        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : 0);
+        entry.id = (pSplineSet ? pSplineSet->GetIDFromSpline(pSpline) : AZStd::string{});
         entry.pSpline = pSpline;
 
         const int numKeys = pSpline->GetKeyCount();
@@ -135,7 +135,7 @@ private:
         std::vector<int> keySelectionFlags;
         _smart_ptr<ISplineBackup> undo;
         _smart_ptr<ISplineBackup> redo;
-        string id;
+        AZStd::string id;
         ISplineInterpolator* pSpline;
     };
 
@@ -824,8 +824,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 {
     const QPen pOldPen = painter->pen();
 
-    const QRect rcClip = painter->clipBoundingRect().intersected(m_rcSpline).toRect();
-
     //////////////////////////////////////////////////////////////////////////
     ISplineInterpolator* pSpline = splineInfo.pSpline;
     ISplineInterpolator* pDetailSpline = splineInfo.pDetailSpline;
@@ -871,16 +869,12 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
 
         painter->setPen(pen);
 
-        int linesDrawn = 0;
-        int pixels = 0;
-
         float gradient = 0.0f;
         int pointsInLine = -1;
         QPoint lineStart;
         QPainterPath path;
         for (int x = left; x <= right; x++)
         {
-            ++pixels;
 
             float time = XOfsToTime(x);
             ISplineInterpolator::ValueType value;
@@ -907,7 +901,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = float(pt.y() - lineStart.y()) / (pt.x() - lineStart.x());
                 pointsInLine = 1;
-                ++linesDrawn;
             }
             else if ((x == right && pointsInLine >= 0) || (pointsInLine > 0 && fabs(lineStart.y() + gradient * (pt.x() - lineStart.x()) - pt.y()) == 1.0f))
             {
@@ -915,7 +908,6 @@ void SplineWidget::DrawSpline(QPainter* painter, SSplineInfo& splineInfo, float 
                 path.lineTo(lineStart);
                 gradient = 0.0f;
                 pointsInLine = 0;
-                ++linesDrawn;
             }
             else if (pointsInLine > 0)
             {
@@ -1282,6 +1274,13 @@ void SplineWidget::mouseDoubleClickEvent(QMouseEvent* event)
     break;
     case HIT_KEY:
     {
+        // End recording that was started at the beginning of the double click sequence
+        if (UiAnimUndo::IsRecording())
+        {
+            UiAnimUndoManager::Get()->Cancel();
+            m_pCurrentUndo = nullptr;
+        }
+
         RemoveKey(m_pHitSpline, m_nHitKeyIndex);
     }
     break;
@@ -2182,18 +2181,6 @@ void AbstractSplineWidget::MoveSelectedKeys(Vec2 offset, bool copyKeys)
             affectedRangeMin = min(affectedRangeMin, (firstAffectedKey <= 0 ? m_timeRange.start : pSpline->GetKeyTime(firstAffectedKey)));
             affectedRangeMax = max(affectedRangeMax, (lastAffectedKey >= keyCount - 1 ? m_timeRange.end : pSpline->GetKeyTime(lastAffectedKey)));
         }
-    }
-
-    int rangeMin = aznumeric_cast<int>(TimeToXOfs(affectedRangeMin));
-    int rangeMax = aznumeric_cast<int>(TimeToXOfs(affectedRangeMax));
-
-    if (m_timeRange.start == affectedRangeMin)
-    {
-        rangeMin = m_rcSpline.left();
-    }
-    if (m_timeRange.end == affectedRangeMax)
-    {
-        rangeMax = m_rcSpline.right();
     }
 
     if (m_pTimelineCtrl)

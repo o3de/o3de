@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(RasterPass, "{16AF74ED-743C-4842-99F9-347D77BA7F2A}", RenderPass);
-            AZ_CLASS_ALLOCATOR(RasterPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RasterPass, SystemAllocator);
             virtual ~RasterPass();
 
             //! Creates a RasterPass
@@ -38,10 +38,12 @@ namespace AZ
 
             void SetDrawListTag(Name drawListName);
 
-            void SetPipelineStateDataIndex(u32 index);
+            void SetPipelineStateDataIndex(uint32_t index);
 
             //! Expose shader resource group.
             ShaderResourceGroup* GetShaderResourceGroup();
+
+            uint32_t GetDrawItemCount();
 
         protected:
             explicit RasterPass(const PassDescriptor& descriptor);
@@ -57,6 +59,9 @@ namespace AZ
 
             // Retrieve draw lists from view and dynamic draw system and generate final draw list
             void UpdateDrawList();
+
+            // Submit draw items to the context
+            virtual void SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t indexOffset) const;
 
             // The draw list tag used to fetch the draw list from the views
             RHI::DrawListTag m_drawListTag;
@@ -76,6 +81,7 @@ namespace AZ
             RHI::Viewport m_viewportState;
             bool m_overrideScissorSate = false;
             bool m_overrideViewportState = false;
+            uint32_t m_drawItemCount = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

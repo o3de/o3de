@@ -28,7 +28,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(PositionModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PositionModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(PositionModifierConfig, "{B7A0A88D-4FDF-487F-A0E6-5BE04C82862A}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;
@@ -53,7 +53,7 @@ namespace Vegetation
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid PositionModifierComponentTypeId = "{A5E84838-57D7-4F40-B011-73D9FD9AE33D}";
+    inline constexpr AZ::TypeId PositionModifierComponentTypeId{ "{A5E84838-57D7-4F40-B011-73D9FD9AE33D}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that offsets position

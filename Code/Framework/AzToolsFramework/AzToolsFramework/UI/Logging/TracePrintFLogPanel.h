@@ -32,7 +32,7 @@ namespace AzToolsFramework
             Q_OBJECT;
         public:
             // class allocator intentionally removed so that QT can make us in their auto-gen code
-            //AZ_CLASS_ALLOCATOR(TracePrintFLogPanel, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(TracePrintFLogPanel, AZ::SystemAllocator);
 
             TracePrintFLogPanel(QWidget* pParent = nullptr);
 
@@ -56,17 +56,17 @@ namespace AzToolsFramework
         {
             Q_OBJECT;
         public:
-            AZ_CLASS_ALLOCATOR(AZTracePrintFLogTab, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZTracePrintFLogTab, AZ::SystemAllocator);
             AZTracePrintFLogTab(QWidget* pParent, const TabSettings& in_settings);
             virtual ~AZTracePrintFLogTab();
 
             //////////////////////////////////////////////////////////////////////////
             // TraceMessagesBus
-            virtual bool OnAssert(const char* message);
-            virtual bool OnException(const char* message);
-            virtual bool OnError(const char* window, const char* message);
-            virtual bool OnWarning(const char* window, const char* message);
-            virtual bool OnPrintf(const char* window, const char* message);
+            bool OnAssert(const char* message) override;
+            bool OnException(const char* message) override;
+            bool OnError(const char* window, const char* message) override;
+            bool OnWarning(const char* window, const char* message) override;
+            bool OnPrintf(const char* window, const char* message) override;
             //////////////////////////////////////////////////////////////////////////
 
             /// Log a message received from the TraceMessageBus

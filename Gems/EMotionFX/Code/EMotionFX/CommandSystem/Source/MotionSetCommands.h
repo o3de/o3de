@@ -40,22 +40,22 @@ namespace CommandSystem
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
     MCORE_DEFINECOMMAND_START(CommandCreateMotionSet, "Create motion set", true)
     public:
-        uint32  mPreviouslyUsedID;
-        bool    mOldWorkspaceDirtyFlag;
+        uint32  m_previouslyUsedId;
+        bool    m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     MCORE_DEFINECOMMAND_START(CommandRemoveMotionSet, "Remove motion set", true)
     public:
-        AZStd::string   mOldName;
-        AZStd::string   mOldFileName;
-        uint32          mOldParentSetID;
-        uint32          mPreviouslyUsedID;
-        bool            mOldWorkspaceDirtyFlag;
+        AZStd::string   m_oldName;
+        AZStd::string   m_oldFileName;
+        uint32          m_oldParentSetId;
+        uint32          m_previouslyUsedId;
+        bool            m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     MCORE_DEFINECOMMAND_START(CommandAdjustMotionSet, "Adjust motion set", true)
-        AZStd::string   mOldSetName;
-        bool            mOldDirtyFlag;
+        AZStd::string   m_oldSetName;
+        bool            m_oldDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -73,8 +73,8 @@ namespace CommandSystem
 
     MCORE_DEFINECOMMAND_START(CommandMotionSetAdjustMotion, "Adjust motion set", true)
     public:
-        AZStd::string   mOldIdString;
-        AZStd::string   mOldMotionFilename;
+        AZStd::string   m_oldIdString;
+        AZStd::string   m_oldMotionFilename;
         void UpdateMotionNodes(const char* oldID, const char* newID);
     MCORE_DEFINECOMMAND_END
 
@@ -85,8 +85,8 @@ namespace CommandSystem
     public:
         using RelocateFilenameFunction = AZStd::function<void(AZStd::string&)>;
         RelocateFilenameFunction m_relocateFilenameFunction;
-        uint32 mOldMotionSetID;
-        bool mOldWorkspaceDirtyFlag;
+        uint32 m_oldMotionSetId;
+        bool m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -105,7 +105,15 @@ namespace CommandSystem
      * @param[in] idStrings A list of already existing string ids for the motion set. This is needed because we need to make sure each id string is unique. In case the defaultIdString is already being used
      *                      we're adding numbers as postfix.
      * @param[in] motionFilename In case the new motion entry is already linked to a motion asset, specify the filename here.
-     * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Elsewise the command is directly executed as a single command.
+     * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Otherwise the command is directly executed as a single command.
      */
     AZStd::string COMMANDSYSTEM_API AddMotionSetEntry(uint32 motionSetId, const AZStd::string& defaultIdString, const AZStd::vector<AZStd::string>& idStrings, const AZStd::string& motionFilename, MCore::CommandGroup* commandGroup = nullptr);
+
+    /**
+     * Create default motion set.
+     * @param[in] forceCreate If false, the default motion set will only be created in case there is no motion set present yet. If true, it will be created either way.
+     * @param[in] commandGroup In case a command group is specified, the newly constructed command will be added to the group but is not executed. Otherwise the command is directly executed as a single command.
+     */
+    void COMMANDSYSTEM_API CreateDefaultMotionSet(bool forceCreate = false, MCore::CommandGroup* commandGroup = nullptr);
+    static constexpr const char* s_defaultMotionSetName = "Default";
 } // namespace CommandSystem

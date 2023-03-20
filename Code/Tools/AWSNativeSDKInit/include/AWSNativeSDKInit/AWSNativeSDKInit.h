@@ -13,7 +13,7 @@
 #include <AzCore/Module/Environment.h>
 
 #if defined(PLATFORM_SUPPORTS_AWS_NATIVE_SDK)
-
+#include <AzCore/PlatformIncl.h>
 // The AWS Native SDK AWSAllocator triggers a warning due to accessing members of std::allocator directly.
 // AWSAllocator.h(70): warning C4996: 'std::allocator<T>::pointer': warning STL4010: Various members of std::allocator are deprecated in C++17.
 // Use std::allocator_traits instead of accessing these members directly.
@@ -25,8 +25,8 @@ AZ_POP_DISABLE_WARNING
 
 namespace AWSNativeSDKInit
 {
-    // Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
-    // Use an AZ::Environment variable to enforce only one init and shutdown
+    //! Entry point for Open 3D Engine managing the AWSNativeSDK's initialization and shutdown requirements
+    //! Use an AZ::Environment variable to enforce only one init and shutdown
     class InitializationManager
     {
     public:
@@ -35,16 +35,27 @@ namespace AWSNativeSDKInit
         InitializationManager();
         ~InitializationManager();
 
-        // Call to guarantee that the API is initialized with proper Open 3D Engine settings.
-        // It's fine to call this from every module which needs to use the NativeSDK
-        // Creates a static shared pointer using the AZ EnvironmentVariable system.
-        // This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or
-        // the AZ::EnvironmentVariable system is brought down.
+        //! Call to guarantee that the API is initialized with proper Open 3D Engine settings.
+        //! It's fine to call this from every module which needs to use the NativeSDK
+        //! Creates a static shared pointer using the AZ EnvironmentVariable system.
+        //! This will prevent a the AWS SDK from going through the shutdown routine until all references are gone, or
+        //! the AZ::EnvironmentVariable system is brought down.
         static void InitAwsApi();
+
+        //! Returns true if the AWS SDK is initialized and ready to be used.
         static bool IsInitialized();
 
-        // Remove our reference
+        //! Remove reference, if final reference then shut down SDK.
         static void Shutdown();
+
+        //! Call this after InitAwsApi to prevent any reachout to the Amazon EC2 instance metadata service (IMDS).
+        //! Unless you are running on EC2 compute this is recommended, otherwise AWS C++ SDK may try to call IMDS for region, config
+        //! or credential information, which will fail on non EC2 compute and waste resources. 
+        //! Note: This is a helper function for managing the environment variable, AWS_EC2_METADATA_DISABLED, but impacts just the current application's environment.
+        //! @param force If true, always set AWS_EC2_METADATA_DISABLED to true, otherwise only set if environment variable is not set.
+        //! @returns True if env var was set or currently prevents calls, False otherwise 
+        static bool PreventAwsEC2MetadataCalls(bool force);
+
     private:    
         void InitializeAwsApiInternal();
         void ShutdownAwsApiInternal();

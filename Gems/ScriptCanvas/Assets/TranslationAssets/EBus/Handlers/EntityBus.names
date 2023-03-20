@@ -1,0 +1,55 @@
+{
+    "entries": [
+        {
+            "base": "EntityBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Game Entity",
+                "category": "Entity"
+            },
+            "methods": [
+                {
+                    "base": "OnEntityActivated",
+                    "details": {
+                        "name": "On Entity Activated",
+                        "tooltip": "Signals that an entity was activated"
+                    },
+                    "exit": {
+                        "name": "On Entity Activated",
+                        "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that was activated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntityDeactivated",
+                    "details": {
+                        "name": "On Entity Deactivated",
+                        "tooltip": "Signals that an entity is being deactivated"
+                    },
+                    "exit": {
+                        "name": "On Entity Deactivated",
+                        "tooltip": "Signaled after Get Body 1 Entity Id is invoked"
+                    },                    
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity",
+                                "tooltip": "The ID of the entity that is being deactivated"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "EditorEntityContextNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "EditorEntityContextNotificationBus"
+            },
+            "methods": [
+                {
+                    "base": "OnEditorEntityCreated",
+                    "details": {
+                        "name": "OnEditorEntityCreated"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEditorEntityDeleted",
+                    "details": {
+                        "name": "OnEditorEntityDeleted"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

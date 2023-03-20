@@ -6,14 +6,13 @@
  *
  */
 #include "UiMaskComponent.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <AzCore/Math/Crc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include "IRenderer.h"
 #include "RenderToTextureBus.h"
 #include "RenderGraph.h"
 #include <LyShine/Bus/UiTransformBus.h>
@@ -262,7 +261,7 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
         if (UiVisualBus::FindFirstHandler(GetEntityId()))
         {
             bool isInRect = false;
-            EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+            UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
             if (isInRect)
             {
                 return false;
@@ -276,7 +275,7 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
             if (UiVisualBus::FindFirstHandler(m_childMaskElement))
             {
                 bool isInRect = false;
-                EBUS_EVENT_ID_RESULT(isInRect, m_childMaskElement, UiTransformBus, IsPointInRect, point);
+                UiTransformBus::EventResult(isInRect, m_childMaskElement, &UiTransformBus::Events::IsPointInRect, point);
                 if (isInRect)
                 {
                     return false;
@@ -285,15 +284,20 @@ bool UiMaskComponent::IsPointMasked(AZ::Vector2 point)
 
             // get any descendants of the child mask element that have visual components
             LyShine::EntityArray childMaskElements;
-            EBUS_EVENT_ID(m_childMaskElement, UiElementBus, FindDescendantElements, 
-                [](const AZ::Entity* descendant) { return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr; },
+            UiElementBus::Event(
+                m_childMaskElement,
+                &UiElementBus::Events::FindDescendantElements,
+                [](const AZ::Entity* descendant)
+                {
+                    return UiVisualBus::FindFirstHandler(descendant->GetId()) != nullptr;
+                },
                 childMaskElements);
 
             // if the point is in any of their rects then it is not masked out
             for (auto child : childMaskElements)
             {
                 bool isInRect = false;
-                EBUS_EVENT_ID_RESULT(isInRect, child->GetId(), UiTransformBus, IsPointInRect, point);
+                UiTransformBus::EventResult(isInRect, child->GetId(), &UiTransformBus::Events::IsPointInRect, point);
                 if (isInRect)
                 {
                     return false;
@@ -462,8 +466,13 @@ UiMaskComponent::EntityComboBoxVec UiMaskComponent::PopulateChildEntityList()
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(GetEntityId(), UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        GetEntityId(),
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -487,7 +496,7 @@ UiMaskComponent::EntityComboBoxVec UiMaskComponent::PopulateChildEntityList()
         // it is set - making it confusing (and hard to change if there are no children).
         // So we add the current value to the list even though it is not a descendant.
         AZ::Entity* childMaskEntity = nullptr;
-        EBUS_EVENT_RESULT(childMaskEntity, AZ::ComponentApplicationBus, FindEntity, m_childMaskElement);
+        AZ::ComponentApplicationBus::BroadcastResult(childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
         if (childMaskEntity)
         {
             result.push_back(AZStd::make_pair(AZ::EntityId(m_childMaskElement), childMaskEntity->GetName()));
@@ -502,8 +511,8 @@ void UiMaskComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -558,21 +567,31 @@ void UiMaskComponent::CreateOrResizeRenderTarget(const AZ::Vector2& pixelAligned
     m_viewportTopLeft = pixelAlignedTopLeft;
     m_viewportSize = renderTargetSize;
 
-    // LYSHINE_ATOM_TODO: optimize by reusing/resizing targets
+    // [LYSHINE_ATOM_TODO][GHI #6271] Optimize by reusing existing render targets
     DestroyRenderTarget();
 
     // Create a render target that this element and its children will be rendered to
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    AZ::RHI::Size imageSize(renderTargetSize.GetX(), renderTargetSize.GetY(), 1);
-    EBUS_EVENT_ID_RESULT(m_contentAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_renderTargetName.c_str()), imageSize);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    AZ::RHI::Size imageSize(static_cast<uint32_t>(renderTargetSize.GetX()), static_cast<uint32_t>(renderTargetSize.GetY()), 1);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_contentAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_renderTargetName.c_str()),
+        imageSize);
     if (m_contentAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create content render target for UiMaskComponent");
     }
 
     // Create separate render target for the mask texture
-    EBUS_EVENT_ID_RESULT(m_maskAttachmentImageId, canvasEntityId, LyShine::RenderToTextureRequestBus, UseRenderTarget, AZ::Name(m_maskRenderTargetName.c_str()), imageSize);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        m_maskAttachmentImageId,
+        canvasEntityId,
+        &LyShine::RenderToTextureRequestBus::Events::UseRenderTarget,
+        AZ::Name(m_maskRenderTargetName.c_str()),
+        imageSize);
     if (m_maskAttachmentImageId.IsEmpty())
     {
         AZ_Warning("UI", false, "Failed to create mask render target for UiMaskComponent");
@@ -596,8 +615,9 @@ void UiMaskComponent::DestroyRenderTarget()
     if (!m_contentAttachmentImageId.IsEmpty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_contentAttachmentImageId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_contentAttachmentImageId);
 
         m_contentAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -605,8 +625,9 @@ void UiMaskComponent::DestroyRenderTarget()
     if (!m_maskAttachmentImageId.IsEmpty())
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, LyShine::RenderToTextureRequestBus, ReleaseRenderTarget, m_maskAttachmentImageId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        LyShine::RenderToTextureRequestBus::Event(
+            canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::ReleaseRenderTarget, m_maskAttachmentImageId);
 
         m_maskAttachmentImageId = AZ::RHI::AttachmentId{};
     }
@@ -624,7 +645,7 @@ void UiMaskComponent::UpdateCachedPrimitive(const AZ::Vector2& pixelAlignedTopLe
     {
         // verts not yet allocated, allocate them now
         const int numIndices = 6;
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
 
         static uint16 indices[numIndices] = { 0, 1, 2, 2, 3, 0 };
@@ -659,7 +680,7 @@ void UiMaskComponent::ComputePixelAlignedBounds(AZ::Vector2& pixelAlignedTopLeft
     // in main viewport space. We then snap them to the nearest pixel since the render target has to be an exact number
     // of pixels.
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
     pixelAlignedTopLeft = Draw2dHelper::RoundXY(points.GetAxisAlignedTopLeft(), IDraw2d::Rounding::Nearest);
     pixelAlignedBottomRight = Draw2dHelper::RoundXY(points.GetAxisAlignedBottomRight(), IDraw2d::Rounding::Nearest);
 }
@@ -709,9 +730,11 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     AZ::Data::Instance<AZ::RPI::AttachmentImage> contentAttachmentImage;
     AZ::Data::Instance<AZ::RPI::AttachmentImage> maskAttachmentImage;
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID_RESULT(contentAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_contentAttachmentImageId);
-    EBUS_EVENT_ID_RESULT(maskAttachmentImage, canvasEntityId, LyShine::RenderToTextureRequestBus, GetRenderTarget, m_maskAttachmentImageId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        contentAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_contentAttachmentImageId);
+    LyShine::RenderToTextureRequestBus::EventResult(
+        maskAttachmentImage, canvasEntityId, &LyShine::RenderToTextureRequestBus::Events::GetRenderTarget, m_maskAttachmentImageId);
 
     // We don't want parent faders to affect what is rendered to the render target since we will
     // apply those fades when we render from the render target.
@@ -722,8 +745,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // mask render target
     {
         // Start building the render to texture node in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        lyRenderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(maskAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the visual component for this element (if there is one) plus the child mask element (if there is one)
         RenderMaskPrimitives(renderGraph, renderInterface, childMaskElementInterface, isInGame);
@@ -735,8 +757,7 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
     // content render target
     {
         // Start building the render to texture node for the content render target in the render graph
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-        lyRenderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
+        renderGraph->BeginRenderToTexture(contentAttachmentImage, m_viewportTopLeft, m_viewportSize, clearColor);
 
         // Render the "content" - the child elements excluding the child mask element (if any)
         RenderContentPrimitives(renderGraph, elementInterface, childMaskElementInterface, numChildren, isInGame);
@@ -761,8 +782,8 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
             if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
             {
                 // go through all the cached vertices and update the alpha values
-                UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
-                desiredPackedColor.a = desiredPackedAlpha;
+                LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+                desiredPackedColor.a = static_cast<uint8>(desiredPackedAlpha);
                 for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
                 {
                     m_cachedPrimitive.m_vertices[i].color = desiredPackedColor;
@@ -772,26 +793,22 @@ void UiMaskComponent::RenderUsingGradientMask(LyShine::IRenderGraph* renderGraph
 
         // Add a primitive to do the alpha mask
         {
-            LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-            if (lyRenderGraph)
-            {
-                // Set the texture and other render state required
-                AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
-                AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
-                bool isClampTextureMode = true;
-                bool isTextureSRGB = true;
-                bool isTexturePremultipliedAlpha = false;
-                LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
+            // Set the texture and other render state required
+            AZ::Data::Instance<AZ::RPI::Image> contentImage = contentAttachmentImage;
+            AZ::Data::Instance<AZ::RPI::Image> maskImage = maskAttachmentImage;
+            bool isClampTextureMode = true;
+            bool isTextureSRGB = true;
+            bool isTexturePremultipliedAlpha = false;
+            LyShine::BlendMode blendMode = LyShine::BlendMode::Normal;
 
-                // add a render node to render using the two render targets, one as an alpha mask of the other
-                lyRenderGraph->AddAlphaMaskPrimitiveAtom(&m_cachedPrimitive,
-                    contentAttachmentImage,
-                    maskAttachmentImage,
-                    isClampTextureMode,
-                    isTextureSRGB,
-                    isTexturePremultipliedAlpha,
-                    blendMode);
-            }
+            // add a render node to render using the two render targets, one as an alpha mask of the other
+            renderGraph->AddAlphaMaskPrimitive(&m_cachedPrimitive,
+                contentAttachmentImage,
+                maskAttachmentImage,
+                isClampTextureMode,
+                isTextureSRGB,
+                isTexturePremultipliedAlpha,
+                blendMode);
         }
     }
 }
@@ -985,7 +1002,8 @@ UiElementInterface* UiMaskComponent::GetValidatedChildMaskElement()
                         const char* elementName = GetEntity()->GetName().c_str();
                         const char* childMaskElementName = "";
                         AZ::Entity* childMaskEntity = nullptr;
-                        EBUS_EVENT_RESULT(childMaskEntity, AZ::ComponentApplicationBus, FindEntity, m_childMaskElement);
+                        AZ::ComponentApplicationBus::BroadcastResult(
+                            childMaskEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_childMaskElement);
                         if (childMaskEntity)
                         {
                             childMaskElementName = childMaskEntity->GetName().c_str();

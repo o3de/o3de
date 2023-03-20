@@ -6,6 +6,9 @@
  *
  */
 
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Math/Vector2.h>
+
 namespace AZ
 {
     AZ_MATH_INLINE Vector4::Vector4(const Vector4& v)
@@ -28,21 +31,42 @@ namespace AZ
         ;
     }
 
-
     AZ_MATH_INLINE Vector4::Vector4(Simd::Vec4::FloatArgType value)
         : m_value(value)
     {
-        ;
     }
 
     AZ_MATH_INLINE Vector4::Vector4(const Vector2& source)
+        : m_value(Simd::Vec4::FromVec2(source.GetSimdValue()))
     {
-        *this = CreateFromVector3(Vector3(source));
+        m_z = 0.0f;
+        m_w = 1.0f;
+    }
+
+    AZ_MATH_INLINE Vector4::Vector4(const Vector2& source, float z)
+        : m_value(Simd::Vec4::FromVec2(source.GetSimdValue()))
+    {
+        m_z = z;
+        m_w = 1.0f;
+    }
+
+    AZ_MATH_INLINE Vector4::Vector4(const Vector2& source, float z, float w)
+        : m_value(Simd::Vec4::FromVec2(source.GetSimdValue()))
+    {
+        m_z = z;
+        m_w = w;
     }
 
     AZ_MATH_INLINE Vector4::Vector4(const Vector3& source)
+        : m_value(Simd::Vec4::FromVec3(source.GetSimdValue()))
     {
-        *this = CreateFromVector3(source);
+        m_w = 1.0f;
+    }
+
+    AZ_MATH_INLINE Vector4::Vector4(const Vector3& source, float w)
+        : m_value(Simd::Vec4::FromVec3(source.GetSimdValue()))
+    {
+        m_w = w;
     }
 
     AZ_MATH_INLINE Vector4 Vector4::CreateZero()
@@ -347,17 +371,19 @@ namespace AZ
 
     AZ_MATH_INLINE float Vector4::NormalizeWithLength()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value));
-        (*this) /= Vector4(Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::Sqrt(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
     AZ_MATH_INLINE float Vector4::NormalizeWithLengthEstimate()
     {
-        const Simd::Vec1::FloatType length = Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value));
-        (*this) /= Vector4(Simd::Vec4::FromVec1(length));
-        return Simd::Vec1::SelectFirst(length);
+        const float length = Simd::Vec1::SelectFirst(
+            Simd::Vec1::SqrtEstimate(Simd::Vec4::Dot(m_value, m_value)));
+        m_value = Simd::Vec4::Div(m_value, Simd::Vec4::Splat(length));
+        return length;
     }
 
 
@@ -464,6 +490,24 @@ namespace AZ
     }
 
 
+    AZ_MATH_INLINE Vector4 Vector4::GetFloor() const
+    {
+        return Vector4(Simd::Vec4::Floor(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetCeil() const
+    {
+        return Vector4(Simd::Vec4::Ceil(m_value));
+    }
+
+
+    AZ_MATH_INLINE Vector4 Vector4::GetRound() const
+    {
+        return Vector4(Simd::Vec4::Round(m_value));
+    }
+
+
     AZ_MATH_INLINE Vector4 Vector4::GetMin(const Vector4& v) const
     {
 #if AZ_TRAIT_USE_PLATFORM_SIMD_SCALAR
@@ -548,14 +592,6 @@ namespace AZ
         const Simd::Vec3::FloatType divisor = Simd::Vec4::ToVec3(Simd::Vec4::SplatFourth(m_value));
         return Vector3(Simd::Vec3::Div(Simd::Vec4::ToVec3(m_value), divisor));
     }
-
-
-    AZ_MATH_INLINE Vector4& Vector4::operator=(const Vector4& rhs)
-    {
-        m_value = rhs.m_value;
-        return *this;
-    }
-
 
     AZ_MATH_INLINE Vector4 Vector4::operator-() const
     {

@@ -7,17 +7,11 @@
 #
 
 set(FILES
-    BaseLibrary.h
-    BaseLibraryItem.h
     UsedResources.h
-    UIEnumsDatabase.h
     Include/EditorCoreAPI.cpp
     Include/IErrorReport.h
-    Include/IBaseLibraryManager.h
     Include/IFileUtil.h
     Include/EditorCoreAPI.h
-    Include/IEditorMaterial.h
-    Include/IEditorMaterialManager.h
     Include/IImageUtil.h
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.qrc
     Controls/ReflectedPropertyControl/ReflectedPropertyCtrl.cpp
@@ -28,17 +22,7 @@ set(FILES
     Controls/ReflectedPropertyControl/ReflectedVar.h
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.cpp
     Controls/ReflectedPropertyControl/ReflectedVarWrapper.h
-    Controls/QBitmapPreviewDialog.cpp
-    Controls/QBitmapPreviewDialog.h
-    Controls/QBitmapPreviewDialog.ui
-    Controls/QBitmapPreviewDialogImp.cpp
-    Controls/QBitmapPreviewDialogImp.h
-    Controls/QToolTipWidget.h
-    Controls/QToolTipWidget.cpp
-    BaseLibraryItem.cpp
-    BaseLibrary.cpp
     UsedResources.cpp
-    UIEnumsDatabase.cpp
     LyViewPaneNames.h
     QtViewPaneManager.cpp
     QtViewPaneManager.h
@@ -64,14 +48,11 @@ set(FILES
     Util/Image.cpp
     Util/ImageHistogram.h
     Util/Image.h
-    Util/ColorUtils.cpp
-    Util/ColorUtils.h
     Undo/Undo.cpp
     Undo/IUndoManagerListener.h
     Undo/IUndoObject.h
     Undo/Undo.h
     Undo/UndoVariableChange.h
-    WinWidgetId.h
     QtUI/ColorButton.cpp
     QtUI/ColorButton.h
     QtUtil.h

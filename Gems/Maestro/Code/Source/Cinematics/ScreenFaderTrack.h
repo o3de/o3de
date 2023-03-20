@@ -19,7 +19,7 @@ class CScreenFaderTrack
     : public TAnimTrack<IScreenFaderKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CScreenFaderTrack, AZ::SystemAllocator);
     AZ_RTTI(CScreenFaderTrack, "{3279BB19-D32D-482E-BD6E-C2DCD8858328}", IAnimTrack);
 
     //-----------------------------------------------------------------------------
@@ -30,8 +30,8 @@ public:
     //-----------------------------------------------------------------------------
     //! IAnimTrack Method Overriding.
     //-----------------------------------------------------------------------------
-    virtual void GetKeyInfo(int key, const char*& description, float& duration);
-    virtual void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IScreenFaderKey& key, XmlNodeRef& keyNode, bool bLoading) override;
     void SetFlags(int flags) override;
 
     void PreloadTextures();

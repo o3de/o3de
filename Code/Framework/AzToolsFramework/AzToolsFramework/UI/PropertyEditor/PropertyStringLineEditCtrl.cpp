@@ -115,7 +115,7 @@ namespace AzToolsFramework
         PropertyStringLineEditCtrl* newCtrl = aznew PropertyStringLineEditCtrl(pParent);
         connect(newCtrl, &PropertyStringLineEditCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         return newCtrl;
     }
@@ -142,16 +142,16 @@ namespace AzToolsFramework
 
     void StringPropertyLineEditHandler::WriteGUIValuesIntoProperty(size_t index, PropertyStringLineEditCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = GUI->value();
         instance = static_cast<property_t>(val);
     }
 
     bool StringPropertyLineEditHandler::ReadValuesIntoGUI(size_t index, PropertyStringLineEditCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZStd::string val = instance;
         GUI->setValue(val);
         return false;
@@ -159,7 +159,8 @@ namespace AzToolsFramework
 
     void RegisterStringLineEditHandler()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew StringPropertyLineEditHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew StringPropertyLineEditHandler());
     }
 
 }

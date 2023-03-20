@@ -10,7 +10,7 @@
 #include <AzCore/std/parallel/config.h>
 #include <AzCore/std/allocator.h>
 #include <AzCore/std/typetraits/alignment_of.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #define AFFINITY_MASK_ALL          AZ_TRAIT_THREAD_AFFINITY_MASK_ALLTHREADS
 #define AFFINITY_MASK_MAINTHREAD   AZ_TRAIT_THREAD_AFFINITY_MASK_MAINTHREAD
@@ -50,12 +50,12 @@ namespace AZStd
 
     struct thread_desc
     {
-        //! Debug thread name.
+        //! Debug thread name. Limited to 16 characters on Linux.
         const char*     m_name{ "AZStd::thread" };
 
         //! Thread stack size. Default is -1, which means we will use the default stack size for each platform.
         int             m_stackSize{ -1 };
-        
+
         //! Windows: One of the following values:
         //!     THREAD_PRIORITY_IDLE
         //!     THREAD_PRIORITY_LOWEST
@@ -87,12 +87,6 @@ namespace AZStd
 
         // construct/copy/destroy:
         thread();
-        /**
-         * \note thread_desc is AZStd extension.
-         */
-        template <class F>
-        explicit thread(F&& f, const thread_desc* desc = 0);
-
         ~thread();
 
         thread(thread&& rhs)
@@ -107,6 +101,15 @@ namespace AZStd
             rhs.m_thread = AZStd::thread().m_thread; // set default value
             return *this;
         }
+
+        template<class F, class... Args, typename = AZStd::enable_if_t<!AZStd::is_convertible_v<AZStd::decay_t<F>, thread_desc>>>
+        explicit thread(F&& f, Args&&... args);
+
+        /**
+         * \note thread_desc is AZStd extension.
+         */
+        template<class F, class... Args>
+        thread(const thread_desc& desc, F&& f, Args&&... args);
 
         // Till we fully have RVALUES
         template <class F>
@@ -136,10 +139,10 @@ namespace AZStd
 
         // Extensions
         //thread(AZStd::delegate<void ()> d,const thread_desc* desc = 0);
-        
+
     private:
-        thread(thread&);
-        thread& operator=(thread&);
+        thread(const thread&) = delete;
+        thread& operator=(const thread&) = delete;
 
         native_thread_data_type     m_thread;
     };
@@ -187,7 +190,7 @@ namespace AZStd
                 : m_f(AZStd::move(f)) {}
             thread_info_impl(Internal::thread_move_t<F> f)
                 : m_f(f) {}
-            virtual void execute() { m_f(); }
+            void execute() override { m_f(); }
         private:
             F m_f;
 
@@ -249,7 +252,7 @@ namespace AZStd
             }
         }
     }
-    
+
     template <>
     struct hash<thread_id>
     {

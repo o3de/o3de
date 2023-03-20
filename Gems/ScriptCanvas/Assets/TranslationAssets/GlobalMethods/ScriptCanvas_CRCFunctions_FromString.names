@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_CRCFunctions_FromString",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From String",
+                "category": "Math/Crc32"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_CRCFunctions_FromString",
+                    "details": {
+                        "name": "From String",
+                        "tooltip": "Returns a Crc32 from the string."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Value"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc32"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

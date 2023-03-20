@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -34,7 +34,6 @@ namespace AzPhysics
 
         static const CollisionGroup None; //!< Collide with nothing
         static const CollisionGroup All; //!< Collide with everything
-        static const CollisionGroup All_NoTouchBend; //!< Collide with everything, except Touch Bendable Vegetation.
 
         //! Construct a Group with the given bitmask.
         //! The each bit in the bitmask corresponds to a CollisionLayer.
@@ -174,4 +173,9 @@ namespace AzPhysics
     private:
         AZStd::vector<Preset> m_groups;
     };
+
+    //! Retrieves a Group with the given Id of a collision group.
+    //! This will lookup the group Id to retrieve the group mask. If not found, CollisionGroup::All is returned.
+    //! @param id The Id of the group to look up the group mask.
+    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id);
 }

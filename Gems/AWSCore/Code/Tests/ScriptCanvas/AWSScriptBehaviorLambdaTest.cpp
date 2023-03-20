@@ -7,22 +7,23 @@
  */
 
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzTest/AzTest.h>
 
 #include <ScriptCanvas/AWSScriptBehaviorLambda.h>
 #include <TestFramework/AWSCoreFixture.h>
 
 using namespace AWSCore;
 
-class AWSScriptBehaviorLambdaNotificationBusHandlerMock : public AWSScriptBehaviorLambdaNotificationBusHandler
+class AWSScriptBehaviorLambdaNotificationBusHandlerMock
+    : public AWSScriptBehaviorLambdaNotificationBusHandler
 {
 public:
+    AZ_CLASS_ALLOCATOR(AWSScriptBehaviorLambdaNotificationBusHandlerMock, AZ::SystemAllocator)
     AWSScriptBehaviorLambdaNotificationBusHandlerMock()
     {
         AWSScriptBehaviorLambdaNotificationBus::Handler::BusConnect();
     }
 
-    ~AWSScriptBehaviorLambdaNotificationBusHandlerMock()
+    ~AWSScriptBehaviorLambdaNotificationBusHandlerMock() override
     {
         AWSScriptBehaviorLambdaNotificationBus::Handler::BusDisconnect();
     }
@@ -31,7 +32,7 @@ public:
     MOCK_METHOD1(OnInvokeError, void(const AZStd::string&));
 };
 
-using AWSScriptBehaviorLambdaTest = UnitTest::ScopedAllocatorSetupFixture;
+using AWSScriptBehaviorLambdaTest = AWSCoreFixture;
 
 TEST_F(AWSScriptBehaviorLambdaTest, InvokeRaw_CallWithEmptyFunctionName_InvokeOnError)
 {

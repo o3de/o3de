@@ -16,9 +16,6 @@ namespace Multiplayer
 {
     struct IRpcParamStruct;
 
-    // The maximum number of RPC's we can aggregate into a single packet
-    static constexpr uint32_t MaxAggregateRpcMessages = 1024;
-
     //! @class NetworkEntityRpcMessage
     //! @brief Remote procedure call data.
     class NetworkEntityRpcMessage
@@ -103,6 +100,7 @@ namespace Multiplayer
         // Non-serialized RPC metadata
         ReliabilityType m_isReliable = ReliabilityType::Reliable;
     };
+    using NetworkEntityRpcVector = AZStd::fixed_vector<NetworkEntityRpcMessage, MaxAggregateRpcMessages>;
 
     struct IRpcParamStruct
     {

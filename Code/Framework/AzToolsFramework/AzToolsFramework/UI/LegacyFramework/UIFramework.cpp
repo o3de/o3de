@@ -16,7 +16,7 @@
 
 #include <AzCore/Serialization/SerializeContext.h>
 
-#include <AzFramework/CommandLine/CommandLine.h>
+#include <AzCore/Settings/CommandLine.h>
 
 #include <AzToolsFramework/UI/UICore/QWidgetSavedState.h>
 #include <AzToolsFramework/UI/LegacyFramework/Core/EditorFrameworkAPI.h>
@@ -34,7 +34,6 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // '...' needs to have
 #include <QProxyStyle>
 AZ_POP_DISABLE_WARNING
 
-#include <AzFramework/StringFunc/StringFunc.h>
 
 #ifndef AZ_PLATFORM_WINDOWS
 int __argc = 0;
@@ -136,7 +135,7 @@ namespace AzToolsFramework
         : public QApplication
     {
     public:
-        AZ_CLASS_ALLOCATOR(AZQtApplication, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AZQtApplication, AZ::SystemAllocator);
         AZQtApplication(int& argc, char** argv)
             : QApplication(argc, argv)
         {
@@ -144,9 +143,9 @@ namespace AzToolsFramework
             qInstallMessageHandler(myMessageOutput);
         }
 
-        virtual ~AZQtApplication()
+        ~AZQtApplication() override
         {
-            qInstallMessageHandler(NULL);
+            qInstallMessageHandler(nullptr);
         }
     };
 
@@ -187,7 +186,8 @@ namespace AzToolsFramework
         pApplication->setApplicationName("O3DE Editor");
 
         bool GUIMode = true;
-        EBUS_EVENT_RESULT(GUIMode, LegacyFramework::FrameworkApplicationMessages::Bus, IsRunningInGUIMode);
+        LegacyFramework::FrameworkApplicationMessages::Bus::BroadcastResult(GUIMode,
+            &LegacyFramework::FrameworkApplicationMessages::Bus::Events::IsRunningInGUIMode);
 
         // if we're not in GUI Mode why bother reigstering fonts and style sheets?
         if (GUIMode)
@@ -201,9 +201,12 @@ namespace AzToolsFramework
             // enable the built-in stylesheet by default:
             bool enableStyleSheet = true;
 
-            const AzFramework::CommandLine* comp = NULL;
-            EBUS_EVENT_RESULT(comp, LegacyFramework::FrameworkApplicationMessages::Bus, GetCommandLineParser);
-            if (comp != NULL)
+            const AZ::CommandLine* comp = nullptr;
+            AZ::ComponentApplicationBus::Broadcast([&comp](AZ::ComponentApplicationRequests* requests)
+                {
+                    comp = requests->GetAzCommandLine();
+                });
+            if (comp != nullptr)
             {
                 if (comp->HasSwitch("nostyle"))
                 {
@@ -255,7 +258,15 @@ namespace AzToolsFramework
         QTimer::singleShot(0, this, SLOT(BootStrapRemainingSystems()));
 
         // register global hotkeys:
-        EBUS_EVENT(FrameworkMessages::Bus, RegisterHotkey, AzToolsFramework::HotkeyDescription(AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44), "Alt+Shift+O", "Open Asset Browser", "General", 1, HotkeyDescription::SCOPE_WINDOW));
+        FrameworkMessages::Bus::Broadcast(
+            &FrameworkMessages::Bus::Events::RegisterHotkey,
+            AzToolsFramework::HotkeyDescription(
+                AZ_CRC("GeneralOpenAssetBrowser", 0xa15ceb44),
+                "Alt+Shift+O",
+                "Open Asset Browser",
+                "General",
+                1,
+                HotkeyDescription::SCOPE_WINDOW));
 
         // run our message loop.  for now, we'll use a timer to do polling.
         // we can always change that to a zero-timed timer which always tick, and sleep ourselves if we want to manage the event loop ourself...
@@ -275,18 +286,18 @@ namespace AzToolsFramework
             // see still need to clean up:
             m_ptrTicker->cancel();
             QApplication::processEvents();
-            AZ::ComponentApplication* pApp = NULL;
-            EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
+            AZ::ComponentApplication* pApp = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
             if (pApp)
             {
                 pApp->Tick();
             }
             azdestroy(m_ptrTicker);
-            m_ptrTicker = NULL;
+            m_ptrTicker = nullptr;
         }
     }
 
-    Framework::~Framework(void)
+    Framework::~Framework()
     {
         AZ::SystemTickBus::Handler::BusDisconnect();
 
@@ -299,7 +310,7 @@ namespace AzToolsFramework
         delete m_ActionChangeProject;
         m_ActionChangeProject = nullptr;
 
-        pApplication = NULL;
+        pApplication = nullptr;
     }
 
     // once we set the project, we can then tell all our other windows to restore our state.
@@ -310,8 +321,8 @@ namespace AzToolsFramework
 
     void Framework::BootStrapRemainingSystems()
     {
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnRestoreState);
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnReady);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnRestoreState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnReady);
     }
 
     void Framework::OnSystemTick()
@@ -341,11 +352,11 @@ namespace AzToolsFramework
     {
         if (event->type() == QEvent::ApplicationDeactivate)
         {
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationDeactivated);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationDeactivated);
         }
         else if (event->type() == QEvent::ApplicationActivate)
         {
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationActivated);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationActivated);
         }
         return QObject::eventFilter(obj, event); // Unhandled events are passed to the base class
     }
@@ -360,25 +371,13 @@ namespace AzToolsFramework
         }
         m_bTicking = true;
         // Tick the component app.
-        AZ::ComponentApplication* pApp = NULL;
-        EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
-        if (pApp)
+        AZ::ComponentApplication* pApp = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
+        if (pApp && m_ptrTicker)
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
-            static AZStd::chrono::system_clock::time_point lastUpdate = now;
-
-            AZStd::chrono::duration<float> delta = now - lastUpdate;
-            float deltaTime = delta.count();
-
-            lastUpdate = now;
-
-            if (m_ptrTicker)
-            {
-                AZ::SystemTickBus::ExecuteQueuedEvents();
-                AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
-                pApp->Tick(deltaTime);
-            }
-
+            AZ::SystemTickBus::ExecuteQueuedEvents();
+            AZ::SystemTickBus::Broadcast(&AZ::SystemTickEvents::OnSystemTick);
+            pApp->Tick();
         }
 
         m_bTicking = false;
@@ -457,14 +456,14 @@ namespace AzToolsFramework
         // start the shutdown sequence:
         Ebus_Event_AllOkay check;
 
-        EBUS_EVENT_RESULT(check, LegacyFramework::CoreMessageBus, OnGetPermissionToShutDown);
+        LegacyFramework::CoreMessageBus::BroadcastResult(check, &LegacyFramework::CoreMessageBus::Events::OnGetPermissionToShutDown);
         if (!check.Accepted())
         {
             return;
         }
 
         // save current project specific and global settings in case shutdown is a crash.
-        EBUS_EVENT(AZ::UserSettingsComponentRequestBus, Save);
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequestBus::Events::Save);
 
 
         CheckForReadyToQuit();
@@ -476,7 +475,7 @@ namespace AzToolsFramework
 
         Ebus_Event_AllOkay check;
 
-        EBUS_EVENT_RESULT(check, LegacyFramework::CoreMessageBus, CheckOkayToShutDown);
+        LegacyFramework::CoreMessageBus::BroadcastResult(check, &LegacyFramework::CoreMessageBus::Events::CheckOkayToShutDown);
         if (!check.Accepted())
         {
             // the above could cause contexts to generate threaded requests that are outstanding (like a long data save).
@@ -485,14 +484,14 @@ namespace AzToolsFramework
             return;
         }
 
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnSaveState);
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, OnDestroyState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnSaveState);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::OnDestroyState);
 
         // we successfully got permission to quit!
         // pump the tickbus one last time!
        // QApplication::processEvents();
-        AZ::ComponentApplication* pApp = NULL;
-        EBUS_EVENT_RESULT(pApp, AZ::ComponentApplicationBus, GetApplication);
+        AZ::ComponentApplication* pApp = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(pApp, &AZ::ComponentApplicationBus::Events::GetApplication);
         if (pApp)
         {
             pApp->Tick();
@@ -501,7 +500,7 @@ namespace AzToolsFramework
         m_ptrTicker->cancel();
 
         azdestroy(m_ptrTicker);
-        m_ptrTicker = NULL;
+        m_ptrTicker = nullptr;
 
         QApplication::quit();
     }
@@ -526,12 +525,12 @@ namespace AzToolsFramework
         // trigger a callback accumulator incremented by contexts via ApplicationCensusReply
         // this is not asynchronous
         m_ApplicationCensusResults = 0;
-        EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationCensus);
+        LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationCensus);
 
         if (m_ApplicationCensusResults > 1)
         {
             // if more than one window is open then simply tell it to close
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationHide, id);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationHide, id);
         }
         else
         {
@@ -552,7 +551,6 @@ namespace AzToolsFramework
         //"Application"
         //  + Open Lua Editor
         //  + Open World Editor
-        //  + Open Driller
         //  + Open Model Viewer
         //  + Preferences...
         //  ------------------------
@@ -577,8 +575,8 @@ namespace AzToolsFramework
                 char output[64];
                 (*mwlIter).ContextID.ToString(output, AZ_ARRAY_SIZE(output), true, true);
                 a->setData(output);
-                EBUS_EVENT(HotkeyBus, RegisterHotkey, (*mwlIter).hotkeyDesc);
-                EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, (*mwlIter).hotkeyDesc.m_HotKeyIDCRC, a);
+                HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, (*mwlIter).hotkeyDesc);
+                HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, (*mwlIter).hotkeyDesc.m_HotKeyIDCRC, a);
                 m_ComponentWindowsActions.push_back(a);
                 ++mwlIter;
             }
@@ -612,8 +610,8 @@ namespace AzToolsFramework
 
             m_ActionQuit = new QAction("Quit", this);
             AzToolsFramework::HotkeyDescription hk(AZ_CRC_CE("GlobalQuitStandaloneTools"), "Alt+Q", "Quit", "General", 1, AzToolsFramework::HotkeyDescription::SCOPE_WINDOW);
-            EBUS_EVENT(HotkeyBus, RegisterHotkey, hk);
-            EBUS_EVENT(HotkeyBus, RegisterActionToHotkey, hk.m_HotKeyIDCRC, m_ActionQuit);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterHotkey, hk);
+            HotkeyBus::Broadcast(&HotkeyBus::Events::RegisterActionToHotkey, hk.m_HotKeyIDCRC, m_ActionQuit);
             connect(m_ActionQuit, SIGNAL(triggered()), this, SLOT(OnMenuQuit()));
         }
         theMenu->addAction(m_ActionQuit);
@@ -634,8 +632,8 @@ namespace AzToolsFramework
         QVariant qv = action->data();
         if (qv.isValid())
         {
-            AZ::Uuid id(qv.toString().toUtf8());
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, ApplicationShow, id);
+            AZ::Uuid id(qv.toString().toUtf8().constData());
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::ApplicationShow, id);
         }
     }
 }   // END namespace AzToolsFramework

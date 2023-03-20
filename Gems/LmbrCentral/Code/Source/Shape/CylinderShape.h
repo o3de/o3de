@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/CylinderShapeComponentBus.h>
 
@@ -32,7 +33,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(CylinderShape, AZ::SystemAllocator)
         AZ_RTTI(CylinderShape, "{B45EFEF2-631F-43D3-B538-A3FE68350231}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -90,6 +91,7 @@ namespace LmbrCentral
         CylinderIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current World transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     void DrawCylinderShape(

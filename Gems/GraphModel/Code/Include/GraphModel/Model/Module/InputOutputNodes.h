@@ -25,6 +25,7 @@ namespace GraphModel
     class BaseInputOutputNode : public Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(BaseInputOutputNode, AZ::SystemAllocator)
         AZ_RTTI(BaseInputOutputNode, "{C54F11AE-3151-44D7-B206-9206FA888963}", Node);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -67,6 +68,7 @@ namespace GraphModel
         //! \param dataType      The type of data represented by this node
         GraphInputNode(GraphModel::GraphPtr graph, DataTypePtr dataType);
 
+        using BaseInputOutputNode::PostLoadSetup;
         void PostLoadSetup(GraphPtr graph, NodeId id) override;
 
         //! Returns the value of the DefaultValue slot, which indicates the default value for this input. This
@@ -95,6 +97,7 @@ namespace GraphModel
         //! \param dataType      The type of data represented by this node
         GraphOutputNode(GraphModel::GraphPtr graph, DataTypePtr dataType);
 
+        using BaseInputOutputNode::PostLoadSetup;
         void PostLoadSetup(GraphPtr graph, NodeId id) override;
 
     protected:

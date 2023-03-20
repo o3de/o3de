@@ -3,7 +3,6 @@
     "Version": 1,
     "ClassName": "AZ::Render::LightingPreset",
     "ClassData": {
-        "displayName": "Palermo Sidewalk",
         "iblDiffuseImageAsset": {
             "assetId": {
                 "guid": "{097EDE05-7CED-553F-B76D-EDBB2E8AB442}",

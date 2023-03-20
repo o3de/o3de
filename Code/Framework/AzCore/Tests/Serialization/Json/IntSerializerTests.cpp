@@ -32,12 +32,12 @@ namespace JsonSerializationTests
 
         AZStd::shared_ptr<NumberType> CreateDefaultInstance() override
         {
-            return AZStd::make_shared<NumberType>(0);
+            return AZStd::make_shared<NumberType>(NumberType(0));
         }
 
         AZStd::shared_ptr<NumberType> CreateFullySetInstance() override
         {
-            return AZStd::make_shared<NumberType>(4);
+            return AZStd::make_shared<NumberType>(NumberType(4));
         }
 
         AZStd::string_view GetJsonForFullySetInstance() override
@@ -73,7 +73,7 @@ namespace JsonSerializationTests
         IntegerSerializerTestDescription<unsigned long, AZ::JsonUnsignedLongSerializer>,
         IntegerSerializerTestDescription<unsigned long long, AZ::JsonUnsignedLongLongSerializer>
     >;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonIntSerializer, JsonSerializerConformityTests, IntegerSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonIntSerializer, JsonSerializerConformityTests, IntegerSerializerConformityTestTypes));
 
 
     template<typename> struct SerializerInfo {};
@@ -544,6 +544,7 @@ namespace JsonSerializationTests
 
         ResultCode result = this->m_serializer->Store(convertedValue, &value, nullptr,
             azrtti_typeid<typename SerializerInfo<TypeParam>::DataType>(), *this->m_jsonSerializationContext);
+        EXPECT_EQ(Outcomes::Success, result.GetOutcome());
 
         if constexpr (AZStd::is_signed<typename SerializerInfo<TypeParam>::DataType>::value)
         {

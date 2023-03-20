@@ -32,7 +32,7 @@ namespace AZ
         class FrameGraphExecuteGroupHandlerBase
         {
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandlerBase, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroupHandlerBase, AZ::SystemAllocator);
 
             FrameGraphExecuteGroupHandlerBase() = default;
             virtual ~FrameGraphExecuteGroupHandlerBase() = default;
@@ -41,6 +41,7 @@ namespace AZ
             void End();
 
             bool IsComplete() const;
+            bool IsExecuted() const;
 
         protected:
             virtual RHI::ResultCode InitInternal(Device& device, const AZStd::vector<RHI::FrameGraphExecuteGroup*>& executeGroups) = 0;
@@ -52,6 +53,7 @@ namespace AZ
             ExecuteWorkRequest m_workRequest;
             RHI::HardwareQueueClass m_hardwareQueueClass = RHI::HardwareQueueClass::Graphics;
             AZStd::vector<RHI::FrameGraphExecuteGroup*> m_executeGroups;
+            bool m_isExecuted = false;
         };
     }
 }

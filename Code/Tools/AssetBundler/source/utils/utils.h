@@ -221,7 +221,6 @@ namespace AssetBundler
     //! Please note that the game project could be in a different location to the engine therefore we need the assetRoot param.
     AzFramework::PlatformFlags GetEnabledPlatformFlags(
         AZStd::string_view enginePath,
-        AZStd::string_view assetRoot,
         AZStd::string_view projectPath);
 
     QJsonObject ReadJson(const AZStd::string& filePath);
@@ -235,7 +234,7 @@ namespace AssetBundler
     class FilePath
     {
     public:
-        AZ_CLASS_ALLOCATOR(FilePath, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FilePath, AZ::SystemAllocator);
         explicit FilePath(
             const AZStd::string& filePath,
             AZStd::string platformIdentifier = AZStd::string(),

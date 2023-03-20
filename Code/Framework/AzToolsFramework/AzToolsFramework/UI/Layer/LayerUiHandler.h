@@ -16,7 +16,7 @@ namespace AzToolsFramework
         : public EditorEntityUiHandlerBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(LayerUiHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LayerUiHandler, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::LayerUiHandler, "{C078A6D9-4E1E-4431-9B6A-859477748BDB}", EditorEntityUiHandlerBase);
 
         LayerUiHandler() = default;
@@ -24,7 +24,7 @@ namespace AzToolsFramework
 
         // EditorEntityUiHandler...
         QString GenerateItemInfoString(AZ::EntityId entityId) const override;
-        QPixmap GenerateItemIcon(AZ::EntityId entityId) const override;
+        QIcon GenerateItemIcon(AZ::EntityId entityId) const override;
         void PaintItemBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
         void PaintDescendantBackground(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index,
             const QModelIndex& descendantIndex) const override;

@@ -17,11 +17,12 @@ namespace GraphCanvas
         : public EditContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CutGraphSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CutGraphSelectionMenuAction, AZ::SystemAllocator);
         
         CutGraphSelectionMenuAction(QObject* parent);
         virtual ~CutGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -29,11 +30,12 @@ namespace GraphCanvas
         : public EditContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CopyGraphSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CopyGraphSelectionMenuAction, AZ::SystemAllocator);
         
         CopyGraphSelectionMenuAction(QObject* parent);
         virtual ~CopyGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -43,12 +45,14 @@ namespace GraphCanvas
     public:
         using ContextMenuAction::RefreshAction;
 
-        AZ_CLASS_ALLOCATOR(PasteGraphSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PasteGraphSelectionMenuAction, AZ::SystemAllocator);
         
         PasteGraphSelectionMenuAction(QObject* parent);
         virtual ~PasteGraphSelectionMenuAction() = default;
 
         void RefreshAction() override;
+
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
     
@@ -56,11 +60,12 @@ namespace GraphCanvas
         : public EditContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(DeleteGraphSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DeleteGraphSelectionMenuAction, AZ::SystemAllocator);
         
         DeleteGraphSelectionMenuAction(QObject* parent);
         virtual ~DeleteGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -68,11 +73,12 @@ namespace GraphCanvas
         : public EditContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(DuplicateGraphSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DuplicateGraphSelectionMenuAction, AZ::SystemAllocator);
         
         DuplicateGraphSelectionMenuAction(QObject* parent);
         virtual ~DuplicateGraphSelectionMenuAction() = default;
 
+        using EditContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

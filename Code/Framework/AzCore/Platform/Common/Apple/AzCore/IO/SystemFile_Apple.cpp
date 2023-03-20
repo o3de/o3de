@@ -7,15 +7,16 @@
  */
 
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/functional.h>
 #include <AzCore/std/string/wildcard.h>
 #include <../Common/UnixLike/AzCore/IO/Internal/SystemFileUtils_UnixLike.h>
 
 #include <errno.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
 
 namespace AZ::IO::Platform
 {
@@ -44,21 +45,32 @@ namespace AZ::IO::Platform
                 entry = readdir(dir);
             }
 
-            int lastError = errno;
-            if (lastError != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, lastError);
-            }
-
             closedir(dir);
-        }
-        else
-        {
-            int lastError = errno;
-            if (lastError != ENOENT)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, 0);
-            }
         }
     }
 }
+
+namespace AZ::IO::PosixInternal
+{
+    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags readStatusFlags)
+    {
+        // Apple does not support pipe2
+        // Therefore use a combination of pipe + fcntl
+        // to set the read end of the pipe status flags
+        const int pipeResult = pipe(pipeFileDescriptors);
+        if (pipeResult == 0)
+        {
+            // Query the file status flags from the read end and bit-wise or the input status flags to
+            const int fcntlFlags = fcntl(pipeFileDescriptors[0], F_GETFL);
+            if (const int fcntlStatusResult = fcntl(pipeFileDescriptors[0], F_SETFL, fcntlFlags | static_cast<int>(readStatusFlags));
+                fcntlStatusResult == -1)
+            {
+                // If the status flags could not be set, close the pipe and return the fcntl status result
+                close(pipeFileDescriptors[1]);
+                close(pipeFileDescriptors[0]);
+                return fcntlStatusResult;
+            }
+        }
+        return pipeResult;
+    }
+} // namespace AZ::IO::PosixInternal

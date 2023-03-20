@@ -1,7 +1,0 @@
-<Material MtlFlags="557092" DccMaterialHash="0" Shader="Illum" GenMask="800000080003" StringGenMask="%ALLOW_SILHOUETTE_POM%ALLOW_SPECULAR_ANTIALIASING%EMITTANCE_MAP%SUBSURFACE_SCATTERING" SurfaceType="mat_default" Diffuse="1,1,1,1" Specular="0,0,0,1" Emittance="1,0.18447502,0.0024282159,28.190001" Opacity="0.99000001" AlphaTest="0.17" vertModifType="0" LayerAct="1">
- <Textures>
-  <Texture Map="Diffuse" File="textures/muzzleflash.dds"/>
-  <Texture Map="Emittance" File="textures/muzzleflash.dds"/>
- </Textures>
- <PublicParams EmittanceMapGamma="1" SSSIndex="0" IndirectColor="0.25,0.25,0.25"/>
-</Material>

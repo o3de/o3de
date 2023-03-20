@@ -39,7 +39,6 @@ ly_add_target(
             EDITOR_COMMON_IMPORTS
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::zlib
             3rdParty::Qt::Core
             3rdParty::Qt::Widgets
             Legacy::CryCommon
@@ -51,4 +50,5 @@ ly_add_target(
         AZ::AzCore
         AZ::AzToolsFramework
         AZ::AzQtComponents
+        Legacy::EditorCore
 )

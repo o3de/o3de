@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/Preprocessor/Enum.h>
 
 #include <Atom/RPI.Reflect/Base.h>
 
@@ -43,8 +44,11 @@ namespace AZ
         // Rendering -> Idle
         //           -> Queued (Rendering will transition to Queued if a pass was queued with the PassSystem during Rendering)
         //
-        enum class PassState : u8
-        {
+        // Any State -> Orphaned  (transition to Orphaned state can be outside the jurisdiction of the pass and so can happen from any state)
+        // Orphaned  -> Queued    (When coming out of Orphaned state, pass will queue itself for build. In practice this
+        //                         (almost?) never happens as orphaned passes are re-created in most if not all cases.)
+        //
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PassState, uint8_t,
             // Default value, you should only ever see this in the Pass constructor
             // Once the constructor is done, the Pass will set it's state to Reset
             Uninitialized,
@@ -92,12 +96,15 @@ namespace AZ
             //   |
             //   V
             // Pass is currently rendering. Pass must be in Idle state before entering this state
-            Rendering
-        };
+            Rendering,
+
+            // Special state: Orphaned State, pass was removed from it's parent and is awaiting deletion
+            Orphaned
+        );
 
         // This enum keeps track of what actions the pass is queued for with the pass system
-        enum class PassQueueState : u8
-        {
+        AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PassQueueState, uint8_t,
+        
             // The pass is currently not in any queued state and may therefore transition to any queued state
             NoQueue,
 
@@ -111,6 +118,6 @@ namespace AZ
             // The pass is queued for Initialization at the start of the frame.
             // This state has the lowest priority and can therefore be overridden by QueueForBuildAndInitialization or QueueForRemoval.
             QueuedForInitialization,
-        };
+        );
     }
 }

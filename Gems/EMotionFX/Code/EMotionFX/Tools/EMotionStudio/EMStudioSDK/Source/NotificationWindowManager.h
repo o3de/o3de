@@ -24,7 +24,7 @@ namespace EMStudio
     public:
         MCORE_INLINE NotificationWindowManager()
         {
-            mVisibleTime = 5;
+            m_visibleTime = 5;
         }
 
         void CreateNotificationWindow(NotificationWindow::EType type, const QString& message);
@@ -32,28 +32,28 @@ namespace EMStudio
 
         MCORE_INLINE NotificationWindow* GetNotificationWindow(uint32 index) const
         {
-            return mNotificationWindows[index];
+            return m_notificationWindows[index];
         }
 
         MCORE_INLINE size_t GetNumNotificationWindow() const
         {
-            return mNotificationWindows.size();
+            return m_notificationWindows.size();
         }
 
         void OnMovedOrResized();
 
         MCORE_INLINE void SetVisibleTime(int32 timeSeconds)
         {
-            mVisibleTime = timeSeconds;
+            m_visibleTime = timeSeconds;
         }
 
         MCORE_INLINE int32 GetVisibleTime() const
         {
-            return mVisibleTime;
+            return m_visibleTime;
         }
 
     private:
-        AZStd::vector<NotificationWindow*> mNotificationWindows;
-        int32 mVisibleTime;
+        AZStd::vector<NotificationWindow*> m_notificationWindows;
+        int32 m_visibleTime;
     };
 } // namespace EMStudio

@@ -32,6 +32,8 @@ set(FILES
     Importers/AssImpBoneImporter.cpp
     Importers/AssImpColorStreamImporter.h
     Importers/AssImpColorStreamImporter.cpp
+    Importers/AssImpCustomPropertyImporter.h
+    Importers/AssImpCustomPropertyImporter.cpp
     Importers/AssImpImporterUtilities.h
     Importers/AssImpImporterUtilities.cpp
     Importers/AssImpMaterialImporter.h

@@ -43,7 +43,7 @@ namespace AZ
 
             m_queue = &device.GetCommandQueueContext().GetCommandQueue(RHI::HardwareQueueClass::Copy);
 
-            result = BuilidFramePackets();
+            result = BuildFramePackets();
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             m_asyncWaitQueue.Init();
@@ -63,7 +63,6 @@ namespace AZ
 
             const uint8_t* sourceData = reinterpret_cast<const uint8_t*>(request.m_sourceData);
             const size_t byteCount = request.m_byteCount;
-            const size_t byteOffset = request.m_byteOffset;
             auto* buffer = static_cast<Buffer*>(request.m_buffer);
             RHI::BufferPool* bufferPool = static_cast<RHI::BufferPool*>(buffer->GetPool());
 
@@ -96,7 +95,7 @@ namespace AZ
             uploadFence->Init(device, RHI::FenceState::Reset);
             CommandQueue::Command command = [=, &device](void* queue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer");
+                AZ_PROFILE_SCOPE(RHI, "Upload Buffer");
                 size_t pendingByteOffset = 0;
                 size_t pendingByteCount = byteCount;
                 FramePacket* framePacket = nullptr;
@@ -110,7 +109,7 @@ namespace AZ
 
                 while (pendingByteCount > 0)
                 {
-                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Buffer Chunk");
+                    AZ_PROFILE_SCOPE(RHI, "Upload Buffer Chunk");
 
                     framePacket = BeginFramePacket(vulkanQueue);
                     const size_t bytesToCopy = AZStd::min(pendingByteCount, m_descriptor.m_stagingSizeInBytes);
@@ -170,10 +169,15 @@ namespace AZ
         // [GFX TODO][ATOM-4205] Stage/Upload 3D streaming images more efficiently.
         RHI::AsyncWorkHandle AsyncUploadQueue::QueueUpload(const RHI::StreamingImageExpandRequest& request, uint32_t residentMip)
         {
+            if (residentMip < request.m_mipSlices.size() || residentMip < 1)
+            {
+                AZ_Assert(false, "Wrong input parameter");
+            }
+
             auto* image = static_cast<Image*>(request.m_image);
             auto& device = static_cast<Device&>(GetDevice());
 
-            const uint16_t startMip = residentMip - 1;
+            const uint16_t startMip = static_cast<uint16_t>(residentMip - 1);
             const uint16_t endMip = static_cast<uint16_t>(residentMip - request.m_mipSlices.size());
 
             RHI::Ptr<Fence> uploadFence = Fence::Create();
@@ -181,7 +185,7 @@ namespace AZ
 
             CommandQueue::Command command = [=, &device](void* queue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Upload Image");
+                AZ_PROFILE_SCOPE(RHI, "Upload Image");
 
                 Queue* vulkanQueue = static_cast<Queue*>(queue);
                 FramePacket* framePacket = BeginFramePacket(vulkanQueue);
@@ -189,8 +193,6 @@ namespace AZ
                 // Set pipeline barriers before copy.
                 EmmitPrologueMemoryBarrier(request, residentMip);
 
-                const uint16_t arraySize = image->GetDescriptor().m_arraySize;
-                const uint16_t imageMipLevels = image->GetDescriptor().m_mipLevels;
                 const static uint32_t bufferOffsetAlign = 4; // refer VkBufferImageCopy in the spec.
 
                 // Variables for split subresource slice. 
@@ -213,11 +215,7 @@ namespace AZ
 
                     // ImageHeight must be bigger than or equal to the Image's row count. Images with a RowCount that is less than the ImageHeight indicates a block compression.
                     // Images with a RowCount which is higher than the ImageHeight indicates a planar image, which is not supported for streaming images.
-                    if (subresourceLayout.m_size.m_height < subresourceLayout.m_rowCount)
-                    {
-                        AZ_Error("StreamingImage", false, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
-                        RHI::AsyncWorkHandle::Null;
-                    }
+                    AZ_Error("StreamingImage", subresourceLayout.m_size.m_height >= subresourceLayout.m_rowCount, "AsyncUploadQueue::QueueUpload expects ImageHeight '%d' to be bigger than or equal to the image's RowCount '%d'.", subresourceLayout.m_size.m_height, subresourceLayout.m_rowCount);
 
                     // The final staging size for each CopyTextureRegion command
                     uint32_t stagingSize = stagingSlicePitch;
@@ -257,7 +255,7 @@ namespace AZ
 
                                 // Copy subresource data to staging memory.
                                 {
-                                    AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                    AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
                                     uint8_t* stagingDataStart = reinterpret_cast<uint8_t*>(framePacket->m_stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write)) + framePacket->m_dataOffset;
                                     for (uint32_t row = 0; row < subresourceLayout.m_rowCount; ++row)
                                     {
@@ -277,7 +275,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
@@ -309,7 +307,7 @@ namespace AZ
                                 copyDescriptor.m_sourceSize.m_depth = 1;
                                 copyDescriptor.m_destinationImage = image;
                                 copyDescriptor.m_destinationSubresource.m_mipSlice = curMip;
-                                copyDescriptor.m_destinationSubresource.m_arraySlice = arraySlice;
+                                copyDescriptor.m_destinationSubresource.m_arraySlice = static_cast<uint16_t>(arraySlice);
                                 copyDescriptor.m_destinationOrigin.m_left = 0;
                                 copyDescriptor.m_destinationOrigin.m_top = 0;
                                 copyDescriptor.m_destinationOrigin.m_front = depth;
@@ -332,7 +330,7 @@ namespace AZ
 
                                     // Copy subresource data to staging memory.
                                     {
-                                        AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Copy CPU image");
+                                        AZ_PROFILE_SCOPE(RHI, "Copy CPU image");
 
                                         uint8_t* stagingDataStart = reinterpret_cast<uint8_t*>(framePacket->m_stagingBuffer->GetBufferMemoryView()->Map(RHI::HostMemoryAccess::Write));
                                         stagingDataStart += framePacket->m_dataOffset;
@@ -437,7 +435,22 @@ namespace AZ
             ProcessCallback(workHandle);
         }
 
-        RHI::ResultCode AsyncUploadQueue::BuilidFramePackets()
+        void AsyncUploadQueue::QueueBindSparse(const VkBindSparseInfo& bindInfo)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+
+            VkBindSparseInfo bindInfoCache = bindInfo;
+
+            CommandQueue::Command command = [=, &device](void* queue)
+            {            
+                Queue* vulkanQueue = static_cast<Queue*>(queue);
+                device.GetContext().QueueBindSparse(vulkanQueue->GetNativeQueue(), 1, &bindInfoCache, VK_NULL_HANDLE);
+            };
+            
+            m_queue->QueueCommand(AZStd::move(command));
+        }
+
+        RHI::ResultCode AsyncUploadQueue::BuildFramePackets()
         {
             auto& device = static_cast<Device&>(GetDevice());
             m_framePackets.resize(m_descriptor.m_frameCount);
@@ -458,7 +471,7 @@ namespace AZ
 
         AsyncUploadQueue::FramePacket* AsyncUploadQueue::BeginFramePacket(Queue* queue)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: BeginFramePacket");
             AZ_Assert(!m_recordingFrame, "The previous frame packet isn't ended.");
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -478,7 +491,7 @@ namespace AZ
 
         void AsyncUploadQueue::EndFramePacket(Queue* queue, Semaphore* semaphoreToSignal /*=nullptr*/)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: EndFramePacket");
             AZ_Assert(m_recordingFrame, "The frame packet wasn't started. You need to call StartFramePacket first.");
 
             m_commandList->EndCommandBuffer();
@@ -513,7 +526,10 @@ namespace AZ
             barrier.offset = memoryView->GetOffset() + offset;
             barrier.size = size;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -547,7 +563,10 @@ namespace AZ
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = image.GetDescriptor().m_arraySize;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -578,7 +597,10 @@ namespace AZ
             barrier.offset = memoryView->GetOffset() + offset;
             barrier.size = size;
 
-            vkCmdPipelineBarrier(m_commandList->GetNativeCommandBuffer(),
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
+                m_commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
                 VK_DEPENDENCY_BY_REGION_BIT,
@@ -596,7 +618,6 @@ namespace AZ
             uint32_t residentMip)
         {
             const auto& image = static_cast<const Image&>(*request.m_image);
-            const RHI::ImageBindFlags bindFlags = image.GetDescriptor().m_bindFlags;
             const VkImageLayout layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             const uint32_t beforeMip = residentMip;
             const uint32_t afterMip = beforeMip - static_cast<uint32_t>(request.m_mipSlices.size());
@@ -617,7 +638,9 @@ namespace AZ
             barrier.subresourceRange.baseArrayLayer = 0;
             barrier.subresourceRange.layerCount = image.GetDescriptor().m_arraySize;
 
-            vkCmdPipelineBarrier(
+            auto& device = static_cast<Device&>(GetDevice());
+
+            device.GetContext().CmdPipelineBarrier(
                 commandList.GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -644,7 +667,7 @@ namespace AZ
 
         void AsyncUploadQueue::ProcessCallback(const RHI::AsyncWorkHandle& handle)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "AsyncUploadQueue: ProcessCallback");
             AZStd::unique_lock<AZStd::mutex> lock(m_callbackListMutex);
             auto findIter = m_callbackList.find(handle);
             if (findIter != m_callbackList.end())

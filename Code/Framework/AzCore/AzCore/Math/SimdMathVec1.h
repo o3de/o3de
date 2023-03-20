@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Internal/MathTypes.h>
 namespace AZ
 {
     namespace Simd

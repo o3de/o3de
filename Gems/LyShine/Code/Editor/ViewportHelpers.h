@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 namespace ViewportHelpers
 {

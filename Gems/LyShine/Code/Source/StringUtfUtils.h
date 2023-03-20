@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <AzCore/std/string/conversions.h>
+
 namespace LyShine
 {
     //! \brief Returns the number of UTF8 characters in a string.
@@ -16,15 +18,9 @@ namespace LyShine
     //! character in the string.
     inline int GetUtf8StringLength(const AZStd::string& utf8String)
     {
-        int utf8StrLen = 0;
-        Unicode::CIterator<const char*, false> pChar(utf8String.c_str());
-        while (uint32_t ch = *pChar)
-        {
-            ++pChar;
-            ++utf8StrLen;
-        }
-
-        return utf8StrLen;
+        AZStd::wstring utf8StringW;
+        AZStd::to_wstring(utf8StringW, utf8String.c_str());
+        return static_cast<int>(utf8StringW.size());
     }
 
     //! \brief Returns the number of bytes of the size of the given multi-byte char.
@@ -34,17 +30,16 @@ namespace LyShine
         // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
         // work for cases tested but may not in general.
         // In the long run it would be better to eliminate
-        // this function and use Unicode::CIterator<>::Position instead.
-        wchar_t wcharString[2] = { static_cast<wchar_t>(multiByteChar), 0 };
-        AZStd::string utf8String(CryStringUtils::WStrToUTF8(wcharString));
-        int utf8Length = static_cast<int>(utf8String.length());
-        return utf8Length;
+        // this function and use some sequence_lenght function that is not internal.
+        return static_cast<int>(Utf8::Internal::sequence_length(&multiByteChar));
     }
 
     inline int GetByteLengthOfUtf8Chars(const char* utf8String, int numUtf8Chars)
     {
+        AZStd::wstring utf8StringW;
+        AZStd::to_wstring(utf8StringW, utf8String);
+        AZStd::wstring::const_iterator pChar = utf8StringW.begin();
         int byteStrlen = 0;
-        Unicode::CIterator<const char*, false> pChar(utf8String);
         for (int i = 0; i < numUtf8Chars; i++)
         {
             uint32_t ch = *pChar;

@@ -1,0 +1,58 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "RttChildPassTemplate",
+            "PassClass": "RttChildPass",
+            "Slots": [
+                {
+                    "Name": "RenderTargetOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",		
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0.0,
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "DepthInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Type": "DepthStencil",
+                            "DepthStencilValue": {
+                                "Depth": "0.0"
+                            }
+                        },
+                        "LoadAction": "Clear",
+                        "LoadActionStencil": "Clear"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DepthInputOutput",
+                    "AttachmentRef": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthInputOutput"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "lyshinerttpass",
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

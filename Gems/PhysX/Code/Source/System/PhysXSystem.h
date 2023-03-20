@@ -7,10 +7,9 @@
  */
 #pragma once
 
-#include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Configuration/SystemConfiguration.h>
 
@@ -22,6 +21,11 @@
 
 #include <PhysX/Configuration/PhysXConfiguration.h>
 #include <System/PhysXJointInterface.h>
+
+namespace AZ::Debug
+{
+    class PerformanceCollector;
+}
 
 namespace physx
 {
@@ -35,13 +39,12 @@ namespace PhysX
 {
     class PhysXSystem
         : public AZ::Interface<AzPhysics::SystemInterface>::Registrar
-        , private AzFramework::AssetCatalogEventBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
         AZ_RTTI(PhysXSystem, "{B6F4D92A-061B-4CB3-AAB5-984B599A53AE}", AzPhysics::SystemInterface);
 
-        PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams);
+        PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams);
         virtual ~PhysXSystem();
 
         // SystemInterface interface ...
@@ -70,8 +73,6 @@ namespace PhysX
         //! Accessor to get the Settings Registry Manager.
         const PhysXSettingsRegistryManager& GetSettingsRegistryManager() const;
 
-        void UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary);
-
         //TEMP -- until these are fully moved over here
         physx::PxPhysics* GetPxPhysics() { return m_physXSdk.m_physics; }
         physx::PxCooking* GetPxCooking() { return m_physXSdk.m_cooking; }
@@ -83,16 +84,17 @@ namespace PhysX
         void SetCollisionLayerName(int index, const AZStd::string& layerName);
         void CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group);
         //TEMP -- until these are fully moved over here
+
+        AZ::Debug::PerformanceCollector* GetPerformanceCollector();
+
     private:
         //! Initializes the PhysX SDK.
         //! This sets up the PhysX Foundation, Cooking, and other PhysX sub-systems.
-        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface. 
+        //! @param cookingParams The cooking params to use when setting up PhysX cooking interface.
         void InitializePhysXSdk(const physx::PxCookingParams& cookingParams);
         void ShutdownPhysXSdk();
-        bool LoadMaterialLibrary();
 
-        // AzFramework::AssetCatalogEventBus::Handler ...
-        void OnCatalogLoaded(const char* catalogFile) override;
+        void InitializePerformanceCollector();
 
         PhysXSystemConfiguration m_systemConfig;
         AzPhysics::SceneConfiguration m_defaultSceneConfiguration;
@@ -123,28 +125,14 @@ namespace PhysX
         State m_state = State::Uninitialized;
 
         Debug::PhysXDebug m_physXDebug; //! Handler for the PhysXDebug Interface.
-        PhysXSettingsRegistryManager& m_registryManager; //! Handles all settings registry interactions.
+        AZStd::unique_ptr<PhysXSettingsRegistryManager> m_registryManager; //! Handles all settings registry interactions.
         PhysXSceneInterface m_sceneInterface; //! Implemented the Scene Az::Interface.
         PhysXJointHelpersInterface m_jointHelperInterface; //! Implementation of the JointHelpersInterface.
 
-        class MaterialLibraryAssetHelper
-            : private AZ::Data::AssetBus::Handler
-        {
-        public:
-            using OnMaterialLibraryReloadedCallback = AZStd::function<void(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)>;
+        static constexpr AZStd::string_view PerformanceLogCategory = "PhysX";
+        static constexpr AZStd::string_view PerformanceSpecPhysXSimulationTime = "PhysX Simulation Time";
 
-            MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback);
-
-            void Connect(const AZ::Data::AssetId& materialLibraryId);
-            void Disconnect();
-
-        private:
-            // AZ::Data::AssetBus::Handler
-            void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-            OnMaterialLibraryReloadedCallback m_onMaterialLibraryReloadedCallback;
-        };
-        MaterialLibraryAssetHelper m_materialLibraryAssetHelper;
+        AZStd::unique_ptr<AZ::Debug::PerformanceCollector> m_performanceCollector;
     };
 
     //! Helper function for getting the PhysX System interface from inside the PhysX gem.

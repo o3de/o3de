@@ -26,7 +26,7 @@ namespace LandscapeCanvas
     class SpawnerAreaNode : public BaseAreaNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(SpawnerAreaNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnerAreaNode, AZ::SystemAllocator);
         AZ_RTTI(SpawnerAreaNode, "{664DF87C-5420-44EA-8CFF-BC8D63F52112}", BaseAreaNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -34,7 +34,7 @@ namespace LandscapeCanvas
         SpawnerAreaNode() = default;
         explicit SpawnerAreaNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

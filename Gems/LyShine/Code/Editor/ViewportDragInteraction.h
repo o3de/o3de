@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/Math/Vector2.h>
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 //! Abstract base class for drag interactions in the UI Editor viewport window.
 class ViewportDragInteraction

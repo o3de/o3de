@@ -52,7 +52,6 @@ namespace AssetProcessor
         SizeType finalPosition = GenericStream::ComputeSeekPosition(bytes, mode);
 
         AZ_Assert(finalPosition < INT_MAX, "Overflow of SizeType to int in ByteArrayStream.");
-        AZ_Assert(finalPosition >= 0, "underflow in seek in ByteArrayStream");
         AZ_Assert(finalPosition <= m_activeArray->size(), "You cant seek beyond end of file");
 
         // safety clamp!

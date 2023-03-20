@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_ANIMGRAPHPLUGIN_H
-#define __EMSTUDIO_ANIMGRAPHPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -28,6 +27,8 @@
 #include <EMotionFX/Source/AnimGraphTransitionCondition.h>
 #include <EMotionFX/Source/Recorder.h>
 #include <EMotionFX/Tools/EMotionStudio/Plugins/StandardPlugins/Source/AnimGraph/AnimGraphActionManager.h>
+
+#include <GraphCanvas/Editor/EditorTypes.h>
 
 #include <QDockWidget>
 #include <QStackedWidget>
@@ -56,15 +57,14 @@ namespace EMStudio
     class NavigateWidget;
     class BlendTreeVisualNode;
     class AttributesWindow;
-    class GameControllerWindow;
     class GraphNodeFactory;
     class ParameterWindow;
-    class NodeGroupWindow;
     class BlendGraphViewWidget;
     class AnimGraphPlugin;
     class TimeViewPlugin;
-    class SaveDirtyAnimGraphFilesCallback;
     class NavigationHistory;
+
+    static constexpr GraphCanvas::EditorId AnimGraphEditorId = AZ_CRC_CE("AnimGraphEditor");
 
     // our anim graph event handler
     class AnimGraphEventHandler
@@ -76,7 +76,7 @@ namespace EMStudio
         AnimGraphEventHandler(AnimGraphPlugin* plugin);
 
         const AZStd::vector<EMotionFX::EventTypes> GetHandledEventTypes() const override { return { EMotionFX::EVENT_TYPE_ON_SET_VISUAL_MANIPULATOR_OFFSET, EMotionFX::EVENT_TYPE_ON_INPUT_PORTS_CHANGED, EMotionFX::EVENT_TYPE_ON_OUTPUT_PORTS_CHANGED, EMotionFX::EVENT_TYPE_ON_RAY_INTERSECTION_TEST, EMotionFX::EVENT_TYPE_ON_DELETE_ANIM_GRAPH, EMotionFX::EVENT_TYPE_ON_DELETE_ANIM_GRAPH_INSTANCE }; }
-        void OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, uint32 paramIndex, const AZ::Vector3& offset) override;
+        void OnSetVisualManipulatorOffset(EMotionFX::AnimGraphInstance* animGraphInstance, size_t paramIndex, const AZ::Vector3& offset) override;
         void OnInputPortsChanged(EMotionFX::AnimGraphNode* node, const AZStd::vector<AZStd::string>& newInputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) override;
         void OnOutputPortsChanged(EMotionFX::AnimGraphNode* node, const AZStd::vector<AZStd::string>& newOutputPorts, const AZStd::string& memberName, const AZStd::vector<AZStd::string>& memberValue) override;
         bool OnRayIntersectionTest(const AZ::Vector3& start, const AZ::Vector3& end, EMotionFX::IntersectionInfo* outIntersectInfo) override;
@@ -84,7 +84,7 @@ namespace EMStudio
         void OnDeleteAnimGraphInstance(EMotionFX::AnimGraphInstance* animGraphInstance) override;
 
     private:
-        AnimGraphPlugin* mPlugin;
+        AnimGraphPlugin* m_plugin;
     };
 
     class AnimGraphPerFrameCallback
@@ -114,18 +114,21 @@ namespace EMStudio
             DISPLAYFLAG_PLAYSPEED       = 1 << 0,
             DISPLAYFLAG_GLOBALWEIGHT    = 1 << 1,
             DISPLAYFLAG_SYNCSTATUS      = 1 << 2,
-            DISPLAYFLAG_PLAYPOSITION    = 1 << 3
+            DISPLAYFLAG_PLAYPOSITION    = 1 << 3,
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            DISPLAYFLAG_PROFILING_UPDATE = 1 << 5,
+            DISPLAYFLAG_PROFILING_TOPDOWN = 1 << 6,
+            DISPLAYFLAG_PROFILING_POSTUPDATE = 1 << 7,
+            DISPLAYFLAG_PROFILING_OUTPUT = 1 << 8,
+#endif
         };
 
         AnimGraphPlugin();
         ~AnimGraphPlugin();
 
         // overloaded
-        const char* GetCompileDate() const override;
         const char* GetName() const override;
         uint32 GetClassID() const override;
-        const char* GetCreatorName() const override;
-        float GetVersion() const override;
         bool GetIsClosable() const override             { return true; }
         bool GetIsFloatable() const override            { return true; }
         bool GetIsVertical() const override             { return false; }
@@ -133,15 +136,11 @@ namespace EMStudio
         void AddWindowMenuEntries(QMenu* parent) override;
 
         void SetActiveAnimGraph(EMotionFX::AnimGraph* animGraph);
-        EMotionFX::AnimGraph* GetActiveAnimGraph()           { return mActiveAnimGraph; }
+        EMotionFX::AnimGraph* GetActiveAnimGraph()           { return m_activeAnimGraph; }
 
-        void SaveAnimGraph(const char* filename, uint32 animGraphIndex, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        void SaveAnimGraphAs(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup = nullptr);
-        int SaveDirtyAnimGraph(EMotionFX::AnimGraph* animGraph, MCore::CommandGroup* commandGroup, bool askBeforeSaving, bool showCancelButton = true);
         int OnSaveDirtyAnimGraphs();
 
-        PluginOptions* GetOptions() override { return &mOptions; }
+        PluginOptions* GetOptions() override { return &m_options; }
 
         void LoadOptions();
         void SaveOptions();
@@ -193,64 +192,54 @@ namespace EMStudio
         void OnClickedRecorderNodeHistoryItem(EMotionFX::Recorder::ActorInstanceData* actorInstanceData, EMotionFX::Recorder::NodeHistoryItem* historyItem);
 
     public:
-        BlendGraphWidget* GetGraphWidget()                     { return mGraphWidget; }
-        NavigateWidget* GetNavigateWidget()                    { return mNavigateWidget; }
-        NodePaletteWidget* GetPaletteWidget()                  { return mPaletteWidget; }
-        AttributesWindow* GetAttributesWindow()                { return mAttributesWindow; }
-        ParameterWindow* GetParameterWindow()                  { return mParameterWindow; }
-        NodeGroupWindow* GetNodeGroupWidget()                  { return mNodeGroupWindow; }
-        BlendGraphViewWidget* GetViewWidget()                  { return mViewWidget; }
+        BlendGraphWidget* GetGraphWidget()                     { return m_graphWidget; }
+        NavigateWidget* GetNavigateWidget()                    { return m_navigateWidget; }
+        NodePaletteWidget* GetPaletteWidget()                  { return m_paletteWidget; }
+        AttributesWindow* GetAttributesWindow()                { return m_attributesWindow; }
+        ParameterWindow* GetParameterWindow()                  { return m_parameterWindow; }
+        BlendGraphViewWidget* GetViewWidget()                  { return m_viewWidget; }
         NavigationHistory* GetNavigationHistory() const        { return m_navigationHistory; }
 
-        QDockWidget* GetAttributeDock()                        { return mAttributeDock; }
-        QDockWidget* GetNodePaletteDock()                      { return mNodePaletteDock; }
-        QDockWidget* GetParameterDock()                        { return mParameterDock; }
-        QDockWidget* GetNodeGroupDock()                        { return mNodeGroupDock; }
-
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow* GetGameControllerWindow()        { return mGameControllerWindow; }
-        QDockWidget* GetGameControllerDock()                   { return mGameControllerDock; }
-#endif
+        QDockWidget* GetNodePaletteDock()                      { return m_nodePaletteDock; }
+        QDockWidget* GetParameterDock()                        { return m_parameterDock; }
 
         void SetDisplayFlagEnabled(uint32 flags, bool enabled)
         {
             if (enabled)
             {
-                mDisplayFlags |= flags;
+                m_displayFlags |= flags;
             }
             else
             {
-                mDisplayFlags &= ~flags;
+                m_displayFlags &= ~flags;
             }
         }
-        bool GetIsDisplayFlagEnabled(uint32 flags) const                                   { return (mDisplayFlags & flags); }
-        uint32 GetDisplayFlags() const                                                     { return mDisplayFlags; }
+        bool GetIsDisplayFlagEnabled(uint32 flags) const                                   { return (m_displayFlags & flags); }
+        uint32 GetDisplayFlags() const                                                     { return m_displayFlags; }
 
         const EMotionFX::AnimGraphObjectFactory* GetAnimGraphObjectFactory() const         { return m_animGraphObjectFactory; }
-        GraphNodeFactory* GetGraphNodeFactory()                                            { return mGraphNodeFactory; }
+        GraphNodeFactory* GetGraphNodeFactory()                                            { return m_graphNodeFactory; }
 
         // overloaded main init function
         void Reflect(AZ::ReflectContext* serializeContext) override;
         bool Init() override;
         void OnAfterLoadLayout() override;
-        EMStudioPlugin* Clone() override;
+        EMStudioPlugin* Clone() const override { return new AnimGraphPlugin(); }
 
-        const AnimGraphOptions& GetAnimGraphOptions() const                                { return mOptions; }
+        const AnimGraphOptions& GetAnimGraphOptions() const                                { return m_options; }
 
-        void SetDisableRendering(bool flag)                                                { mDisableRendering = flag; }
-        bool GetDisableRendering() const                                                   { return mDisableRendering; }
+        void SetDisableRendering(bool flag)                                                { m_disableRendering = flag; }
+        bool GetDisableRendering() const                                                   { return m_disableRendering; }
 
         void SetActionFilter(const AnimGraphActionFilter& actionFilter);
         const AnimGraphActionFilter& GetActionFilter() const;
+        void FileOpen(AZStd::string filename);
 
     private:
         enum EDockWindowOptionFlag
         {
             WINDOWS_PARAMETERWINDOW = 1,
-            WINDOWS_ATTRIBUTEWINDOW = 2,
-            WINDOWS_NODEGROUPWINDOW = 3,
-            WINDOWS_PALETTEWINDOW = 4,
-            WINDOWS_GAMECONTROLLERWINDOW = 5,
+            WINDOWS_PALETTEWINDOW = 2,
 
             NUM_DOCKWINDOW_OPTIONS //automatically gets the next number assigned
         };
@@ -264,44 +253,34 @@ namespace EMStudio
         MCORE_DEFINECOMMANDCALLBACK(CommandPlayMotionCallback);
 
         AZStd::vector<MCore::Command::Callback*>    m_commandCallbacks;
-        AZStd::vector<AnimGraphPerFrameCallback*>   mPerFrameCallbacks;
+        AZStd::vector<AnimGraphPerFrameCallback*>   m_perFrameCallbacks;
 
-        bool                                        mDisableRendering;
+        bool                                        m_disableRendering;
 
-        AnimGraphEventHandler                       mEventHandler;
+        AnimGraphEventHandler                       m_eventHandler;
 
-        BlendGraphWidget*                           mGraphWidget;
-        NavigateWidget*                             mNavigateWidget;
-        NodePaletteWidget*                          mPaletteWidget;
-        AttributesWindow*                           mAttributesWindow;
-        ParameterWindow*                            mParameterWindow;
-        NodeGroupWindow*                            mNodeGroupWindow;
-        BlendGraphViewWidget*                       mViewWidget;
+        BlendGraphWidget*                           m_graphWidget;
+        NavigateWidget*                             m_navigateWidget;
+        NodePaletteWidget*                          m_paletteWidget;
+        AttributesWindow*                           m_attributesWindow;
+        ParameterWindow*                            m_parameterWindow;
+        BlendGraphViewWidget*                       m_viewWidget;
         NavigationHistory*                          m_navigationHistory;
 
-        SaveDirtyAnimGraphFilesCallback*            mDirtyFilesCallback;
+        QDockWidget*                                m_nodePaletteDock;
+        QDockWidget*                                m_parameterDock;
+        QAction*                                    m_dockWindowActions[NUM_DOCKWINDOW_OPTIONS];
+        EMotionFX::AnimGraph*                       m_activeAnimGraph;
 
-        QDockWidget*                                mAttributeDock;
-        QDockWidget*                                mNodePaletteDock;
-        QDockWidget*                                mParameterDock;
-        QDockWidget*                                mNodeGroupDock;
-        QAction*                                    mDockWindowActions[NUM_DOCKWINDOW_OPTIONS];
-        EMotionFX::AnimGraph*                       mActiveAnimGraph;
+        float                                       m_lastPlayTime;
+        float                                       m_totalTime;
 
-#if AZ_TRAIT_EMOTIONFX_HAS_GAME_CONTROLLER
-        GameControllerWindow*                       mGameControllerWindow;
-        QPointer<QDockWidget>                       mGameControllerDock;
-#endif
+        uint32                                      m_displayFlags;
 
-        float                                       mLastPlayTime;
-        float                                       mTotalTime;
-
-        uint32                                      mDisplayFlags;
-
-        AnimGraphOptions                            mOptions;
+        AnimGraphOptions                            m_options;
 
         EMotionFX::AnimGraphObjectFactory*          m_animGraphObjectFactory;
-        GraphNodeFactory*                           mGraphNodeFactory;
+        GraphNodeFactory*                           m_graphNodeFactory;
 
         // Model used for the MVC pattern
         AnimGraphModel*                             m_animGraphModel;
@@ -311,7 +290,7 @@ namespace EMStudio
         AnimGraphActionFilter                       m_actionFilter;
 
         void InitForAnimGraph(EMotionFX::AnimGraph* setup);
-        bool GetOptionFlag(EDockWindowOptionFlag option) { return mDockWindowActions[(uint32)option]->isChecked(); }
+        bool GetOptionFlag(EDockWindowOptionFlag option) { return m_dockWindowActions[(uint32)option]->isChecked(); }
         void SetOptionFlag(EDockWindowOptionFlag option, bool isEnabled);
         void SetOptionEnabled(EDockWindowOptionFlag option, bool isEnabled);
 
@@ -320,6 +299,3 @@ namespace EMStudio
         void UpdateWindowActionsCheckState();
     };
 }   // namespace EMStudio
-
-
-#endif

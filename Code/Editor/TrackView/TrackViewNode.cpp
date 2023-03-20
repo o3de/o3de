@@ -22,16 +22,12 @@
 ////////////////////////////////////////////////////////////////////////////
 void CTrackViewKeyConstHandle::GetKey(IKey* pKey) const
 {
-    assert(m_bIsValid);
-
     m_pTrack->GetKey(m_keyIndex, pKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////
 float CTrackViewKeyConstHandle::GetTime() const
 {
-    assert(m_bIsValid);
-
     return m_pTrack->GetKeyTime(m_keyIndex);
 }
 
@@ -86,7 +82,7 @@ void CTrackViewKeyHandle::SetTime(float time, bool notifyListeners)
     if (!m_pTrack->IsSortMarkerKey(m_keyIndex))
     {
         CTrackViewKeyBundle allKeys = m_pTrack->GetAllKeys();
-        for (int x = 0; x < allKeys.GetKeyCount(); x++)
+        for (unsigned int x = 0; x < allKeys.GetKeyCount(); x++)
         {
             unsigned int curIndex = allKeys.GetKey(x).GetIndex();
             if (m_pTrack->IsSortMarkerKey(curIndex))
@@ -583,7 +579,6 @@ namespace
         nodeOrder[static_cast<int>(AnimNodeType::Alembic)] = 4;
         nodeOrder[static_cast<int>(AnimNodeType::CVar)] = 6;
         nodeOrder[static_cast<int>(AnimNodeType::ScriptVar)] = 7;
-        nodeOrder[static_cast<int>(AnimNodeType::Material)] = 8;
         nodeOrder[static_cast<int>(AnimNodeType::Event)] = 9;
         nodeOrder[static_cast<int>(AnimNodeType::Layer)] = 10;
         nodeOrder[static_cast<int>(AnimNodeType::Comment)] = 11;
@@ -626,7 +621,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTypeOrder == otherTypeOrder)
         {
             // Same node type, sort by name
-            return azstricmp(thisAnimNode.GetName(), otherAnimNode.GetName()) < 0;
+            return thisAnimNode.GetName() < otherAnimNode.GetName();
         }
 
         return thisTypeOrder < otherTypeOrder;
@@ -638,7 +633,7 @@ bool CTrackViewNode::operator<(const CTrackViewNode& otherNode) const
         if (thisTrack.GetParameterType() == otherTrack.GetParameterType())
         {
             // Same parameter type, sort by name
-            return azstricmp(thisTrack.GetName(), otherTrack.GetName()) < 0;
+            return thisTrack.GetName() < otherTrack.GetName();
         }
 
         return thisTrack.GetParameterType() < otherTrack.GetParameterType();

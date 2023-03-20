@@ -1,0 +1,50 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_TransformFunctions_FromRotationScaleAndTranslation",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "From Rotation Scale And Translation",
+                "category": "Math/Transform"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_TransformFunctions_FromRotationScaleAndTranslation",
+                    "details": {
+                        "name": "From Rotation Scale And Translation",
+                        "tooltip": "Returns a transform from the rotation, scale and the translation."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+                            "details": {
+                                "name": "Rotation"
+                            }
+                        },
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Scale"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Translation"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

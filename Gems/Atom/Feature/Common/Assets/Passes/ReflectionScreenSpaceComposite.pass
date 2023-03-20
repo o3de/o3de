@@ -8,14 +8,19 @@
             "PassClass": "ReflectionScreenSpaceCompositePass",
             "Slots": [
                 {
-                    "Name": "TraceInput",
+                    "Name": "ReflectionInput",
                     "SlotType": "Input",
                     "ScopeAttachmentUsage": "Shader"
                 },
                 {
-                    "Name": "PreviousFrameBufferInput",
+                    "Name": "DownsampledDepthInput",
                     "SlotType": "Input",
-                    "ScopeAttachmentUsage": "Shader"
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
                 },
                 {
                     "Name": "NormalInput",

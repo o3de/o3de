@@ -13,7 +13,6 @@
 #include <QMap>
 #include <QTranslator>
 #include <QSet>
-#include "IEventLoopHook.h"
 #include <unordered_map>
 
 #include <AzCore/PlatformDef.h>
@@ -72,13 +71,11 @@ namespace Editor
         ////
 
         static EditorQtApplication* instance();
+        static EditorQtApplication* newInstance(int& argc, char** argv);
 
         static bool IsActive();
 
         bool isMovingOrResizing() const;
-
-        // QAbstractNativeEventFilter:
-        bool nativeEventFilter(const QByteArray& eventType, void* message, long* result) override;
 
         // IEditorNotifyListener:
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
@@ -100,14 +97,11 @@ namespace Editor
     signals:
         void skinChanged();
 
+    protected:
+
+        bool m_isMovingOrResizing = false;
+
     private:
-        enum TimerResetFlag
-        {
-            PollState,
-            GameMode,
-            EditorMode
-        };
-        void ResetIdleTimerInterval(TimerResetFlag = PollState);
         static QColor InterpolateColors(QColor a, QColor b, float factor);
         void RefreshStyleSheet();
         void InstallFilters();
@@ -115,8 +109,6 @@ namespace Editor
         void maybeProcessIdle();
 
         AzQtComponents::O3DEStylesheet* m_stylesheet;
-
-        bool m_inWinEventFilter = false;
 
         // Translators
         void InstallEditorTranslators();
@@ -126,8 +118,6 @@ namespace Editor
 
         QTranslator* m_editorTranslator = nullptr;
         QTranslator* m_assetBrowserTranslator = nullptr;
-        QTimer* const m_idleTimer = nullptr;
-        bool m_isMovingOrResizing = false;
 
         AZ::UserSettingsProvider m_localUserSettings;
 
@@ -135,5 +125,6 @@ namespace Editor
         QSet<int> m_pressedKeys;
 
         bool m_activatedLocalUserSettings = false;
+        bool m_applicationActive = false;
     };
 } // namespace editor

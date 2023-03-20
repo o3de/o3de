@@ -6,6 +6,8 @@
  *
  */
 
+#include <AzCore/Utils/Utils.h>
+
 #include <Integration/Assets/AnimGraphAsset.h>
 #include <EMotionFX/Source/Allocators.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
@@ -18,8 +20,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(AnimGraphAssetHandler, EMotionFXAllocator)
 
         AnimGraphAsset::AnimGraphAsset(AZ::Data::AssetId id)
             : EMotionFXAsset(id)
@@ -65,15 +67,11 @@ namespace EMotionFX
                 // The following code is required to be set so the FileManager detects changes to the files loaded
                 // through this method. Once EMotionFX is integrated to the asset system this can go away.
                 AZStd::string assetFilename;
-                EBUS_EVENT_RESULT(assetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, asset.GetId());
-                const char* devAssetsPath = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
-                if (devAssetsPath)
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, asset.GetId());
+                AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+                if (!projectPath.empty())
                 {
-                    AZStd::string assetSourcePath = devAssetsPath;
-
-                    AzFramework::StringFunc::AssetDatabasePath::Normalize(assetSourcePath);
-                    AZStd::string filename;
-                    AzFramework::StringFunc::AssetDatabasePath::Join(assetSourcePath.c_str(), assetFilename.c_str(), filename);
+                    AZ::IO::FixedMaxPathString filename{ (projectPath / assetFilename).LexicallyNormal().FixedMaxPathStringAsPosix() };
 
                     assetData->m_emfxAnimGraph->SetFileName(filename.c_str());
                 }
@@ -81,7 +79,7 @@ namespace EMotionFX
                 {
                     if (GetEMotionFX().GetIsInEditorMode())
                     {
-                        AZ_Warning("EMotionFX", false, "Failed to retrieve asset source path with alias '@devassets@'. Cannot set absolute filename for '%s'", assetFilename.c_str());
+                        AZ_Warning("EMotionFX", false, "Failed to retrieve project root path . Cannot set absolute filename for '%s'", assetFilename.c_str());
                     }
                     assetData->m_emfxAnimGraph->SetFileName(assetFilename.c_str());
                 }

@@ -18,7 +18,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ReflectedTestClass, "{AE55A3D4-845B-457F-94BA-A708BBDD6307}");
-        AZ_CLASS_ALLOCATOR(ReflectedTestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedTestClass, AZ::SystemAllocator);
 
         ~ReflectedTestClass()
         {
@@ -118,14 +118,16 @@ namespace UnitTest
         }
     };
 
-    TEST(FingerprintTests, IntFingerprint_IsValid)
+    using FingerprintTests = UnitTest::LeakDetectionFixture;
+
+    TEST_F(FingerprintTests, IntFingerprint_IsValid)
     {
         AZ::SerializeContext serializeContext;
         TypeFingerprinter fingerprinter{ serializeContext };
         EXPECT_NE(InvalidTypeFingerprint, fingerprinter.GetFingerprint<int>());
     }
 
-    TEST(FingerprintTests, ClassFingerprint_IsValid)
+    TEST_F(FingerprintTests, ClassFingerprint_IsValid)
     {
         AZ::SerializeContext serializeContext;
         ReflectedTestClass::ReflectDefault(serializeContext);
@@ -134,7 +136,7 @@ namespace UnitTest
         EXPECT_NE(InvalidTypeFingerprint, fingerprinter.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassWithNewVersionNumber_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassWithNewVersionNumber_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedTestClass::ReflectDefault(serializeContext1);
@@ -147,7 +149,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedTestClass>(), fingerprinter2.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassWithRenamedProperty_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassWithRenamedProperty_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedTestClass::ReflectDefault(serializeContext1);
@@ -160,7 +162,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedTestClass>(), fingerprinter2.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassWithPropertyThatChangesType_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassWithPropertyThatChangesType_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedTestClass::ReflectDefault(serializeContext1);
@@ -173,7 +175,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedTestClass>(), fingerprinter2.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassWithPropertyThatChangesToPointer_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassWithPropertyThatChangesToPointer_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedTestClass::ReflectDefault(serializeContext1);
@@ -186,7 +188,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedTestClass>(), fingerprinter2.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassWithNewProperty_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassWithNewProperty_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedTestClass::ReflectDefault(serializeContext1);
@@ -199,7 +201,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedTestClass>(), fingerprinter2.GetFingerprint<ReflectedTestClass>());
     }
 
-    TEST(FingerprintTests, ClassGainingBaseClass_ChangesFingerprint)
+    TEST_F(FingerprintTests, ClassGainingBaseClass_ChangesFingerprint)
     {
         AZ::SerializeContext serializeContext1;
         ReflectedBaseClass::ReflectDefault(serializeContext1);
@@ -214,7 +216,7 @@ namespace UnitTest
         EXPECT_NE(fingerprinter1.GetFingerprint<ReflectedSubClass>(), fingerprinter2.GetFingerprint<ReflectedSubClass>());
     }
 
-    TEST(FingerprintTests, GatherAllTypesInObject_FindsCorrectTypes)
+    TEST_F(FingerprintTests, GatherAllTypesInObject_FindsCorrectTypes)
     {
         AZ::SerializeContext serializeContext;
         ReflectedTestClass::ReflectDefault(serializeContext);
@@ -229,7 +231,7 @@ namespace UnitTest
         EXPECT_EQ(1, typesInObject.count(AZ::SerializeTypeInfo<ReflectedTestClass>::GetUuid()));
     }
 
-    TEST(FingerprintTests, GatherAllTypesInObjectWithBaseClass_FindsCorrectTypes)
+    TEST_F(FingerprintTests, GatherAllTypesInObjectWithBaseClass_FindsCorrectTypes)
     {
         AZ::SerializeContext serializeContext;
         ReflectedBaseClass::ReflectDefault(serializeContext);
@@ -245,7 +247,7 @@ namespace UnitTest
         EXPECT_EQ(1, typesInObject.count(AZ::SerializeTypeInfo<ReflectedBaseClass>::GetUuid()));
     }
 
-    TEST(FingerprintTests, GatherTypesInObjectWithNullPointer_FindsCorrectTypes)
+    TEST_F(FingerprintTests, GatherTypesInObjectWithNullPointer_FindsCorrectTypes)
     {
         AZ::SerializeContext serializeContext;
         ReflectedClassWithPointer::Reflect(serializeContext);
@@ -263,7 +265,7 @@ namespace UnitTest
         EXPECT_EQ(1, typesInObject.count(AZ::SerializeTypeInfo<ReflectedClassWithPointer>::GetUuid()));
     }
 
-    TEST(FingerprintTests, GatherTypesInObjectWithValidPointer_FindsCorrectTypes)
+    TEST_F(FingerprintTests, GatherTypesInObjectWithValidPointer_FindsCorrectTypes)
     {
         AZ::SerializeContext serializeContext;
         ReflectedClassWithPointer::Reflect(serializeContext);
@@ -283,7 +285,7 @@ namespace UnitTest
         EXPECT_EQ(1, typesInObject.count(AZ::SerializeTypeInfo<int>::GetUuid()));
     }
 
-    TEST(FingerprintTests, GenerateFingerprintForAllTypesInObject_Works)
+    TEST_F(FingerprintTests, GenerateFingerprintForAllTypesInObject_Works)
     {
         AZ::SerializeContext serializeContext;
         ReflectedTestClass::ReflectDefault(serializeContext);

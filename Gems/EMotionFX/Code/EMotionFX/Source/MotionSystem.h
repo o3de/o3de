@@ -104,7 +104,7 @@ namespace EMotionFX
          * @result A pointer to the motion instance.
          * @see IsValidMotionInstance
          */
-        MotionInstance* GetMotionInstance(uint32 nr) const;
+        MotionInstance* GetMotionInstance(size_t nr) const;
 
         /**
          * Recursively search for the first non mixing motion and return the motion instance.
@@ -215,9 +215,9 @@ namespace EMotionFX
 
 
     protected:
-        AZStd::vector<MotionInstance*>   mMotionInstances;       /**< The collection of motion instances. */
-        ActorInstance*                  mActorInstance;         /**< The actor instance where this motion system belongs to. */
-        MotionQueue*                    mMotionQueue;           /**< The motion queue. */
+        AZStd::vector<MotionInstance*>   m_motionInstances;       /**< The collection of motion instances. */
+        ActorInstance*                  m_actorInstance;         /**< The actor instance where this motion system belongs to. */
+        MotionQueue*                    m_motionQueue;           /**< The motion queue. */
 
         /**
          * Constructor.

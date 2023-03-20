@@ -75,7 +75,11 @@ namespace LmbrCentral
         if (rtpcName && rtpcName[0] != '\0')
         {
             Audio::TAudioControlID rtpcID = INVALID_AUDIO_CONTROL_ID;
-            Audio::AudioSystemRequestBus::BroadcastResult(rtpcID, &Audio::AudioSystemRequestBus::Events::GetAudioRtpcID, rtpcName);
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                rtpcID = audioSystem->GetAudioRtpcID(rtpcName);
+            }
+
             if (rtpcID != INVALID_AUDIO_CONTROL_ID)
             {
                 AudioProxyComponentRequestBus::Event(GetEntityId(), &AudioProxyComponentRequestBus::Events::SetRtpcValue, rtpcID, value);
@@ -89,7 +93,10 @@ namespace LmbrCentral
         m_defaultRtpcID = INVALID_AUDIO_CONTROL_ID;
         if (!m_defaultRtpcName.empty())
         {
-            Audio::AudioSystemRequestBus::BroadcastResult(m_defaultRtpcID, &Audio::AudioSystemRequestBus::Events::GetAudioRtpcID, m_defaultRtpcName.c_str());
+            if (auto audioSystem = AZ::Interface<Audio::IAudioSystem>::Get(); audioSystem != nullptr)
+            {
+                m_defaultRtpcID = audioSystem->GetAudioRtpcID(m_defaultRtpcName.c_str());
+            }
         }
     }
 

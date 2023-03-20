@@ -12,6 +12,7 @@
 #include <QCoreApplication>
 #include "native/assetprocessor.h"
 #include <AzFramework/Asset/AssetSystemTypes.h>
+#include <native/tests/UnitTestUtilities.h>
 
 class RCcontrollerTest
     : public AssetProcessor::AssetProcessorTest
@@ -35,4 +36,5 @@ private:
     char**      m_argv;
 
     QCoreApplication* m_qApp;
+    UnitTests::MockPathConversion m_mockPathConversion;
 };

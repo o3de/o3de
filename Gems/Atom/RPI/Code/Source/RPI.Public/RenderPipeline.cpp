@@ -9,6 +9,7 @@
 
 #include <Atom/RHI/DrawListTagRegistry.h>
 
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassSystem.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -18,9 +19,9 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
-#include <Atom/RPI.Public/WindowContext.h>
 
 #include <Atom/RPI.Reflect/System/AnyAsset.h>
+
 
 namespace AZ
 {
@@ -40,14 +41,14 @@ namespace AZ
                 rootRequest.m_templateName = desc.m_rootPassTemplate;
 
                 Ptr<Pass> rootPass = passSystem->CreatePassFromRequest(&rootRequest);
-                AZ_Assert(rootPass != nullptr && rootPass->AsParent() != nullptr, "Error creating root pass for pipeline!");
-                pipeline->m_rootPass = rootPass->AsParent();
+                pipeline->m_passTree.m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
             }
             else
             {
                 // Otherwise create an empty root pass with pipeline name
-                pipeline->m_rootPass = passSystem->CreatePass<ParentPass>(passName);
+                pipeline->m_passTree.m_rootPass = passSystem->CreatePass<ParentPass>(passName);
             }
+            AZ_Assert(pipeline->m_passTree.m_rootPass != nullptr, "Error creating root pass for pipeline!");
 
             InitializeRenderPipeline(pipeline, desc);
 
@@ -82,48 +83,147 @@ namespace AZ
             return CreateRenderPipelineForWindow(*renderPipelineDescriptor, windowContext);
         }
 
-        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext)
+        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForWindow(const RenderPipelineDescriptor& desc, const WindowContext& windowContext,
+                                                                        const ViewType viewType)
         {
-            RenderPipeline* pipeline = aznew RenderPipeline();
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
 
             PassDescriptor swapChainDescriptor(Name(desc.m_name));
-            pipeline->m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, Name(desc.m_rootPassTemplate.c_str()));
+            Name templateName = Name(desc.m_rootPassTemplate.c_str());
+            swapChainDescriptor.m_passTemplate = passSystem->GetPassTemplate(templateName);
+
+            if (!swapChainDescriptor.m_passTemplate)
+            {
+                AZ_Error("RPISystem", false, "Root-PassTemplate %s not found!", templateName.GetCStr());
+                return nullptr;
+            }
+
+            pipeline->m_passTree.m_rootPass = aznew SwapChainPass(swapChainDescriptor, &windowContext, viewType);
             pipeline->m_windowHandle = windowContext.GetWindowHandle();
+            pipeline->m_viewType = viewType;
+            InitializeRenderPipeline(pipeline.get(), desc);
 
-            InitializeRenderPipeline(pipeline, desc);
+            return pipeline;
+        }
 
-            return RenderPipelinePtr(pipeline);
+        RenderPipelinePtr RenderPipeline::CreateRenderPipelineForImage(const RenderPipelineDescriptor& desc, Data::Asset<AttachmentImageAsset> imageAsset)
+        {
+            RenderPipelinePtr pipeline{aznew RenderPipeline()};
+            PassSystemInterface* passSystem = PassSystemInterface::Get();
+
+            PassRequest passRequest;
+
+            PassImageAttachmentDesc imageAttachmentDesc;
+            imageAttachmentDesc.m_assetRef.m_assetId = imageAsset.GetId();
+            imageAttachmentDesc.m_lifetime = RHI::AttachmentLifetimeType::Imported;
+            imageAttachmentDesc.m_name = Name("OutputImage");
+            passRequest.m_imageAttachmentOverrides.push_back(imageAttachmentDesc);
+
+            auto passTemplate = passSystem->GetPassTemplate(Name(desc.m_rootPassTemplate));
+
+            if (!passTemplate)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: the render pipeline root pass template doesn't exist");
+                return nullptr;
+            }
+
+            PassConnection passConnection;
+
+            // use first output slot for connection
+            for (auto slot : passTemplate->m_slots)
+            {
+                if (slot.m_slotType == RPI::PassSlotType::Output || slot.m_slotType == RPI::PassSlotType::InputOutput)
+                {
+                    passConnection.m_localSlot = slot.m_name;
+                    break;
+                }
+            }
+
+            if (passConnection.m_localSlot.IsEmpty())
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: the render pipeline root pass template doesn't have output slot for render target");
+                return nullptr;
+            }
+
+            passConnection.m_attachmentRef.m_pass = "This";
+            passConnection.m_attachmentRef.m_attachment = imageAttachmentDesc.m_name;
+            passRequest.m_passName = desc.m_name;
+            passRequest.m_templateName = desc.m_rootPassTemplate;
+            passRequest.m_connections.push_back(passConnection);
+                        
+            auto rootPass = passSystem->CreatePassFromRequest(&passRequest);
+            if (!rootPass)
+            {
+                AZ_Error("RPI", false, "Failed to create a RenderPipeline: failed to create root pass for the render pipeline");
+                return nullptr;
+            }
+            pipeline->m_passTree.m_rootPass = azrtti_cast<ParentPass*>(rootPass.get());
+
+            InitializeRenderPipeline(pipeline.get(), desc);
+
+            return pipeline;
         }
 
         void RenderPipeline::InitializeRenderPipeline(RenderPipeline* pipeline, const RenderPipelineDescriptor& desc)
         {
+            pipeline->m_descriptor = desc;
             pipeline->m_mainViewTag = Name(desc.m_mainViewTagName);
             pipeline->m_nameId = desc.m_name.data();
-            pipeline->m_executeOnce = desc.m_executeOnce;
-            pipeline->m_originalRenderSettings = desc.m_renderSettings;
+            pipeline->m_materialPipelineTagName = Name{desc.m_materialPipelineTag};
             pipeline->m_activeRenderSettings = desc.m_renderSettings;
-            pipeline->m_rootPass->SetRenderPipeline(pipeline);
-            pipeline->m_rootPass->ManualPipelineBuildAndInitialize();
+            pipeline->m_passTree.m_rootPass->SetRenderPipeline(pipeline);
+            pipeline->m_passTree.m_rootPass->m_flags.m_isPipelineRoot = true;
+            pipeline->m_passTree.m_rootPass->ManualPipelineBuildAndInitialize();
+
+            pipeline->UpdateViewportScissor();
+        }
+
+        void RenderPipeline::UpdateViewportScissor()
+        {
+            for (PassAttachmentBinding& binding : m_passTree.m_rootPass->m_attachmentBindings)
+            {
+                if (binding.m_slotType == PassSlotType::Output || binding.m_slotType == PassSlotType::InputOutput)
+                {
+                    auto attachment = binding.GetAttachment();
+                    if (attachment && attachment->GetAttachmentType() == RHI::AttachmentType::Image)
+                    {
+                        RHI::ImageDescriptor imageDesc;
+                        if (attachment->m_importedResource)
+                        {
+                            AttachmentImage* image = static_cast<AttachmentImage*>(attachment->m_importedResource.get());
+                            imageDesc = image->GetDescriptor();
+                        }
+                        else
+                        {
+                            imageDesc = attachment->m_descriptor.m_image;
+                        }
+                        m_viewport = RHI::Viewport(0, (float)imageDesc.m_size.m_width, 0, (float)imageDesc.m_size.m_height);
+                        m_scissor = RHI::Scissor(0, 0, imageDesc.m_size.m_width, imageDesc.m_size.m_height);
+                        return;
+                    }
+                }
+            }
         }
 
         RenderPipeline::~RenderPipeline()
         {
-            if (m_rootPass)
+            if (m_passTree.m_rootPass)
             {
-                m_rootPass->SetRenderPipeline(nullptr);
+                m_passTree.m_rootPass->SetRenderPipeline(nullptr);
             }
         }
 
         void RenderPipeline::BuildPipelineViews()
         {
-            if (m_rootPass == nullptr)
+            if (m_passTree.m_rootPass == nullptr)
             {
                 return;
             }
 
             // Get view tags from all passes.
-            SortedPipelineViewTags viewTags;
-            m_rootPass->GetPipelineViewTags(viewTags);
+            PipelineViewTags viewTags;
+            m_passTree.m_rootPass->GetPipelineViewTags(viewTags);
 
             // Use a new list for building pipeline views since we may need information from the previous list in m_views in the process
             PipelineViewMap newViewsByTag;
@@ -157,11 +257,41 @@ namespace AZ
         {
             views.m_drawListMask.reset();
             views.m_passesByDrawList.clear();
-            m_rootPass->GetViewDrawListInfo(views.m_drawListMask, views.m_passesByDrawList, views.m_viewTag);
+            m_passTree.m_rootPass->GetViewDrawListInfo(views.m_drawListMask, views.m_passesByDrawList, views.m_viewTag);
+        }
+
+        bool RenderPipeline::CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const
+        {
+            auto registeredViewItr = m_persistentViewsByViewTag.find(view);
+            if (registeredViewItr != m_persistentViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
+            {
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for persistent ViewTag [%s].",
+                         view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
+                return false;
+            }
+
+            registeredViewItr = m_transientViewsByViewTag.find(view);
+            if (registeredViewItr != m_transientViewsByViewTag.end() && registeredViewItr->second != allowedViewTag)
+            {
+                AZ_Warning("RenderPipeline", false, "View [%s] is already registered for transient ViewTag [%s].",
+                         view->GetName().GetCStr(), registeredViewItr->second.GetCStr());
+                return false;
+            }
+            return true;
         }
 
         void RenderPipeline::SetPersistentView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
+            // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
+            // here if the view is already registered with another viewTag.
+            // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
+
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
             {
@@ -178,11 +308,17 @@ namespace AZ
                     pipelineViews.m_views.resize(1);
                 }
                 ViewPtr previousView = pipelineViews.m_views[0];
+                if (view)
+                {
+                    view->OnAddToRenderPipeline();
+                }
                 pipelineViews.m_views[0] = view;
+                m_persistentViewsByViewTag[view.get()] = viewTag;
 
                 if (previousView)
                 {
                     previousView->SetPassesByDrawList(nullptr);
+                    m_persistentViewsByViewTag.erase(previousView.get());
                 }
 
                 if (m_scene)
@@ -222,8 +358,28 @@ namespace AZ
             }
         }
 
+        void RenderPipeline::SetDefaultStereoscopicViewFromEntity(EntityId entityId, RPI::ViewType viewType)
+        {
+            ViewPtr cameraView;
+            ViewProviderBus::EventResult(cameraView, entityId, &ViewProvider::GetStereoscopicView, viewType);
+            if (cameraView)
+            {
+                SetDefaultView(cameraView);
+            }
+        }
+
         void RenderPipeline::AddTransientView(const PipelineViewTag& viewTag, ViewPtr view)
         {
+            // If a view is registered for multiple viewTags, it gets only the PassesByDrawList of whatever
+            // DrawList it was registered last, which will cause a crash during SortDrawList later. So we check
+            // here if the view is already registered with another viewTag.
+            // TODO: remove this check and merge the PassesByDrawList if that behaviour is actually needed.
+            if (!CanRegisterView(viewTag, view.get()))
+            {
+                AZ_Assert(false, "Can't register transient view [%s] with viewTag [%s]", view->GetName().GetCStr(), viewTag.GetCStr());
+                return;
+            }
+
             auto viewItr = m_pipelineViewsByTag.find(viewTag);
             if (viewItr != m_pipelineViewsByTag.end())
             {
@@ -238,7 +394,9 @@ namespace AZ
                     pipelineViews.m_type = PipelineViewType::Transient;
                 }
                 view->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
+                view->OnAddToRenderPipeline();
                 pipelineViews.m_views.push_back(view);
+                m_transientViewsByViewTag[view.get()] = viewTag;
             }
         }
 
@@ -283,40 +441,39 @@ namespace AZ
         {
             AZ_Assert(m_scene == nullptr, "Pipeline was added to another scene");
             m_scene = scene;
-            PassSystemInterface::Get()->GetRootPass()->AddChild(m_rootPass);
-            if (m_renderMode != RenderMode::NoRender)
-            {
-                m_rootPass->SetEnabled(true);
-            }
+            PassSystemInterface::Get()->AddRenderPipeline(this);
         }
 
         void RenderPipeline::OnRemovedFromScene([[maybe_unused]] Scene* scene)
         {
+            m_passTree.ClearQueues();
+
             AZ_Assert(m_scene == scene, "Pipeline isn't added to the specified scene");
             m_scene = nullptr;
-            m_rootPass->SetEnabled(false);
-            m_rootPass->QueueForRemoval();
+            PassSystemInterface::Get()->RemoveRenderPipeline(this);
 
-            m_drawFilterTag.Reset();
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
             m_drawFilterMask = 0;
         }
 
-        void RenderPipeline::OnPassModified()
+        void RenderPipeline::ProcessQueuedPassChanges()
         {
-            if (m_needsPassRecreate)
+            m_passTree.ProcessQueuedChanges();
+        }
+
+        void RenderPipeline::UpdatePasses()
+        {
+            // Rebuild Pipeline if needed, for example if passes where hot reloaded
+            if (PipelineNeedsRebuild(m_pipelinePassChanges))
             {
-                PassSystemInterface* passSystem = PassSystemInterface::Get();
-
                 // Process any queued changes before we attempt to reload the pipeline
-                passSystem->ProcessQueuedChanges();
-
-                passSystem->SetHotReloading(true);
+                m_passTree.ProcessQueuedChanges();
 
                 // Attempt to re-create hierarchy under root pass
-                Ptr<ParentPass> newRoot = m_rootPass->Recreate();
+                Ptr<ParentPass> newRoot = azrtti_cast<ParentPass*>(m_passTree.m_rootPass->Recreate().get());
                 newRoot->SetRenderPipeline(this);
-
-                // Manually build the pipeline
+                newRoot->m_flags.m_isPipelineRoot = true;
                 newRoot->ManualPipelineBuildAndInitialize();
 
                 // Validate the new root
@@ -325,14 +482,16 @@ namespace AZ
                 if (validation.IsValid())
                 {
                     // Remove old pass
-                    m_rootPass->SetRenderPipeline(nullptr);
-                    m_rootPass->QueueForRemoval();
+                    m_passTree.m_rootPass->SetRenderPipeline(nullptr);
+                    m_passTree.m_rootPass->QueueForRemoval();
 
                     // Set new root
-                    m_rootPass = newRoot;
-                    passSystem->GetRootPass()->AddChild(m_rootPass);
+                    m_passTree.m_rootPass = newRoot;
+                    PassSystemInterface::Get()->GetRootPass()->AddChild(m_passTree.m_rootPass);
 
-                    m_wasPassModified = true;
+                    // Re-Apply render pipeline change
+                    m_wasModifiedByScene = false;
+                    m_scene->TryApplyRenderPipelineChanges(this);
                 }
                 else
                 {
@@ -343,45 +502,69 @@ namespace AZ
                     newRoot->DebugPrint();
 #endif
                 }
-                passSystem->SetHotReloading(false);
-                m_needsPassRecreate = false;
             }
 
-            if (m_wasPassModified)
+            // Build and initialize any queued passes
+            m_passTree.ProcessQueuedChanges();
+
+            if (m_pipelinePassChanges != PipelinePassChanges::NoPassChanges)
             {
-                m_rootPass->SetRenderPipeline(this);
-                BuildPipelineViews();
-                m_wasPassModified = false;
+                m_passTree.m_rootPass->SetRenderPipeline(this);
+
+                // Pipeline views
+                if (PipelineViewsNeedRebuild(m_pipelinePassChanges))
+                {
+                    BuildPipelineViews();
+                }
+
                 if (m_scene)
                 {
                     SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelinePassesChanged, this);
+                    SceneNotificationBus::Event(m_scene->GetId(), &SceneNotification::OnRenderPipelineChanged, this,
+                        SceneNotification::RenderPipelineChangeType::PassChanged);
+
+                    // Pipeline state lookup
+                    if (PipelineStateLookupNeedsRebuild(m_pipelinePassChanges))
+                    {
+                        SceneRequestBus::Event(m_scene->GetId(), &SceneRequest::PipelineStateLookupNeedsRebuild);
+                    }
+                }
+                                
+                UpdateViewportScissor();
+
+                // Reset change flags
+                m_pipelinePassChanges = PipelinePassChanges::NoPassChanges;
+
+                if (m_scene)
+                {
+                    // Process any changes that may have happened due to SceneNotification Events. This may cause the
+                    // m_pipelinePassChanges flag to change and be handled later.
+                    m_passTree.ProcessQueuedChanges();
                 }
             }
         }
 
         bool RenderPipeline::IsExecuteOnce()
         {
-            return m_executeOnce;
+            return m_descriptor.m_executeOnce;
         }
 
         void RenderPipeline::RemoveFromScene()
         {
             if (m_scene == nullptr)
             {
-                AZ_Assert(false, "Pipeline isn't added to the any scene");
+                AZ_Assert(false, "RenderPipeline::RemoveFromScene: Pipeline [%s] isn't added to any scene", m_nameId.GetCStr());
                 return;
             }
 
             m_scene->RemoveRenderPipeline(m_nameId);
         }
 
-        void RenderPipeline::OnStartFrame(const TickTimeInfo& tick)
+        void RenderPipeline::OnStartFrame([[maybe_unused]] float time)
         {
-            AZ_PROFILE_FUNCTION(Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RPI, "RenderPipeline: OnStartFrame");
 
-            m_lastRenderStartTime = tick.m_currentGameTime;
-
-            OnPassModified();
+            UpdatePasses();
 
             for (auto& viewItr : m_pipelineViewsByTag)
             {
@@ -394,11 +577,10 @@ namespace AZ
                 }
                 else if (pipelineViews.m_type == PipelineViewType::Persistent)
                 {
-                    // Reset persistent view: clean draw list mask and draw lists
-                    pipelineViews.m_views[0]->Reset();
                     pipelineViews.m_views[0]->SetPassesByDrawList(&pipelineViews.m_passesByDrawList);
                 }
             }
+            m_transientViewsByViewTag.clear();
         }
 
         void RenderPipeline::OnFrameEnd()
@@ -406,6 +588,26 @@ namespace AZ
             if (m_renderMode == RenderMode::RenderOnce)
             {
                 RemoveFromRenderTick();
+            }
+        }
+
+        void RenderPipeline::PassSystemFrameBegin(Pass::FramePrepareParams params)
+        {
+            AZ_PROFILE_FUNCTION(RPI);
+            if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
+            {
+                params.m_viewportState = m_viewport;
+                params.m_scissorState = m_scissor;
+                m_passTree.m_rootPass->FrameBegin(params);
+            }
+        }
+
+        void RenderPipeline::PassSystemFrameEnd()
+        {
+            AZ_PROFILE_FUNCTION(RPI);
+            if (GetRenderMode() != RenderPipeline::RenderMode::NoRender)
+            {
+                m_passTree.m_rootPass->FrameEnd();
             }
         }
 
@@ -432,6 +634,44 @@ namespace AZ
             }
         }
 
+        const PipelineGlobalBinding* RenderPipeline::GetPipelineGlobalConnection(const Name& globalName) const
+        {
+            for (const PipelineGlobalBinding& connection : m_pipelineGlobalConnections)
+            {
+                if (connection.m_globalName == globalName)
+                {
+                    return &connection;
+                }
+            }
+            return nullptr;
+        }
+
+        void RenderPipeline::AddPipelineGlobalConnection(const Name& globalName, PassAttachmentBinding* binding, Pass* pass)
+        {
+            m_pipelineGlobalConnections.push_back(PipelineGlobalBinding{ globalName, binding, pass });
+        }
+
+        void RenderPipeline::RemovePipelineGlobalConnectionsFromPass(Pass* passOnwer)
+        {
+            auto iter = m_pipelineGlobalConnections.begin();
+            while (iter != m_pipelineGlobalConnections.end())
+            {
+                if (iter->m_pass == passOnwer)
+                {
+                    m_pipelineGlobalConnections.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
+            }
+        }
+
+        void RenderPipeline::ClearGlobalBindings()
+        {
+            m_pipelineGlobalConnections.clear();
+        }
+
         RenderPipelineId RenderPipeline::GetId() const
         {
             return m_nameId;
@@ -439,17 +679,12 @@ namespace AZ
 
         const Ptr<ParentPass>& RenderPipeline::GetRootPass() const
         {
-            return m_rootPass;
+            return m_passTree.m_rootPass;
         }
 
-        void RenderPipeline::SetPassModified()
+        void RenderPipeline::MarkPipelinePassChanges(u32 passChangeFlags)
         {
-            m_wasPassModified = true;
-        }
-
-        void RenderPipeline::SetPassNeedsRecreate()
-        {
-            m_needsPassRecreate = true;
+            m_pipelinePassChanges |= passChangeFlags;
         }
 
         Scene* RenderPipeline::GetScene() const
@@ -474,40 +709,32 @@ namespace AZ
 
         void RenderPipeline::RevertRenderSettings()
         {
-            m_activeRenderSettings = m_originalRenderSettings;
+            m_activeRenderSettings = m_descriptor.m_renderSettings;
         }
 
         void RenderPipeline::AddToRenderTickOnce()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderOnce;
         }
 
         void RenderPipeline::AddToRenderTick()
         {
-            m_rootPass->SetEnabled(true);
             m_renderMode = RenderMode::RenderEveryTick;
         }
 
         void RenderPipeline::RemoveFromRenderTick()
         {
             m_renderMode = RenderMode::NoRender;
-            m_rootPass->SetEnabled(false);
         }
 
         RenderPipeline::RenderMode RenderPipeline::GetRenderMode() const
         {
             return m_renderMode;
         }
-        
+
         bool RenderPipeline::NeedsRender() const
         {
             return m_renderMode != RenderMode::NoRender;
-        }
-
-        RHI::DrawFilterTag RenderPipeline::GetDrawFilterTag() const
-        {
-            return m_drawFilterTag;
         }
 
         RHI::DrawFilterMask RenderPipeline::GetDrawFilterMask() const
@@ -515,17 +742,89 @@ namespace AZ
             return m_drawFilterMask;
         }
 
-        void RenderPipeline::SetDrawFilterTag(RHI::DrawFilterTag tag)
+        void RenderPipeline::SetDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
+        {   
+            m_drawFilterTagForPipelineInstanceName = tagRegistry->AcquireTag(m_nameId);
+            m_drawFilterTagForMaterialPipeline = tagRegistry->AcquireTag(m_materialPipelineTagName);
+                        
+            m_drawFilterMask = 0;
+            
+            if (m_drawFilterTagForPipelineInstanceName.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForPipelineInstanceName.GetIndex();
+            }
+            if (m_drawFilterTagForMaterialPipeline.IsValid())
+            {
+                m_drawFilterMask |= 1 << m_drawFilterTagForMaterialPipeline.GetIndex();
+            }
+        }
+
+        void RenderPipeline::ReleaseDrawFilterTags(RHI::DrawFilterTagRegistry* tagRegistry)
         {
-            m_drawFilterTag = tag;
-            if (m_drawFilterTag.IsValid())
+            tagRegistry->ReleaseTag(m_drawFilterTagForPipelineInstanceName);
+            tagRegistry->ReleaseTag(m_drawFilterTagForMaterialPipeline);
+            m_drawFilterTagForPipelineInstanceName.Reset();
+            m_drawFilterTagForMaterialPipeline.Reset();
+        }
+
+        const RenderPipelineDescriptor& RenderPipeline::GetDescriptor() const
+        {
+            return m_descriptor;
+        }
+
+        bool RenderPipeline::AddPassBefore(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
             {
-                m_drawFilterMask = 1 << tag.GetIndex();
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
             }
-            else
+
+            // insert the pass
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex());
+        }
+
+        bool RenderPipeline::AddPassAfter(Ptr<Pass> newPass, const AZ::Name& referencePassName)
+        {
+            auto foundPass = FindFirstPass(referencePassName);
+
+            if (!foundPass)
             {
-                m_drawFilterMask = 0;
+                AZ_Warning("RenderPipeline", false, "Add pass to render pipeline failed: can't find reference pass [%s] in render pipeline [%s]",
+                    referencePassName.GetCStr(), GetId().GetCStr());
+                return false;
             }
+
+            // insert the pass
+            auto parentPass = foundPass->GetParent();
+            auto passIndex = parentPass->FindChildPassIndex(referencePassName);
+            // Note: no need to check if passIndex is valid since the pass was already found
+            return parentPass->InsertChild(newPass, passIndex.GetIndex()+1);
+        }
+
+        Ptr<Pass> RenderPipeline::FindFirstPass(const AZ::Name& passName)
+        {
+            auto passFilter = RPI::PassFilter::CreateWithPassHierarchy({passName});
+            passFilter.SetOwnerRenderPipeline(this);
+            RPI::Ptr<RPI::Pass> foundPass = nullptr;
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundPass](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    foundPass = pass;
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+
+            return foundPass;
+        }
+
+        ViewType RenderPipeline::GetViewType() const
+        {
+            return m_viewType;
         }
     }
 }

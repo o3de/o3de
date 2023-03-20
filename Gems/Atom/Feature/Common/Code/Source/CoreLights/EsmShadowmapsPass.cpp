@@ -10,6 +10,7 @@
 #include <CoreLights/DepthExponentiationPass.h>
 
 #include <Atom/Feature/CoreLights/EsmShadowmapsPassData.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
 #include <Atom/RPI.Public/Pass/ComputePass.h>
 #include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Math/MathFilterDescriptor.h>
@@ -19,6 +20,8 @@ namespace AZ
 {
     namespace Render
     {
+        // --- Pass Creation ---
+
         RPI::Ptr<EsmShadowmapsPass> EsmShadowmapsPass::Create(const RPI::PassDescriptor& descriptor)
         {
             return aznew EsmShadowmapsPass(descriptor);
@@ -35,33 +38,27 @@ namespace AZ
             }
 
             m_lightTypeName = esmData->m_lightType;
+
+            if (m_lightTypeName == Name("projected"))
+            {
+                m_lightType = EsmLightType::Projected;
+            }
+            else if (m_lightTypeName == Name("directional"))
+            {
+                m_lightType = EsmLightType::Directional;
+            }
         }
+
+        // --- Setters/Getters ---
 
         const Name& EsmShadowmapsPass::GetLightTypeName() const
         {
             return m_lightTypeName;
         }
 
-        void EsmShadowmapsPass::SetFilterParameters(const AZStd::array_view<float>& standardDeviations)
+        bool EsmShadowmapsPass::GetIsProjected() const
         {
-            // Set descriptor for Gaussian filters for given set of standard deviations.
-            MathFilterDescriptor descriptor;
-            descriptor.m_kind = MathFilterKind::Gaussian;
-            descriptor.m_gaussians.reserve(standardDeviations.size());
-            for (const float standardDeviation : standardDeviations)
-            {
-                descriptor.m_gaussians.emplace_back(GaussianFilterDescriptor{ standardDeviation });
-            }
-
-            // Set filter paramter buffer along with element counts for each filter.
-            MathFilter::BufferWithElementCounts bufferCounts = MathFilter::FindOrCreateFilterBuffer(descriptor);
-            m_filterTableBuffer = bufferCounts.first;
-            m_filterCounts = AZStd::move(bufferCounts.second);
-        }
-
-        AZStd::array_view<uint32_t> EsmShadowmapsPass::GetFilterCounts() const
-        {
-            return m_filterCounts;
+            return m_lightType == EsmLightType::Projected;
         }
 
         void EsmShadowmapsPass::SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer)
@@ -72,6 +69,69 @@ namespace AZ
         void EsmShadowmapsPass::SetFilterParameterBuffer(const Data::Instance<RPI::Buffer>& dataBuffer)
         {
             m_filterParameterBuffer = dataBuffer;
+        }
+
+        void EsmShadowmapsPass::SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex)
+        {
+            if (m_shadowmapIndexTableBufferIndices[childPassIndex].IsNull())
+            {
+                m_shadowmapIndexTableBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_shadowmapIndexTable"));
+            }
+            srg->SetBuffer(m_shadowmapIndexTableBufferIndices[childPassIndex], m_shadowmapIndexTableBuffer);
+
+            if (m_filterParameterBufferIndices[childPassIndex].IsNull())
+            {
+                m_filterParameterBufferIndices[childPassIndex] = srg->FindShaderInputBufferIndex(Name("m_filterParameters"));
+            }
+            srg->SetBuffer(m_filterParameterBufferIndices[childPassIndex], m_filterParameterBuffer);
+        }
+
+        void EsmShadowmapsPass::SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, uint32_t kawaseBlurIndex)
+        {
+            if (m_kawaseBlurConstantIndices[kawaseBlurIndex].IsNull())
+            {
+                m_kawaseBlurConstantIndices[kawaseBlurIndex] = srg->FindShaderInputConstantIndex(Name("m_rcpResolutionAndIteration"));
+            }
+            const Vector4 data(
+                1.0f / m_shadowmapImageSize.m_width, 1.0f / m_shadowmapImageSize.m_height, aznumeric_cast<float>(kawaseBlurIndex), 0.0f);
+
+            srg->SetConstant(m_kawaseBlurConstantIndices[kawaseBlurIndex], data);
+        }
+
+        // --- Frame Render ---
+
+        void EsmShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
+        {
+            SetEnabledComputation(m_computationEnabled);
+            if (m_computationEnabled)
+            {
+                UpdateChildren();
+            }
+            Base::FrameBeginInternal(params);
+        }
+
+        void EsmShadowmapsPass::BuildInternal()
+        {
+            if (GetInputOutputCount() > 0 && GetIsProjected())
+            {
+                if (!m_atlasAttachmentImage)
+                {
+                    auto binding = GetInputOutputBinding(0);
+                    if (binding.GetAttachment() == nullptr)
+                    {
+                        // Make sure at least a dummy image is attached if lacking any other attachments.
+                        // This may be necessary for a few frames during initialization.
+                        auto tempAttachmentImage = RPI::ImageSystemInterface::Get()->GetSystemAttachmentImage(RHI::Format::R16_FLOAT);
+                        AttachImageToSlot(Name("EsmShadowmaps"), tempAttachmentImage);
+                    }
+                }
+                else
+                {
+                    AttachImageToSlot(Name("EsmShadowmaps"), m_atlasAttachmentImage);
+                }
+            }
+
+            Base::BuildInternal();
         }
 
         void EsmShadowmapsPass::SetEnabledComputation(bool enabled)
@@ -90,11 +150,11 @@ namespace AZ
             {
                 auto* exponentiationPass = azrtti_cast<DepthExponentiationPass*>(GetChildren()[static_cast<uint32_t>(EsmChildPassKind::Exponentiation)].get());
                 AZ_Assert(exponentiationPass, "Child not found or not of type DepthExponentiationPass.");
-                if (m_lightTypeName == Name("directional"))
+                if (m_lightType == EsmLightType::Directional)
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Directional);
                 }
-                else if (m_lightTypeName == Name("projected"))
+                else if (m_lightType == EsmLightType::Projected)
                 {
                     exponentiationPass->SetShadowmapType(Shadow::ShadowmapType::Projected);
                 }
@@ -107,55 +167,43 @@ namespace AZ
             m_computationEnabled = enabled;
         }
 
-        void EsmShadowmapsPass::ResetInternal()
+        void EsmShadowmapsPass::SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge)
         {
-            SetEnabledComputation(m_computationEnabled);
-            Base::ResetInternal();
-        }
-
-        void EsmShadowmapsPass::FrameBeginInternal(FramePrepareParams params)
-        {
-            UpdateChildren();
-
-            Base::FrameBeginInternal(params);
+            if (m_atlasAttachmentImage != atlasAttachmentIamge)
+            {
+                m_atlasAttachmentImage = atlasAttachmentIamge;
+                QueueForBuildAndInitialization();
+            }
         }
 
         void EsmShadowmapsPass::UpdateChildren()
         {
             const RPI::PassAttachmentBinding& inputBinding = GetInputBinding(0);
-            AZ_Assert(inputBinding.m_attachment->m_descriptor.m_type == RHI::AttachmentType::Image, "[EsmShadowmapsPass %s] input attachment requires an image attachment", GetPathName().GetCStr());
-            m_shadowmapImageSize = inputBinding.m_attachment->m_descriptor.m_image.m_size;
-            m_shadowmapArraySize = inputBinding.m_attachment->m_descriptor.m_image.m_arraySize;
 
-            const AZStd::array_view<RPI::Ptr<RPI::Pass>>& children = GetChildren();
+            if (!inputBinding.GetAttachment())
+            {
+                AZ_Assert(false, "[EsmShadowmapsPass %s] requires an input attachment", GetPathName().GetCStr());
+                return;
+            }
+
+            AZ_Assert(inputBinding.GetAttachment()->m_descriptor.m_type == RHI::AttachmentType::Image, "[EsmShadowmapsPass %s] input attachment requires an image attachment", GetPathName().GetCStr());
+            m_shadowmapImageSize = inputBinding.GetAttachment()->m_descriptor.m_image.m_size;
+            m_shadowmapArraySize = inputBinding.GetAttachment()->m_descriptor.m_image.m_arraySize;
+
+            const AZStd::span<const RPI::Ptr<RPI::Pass>>& children = GetChildren();
             AZ_Assert(children.size() == EsmChildPassKindCount, "[EsmShadowmapsPass '%s'] The count of children is wrong.", GetPathName().GetCStr());
 
-            for (uint32_t index = 0; index < EsmChildPassKindCount; ++index)
+            for (uint32_t childPassIndex = 0; childPassIndex < EsmChildPassKindCount; ++childPassIndex)
             {
-                RPI::ComputePass* child = azrtti_cast<RPI::ComputePass*>(children[index].get());
+                RPI::ComputePass* child = azrtti_cast<RPI::ComputePass*>(children[childPassIndex].get());
                 AZ_Assert(child, "[EsmShadowmapsPass '%s'] A child does not compute.", GetPathName().GetCStr());
 
                 Data::Instance<RPI::ShaderResourceGroup> srg = child->GetShaderResourceGroup();
 
-                if (m_shadowmapIndexTableBufferIndices[index].IsNull())
+                SetBlurParameters(srg, childPassIndex);
+                if (childPassIndex >= aznumeric_cast<uint32_t>(EsmChildPassKind::KawaseBlur0))
                 {
-                    m_shadowmapIndexTableBufferIndices[index] = srg->FindShaderInputBufferIndex(Name("m_shadowmapIndexTable"));
-                }
-                srg->SetBuffer(m_shadowmapIndexTableBufferIndices[index], m_shadowmapIndexTableBuffer);
-
-                if (m_filterParameterBufferIndices[index].IsNull())
-                {
-                    m_filterParameterBufferIndices[index] = srg->FindShaderInputBufferIndex(Name("m_filterParameters"));
-                }
-                srg->SetBuffer(m_filterParameterBufferIndices[index], m_filterParameterBuffer);
-
-                if (index != static_cast<uint32_t>(EsmChildPassKind::Exponentiation))
-                {
-                    if (m_filterTableBufferIndices[index].IsNull())
-                    {
-                        m_filterTableBufferIndices[index] = srg->FindShaderInputBufferIndex(Name("m_filterTable"));
-                    }
-                    srg->SetBuffer(m_filterTableBufferIndices[index], m_filterTableBuffer);
+                    SetKawaseBlurSpecificParameters(srg, childPassIndex - aznumeric_cast<uint32_t>(EsmChildPassKind::KawaseBlur0));
                 }
 
                 child->SetTargetThreadCounts(
@@ -164,6 +212,5 @@ namespace AZ
                     m_shadowmapArraySize);
             }
         }
-
     } // namespace Render
 } // namespace AZ

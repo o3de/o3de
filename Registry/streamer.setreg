@@ -14,13 +14,14 @@
                     "Generic":
                     {
                         "Stack":
-                        [
+                        {
+                            "Drive":
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
                                 // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 1024 
                             }
-                        ]
+                        }
                     }
                 }
             }

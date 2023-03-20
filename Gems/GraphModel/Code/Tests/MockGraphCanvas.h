@@ -11,7 +11,6 @@
 // AZ ...
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 // Graph Canvas ...
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
@@ -20,6 +19,11 @@
 #include <GraphCanvas/Components/Slots/Extender/ExtenderSlotBus.h>
 #include <GraphCanvas/Editor/EditorTypes.h>
 #include <GraphCanvas/GraphCanvasBus.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace MockGraphCanvasServices
 {
@@ -48,7 +52,7 @@ namespace MockGraphCanvasServices
         GraphCanvas::SlotType m_slotType;
         GraphCanvas::SlotConfiguration m_slotConfiguration;
     };
-    
+
     //! This mocks the GraphCanvas::DataSlotComponent component.
     //! This component is the specific instance of a SlotComponent that is
     //! added to a SlotEntity when a DataSlot is added to a Node.
@@ -72,8 +76,8 @@ namespace MockGraphCanvasServices
         void Deactivate() override;
 
         // GraphCanvas::DataSlotRequestBus overrides ...
-        bool ConvertToReference() override;
-        bool CanConvertToReference() const override;
+        bool ConvertToReference(bool isNewSlot = false) override;
+        bool CanConvertToReference(bool isNewSlot = false) const override;
         bool ConvertToValue() override;
         bool CanConvertToValue() const override;
         bool IsUserSlot() const override;
@@ -137,8 +141,8 @@ namespace MockGraphCanvasServices
         ~MockExtenderSlotComponent() = default;
 
         // Component overrides ...
-        void Activate();
-        void Deactivate();
+        void Activate() override;
+        void Deactivate() override;
         ////
 
         // ExtenderSlotComponent overrides ...
@@ -175,9 +179,8 @@ namespace MockGraphCanvasServices
 
         // GraphCanvas::NodeRequestBus overrides ...
         void SetTooltip(const AZStd::string& tooltip) override;
-        void SetTranslationKeyedTooltip(const GraphCanvas::TranslationKeyedString& tooltip) override;
         const AZStd::string GetTooltip() const override;
-        void SetShowInOutliner(bool showInOutliner);
+        void SetShowInOutliner(bool showInOutliner) override;
         bool ShowInOutliner() const override;
         void AddSlot(const AZ::EntityId& slotId) override;
         void RemoveSlot(const AZ::EntityId& slotId) override;

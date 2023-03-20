@@ -26,7 +26,7 @@ namespace AZ
             using Base = RHI::QueryPool;
         public:
             AZ_RTTI(QueryPool, "{158BB61D-8867-4939-B6B3-07C6280AD5DC}", Base);
-            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(QueryPool, AZ::SystemAllocator);
             virtual ~QueryPool() = default;
 
             static RHI::Ptr<QueryPool> Create();
@@ -44,6 +44,7 @@ namespace AZ
             RHI::ResultCode InitInternal(RHI::Device& device, const RHI::QueryPoolDescriptor& descriptor) override;
             RHI::ResultCode InitQueryInternal(RHI::Query& query) override;
             RHI::ResultCode GetResultsInternal(uint32_t startIndex, uint32_t queryCount, uint64_t* results, uint32_t resultsCount, RHI::QueryResultFlagBits flags) override;
+            void ShutdownInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////

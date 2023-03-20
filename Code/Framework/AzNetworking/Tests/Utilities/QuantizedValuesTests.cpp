@@ -9,6 +9,7 @@
 #include <AzNetworking/Utilities/QuantizedValues.h>
 #include <AzNetworking/Serialization/NetworkInputSerializer.h>
 #include <AzNetworking/Serialization/NetworkOutputSerializer.h>
+#include <AzCore/std/limits.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 namespace UnitTest
@@ -79,13 +80,12 @@ namespace UnitTest
     template <uint32_t NUM_ELEMENTS, uint32_t NUM_BYTES>
     void TestQuantizedValuesHelper01()
     {
-        AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, 0, 1> testIn, testOut; // Transmits float values between 0 and 1 using NUM_BYTES
+        AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, 0, 1> testIn(ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f)), testOut; // Transmits float values between 0 and 1 using NUM_BYTES
 
         AZStd::array<uint8_t, 1024> buffer;
         AzNetworking::NetworkInputSerializer  inputSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
         AzNetworking::NetworkOutputSerializer outputSerializer(buffer.data(), static_cast<uint32_t>(buffer.size()));
 
-        testIn = ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f);
         EXPECT_EQ(static_cast<typename ValueFromFloat<NUM_ELEMENTS>::ValueType>(testIn), ValueFromFloat<NUM_ELEMENTS>::Construct(0.0f));
         testIn.Serialize(inputSerializer);
         EXPECT_EQ(inputSerializer.GetSize(), NUM_BYTES * NUM_ELEMENTS);
@@ -95,6 +95,8 @@ namespace UnitTest
         testIn = ValueFromFloat<NUM_ELEMENTS>::Construct(1.0f);
         EXPECT_EQ(static_cast<typename ValueFromFloat<NUM_ELEMENTS>::ValueType>(testIn), ValueFromFloat<NUM_ELEMENTS>::Construct(1.0f));
         testIn.Serialize(inputSerializer);
+        EXPECT_NE(testIn, testOut);
+        EXPECT_NE(testIn.GetQuantizedIntegralValues()[0], testOut.GetQuantizedIntegralValues()[0]);
         testOut.Serialize(outputSerializer);
         EXPECT_EQ(testIn, testOut);
 
@@ -209,8 +211,8 @@ namespace UnitTest
     void TestQuantizedValuesHelper24bitRange()
     {
         // This gives us a hash sensitivity of around 1/128th of a unit, and will detect errors within a range of -16,777,216 to +16,777,216
-        static const int32_t FloatHashMinValue = (INT_MIN >> 7);
-        static const int32_t FloatHashMaxValue = (INT_MAX >> 7);
+        static constexpr int32_t FloatHashMinValue = (AZStd::numeric_limits<int>::min() >> 7);
+        static constexpr int32_t FloatHashMaxValue = (AZStd::numeric_limits<int>::max() >> 7);
 
         AzNetworking::QuantizedValues<NUM_ELEMENTS, NUM_BYTES, FloatHashMinValue, FloatHashMaxValue> testIn, testOut;
 

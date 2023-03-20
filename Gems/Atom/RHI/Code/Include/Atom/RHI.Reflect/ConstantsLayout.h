@@ -9,9 +9,20 @@
 
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Utils/TypeHash.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
@@ -32,7 +43,7 @@ namespace AZ
         {
         public:
             AZ_TYPE_INFO(ConstantsLayout, "{66EDAC32-7730-4F05-AF9D-B3CB0F5D90E0}");
-            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ConstantsLayout, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             static RHI::Ptr<ConstantsLayout> Create();
@@ -72,7 +83,7 @@ namespace AZ
 
             //! Returns the full lists of shader input added to the layout. Inputs
             //! maintain their original order with respect to AddShaderInput.
-            AZStd::array_view<ShaderInputConstantDescriptor> GetShaderInputList() const;
+            AZStd::span<const ShaderInputConstantDescriptor> GetShaderInputList() const;
 
             //! Returns the total size in bytes used by the constants.
             uint32_t GetDataSize() const;
@@ -82,11 +93,18 @@ namespace AZ
             //! If validation is disabled, true is always returned.
             bool ValidateAccess(ShaderInputConstantIndex inputIndex) const;
 
+            //! Prints to the console the shader input names specified by input list of indices
+            //! Will ignore any indices outside of the inputs array bounds
+            void DebugPrintNames(AZStd::span<const ShaderInputConstantIndex> constantList) const;
+
         protected:
             ConstantsLayout() = default;
 
         private:
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             bool ValidateConstantInputs() const;
 
@@ -95,7 +113,6 @@ namespace AZ
 
             AZStd::vector<ShaderInputConstantDescriptor> m_inputs;
             IdReflectionMapForConstants m_idReflection;
-            AZStd::vector<Interval> m_intervals;
             uint32_t m_sizeInBytes = 0;
             HashValue64 m_hash = InvalidHash;
         };

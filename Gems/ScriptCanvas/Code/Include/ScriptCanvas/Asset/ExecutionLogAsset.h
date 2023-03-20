@@ -9,6 +9,7 @@
 
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/IO/Path/Path_fwd.h>
 #include <ScriptCanvas/Core/ExecutionNotificationsBus.h>
 
 namespace ScriptCanvas
@@ -18,7 +19,7 @@ namespace ScriptCanvas
     struct ExecutionLogData
     {
         AZ_TYPE_INFO(ExecutionLogData, "{8813C6D6-7FC6-4A41-B77B-5B8BFC9C4C01}");
-        AZ_CLASS_ALLOCATOR(ExecutionLogData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionLogData, AZ::SystemAllocator);
                 
         static void Reflect(AZ::ReflectContext* reflectContext);
         
@@ -40,7 +41,7 @@ namespace ScriptCanvas
     {
     public:
         AZ_RTTI(ExecutionLogAsset, "{2D49C2E2-2CAF-4F3F-8BED-D613DC16D3F5}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(ExecutionLogAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExecutionLogAsset, AZ::SystemAllocator);
                 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -48,8 +49,7 @@ namespace ScriptCanvas
         static const char* GetGroup() { return "ScriptCanvasLogs"; }
         static const char* GetFileExtension() { return "scriptcanvas_log"; }
         static const char* GetFileFilter() { return "*.scriptcanvas_log"; }
-        static const char* GetDefaultDirectoryRoot();
-        static const char* GetDefaultDirectoryPath() { return "/Gems/ScriptCanvas/Assets/Logs/"; }
+        static AZ::IO::FixedMaxPath GetDefaultDirectoryPath();
 
         ExecutionLogAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded);
         

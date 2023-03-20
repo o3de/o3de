@@ -8,16 +8,25 @@
 
 #include "EntityVisibilityBoundsUnionSystem.h"
 
+#include <AzCore/Debug/Profiler.h>
 #include <AzFramework/Visibility/BoundsBus.h>
-#include <cstring>
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
     EntityVisibilityBoundsUnionSystem::EntityVisibilityBoundsUnionSystem()
-        : m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
-        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
+        : m_entityActivatedEventHandler(
+              [this](AZ::Entity* entity)
+              {
+                  OnEntityActivated(entity);
+              })
+        , m_entityDeactivatedEventHandler(
+              [this](AZ::Entity* entity)
+              {
+                  OnEntityDeactivated(entity);
+              })
     {
-        ;
     }
 
     void EntityVisibilityBoundsUnionSystem::Connect()
@@ -42,20 +51,15 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityActivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // ignore any entity that might activate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
             return;
         }
 
-        if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
-            instance_it == m_entityVisibilityBoundsUnionInstanceMapping.end())
+        if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+            instanceIt == m_entityVisibilityBoundsUnionInstanceMapping.end())
         {
-            AZ::TransformInterface* transformInterface = entity->GetTransform();
-            const AZ::Vector3 entityPosition = transformInterface->GetWorldTranslation();
-
             EntityVisibilityBoundsUnionInstance instance;
             instance.m_localEntityBoundsUnion = CalculateEntityLocalBoundsUnion(entity);
             instance.m_visibilityEntry.m_typeFlags = VisibilityEntry::TYPE_Entity;
@@ -68,29 +72,25 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnEntityDeactivated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // ignore any entity that might deactivate which does not have a TransformComponent
         if (entity->GetTransform() == nullptr)
         {
             return;
         }
 
-        if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
-            instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+        if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+            instanceIt != m_entityVisibilityBoundsUnionInstanceMapping.end())
         {
             if (IVisibilitySystem* visibilitySystem = AZ::Interface<IVisibilitySystem>::Get())
             {
-                visibilitySystem->GetDefaultVisibilityScene()->RemoveEntry(instance_it->second.m_visibilityEntry);
-                m_entityVisibilityBoundsUnionInstanceMapping.erase(instance_it);
+                visibilitySystem->GetDefaultVisibilityScene()->RemoveEntry(instanceIt->second.m_visibilityEntry);
+                m_entityVisibilityBoundsUnionInstanceMapping.erase(instanceIt);
             }
         }
     }
 
     void EntityVisibilityBoundsUnionSystem::UpdateVisibilitySystem(AZ::Entity* entity, EntityVisibilityBoundsUnionInstance& instance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         if (const auto& localEntityBoundsUnions = instance.m_localEntityBoundsUnion; localEntityBoundsUnions.IsValid())
         {
             // note: worldEntityBounds will not be a 'tight-fit' Aabb but that of a transformed local aabb
@@ -108,8 +108,7 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::RefreshEntityLocalBoundsUnion(const AZ::EntityId entityId)
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-        if (entity != nullptr)
+        if (AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId))
         {
             // track entities that need their bounds union to be recalculated
             m_entityBoundsDirty.insert(entity);
@@ -118,16 +117,32 @@ namespace AzFramework
 
     AZ::Aabb EntityVisibilityBoundsUnionSystem::GetEntityLocalBoundsUnion(const AZ::EntityId entityId) const
     {
-        AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId);
-        if (entity != nullptr)
+        if (AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId))
         {
-            // if the entity is not found in the mapping then return a null Aabb, this is to mimic 
+            // if the entity is not found in the mapping then return a null Aabb, this is to mimic
             // as closely as possible the behavior of an individual GetLocalBounds call to an Entity that
             // had been deleted (there would be no response, leaving the default value assigned)
-            if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
-                instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instanceIt != m_entityVisibilityBoundsUnionInstanceMapping.end())
             {
-                return instance_it->second.m_localEntityBoundsUnion;
+                return instanceIt->second.m_localEntityBoundsUnion;
+            }
+        }
+
+        return AZ::Aabb::CreateNull();
+    }
+
+    AZ::Aabb EntityVisibilityBoundsUnionSystem::GetEntityWorldBoundsUnion(const AZ::EntityId entityId) const
+    {
+        if (AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityId))
+        {
+            // if the entity is not found in the mapping then return a null Aabb, this is to mimic
+            // as closely as possible the behavior of an individual GetLocalBounds call to an Entity that
+            // had been deleted (there would be no response, leaving the default value assigned)
+            if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instanceIt != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            {
+                return instanceIt->second.m_localEntityBoundsUnion.GetTranslated(entity->GetTransform()->GetWorldTranslation());
             }
         }
 
@@ -136,16 +151,16 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::ProcessEntityBoundsUnionRequests()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         // iterate over all entities whose bounds changed and recalculate them
         for (const auto& entity : m_entityBoundsDirty)
         {
-            if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
-                instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+            if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+                instanceIt != m_entityVisibilityBoundsUnionInstanceMapping.end())
             {
-                instance_it->second.m_localEntityBoundsUnion = CalculateEntityLocalBoundsUnion(entity);
-                UpdateVisibilitySystem(entity, instance_it->second);
+                instanceIt->second.m_localEntityBoundsUnion = CalculateEntityLocalBoundsUnion(entity);
+                UpdateVisibilitySystem(entity, instanceIt->second);
             }
         }
 
@@ -155,18 +170,15 @@ namespace AzFramework
 
     void EntityVisibilityBoundsUnionSystem::OnTransformUpdated(AZ::Entity* entity)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-
         // update the world transform of the visibility bounds union
-        if (auto instance_it = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
-            instance_it != m_entityVisibilityBoundsUnionInstanceMapping.end())
+        if (auto instanceIt = m_entityVisibilityBoundsUnionInstanceMapping.find(entity);
+            instanceIt != m_entityVisibilityBoundsUnionInstanceMapping.end())
         {
-            UpdateVisibilitySystem(entity, instance_it->second);
+            UpdateVisibilitySystem(entity, instanceIt->second);
         }
     }
 
-    void EntityVisibilityBoundsUnionSystem::OnTick(
-        [[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
+    void EntityVisibilityBoundsUnionSystem::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
         ProcessEntityBoundsUnionRequests();
     }

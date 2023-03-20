@@ -30,16 +30,6 @@
 #define MOBILE
 #endif
 
-// Force all allocations to be aligned to TARGET_DEFAULT_ALIGN.
-// This is because malloc on Android 32 bit returns memory that is not aligned
-// to what some structs/classes need.
-#define CRY_FORCE_MALLOC_NEW_ALIGN
-
-#define DEBUG_BREAK raise(SIGTRAP)
-#define RC_EXECUTABLE "rc"
-#define USE_CRT 1
-#define SIZEOF_PTR 4
-
 //////////////////////////////////////////////////////////////////////////
 // Standard includes.
 //////////////////////////////////////////////////////////////////////////
@@ -118,13 +108,6 @@ typedef unsigned char               byte;
 #define FILE_ATTRIBUTE_ENCRYPTED            0x00004000
 
 #define INVALID_FILE_ATTRIBUTES (-1)
-
-#define DEFINE_ALIGNED_DATA(type, name, alignment) \
-    type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_STATIC(type, name, alignment) \
-    static type __attribute__ ((aligned(alignment))) name;
-#define DEFINE_ALIGNED_DATA_CONST(type, name, alignment) \
-    const type __attribute__ ((aligned(alignment))) name;
 
 #include "LinuxSpecific.h"
 // these functions do not exist int the wchar.h header

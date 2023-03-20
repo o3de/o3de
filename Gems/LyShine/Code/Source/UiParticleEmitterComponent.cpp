@@ -15,6 +15,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/Time/ITime.h>
 
 #include <LyShine/ISprite.h>
 
@@ -53,7 +54,7 @@ void UiParticleEmitterComponent::OnCanvasSizeOrScaleChange(AZ::EntityId canvasEn
 {
     // Only clear particles if the canvas that resized is the one that this particle component is on.
     AZ::EntityId canvasId;
-    EBUS_EVENT_ID_RESULT(canvasId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     if (canvasEntityId == canvasId)
     {
         ClearActiveParticles();
@@ -73,7 +74,7 @@ void UiParticleEmitterComponent::SetIsEmitting(bool emitParticles)
     {
         m_nextEmitTime = (m_isHitParticleCountOnActivate ? -m_particleLifetime : 0.0f);
         m_emitterAge = 0.0f;
-        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : gEnv->pTimer->GetAsyncTime().GetMilliSecondsAsInt64());
+        m_random.SetSeed(m_isRandomSeedFixed ? m_randomSeed : aznumeric_cast<int64_t>(AZ::GetElapsedTimeMs()));
     }
     m_isEmitting = emitParticles;
 }
@@ -771,25 +772,21 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     if (m_isPositionRelativeToEmitter)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
         emitterOffset = (points.TopLeft() + points.BottomRight()) * 0.5f;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
     }
     else
     {
         AZ::EntityId canvasID;
-        EBUS_EVENT_ID_RESULT(canvasID, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID_RESULT(transform, canvasID, UiCanvasBus, GetCanvasToViewportMatrix);
+        UiElementBus::EventResult(canvasID, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasBus::EventResult(transform, canvasID, &UiCanvasBus::Events::GetCanvasToViewportMatrix);
     }
 
     AZ::Data::Instance<AZ::RPI::Image> image;
     if (m_sprite)
     {
-        CSprite* sprite = dynamic_cast<CSprite*>(m_sprite);
-        if (sprite)
-        {
-            image = sprite->GetImage();
-        }
+        image = m_sprite->GetImage();
     }
 
     bool isClampTextureMode = true;
@@ -830,9 +827,9 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
     AZ::u32 totalVerticesInserted = 0;
 
     // particlesToRender is the max particles we will render, we could render less if some have zero alpha
-    for (int i = 0; i < particlesToRender; ++i)
+    for (AZ::u32 i = 0; i < particlesToRender; ++i)
     {
-        SVF_P2F_C4B_T2F_F4B* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
+        LyShine::UiPrimitiveVertex* firstVertexOfParticle = &m_cachedPrimitive.m_vertices[totalVerticesInserted];
 
         if (m_particleContainer[i].FillVertices(firstVertexOfParticle, renderParameters, transform))
         {
@@ -843,11 +840,7 @@ void UiParticleEmitterComponent::Render(LyShine::IRenderGraph* renderGraph)
 
     m_cachedPrimitive.m_numVertices = totalVerticesInserted;
     m_cachedPrimitive.m_numIndices = totalParticlesInserted * indicesPerParticle;
-    LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph);
-    if (lyRenderGraph)
-    {
-        lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-    }
+    renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -896,7 +889,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
         {
             AZ::Vector2 emitterPosition = AZ::Vector2::CreateZero();
             UiTransformInterface::RectPoints points;
-            EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+            UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
             emitterPosition = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
             if (m_nextEmitTime + m_particleLifetime + m_particleLifetimeVariation < m_emitterAge)
@@ -910,7 +903,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
 
             if (!m_isPositionRelativeToEmitter)
             {
-                EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToCanvasSpace, transform);
+                UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToCanvasSpace, transform);
                 AZ::Vector3 transformScale = transform.RetrieveScale();
                 scale.Set(transformScale.GetX(), transformScale.GetY());
             }
@@ -983,7 +976,7 @@ void UiParticleEmitterComponent::Update(float deltaTime)
 void UiParticleEmitterComponent::OnUiElementFixup(AZ::EntityId canvasEntityId, AZ::EntityId /*parentEntityId*/)
 {
     bool isElementEnabled = false;
-    EBUS_EVENT_ID_RESULT(isElementEnabled, GetEntityId(), UiElementBus, GetAreElementAndAncestorsEnabled);
+    UiElementBus::EventResult(isElementEnabled, GetEntityId(), &UiElementBus::Events::GetAreElementAndAncestorsEnabled);
     if (isElementEnabled)
     {
         UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -996,7 +989,7 @@ void UiParticleEmitterComponent::OnUiElementAndAncestorsEnabledChanged(bool areE
     if (areElementAndAncestorsEnabled)
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         if (canvasEntityId.IsValid())
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -1027,6 +1020,51 @@ void UiParticleEmitterComponent::SetOverrideAlpha(float alpha)
 {
     m_overrideAlpha = alpha;
     m_isAlphaOverridden = true;
+}
+
+void UiParticleEmitterComponent::SetImageIndex(AZ::u32 index)
+{
+    if (m_spriteSheetCellIndex != index)
+    {
+        m_spriteSheetCellIndex = index;
+        MarkRenderGraphDirty();
+    }
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndex()
+{
+    return m_spriteSheetCellIndex;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+const AZ::u32 UiParticleEmitterComponent::GetImageIndexCount()
+{
+    if (m_sprite)
+    {
+        return static_cast<AZ::u32>(m_sprite->GetSpriteSheetCells().size());
+    }
+
+    return 0;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZStd::string UiParticleEmitterComponent::GetImageIndexAlias(AZ::u32 index)
+{
+    return m_sprite ? m_sprite->GetCellAlias(index) : AZStd::string();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+void UiParticleEmitterComponent::SetImageIndexAlias(AZ::u32 index, const AZStd::string& alias)
+{
+    m_sprite ? m_sprite->SetCellAlias(index, alias) : AZ_UNUSED(0);
+    MarkRenderGraphDirty();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+AZ::u32 UiParticleEmitterComponent::GetImageIndexFromAlias(const AZStd::string& alias)
+{
+    return m_sprite ? m_sprite->GetCellIndexFromAlias(alias) : 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1436,14 +1474,14 @@ void UiParticleEmitterComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
 
     if (!m_sprite && !m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     m_currentAspectRatio = m_particleSize.GetX() / m_particleSize.GetY();
@@ -1469,13 +1507,14 @@ void UiParticleEmitterComponent::Activate()
     UiVisualBus::Handler::BusConnect(GetEntityId());
     UiCanvasSizeNotificationBus::Handler::BusConnect();
     UiElementNotificationBus::Handler::BusConnect(GetEntityId());
+    UiIndexableImageBus::Handler::BusConnect(GetEntityId());
 
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     if (canvasEntityId.IsValid())
     {
         bool isElementEnabled = false;
-        EBUS_EVENT_ID_RESULT(isElementEnabled, GetEntityId(), UiElementBus, GetAreElementAndAncestorsEnabled);
+        UiElementBus::EventResult(isElementEnabled, GetEntityId(), &UiElementBus::Events::GetAreElementAndAncestorsEnabled);
         if (isElementEnabled)
         {
             UiCanvasUpdateNotificationBus::Handler::BusConnect(canvasEntityId);
@@ -1493,6 +1532,7 @@ void UiParticleEmitterComponent::Deactivate()
     UiVisualBus::Handler::BusDisconnect();
     UiCanvasSizeNotificationBus::Handler::BusDisconnect();
     UiElementNotificationBus::Handler::BusDisconnect();
+    UiIndexableImageBus::Handler::BusDisconnect();
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1509,7 +1549,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     if (m_emitShape == EmitShape::Point)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
         AZ::Vector2 centerPoint = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
         if (IsMovementCoordinateTypeCartesian())
@@ -1529,7 +1569,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     else if (m_emitShape == EmitShape::Circle)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
         AZ::Vector2 centerPoint = (points.TopLeft() + points.BottomRight()) * 0.5f;
 
@@ -1564,7 +1604,7 @@ AZ::Vector3 UiParticleEmitterComponent::GetRandomParticlePosition()
     else if (m_emitShape == EmitShape::Quad)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
         AZ::Vector2 shapeTopLeft = points.TopLeft();
 
@@ -1825,9 +1865,9 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     }
     m_cachedPrimitive.m_indices = new uint16[numIndices];
 
-    const int verticesPerParticle = 4;
-    int baseIndex = 0;
-    for (int i = 0; i < numIndices; i += indicesPerParticle)
+    const uint16 verticesPerParticle = 4;
+    uint16 baseIndex = 0;
+    for (AZ::u32 i = 0; i < numIndices; i += indicesPerParticle)
     {
         m_cachedPrimitive.m_indices[i + 0] = 0 + baseIndex;
         m_cachedPrimitive.m_indices[i + 1] = 1 + baseIndex;
@@ -1844,7 +1884,7 @@ void UiParticleEmitterComponent::ResetParticleBuffers()
     {
         delete [] m_cachedPrimitive.m_vertices;
     }
-    m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+    m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
 
     m_particleContainer.clear();
     m_particleContainer.reserve(m_particleBufferSize);
@@ -1934,7 +1974,7 @@ void UiParticleEmitterComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     SAFE_RELEASE(m_sprite);
@@ -2101,6 +2141,6 @@ void UiParticleEmitterComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }

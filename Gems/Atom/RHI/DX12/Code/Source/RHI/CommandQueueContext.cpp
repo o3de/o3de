@@ -5,10 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/CpuProfiler.h>
+
 #include <Atom/RHI/Device.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/Device.h>
 
@@ -37,15 +35,15 @@ namespace AZ
 
         void CommandQueueContext::Init(RHI::Device& deviceBase)
         {
-            Device& device = static_cast<Device&>(deviceBase);
+            m_device = static_cast<Device*>(&deviceBase);
             m_currentFrameIndex = 0;
-            m_frameFences.resize(RHI::Limits::Device::FrameCountMax - 1);
+            m_frameFences.resize(RHI::Limits::Device::FrameCountMax);
             for (FenceSet& fences : m_frameFences)
             {
-                fences.Init(device.GetDevice(), RHI::FenceState::Signaled);
+                fences.Init(m_device->GetDevice(), RHI::FenceState::Signaled);
             }
 
-            m_compiledFences.Init(device.GetDevice(), RHI::FenceState::Reset);
+            m_compiledFences.Init(m_device->GetDevice(), RHI::FenceState::Reset);
 
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
@@ -55,18 +53,8 @@ namespace AZ
                 commandQueueDesc.m_hardwareQueueClass = static_cast<RHI::HardwareQueueClass>(hardwareQueueIdx);
                 commandQueueDesc.m_hardwareQueueSubclass = HardwareQueueSubclass::Primary;
                 m_commandQueues[hardwareQueueIdx]->SetName(Name{ EventTrace::GpuQueueNames[hardwareQueueIdx] });
-                m_commandQueues[hardwareQueueIdx]->Init(device, commandQueueDesc);
+                m_commandQueues[hardwareQueueIdx]->Init(*m_device, commandQueueDesc);
             }
-
-            Debug::EventTraceDrillerSetupBus::Broadcast(
-                &Debug::EventTraceDrillerSetupBus::Events::SetThreadName,
-                EventTrace::GpuQueueIds[static_cast<size_t>(RHI::HardwareQueueClass::Graphics)],
-                EventTrace::GpuQueueNames[static_cast<size_t>(RHI::HardwareQueueClass::Graphics)]);
-
-            Debug::EventTraceDrillerSetupBus::Broadcast(
-                &Debug::EventTraceDrillerSetupBus::Events::SetThreadName,
-                EventTrace::GpuQueueIds[static_cast<size_t>(RHI::HardwareQueueClass::Compute)],
-                EventTrace::GpuQueueNames[static_cast<size_t>(RHI::HardwareQueueClass::Compute)]);
 
             CalibrateClocks();
         }
@@ -101,7 +89,7 @@ namespace AZ
 
         void CommandQueueContext::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: WaitForIdle");
             for (uint32_t hardwareQueueIdx = 0; hardwareQueueIdx < RHI::HardwareQueueClassCount; ++hardwareQueueIdx)
             {
                 if (m_commandQueues[hardwareQueueIdx])
@@ -113,10 +101,10 @@ namespace AZ
 
         void CommandQueueContext::Begin()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: Begin");
 
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "Clearing Command Queue Timers");
+                AZ_PROFILE_SCOPE(RHI, "Clearing Command Queue Timers");
                 for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
                 {
                     commandQueue->ClearTimers();
@@ -131,8 +119,7 @@ namespace AZ
 
         void CommandQueueContext::End()
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("DX12", "CommandQueueContext: End");
+            AZ_PROFILE_SCOPE(RHI, "CommandQueueContext: End");
 
             QueueGpuSignals(m_frameFences[m_currentFrameIndex]);
 
@@ -145,8 +132,7 @@ namespace AZ
             m_currentFrameIndex = (m_currentFrameIndex + 1) % aznumeric_cast<uint32_t>(m_frameFences.size());
 
             {
-                AZ_PROFILE_SCOPE_IDLE(AZ::Debug::ProfileCategory::AzRender, "Wait and Reset Fence");
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("DX12", "CommandQueueContext: Wait on Fences");
+                AZ_PROFILE_SCOPE(RHI, "Wait and Reset Fence");
 
                 FenceEvent event("FrameFence");
                 m_frameFences[m_currentFrameIndex].Wait(event);
@@ -170,7 +156,14 @@ namespace AZ
         {
             GetCommandQueue(hardwareQueueClass).ExecuteWork(request);
 
-#if defined (AZ_DX12_FORCE_FLUSH_SCOPES)
+#if defined(AZ_FORCE_CPU_GPU_INSYNC)
+            // Cache the name of the scope we just queued and wait for it to finish on the cpu
+            m_device->SetLastExecutingScope(request.m_commandLists.front()->GetName().GetStringView());
+            // We call wait for idle on all queues for the following reason -> Dx12 will signal a fence on the
+            // queue that was executing work that may have caused the crash hence if we wait on that explicit queue
+            // that is executing the work we will not catch the crash at the correct place. The cpu will think that
+            // the pass finished executing successfully. In order to get around it we try to make
+            // every queue signal a fence causing a crash for other queues but at the correct place.
             WaitForIdle();
 #endif
         }
@@ -185,22 +178,38 @@ namespace AZ
             return *m_commandQueues[static_cast<uint32_t>(hardwareQueueClass)];
         }
 
-        void CommandQueueContext::UpdateCpuTimingStatistics(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void CommandQueueContext::UpdateCpuTimingStatistics() const
         {
-            cpuTimingStatistics.Reset();
-
-            AZStd::sys_time_t presentDuration = 0;
-            for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+            if (auto statsProfiler = AZ::Interface<AZ::Statistics::StatisticalProfilerProxy>::Get(); statsProfiler)
             {
-                cpuTimingStatistics.m_queueStatistics.push_back({ commandQueue->GetName(), commandQueue->GetLastExecuteDuration() });
-                presentDuration += commandQueue->GetLastPresentDuration();
+                auto& rhiMetrics = statsProfiler->GetProfiler(rhiMetricsId);
+
+                AZStd::sys_time_t presentDuration = 0;
+                for (const RHI::Ptr<CommandQueue>& commandQueue : m_commandQueues)
+                {
+                    const AZ::Crc32 commandQueueId(commandQueue->GetName().GetHash());
+                    rhiMetrics.PushSample(commandQueueId, static_cast<double>(commandQueue->GetLastExecuteDuration()));
+                    presentDuration += commandQueue->GetLastPresentDuration();
+                }
+
+                rhiMetrics.PushSample(AZ_CRC_CE("Present"), static_cast<double>(presentDuration));
             }
-            cpuTimingStatistics.m_presentDuration = presentDuration;
         }
 
         const FenceSet& CommandQueueContext::GetCompiledFences()
         {
             return m_compiledFences;
-        };
+        }
+
+        size_t CommandQueueContext::GetLastFrameIndex() const
+        {
+            return (m_currentFrameIndex + m_frameFences.size() - 1) % m_frameFences.size();
+        }
+
+        const FenceSet& CommandQueueContext::GetFrameFences(size_t frameIndex) const
+        {
+            frameIndex %= m_frameFences.size();
+            return m_frameFences[frameIndex];
+        }
     }
 }

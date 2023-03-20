@@ -7,7 +7,6 @@
  */
 
 #include "InitSceneAPIFixture.h"
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/conversions.h>
@@ -42,7 +41,6 @@ namespace EMotionFX
     // the morph target pipeline tests
 
     using MorphTargetPipelineFixtureBase = InitSceneAPIFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -151,8 +149,8 @@ namespace EMotionFX
             Skeleton* skeleton = actor->GetSkeleton();
             EMotionFX::Mesh* mesh = nullptr;
 
-            const uint32 numNodes = skeleton->GetNumNodes();
-            for (uint32 nodeNum = 0; nodeNum < numNodes; ++nodeNum)
+            const size_t numNodes = skeleton->GetNumNodes();
+            for (size_t nodeNum = 0; nodeNum < numNodes; ++nodeNum)
             {
                 if (mesh)
                 {
@@ -223,8 +221,8 @@ namespace EMotionFX
             return;
         }
 
-        const uint32 numMorphTargets = morphSetup->GetNumMorphTargets();
-        for (uint32 morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
+        const size_t numMorphTargets = morphSetup->GetNumMorphTargets();
+        for (size_t morphTargetIndex = 0; morphTargetIndex < numMorphTargets; ++morphTargetIndex)
         {
             const MorphTarget* morphTarget = morphSetup->GetMorphTarget(morphTargetIndex);
             EXPECT_STREQ(morphTarget->GetName(), selectedMorphTargets[morphTargetIndex].c_str()) << "Morph target's name is incorrect";

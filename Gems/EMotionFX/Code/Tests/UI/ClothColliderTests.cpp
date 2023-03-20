@@ -6,17 +6,19 @@
  *
  */
 
+#include "Editor/ColliderHelpers.h"
 #include <gtest/gtest.h>
 
 #include <QtTest>
 #include <QTreeView>
 
-#include <Editor/Plugins/Cloth/ClothJointInspectorPlugin.h>
+#include <Editor/Plugins/ColliderWidgets/ClothOutlinerNotificationHandler.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 #include <Editor/ReselectingTreeView.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
 
 namespace EMotionFX
@@ -48,18 +50,6 @@ namespace EMotionFX
     class ClothColliderTestsFixture : public UIFixture
     {
     public:
-        void SetUp() override
-        {
-            SetupQtAndFixtureBase();
-
-            AZ::SerializeContext* serializeContext = nullptr;
-            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-            SystemComponent::Reflect(serializeContext);
-
-            SetupPluginWindows();
-        }
-
         void TearDown() override
         {
             QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
@@ -81,28 +71,39 @@ namespace EMotionFX
             m_treeView = m_skeletonOutliner->GetDockWidget()->findChild<ReselectingTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
 
             m_indexList.clear();
-            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0), m_indexList);
+            m_treeView->RecursiveGetAllChildren(m_treeView->model()->index(0, 0, m_treeView->model()->index(0, 0)), m_indexList);
         }
 
     protected:
+        bool ShouldReflectPhysicSystem() override { return true; }
+
+        void ReflectMockedSystems() override
+        {
+            UIFixture::ReflectMockedSystems();
+
+            // Reflect the mocked version of the cloth system.
+            AZ::SerializeContext* serializeContext = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+            SystemComponent::Reflect(serializeContext);
+        }
+
         QModelIndexList m_indexList;
         ReselectingTreeView* m_treeView;
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner;
 
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(ClothColliderTestsFixture, DISABLED_RemoveClothColliders)
-#else
     TEST_F(ClothColliderTestsFixture, RemoveClothColliders)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         const int numJoints = 8;
         const int firstIndex = 3;
         const int lastIndex = 6;
         RecordProperty("test_case_id", "C18970351");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(numJoints, "RagdollEditTestsActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, numJoints, "RagdollEditTestsActor");
 
         CreateSkeletonAndModelIndices();
         EXPECT_EQ(m_indexList.size(), numJoints);
@@ -132,7 +133,7 @@ namespace EMotionFX
         // Check colliders are in model
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_TRUE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_TRUE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
 
         // Remove context menu as it is rebuild below
@@ -155,7 +156,7 @@ namespace EMotionFX
         // Check colliders have been removed
         for (int i = firstIndex; i <= lastIndex; ++i)
         {
-            EXPECT_FALSE(ClothJointInspectorPlugin::IsJointInCloth(m_indexList[i]));
+            EXPECT_FALSE(ColliderHelpers::NodeHasClothCollider(m_indexList[i]));
         }
     }
 }

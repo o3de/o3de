@@ -12,8 +12,10 @@
 #include <Atom/Feature/Utils/GpuBufferHandler.h>
 #include <Atom/Feature/Utils/IndexedDataVector.h>
 #include <Atom/Feature/Utils/MultiSparseVector.h>
+#include <Atom/RPI.Public/Shader/Shader.h>
 #include <CoreLights/EsmShadowmapsPass.h>
 #include <CoreLights/ProjectedShadowmapsPass.h>
+#include <CoreLights/ShadowmapPass.h>
 
 namespace AZ::Render
 {
@@ -24,10 +26,11 @@ namespace AZ::Render
         : public ProjectedShadowFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(ProjectedShadowFeatureProcessor, SystemAllocator)
 
         AZ_RTTI(AZ::Render::ProjectedShadowFeatureProcessor, "{02AFA06D-8B37-4D47-91BD-849CAC7FB330}", AZ::Render::ProjectedShadowFeatureProcessorInterface);
 
-        static void Reflect(AZ::ReflectContext* context);
+        static void Reflect(ReflectContext* context);
 
         ProjectedShadowFeatureProcessor() = default;
         virtual ~ProjectedShadowFeatureProcessor() = default;
@@ -48,14 +51,14 @@ namespace AZ::Render
         void SetFieldOfViewY(ShadowId id, float fieldOfViewYRadians) override;
         void SetShadowmapMaxResolution(ShadowId id, ShadowmapSize size) override;
         void SetShadowBias(ShadowId id, float bias) override;
-        void SetPcfMethod(ShadowId id, PcfMethod method);
-        void SetEsmExponent(ShadowId id, float exponent);
+        void SetNormalShadowBias(ShadowId id, float normalShadowBias) override;
         void SetShadowFilterMethod(ShadowId id, ShadowFilterMethod method) override;
-        void SetSofteningBoundaryWidthAngle(ShadowId id, float boundaryWidthRadians) override;
-        void SetPredictionSampleCount(ShadowId id, uint16_t count) override;
         void SetFilteringSampleCount(ShadowId id, uint16_t count) override;
+        void SetUseCachedShadows(ShadowId id, bool useCachedShadows) override;
         void SetShadowProperties(ShadowId id, const ProjectedShadowDescriptor& descriptor) override;
         const ProjectedShadowDescriptor& GetShadowProperties(ShadowId id) override;
+
+        void SetEsmExponent(ShadowId id, float exponent);
 
     private:
 
@@ -64,13 +67,12 @@ namespace AZ::Render
         {
             Matrix4x4 m_depthBiasMatrix = Matrix4x4::CreateIdentity();
             uint32_t m_shadowmapArraySlice = 0; // array slice who has shadowmap in the atlas.
-            uint16_t m_shadowFilterMethod = 0; // filtering method of shadows.
-            PcfMethod m_pcfMethod = PcfMethod::BoundarySearch;  // method for performing Pcf (uint16_t)
+            uint32_t m_shadowFilterMethod = 0; // filtering method of shadows.
             float m_boundaryScale = 0.f; // the half of boundary of lit/shadowed areas. (in degrees)
-            uint32_t m_predictionSampleCount = 0; // sample count to judge whether it is on the shadow boundary or not.
             uint32_t m_filteringSampleCount = 0;
             AZStd::array<float, 2> m_unprojectConstants = { {0, 0} };
-            float m_bias;
+            float m_bias = 0.0f;
+            float m_normalShadowBias = 0.0f;
             float m_esmExponent = 87.0f;
             float m_padding[3];
         };
@@ -80,35 +82,41 @@ namespace AZ::Render
         {
             ProjectedShadowDescriptor m_desc;
             RPI::ViewPtr m_shadowmapView;
+            RPI::Ptr<ShadowmapPass> m_shadowmapPass;
             float m_bias = 0.1f;
             ShadowId m_shadowId;
+            bool m_useCachedShadows = false;
         };
 
         using FilterParameter = EsmShadowmapsPass::FilterParameter;
         static constexpr float MinimumFieldOfView = 0.001f;
 
         // RPI::SceneNotificationBus::Handler overrides...
-        void OnRenderPipelinePassesChanged(RPI::RenderPipeline* renderPipeline) override;
-        void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-        void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+        void OnRenderPipelineChanged(RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
         
         // Shadow specific functions
         void UpdateShadowView(ShadowProperty& shadowProperty);
         void InitializeShadow(ShadowId shadowId);
             
         // Functions for caching the ProjectedShadowmapsPass and EsmShadowmapsPass.
-        void CachePasses();
-        AZStd::vector<RPI::RenderPipelineId> CacheProjectedShadowmapsPass();
-        void CacheEsmShadowmapsPass(const AZStd::vector<RPI::RenderPipelineId>& validPipelineIds);
+        void CheckRemovePrimaryPasses(RPI::RenderPipeline* renderPipeline);
+        void RemoveCachedPasses(RPI::RenderPipeline* renderPipeline);
+        void CachePasses(RPI::RenderPipeline* renderPipeline);
+        void UpdatePrimaryPasses();
             
         //! Functions to update the parameter of Gaussian filter used in ESM.
         void UpdateFilterParameters();
-        void UpdateStandardDeviations();
-        void UpdateFilterOffsetsCounts();
+        void UpdateEsmPassEnabled();
         void SetFilterParameterToPass();
         bool FilterMethodIsEsm(const ShadowData& shadowData) const;
 
         ShadowProperty& GetShadowPropertyFromShadowId(ShadowId id);
+        RPI::Ptr<ShadowmapPass> CreateShadowmapPass(size_t childIndex);
+
+        void CreateClearShadowDrawPacket();
+
+        void UpdateAtlas();
+        void UpdateShadowPasses();
 
         GpuBufferHandler m_shadowBufferHandler; // For ViewSRG m_projectedShadows
         GpuBufferHandler m_filterParamBufferHandler; // For ViewSRG m_projectedFilterParams
@@ -129,11 +137,21 @@ namespace AZ::Render
         // m_shadowProperties.
         MultiSparseVector<ShadowData, FilterParameter, uint16_t> m_shadowData;
 
-        AZStd::vector<ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
-        AZStd::vector<EsmShadowmapsPass*> m_esmShadowmapsPasses;
+        ShadowmapAtlas m_atlas;
+        Data::Instance<RPI::AttachmentImage> m_atlasImage;
+        Data::Instance<RPI::AttachmentImage> m_esmAtlasImage;
 
-        RHI::ShaderInputConstantIndex m_shadowmapAtlasSizeIndex;
-        RHI::ShaderInputConstantIndex m_invShadowmapAtlasSizeIndex;
+        AZStd::unordered_map<RPI::RenderPipeline*, ProjectedShadowmapsPass*> m_projectedShadowmapsPasses;
+        AZStd::unordered_map<RPI::RenderPipeline*, EsmShadowmapsPass*> m_esmShadowmapsPasses;
+        ProjectedShadowmapsPass* m_primaryProjectedShadowmapsPass = nullptr;
+        EsmShadowmapsPass* m_primaryEsmShadowmapsPass = nullptr;
+        RPI::RenderPipeline* m_primaryShadowPipeline = nullptr;
+
+        Data::Instance<RPI::Shader> m_clearShadowShader;
+        RHI::ConstPtr<RHI::DrawPacket> m_clearShadowDrawPacket;
+
+        RHI::ShaderInputNameIndex m_shadowmapAtlasSizeIndex{ "m_shadowmapAtlasSize" };
+        RHI::ShaderInputNameIndex m_invShadowmapAtlasSizeIndex{ "m_invShadowmapAtlasSize" };
 
         bool m_deviceBufferNeedsUpdate = false;
         bool m_shadowmapPassNeedsUpdate = true;

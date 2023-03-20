@@ -6,11 +6,14 @@
  *
  */
 
-#include <AzCore/std/smart_ptr/make_shared.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzFramework/StringFunc/StringFunc.h>
+#include <AzQtComponents/Components/StyledBusyLabel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/Thumbnails/LoadingThumbnail.h>
+#include <AzToolsFramework/Thumbnails/MissingThumbnail.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerComponent.h>
-#include <AzToolsFramework/Thumbnails/ThumbnailContext.h>
 
 #include <QApplication>
 #include <QStyle>
@@ -19,23 +22,37 @@ namespace AzToolsFramework
 {
     namespace Thumbnailer
     {
-
         ThumbnailerComponent::ThumbnailerComponent()
+            : m_missingThumbnail(new MissingThumbnail())
+            , m_loadingThumbnail(new LoadingThumbnail())
+            , m_currentJobsCount(0)
         {
+            // Increase the maximum number of QThreads to support the number of
+            // concurrent jobs needed here.
+            int currentMaxThreadCount = QThreadPool::globalInstance()->maxThreadCount();
+            int newMaxThreadCount = AZStd::max<int>(currentMaxThreadCount, m_maxThumbnailJobs + 1);
+            QThreadPool::globalInstance()->setMaxThreadCount(newMaxThreadCount);
         }
 
-        ThumbnailerComponent::~ThumbnailerComponent() = default;
+        ThumbnailerComponent::~ThumbnailerComponent()
+        {
+            ThumbnailerRequestBus::Handler::BusDisconnect();
+            m_providers.clear();
+            m_missingThumbnail.reset();
+            m_loadingThumbnail.reset();
+        }
 
         void ThumbnailerComponent::Activate()
         {
-            RegisterContext(ThumbnailContext::DefaultContext);
-            BusConnect();
+            ThumbnailerRequestBus::Handler::BusConnect();
         }
 
         void ThumbnailerComponent::Deactivate()
         {
-            BusDisconnect();
-            m_thumbnails.clear();
+            ThumbnailerRequestBus::Handler::BusDisconnect();
+            m_providers.clear();
+            m_missingThumbnail.reset();
+            m_loadingThumbnail.reset();
         }
 
         void ThumbnailerComponent::Reflect(AZ::ReflectContext* context)
@@ -49,59 +66,118 @@ namespace AzToolsFramework
 
         void ThumbnailerComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
+            incompatible.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
         void ThumbnailerComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("ThumbnailerService", 0x65422b97));
+            provided.push_back(AZ_CRC_CE("ThumbnailerService"));
         }
 
-        void ThumbnailerComponent::RegisterContext(const char* contextName)
+        void ThumbnailerComponent::RegisterThumbnailProvider(SharedThumbnailProvider provider)
         {
-            AZ_Assert(m_thumbnails.find(contextName) == m_thumbnails.end(), "Context %s already registered", contextName);
-            m_thumbnails[contextName] = AZStd::make_shared<ThumbnailContext>();
+            auto it = AZStd::find_if(m_providers.begin(), m_providers.end(), [provider](const SharedThumbnailProvider& existingProvider)
+                {
+                    return AZ::StringFunc::Equal(provider->GetProviderName(), existingProvider->GetProviderName());
+                });
+
+            if (it != m_providers.end())
+            {
+                AZ_Error("ThumbnailerComponent", false, "Provider with name %s is already registered with context.", provider->GetProviderName());
+                return;
+            }
+
+            m_providers.insert(provider);
         }
 
-        void ThumbnailerComponent::UnregisterContext(const char* contextName)
+        void ThumbnailerComponent::UnregisterThumbnailProvider(const char* providerName)
         {
-            AZ_Assert(m_thumbnails.find(contextName) != m_thumbnails.end(), "Context %s not registered", contextName);
-            m_thumbnails.erase(contextName);
+            AZStd::erase_if(
+                m_providers,
+                [providerName](const SharedThumbnailProvider& provider)
+                {
+                    return AZ::StringFunc::Equal(provider->GetProviderName(), providerName);
+                });
+
         }
 
-        bool ThumbnailerComponent::HasContext(const char* contextName) const
+        SharedThumbnail ThumbnailerComponent::GetThumbnail(SharedThumbnailKey key)
         {
-            return m_thumbnails.find(contextName) != m_thumbnails.end();
+            // find provider who can handle supplied key
+            for (auto& provider : m_providers)
+            {
+                SharedThumbnail thumbnail;
+                if (provider->GetThumbnail(key, thumbnail))
+                {
+                    // if thumbnail is ready return it
+                    if (thumbnail->GetState() == Thumbnail::State::Ready)
+                    {
+                        return thumbnail;
+                    }
+
+                    // if we already have the maximum number of concurrent jobs running
+                    // return the loading thumbnail.
+                    if (m_currentJobsCount > m_maxThumbnailJobs)
+                    {
+                        return m_loadingThumbnail;
+                    }
+
+                    // if thumbnail is not loaded, start loading it, meanwhile return loading thumbnail
+                    if (thumbnail->GetState() == Thumbnail::State::Unloaded)
+                    {
+                        ++m_currentJobsCount;
+                        // listen to the loading signal, so the anyone using it will update loading animation
+                        AzQtComponents::StyledBusyLabel* busyLabel = {};
+                        AssetBrowser::AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowser::AssetBrowserComponentRequests::GetStyledBusyLabel);
+                        connect(m_loadingThumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
+                        connect(busyLabel, &AzQtComponents::StyledBusyLabel::repaintNeeded, this, &ThumbnailerComponent::RedrawThumbnail);
+
+                        // once the thumbnail is loaded, disconnect it from loading thumbnail
+                        connect(thumbnail.data(), &Thumbnail::Updated, this, [this, key, thumbnail, busyLabel]()
+                            {
+                                disconnect(m_loadingThumbnail.data(), nullptr, key.data(), nullptr);
+                                disconnect(busyLabel, nullptr, this, nullptr);
+                                disconnect(thumbnail.data(), nullptr, nullptr, nullptr);
+
+                                connect(thumbnail.data(), &Thumbnail::Updated, key.data(), &ThumbnailKey::ThumbnailUpdatedSignal);
+                                connect(key.data(), &ThumbnailKey::UpdateThumbnailSignal, thumbnail.data(), &Thumbnail::Update);
+
+                                key->SetReady(true);
+                                m_currentJobsCount--;
+                                Q_EMIT key->ThumbnailUpdatedSignal();
+                            });
+
+                        thumbnail->Load();
+                    }
+
+                    if (thumbnail->GetState() == Thumbnail::State::Failed)
+                    {
+                        return m_missingThumbnail;
+                    }
+
+                    return m_loadingThumbnail;
+                }
+            }
+            return m_missingThumbnail;
         }
 
-        void ThumbnailerComponent::RegisterThumbnailProvider(SharedThumbnailProvider provider, const char* contextName)
+        bool ThumbnailerComponent::IsLoading(SharedThumbnailKey key)
         {
-            auto it = m_thumbnails.find(contextName);
-            AZ_Assert(it != m_thumbnails.end(), "Context %s not registered", contextName);
-            it->second->RegisterThumbnailProvider(provider);
+            for (auto& provider : m_providers)
+            {
+                SharedThumbnail thumbnail;
+                if (provider->GetThumbnail(key, thumbnail))
+                {
+                    return thumbnail->GetState() == Thumbnail::State::Unloaded || thumbnail->GetState() == Thumbnail::State::Loading;
+                }
+            }
+            return false;
         }
 
-        void ThumbnailerComponent::UnregisterThumbnailProvider(const char* providerName, const char* contextName)
+        void ThumbnailerComponent::RedrawThumbnail()
         {
-            auto it = m_thumbnails.find(contextName);
-            AZ_Assert(it != m_thumbnails.end(), "Context %s not registered", contextName);
-            it->second->UnregisterThumbnailProvider(providerName);
+            AssetBrowser::AssetBrowserViewRequestBus::Broadcast(&AssetBrowser::AssetBrowserViewRequests::Update);
         }
-
-        SharedThumbnail ThumbnailerComponent::GetThumbnail(SharedThumbnailKey key, const char* contextName)
-        {
-            auto it = m_thumbnails.find(contextName);
-            AZ_Assert(it != m_thumbnails.end(), "Context %s not registered", contextName);
-            return it->second->GetThumbnail(key);
-        }
-
-        bool ThumbnailerComponent::IsLoading(SharedThumbnailKey key, const char* contextName)
-        {
-            auto it = m_thumbnails.find(contextName);
-            AZ_Assert(it != m_thumbnails.end(), "Context %s not registered", contextName);
-            return it->second->IsLoading(key);
-        }
-
     } // namespace Thumbnailer
 } // namespace AzToolsFramework
 

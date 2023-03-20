@@ -35,7 +35,7 @@ Module Documentation:
     A set of utility functions
 
     <to do: further document this module>
-    
+
     To Do:
         ATOM-5859
 '''
@@ -48,34 +48,22 @@ import os
 import sys
 import site
 import fnmatch
+import logging as _logging
 
 # 3rd Party
 from pathlib import Path
 # from progress.spinner import Spinner # deprecate use (or refactor)
-
-# Lumberyard extensions
-from azpy.constants import *
-from azpy import initialize_logger
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
-#  global space debug flag
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
-
 #  global space
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
+from DccScriptingInterface.azpy.shared.common import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.core_utils'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 
-_PACKAGENAME = __name__
-if _PACKAGENAME is '__main__':
-    _PACKAGENAME = 'azpy.shared.common.core_utils'
-
-import azpy
-_LOGGER = azpy.initialize_logger(_PACKAGENAME)
-_LOGGER.debug('Invoking __init__.py for {0}.'.format({_PACKAGENAME}))
+from DccScriptingInterface.azpy.constants import *
 # -------------------------------------------------------------------------
 
 
@@ -421,7 +409,7 @@ def return_stub(stub):
 if __name__ == "__main__":
     '''To Do: Document'''
     # constants for shared use.
-    _G_DEBUG = True
+    DCCSI_GDEBUG = True
 
     # happy _LOGGER.info
     _LOGGER.info("# {0} #".format('-' * 72))
@@ -435,7 +423,7 @@ if __name__ == "__main__":
     _KNOWN_SITEDIR_PATHS = site._init_pathinfo()
 
     #  this is just a debug developer convenience _LOGGER.info (for testing acess)
-    if _G_DEBUG:
+    if DCCSI_GDEBUG:
         import pkgutil
         _LOGGER.info('Current working dir: {0}'.format(cwd))
         search_path = ['.']  # set to None to see all modules importable from sys.path
@@ -460,7 +448,7 @@ if __name__ == "__main__":
 
     # test gather_paths_of_type_from_dir
     extTest = '*.py'
-    fileList = gather_paths_of_type_from_dir(os.getcwd(), extTest, use_spinner=True)
+    fileList = gather_paths_of_type_from_dir(in_path=os.getcwd(), extension=extTest)
     _LOGGER.info('Found {0}: {1}'.format(extTest, len(fileList)))
     _LOGGER.info('')
 

@@ -1,0 +1,130 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "HairPPLLRasterPassTemplate",
+            "PassClass": "HairPPLLRasterPass",
+            "Slots": [
+                // Input/Outputs...
+                {
+                    // Super important to keep this as it is used to set the size of the Head PPLL image buffer.
+                    // If DepthLinear is not availbale - connect to another viewport (non MSAA) image.
+                    "Name": "DepthLinear",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                { // The depth buffer will be used to write the closest hair fragment depth
+                    "Name": "Depth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "RenderTargetInputOutput",
+                    "SlotType": "InputOutput",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "Load",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "SkinnedHairSharedBuffer",
+                    "ShaderInputName": "m_skinnedHairSharedBuffer",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "PPLLIndexCounter",
+                    "ShaderInputName": "m_linkedListCounter",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "BufferViewDesc": {
+                        "m_elementOffset": "0",
+                        "m_elementCount": "1",
+                        "m_elementSize": "4",
+                        "m_elementFormat": "R32_UINT" // Unknown is not accpeted and the pass compilation failsd
+                    },
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [ 0, 0, 0, 0 ]
+                        },
+                        "LoadAction": "Clear"
+                    }
+                },
+                {
+                    "Name": "PerPixelListHead",
+                    "ShaderInputName": "m_fragmentListHead",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader",
+                    "LoadStoreAction": {
+                        "ClearValue": {
+                            "Value": [
+                                0,
+                                0,
+                                0,
+                                0
+                            ]
+                        },
+                        "LoadAction": "Clear",
+                        "StoreAction": "Store"
+                    }
+                },
+                {
+                    "Name": "PerPixelLinkedList",
+                    "ShaderInputName": "m_linkedListNodes",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "BufferAttachments": [
+                {
+                    "Name": "PPLLIndexCounter",
+                    "BufferDescriptor": {
+                        "m_bindFlags": "ShaderReadWrite",
+                        "m_byteCount": "4",
+                        "m_alignment": "0" // or size of the buffer element
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "PerPixelListHead",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "DepthLinear"
+                        }
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R32_UINT",
+                        "SharedQueueMask": "Graphics",
+                        "BindFlags": "ShaderReadWrite"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "PerPixelListHead",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PerPixelListHead"
+                    }
+                },
+                {
+                    "LocalSlot": "PPLLIndexCounter",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "PPLLIndexCounter"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "RasterPassData",
+                "DrawListTag": "hairFillPass",
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

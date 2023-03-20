@@ -24,7 +24,7 @@ namespace GraphCanvas
     public:
 
         AZ_RTTI(SlotLayoutItem, "{ED76860E-35B8-4FEE-A2A0-04B467F778B6}", QGraphicsLayoutItem, QGraphicsItem);
-        AZ_CLASS_ALLOCATOR(SlotLayoutItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlotLayoutItem, AZ::SystemAllocator);
 
         SlotLayoutItem()
         {
@@ -38,7 +38,7 @@ namespace GraphCanvas
 
     protected:
         // QGraphicsItem  
-        void mousePressEvent(QGraphicsSceneMouseEvent* event)
+        void mousePressEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMousePress, GetEntityId(), event);
@@ -48,7 +48,7 @@ namespace GraphCanvas
             }
         }
 
-        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+        void mouseReleaseEvent(QGraphicsSceneMouseEvent* event) override
         {
             bool result = false;
             VisualNotificationBus::EventResult(result, GetEntityId(), &VisualNotifications::OnMouseRelease, GetEntityId(), event);

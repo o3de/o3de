@@ -25,18 +25,6 @@
                 "Path": "Passes/DepthMSAA.pass"
             },
             {
-                "Name": "DepthMSAA2xPassTemplate",
-                "Path": "Passes/DepthMSAA2x.pass"
-            },
-            {
-                "Name": "DepthMSAA4xPassTemplate",
-                "Path": "Passes/DepthMSAA4x.pass"
-            },
-            {
-                "Name": "DepthMSAA8xPassTemplate",
-                "Path": "Passes/DepthMSAA8x.pass"
-            },
-            {
                 "Name": "DepthMaxPassTemplate",
                 "Path": "Passes/DepthMax.pass"
             },
@@ -45,16 +33,16 @@
                 "Path": "Passes/Forward.pass"
             },
             {
-                "Name": "ForwardMSAAPassTemplate",
-                "Path": "Passes/ForwardMSAA.pass"
-            },
-            {
-                "Name": "ForwardSubsurfaceMSAAPassTemplate",
-                "Path": "Passes/ForwardSubsurfaceMSAA.pass"
+                "Name": "ForwardSubsurfacePassTemplate",
+                "Path": "Passes/ForwardSubsurface.pass"
             },
             {
                 "Name": "MainPipeline",
                 "Path": "Passes/MainPipeline.pass"
+            },
+            {
+                "Name": "CameraPipeline",
+                "Path": "Passes/CameraPipeline.pass"
             },
             {
                 "Name": "MainPipelineRenderToTexture",
@@ -63,6 +51,10 @@
             {
                 "Name": "CascadedShadowmapsTemplate",
                 "Path": "Passes/CascadedShadowmaps.pass"
+            },
+            {
+                "Name": "SlowClearPassTemplate",
+                "Path": "Passes/SlowClear.pass"
             },
             {
                 "Name": "FullscreenCopyTemplate",
@@ -87,6 +79,30 @@
             {
                 "Name": "AuxGeomPassTemplate",
                 "Path": "Passes/AuxGeom.pass"
+            },
+            {
+                "Name": "SkyAtmosphereParentTemplate",
+                "Path": "Passes/SkyAtmosphereParent.pass"
+            },
+            {
+                "Name": "SkyAtmosphereTemplate",
+                "Path": "Passes/SkyAtmosphere.pass"
+            },
+            {
+                "Name": "SkyTransmittanceLUTTemplate",
+                "Path": "Passes/SkyTransmittanceLUT.pass"
+            },
+            {
+                "Name": "SkyViewLUTTemplate",
+                "Path": "Passes/SkyViewLUT.pass"
+            },
+            {
+                "Name": "SkyVolumeLUTTemplate",
+                "Path": "Passes/SkyVolumeLUT.pass"
+            },
+            {
+                "Name": "SkyRayMarchingTemplate",
+                "Path": "Passes/SkyRayMarching.pass"
             },
             {
                 "Name": "SkyBoxTemplate",
@@ -119,6 +135,10 @@
             {
                 "Name": "DownsampleMipChainTemplate",
                 "Path": "Passes/DownsampleMipChain.pass"
+            },
+            {
+                "Name": "DownsampleSinglePassLuminanceTemplate",
+                "Path": "Passes/DownsampleSinglePassLuminance.pass"
             },
             {
                 "Name": "DisplayMapperTemplate",
@@ -185,16 +205,40 @@
                 "Path": "Passes/DepthOfFieldWriteFocusDepthFromGpu.pass"
             },
             {
-                "Name": "FilterDepthHorizontalTemplate",
-                "Path": "Passes/FilterDepthHorizontal.pass"
+                "Name": "NewDepthOfFieldTemplate",
+                "Path": "Passes/NewDepthOfField.pass"
             },
             {
-                "Name": "FilterDepthVerticalTemplate",
-                "Path": "Passes/FilterDepthVertical.pass"
+                "Name": "NewDepthOfFieldDownsampleTemplate",
+                "Path": "Passes/NewDepthOfFieldDownsample.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTileReduceTemplate",
+                "Path": "Passes/NewDepthOfFieldTileReduce.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldTile3x3Template",
+                "Path": "Passes/NewDepthOfFieldTile3x3.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterLargeTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterLarge.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldFilterSmallTemplate",
+                "Path": "Passes/NewDepthOfFieldFilterSmall.pass"
+            },
+            {
+                "Name": "NewDepthOfFieldCompositeTemplate",
+                "Path": "Passes/NewDepthOfFieldComposite.pass"
             },
             {
                 "Name": "EsmShadowmapsTemplate",
                 "Path": "Passes/EsmShadowmaps.pass"
+            },
+            {
+                "Name": "FullscreenShadowTemplate",
+                "Path": "Passes/FullscreenShadow.pass"
             },
             {
                 "Name": "LightCullingHeatmapTemplate",
@@ -227,18 +271,6 @@
             {
                 "Name": "LightCullingRemapTemplate",
                 "Path": "Passes/LightCullingRemap.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapForwardMSAAPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapForwardMSAA.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapDepthMSAAPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapDepthMSAA.pass"
-            },
-            {
-                "Name": "EnvironmentCubeMapSkyBoxPassTemplate",
-                "Path": "Passes/EnvironmentCubeMapSkyBox.pass"
             },
             {
                 "Name": "DepthToLinearTemplate",
@@ -329,6 +361,10 @@
                 "Path": "Passes/ReflectionScreenSpace.pass"
             },
             {
+                "Name": "ReflectionScreenSpaceRayTracingPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceRayTracing.pass"
+            },
+            {
                 "Name": "ReflectionScreenSpaceTracePassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceTrace.pass"
             },
@@ -343,6 +379,14 @@
             {
                 "Name": "ReflectionScreenSpaceBlurHorizontalPassTemplate",
                 "Path": "Passes/ReflectionScreenSpaceBlurHorizontal.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceFilterPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceFilter.pass"
+            },
+            {
+                "Name": "ReflectionScreenSpaceCopyHistoryPassTemplate",
+                "Path": "Passes/ReflectionScreenSpaceCopyHistory.pass"
             },
             {
                 "Name": "ReflectionScreenSpaceCompositePassTemplate",
@@ -405,50 +449,6 @@
                 "Path": "Passes/Bloom.pass"
             },
             {
-                "Name": "DiffuseProbeGridRayTracingPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRayTracing.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridUpdatePassTemplate",
-                "Path": "Passes/DiffuseProbeGridUpdate.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBlendIrradiancePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBlendIrradiance.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBlendDistancePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBlendDistance.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridBorderUpdatePassTemplate",
-                "Path": "Passes/DiffuseProbeGridBorderUpdate.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridRelocationPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRelocation.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridClassificationPassTemplate",
-                "Path": "Passes/DiffuseProbeGridClassification.pass"
-            },
-            {
-                "Name": "DiffuseGlobalIlluminationPassTemplate",
-                "Path": "Passes/DiffuseGlobalIllumination.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridDownsamplePassTemplate",
-                "Path": "Passes/DiffuseProbeGridDownsample.pass"
-            },
-            {
-                "Name": "DiffuseProbeGridRenderPassTemplate",
-                "Path": "Passes/DiffuseProbeGridRender.pass"
-            },
-            {
-                "Name": "DiffuseCompositePassTemplate",
-                "Path": "Passes/DiffuseComposite.pass"
-            },
-            {
                 "Name": "DiffuseGlobalFullscreenPassTemplate",
                 "Path": "Passes/DiffuseGlobalFullscreen.pass"
             },
@@ -457,8 +457,8 @@
                 "Path": "Passes/MorphTarget.pass"
             },
             {
-                "Name": "DepthMSAAParentTemplate",
-                "Path": "Passes/DepthMSAAParent.pass"
+                "Name": "DepthParentTemplate",
+                "Path": "Passes/DepthParent.pass"
             },
             {
                 "Name": "MotionVectorParentTemplate",
@@ -475,6 +475,14 @@
             {
                 "Name": "OpaqueParentTemplate",
                 "Path": "Passes/OpaqueParent.pass"
+            },
+            {
+                "Name": "ToolsPipeline",
+                "Path": "Passes/ToolsPipeline.pass"
+            },
+            {
+                "Name": "ToolsPipelineRenderToTexture",
+                "Path": "Passes/ToolsPipelineRenderToTexture.pass"
             },
             {
                 "Name": "TransparentParentTemplate",
@@ -503,6 +511,54 @@
             {
                 "Name": "LowEndPipelineTemplate",
                 "Path": "Passes/LowEndPipeline.pass"
+            },
+            {
+                "Name": "MultiViewForwardPassTemplate",
+                "Path": "Passes/MultiViewForward.pass"
+            },
+            {
+                "Name": "MultiViewPipelineTemplate",
+                "Path": "Passes/MultiViewPipeline.pass"
+            },
+            {
+                "Name": "MultiViewSkyBoxTemplate",
+                "Path": "Passes/MultiViewSkyBox.pass"
+            },
+            {
+                "Name": "MultiViewTransparentPassTemplate",
+                "Path": "Passes/MultiViewTransparent.pass"
+            },
+            {
+                "Name": "MultiViewTransparentParentTemplate",
+                "Path": "Passes/MultiViewTransparentParent.pass"
+            },
+            {
+                "Name": "MultiViewXRLeftPipelineTemplate",
+                "Path": "Passes/MultiViewXRLeftPipeline.pass"
+            },
+            {
+                "Name": "MultiViewXRRightPipelineTemplate",
+                "Path": "Passes/MultiViewXRRightPipeline.pass"
+            },
+            {
+                "Name": "KawaseShadowBlurTemplate",
+                "Path": "Passes/KawaseShadowBlur.pass"
+            },
+            {
+                "Name": "HDRColorGradingTemplate",
+                "Path": "Passes/HDRColorGrading.pass"
+            },
+            {
+                "Name": "LutGenerationTemplate",
+                "Path": "Passes/LutGeneration.pass"
+            },
+            {
+                "Name": "ChromaticAberrationTemplate",
+                "Path": "Passes/ChromaticAberration.pass"
+            },
+            {
+                "Name": "SplashScreenPassTemplate",
+                "Path": "Passes/SplashScreen.pass"
             }
         ]
     }

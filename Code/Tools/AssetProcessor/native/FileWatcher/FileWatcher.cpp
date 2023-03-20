@@ -6,154 +6,146 @@
  *
  */
 #include "FileWatcher.h"
+#include "AzCore/std/containers/vector.h"
 #include <native/assetprocessor.h>
+#include <native/FileWatcher/FileWatcher_platform.h>
+#include <QFileInfo>
+#include <QDir>
 
-//////////////////////////////////////////////////////////////////////////////
-/// FolderWatchRoot
-void FolderRootWatch::ProcessNewFileEvent(const QString& file)
-{
-    FileChangeInfo info;
-    info.m_action = FileAction::FileAction_Added;
-    info.m_filePath = file;
-    const bool invoked = QMetaObject::invokeMethod(m_fileWatcher, "AnyFileChange", Qt::QueuedConnection, Q_ARG(FileChangeInfo, info));
-    Q_ASSERT(invoked);
-}
+#include <AssetBuilderSDK/AssetBuilderSDK.h>
 
-void FolderRootWatch::ProcessDeleteFileEvent(const QString& file)
+//! IsSubfolder(folderA, folderB)
+//! returns whether folderA is a subfolder of folderB
+//! assumptions: absolute paths
+static bool IsSubfolder(const QString& folderA, const QString& folderB)
 {
-    FileChangeInfo info;
-    info.m_action = FileAction::FileAction_Removed;
-    info.m_filePath = file;
-    const bool invoked = QMetaObject::invokeMethod(m_fileWatcher, "AnyFileChange", Qt::QueuedConnection, Q_ARG(FileChangeInfo, info));
-    Q_ASSERT(invoked);
-}
+    // lets avoid allocating or messing with memory - this is a MAJOR hotspot as it is called for any file change even in the cache!
+    if (folderA.length() <= folderB.length())
+    {
+        return false;
+    }
 
-void FolderRootWatch::ProcessModifyFileEvent(const QString& file)
-{
-    FileChangeInfo info;
-    info.m_action = FileAction::FileAction_Modified;
-    info.m_filePath = file;
-    const bool invoked = QMetaObject::invokeMethod(m_fileWatcher, "AnyFileChange", Qt::QueuedConnection, Q_ARG(FileChangeInfo, info));
-    Q_ASSERT(invoked);
+    using AZStd::begin;
+    using AZStd::end;
+
+    auto isSlash = [](const QChar c) constexpr
+    {
+        return c == AZ::IO::WindowsPathSeparator || c == AZ::IO::PosixPathSeparator;
+    };
+
+    // if folderB doesn't end in a slash, make sure folderA has one at the appropriate location to
+    // avoid matching a partial path that isn't a folder e.g.
+    // folderA = c:/folderWithLongerName
+    // folderB = c:/folder
+    if (!isSlash(folderB[folderB.length() - 1]) && !isSlash(folderA[folderB.length()]))
+    {
+        return false;
+    }
+
+    const auto firstPathSeparator = AZStd::find_if(begin(folderB), end(folderB), [&isSlash](const QChar c)
+    {
+        return isSlash(c);
+    });
+
+    // Follow the convention used by AZ::IO::Path, and use a case-sensitive comparison on Posix paths
+    const bool useCaseSensitiveCompare = (firstPathSeparator == end(folderB)) ? true : (*firstPathSeparator == AZ::IO::PosixPathSeparator);
+
+    return AZStd::equal(begin(folderB), end(folderB), begin(folderA), [isSlash, useCaseSensitiveCompare](const QChar charAtB, const QChar charAtA)
+    {
+        if (isSlash(charAtA))
+        {
+            return isSlash(charAtB);
+        }
+        if (useCaseSensitiveCompare)
+        {
+            return charAtA == charAtB;
+        }
+        return charAtA.toLower() == charAtB.toLower();
+    });
 }
 
 //////////////////////////////////////////////////////////////////////////
 /// FileWatcher
 FileWatcher::FileWatcher()
-    : m_nextHandle(0)
+    : m_platformImpl(AZStd::make_unique<PlatformImplementation>())
 {
-    qRegisterMetaType<FileChangeInfo>("FileChangeInfo");
+    auto makeFilter = [this](auto signal)
+    {
+        return [this, signal](QString path)
+        {
+            const auto foundWatchRoot = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [path](const WatchRoot& watchRoot)
+            {
+                return Filter(path, watchRoot);
+            });
+            if (foundWatchRoot == end(m_folderWatchRoots))
+            {
+                return;
+            }
+
+            if (IsExcluded(path))
+            {
+                return;
+            }
+
+            AZStd::invoke(signal, this, path);
+        };
+    };
+
+    // The rawFileAdded signals are emitted by the watcher thread. Use a queued
+    // connection so that the consumers of the notification process the
+    // notification on the main thread.
+    connect(this, &FileWatcherBase::rawFileAdded, this, makeFilter(&FileWatcherBase::fileAdded), Qt::QueuedConnection);
+    connect(this, &FileWatcherBase::rawFileRemoved, this, makeFilter(&FileWatcherBase::fileRemoved), Qt::QueuedConnection);
+    connect(this, &FileWatcherBase::rawFileModified, this, makeFilter(&FileWatcherBase::fileModified), Qt::QueuedConnection);
 }
 
 FileWatcher::~FileWatcher()
 {
+    disconnect();
+    StopWatching();
 }
 
-int FileWatcher::AddFolderWatch(FolderWatchBase* pFolderWatch)
+void FileWatcher::AddFolderWatch(QString directory, bool recursive)
 {
-    if (!pFolderWatch)
+    // Search for an already monitored root that is a parent of `directory`,
+    // that is already watching subdirectories recursively
+    const auto found = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [directory](const WatchRoot& root)
     {
-        return -1;
+        return root.m_recursive && IsSubfolder(directory, root.m_directory);
+    });
+
+    if (found != end(m_folderWatchRoots))
+    {
+        // This directory is already watched
+        return;
     }
 
-    FolderRootWatch* pFolderRootWatch = nullptr;
+    //create a new root and start listening for changes
+    m_folderWatchRoots.push_back({directory, recursive});
 
-    //see if this a sub folder of an already watched root
-    for (auto rootsIter = m_folderWatchRoots.begin(); !pFolderRootWatch && rootsIter != m_folderWatchRoots.end(); ++rootsIter)
+    //since we created a new root, see if the new root is a super folder
+    //of other roots, if it is then then fold those roots into the new super root
+    if (recursive)
     {
-        if (FolderWatchBase::IsSubfolder(pFolderWatch->m_folder, (*rootsIter)->m_root))
+        AZStd::erase_if(m_folderWatchRoots, [directory](const WatchRoot& root)
         {
-            pFolderRootWatch = *rootsIter;
-        }
+            return IsSubfolder(root.m_directory, directory);
+        });
     }
-
-    bool bCreatedNewRoot = false;
-    //if its not a sub folder
-    if (!pFolderRootWatch)
-    {
-        //create a new root and start listening for changes
-        pFolderRootWatch = new FolderRootWatch(pFolderWatch->m_folder);
-
-        //make sure the folder watcher(s) get deleted before this
-        pFolderRootWatch->setParent(this);
-        bCreatedNewRoot = true;
-    }
-
-    pFolderRootWatch->m_fileWatcher = this;
-    QObject::connect(this, &FileWatcher::AnyFileChange, pFolderWatch, &FolderWatchBase::OnAnyFileChange);
-
-    if (bCreatedNewRoot)
-    {
-        if (m_startedWatching)
-        {
-            pFolderRootWatch->Start();
-        }
-
-        //since we created a new root, see if the new root is a super folder
-        //of other roots, if it is then then fold those roots into the new super root
-        for (auto rootsIter = m_folderWatchRoots.begin(); rootsIter != m_folderWatchRoots.end(); )
-        {
-            if (FolderWatchBase::IsSubfolder((*rootsIter)->m_root, pFolderWatch->m_folder))
-            {
-                //union the sub folder map over to the new root
-                pFolderRootWatch->m_subFolderWatchesMap.insert((*rootsIter)->m_subFolderWatchesMap);
-
-                //clear the old root sub folders map so they don't get deleted when we
-                //delete the old root as they are now pointed to by the new root
-                (*rootsIter)->m_subFolderWatchesMap.clear();
-
-                //delete the empty old root, deleting a root will call Stop()
-                //automatically which kills the thread
-                delete *rootsIter;
-
-                //remove the old root pointer form the watched list
-                rootsIter = m_folderWatchRoots.erase(rootsIter);
-            }
-            else
-            {
-                ++rootsIter;
-            }
-        }
-
-        //add the new root to the watched roots
-        m_folderWatchRoots.push_back(pFolderRootWatch);
-    }
-
-    //add to the root
-    pFolderRootWatch->m_subFolderWatchesMap.insert(m_nextHandle, pFolderWatch);
-
-    m_nextHandle++;
-
-    return m_nextHandle - 1;
 }
 
-void FileWatcher::RemoveFolderWatch(int handle)
+bool FileWatcher::HasWatchFolder(QString directory) const
 {
-    for (auto rootsIter = m_folderWatchRoots.begin(); rootsIter != m_folderWatchRoots.end(); )
+    const auto found = AZStd::find_if(begin(m_folderWatchRoots), end(m_folderWatchRoots), [directory](const WatchRoot& root)
     {
-        //find an element by the handle
-        auto foundIter = (*rootsIter)->m_subFolderWatchesMap.find(handle);
-        if (foundIter != (*rootsIter)->m_subFolderWatchesMap.end())
-        {
-            //remove the element
-            (*rootsIter)->m_subFolderWatchesMap.erase(foundIter);
+            return root.m_directory == directory;
+    });
+    return found != end(m_folderWatchRoots);
+}
 
-            //we removed a folder watch, if it's empty then there is no reason to keep watching it.
-            if ((*rootsIter)->m_subFolderWatchesMap.empty())
-            {
-                delete(*rootsIter);
-                rootsIter = m_folderWatchRoots.erase(rootsIter);
-            }
-            else
-            {
-                ++rootsIter;
-            }
-        }
-        else
-        {
-            ++rootsIter;
-        }
-    }
+void FileWatcher::ClearFolderWatches()
+{
+    m_folderWatchRoots.clear();
 }
 
 void FileWatcher::StartWatching()
@@ -164,12 +156,27 @@ void FileWatcher::StartWatching()
         return;
     }
 
-    for (FolderRootWatch* root : m_folderWatchRoots)
+    m_shutdownThreadSignal = false;
+
+    if (PlatformStart())
     {
-        root->Start();
+        m_thread = AZStd::thread({/*.name=*/ "AssetProcessor FileWatcher thread"}, [this]{
+            WatchFolderLoop();
+        });
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File Change Monitoring started.\n");
+    }
+    else
+    {
+        AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File Change Monitoring failed to start.\n");
+    }
+    
+    while(!m_startedSignal)
+    {
+        // wait for the thread to signal that it is completely ready.  This should
+        // take a very short amount of time, so yield for it (not sleep).
+        AZStd::this_thread::yield();
     }
 
-    AZ_TracePrintf(AssetProcessor::ConsoleChannel, "File Change Monitoring started.\n");
     m_startedWatching = true;
 }
 
@@ -177,17 +184,124 @@ void FileWatcher::StopWatching()
 {
     if (!m_startedWatching)
     {
-        AZ_Warning("FileWatcher", false, "StartWatching() called when is not watching for file changes.");
         return;
     }
 
-    for (FolderRootWatch* root : m_folderWatchRoots)
-    {
-        root->Stop();
-    }
+    m_shutdownThreadSignal = true;
+
+    // The platform is expected to join the thread in PlatformStop.  It cannot be joined here,
+    // since the platform may have to signal the thread to stop in a platform specific
+    // way before it is safe to join.
+    PlatformStop(); 
 
     m_startedWatching = false;
 }
 
-#include "native/FileWatcher/moc_FileWatcher.cpp"
-#include "native/FileWatcher/moc_FileWatcherAPI.cpp"
+bool FileWatcher::Filter(QString path, const WatchRoot& watchRoot)
+{
+    if (!IsSubfolder(path, watchRoot.m_directory))
+    {
+        return false;
+    }
+    if (!watchRoot.m_recursive)
+    {
+        // filter out subtrees too.
+        QStringRef subRef = path.rightRef(path.length() - watchRoot.m_directory.length());
+        if ((subRef.indexOf('/') != -1) || (subRef.indexOf('\\') != -1))
+        {
+            return false; // filter this out.
+        }
+    }
+
+    return true;
+}
+
+bool FileWatcher::IsExcluded(QString filepath) const
+{
+    for (const AssetBuilderSDK::FilePatternMatcher& matcher : m_excludes)
+    {
+        if (matcher.MatchesPath(filepath.toUtf8().constData()))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void FileWatcher::AddExclusion(const AssetBuilderSDK::FilePatternMatcher& excludeMatch)
+{
+    m_excludes.push_back(excludeMatch);
+}
+
+void FileWatcher::InstallDefaultExclusionRules(QString cacheRootPath, QString projectRootPath)
+{
+    constexpr const char* intermediates = AssetProcessor::IntermediateAssetsFolderName;
+    using AssetBuilderSDK::FilePatternMatcher;
+    using AssetBuilderSDK::AssetBuilderPattern;
+
+    // Note to maintainers:
+    // If you add more here, consider updating DefaultExcludes_ExcludeExpectedLocations.  It turns out each platform
+    // can approach these exclusions slightly differently, due to slash direction, naming, and how it installs its
+    // file monitors.
+    // 
+    // File exclusions from the config are already checked on all files coming from the file watcher, but are done so
+    // in the main thread quite late in the process, so as not to block the file monitor unnecessarily.
+    // The file monitor is sensitive to being blocked due to it being a raw listener to some operating system level file event
+    // stream, and as little work in its threads should be done as possible, so do not add a large number of exclusions here.
+    // The best situation is a really small number of exclusions that match a very broad number of actual files (like the entire
+    // user folder full of log files).
+    //
+    // For most situations its probably better to just filter on the main thread instead of in the watcher - and most implementations
+    // of this class do just that.  
+    // However, on some operating systems, each monitored folder in a tree of monitored folders costs actual system resources
+    // (a handle) and there are limited handles available, so excluding entire folder trees that we know we don't care about
+    // is valuable to save resources even if it costs more in the listener.
+    // 
+    // It is up to each implementation to make use of the list of excludes to best optimize itself for performance.  Even if the
+    // implementation does absolutely nothing with this exclude list, this class itself will still filter out excludes before
+    // forwarding the file events to actual handlers.
+    //
+    // To strike a balance here, add just a few hand-picked exclusions that tend to contain a lot of unnecessary folders:
+    //    * Everything in the cache EXCEPT for the "Intermediate Assets" and "fence" folders (filtering out fence will deadlock!)
+    //    * Project/build/*    (case insensitive)
+    //    * Project/user/*     (case insensitive)
+    //    * Project/gem/code/* (case insensitive)
+    // These (except for the cache) also mimic the built in exclusions for scanning, and are also likely to be deep folder trees.
+
+    if (!cacheRootPath.isEmpty())
+    {
+        // Use the actual cache root as part of the regex for filtering out the Intermediate Assets and fence folder
+        // this prevents accidental filtering of folders that have the word 'Cache' in them.
+        QString nativeCacheRoot = QDir::toNativeSeparators(cacheRootPath);
+
+        // Sanitize for regex by prepending any special characters with the escape character:
+        QString sanitizedCacheFolderString;
+        QString regexEscapeChars(R"(\.^$-+()[]{}|?*)");
+        for (int pos = 0; pos < nativeCacheRoot.size(); ++pos)
+        {
+            if (regexEscapeChars.contains(nativeCacheRoot[pos]))
+            {
+                sanitizedCacheFolderString.append('\\');
+            }
+            sanitizedCacheFolderString.append(nativeCacheRoot[pos]);
+        }
+
+        const char* filterString = R"(^%s[\\\/](?!%s|fence).*$)"; // [\\\/] will match \\ and /
+        // final form is something like ^C:\\o3de\\projects\\Project1\\Cache[\\\/](?!Intermediate Assets|fence).*$
+        // on unix-like,                ^/home/myuser/o3de-projects/Project1/Cache[\\\/](?!Intermediate Assets|fence).*$
+        AZStd::string exclusion = AZStd::string::format(filterString, sanitizedCacheFolderString.toUtf8().constData(), intermediates);
+        AddExclusion(AssetBuilderSDK::FilePatternMatcher(exclusion, AssetBuilderSDK::AssetBuilderPattern::Regex));
+    }
+
+    if (!projectRootPath.isEmpty())
+    {
+        // These are not regexes, so do not need sanitation.  Files can't use special characters like * or ? from globs anyway.
+        AZStd::string userPath = QDir::toNativeSeparators(QDir(projectRootPath).absoluteFilePath("user/*")).toUtf8().constData();
+        AZStd::string buildPath = QDir::toNativeSeparators(QDir(projectRootPath).absoluteFilePath("build/*")).toUtf8().constData();
+        AZStd::string gemCodePath = QDir::toNativeSeparators(QDir(projectRootPath).absoluteFilePath("gem/code/*")).toUtf8().constData();
+
+        AddExclusion(FilePatternMatcher(userPath.c_str(), AssetBuilderPattern::Wildcard));
+        AddExclusion(FilePatternMatcher(buildPath.c_str(), AssetBuilderPattern::Wildcard));
+        AddExclusion(FilePatternMatcher(gemCodePath.c_str(), AssetBuilderPattern::Wildcard));
+    }
+}

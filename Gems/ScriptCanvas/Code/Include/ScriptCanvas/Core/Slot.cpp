@@ -27,6 +27,7 @@ namespace ScriptCanvas
         AddVisibility,
         MergeScriptFunctions,
         CorrectDynamicDataTypeForExecution,
+        AddCanHaveInputField,
         // Add your version above
         Current
     };
@@ -209,6 +210,7 @@ namespace ScriptCanvas
                 ->Field("IsReference", &Slot::m_isVariableReference)
                 ->Field("VariableReference", &Slot::m_variableReference)
                 ->Field("IsUserAdded", &Slot::m_isUserAdded)
+                ->Field("CanHaveInputField", &Slot::m_canHaveInputField)
                 ;
         }
 
@@ -223,6 +225,7 @@ namespace ScriptCanvas
         , m_dynamicDataType(DynamicDataType::None)
         , m_id(slotConfiguration.m_slotId)
         , m_isVisible(slotConfiguration.m_isVisible)
+        , m_canHaveInputField(slotConfiguration.m_canHaveInputField)
     {
         if (!slotConfiguration.m_displayGroup.empty())
         {
@@ -237,7 +240,7 @@ namespace ScriptCanvas
             AddContract(contractDesc);
         }
 
-        if (const DataSlotConfiguration* dataSlotConfiguration = azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
+        if (azrtti_cast<const DataSlotConfiguration*>(&slotConfiguration))
         {
             m_dataType = DataType::Data;
         }
@@ -421,14 +424,19 @@ namespace ScriptCanvas
         return datum;
     }
 
-    void Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
+    bool Slot::FindModifiableDatumView(ModifiableDatumView& datumView)
     {
-        m_node->FindModifiableDatumView(GetId(), datumView);
+        return m_node->FindModifiableDatumView(GetId(), datumView);
     }
 
     bool Slot::IsVariableReference() const
     {
         return m_isVariableReference || m_dataType == DataType::VariableReference;
+    }
+
+    bool Slot::CanHaveInputField() const
+    {
+        return m_canHaveInputField;
     }
 
     bool Slot::CanConvertToValue() const
@@ -460,14 +468,14 @@ namespace ScriptCanvas
             && GetDataType() != Data::Type::BehaviorContextObject(GraphScopedVariableId::TYPEINFO_Uuid());
     }
 
-    bool Slot::CanConvertToReference() const
-    {        
-        return !m_isUserAdded && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
+    bool Slot::CanConvertToReference(bool isNewSlot) const
+    {
+        return (!m_isUserAdded || isNewSlot) && CanConvertTypes() && !m_isVariableReference && !m_node->HasConnectedNodes((*this));
     }
 
-    bool Slot::ConvertToReference()
+    bool Slot::ConvertToReference(bool isNewSlot)
     {
-        if (CanConvertToReference())
+        if (CanConvertToReference(isNewSlot))
         {
             m_isVariableReference = true;
 
@@ -480,14 +488,14 @@ namespace ScriptCanvas
         return m_isVariableReference;
     }
 
-    void Slot::SetVariableReference(const VariableId& variableId)
+    void Slot::SetVariableReference(const VariableId& variableId, IsVariableTypeChange isTypeChange)
     {
         if (!IsVariableReference() && !ConvertToReference())
         {
             return;
         }
 
-        if (m_variableReference == variableId)
+        if ((m_variableReference == variableId) && (isTypeChange != IsVariableTypeChange::Yes))
         {
             return;
         }
@@ -498,7 +506,7 @@ namespace ScriptCanvas
 
         if (IsDynamicSlot())
         {
-            if (!HasDisplayType())
+            if (!HasDisplayType() || isTypeChange == IsVariableTypeChange::Yes)
             {
                 GraphVariable* variable = m_node->FindGraphVariable(m_variableReference);
 

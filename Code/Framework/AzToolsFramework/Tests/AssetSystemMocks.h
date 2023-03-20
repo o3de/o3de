@@ -18,8 +18,6 @@ namespace UnitTests
     {
     public:
         MOCK_METHOD1(GetAbsoluteAssetDatabaseLocation, bool(AZStd::string&));
-        MOCK_METHOD0(GetAbsoluteDevGameFolderPath, const char* ());
-        MOCK_METHOD0(GetAbsoluteDevRootFolderPath, const char* ());
         MOCK_METHOD2(GetRelativeProductPathFromFullSourceOrProductPath, bool(const AZStd::string& fullPath, AZStd::string& relativeProductPath));
         MOCK_METHOD3(GenerateRelativeSourcePath,
             bool(const AZStd::string& sourcePath, AZStd::string& relativePath, AZStd::string& watchFolder));
@@ -32,5 +30,6 @@ namespace UnitTests
         MOCK_METHOD1(IsAssetPlatformEnabled, bool(const char* platform));
         MOCK_METHOD1(GetPendingAssetsForPlatform, int(const char* platform));
         MOCK_METHOD2(GetAssetsProducedBySourceUUID, bool(const AZ::Uuid& sourceUuid, AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo));
+        MOCK_METHOD1(ClearFingerprintForAsset, bool(const AZStd::string& sourcePath));
     };
 }

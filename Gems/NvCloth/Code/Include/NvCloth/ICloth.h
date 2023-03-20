@@ -8,11 +8,14 @@
 
 #pragma once
 
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/Event.h>
 #include <AzCore/std/function/function_template.h>
 
 #include <NvCloth/Types.h>
+
+AZ_DECLARE_BUDGET(Cloth);
 
 namespace NvCloth
 {

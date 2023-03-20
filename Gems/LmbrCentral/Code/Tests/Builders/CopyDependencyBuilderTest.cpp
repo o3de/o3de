@@ -16,10 +16,9 @@
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UnitTest/UnitTest.h>
 #include <AzCore/Utils/Utils.h>
-
-#include <LyShine/UiAssetTypes.h>
 
 #include <Builders/CopyDependencyBuilder/CfgBuilderWorker/CfgBuilderWorker.h>
 #include <Builders/CopyDependencyBuilder/FontBuilderWorker/FontBuilderWorker.h>
@@ -34,15 +33,13 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class CopyDependencyBuilderTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::TraceBusRedirector
         , private AzToolsFramework::AssetSystemRequestBus::Handler
     {
     protected:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
             m_app.reset(aznew AZ::ComponentApplication());
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
@@ -59,9 +56,11 @@ namespace UnitTest
             }
 
             // Startup default local FileIO (hits OSAllocator) if not already setup.
-            if (AZ::IO::FileIOBase::GetInstance() == nullptr)
+            auto fileIo = AZ::IO::FileIOBase::GetInstance();
+            if (fileIo == nullptr)
             {
-                AZ::IO::FileIOBase::SetInstance(aznew AZ::IO::LocalFileIO());
+                fileIo = aznew AZ::IO::LocalFileIO();
+                AZ::IO::FileIOBase::SetInstance(fileIo);
             }
 
             const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
@@ -69,7 +68,13 @@ namespace UnitTest
 
             AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
             assetRoot /= "Cache";
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
+
+            // Set the @gemroot:<gem-name> alias for active gems
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("LmbrCentral", *settingsRegistry, fileIo);
+            }
 
             SerializeContext* serializeContext;
             ComponentApplicationBus::BroadcastResult(serializeContext, &ComponentApplicationRequests::GetSerializeContext);
@@ -99,11 +104,9 @@ namespace UnitTest
 
             m_app->Destroy();
             m_app = nullptr;
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
-        static constexpr char testFileFolder[] = "@engroot@/Gems/LmbrCentral/Code/Tests/";
+        static constexpr char testFileFolder[] = "@gemroot:LmbrCentral@/Code/Tests/";
 
         AZStd::string GetFullPath(AZStd::string_view fileName)
         {
@@ -114,7 +117,7 @@ namespace UnitTest
         {
             AssetBuilderSDK::ProductPathDependencySet resolvedPaths;
             AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
-        
+
             AssetBuilderSDK::ProcessJobRequest request;
             request.m_fullPath = GetFullPath(fileName);
             request.m_sourceFile = fileName;
@@ -211,20 +214,18 @@ namespace UnitTest
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::AssetSystem::AssetSystemRequestBus::Handler overrides
-        const char* GetAbsoluteDevGameFolderPath() override { return ""; }
-        const char* GetAbsoluteDevRootFolderPath() override { return ""; }
-        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) { return true; }
+        bool GetRelativeProductPathFromFullSourceOrProductPath([[maybe_unused]] const AZStd::string& fullPath, [[maybe_unused]] AZStd::string& relativeProductPath) override { return true; }
         bool GenerateRelativeSourcePath(
             [[maybe_unused]] const AZStd::string& sourcePath, [[maybe_unused]] AZStd::string& relativePath,
-            [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) { return true; }
-        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) { return true; }
-        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) { return true; }
-        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) { return true; }
-        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) { return true; }
-        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) { return 0; }
-        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) { return true; }
+            [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetFullSourcePathFromRelativeProductPath([[maybe_unused]] const AZStd::string& relPath, [[maybe_unused]] AZStd::string& fullSourcePath) override { return true; }
+        bool GetAssetInfoById([[maybe_unused]] const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetType& assetType, [[maybe_unused]] const AZStd::string& platformName, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& rootFilePath) override { return true; }
+        bool GetSourceInfoBySourcePath([[maybe_unused]] const char* sourcePath, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetSourceInfoBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZ::Data::AssetInfo& assetInfo, [[maybe_unused]] AZStd::string& watchFolder) override { return true; }
+        bool GetScanFolders([[maybe_unused]] AZStd::vector<AZStd::string>& scanFolders) override { return true; }
+        bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) override { return true; }
+        int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) override { return 0; }
+        bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) override { return true; }
         bool GetAssetSafeFolders(AZStd::vector<AZStd::string>& assetSafeFolders) override
         {
             char resolvedBuffer[AZ_MAX_PATH_LEN] = { 0 };
@@ -232,6 +233,7 @@ namespace UnitTest
             assetSafeFolders.emplace_back(resolvedBuffer);
             return true;
         }
+        bool ClearFingerprintForAsset([[maybe_unused]] const AZStd::string& sourcePath) override { return false; }
 
         // When supressing AZ_Errors to count how many occur,
         // you need to tell it you expect double the number of errors.
@@ -428,7 +430,7 @@ namespace UnitTest
             "Fonts/fontexample-bolditalic.font"
         };
 
-        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily"; 
+        AZStd::string fileName = "Fonts/FontFamilyExample.fontfamily";
 
         FontBuilderWorker builderWorker;
 
@@ -445,7 +447,7 @@ namespace UnitTest
         AZStd::string fileName = "Fonts/FontExample.font";
 
         FontBuilderWorker builderWorker;
-    
+
         TestSuccessCase(&builderWorker, fileName, "Fonts/FontExample.ttf");
     }
 
@@ -667,7 +669,7 @@ namespace UnitTest
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/OptionalAttribute"));
 
         AZStd::vector<AssetBuilderSDK::ProductDependency> expectedProductDependencies;
-    
+
         TestSuccessCase(&builderWorker, fileName, expectedPaths, expectedProductDependencies);
     }
 
@@ -896,7 +898,7 @@ namespace UnitTest
         AssetBuilderSDK::CreateJobsResponse response;
 
         request.m_sourceFile = "Tests/Xmls/XmlExampleWithoutVersion.xml";
-        request.m_watchFolder = "@root@/../Gems/LmbrCentral/Code/";
+        request.m_watchFolder = "@gemroot:LmbrCentral@/Code/";
 
         XmlBuilderWorker builderWorker;
         builderWorker.AddSchemaFileDirectory(GetFullPath("Xmls/Schema/WithoutVersionConstraints/FullFeatured"));

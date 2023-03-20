@@ -6,10 +6,12 @@
  *
  */
 
-#include <AudioEngineWwiseGemSystemComponent.h>
+#include "AudioEngineWwiseGemSystemComponent.h"
 
-#include <AzCore/PlatformDef.h>
-#include <AzCore/Memory/OSAllocator.h>
+#include <AzCore/PlatformIncl.h> // This include is needed to include WinSock2.h before including Windows.h
+ // As AK/SoundEngine/Common/AkTypes.h eventually includes Windows.h
+
+#include <AzCore/Console/ILogger.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
@@ -17,7 +19,6 @@
 #include <AzFramework/Platform/PlatformDefaults.h>
 
 #include <AudioAllocators.h>
-#include <AudioLogger.h>
 #include <AudioSystemImplCVars.h>
 #include <AudioSystemImpl_wwise.h>
 #include <Common_wwise.h>
@@ -30,8 +31,6 @@
 
 namespace Audio
 {
-    CAudioLogger g_audioImplLogger_wwise;
-
     namespace Platform
     {
         void* InitializeSecondaryMemoryPool(size_t& secondarySize);
@@ -53,7 +52,6 @@ namespace AudioEngineWwiseGem
             {
                 ec->Class<AudioEngineWwiseGemSystemComponent>("Audio Engine Wwise Gem", "Wwise implementation of the Audio Engine interfaces")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -88,7 +86,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Activate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusConnect();
+        Audio::Gem::EngineRequestBus::Handler::BusConnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusConnect();
@@ -97,7 +95,7 @@ namespace AudioEngineWwiseGem
 
     void AudioEngineWwiseGemSystemComponent::Deactivate()
     {
-        Audio::Gem::AudioEngineGemRequestBus::Handler::BusDisconnect();
+        Audio::Gem::EngineRequestBus::Handler::BusDisconnect();
 
     #if defined(AUDIO_ENGINE_WWISE_EDITOR)
         AudioControlsEditor::EditorImplPluginEventBus::Handler::BusDisconnect();
@@ -109,7 +107,7 @@ namespace AudioEngineWwiseGem
         bool success = false;
 
         // Check memory-related Wwise Cvars...
-        const AZ::u64 memorySubpartitionSizes = Audio::Wwise::Cvars::s_StreamDeviceMemorySize
+        [[maybe_unused]] const AZ::u64 memorySubpartitionSizes = Audio::Wwise::Cvars::s_StreamDeviceMemorySize
 #if !defined(WWISE_RELEASE)
             + Audio::Wwise::Cvars::s_MonitorQueueMemorySize
 #endif // !WWISE_RELEASE
@@ -118,48 +116,30 @@ namespace AudioEngineWwiseGem
         AZ_Assert(Audio::Wwise::Cvars::s_PrimaryMemorySize > memorySubpartitionSizes,
             "Wwise memory sizes of sub-categories add up to more than the primary memory pool size!")
 
-        // Initialize memory block for Wwise to use...
-        if (!AZ::AllocatorInstance<Audio::AudioImplAllocator>::IsReady())
-        {
-            const size_t poolSize = Audio::Wwise::Cvars::s_PrimaryMemorySize << 10;
-
-            Audio::AudioImplAllocator::Descriptor allocDesc;
-
-            // Generic Allocator:
-            allocDesc.m_allocationRecords = true;
-            allocDesc.m_heap.m_numFixedMemoryBlocks = 1;
-            allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0] = poolSize;
-
-            allocDesc.m_heap.m_fixedMemoryBlocks[0] = AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(
-                allocDesc.m_heap.m_fixedMemoryBlocksByteSize[0], allocDesc.m_heap.m_memoryBlockAlignment);
-
-            AZ::AllocatorInstance<Audio::AudioImplAllocator>::Create(allocDesc);
-        }
-
         AZ::SettingsRegistryInterface::FixedValueString assetPlatform = AzFramework::OSPlatformToDefaultAssetPlatform(
             AZ_TRAIT_OS_PLATFORM_CODENAME);
-        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        if (assetPlatform.empty())
         {
-            AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
-                AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
+            if (const auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, assetPlatform,
+                    AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey, "assets");
+            }
         }
+
         m_engineWwise = AZStd::make_unique<Audio::CAudioSystemImpl_wwise>(assetPlatform.c_str());
         if (m_engineWwise)
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "AudioEngineWwise created!");
+            AZLOG_INFO("%s", "AudioEngineWwise created!");
 
-            Audio::SAudioRequest oAudioRequestData;
-            oAudioRequestData.nFlags = (Audio::eARF_PRIORITY_HIGH | Audio::eARF_EXECUTE_BLOCKING);
-
-            Audio::SAudioManagerRequestData<Audio::eAMRT_INIT_AUDIO_IMPL> oAMData;
-            oAudioRequestData.pData = &oAMData;
-            Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequestBlocking, oAudioRequestData);
+            Audio::SystemRequest::Initialize initRequest;
+            AZ::Interface<Audio::IAudioSystem>::Get()->PushRequestBlocking(AZStd::move(initRequest));
 
             success = true;
         }
         else
         {
-            Audio::g_audioImplLogger_wwise.Log(Audio::eALT_ALWAYS, "Could not create AudioEngineWwise!");
+            AZLOG_ERROR("%s", "Could not create AudioEngineWwise!");
         }
 
         return success;
@@ -168,11 +148,6 @@ namespace AudioEngineWwiseGem
     void AudioEngineWwiseGemSystemComponent::Release()
     {
         m_engineWwise.reset();
-
-        if (AZ::AllocatorInstance<Audio::AudioImplAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<Audio::AudioImplAllocator>::Destroy();
-        }
     }
 
 #if defined(AUDIO_ENGINE_WWISE_EDITOR)

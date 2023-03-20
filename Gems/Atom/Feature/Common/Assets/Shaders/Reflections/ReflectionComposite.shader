@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionComposite",
+    "Source" : "ReflectionComposite.azsl",
 
     "RasterState" :
     {
@@ -29,7 +29,7 @@
         }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "One",
         "BlendDest" : "One",
@@ -55,8 +55,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

@@ -145,7 +145,7 @@ void CTrackViewCurveEditor::UpdateSplines()
     std::set<CTrackViewTrack*> newTracks;
     if (selectedTracks.AreAllOfSameType())
     {
-        for (int i = 0; i < selectedTracks.GetCount(); i++)
+        for (unsigned int i = 0; i < selectedTracks.GetCount(); i++)
         {
             CTrackViewTrack* pTrack = selectedTracks.GetTrack(i);
 

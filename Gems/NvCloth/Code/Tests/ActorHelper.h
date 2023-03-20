@@ -23,9 +23,9 @@ namespace UnitTest
         explicit ActorHelper(const char* name);
 
         //! Adds a node to the skeleton.
-        AZ::u32 AddJoint(
+        size_t AddJoint(
             const AZStd::string& name,
-            const AZ::Transform localTransform = AZ::Transform::CreateIdentity(),
+            const AZ::Transform& localTransform = AZ::Transform::CreateIdentity(),
             const AZStd::string& parentName = "");
 
         //! Adds a collider to the cloh configuration.

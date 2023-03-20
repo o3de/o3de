@@ -135,7 +135,7 @@ namespace ScriptCanvasEditor
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(ScriptCanvasComboBoxPropertyDataInterface<DataType>, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasComboBoxPropertyDataInterface<DataType>, AZ::SystemAllocator);
 
         ScriptCanvasComboBoxPropertyDataInterface(AZ::EntityId scriptCanvasNodeId, ScriptCanvas::TypedComboBoxNodePropertyInterface<DataType>* propertyInterface)
             : ScriptCanvasPropertyDataInterface<GraphCanvas::ComboBoxDataInterface, DataType>(scriptCanvasNodeId, propertyInterface)
@@ -177,7 +177,7 @@ namespace ScriptCanvasEditor
             return m_comboBoxModel.GetIndexForValue(dataValue);
         }
 
-        QString GetDisplayString() const
+        QString GetDisplayString() const override
         {
             DataType dataValue = this->GetValue();
             return m_comboBoxModel.GetNameForValue(dataValue);

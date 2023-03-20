@@ -30,7 +30,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MipmapSettingWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MipmapSettingWidget, AZ::SystemAllocator);
         explicit MipmapSettingWidget(EditorTextureSetting& textureSetting, QWidget* parent = nullptr);
         ~MipmapSettingWidget();
 
@@ -47,7 +47,7 @@ namespace ImageProcessingAtomEditor
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
 
     private:

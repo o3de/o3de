@@ -63,7 +63,7 @@ namespace Vegetation
         AZ::Aabb GetPreviewBounds() const override;
         bool GetConstrainToShape() const override;
 
-        GradientSignal::GradientPreviewContextPriority GetPreviewContextPriority() const;
+        GradientSignal::GradientPreviewContextPriority GetPreviewContextPriority() const override;
 
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EntitySelectionEvents::Bus::Handler

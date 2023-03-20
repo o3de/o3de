@@ -60,7 +60,7 @@ namespace EMotionFX
             ~UniqueData() = default;
 
         public:
-            MotionInstance* mMotionInstance = nullptr;
+            MotionInstance* m_motionInstance = nullptr;
         };
 
         AnimGraphMotionCondition();

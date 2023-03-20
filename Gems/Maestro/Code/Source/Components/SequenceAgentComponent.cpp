@@ -74,7 +74,7 @@ namespace Maestro
             AZ::EntityId sequenceEntityId = busIdToDisconnect->first;
 
             // we only process DisconnectSequence events sent over an ID'ed bus - otherwise we don't know which SequenceComponent to disconnect
-            auto findIter = m_sequenceEntityIds.find(sequenceEntityId);
+            [[maybe_unused]] auto findIter = m_sequenceEntityIds.find(sequenceEntityId);
             AZ_Assert(findIter != m_sequenceEntityIds.end(), "A sequence not connected to SequenceAgentComponent on %s is requesting a disconnection", GetEntity()->GetName().c_str());
 
             m_sequenceEntityIds.erase(sequenceEntityId);

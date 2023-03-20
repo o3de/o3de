@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
 namespace UnitTest
@@ -37,22 +36,10 @@ namespace UnitTest
 
             m_AWSGameLiftServerSystemsComponent = aznew NiceMock<AWSGameLiftServerSystemComponentMock>();
             m_entity->AddComponent(m_AWSGameLiftServerSystemsComponent);
-
-            // Set up the file IO and alias
-            m_localFileIO = aznew AZ::IO::LocalFileIO();
-            m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-            m_localFileIO->SetAlias("@log@", AZ_TRAIT_TEST_ROOT_FOLDER);
         }
 
         void TearDown() override
         {
-            AZ::IO::FileIOBase::SetInstance(nullptr);
-            delete m_localFileIO;
-            AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
-
             m_entity->RemoveComponent(m_AWSGameLiftServerSystemsComponent);
             delete m_AWSGameLiftServerSystemsComponent;
             delete m_entity;
@@ -70,9 +57,6 @@ namespace UnitTest
 
         AZ::Entity* m_entity;      
         NiceMock<AWSGameLiftServerSystemComponentMock>* m_AWSGameLiftServerSystemsComponent;
-
-        AZ::IO::FileIOBase* m_priorFileIO;
-        AZ::IO::FileIOBase* m_localFileIO;
     };
 
     TEST_F(AWSGameLiftServerSystemComponentTest, ActivateDeactivateComponent_ExecuteInOrder_Success)

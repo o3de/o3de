@@ -1,0 +1,59 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftStopMatchmakingRequest",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "Stop Matchmaking Request",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "GetTicketId",
+                    "details": {
+                        "name": "Get Ticket Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6132E293-65EF-4DC2-A8A0-00269697229D}",
+                            "details": {
+                                "name": "Stop Matchmaking Request",
+                                "tooltip": "The container for StopMatchmaking request parameters"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Ticket Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTicketId",
+                    "details": {
+                        "name": "Set Ticket Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6132E293-65EF-4DC2-A8A0-00269697229D}",
+                            "details": {
+                                "name": "Stop Matchmaking Request",
+                                "tooltip": "The container for StopMatchmaking request parameters"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Ticket Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

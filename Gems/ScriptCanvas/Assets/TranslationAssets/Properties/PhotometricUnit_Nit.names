@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "PhotometricUnit_Nit",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Nit",
+                "category": "Constants/Photometric Unit"
+            },
+            "methods": [
+                {
+                    "base": "GetPhotometricUnit_Nit",
+                    "details": {
+                        "name": "Nit"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

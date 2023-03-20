@@ -7,5 +7,6 @@
 #
 
 set(FILES
-    AzToolsFramework/Archive/ArchiveComponent_Windows.cpp
+    ../Common/Default/AzToolsFramework/API/PythonLoader_Default.cpp
+    AzToolsFramework/API/EditorAssetSystemAPI_Windows.cpp
 )

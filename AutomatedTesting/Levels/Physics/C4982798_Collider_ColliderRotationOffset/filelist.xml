@@ -1,6 +1,0 @@
-<download name="C4982797_PhysXCollider_ColliderOffsetTest" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="8985" md5="21522dd26797c603d56dbae2ad6b10f0"/>
- </files>
-</download>

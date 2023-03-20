@@ -8,14 +8,12 @@
 
 #include "Attribute.h"
 #include "AttributeFactory.h"
-#include "AttributeString.h"
-#include "StringConversions.h"
 
 namespace MCore
 {
-    Attribute::Attribute(uint32 typeID)
+    Attribute::Attribute(AZ::u32 typeID)
     {
-        mTypeID = typeID;
+        m_typeId = typeID;
     }
 
     Attribute::~Attribute()

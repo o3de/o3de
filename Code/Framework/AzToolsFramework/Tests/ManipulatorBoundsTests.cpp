@@ -187,4 +187,51 @@ namespace UnitTest
         EXPECT_NEAR(intersectionDistance, 10.0f, g_epsilon);
         EXPECT_TRUE(intersection);
     }
+
+    // replicates a scenario in the Editor using a cone and a pick ray which should have failed but passed with Intersect::IntersectRayCone
+    TEST(ManipulatorIntersectRayConeTest, RayConeEditorScenarioTest)
+    {
+        auto rayOrigin = AZ::Vector3(0.0f, -0.808944702f, 0.0f);
+        auto rayDir = AZ::Vector3(0.301363617f, 0.939044654f, 0.165454566f);
+        float t = 0.0f;
+        bool hit = AzToolsFramework::Picking::IntersectRayCone(
+            rayOrigin, rayDir, AZ::Vector3(0.0f, 0.0f, 0.161788940f), AZ::Vector3(0.0f, 0.0f, -1.0f), 0.0453009047, 0.0113252262, t);
+        EXPECT_FALSE(hit);
+    }
+
+    // cone lying flat, ray going towards base of cone
+    TEST(ManipulatorIntersectRayConeTest, RayIntersectsConeBase)
+    {
+        auto rayOrigin = AZ::Vector3::CreateZero();
+        auto rayDir = AZ::Vector3::CreateAxisY();
+        float t = 0.0f;
+        bool hit = AzToolsFramework::Picking::IntersectRayCone(
+            rayOrigin, rayDir, AZ::Vector3::CreateAxisY(10.0f), AZ::Vector3::CreateAxisY(-1.0f), 5.0f, 1.0f, t);
+        EXPECT_TRUE(hit);
+        EXPECT_THAT(t, ::testing::FloatNear(5.0f, 0.0001f));
+    }
+
+    // cone standing up, ray going towards mid side of cone
+    TEST(ManipulatorIntersectRayConeTest, RayIntersectsConeSide)
+    {
+        auto rayOrigin = AZ::Vector3::CreateZero();
+        auto rayDir = AZ::Vector3::CreateAxisY();
+        float t = 0.0f;
+        bool hit = AzToolsFramework::Picking::IntersectRayCone(
+            rayOrigin, rayDir, AZ::Vector3(0.0f, 10.0f, 5.0f), AZ::Vector3::CreateAxisZ(-1.0f), 10.0f, 5.0f, t);
+        EXPECT_TRUE(hit);
+        EXPECT_THAT(t, ::testing::FloatNear(7.5f, 0.0001f));
+    }
+
+    // cone standing up, ray going towards mid side of cone
+    TEST(ManipulatorIntersectRayConeTest, RayIntersectsConeApex)
+    {
+        auto rayOrigin = AZ::Vector3::CreateZero();
+        auto rayDir = AZ::Vector3::CreateAxisY();
+        float t = 0.0f;
+        bool hit = AzToolsFramework::Picking::IntersectRayCone(
+            rayOrigin, rayDir, AZ::Vector3::CreateAxisY(2.5f), AZ::Vector3::CreateAxisY(1.0f), 5.0f, 1.0f, t);
+        EXPECT_TRUE(hit);
+        EXPECT_THAT(t, ::testing::FloatNear(2.5f, 0.0001f));
+    }
 } // namespace UnitTest

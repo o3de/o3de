@@ -14,12 +14,16 @@
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
+#include <Atom/RPI.Public/Image/ImageSystemInterface.h>
+#include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewportContext.h>
 #include <Atom/RPI.Public/View.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/MemoryUsage.h>
 
 #include <CryCommon/ISystem.h>
 #include <CryCommon/IConsole.h>
@@ -58,7 +62,6 @@ namespace AZ::Render
             {
                 ec->Class<AtomViewportDisplayInfoSystemComponent>("Viewport Display Info", "Manages debug viewport information through r_displayInfo")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
-                        ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -130,12 +133,13 @@ namespace AZ::Render
         }
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
 
-        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene())
+        if (!m_fontDrawInterface || !viewportContext || !viewportContext->GetRenderScene() ||
+            !AZ::Interface<AzFramework::FontQueryInterface>::Get())
         {
             return;
         }
 
-        m_fpsInterval = AZStd::chrono::seconds(r_fpsCalcInterval);
+        m_fpsInterval = AZStd::chrono::seconds(static_cast<AZStd::sys_time_t>(r_fpsCalcInterval));
 
         UpdateFramerate();
 
@@ -147,16 +151,19 @@ namespace AZ::Render
 
         if (m_updateRootPassQuery)
         {
-            if (auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass())
+            if (auto currentPipeline = viewportContext->GetCurrentPipeline())
             {
-                rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
-                m_updateRootPassQuery = false;
+                if (auto rootPass = currentPipeline->GetRootPass())
+                {
+                    rootPass->SetPipelineStatisticsQueryEnabled(displayLevel != AtomBridge::ViewportInfoDisplayState::CompactInfo);
+                    m_updateRootPassQuery = false;
+                }
             }
         }
 
         m_drawParams.m_drawViewportId = viewportContext->GetId();
         auto viewportSize = viewportContext->GetViewportSize();
-        m_drawParams.m_position = AZ::Vector3(viewportSize.m_width, 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
+        m_drawParams.m_position = AZ::Vector3(static_cast<float>(viewportSize.m_width), 0.0f, 1.0f) + AZ::Vector3(r_topRightBorderPadding) * viewportContext->GetDpiScalingFactor();
         m_drawParams.m_color = AZ::Colors::White;
         m_drawParams.m_scale = AZ::Vector2(BaseFontSize);
         m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Right;
@@ -180,6 +187,7 @@ namespace AZ::Render
         {
             DrawPassInfo();
         }
+        DrawMemoryInfo();
         DrawFramerate();
     }
 
@@ -200,6 +208,17 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawRendererInfo()
     {
         DrawLine(m_rendererDescription, AZ::Colors::Yellow);
+
+        // resolution and MSAA state
+        AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const RHI::MultisampleState& multisampleState = RPI::RPISystemInterface::Get()->GetApplicationMultisampleState();
+
+        DrawLine(AZStd::string::format(
+            "Resolution: %dx%d (%s)",
+            viewportContext->GetViewportSize().m_width,
+            viewportContext->GetViewportSize().m_height,
+            multisampleState.m_samples > 1 ? AZStd::string::format("MSAA %dx", multisampleState.m_samples).c_str() : "NoMSAA"
+        ));
     }
 
     void AtomViewportDisplayInfoSystemComponent::DrawCameraInfo()
@@ -211,7 +230,6 @@ namespace AZ::Render
             return;
         }
 
-        auto viewportSize = viewportContext->GetViewportSize();
         AzFramework::CameraState cameraState;
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
         const AZ::Transform transform = currentView->GetCameraTransform();
@@ -228,32 +246,31 @@ namespace AZ::Render
     void AtomViewportDisplayInfoSystemComponent::DrawPassInfo()
     {
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        if (!viewportContext->GetCurrentPipeline())
+        {
+            return;
+        }
         auto rootPass = viewportContext->GetCurrentPipeline()->GetRootPass();
         const RPI::PipelineStatisticsResult stats = rootPass->GetLatestPipelineStatisticsResult();
-        AZStd::function<int(const AZ::RPI::Ptr<AZ::RPI::Pass>)> containingPassCount = [&containingPassCount](const AZ::RPI::Ptr<AZ::RPI::Pass> pass)
-        {
-            int count = 1;
-            if (auto passAsParent = pass->AsParent())
-            {
-                for (const auto& child : passAsParent->GetChildren())
-                {
-                    count += containingPassCount(child);
-                }
-            }
-            return count;
-        };
-        const int numPasses = containingPassCount(rootPass);
+
+        RPI::PassSystemFrameStatistics passSystemFrameStatistics = AZ::RPI::PassSystemInterface::Get()->GetFrameStatistics();
+
         DrawLine(AZStd::string::format(
-            "Total Passes: %d Vertex Count: %lld Primitive Count: %lld",
-            numPasses,
+            "RenderPasses: %d Vertex Count: %lld Primitive Count: %lld",
+            passSystemFrameStatistics.m_numRenderPassesExecuted,
             aznumeric_cast<long long>(stats.m_vertexCount),
             aznumeric_cast<long long>(stats.m_primitiveCount)
+        ));
+        DrawLine(AZStd::string::format(
+            "Total Draw Item Count: %d  Max Draw Items in a Pass: %d",
+            passSystemFrameStatistics.m_totalDrawItemsRendered,
+            passSystemFrameStatistics.m_maxDrawItemsRenderedInAPass
         ));
     }
 
     void AtomViewportDisplayInfoSystemComponent::UpdateFramerate()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
         while (!m_fpsHistory.empty() && (currentTime - m_fpsHistory.front()) > m_fpsInterval)
         {
             m_fpsHistory.pop_front();
@@ -261,9 +278,86 @@ namespace AZ::Render
         m_fpsHistory.push_back(currentTime);
     }
 
+    void AtomViewportDisplayInfoSystemComponent::DrawMemoryInfo()
+    {
+        RHI::RHISystemInterface* rhi = RHI::RHISystemInterface::Get();
+        if (!rhi)
+        {
+            return;
+        }
+
+        const RHI::MemoryStatistics* stats = rhi->GetMemoryStatistics();
+        if (!stats)
+        {
+            return;
+        }
+
+        // Accumulate total device memory pressure (reserved, resident)
+        size_t deviceResident = 0;
+        size_t deviceReserved = 0;
+
+        for (const auto& pool : stats->m_pools)
+        {
+            deviceReserved += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_totalResidentInBytes;
+            deviceResident += pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device).m_usedResidentInBytes;
+        }
+
+        // Query for available device memory
+        float availableDeviceMemoryMB = 0.f;
+
+        static constexpr size_t MB = 1u << 20;
+
+        if (RHI::Device* device = rhi->GetDevice(); device)
+        {
+            const RHI::PhysicalDeviceDescriptor& deviceDesc = device->GetPhysicalDevice().GetDescriptor();
+            availableDeviceMemoryMB =
+                static_cast<float>(deviceDesc.m_heapSizePerLevel[static_cast<size_t>(RHI::HeapMemoryLevel::Device)]) / MB;
+        }
+
+        float deviceResidentMB = static_cast<float>(deviceResident) / MB;
+        float deviceReservedMB = static_cast<float>(deviceReserved) / MB;
+
+        AZ::Color deviceMemoryColor = AZ::Colors::White;
+        if (availableDeviceMemoryMB != 0.f)
+        {
+            // Highlight text based on device memory pressure
+            if (deviceResidentMB > 0.6f * availableDeviceMemoryMB)
+            {
+                deviceMemoryColor = AZ::Colors::Yellow;
+            }
+            else if (deviceResidentMB > 0.8f * availableDeviceMemoryMB)
+            {
+                deviceMemoryColor = AZ::Colors::Red;
+            }
+        }
+        DrawLine(
+            AZStd::string::format(
+                "VRAM (resident/reserved): %.2f / %.2f MiB | %.2f available", deviceResidentMB, deviceReservedMB, availableDeviceMemoryMB),
+            deviceMemoryColor);
+
+        // RPI default StreamingImagePool usage
+        Data::Instance<RPI::StreamingImagePool> streamingImagePool = RPI::ImageSystemInterface::Get()->GetSystemStreamingPool();
+        const RHI::HeapMemoryUsage& imagePoolMemoryUsage = streamingImagePool->GetRHIPool()->GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
+
+        float imagePoolUsedAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_usedResidentInBytes) / MB;
+        float imagePoolTotalAllocatedMB = static_cast<float>(imagePoolMemoryUsage.m_totalResidentInBytes) / MB;
+        float imagePoolBudgetMB = static_cast<float>(imagePoolMemoryUsage.m_budgetInBytes) / MB;
+        bool supportTiledImage = streamingImagePool->GetRHIPool()->SupportTiledImage();
+        AZ::Color fontColor = AZ::Colors::White;
+        if (streamingImagePool->IsMemoryLow())
+        {
+            fontColor = AZ::Colors::Red;
+        }
+
+        DrawLine(
+            AZStd::string::format("StreamingImagePool %s (used/allocated/budget): %.2f / %.2f/%.2f MiB", supportTiledImage?"Tiled":"", imagePoolUsedAllocatedMB, imagePoolTotalAllocatedMB, imagePoolBudgetMB),
+            fontColor
+        );
+    }
+
     void AtomViewportDisplayInfoSystemComponent::DrawFramerate()
     {
-        AZStd::optional<AZStd::chrono::system_clock::time_point> lastTime;
+        AZStd::optional<AZStd::chrono::steady_clock::time_point> lastTime;
         double minFPS = DBL_MAX;
         double maxFPS = 0;
         AZStd::chrono::duration<double> deltaTime;
@@ -290,13 +384,19 @@ namespace AZ::Render
 
         const double frameIntervalSeconds = m_fpsInterval.count();
 
+        auto ClampedFloatDisplay = [](double value, const char* format) -> AZStd::string
+        {
+            constexpr float upperLimit = 10000.0f;
+            return value > upperLimit ? "inf" : AZStd::string::format(format, value);
+        };
+
         DrawLine(
             AZStd::string::format(
-                "FPS %.1f [%.0f..%.0f], %.1fms/frame, avg over %.1fs",
-                averageFPS,
-                minFPS,
-                maxFPS,
-                averageFrameMs,
+                "FPS %s [%s..%s], %sms/frame, avg over %.1fs",
+                ClampedFloatDisplay(averageFPS, "%.1f").c_str(),
+                ClampedFloatDisplay(minFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(maxFPS, "%.0f").c_str(),
+                ClampedFloatDisplay(averageFrameMs, "%.1f").c_str(),
                 frameIntervalSeconds),
             AZ::Colors::Yellow);
     }

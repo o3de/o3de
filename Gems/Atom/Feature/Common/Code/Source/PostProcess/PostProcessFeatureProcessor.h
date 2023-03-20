@@ -14,7 +14,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Base.h>
 #include <AtomCore/std/containers/vector_set.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 
 
 namespace AZ
@@ -26,6 +26,7 @@ namespace AZ
             : public PostProcessFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(PostProcessFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::PostProcessFeatureProcessor, "{A6A8357C-5A34-4297-B4DD-A1FB6556CE3E}", AZ::Render::PostProcessFeatureProcessorInterface);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -34,6 +35,7 @@ namespace AZ
 
             //! FeatureProcessor overrides...
             void Activate() override;
+            void Deactivate() override;
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
 
             //! PostProcessFeatureProcessorInterface...
@@ -43,12 +45,15 @@ namespace AZ
             void OnPostProcessSettingsChanged() override;
             PostProcessSettings* GetLevelSettingsFromView(AZ::RPI::ViewPtr view);
 
+            void SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView);
+            void RemoveViewAlias(const AZ::RPI::ViewPtr sourceView);
+
         private:
             PostProcessFeatureProcessor(const PostProcessFeatureProcessor&) = delete;
 
             void UpdateTime();
 
-            // Sorts all post processing settings into buckets based on category (level, 
+            // Sorts all post processing settings into buckets based on category (level,
             void SortPostProcessSettings();
 
             // Aggregates all level settings into a single level setting based their priorities and override settings
@@ -78,11 +83,13 @@ namespace AZ
             bool m_settingsChanged = true;
 
             // Time...
-            AZStd::chrono::system_clock::time_point m_currentTime;
+            AZStd::chrono::steady_clock::time_point m_currentTime;
             float m_deltaTime;
 
             // Each camera/view will have its own PostProcessSettings
             AZStd::unordered_map<AZ::RPI::View*, PostProcessSettings> m_blendedPerViewSettings;
+            // This is used for mimicking a postfx setting of a different view
+            AZStd::unordered_map<AZ::RPI::View*, AZ::RPI::View*> m_viewAliasMap;
         };
     } // namespace Render
 } // namespace AZ

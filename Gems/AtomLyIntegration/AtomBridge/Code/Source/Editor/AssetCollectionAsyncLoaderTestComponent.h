@@ -109,12 +109,12 @@ namespace AZ
 
             static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& services)
             {
-                services.push_back(AZ_CRC("AssetCollectionAsyncLoaderTest", 0xdd5ab934));
+                services.push_back(AZ_CRC("AssetCollectionAsyncLoaderTest", 0x66d04369));
             }
 
             static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& services)
             {
-                services.push_back(AZ_CRC("AssetCollectionAsyncLoaderTest", 0xdd5ab934));
+                services.push_back(AZ_CRC("AssetCollectionAsyncLoaderTest", 0x66d04369));
             }
 
             static void Reflect(AZ::ReflectContext* context);

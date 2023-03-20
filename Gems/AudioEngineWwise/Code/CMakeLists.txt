@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) #for PAL_TRAIT_AUDIO_ENGINE_WWISE Traits
 
@@ -18,43 +18,31 @@ set(AUDIOENGINEWWISE_COMPILEDEFINITIONS
 find_package(Wwise MODULE)
 
 ################################################################################
-# Server / Unsupported
+# Servers
+# (and situations where Wwise SDK is not found or otherwise unavailable)
 ################################################################################
-if (PAL_TRAIT_BUILD_SERVER_SUPPORTED OR PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB OR NOT Wwise_FOUND)
-    # Stub gem for server and unsupported platforms. Audio Engine Wwise is client only
-    ly_add_target(
-        NAME AudioEngineWwise.Stub ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            audioenginewwise_stub_files.cmake
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzCore
-    )
-endif()
-
-if (PAL_TRAIT_AUDIO_ENGINE_WWISE_USE_STUB OR NOT Wwise_FOUND)
-    # setup aliases so stubs will be used if something references AudioEngineWwise(.Editor)
-    add_library(Gem::AudioEngineWwise ALIAS AudioEngineWwise.Stub)
-    add_library(Gem::AudioEngineWwise.Editor ALIAS AudioEngineWwise.Stub)
+if(NOT PAL_TRAIT_AUDIO_ENGINE_WWISE_SUPPORTED OR NOT Wwise_FOUND)
+    # Don't create any Gem targets and aliases.  Nothing should depend on this
+    # Gem directly, because if it doesn't define targets it will cause an error.
     return()
 endif()
 
 
 ################################################################################
-# Runtime / Game
+# Clients
 ################################################################################
 ly_add_target(
-    NAME AudioEngineWwise.Static STATIC
+    NAME ${gem_name}.Private.Object STATIC
     NAMESPACE Gem
     FILES_CMAKE
         audioenginewwise_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     PLATFORM_INCLUDE_FILES
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
+    TARGET_PROPERTIES
+        O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             Source/Engine
             ${pal_dir}
             ${common_dir}
@@ -65,37 +53,32 @@ ly_add_target(
         PUBLIC
             3rdParty::Wwise
             Legacy::CryCommon
-            Gem::AudioSystem.Static
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
-    NAME AudioEngineWwise ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAME ${gem_name} ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
     NAMESPACE Gem
     FILES_CMAKE
         audioenginewwise_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Source
             Source/Engine
             ${pal_dir}
             ${common_dir}
-    COMPILE_DEFINITIONS
-        PUBLIC
-            ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
     BUILD_DEPENDENCIES
         PRIVATE
-            Gem::AudioEngineWwise.Static
+            Gem::${gem_name}.Private.Object
 )
 
-# we'll load the above "Gem::AudioEngineWwise" module in clients.
-ly_create_alias(NAME AudioEngineWwise.Clients NAMESPACE Gem TARGETS Gem::AudioEngineWwise)
+ly_create_alias(NAME ${gem_name}.Clients NAMESPACE Gem TARGETS Gem::${gem_name})
 
 ################################################################################
 # Tests
 ################################################################################
 if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
    ly_add_target(
-        NAME AudioEngineWwise.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAME ${gem_name}.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
             audioenginewwise_tests_files.cmake
@@ -103,71 +86,22 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Tests
-                Source
                 Source/Engine
                 ${pal_dir}
                 ${common_dir}
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
             PRIVATE
                 AZ::AzTest
-                Gem::AudioEngineWwise.Static
+                Gem::${gem_name}.Private.Object
     )
+
     ly_add_googletest(
-        NAME Gem::AudioEngineWwise.Tests
+        NAME Gem::${gem_name}.Tests
     )
 
-    list(APPEND testTargets AudioEngineWwise.Tests)
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/EmptyControl.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingPreloads.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingWwiseFileNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadOneBank.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/AudioControls
-    )
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingAtlPlatformsNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingConfigGroupNameAttribute.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNameAttributeOnePreload.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingWwiseFileNode.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/NoConfigGroups.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadMultipleBanks.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadOneBank.xml
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/WrongConfigGroup.xml
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/AudioControls/Legacy
-    )
-
-    ly_add_target_files(
-        TARGETS
-            ${testTargets}
-        FILES
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank1.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank2.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank3.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank4.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank5.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank6.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank7.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank8.bankdeps
-            ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank9.bankdeps
-        OUTPUT_SUBDIRECTORY
-            Test.Assets/Gems/AudioEngineWwise/sounds/wwise
-    )
+    list(APPEND testTargets ${gem_name}.Tests)
 
     ly_add_target_files(
         TARGETS
@@ -178,37 +112,43 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             Test.Assets/Gems/AudioEngineWwise/sounds/wwise/soundbanks
     )
 
-endif()
+endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+
 
 ################################################################################
-# Tools / Editor
+# Tools / Builders
 ################################################################################
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
-        NAME AudioEngineWwise.Editor.Static STATIC
+        NAME ${gem_name}.Editor.Private.Object STATIC
         NAMESPACE Gem
         AUTORCC
         FILES_CMAKE
             audioenginewwise_editor_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        COMPILE_DEFINITIONS
+            PUBLIC
+                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
-                Source
         BUILD_DEPENDENCIES
+            PUBLIC
+                3rdParty::Wwise
+                Gem::AudioSystem.Editor.API
+                Legacy::CryCommon
             PRIVATE
                 Legacy::EditorCore
-            PUBLIC
-                AZ::AssetBuilderSDK
-                Gem::AudioEngineWwise.Static
-                Gem::AudioSystem.Editor
+                Gem::${gem_name}.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
 
     ly_add_target(
-        NAME AudioEngineWwise.Editor GEM_MODULE
+        NAME ${gem_name}.Editor GEM_MODULE
         NAMESPACE Gem
         FILES_CMAKE
             audioenginewwise_editor_shared_files.cmake
@@ -217,41 +157,149 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AUDIO_ENGINE_WWISE_EDITOR
         INCLUDE_DIRECTORIES
             PRIVATE
-                Source/Builder
                 Source/Engine
                 Source/Editor
                 ${pal_dir}
-                Source
         BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
             PRIVATE
-                Gem::AudioEngineWwise.Editor.Static
+                Gem::${gem_name}.Editor.Private.Object
         RUNTIME_DEPENDENCIES
             Gem::AudioSystem.Editor
     )
 
-    # by default, we'll load the above "Gem::AudioEngineWwise.Editor" module in builders and tools.
-    ly_create_alias(NAME AudioEngineWwise.Builders NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
-    ly_create_alias(NAME AudioEngineWwise.Tools NAMESPACE Gem TARGETS Gem::AudioEngineWwise.Editor)
+    ly_add_target(
+        NAME ${gem_name}.Builder.Private.Object STATIC
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_files.cmake
+        TARGET_PROPERTIES
+            O3DE_PRIVATE_TARGET TRUE
+        COMPILE_DEFINITIONS
+            PUBLIC
+                ${AUDIOENGINEWWISE_COMPILEDEFINITIONS}
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                3rdParty::Wwise
+                AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
+            PRIVATE
+                Legacy::EditorCore
+    )
+
+    ly_add_target(
+        NAME ${gem_name}.Builder GEM_MODULE
+        NAMESPACE Gem
+        FILES_CMAKE
+            audioenginewwise_builder_shared_files.cmake
+        COMPILE_DEFINITIONS
+            PRIVATE
+                AUDIO_ENGINE_WWISE_BUILDER
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Source/Builder
+                Source/Editor
+                Source/Engine
+                ${pal_dir}
+        BUILD_DEPENDENCIES
+            PUBLIC
+                Gem::AudioSystem.API
+                Gem::AudioSystem.Editor.API
+                Legacy::CryCommon
+            PRIVATE
+                Gem::${gem_name}.Builder.Private.Object
+                Gem::${gem_name}.Private.Object
+    )
+
+    ly_create_alias(NAME ${gem_name}.Builders   NAMESPACE Gem TARGETS Gem::${gem_name}.Builder)
+    ly_create_alias(NAME ${gem_name}.Tools      NAMESPACE Gem TARGETS Gem::${gem_name}.Editor)
 
     if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         ly_add_target(
-            NAME AudioEngineWwise.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME ${gem_name}.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
                 audioenginewwise_editor_tests_files.cmake
+                audioenginewwise_editor_shared_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
+                    Source/Builder
                     Source/Editor
-                    Source
+                    Source/Engine
+                    ${pal_dir}
             BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::AudioSystem.API
                 PRIVATE
                     AZ::AzTest
-                    Gem::AudioEngineWwise.Editor.Static
+                    Gem::${gem_name}.Editor.Private.Object
+                    Gem::${gem_name}.Builder.Private.Object
                     Legacy::CryCommon
         )
+
         ly_add_googletest(
-            NAME Gem::AudioEngineWwise.Editor.Tests
+            NAME Gem::${gem_name}.Editor.Tests
         )
-    endif()
-endif()
+
+        list(APPEND editorTestTargets ${gem_name}.Editor.Tests)
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/EmptyControl.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingPreloads.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MissingWwiseFileNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/MultiplePreloadsOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/OnePreloadOneBank.xml
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/AudioControls
+        )
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingAtlPlatformsNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingConfigGroupNameAttribute.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNameAttributeOnePreload.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingPlatformNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MissingWwiseFileNode.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/MultiplePreloadsOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/NoConfigGroups.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadMultipleBanks.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/OnePreloadOneBank.xml
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/AudioControls/Legacy/WrongConfigGroup.xml
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/AudioControls/Legacy
+        )
+
+        ly_add_target_files(
+            TARGETS
+                ${editorTestTargets}
+            FILES
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank1.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank2.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank3.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank4.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank5.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank6.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank7.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank8.bankdeps
+                ${CMAKE_CURRENT_SOURCE_DIR}/Tests/Sounds/wwise/test_bank9.bankdeps
+            OUTPUT_SUBDIRECTORY
+                Test.Assets/Gems/AudioEngineWwise/sounds/wwise
+        )
+
+    endif() # PAL_TRAIT_BUILD_TESTS_SUPPORTED
+endif() # PAL_TRAIT_BUILD_HOST_TOOLS

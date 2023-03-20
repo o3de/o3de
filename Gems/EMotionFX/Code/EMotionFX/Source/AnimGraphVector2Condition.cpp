@@ -23,7 +23,7 @@ namespace EMotionFX
     const char* AnimGraphVector2Condition::s_operationGetX = "Get X";
     const char* AnimGraphVector2Condition::s_operationGetY = "Get Y";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphVector2Condition, AnimGraphAllocator)
 
     AnimGraphVector2Condition::AnimGraphVector2Condition()
         : AnimGraphTransitionCondition()
@@ -57,7 +57,7 @@ namespace EMotionFX
         SetOperation(m_operation);
 
         // Find the parameter index for the given parameter name, to prevent string based lookups every frame
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
     }
 
 
@@ -89,7 +89,7 @@ namespace EMotionFX
         if (m_parameterIndex.IsSuccess())
         {
             // get access to the parameter info and return the type of its default value
-            const ValueParameter* valueParameter = mAnimGraph->FindValueParameter(m_parameterIndex.GetValue());
+            const ValueParameter* valueParameter = m_animGraph->FindValueParameter(m_parameterIndex.GetValue());
             return azrtti_typeid(valueParameter);
         }
         else
@@ -348,7 +348,7 @@ namespace EMotionFX
     {
         AZ_UNUSED(beforeChange);
         AZ_UNUSED(afterChange);
-        m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+        m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
     }
 
     void AnimGraphVector2Condition::ParameterRemoved(const AZStd::string& oldParameterName)
@@ -360,7 +360,7 @@ namespace EMotionFX
         }
         else
         {
-            m_parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_parameterName);
+            m_parameterIndex = m_animGraph->FindValueParameterIndexByName(m_parameterName);
         }
     }
 

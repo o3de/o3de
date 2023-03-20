@@ -15,7 +15,7 @@ namespace AZStd
 {
     namespace Platform
     {
-        void PostThreadRun();
+        unsigned __stdcall PostThreadRun();
         HANDLE CreateThread(unsigned stackSize, unsigned (__stdcall* threadRunFunction)(void*), AZStd::Internal::thread_info* ti, unsigned int* id);
         unsigned HardwareConcurrency();
         void SetThreadName(HANDLE hThread, const char* threadName);
@@ -38,11 +38,8 @@ namespace AZStd
             destroy_thread_info(ti);
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadExit, this_thread::get_id()); // goes to client listeners
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadExit, this_thread::get_id()); // goes to the profiler.
 
-            Platform::PostThreadRun();
-
-            return 0;
+            return Platform::PostThreadRun();
         }
 
         /**
@@ -75,7 +72,6 @@ namespace AZStd
             }
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadEnter, thread::id(*id), desc);
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadEnter, thread::id(*id), desc);
 
             ::ResumeThread(hThread);
 

@@ -1,6 +1,6 @@
 {
  
-    "Source" : "ImGuiAtom",
+    "Source" : "ImGuiAtom.azsl",
 
     
     "RasterState" : { "CullMode" : "None" },
@@ -9,7 +9,7 @@
         "Depth" : { "Enable" : false, "CompareFunc" : "GreaterEqual" }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "One",
         "BlendAlphaSource" : "One",

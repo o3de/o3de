@@ -9,6 +9,8 @@
 #include <Source/ForceRegionForces.h>
 
 #include <AzCore/Component/Entity.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
@@ -57,26 +59,21 @@ namespace PhysX
             sceneInterface->RegisterSceneSimulationFinishHandler(sceneHandle, m_sceneFinishSimHandler);
         }
 
-        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
-        {
-            AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody = physicsSystem->FindAttachedBodyHandleFromEntityId(m_entity->GetId());
-            if (foundBody.first != AzPhysics::InvalidSceneHandle)
-            {
-                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(
-                    foundBody.first, foundBody.second, m_onTriggerEnterHandler);
-                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(
-                    foundBody.first, foundBody.second, m_onTriggerExitHandler);
-            }
-        }
+        // During entity activation the simulated bodies are not created yet.
+        // Connect to RigidBodyNotificationBus to listen when they get enabled to register the trigger handlers.
+        Physics::RigidBodyNotificationBus::Handler::BusConnect(GetEntityId());
+
         if (m_debugForces)
         {
-            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(m_entity->GetId());
+            AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         }
         m_forceRegion.Activate(GetEntityId());
     }
 
     void ForceRegionComponent::Deactivate()
     {
+        Physics::RigidBodyNotificationBus::Handler::BusDisconnect();
+
         m_forceRegion.Deactivate();
         if (m_debugForces)
         {
@@ -87,6 +84,28 @@ namespace PhysX
         m_sceneFinishSimHandler.Disconnect();
 
         m_entities.clear(); // On re-activation, each entity in this force region triggers OnTriggerEnter again.
+    }
+
+    void ForceRegionComponent::OnPhysicsEnabled(const AZ::EntityId& entityId)
+    {
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            AZStd::pair<AzPhysics::SceneHandle, AzPhysics::SimulatedBodyHandle> foundBody =
+                physicsSystem->FindAttachedBodyHandleFromEntityId(entityId);
+            if (foundBody.first != AzPhysics::InvalidSceneHandle)
+            {
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerEnterHandler(
+                    foundBody.first, foundBody.second, m_onTriggerEnterHandler);
+                AzPhysics::SimulatedBodyEvents::RegisterOnTriggerExitHandler(
+                    foundBody.first, foundBody.second, m_onTriggerExitHandler);
+            }
+        }
+    }
+
+    void ForceRegionComponent::OnPhysicsDisabled([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        m_onTriggerEnterHandler.Disconnect();
+        m_onTriggerExitHandler.Disconnect();
     }
 
     void ForceRegionComponent::InitPhysicsTickHandler()
@@ -115,7 +134,7 @@ namespace PhysX
 
     void ForceRegionComponent::PostPhysicsSubTick(float fixedDeltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         for (auto entityId : m_entities)
         {

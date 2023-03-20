@@ -62,15 +62,5 @@ namespace ScriptCanvasTesting
         {
             input.clear();
         }
-
-        void PropertyExample::In()
-        {
-            for ([[maybe_unused]] auto& num : Numbers)
-            {
-                AZ_TracePrintf("ScriptCanvas", "%f", num);
-            }
-
-            AZ_TracePrintf("ScriptCanvas", "Slang: %s", Slang.c_str());
-        }
     }
 }

@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonEntitySerializer, AZ::SystemAllocator);
 
     JsonSerializationResult::Result JsonEntitySerializer::Load(void* outputValue, [[maybe_unused]] const Uuid& outputValueTypeId,
         const rapidjson::Value& inputValue, JsonDeserializerContext& context)
@@ -81,25 +81,31 @@ namespace AZ
                     azrtti_typeid<decltype(componentMap)>(),
                     inputValue, "Components", context);
 
+            static TypeId genericComponentWrapperTypeId("{68D358CA-89B9-4730-8BA6-E181DEA28FDE}");
             for (auto& [componentKey, component] : componentMap)
             {
-                entityInstance->m_components.emplace_back(component);
+                // if the component didn't serialize (i.e. is null) or the underlying type is genericComponentWrapperTypeId, the
+                // template is null and the component should not be added
+                if (component && (component->GetUnderlyingComponentType() != genericComponentWrapperTypeId))
+                {
+                    entityInstance->m_components.emplace_back(component);
+                    component->SetSerializedIdentifier(componentKey);
+                }
             }
 
             result.Combine(componentLoadResult);
         }
 
-        {
-            JSR::ResultCode runtimeActiveLoadResult =
-                ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
-                    azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
-                    inputValue, "IsRuntimeActive", context);
-        }
+        ContinueLoadingFromJsonObjectField(&entityInstance->m_isRuntimeActiveByDefault,
+            azrtti_typeid<decltype(entityInstance->m_isRuntimeActiveByDefault)>(),
+            inputValue, "IsRuntimeActive", context);
+ 
+        AZStd::string_view message = result.GetProcessing() == JSR::Processing::Completed
+            ? "Successfully loaded entity information."
+            : (result.GetProcessing() != JSR::Processing::Halted ? "Partially loaded entity information."
+                                                                 : "Failed to load entity information.");
 
-        return context.Report(
-            result,
-            result.GetProcessing() != JSR::Processing::Halted ? "Succesfully loaded entity information."
-                                                              : "Failed to load entity information.");
+        return context.Report(result, message);
     }
 
     JsonSerializationResult::Result JsonEntitySerializer::Store(rapidjson::Value& outputValue,
@@ -200,8 +206,46 @@ namespace AZ
         {
             if (component)
             {
-                componentMapOut.emplace(AZStd::string::format("Component_[%llu]", component->GetId()), component);
+                AZStd::string componentAlias = component->GetSerializedIdentifier();
+                if (componentAlias.empty())
+                {
+                    // Component alias can be empty for non-editor components
+                    componentAlias = AZStd::string::format("Component_[%llu]", component->GetId());
+                }
+                componentMapOut.emplace(componentAlias, component);
             }
         }
     }
-}
+
+    void DeprecatedComponentMetadata::SetEnableDeprecationTrackingCallback(EnableDeprecationTrackingCallback callback)
+    {
+        m_enableDeprecationTrackingCallback = callback;
+    }
+
+    void DeprecatedComponentMetadata::AddComponent(const TypeId& componentType)
+    {
+        if (!m_enableDeprecationTrackingCallback || m_enableDeprecationTrackingCallback())
+        {
+            m_componentTypes.insert(componentType);
+        }
+    }
+
+    AZStd::vector<AZStd::string> DeprecatedComponentMetadata::GetComponentNames() const
+    {
+        AZStd::vector<AZStd::string> componentNames;
+
+        componentNames.reserve(m_componentTypes.size());
+        for (auto componentType : m_componentTypes)
+        {
+            AZ::ComponentDescriptor* descriptor = nullptr;
+            AZ::ComponentDescriptorBus::EventResult(descriptor, componentType, &AZ::ComponentDescriptorBus::Events::GetDescriptor);
+            if (descriptor)
+            {
+                componentNames.push_back(descriptor->GetName());
+            }
+        }
+
+        return componentNames;
+    }
+
+} // namespace AZ

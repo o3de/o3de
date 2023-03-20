@@ -1,0 +1,372 @@
+{
+    "version": 4,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 23,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "default",
+            "description": "Placeholder configuration that buildPresets and testPresets can inherit from",
+            "hidden": true
+        },
+        {
+            "name": "debug",
+            "description": "Specifies build type for single-configuration generators: debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "debug"
+                }
+            }
+        },
+        {
+            "name": "release",
+            "description": "Specifies build type for single-configuration generators: release",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "release"
+                }
+            }
+        },
+        {
+            "name": "profile",
+            "description": "Specifies build type for single-configuration generators: profile",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": {
+                    "type": "STRING",
+                    "value": "profile"
+                }
+            }
+        },
+        {
+            "name": "no-unity",
+            "description": "unity: off",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_UNITY_BUILD": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "unity",
+            "description": "unity: on",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_UNITY_BUILD": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "non-monolithic",
+            "description": "non-monolithic permutation(Default)",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_MONOLITHIC_GAME": {
+                    "type": "BOOL",
+                    "value": "OFF"
+                }
+            }
+        },
+        {
+            "name": "monolithic",
+            "description": "monolithic permutation(Monolithic)",
+            "hidden": true,
+            "cacheVariables": {
+                "LY_MONOLITHIC_GAME": {
+                    "type": "BOOL",
+                    "value": "ON"
+                }
+            }
+        },
+        {
+            "name": "makefiles",
+            "displayName": "Unix Makefiles",
+            "description": "Configure using Unix Makefile generator",
+            "generator": "Unix Makefiles",
+            "hidden": true
+        },
+        {
+            "name": "ninja-multi-config",
+            "displayName": "Ninja Multi-Config",
+            "description": "Configure using Ninja Multi-Config generator",
+            "hidden": true,
+            "generator": "Ninja Multi-Config"
+        },
+        {
+            "name": "vs2022",
+            "displayName": "Visual Studio 2022",
+            "description": "Configure using VS2022 generator",
+            "generator": "Visual Studio 17 2022",
+            "hidden": true,
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "vs2019",
+            "displayName": "Visual Studio 2019",
+            "description": "Configure using VS2019 generator",
+            "generator": "Visual Studio 16 2019",
+            "hidden": true,
+            "inherits": [
+                "host-windows"
+            ]
+        },
+        {
+            "name": "xcode",
+            "displayName": "Xcode",
+            "description": "Configure using Xcode generator",
+            "generator": "Xcode",
+            "hidden": true,
+            "inherits": [
+                "host-mac"
+            ]
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "host-windows-linux-mac",
+            "displayName": "Host OS - Any",
+            "description": "Allows Windows, Linux or Mac to be used for host condition for configure preset",
+            "hidden": true,
+            "condition": {
+                "type": "inList",
+                "string": "${hostSystemName}",
+                "list": [
+                  "Darwin",
+                  "Linux",
+                  "Windows"
+                ]
+              }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "debug",
+            "description": "configuration: debug",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "debug"
+        },
+        {
+            "name": "release",
+            "description": "configuration: release",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "release"
+        },
+        {
+            "name": "profile",
+            "description": "configuration: profile",
+            "hidden": true,
+            "configurePreset": "default",
+            "configuration": "profile"
+        },
+        {
+            "name": "editor",
+            "description": "target: editor",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "Editor"
+        },
+        {
+            "name": "assetprocessor",
+            "description": "target: asset processor",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "AssetProcessor"
+        },
+        {
+            "name": "install",
+            "description": "Builds the dependencies install(Ninja, Make, etc...) or INSTALL(Visual Studio, Xcode) target. Afterwards run the CMake install step to install the build dependencies",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": "install"
+        },
+        {
+            "name": "test-default",
+            "description": "Builds the smoke and main test suite dependencies",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": [ "profile"],
+            "targets": ["TEST_SUITE_main", "TEST_SUITE_smoke"]
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        },
+        {
+            "name": "host-windows-linux-mac",
+            "displayName": "Host OS - Any",
+            "description": "Allows Windows, Linux or Mac to be used for host condition for build preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "inList",
+                "string": "${hostSystemName}",
+                "list": [
+                  "Darwin",
+                  "Linux",
+                  "Windows"
+                ]
+              }
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "test-default",
+            "description": "CTest preset which runs the smoke and main test suites",
+            "hidden": true,
+            "configurePreset": "default",
+            "output": {
+                "outputOnFailure": true,
+                "outputLogFile": "Ctest-${presetName}.log"
+            },
+            "execution": {
+                "noTestsAction": "error"
+            },
+            "filter": {
+                "include": {
+                    "label": "(SUITE_smoke|SUITE_main)"
+                },
+                "exclude": {
+                    "label": "(REQUIRES_gpu)"
+                }
+            }
+        },
+        {
+            "name": "test-default-debug",
+            "description": "Runs the smoke and main test suites using the debug configuration",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": ["test-default"],
+            "configuration": "debug",
+            "output": {
+                "outputLogFile": "Ctest-${presetName}-debug.log"
+            }
+        },
+        {
+            "name": "test-default-profile",
+            "description": "Runs the smoke and main test suites using the profile configuration",
+            "hidden": true,
+            "configurePreset": "default",
+            "inherits": ["test-default"],
+            "configuration": "profile",
+            "output": {
+                "outputLogFile": "Ctest-${presetName}-profile.log"
+            }
+        },
+        {
+            "name": "host-windows",
+            "displayName": "Host OS - Windows",
+            "description": "Specifies Windows host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            }
+        },
+        {
+            "name": "host-linux",
+            "displayName": "Host OS - Linux",
+            "description": "Specifies Linux host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "host-mac",
+            "displayName": "Host OS - Mac",
+            "description": "Specifies Mac host condition for test preset",
+            "hidden": true,
+            "configurePreset": "default",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Darwin"
+            }
+        }
+    ]
+}

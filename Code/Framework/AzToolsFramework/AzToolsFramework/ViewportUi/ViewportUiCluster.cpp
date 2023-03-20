@@ -38,6 +38,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             },
             [button](QAction* action)
             {
+                action->setDisabled(button->m_state == Button::State::Disabled);
                 action->setChecked(button->m_state == Button::State::Selected);
             });
 
@@ -61,9 +62,6 @@ namespace AzToolsFramework::ViewportUi::Internal
         {
             return;
         }
-
-        // set hover to true by default
-        action->setProperty("IconHasHoverEffect", true);
 
         // add the action
         addAction(action);

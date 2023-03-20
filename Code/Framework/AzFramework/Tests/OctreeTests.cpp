@@ -19,18 +19,11 @@ using namespace AzFramework;
 namespace UnitTest
 {
     class OctreeTests
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         { 
-            // Create the SystemAllocator if not available
-            if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-                m_ownsSystemAllocator = true;
-            }
-
             m_console = aznew AZ::Console();
             AZ::Interface<AZ::IConsole>::Register(m_console);
             m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
@@ -73,16 +66,8 @@ namespace UnitTest
             AZ::Interface<AZ::IConsole>::Unregister(m_console);
             delete m_console;
             m_console = nullptr;
-
-            // Destroy system allocator only if it was created by this environment
-            if (m_ownsSystemAllocator)
-            {
-                AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-                m_ownsSystemAllocator = false;
-            }
         }
 
-        bool m_ownsSystemAllocator = false;
         OctreeSystemComponent* m_octreeSystemComponent = nullptr;
         OctreeScene* m_octreeScene = nullptr;
         uint32_t m_savedMaxEntries = 0;

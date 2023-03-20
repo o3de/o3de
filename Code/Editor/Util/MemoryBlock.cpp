@@ -78,7 +78,7 @@ bool CMemoryBlock::Allocate(int size, int uncompressedSize)
     {
         QString str;
         str = QStringLiteral("CMemoryBlock::Allocate failed to allocate %1Mb of Memory").arg(size / (1024 * 1024));
-        CryLogAlways(str.toUtf8().data());
+        CryLogAlways("%s", str.toUtf8().data());
 
         QMessageBox::critical(QApplication::activeWindow(), QString(), str + QString("\r\nSandbox will try to reduce its working memory set to free memory for this allocation."));
         GetIEditor()->ReduceMemory();
@@ -154,12 +154,12 @@ void CMemoryBlock::Compress(CMemoryBlock& toBlock) const
     assert(this != &toBlock);
     unsigned long destSize = m_size * 2 + 128;
     CMemoryBlock temp;
-    temp.Allocate(destSize);
+    temp.Allocate(static_cast<int>(destSize));
 
     compress((unsigned char*)temp.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), m_size);
 
-    toBlock.Allocate(destSize);
-    toBlock.Copy(temp.GetBuffer(), destSize);
+    toBlock.Allocate(static_cast<int>(destSize));
+    toBlock.Copy(temp.GetBuffer(), static_cast<int>(destSize));
     toBlock.m_uncompressedSize = GetSize();
 }
 
@@ -170,12 +170,9 @@ void CMemoryBlock::Uncompress(CMemoryBlock& toBlock) const
     toBlock.Allocate(m_uncompressedSize);
     toBlock.m_uncompressedSize = 0;
     unsigned long destSize = m_uncompressedSize;
-#if !defined(NDEBUG)
-    int result =
-#endif
-        uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
+    [[maybe_unused]] int result = uncompress((unsigned char*)toBlock.GetBuffer(), &destSize, (unsigned char*)GetBuffer(), GetSize());
     assert(result == Z_OK);
-    assert(destSize == m_uncompressedSize);
+    assert(destSize == static_cast<unsigned long>(m_uncompressedSize));
 }
 
 //////////////////////////////////////////////////////////////////////////

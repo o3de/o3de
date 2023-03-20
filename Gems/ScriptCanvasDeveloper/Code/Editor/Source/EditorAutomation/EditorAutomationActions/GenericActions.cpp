@@ -10,7 +10,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ///////////////////
     // CompoundAction
@@ -105,15 +105,15 @@ namespace ScriptCanvasDeveloper
 
     void DelayAction::SetupAction()
     {
-        m_startPoint = AZStd::chrono::system_clock::now();
+        m_startPoint = AZStd::chrono::steady_clock::now();
     }
 
     bool DelayAction::Tick()
     {
-        auto currentTime = AZStd::chrono::system_clock::now();
+        auto currentTime = AZStd::chrono::steady_clock::now();
 
         auto elapsedTime = AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(currentTime - m_startPoint);
-        
+
         return elapsedTime >= m_delay;
     }
 
@@ -141,7 +141,7 @@ namespace ScriptCanvasDeveloper
         {
             m_delayComplete = DelayAction::Tick();
         }
-        
+
         if (m_delayComplete && !m_processingEventsSwitch)
         {
             m_processingEventsSwitch = true;

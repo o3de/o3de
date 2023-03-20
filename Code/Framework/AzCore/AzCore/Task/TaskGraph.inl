@@ -28,19 +28,14 @@ namespace AZ
         (tokens.PrecedesInternal(*this), ...);
     }
 
+    inline TaskGraphEvent::TaskGraphEvent(const char* label)
+        : m_label{ label }
+    {
+    }
+
     inline bool TaskGraphEvent::IsSignaled()
     {
         return m_semaphore.try_acquire_for(AZStd::chrono::milliseconds{ 0 });
-    }
-
-    inline void TaskGraphEvent::Wait()
-    {
-        m_semaphore.acquire();
-    }
-
-    inline void TaskGraphEvent::Signal()
-    {
-        m_semaphore.release();
     }
 
     template<typename Lambda>
@@ -57,6 +52,11 @@ namespace AZ
     AZStd::array<TaskToken, sizeof...(Lambdas)> TaskGraph::AddTasks(TaskDescriptor const& descriptor, Lambdas&&... lambdas)
     {
         return { AddTask(descriptor, AZStd::forward<Lambdas>(lambdas))... };
+    }
+
+    inline bool TaskGraph::IsEmpty()
+    {
+        return m_tasks.empty();
     }
 
     inline void TaskGraph::Detach()

@@ -18,7 +18,8 @@ namespace ViewportHelpers
         bool isControlledByParent = false;
         if (parentElement)
         {
-            EBUS_EVENT_ID_RESULT(isControlledByParent, parentElement->GetId(), UiLayoutBus, IsControllingChild, element->GetId());
+            UiLayoutBus::EventResult(
+                isControlledByParent, parentElement->GetId(), &UiLayoutBus::Events::IsControllingChild, element->GetId());
         }
 
         return isControlledByParent;
@@ -33,7 +34,7 @@ namespace ViewportHelpers
     {
         bool isHorizontallyFit = false;
 
-        EBUS_EVENT_ID_RESULT(isHorizontallyFit, element->GetId(), UiLayoutFitterBus, GetHorizontalFit);
+        UiLayoutFitterBus::EventResult(isHorizontallyFit, element->GetId(), &UiLayoutFitterBus::Events::GetHorizontalFit);
 
         return isHorizontallyFit;
     }
@@ -42,7 +43,7 @@ namespace ViewportHelpers
     {
         bool isVerticallyFit = false;
 
-        EBUS_EVENT_ID_RESULT(isVerticallyFit, element->GetId(), UiLayoutFitterBus, GetVerticalFit);
+        UiLayoutFitterBus::EventResult(isVerticallyFit, element->GetId(), &UiLayoutFitterBus::Events::GetVerticalFit);
 
         return isVerticallyFit;
     }
@@ -324,19 +325,19 @@ namespace ViewportHelpers
             && viewportInteraction->GetLeftButtonIsActive())
         {
             float rotation = 0.0f;
-            EBUS_EVENT_ID_RESULT(rotation, element->GetId(), UiTransformBus, GetZRotation);
+            UiTransformBus::EventResult(rotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
             QString rotationString = QString("%1").number(rotation, 'f', 2);
             QChar degChar(0xB0);
             rotationString.append(degChar);
 
             AZ::Vector2 pivotPos;
-            EBUS_EVENT_ID_RESULT(pivotPos, element->GetId(), UiTransformBus, GetViewportSpacePivot);
+            UiTransformBus::EventResult(pivotPos, element->GetId(), &UiTransformBus::Events::GetViewportSpacePivot);
             float offset = (viewportPivot->GetSize().GetY() * 0.5f) + (GetDpiScaledSize(4.0f));
             AZ::Vector2 rotationStringPos(pivotPos.GetX(), pivotPos.GetY() - offset);
 
             draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
             draw2d.SetTextRotation(0.0f);
-            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, GetDpiScaledSize(16.0f), 1.0f);
+            draw2d.DrawText(rotationString.toUtf8().data(), rotationStringPos, 8.0f, 1.0f);
         }
     }
 
@@ -347,9 +348,11 @@ namespace ViewportHelpers
         const AZ::Vector2 textLabelOffset(10.0f, -10.0f);
         QPoint viewportCursorPos = viewport->mapFromGlobal(QCursor::pos());
         AZ::Vector2 textPos = AZ::Vector2(aznumeric_cast<float>(viewportCursorPos.x()), aznumeric_cast<float>(viewportCursorPos.y())) + textLabelOffset;
+        float dpiScale = viewport->WidgetToViewportFactor();
+        textPos *= dpiScale;
 
         draw2d.SetTextAlignment(IDraw2d::HAlign::Left, IDraw2d::VAlign::Bottom);
         draw2d.SetTextRotation(0.0f);
-        draw2d.DrawText(textLabel.c_str(), textPos, GetDpiScaledSize(16.0f), 1.0f);
+        draw2d.DrawText(textLabel.c_str(), textPos, 8.0f, 1.0f);
     }
 }   // namespace ViewportHelpers

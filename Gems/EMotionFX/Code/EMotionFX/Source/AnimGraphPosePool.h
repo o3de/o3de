@@ -34,22 +34,22 @@ namespace EMotionFX
         AnimGraphPosePool();
         ~AnimGraphPosePool();
 
-        void Resize(uint32 numPoses);
+        void Resize(size_t numPoses);
 
         AnimGraphPose* RequestPose(const ActorInstance* actorInstance);
         void FreePose(AnimGraphPose* pose);
 
         void FreeAllPoses();
 
-        MCORE_INLINE size_t GetNumFreePoses() const             { return mFreePoses.size(); }
-        MCORE_INLINE size_t GetNumPoses() const                 { return mPoses.size(); }
-        MCORE_INLINE size_t GetNumUsedPoses() const             { return (mPoses.size() - mFreePoses.size()); }
-        MCORE_INLINE uint32 GetNumMaxUsedPoses() const          { return mMaxUsed; }
-        MCORE_INLINE void ResetMaxUsedPoses()                   { mMaxUsed = 0; }
+        MCORE_INLINE size_t GetNumFreePoses() const             { return m_freePoses.size(); }
+        MCORE_INLINE size_t GetNumPoses() const                 { return m_poses.size(); }
+        MCORE_INLINE size_t GetNumUsedPoses() const             { return m_poses.size() - m_freePoses.size(); }
+        MCORE_INLINE size_t GetNumMaxUsedPoses() const          { return m_maxUsed; }
+        MCORE_INLINE void ResetMaxUsedPoses()                   { m_maxUsed = 0; }
 
     private:
-        AZStd::vector<AnimGraphPose*>   mPoses;
-        AZStd::vector<AnimGraphPose*>   mFreePoses;
-        uint32                         mMaxUsed;
+        AZStd::vector<AnimGraphPose*>   m_poses;
+        AZStd::vector<AnimGraphPose*>   m_freePoses;
+        size_t                          m_maxUsed;
     };
 }   // namespace EMotionFX

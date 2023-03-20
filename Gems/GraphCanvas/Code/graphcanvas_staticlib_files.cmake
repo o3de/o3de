@@ -7,8 +7,14 @@
 #
 
 set(FILES
+
+    Source/Translation/TranslationBus.h
+    Source/Translation/TranslationDatabase.h
+    Source/Translation/TranslationDatabase.cpp
+    Source/Translation/TranslationSerializer.h
+    Source/Translation/TranslationSerializer.cpp
+
     StaticLib/GraphCanvas/Widgets/Resources/GraphCanvasEditorResources.qrc
-    StaticLib/GraphCanvas/Widgets/Resources/Resources.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.cpp
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeContainer.h
     StaticLib/GraphCanvas/Widgets/GraphCanvasMimeEvent.cpp
@@ -23,20 +29,24 @@ set(FILES
     StaticLib/GraphCanvas/GraphCanvasBus.h
     StaticLib/GraphCanvas/Components/EntitySaveDataBus.h
     StaticLib/GraphCanvas/Components/GeometryBus.h
+    StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.cpp
     StaticLib/GraphCanvas/Components/GraphCanvasPropertyBus.h
     StaticLib/GraphCanvas/Components/GridBus.h
     StaticLib/GraphCanvas/Components/LayerBus.h
     StaticLib/GraphCanvas/Components/MimeDataHandlerBus.h
     StaticLib/GraphCanvas/Components/PersistentIdBus.h
     StaticLib/GraphCanvas/Components/SceneBus.h
+    StaticLib/GraphCanvas/Components/SceneBus.cpp
     StaticLib/GraphCanvas/Components/StyleBus.h
-    StaticLib/GraphCanvas/Components/ToastBus.h
+    StaticLib/GraphCanvas/Components/StyleBus.cpp
     StaticLib/GraphCanvas/Components/ViewBus.h
     StaticLib/GraphCanvas/Components/VisualBus.h
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.cpp
     StaticLib/GraphCanvas/GraphicsItems/AnimatedPulse.h
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.cpp
     StaticLib/GraphCanvas/GraphicsItems/GlowOutlineGraphicsItem.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.h
+    StaticLib/GraphCanvas/GraphicsItems/GraphicsEffectBus.cpp
     StaticLib/GraphCanvas/GraphicsItems/GraphicsEffect.h
     StaticLib/GraphCanvas/GraphicsItems/Occluder.cpp
     StaticLib/GraphCanvas/GraphicsItems/Occluder.h
@@ -51,7 +61,6 @@ set(FILES
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/BooleanDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/ComboBoxDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/DataInterface.h
-    StaticLib/GraphCanvas/Components/NodePropertyDisplay/DoubleDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/EntityIdDataInterface.h
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.cpp
     StaticLib/GraphCanvas/Components/NodePropertyDisplay/NodePropertyDisplay.h
@@ -69,6 +78,7 @@ set(FILES
     StaticLib/GraphCanvas/Components/Nodes/Group/NodeGroupBus.h
     StaticLib/GraphCanvas/Components/Nodes/Wrapper/WrapperNodeBus.h
     StaticLib/GraphCanvas/Components/Slots/SlotBus.h
+    StaticLib/GraphCanvas/Components/Slots/SlotBus.cpp
     StaticLib/GraphCanvas/Components/Slots/Data/DataSlotBus.h
     StaticLib/GraphCanvas/Components/Slots/Property/PropertySlotBus.h
     StaticLib/GraphCanvas/Editor/AssetEditorBus.h
@@ -78,7 +88,7 @@ set(FILES
     StaticLib/GraphCanvas/Editor/EditorTypes.h
     StaticLib/GraphCanvas/Editor/GraphCanvasProfiler.h
     StaticLib/GraphCanvas/Editor/GraphModelBus.h
-    StaticLib/GraphCanvas/Styling/definitions.cpp
+    StaticLib/GraphCanvas/Editor/GraphModelBus.cpp
     StaticLib/GraphCanvas/Styling/definitions.h
     StaticLib/GraphCanvas/Styling/PseudoElement.cpp
     StaticLib/GraphCanvas/Styling/PseudoElement.h
@@ -91,6 +101,7 @@ set(FILES
     StaticLib/GraphCanvas/Styling/Style.cpp
     StaticLib/GraphCanvas/Styling/Style.h
     StaticLib/GraphCanvas/Styling/StyleHelper.h
+    StaticLib/GraphCanvas/Styling/StyleHelper.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.cpp
     StaticLib/GraphCanvas/Styling/StyleManager.h
     StaticLib/GraphCanvas/Types/ComponentSaveDataInterface.h
@@ -103,7 +114,6 @@ set(FILES
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.cpp
     StaticLib/GraphCanvas/Types/GraphCanvasGraphSerialization.h
     StaticLib/GraphCanvas/Types/SceneMemberComponentSaveData.h
-    StaticLib/GraphCanvas/Types/TranslationTypes.h
     StaticLib/GraphCanvas/Types/Types.h
     StaticLib/GraphCanvas/Types/QtMetaTypes.h
     StaticLib/GraphCanvas/Widgets/Resources/default_style.json
@@ -147,8 +157,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/AlignmentMenuActions/AlignmentContextMenuActions.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/BookmarkConstructMenuActions.h
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/CommentConstructMenuActions.cpp
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/CommentConstructMenuActions.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/ConstructMenuActions/ConstructPresetMenuActions.h
@@ -179,8 +187,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/NodeMenuActions/NodeContextMenuActions.h
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.cpp
-    StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneActionsMenuGroup.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuAction.h
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.cpp
     StaticLib/GraphCanvas/Widgets/EditorContextMenu/ContextMenuActions/SceneMenuActions/SceneContextMenuActions.h
@@ -221,9 +227,6 @@ set(FILES
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/GenericComboBoxDelegate.h
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.cpp
     StaticLib/GraphCanvas/Widgets/StyledItemDelegates/IconDecoratedNameDelegate.h
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.cpp
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.h
-    StaticLib/GraphCanvas/Widgets/ToastNotification/ToastNotification.ui
     StaticLib/GraphCanvas/Utils/ColorUtils.h
     StaticLib/GraphCanvas/Utils/ConversionUtils.h
     StaticLib/GraphCanvas/Utils/GraphUtils.cpp

@@ -28,6 +28,7 @@
 #include <AzToolsFramework/Entity/EditorEntityTransformBus.h>
 #include <AzToolsFramework/Entity/EditorEntityModelBus.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponentBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponentBus.h>
@@ -48,6 +49,7 @@ namespace AzToolsFramework
         , public EditorTransformChangeNotificationBus::Handler
         , public EntityCompositionNotificationBus::Handler
         , public EditorEntityModelRequestBus::Handler
+        , public AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
         , public AZ::EntityBus::MultiHandler
         , public AZ::TickBus::Handler
     {
@@ -94,9 +96,7 @@ namespace AzToolsFramework
         void OnEntityStreamLoadBegin() override;
         void OnEntityStreamLoadSuccess() override;
         void OnEntityStreamLoadFailed() override;
-        void OnEntitiesAboutToBeCloned() override;
-        void OnEntitiesCloned() override;
-
+        void SetForceAddEntitiesToBackFlag(bool forceAddToBack) override;
 
         ////////////////////////////////////////////////
         // AzFramework::EntityContextEventBus::Handler
@@ -138,6 +138,12 @@ namespace AzToolsFramework
         // AZ::TickBus
         ////////////////////////////////////////////////////////////////////////
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        ////////////////////////////////////////////////////////////////////////
+        // PrefabPublicNotificationBus
+        ////////////////////////////////////////////////////////////////////////
+        void OnPrefabInstancePropagationBegin() override;
+        void OnPrefabInstancePropagationEnd() override;
 
         void AddToChildrenWithOverrides(const EntityIdList& parentEntityIds, const AZ::EntityId& entityId) override;
         void RemoveFromChildrenWithOverrides(const EntityIdList& parentEntityIds, const AZ::EntityId& entityId) override;
@@ -369,5 +375,6 @@ namespace AzToolsFramework
         AZ::EntityId m_postInstantiateBeforeEntity;
         AZ::EntityId m_postInstantiateSliceParent;
         bool m_gotInstantiateSliceDetails = false;
+        bool m_isPrefabPropagationInProgress = false;
     };
 }

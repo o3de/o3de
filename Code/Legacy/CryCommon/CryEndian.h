@@ -6,9 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYCOMMON_CRYENDIAN_H
-#define CRYINCLUDE_CRYCOMMON_CRYENDIAN_H
 #pragma once
 
 #include <BaseTypes.h>
@@ -67,18 +64,6 @@ enum EEndianness
     eEndianness_NonNative = eEndianness_Big,
 #endif
 };
-
-
-// Legacy macros
-#define GetPlatformEndian() false
-
-/////////////////////////////////////////////////////////////////////////////////////
-
-inline bool IsSystemLittleEndian()
-{
-    const int a = 1;
-    return 1 == *(const char*)&a;
-}
 
 /////////////////////////////////////////////////////////////////////////////////////
 
@@ -233,63 +218,3 @@ inline void SwapEndian(T& t, bool bSwapEndian = eLittleEndian)
         SwapEndianBase(&t, 1);
     }
 }
-
-template<class T>
-inline T SwapEndianValue(T t, bool bSwapEndian = eLittleEndian)
-{
-    if (bSwapEndian)
-    {
-        SwapEndianBase(&t, 1);
-    }
-    return t;
-}
-
-//---------------------------------------------------------------------------
-// Object-oriented data extraction for endian-swapping reading.
-template<class T, class D>
-inline T* StepData(D*& pData, size_t nCount, bool bSwapEndian)
-{
-    T* Elems = (T*)pData;
-    SwapEndian(Elems, nCount, bSwapEndian);
-    pData = (D*)((T*)pData + nCount);
-    return Elems;
-}
-
-template<class T, class D>
-inline T* StepData(D*& pData, bool bSwapEndian)
-{
-    return StepData<T, D>(pData, 1, bSwapEndian);
-}
-
-template<class T, class D>
-inline void StepData(T*& Result, D*& pData, size_t nCount, bool bSwapEndian)
-{
-    Result = StepData<T, D>(pData, nCount, bSwapEndian);
-}
-
-template<class T, class D>
-inline void StepDataCopy(T* Dest, D*& pData, size_t nCount, bool bSwapEndian)
-{
-    memcpy(Dest, pData, nCount * sizeof(T));
-    SwapEndian(Dest, nCount, bSwapEndian);
-    pData = (D*)((T*)pData + nCount);
-}
-
-template<class T, class D>
-inline void StepDataWrite(D*& pDest, const T* aSrc, size_t nCount, bool bSwapEndian)
-{
-    memcpy(pDest, aSrc, nCount * sizeof(T));
-    if (bSwapEndian)
-    {
-        SwapEndianBase((T*)pDest, nCount, true);
-    }
-    (T*&)pDest += nCount;
-}
-
-template<class T, class D>
-inline void StepDataWrite(D*& pDest, const T& Src, bool bSwapEndian)
-{
-    StepDataWrite(pDest, &Src, 1, bSwapEndian);
-}
-
-#endif // CRYINCLUDE_CRYCOMMON_CRYENDIAN_H

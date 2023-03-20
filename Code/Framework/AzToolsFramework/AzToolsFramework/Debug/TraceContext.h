@@ -39,7 +39,7 @@ namespace AzToolsFramework
         //      the TraceContextLogFormatter.
         //
         //      Usage example:
-        //          const char* gameFolder = m_context.pRC->GetSystemEnvironment()->pFileIO->GetAlias("@devassets@");
+        //          const char* gameFolder = m_context.pRC->GetSystemEnvironment()->pFileIO->GetAlias("@projectroot@");
         //          AZ_TraceContext("Game folder", gameFolder);
         //
         //          for (int i=0; i<subMeshCount; ++i)

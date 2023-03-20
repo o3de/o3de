@@ -23,7 +23,7 @@ def create_jobs(request):
     jobDescriptorList = []
     for platformInfo in request.enabledPlatforms:
         jobDesc = azlmbr.asset.builder.JobDescriptor()
-        jobDesc.jobKey = jobKeyName
+        jobDesc.jobKey = f'{jobKeyName}-{platformInfo.identifier}'
         jobDesc.set_platform_identifier(platformInfo.identifier)
         jobDescriptorList.append(jobDesc)
 
@@ -38,7 +38,7 @@ def on_create_jobs(args):
         return create_jobs(request)
     except:
         log_exception_traceback()
-    # returing back a default CreateJobsResponse() records an asset error
+    # returning back a default CreateJobsResponse() records an asset error
     return azlmbr.asset.builder.CreateJobsResponse()
 
 def process_file(request):
@@ -58,10 +58,11 @@ def process_file(request):
     fileOutput = open(tempFilename, "w")
     fileOutput.write('{}')
     fileOutput.close()
+    print(f'Wrote mock asset file: {tempFilename}')
 
     # generate a product asset file entry
     subId = binascii.crc32(mockFilename.encode())
-    mockAssetType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080E467}', 0)
+    mockAssetType = azlmbr.math.Uuid_CreateString('{9274AD17-3212-4651-9F3B-7DCCB080E467}')
     product = azlmbr.asset.builder.JobProduct(mockFilename, mockAssetType, subId)
     product.dependenciesHandled = True
     productOutputs = []
@@ -108,7 +109,7 @@ def register_asset_builder(busId):
 
 # create the asset builder handler
 busIdString = '{CF5C74C1-9ED4-5851-95B1-0B15090DBEC7}'
-busId = azlmbr.math.Uuid_CreateString(busIdString, 0)
+busId = azlmbr.math.Uuid_CreateString(busIdString)
 handler = None
 try:
     handler = register_asset_builder(busId)

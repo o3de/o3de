@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "ShapeComponentNotificationsBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Shape Component",
+                "category": "Shape"
+            },
+            "methods": [
+                {
+                    "base": "OnShapeChanged",
+                    "details": {
+                        "name": "On Shape Changed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

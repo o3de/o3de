@@ -33,6 +33,15 @@ namespace MathTestData
         AZ::Matrix3x3::CreateScale(AZ::Vector3(0.7f, 1.3f, 0.9f))
     };
 
+    static const AZ::Matrix4x4 Matrix4x4s[] = {
+        AZ::Matrix4x4::CreateIdentity(),
+        AZ::Matrix4x4::CreateFromQuaternionAndTranslation(AZ::Quaternion(-0.46f, 0.26f, -0.22f, 0.82f), AZ::Vector3(1.0f, 5.0f, 10.0f)),
+        AZ::Matrix4x4::CreateFromTransform(AZ::Transform::CreateFromMatrix3x3AndTranslation(
+            AZ::Matrix3x3::CreateScale(AZ::Vector3(1.0f, 2.0f, 3.0f)), AZ::Vector3(2.0f, 4.0f, 6.0f))),
+        AZ::Matrix4x4::CreateScale(AZ::Vector3(5.0f, 10.0f, 15.0f)),
+        AZ::Matrix4x4::CreateRotationZ(AZ::DegToRad(45.0f))
+    };
+
     using AxisPair = AZStd::pair<AZ::Constants::Axis, AZ::Vector3>;
     static const AxisPair Axes[] = {
         { AZ::Constants::Axis::XPositive, AZ::Vector3::CreateAxisX(1.0f) },

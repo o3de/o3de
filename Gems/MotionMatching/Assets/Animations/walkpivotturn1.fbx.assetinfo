@@ -1,0 +1,106 @@
+<ObjectStream version="3">
+	<Class name="SceneManifest" version="1" type="{9274AD17-3212-4651-9F3B-7DCCB080E467}">
+		<Class name="AZStd::vector" field="values" type="{5D6A7C67-11CA-59A4-829B-0B20B781B292}">
+			<Class name="AZStd::shared_ptr" field="element" type="{EB7522F9-0E87-55A9-A191-E924DC5AE867}">
+				<Class name="MotionGroup" field="element" version="3" type="{1B0ABB1E-F6DF-4534-9A35-2DD8244BF58C}">
+					<Class name="IMotionGroup" field="BaseClass1" version="1" type="{1CA400A8-2C3E-423D-B8A3-C457EF88E533}">
+						<Class name="IGroup" field="BaseClass1" version="1" type="{DE008E67-790D-4672-A73A-5CA0F31EDD2D}">
+							<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+						</Class>
+					</Class>
+					<Class name="AZStd::string" field="name" value="walkpivotturn1" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZStd::string" field="selectedRootBone" value="RootNode.root" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+					<Class name="AZ::Uuid" field="id" value="{575C0159-F151-596D-BCFB-2F92CF7DB9A1}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="RuleContainer" field="rules" version="1" type="{2C20D3DF-57FF-4A31-8680-A4D45302B9CF}">
+						<Class name="AZStd::vector" field="rules" type="{B5BDB053-178F-5D55-8663-70897A71B7C9}">
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="CoordinateSystemRule" field="element" version="1" type="{603207E2-4F55-4C33-9AAB-98CA75C1E351}">
+									<Class name="IRule" field="BaseClass1" version="1" type="{81267F8B-3963-423B-9FF7-D276D82CD110}">
+										<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									</Class>
+									<Class name="int" field="targetCoordinateSystem" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+								</Class>
+							</Class>
+							<Class name="AZStd::shared_ptr" field="element" type="{0BB4AFBA-F087-55C7-95DF-01D71F6CB052}">
+								<Class name="MetaDataRule" field="element" version="2" type="{8D759063-7D2E-4543-8EB3-AB510A5886CF}">
+									<Class name="IManifestObject" field="BaseClass1" type="{3B839407-1884-4FF4-ABEA-CA9D347E83F7}"/>
+									<Class name="AZStd::vector" field="commands" type="{C9984A24-DA9E-518F-9F81-27E51FAEB1F7}">
+										<Class name="CommandSystem::CommandAdjustMotion" field="element" version="1" type="{A8977553-4011-4BEB-97C8-6AE44B07C7A8}">
+											<Class name="MCore::Command" field="BaseClass1" version="1" type="{49C636CE-7C0E-408A-A0F7-F7D12647EFBA}"/>
+											<Class name="CommandSystem::MotionIdCommandMixin" field="BaseClass2" version="1" type="{968E9513-3159-4469-B5FA-97D0920456E3}">
+												<Class name="int" field="motionID" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+											</Class>
+											<Class name="AZStd::optional" field="dirtyFlag" type="{0170062C-2E7E-5CEB-BAB8-F7663BEF7B3E}"/>
+											<Class name="AZStd::optional" field="motionExtractionFlags" type="{43BA4537-CBCC-54F5-B403-84188A203D60}">
+												<Class name="unsigned char" field="element" value="0" type="{72B9409A-7D1A-4831-9CFE-FCB3FADD3426}"/>
+											</Class>
+											<Class name="AZStd::optional" field="name" type="{B0D91084-263A-54B9-A4F3-7C5F4240E248}"/>
+										</Class>
+										<Class name="CommandSystem::CommandCreateMotionEventTrack" field="element" version="1" type="{961F762D-5B90-4E21-8692-9FADDCA54E6C}">
+											<Class name="MCore::Command" field="BaseClass1" version="1" type="{49C636CE-7C0E-408A-A0F7-F7D12647EFBA}"/>
+											<Class name="CommandSystem::MotionIdCommandMixin" field="BaseClass2" version="1" type="{968E9513-3159-4469-B5FA-97D0920456E3}">
+												<Class name="int" field="motionID" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+											</Class>
+											<Class name="AZStd::string" field="eventTrackName" value="Sync" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+											<Class name="AZStd::optional" field="eventTrackIndex" type="{5BC30B08-5E9C-5B73-BDE4-4BE8170C21C6}"/>
+											<Class name="AZStd::optional" field="isEnabled" type="{0170062C-2E7E-5CEB-BAB8-F7663BEF7B3E}"/>
+										</Class>
+										<Class name="CommandSystem::CommandCreateMotionEventTrack" field="element" version="1" type="{961F762D-5B90-4E21-8692-9FADDCA54E6C}">
+											<Class name="MCore::Command" field="BaseClass1" version="1" type="{49C636CE-7C0E-408A-A0F7-F7D12647EFBA}"/>
+											<Class name="CommandSystem::MotionIdCommandMixin" field="BaseClass2" version="1" type="{968E9513-3159-4469-B5FA-97D0920456E3}">
+												<Class name="int" field="motionID" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+											</Class>
+											<Class name="AZStd::string" field="eventTrackName" value="MM Discards" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+											<Class name="AZStd::optional" field="eventTrackIndex" type="{5BC30B08-5E9C-5B73-BDE4-4BE8170C21C6}"/>
+											<Class name="AZStd::optional" field="isEnabled" type="{0170062C-2E7E-5CEB-BAB8-F7663BEF7B3E}"/>
+										</Class>
+										<Class name="CommandSystem::CommandCreateMotionEvent" field="element" type="{D19C2AFB-A5AA-4367-BCFC-02EB88C1B61F}">
+											<Class name="MCore::Command" field="BaseClass1" version="1" type="{49C636CE-7C0E-408A-A0F7-F7D12647EFBA}"/>
+											<Class name="CommandSystem::MotionIdCommandMixin" field="BaseClass2" version="1" type="{968E9513-3159-4469-B5FA-97D0920456E3}">
+												<Class name="int" field="motionID" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+											</Class>
+											<Class name="AZStd::string" field="eventTrackName" value="MM Discards" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+											<Class name="float" field="startTime" value="0.0000000" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+											<Class name="float" field="endTime" value="0.5569170" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+											<Class name="AZStd::optional" field="eventDatas" type="{C69F2148-2DBF-5C3D-8154-447C6E99D041}">
+												<Class name="AZStd::vector" field="element" type="{4918F644-6F31-5DC0-92CC-471D16563C8A}">
+													<Class name="AZStd::shared_ptr" field="element" type="{FA64741F-5600-53BC-9B56-A81DD4938FF5}">
+														<Class name="MotionMatchEventData" field="element" version="1" type="{25499823-E611-4958-85B7-476BC1918744}">
+															<Class name="EventData" field="BaseClass1" version="1" type="{F6AFCD3B-D58E-4821-9E7C-D1F437304E5D}"/>
+															<Class name="AZStd::string" field="tag" value="discard" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+														</Class>
+													</Class>
+												</Class>
+											</Class>
+										</Class>
+										<Class name="CommandSystem::CommandCreateMotionEvent" field="element" type="{D19C2AFB-A5AA-4367-BCFC-02EB88C1B61F}">
+											<Class name="MCore::Command" field="BaseClass1" version="1" type="{49C636CE-7C0E-408A-A0F7-F7D12647EFBA}"/>
+											<Class name="CommandSystem::MotionIdCommandMixin" field="BaseClass2" version="1" type="{968E9513-3159-4469-B5FA-97D0920456E3}">
+												<Class name="int" field="motionID" value="0" type="{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}"/>
+											</Class>
+											<Class name="AZStd::string" field="eventTrackName" value="MM Discards" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+											<Class name="float" field="startTime" value="43.9500351" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+											<Class name="float" field="endTime" value="47.1987190" type="{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}"/>
+											<Class name="AZStd::optional" field="eventDatas" type="{C69F2148-2DBF-5C3D-8154-447C6E99D041}">
+												<Class name="AZStd::vector" field="element" type="{4918F644-6F31-5DC0-92CC-471D16563C8A}">
+													<Class name="AZStd::shared_ptr" field="element" type="{FA64741F-5600-53BC-9B56-A81DD4938FF5}">
+														<Class name="MotionMatchEventData" field="element" version="1" type="{25499823-E611-4958-85B7-476BC1918744}">
+															<Class name="EventData" field="BaseClass1" version="1" type="{F6AFCD3B-D58E-4821-9E7C-D1F437304E5D}"/>
+															<Class name="AZStd::string" field="tag" value="discard" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+														</Class>
+													</Class>
+												</Class>
+											</Class>
+										</Class>
+									</Class>
+									<Class name="AZStd::string" field="metaData" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+								</Class>
+							</Class>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+		</Class>
+	</Class>
+</ObjectStream>
+

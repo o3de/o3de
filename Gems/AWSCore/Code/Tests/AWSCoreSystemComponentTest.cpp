@@ -11,6 +11,7 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobCancelGroup.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -18,6 +19,7 @@
 #include <AzTest/AzTest.h>
 
 #include <AWSCoreSystemComponent.h>
+#include <AWSNativeSDKTestManager.h>
 #include <Configuration/AWSCoreConfiguration.h>
 #include <Credential/AWSCredentialManager.h>
 #include <Framework/AWSApiJob.h>
@@ -30,7 +32,7 @@ class AWSCoreNotificationsBusMock
     : protected AWSCoreNotificationsBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(AWSCoreNotificationsBusMock, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AWSCoreNotificationsBusMock, AZ::SystemAllocator);
 
     AWSCoreNotificationsBusMock()
         : m_sdkInitialized(0)
@@ -39,7 +41,7 @@ public:
         AWSCoreNotificationsBus::Handler::BusConnect();
     }
 
-    ~AWSCoreNotificationsBusMock()
+    ~AWSCoreNotificationsBusMock() override
     {
         AWSCoreNotificationsBus::Handler::BusDisconnect();
     }
@@ -102,6 +104,9 @@ public:
 
 TEST_F(AWSCoreSystemComponentTest, ComponentActivateTest)
 {
+    // Shutdown SDK which is init in fixture setup step
+    AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
+
     EXPECT_FALSE(m_coreSystemsComponent->IsAWSApiInitialized());
 
     // activate component

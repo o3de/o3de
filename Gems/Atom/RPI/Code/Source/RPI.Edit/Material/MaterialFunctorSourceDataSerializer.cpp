@@ -9,9 +9,8 @@
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataSerializer.h>
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Common/AssetUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
 #include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataRegistration.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
@@ -28,8 +27,8 @@ namespace AZ
             constexpr const char ArgsField[] = "args";
         }
 
-        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator, 0);
-        
+        AZ_CLASS_ALLOCATOR_IMPL(JsonMaterialFunctorSourceDataSerializer, SystemAllocator);
+
         JsonSerializationResult::Result JsonMaterialFunctorSourceDataSerializer::Load(void* outputValue, const Uuid& outputValueTypeId,
             const rapidjson::Value& inputValue, JsonDeserializerContext& context)
         {
@@ -50,7 +49,7 @@ namespace AZ
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Material functor data must be a JSON object.");
             }
 
-            Uuid functorTypeId = 0;
+            Uuid functorTypeId;
             if (!inputValue.HasMember(TypeField))
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not specified.");
@@ -60,7 +59,7 @@ namespace AZ
             AZStd::string functorName;
             result.Combine(ContinueLoadingFromJsonObjectField(&functorName, azrtti_typeid<AZStd::string>(), inputValue, TypeField, context));
             functorTypeId = MaterialFunctorSourceDataRegistration::Get()->FindMaterialFunctorTypeIdByName(functorName);
-            if (functorTypeId == 0)
+            if (functorTypeId.IsNull())
             {
                 return context.Report(JSR::Tasks::ReadField, JSR::Outcomes::Unsupported, "Functor type name is not registered.");
             }

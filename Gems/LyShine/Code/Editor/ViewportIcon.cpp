@@ -6,7 +6,7 @@
  *
  */
 #include "EditorCommon.h"
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAsset.h>
@@ -15,7 +15,7 @@ float ViewportIcon::m_dpiScaleFactor = 1.0f;
 
 ViewportIcon::ViewportIcon(const char* textureFilename)
 {
-    m_image = CDraw2d::LoadTexture(textureFilename);
+    m_image = Draw2dHelper::LoadTexture(textureFilename);
 }
 
 ViewportIcon::~ViewportIcon()
@@ -27,7 +27,7 @@ AZ::Vector2 ViewportIcon::GetTextureSize() const
     if (m_image)
     {
         AZ::RHI::Size size = m_image->GetDescriptor().m_size;
-        AZ::Vector2 scaledSize(size.m_width, size.m_height);
+        AZ::Vector2 scaledSize(static_cast<float>(size.m_width), static_cast<float>(size.m_height));
         if (m_applyDpiScaleFactorToSize)
         {
             scaledSize *= m_dpiScaleFactor;
@@ -48,12 +48,11 @@ void ViewportIcon::DrawImageAligned(Draw2dHelper& draw2d, AZ::Vector2& pivot, fl
         opacity);
 }
 
-void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts, [[maybe_unused]] float opacity)
+void ViewportIcon::DrawImageTiled(Draw2dHelper& draw2d, IDraw2d::VertexPosColUV* verts)
 {
     // Use default blending and rounding modes
-    int blendMode = GS_BLSRC_SRCALPHA | GS_BLDST_ONEMINUSSRCALPHA;
     IDraw2d::Rounding rounding = IDraw2d::Rounding::Nearest;
-    draw2d.DrawQuad(m_image, verts, blendMode, rounding);
+    draw2d.DrawQuad(m_image, verts, rounding);
 }
 
 void ViewportIcon::DrawAxisAlignedBoundingBox(Draw2dHelper& draw2d, AZ::Vector2 bound0, AZ::Vector2 bound1)
@@ -297,7 +296,7 @@ void ViewportIcon::DrawDistanceLine(Draw2dHelper& draw2d, AZ::Vector2 start, AZ:
 
     draw2d.SetTextAlignment(IDraw2d::HAlign::Center, IDraw2d::VAlign::Bottom);
     draw2d.SetTextRotation(rotation);
-    draw2d.DrawText(textBuf, textPos, 16.0f * ViewportIcon::GetDpiScaleFactor(), 1.0f);
+    draw2d.DrawText(textBuf, textPos, 8.0f, 1.0f);
 }
 
 void ViewportIcon::DrawAnchorLinesSplit(Draw2dHelper& draw2d, AZ::Vector2 anchorPos1, AZ::Vector2 anchorPos2,
@@ -349,13 +348,13 @@ void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId ent
 {
     // get the transformed rect for the element
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(entityId, UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(entityId, &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     // work out if we should snap to exact pixel
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, entityId, UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, entityId, &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     IDraw2d::Rounding pixelRounding = isPixelAligned ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
 
     // round the points to the nearest pixel if the canvas is set to do that for elements since
@@ -371,7 +370,7 @@ void ViewportIcon::DrawElementRectOutline(Draw2dHelper& draw2d, AZ::EntityId ent
     // So we instead get the transform matrix and transform two unit vectors
     // and then normalize them (they have to be re-normalized since the transform can scale them)
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(entityId, UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(entityId, &UiTransformBus::Events::GetTransformToViewport, transform);
     AZ::Vector3 rightVec3(1.0f, 0.0f, 0.0f);
     AZ::Vector3 downVec3(0.0f, 1.0f, 0.0f);
     rightVec3 = transform.Multiply3x3(rightVec3);

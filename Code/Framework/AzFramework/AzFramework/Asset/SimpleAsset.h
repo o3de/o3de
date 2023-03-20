@@ -42,7 +42,6 @@
  */
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/Component.h>
@@ -65,7 +64,7 @@ namespace AzFramework
 
         virtual ~SimpleAssetReferenceBase() { }
 
-        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReferenceBase, AZ::SystemAllocator);
         AZ_RTTI(SimpleAssetReferenceBase, "{E16CA6C5-5C78-4AD9-8E9B-F8C1FB4D1DB8}");
 
         const AZStd::string& GetAssetPath() const { return m_assetPath; }
@@ -74,38 +73,7 @@ namespace AzFramework
         virtual AZ::Data::AssetType GetAssetType() const = 0;
         virtual const char* GetFileFilter() const = 0;
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<SimpleAssetReferenceBase>()
-                    ->Version(1)
-                    ->Field("AssetPath", &SimpleAssetReferenceBase::m_assetPath);
-
-                AZ::EditContext* edit = serializeContext->GetEditContext();
-                if (edit)
-                {
-                    edit->Class<SimpleAssetReferenceBase>("Asset path", "Asset reference as a project-relative path")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                            ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::Hide)
-                        ;
-                }
-            }
-
-            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<SimpleAssetReferenceBase>()
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
-                    ->Attribute(AZ::Script::Attributes::Category, "Asset")
-                    ->Attribute(AZ::Script::Attributes::Module, "asset")
-                    ->Property("assetPath", &SimpleAssetReferenceBase::GetAssetPath, nullptr)
-                    ->Property("assetType", &SimpleAssetReferenceBase::GetAssetType, nullptr)
-                    ->Property("fileFilter", &SimpleAssetReferenceBase::GetFileFilter, nullptr)
-                    ->Method("SetAssetPath", &SimpleAssetReferenceBase::SetAssetPath)
-                        ->Attribute(AZ::Script::Attributes::Alias, "set_asset_path")
-                    ;
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
     protected:
 
@@ -117,7 +85,7 @@ namespace AzFramework
                 AZStd::char_traits<char>,
                 AZStd::static_buffer_allocator<128, AZStd::alignment_of<char>::value> >;
 
-    inline const AZ::Uuid SimpleAssetReferenceTypeId = { "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
+    inline constexpr AZ::Uuid SimpleAssetReferenceTypeId{ "{D03D0CF6-9A61-4DBA-AC53-E62453CE940D}" };
 
     /*!
      * Templated asset reference type.
@@ -130,8 +98,8 @@ namespace AzFramework
         : public SimpleAssetReferenceBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator, 0);
-        AZ_RTTI((SimpleAssetReference<AssetType>, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
+        AZ_CLASS_ALLOCATOR(SimpleAssetReference<AssetType>, AZ::SystemAllocator);
+        AZ_RTTI((SimpleAssetReference, SimpleAssetReferenceTypeId, AssetType), SimpleAssetReferenceBase);
 
         static void Register(AZ::SerializeContext& context)
         {
@@ -223,7 +191,7 @@ namespace AZ
     };
 
     //! This is being declared so that azrtti_typeid<AzFramework::SimpleAssetReference>() will work
-    AZ_TYPE_INFO_INTERNAL_VARIATION_GENERIC(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId)
+    AZ_TYPE_INFO_TEMPLATE(AzFramework::SimpleAssetReference, AzFramework::SimpleAssetReferenceTypeId, AZ_TYPE_INFO_CLASS);
 }
 
 #endif // AZFRAMEWORK_SIMPLEASSET_H

@@ -29,7 +29,6 @@ namespace EMotionFX
     class Actor;
     class Node;
     class NodeGroup;
-    class Material;
     class MorphTarget;
     class AnimGraph;
     class MotionEventTable;
@@ -57,6 +56,7 @@ namespace ExporterLib
 
     // endian conversion
     void ConvertUnsignedInt(uint32* value, MCore::Endian::EEndianType targetEndianType);
+    void ConvertUnsignedInt(uint64* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertInt(int* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertUnsignedShort(uint16* value, MCore::Endian::EEndianType targetEndianType);
     void ConvertFloat(float* value, MCore::Endian::EEndianType targetEndianType);
@@ -106,14 +106,14 @@ namespace ExporterLib
     void SaveAttachmentNodes(MCore::Stream* file, EMotionFX::Actor* actor, const AZStd::vector<uint16>& attachmentNodes, MCore::Endian::EEndianType targetEndianType);
 
     // morph targets
-    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
-    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, uint32 lodLevel, MCore::Endian::EEndianType targetEndianType);
+    void SaveMorphTarget(MCore::Stream* file, EMotionFX::Actor* actor, EMotionFX::MorphTarget* inputMorphTarget, size_t lodLevel, MCore::Endian::EEndianType targetEndianType);
+    void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, size_t lodLevel, MCore::Endian::EEndianType targetEndianType);
     void SaveMorphTargets(MCore::Stream* file, EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType);
 
     // actors
     const char* GetActorExtension(bool includingDot = true);
     void SaveActorHeader(MCore::Stream* file, MCore::Endian::EEndianType targetEndianType);
-    void SaveActorFileInfo(MCore::Stream* file, uint32 numLODLevels, uint32 motionExtractionNodeIndex, uint32 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
+    void SaveActorFileInfo(MCore::Stream* file, uint64 numLODLevels, uint64 motionExtractionNodeIndex, uint64 retargetRootNodeIndex, const char* sourceApp, const char* orgFileName, const char* actorName, MCore::Distance::EUnitType unitType, MCore::Endian::EEndianType targetEndianType, bool optimizeSkeleton);
     void SaveActor(MCore::MemoryFile* file, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
     bool SaveActor(AZStd::string& filename, const EMotionFX::Actor* actor, MCore::Endian::EEndianType targetEndianType, const AZStd::optional<AZ::Data::AssetId> meshAssetId = AZStd::nullopt);
 

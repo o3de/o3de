@@ -11,29 +11,16 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Script/ScriptAsset.h>
 #include <AzCore/std/any.h>
+#include <ScriptCanvas/Asset/RuntimeInputs.h>
 #include <ScriptCanvas/Core/Core.h>
-#include <ScriptCanvas/Data/Data.h>
 #include <ScriptCanvas/Core/SubgraphInterface.h>
-#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
+#include <ScriptCanvas/Data/Data.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
-
-namespace AZ
-{
-    class EntityId;
-}
+#include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 namespace ScriptCanvas
 {
-    class Datum;
-    class Nodeable;
-
-    struct VariableId;
-
-    namespace Grammar
-    {
-        class AbstractCodeModel;
-    }
-
     namespace Translation
     {
         enum TargetFlags
@@ -41,39 +28,6 @@ namespace ScriptCanvas
             Lua = 1 << 0,
             Cpp = 1 << 1,
             Hpp = 1 << 2,
-        };
-
-        // information required at runtime begin execution of the compiled graph from the host 
-        struct RuntimeInputs
-        {
-            AZ_TYPE_INFO(RuntimeInputs, "{CFF0820B-EE0D-4E02-B847-2B295DD5B5CF}");
-            AZ_CLASS_ALLOCATOR(RuntimeInputs, AZ::SystemAllocator, 0);
-
-            static void Reflect(AZ::ReflectContext* reflectContext);
-
-            Grammar::ExecutionStateSelection m_executionSelection = Grammar::ExecutionStateSelection::InterpretedPure;
-
-            AZStd::vector<Nodeable*> m_nodeables;
-            AZStd::vector<AZStd::pair<VariableId, Datum>> m_variables;
-
-            // either the entityId was a (member) variable in the source graph, or it got promoted to one during parsing
-            AZStd::vector<AZStd::pair<VariableId, Data::EntityIDType>> m_entityIds;
-
-            // Statics required for internal, local values that need non-code constructible initialization,
-            // when the system can't pass in the input from C++.
-            AZStd::vector<AZStd::pair<VariableId, AZStd::any>> m_staticVariables;
-
-            RuntimeInputs() = default;
-            RuntimeInputs(const RuntimeInputs&) = default;
-            RuntimeInputs(RuntimeInputs&&);
-            ~RuntimeInputs() = default;
-
-            void CopyFrom(const Grammar::ParsedRuntimeInputs& inputs);
-
-            size_t GetConstructorParameterCount() const;
-
-            RuntimeInputs& operator=(const RuntimeInputs&) = default;
-            RuntimeInputs& operator=(RuntimeInputs&&);
         };
 
         struct TargetResult
@@ -85,7 +39,7 @@ namespace ScriptCanvas
             AZStd::sys_time_t m_duration;
         };
 
-        using ErrorList = AZStd::vector<AZStd::string>;
+        using ErrorList = AZStd::vector<ValidationConstPtr>;
         using Errors = AZStd::unordered_map<TargetFlags, ErrorList>;
         using Translations = AZStd::unordered_map<TargetFlags, TargetResult>;
 
@@ -102,7 +56,6 @@ namespace ScriptCanvas
             const AZStd::sys_time_t m_translationDuration;
 
             Result(AZStd::string invalidSourceInfo);
-            Result(Result&& source);
             Result(Grammar::AbstractCodeModelConstPtr model);
             Result(Grammar::AbstractCodeModelConstPtr model, Translations&& translations, Errors&& errors);
 

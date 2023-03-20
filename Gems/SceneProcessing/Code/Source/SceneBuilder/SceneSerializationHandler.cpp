@@ -19,6 +19,7 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Components/LoadingComponent.h>
 
 namespace SceneBuilder
 {
@@ -44,7 +45,10 @@ namespace SceneBuilder
     }
 
     AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> SceneSerializationHandler::LoadScene(
-        const AZStd::string& filePath, AZ::Uuid sceneSourceGuid)
+        const AZStd::string& filePath,
+        AZ::Uuid sceneSourceGuid,
+        const AZStd::string& watchFolder
+    )
     {
         namespace Utilities = AZ::SceneAPI::Utilities;
         using AZ::SceneAPI::Events::AssetImportRequest;
@@ -79,8 +83,9 @@ namespace SceneBuilder
             return nullptr;
         }
 
-        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene =
-            AssetImportRequest::LoadSceneFromVerifiedPath(filePath, sceneSourceGuid, AssetImportRequest::RequestingApplication::AssetProcessor);
+        AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene = AssetImportRequest::LoadSceneFromVerifiedPath(
+            filePath, sceneSourceGuid, AssetImportRequest::RequestingApplication::AssetProcessor,
+            AZ::SceneAPI::SceneCore::LoadingComponent::TYPEINFO_Uuid(), watchFolder);
 
         if (!scene)
         {

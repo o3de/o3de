@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/SphereShapeComponentBus.h>
 
@@ -28,7 +29,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator)
         AZ_RTTI(SphereShape, "{FC63856F-318C-406A-AF3A-FDFF448D850A}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -44,6 +45,8 @@ namespace LmbrCentral
         bool IsPointInside(const AZ::Vector3& point)  override;
         float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // SphereShapeComponentRequestsBus::Handler
         SphereShapeConfig GetSphereConfiguration() override { return m_sphereShapeConfig; }
@@ -81,6 +84,7 @@ namespace LmbrCentral
         SphereIntersectionDataCache m_intersectionDataCache; ///< Caches transient intersection data.
         AZ::Transform m_currentTransform; ///< Caches the current world transform.
         AZ::EntityId m_entityId; ///< The Id of the entity the shape is attached to.
+        mutable AZStd::shared_mutex m_mutex; ///< Mutex to allow multiple readers but single writer for efficient thread safety
     };
 
     void DrawSphereShape(

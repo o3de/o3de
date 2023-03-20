@@ -16,7 +16,6 @@
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Asset/BuiltInAssetHandler.h>
-#include <Atom/RPI.Reflect/Image/DefaultStreamingImageControllerAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageSystemDescriptor.h>
 
 #include <Atom/RPI.Public/Image/ImageSystemInterface.h>
@@ -55,9 +54,13 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // ImageSystemInterface
             const Data::Instance<Image>& GetSystemImage(SystemImage systemImage) const override;
+            const Data::Instance<AttachmentImage>& GetSystemAttachmentImage(RHI::Format format) override;
             const Data::Instance<StreamingImagePool>& GetSystemStreamingPool() const override;
             const Data::Instance<AttachmentImagePool>& GetSystemAttachmentPool() const override;
             const Data::Instance<StreamingImagePool>& GetStreamingPool() const override;
+            bool RegisterAttachmentImage(AttachmentImage* attachmentImage) override;
+            void UnregisterAttachmentImage(AttachmentImage* attachmentImage) override;
+            Data::Instance<AttachmentImage> FindRegisteredAttachmentImage(const Name& uniqueName) const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -73,11 +76,16 @@ namespace AZ
             // Streaming image pool for streaming image created from asset 
             Data::Instance<StreamingImagePool> m_assetStreamingPool;
 
-            Data::Asset<DefaultStreamingImageControllerAsset> m_defaultStreamingImageControllerAsset;
-
             AZStd::fixed_vector<Data::Instance<Image>, static_cast<uint32_t>(SystemImage::Count)> m_systemImages;
 
+            AZStd::shared_mutex m_systemAttachmentImagesUpdateMutex;
+            AZStd::unordered_map<RHI::Format, Data::Instance<AttachmentImage>> m_systemAttachmentImages;
+
             bool m_initialized = false;
+
+            // a collections of registered attachment images
+            // Note: use AttachmentImage* instead of Data::Instance<AttachmentImage> so it can be released properly
+            AZStd::unordered_map<RHI::AttachmentId, AttachmentImage*> m_registeredAttachmentImages;
         };
     }
 }

@@ -25,16 +25,21 @@ namespace AZStd
             // Unimplemented on Android
         }
 
-        void SetThreadPriority(int priority, pthread_attr_t&)
+        void SetThreadPriority([[maybe_unused]] int priority, pthread_attr_t&)
         {
             // (not supported at v r10d)
-            AZ_Warning("System", priority <= 0, "Thread priorities %d not supported on Android!\n", priority);
-            (void)priority;
         }
 
         void PostCreateThread(pthread_t tId, const char* name, int)
         {
             pthread_setname_np(tId, name);
+        }
+
+        uint8_t GetDefaultThreadPriority()
+        {
+            // pthread priority is an integer between >=1 and <=99 (although only range 1<=>32 is guaranteed)
+            // Don't use a scheduling policy value (e.g. SCHED_OTHER or SCHED_FIFO) here.
+            return 1;
         }
     }
 }

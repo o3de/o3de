@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZSTD_FIXED_UNORDERED_MAP_H
-#define AZSTD_FIXED_UNORDERED_MAP_H 1
+#pragma once
 
 #include <AzCore/std/hash_table.h>
 
@@ -17,11 +16,11 @@ namespace AZStd
         template<class Key, class MappedType, class Hasher, class EqualKey, bool isMultiMap, AZStd::size_t FixedNumBuckets, AZStd::size_t FixedNumElements>
         struct UnorderedFixedMapTableTraits
         {
-            typedef Key                             key_type;
-            typedef EqualKey                        key_eq;
-            typedef Hasher                          hasher;
-            typedef AZStd::pair<Key, MappedType>     value_type;
-            typedef AZStd::no_default_allocator     allocator_type;
+            using key_type = Key;
+            using key_equal = EqualKey;
+            using hasher = Hasher;
+            using value_type = AZStd::pair<Key, MappedType>;
+            using allocator_type = AZStd::no_default_allocator;
             enum
             {
                 max_load_factor = 4,
@@ -69,63 +68,101 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef fixed_unordered_map<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey> this_type;
-        typedef hash_table< Internal::UnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, false, FixedNumBuckets, FixedNumElements> > base_type;
+        using this_type = fixed_unordered_map<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey>;
+        using base_type = hash_table<Internal::UnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, false, FixedNumBuckets, FixedNumElements>>;
     public:
-        typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
-        typedef typename base_type::hasher      hasher;
-        typedef MappedType                      mapped_type;
+        using traits_type = typename base_type::traits_type;
 
-        typedef typename base_type::allocator_type              allocator_type;
-        typedef typename base_type::size_type                   size_type;
-        typedef typename base_type::difference_type             difference_type;
-        typedef typename base_type::pointer                     pointer;
-        typedef typename base_type::const_pointer               const_pointer;
-        typedef typename base_type::reference                   reference;
-        typedef typename base_type::const_reference             const_reference;
+        using key_type = typename base_type::key_type;
+        using key_equal = typename base_type::key_equal;
+        using hasher = typename base_type::hasher;
+        using mapped_type = MappedType;
 
-        typedef typename base_type::iterator                    iterator;
-        typedef typename base_type::const_iterator              const_iterator;
+        using allocator_type = typename base_type::allocator_type;
+        using size_type = typename base_type::size_type;
+        using difference_type = typename base_type::difference_type;
+        using pointer = typename base_type::pointer;
+        using const_pointer = typename base_type::const_pointer;
+        using reference = typename base_type::reference;
+        using const_reference = typename base_type::const_reference;
 
-        //typedef typename base_type::reverse_iterator          reverse_iterator;
-        //typedef typename base_type::const_reverse_iterator        const_reverse_iterator;
+        using iterator = typename base_type::iterator;
+        using const_iterator = typename base_type::const_iterator;
 
-        typedef typename base_type::value_type                  value_type;
+        using value_type = typename base_type::value_type;
 
-        typedef typename base_type::local_iterator              local_iterator;
-        typedef typename base_type::const_local_iterator        const_local_iterator;
+        using local_iterator = typename base_type::local_iterator;
+        using const_local_iterator = typename base_type::const_local_iterator;
 
-        typedef typename base_type::pair_iter_bool              pair_iter_bool;
+        using pair_iter_bool = typename base_type::pair_iter_bool;
 
-        AZ_FORCE_INLINE fixed_unordered_map()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE fixed_unordered_map(const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual) {}
-        template<class Iterator>
-        fixed_unordered_map(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
+        using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
+        using insert_return_type = AssociativeInternal::insert_return_type<iterator, node_type>;
+
+        fixed_unordered_map()
+            : base_type(hasher(), key_equal()) {}
+        explicit fixed_unordered_map(size_type numBucketsHint,
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
         {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
+            base_type::rehash(numBucketsHint);
         }
-        template<class Iterator>
-        fixed_unordered_map(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual, allocator_type())
+        template<class InputIterator>
+        fixed_unordered_map(InputIterator first, InputIterator last, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
         {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
+            base_type::rehash(numBucketsHint);
+            base_type::insert(first, last);
         }
-        fixed_unordered_map(const AZStd::initializer_list<value_type>& list, const hasher& hash = hasher(),
-            const key_eq& keyEqual = key_eq())
-            : fixed_unordered_map(list.begin(), list.end(), hash, keyEqual)
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        fixed_unordered_map(from_range_t, R&& rg, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert_range(AZStd::forward<R>(rg));
+        }
+
+        fixed_unordered_map(const fixed_unordered_map& rhs)
+            : base_type(rhs) {}
+        fixed_unordered_map(fixed_unordered_map&& rhs)
+            : base_type(AZStd::move(rhs)) {}
+
+        fixed_unordered_map(initializer_list<value_type> list, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert(list);
+        }
+        fixed_unordered_map(size_type numBucketsHint, const hasher& hash)
+            : fixed_unordered_map(numBucketsHint, hash, key_equal())
+        {
+        }
+        template<class InputIterator>
+        fixed_unordered_map(InputIterator f, InputIterator l, size_type n, const hasher& hf)
+            : fixed_unordered_map(f, l, n, hf, key_equal())
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        fixed_unordered_map(from_range_t, R&& rg, size_type n, const hasher& hf)
+            : fixed_unordered_map(from_range, AZStd::forward<R>(rg), n, hf, key_equal())
+        {
+        }
+        fixed_unordered_map(initializer_list<value_type> il, size_type n, const hasher& hf)
+            : fixed_unordered_map(il, n, hf, key_equal())
         {
         }
 
+        /// This constructor is AZStd extension
+        fixed_unordered_map(const hasher& hash, const key_equal& keyEqual)
+            : base_type(hash, keyEqual)
+        {
+        }
+
+        using base_type::insert;
+        using base_type::insert_range;
         AZ_FORCE_INLINE pair_iter_bool insert(const value_type& value)
         {
             return base_type::insert_impl(value);
@@ -195,63 +232,100 @@ namespace AZStd
             CONTAINER_VERSION = 1
         };
 
-        typedef fixed_unordered_multimap<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey> this_type;
-        typedef hash_table< Internal::UnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, true, FixedNumBuckets, FixedNumElements> > base_type;
+        using this_type = fixed_unordered_map<Key, MappedType, FixedNumBuckets, FixedNumElements, Hasher, EqualKey>;
+        using base_type = hash_table<Internal::UnorderedFixedMapTableTraits<Key, MappedType, Hasher, EqualKey, true, FixedNumBuckets, FixedNumElements>>;
     public:
-        typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
-        typedef typename base_type::hasher      hasher;
-        typedef MappedType                      mapped_type;
+        using traits_type = typename base_type::traits_type;
 
-        typedef typename base_type::allocator_type              allocator_type;
-        typedef typename base_type::size_type                   size_type;
-        typedef typename base_type::difference_type             difference_type;
-        typedef typename base_type::pointer                     pointer;
-        typedef typename base_type::const_pointer               const_pointer;
-        typedef typename base_type::reference                   reference;
-        typedef typename base_type::const_reference             const_reference;
+        using key_type = typename base_type::key_type;
+        using key_equal = typename base_type::key_equal;
+        using hasher = typename base_type::hasher;
+        using mapped_type = MappedType;
 
-        typedef typename base_type::iterator                    iterator;
-        typedef typename base_type::const_iterator              const_iterator;
+        using allocator_type = typename base_type::allocator_type;
+        using size_type = typename base_type::size_type;
+        using difference_type = typename base_type::difference_type;
+        using pointer = typename base_type::pointer;
+        using const_pointer = typename base_type::const_pointer;
+        using reference = typename base_type::reference;
+        using const_reference = typename base_type::const_reference;
 
-        //typedef typename base_type::reverse_iterator          reverse_iterator;
-        //typedef typename base_type::const_reverse_iterator        const_reverse_iterator;
+        using iterator = typename base_type::iterator;
+        using const_iterator = typename base_type::const_iterator;
 
-        typedef typename base_type::value_type                  value_type;
+        using value_type = typename base_type::value_type;
 
-        typedef typename base_type::local_iterator              local_iterator;
-        typedef typename base_type::const_local_iterator        const_local_iterator;
+        using local_iterator = typename base_type::local_iterator;
+        using const_local_iterator = typename base_type::const_local_iterator;
 
-        typedef typename base_type::pair_iter_bool              pair_iter_bool;
+        using pair_iter_bool = typename base_type::pair_iter_bool;
 
-        AZ_FORCE_INLINE fixed_unordered_multimap()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE fixed_unordered_multimap(const hasher& hash, const key_eq& keyEqual)
-            : base_type(hash, keyEqual) {}
-        template<class Iterator>
-        fixed_unordered_multimap(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
-        {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
-        }
-        template<class Iterator>
-        fixed_unordered_multimap(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
+        using node_type = map_node_handle<map_node_traits<key_type, mapped_type, allocator_type, typename base_type::list_node_type, typename base_type::node_deleter>>;
+
+        fixed_unordered_multimap()
+            : base_type(hasher(), key_equal()) {}
+        explicit fixed_unordered_multimap(size_type numBucketsHint,
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
             : base_type(hash, keyEqual)
         {
-            for (; first != last; ++first)
-            {
-                base_type::insert(*first);
-            }
+            base_type::rehash(numBucketsHint);
         }
-        fixed_unordered_multimap(const AZStd::initializer_list<value_type>& list, const hasher& hash = hasher(),
-            const key_eq& keyEqual = key_eq())
-            : fixed_unordered_multimap(list.begin(), list.end(), hash, keyEqual)
+        template<class InputIterator>
+        fixed_unordered_multimap(InputIterator first, InputIterator last, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert(first, last);
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        fixed_unordered_multimap(from_range_t, R&& rg, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert_range(AZStd::forward<R>(rg));
+        }
+
+        fixed_unordered_multimap(const fixed_unordered_multimap& rhs)
+            : base_type(rhs) {}
+        fixed_unordered_multimap(fixed_unordered_multimap&& rhs)
+            : base_type(AZStd::move(rhs)) {}
+
+        fixed_unordered_multimap(initializer_list<value_type> list, size_type numBucketsHint = {},
+            const hasher& hash = hasher(), const key_equal& keyEqual = key_equal())
+            : base_type(hash, keyEqual)
+        {
+            base_type::rehash(numBucketsHint);
+            base_type::insert(list);
+        }
+        fixed_unordered_multimap(size_type numBucketsHint, const hasher& hash)
+            : fixed_unordered_multimap(numBucketsHint, hash, key_equal())
+        {
+        }
+        template<class InputIterator>
+        fixed_unordered_multimap(InputIterator f, InputIterator l, size_type n, const hasher& hf)
+            : fixed_unordered_multimap(f, l, n, hf, key_equal())
+        {
+        }
+        template<class R, class = enable_if_t<Internal::container_compatible_range<R, value_type>>>
+        fixed_unordered_multimap(from_range_t, R&& rg, size_type n, const hasher& hf)
+            : fixed_unordered_multimap(from_range, AZStd::forward<R>(rg), n, hf, key_equal())
+        {
+        }
+        fixed_unordered_multimap(initializer_list<value_type> il, size_type n, const hasher& hf)
+            : fixed_unordered_multimap(il, n, hf, key_equal())
         {
         }
 
+        /// This constructor is AZStd extension
+        fixed_unordered_multimap(const hasher& hash, const key_equal& keyEqual)
+            : base_type(hash, keyEqual)
+        {
+        }
+
+        using base_type::insert;
+        using base_type::insert_range;
         AZ_FORCE_INLINE iterator insert(const value_type& value)
         {
             return base_type::insert_impl(value).first;
@@ -274,6 +348,3 @@ namespace AZStd
         left.swap(right);
     }
 }
-
-#endif // AZSTD_FIXED_UNORDERED_MAP_H
-#pragma once

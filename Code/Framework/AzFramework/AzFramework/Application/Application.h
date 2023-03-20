@@ -13,6 +13,7 @@
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
+#include <AzCore/Instance/InstancePool.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/fixed_string.h>
@@ -59,7 +60,7 @@ namespace AzFramework
         };
 
         AZ_RTTI(Application, "{0BD2388B-F435-461C-9C84-D0A96CAF32E4}", AZ::ComponentApplication);
-        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Application, AZ::SystemAllocator);
 
         // Publicized types & methods from base ComponentApplication.
         using AZ::ComponentApplication::Descriptor;
@@ -87,7 +88,7 @@ namespace AzFramework
          */
         virtual void Stop();
 
-        void Tick(float deltaOverride = -1.f) override;
+        void Tick() override;
 
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override;
@@ -95,10 +96,9 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         //! ApplicationRequests::Bus::Handler
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        const char* GetAppRoot() const override;
         void ResolveEnginePath(AZStd::string& engineRelativePath) const override;
         void CalculateBranchTokenForEngineRoot(AZStd::string& token) const override;
+        bool IsEditorModeFeedbackEnabled() const override;
         bool IsPrefabSystemEnabled() const override;
         bool ArePrefabWipFeaturesEnabled() const override;
         void SetPrefabSystemEnabled(bool enable) override;
@@ -146,8 +146,6 @@ namespace AzFramework
          */
         void SetFileIOAliases();
 
-        void PreModuleLoad() override;
-
         //////////////////////////////////////////////////////////////////////////
         //! AZ::ComponentApplication
         void RegisterCoreComponents() override;
@@ -178,16 +176,14 @@ namespace AzFramework
         AZStd::unique_ptr<AZ::IO::Archive> m_archive; ///> The AZ::IO::Instance
         AZStd::unique_ptr<Implementation> m_pimpl;
         AZStd::unique_ptr<AZ::NativeUI::NativeUIRequests> m_nativeUI;
+        AZStd::unique_ptr<AZ::InstancePoolManager> m_poolManager;
+
         bool m_ownsConsole = false;
 
         bool m_exitMainLoopRequested = false;
-        
-        enum class RootPathType
-        {
-            AppRoot,
-            EngineRoot
-        };
-        void SetRootPath(RootPathType type, const char* source);
+
     };
 } // namespace AzFramework
+
+AZ_DECLARE_BUDGET(AzFramework);
 

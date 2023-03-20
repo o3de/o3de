@@ -18,7 +18,7 @@
 #include <Atom/RPI.Edit/Shader/ShaderVariantTreeAssetCreator.h>
 #include <Atom/RPI.Edit/Common/JsonUtils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantKey.h>
 
 #include <Atom/RHI.Edit/Utils.h>
@@ -33,9 +33,10 @@
 #include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
@@ -45,7 +46,9 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
+#include <AzCore/std/time.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/StringFunc/StringFunc.h>
 
 #include "ShaderAssetBuilder.h"
 #include "ShaderBuilderUtility.h"
@@ -53,9 +56,8 @@
 #include "AzslData.h"
 #include "AzslCompiler.h"
 #include <CommonFiles/Preprocessor.h>
-#include <CommonFiles/GlobalBuildOptions.h>
 #include <ShaderPlatformInterfaceRequest.h>
-#include "AtomShaderConfig.h"
+#include "ShaderBuildArgumentsManager.h"
 
 namespace AZ
 {
@@ -79,7 +81,7 @@ namespace AZ
 
             bool found = false;
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
+            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
                 AssetBuilderSDK::SourceFileDependency sourceFileDependency;
@@ -102,53 +104,19 @@ namespace AZ
             return found;
         }
 
-
-        //! Returns true if @sourceFileFullPath starts with a valid asset processor scan folder, false otherwise.
-        //! In case of true, it splits @sourceFileFullPath into @scanFolderFullPath and @filePathFromScanFolder.
-        //! @sourceFileFullPath The full path to a source asset file.
-        //! @scanFolderFullPath [out] Gets the full path of the scan folder where the source file is located.
-        //! @filePathFromScanFolder [out] Get the file path relative to  @scanFolderFullPath.
-        static bool SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(const AZStd::string& sourceFileFullPath, AZStd::string& scanFolderFullPath, AZStd::string& filePathFromScanFolder)
-        {
-            AZStd::vector<AZStd::string> scanFolders;
-            bool success = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-            if (!success)
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folders");
-                return false;
-            }
-
-            for (AZStd::string scanFolder : scanFolders)
-            {
-                AzFramework::StringFunc::Path::Normalize(scanFolder);
-                if (!AZ::StringFunc::StartsWith(sourceFileFullPath, scanFolder))
-                {
-                    continue;
-                }
-                const size_t scanFolderSize = scanFolder.size();
-                const size_t sourcePathSize = sourceFileFullPath.size();
-                scanFolderFullPath = scanFolder;
-                filePathFromScanFolder = sourceFileFullPath.substr(scanFolderSize + 1, sourcePathSize - scanFolderSize - 1);
-                return true;
-            }
-
-            return false;
-        }
-
         //! Validates if a given .shadervariantlist file is located at the correct path for a given .shader full path.
         //! There are two valid paths:
         //! 1- Lower Precedence: The same folder where the .shader file is located.
-        //! 2- Higher Precedence: <DEVROOT>/<GAME>/ShaderVariants/<Same Scan Folder Subpath as the .shader file>.
+        //! 2- Higher Precedence: <project-path>/ShaderVariants/<Same Scan Folder Subpath as the .shader file>.
         //! The "Higher Precedence" path gives the option to game projects to override what variants to generate. If this
         //!     file exists then the "Lower Precedence" path is disregarded.
         //! A .shader full path is located under an AP scan folder.
-        //! Example: "<DEVROOT>/Gems/Atom/Feature/Common/Assets/Materials/Types/StandardPBR_ForwardPass.shader"
-        //!     - In this example the Scan Folder is "<DEVROOT>/Gems/Atom/Feature/Common/Assets", while the subfolder is "Materials/Types".
+        //! Example: "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR_ForwardPass.shader"
+        //!     - In this example the Scan Folder is "<atom-gem-path>/Feature/Common/Assets", while the subfolder is "Materials/Types".
         //! The "Higher Precedence" expected valid location for the .shadervariantlist would be:
-        //!     - <DEVROOT>/<GameProject>/ShaderVariants/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
+        //!     - <GameProject>/ShaderVariants/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
         //! The "Lower Precedence" valid location would be:
-        //!     - <DEVROOT>/Gems/Atom/Feature/Common/Assets/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
+        //!     - @gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR_ForwardPass.shadervariantlist.
         //! @shouldExitEarlyFromProcessJob [out] Set to true if ProcessJob should do no work but return successfully.
         //!     Set to false if ProcessJob should do work and create assets.
         //!     When @shaderVariantListFileFullPath is provided by a Gem/Feature instead of the Game Project
@@ -159,7 +127,11 @@ namespace AZ
         {
             AZStd::string scanFolderFullPath;
             AZStd::string shaderProductFileRelativePath;
-            if (!SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(shaderFileFullPath, scanFolderFullPath, shaderProductFileRelativePath))
+            bool success = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success
+                , &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath
+                , shaderFileFullPath, shaderProductFileRelativePath, scanFolderFullPath);
+            if (!success)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folder for shader [%s]", shaderFileFullPath.c_str());
                 return false;
@@ -167,19 +139,15 @@ namespace AZ
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "For shader [%s], Scan folder full path [%s], relative file path [%s]", shaderFileFullPath.c_str(), scanFolderFullPath.c_str(), shaderProductFileRelativePath.c_str());
 
             AZStd::string shaderVariantListFileRelativePath = shaderProductFileRelativePath;
-            AzFramework::StringFunc::Path::ReplaceExtension(shaderVariantListFileRelativePath, RPI::ShaderVariantListSourceData::Extension);
+            AZ::StringFunc::Path::ReplaceExtension(shaderVariantListFileRelativePath, RPI::ShaderVariantListSourceData::Extension);
 
-            const char * gameProjectPath = nullptr;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(gameProjectPath, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
+            AZ::IO::FixedMaxPath gameProjectPath = AZ::Utils::GetProjectPath();
 
-            AZStd::string expectedHigherPrecedenceFileFullPath;
-            AzFramework::StringFunc::Path::Join(gameProjectPath, RPI::ShaderVariantTreeAsset::CommonSubFolder, expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
-            AzFramework::StringFunc::Path::Join(expectedHigherPrecedenceFileFullPath.c_str(), shaderProductFileRelativePath.c_str(), expectedHigherPrecedenceFileFullPath, false /* handle directory overlap? */, false /* be case insensitive? */);
-            AzFramework::StringFunc::Path::ReplaceExtension(expectedHigherPrecedenceFileFullPath, AZ::RPI::ShaderVariantListSourceData::Extension);
-            AzFramework::StringFunc::Path::Normalize(expectedHigherPrecedenceFileFullPath);
+            auto expectedHigherPrecedenceFileFullPath = (gameProjectPath
+                / RPI::ShaderVariantTreeAsset::CommonSubFolder / shaderProductFileRelativePath).LexicallyNormal();
+            expectedHigherPrecedenceFileFullPath.ReplaceExtension(AZ::RPI::ShaderVariantListSourceData::Extension);
 
-            AZStd::string normalizedShaderVariantListFileFullPath = shaderVariantListFileFullPath;
-            AzFramework::StringFunc::Path::Normalize(normalizedShaderVariantListFileFullPath);
+            auto normalizedShaderVariantListFileFullPath = AZ::IO::FixedMaxPath(shaderVariantListFileFullPath).LexicallyNormal();
 
             if (expectedHigherPrecedenceFileFullPath == normalizedShaderVariantListFileFullPath)
             {
@@ -203,23 +171,15 @@ namespace AZ
             }
 
             // Check the "Lower Precedence" case, .shader path == .shadervariantlist path.
-            AZStd::string normalizedShaderFileFullPath = shaderFileFullPath;
-            AzFramework::StringFunc::Path::Normalize(normalizedShaderFileFullPath);
+            AZ::IO::Path normalizedShaderFileFullPath = AZ::IO::Path(shaderFileFullPath).LexicallyNormal();
 
-            AZStd::string normalizedShaderFileFullPathWithoutExtension = normalizedShaderFileFullPath;
-            AzFramework::StringFunc::Path::StripExtension(normalizedShaderFileFullPathWithoutExtension);
+            auto normalizedShaderFileFullPathWithoutExtension = normalizedShaderFileFullPath;
+            normalizedShaderFileFullPathWithoutExtension.ReplaceExtension("");
 
-            AZStd::string normalizedShaderVariantListFileFullPathWithoutExtension = normalizedShaderVariantListFileFullPath;
-            AzFramework::StringFunc::Path::StripExtension(normalizedShaderVariantListFileFullPathWithoutExtension);
+            auto normalizedShaderVariantListFileFullPathWithoutExtension = normalizedShaderVariantListFileFullPath;
+            normalizedShaderVariantListFileFullPathWithoutExtension.ReplaceExtension("");
 
-#if AZ_TRAIT_OS_USE_WINDOWS_FILE_PATHS
-            //In certain circumstances, the capitalization of the drive letter may not match
-            const bool caseSensitive = false;
-#else
-            //On the other platforms there's no drive letter, so it should be a non-issue.
-            const bool caseSensitive = true;
-#endif
-            if (!StringFunc::Equal(normalizedShaderFileFullPathWithoutExtension.c_str(), normalizedShaderVariantListFileFullPathWithoutExtension.c_str(), caseSensitive))
+            if (normalizedShaderFileFullPathWithoutExtension != normalizedShaderVariantListFileFullPathWithoutExtension)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "For shader file at path [%s], the shader variant list [%s] is expected to be located at [%s.%s] or [%s]"
                     , normalizedShaderFileFullPath.c_str(), normalizedShaderVariantListFileFullPath.c_str(),
@@ -253,7 +213,7 @@ namespace AZ
         {
             // Need to get the name of the shader file from the template so that we can preprocess the shader data and setup
             // source file dependencies.
-            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantList))
+            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantList, AZStd::numeric_limits<size_t>::max()))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse Shader Variant List Descriptor JSON from [%s]", variantListFullPath.c_str());
                 return LoadResult{LoadResult::Code::Error};
@@ -295,7 +255,7 @@ namespace AZ
         void ShaderVariantAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             AZStd::string variantListFullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
 
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "CreateJobs for Shader Variant List \"%s\"\n", variantListFullPath.data());
 
@@ -309,7 +269,10 @@ namespace AZ
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
-            
+
+            // Even if the shader file doesn't exist yet, when calling LocateReferencedSourceFile() the source
+            // asset dependency list will be populated. This will cause to re-run this builder
+            // when the source *.shader file comes into existence.
             AZStd::string foundShaderFile;
             LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
 
@@ -322,7 +285,11 @@ namespace AZ
 
                     jobDescriptor.m_priority = -5000;
                     jobDescriptor.m_critical = false;
-                    jobDescriptor.m_jobKey = ShaderVariantAssetBuilderJobKey;
+                    // We are going to create a fake job that we know will fail.
+                    // We need to use a job key of a real product (In this case we are using the job key for the ShaderVariantTreeAsset).
+                    // Using a real product job key will guarantee to clear old errors in the future, because a successful product build will
+                    // replace the lingering error thanks to matching job keys.
+                    jobDescriptor.m_jobKey = GetShaderVariantTreeAssetJobKey();
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
                     
                     if (!foundShaderFile.empty())
@@ -388,7 +355,7 @@ namespace AZ
                 for (const AZ::RPI::ShaderVariantListSourceData::VariantInfo& variantInfo : shaderVariantList.m_shaderVariants)
                 {
                     AZStd::string variantInfoAsJsonString;
-                    const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
+                    [[maybe_unused]] const bool convertSuccess = AZ::RPI::JsonUtils::SaveObjectToJsonString(variantInfo, variantInfoAsJsonString);
                     AZ_Assert(convertSuccess, "Failed to convert VariantInfo to json string");
 
                     AssetBuilderSDK::JobDescriptor jobDescriptor;
@@ -478,7 +445,7 @@ namespace AZ
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
             // The shader options define what options are available, what are the allowed values/range
             // for each option and what is its default value.
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(optionsGroupJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -509,7 +476,7 @@ namespace AZ
             }
 
             auto functionsJsonPath = functionsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(functionsJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -528,7 +495,6 @@ namespace AZ
             const AssetBuilderSDK::PlatformInfo& platformInfo,
             const AzslCompiler& azslCompiler, const AZStd::string& shaderSourceFileFullPath,
             const RPI::SupervariantIndex supervariantIndex,
-            const bool platformUsesRegisterSpaces,
             RPI::ShaderResourceGroupLayoutList& srgLayoutList,
             RootConstantData& rootConstantData)
         {
@@ -541,7 +507,7 @@ namespace AZ
             }
 
             auto srgJsonPath = srgJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(srgJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -554,7 +520,7 @@ namespace AZ
                 return false;
             }
             // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, platformUsesRegisterSpaces, srgLayoutList))
+            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, srgLayoutList))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to load ShaderResourceGroupLayouts");
                 return false;
@@ -573,7 +539,7 @@ namespace AZ
             // Access the root constants reflection
             if (!azslCompiler.ParseSrgPopulateRootConstantData(
                     jsonOutcome.GetValue(),
-                    rootConstantData)) // consuming data from --srg ("InlineConstantBuffer" subjson section)
+                    rootConstantData)) // consuming data from --srg ("RootConstantBuffer" subjson section)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to obtain root constant data reflection");
                 return false;
@@ -598,7 +564,7 @@ namespace AZ
             }
     
             auto bindingsJsonPath = bindingsJsonPathOutcome.TakeValue();
-            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath);
+            auto jsonOutcome = JsonSerializationUtils::ReadJsonFile(bindingsJsonPath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!jsonOutcome.IsSuccess())
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "%s", jsonOutcome.GetError().c_str());
@@ -630,7 +596,7 @@ namespace AZ
             }
 
             hlslSourcePath = hlslSourcePathOutcome.TakeValue();
-            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath);
+            Outcome<AZStd::string, AZStd::string> hlslSourceOutcome = Utils::ReadFile(hlslSourcePath, AZ::RPI::JsonUtils::DefaultMaxFileSize);
             if (!hlslSourceOutcome.IsSuccess())
             {
                 AZ_Error(
@@ -644,10 +610,10 @@ namespace AZ
         void ShaderVariantAssetBuilder::ProcessShaderVariantTreeJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
             AZStd::string variantListFullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), variantListFullPath, true);
 
             RPI::ShaderVariantListSourceData shaderVariantListDescriptor;
-            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantListDescriptor))
+            if (!RPI::JsonUtils::LoadObjectFromFile(variantListFullPath, shaderVariantListDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
                 AZ_Assert(false, "Failed to parse Shader Variant List Descriptor JSON [%s]", variantListFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
@@ -658,7 +624,7 @@ namespace AZ
 
             //For debugging purposes will create a dummy azshadervarianttree file.
             AZStd::string shaderName;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderName);
+            AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderName);
 
             // No error checking because the same calls were already executed during CreateJobs()
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
@@ -721,7 +687,7 @@ namespace AZ
 
             AZStd::string filename = AZStd::string::format("%s.%s", shaderName.c_str(), RPI::ShaderVariantTreeAsset::Extension);
             AZStd::string assetPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), filename.c_str(), assetPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_tempDirPath.c_str(), filename.c_str(), assetPath, true);
             if (!AZ::Utils::SaveObjectToFile(assetPath, AZ::DataStream::ST_BINARY, shaderVariantTreeAsset.Get()))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to save Shader Variant Tree Asset to \"%s\"", assetPath.c_str());
@@ -743,20 +709,21 @@ namespace AZ
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
         {
-            const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
             AssetBuilderSDK::JobCancelListener jobCancelListener(request.m_jobId);
 
             AZStd::string fullPath;
-            AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
+            AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), fullPath, true);
 
             const auto& jobParameters = request.m_jobDescription.m_jobParameters;
             const AZStd::string& shaderSourceFileFullPath = jobParameters.at(ShaderSourceFilePathJobParam);
+            auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
+            RPI::ShaderSourceData shaderSourceData = descriptorParseOutcome.TakeValue();
             AZStd::string shaderFileName;
-            AzFramework::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
+            AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
 
             const AZStd::string& variantJsonString = jobParameters.at(ShaderVariantJobVariantParam);
             RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-            const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
+            [[maybe_unused]] const bool fromJsonStringSuccess = AZ::RPI::JsonUtils::LoadObjectFromJsonString(variantJsonString, variantInfo);
             AZ_Assert(fromJsonStringSuccess, "Failed to convert json string to VariantInfo");
 
             RPI::ShaderSourceData shaderSourceDescriptor;
@@ -777,13 +744,18 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
+            
+            const AZ::u64 shaderVariantAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
-            GlobalBuildOptions buildOptions = ReadBuildOptions(ShaderVariantAssetBuilderName);
-            // At this moment We have global build options that should be merged with the build options that are common
-            // to all the supervariants of this shader.
-            buildOptions.m_compilerArguments.Merge(shaderSourceDescriptor.m_compiler);
+            ShaderBuildArgumentsManager buildArgsManager;
+            buildArgsManager.Init();
+            // A job always runs on behalf of an Asset Processing platform (aka PlatformInfo).
+            // Let's merge the shader build arguments of the current PlatformInfo with the global
+            // set of arguments.
+            const auto platformName = ShaderBuilderUtility::GetPlatformNameFromPlatformInfo(request.m_platformInfo);
+            buildArgsManager.PushArgumentScope(platformName);
 
             //! The ShaderOptionGroupLayout is common across all RHIs & Supervariants
             RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = nullptr;
@@ -791,7 +763,11 @@ namespace AZ
             // Generate shaders for each of those ShaderPlatformInterfaces.
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
-                AZ_TraceContext("ShaderPlatformInterface", shaderPlatformInterface->GetAPIName().GetCStr());
+                AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
+                AZ_TraceContext("Platform API", apiName);
+
+                buildArgsManager.PushArgumentScope(apiName);
+                buildArgsManager.PushArgumentScope(shaderSourceData.m_removeBuildArguments, shaderSourceData.m_addBuildArguments, shaderSourceData.m_definitions);
 
                 // Loop through all the Supervariants.
                 uint32_t supervariantIndexCounter = 0;
@@ -806,6 +782,8 @@ namespace AZ
                         response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Cancelled;
                         return;
                     }
+
+                    buildArgsManager.PushArgumentScope(supervariantInfo.m_removeBuildArguments, supervariantInfo.m_addBuildArguments, supervariantInfo.m_definitions);
 
                     AZStd::string shaderStemNamePrefix = shaderFileName;
                     if (supervariantIndex.GetIndex() > 0)
@@ -843,17 +821,14 @@ namespace AZ
                     MapOfStringToStageType shaderEntryPoints;
                     if (shaderSourceDescriptor.m_programSettings.m_entryPoints.empty())
                     {
-                        AZ_TracePrintf(
-                            ShaderVariantAssetBuilderName,
-                            "ProgramSettings do not specify entry points, will use GetDefaultEntryPointsFromShader()\n");
-                        ShaderBuilderUtility::GetDefaultEntryPointsFromFunctionDataList(azslFunctions, shaderEntryPoints);
+                        AZ_Error(ShaderVariantAssetBuilderName, false,  "ProgramSettings must specify entry points.");
+                        response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+                        return;
                     }
-                    else
+
+                    for (const auto& entryPoint : shaderSourceDescriptor.m_programSettings.m_entryPoints)
                     {
-                        for (const auto& entryPoint : shaderSourceDescriptor.m_programSettings.m_entryPoints)
-                        {
-                            shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
-                        }
+                        shaderEntryPoints[entryPoint.m_name] = entryPoint.m_type;
                     }
 
                     // 3- hlslCode
@@ -869,19 +844,12 @@ namespace AZ
                     //! It is important to keep this refcounted pointer outside of the if block to prevent it from being destroyed.
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
                     if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
-                    {
-                        AZStd::string azslcCompilerParameters =
-                            shaderPlatformInterface->GetAzslCompilerParameters(buildOptions.m_compilerArguments);
-                        const bool platformUsesRegisterSpaces =
-                            (AzFramework::StringFunc::Find(azslcCompilerParameters, "--use-spaces") != AZStd::string::npos);
-                    
+                    {                    
                         RPI::ShaderResourceGroupLayoutList srgLayoutList;
                         RootConstantData rootConstantData;
                         if (!LoadSrgLayoutListFromShaderAssetBuilder(
                             shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
-                            platformUsesRegisterSpaces,
-                            srgLayoutList,
-                            rootConstantData))
+                            srgLayoutList, rootConstantData))
                         {
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;
@@ -898,7 +866,7 @@ namespace AZ
                         
                         pipelineLayoutDescriptor =
                             ShaderBuilderUtility::BuildPipelineLayoutDescriptorForApi(
-                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildOptions.m_compilerArguments, rootConstantData,
+                                ShaderVariantAssetBuilderName, srgLayoutList, shaderEntryPoints, buildArgsManager.GetCurrentArguments(), rootConstantData,
                                 shaderPlatformInterface, bindingDependencies);
                         if (!pipelineLayoutDescriptor)
                         {
@@ -913,8 +881,8 @@ namespace AZ
                     // Setup the shader variant creation context:
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
-                        *shaderPlatformInterface, request.m_platformInfo, buildOptions.m_compilerArguments, request.m_tempDirPath,
-                        startTime,
+                        *shaderPlatformInterface, request.m_platformInfo, buildArgsManager.GetCurrentArguments(), request.m_tempDirPath,
+                        shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -963,9 +931,12 @@ namespace AZ
                             response.m_outputProducts.push_back(AZStd::move(jobProduct));
                         }
                     }
+                    buildArgsManager.PopArgumentScope(); // Pop the supervariant build arguments.
                     supervariantIndexCounter++;
                 } // End of supervariant for block
-                
+
+                buildArgsManager.PopArgumentScope(); // Pop the .shader build arguments.
+                buildArgsManager.PopArgumentScope(); // Pop the RHI build arguments.
             }
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
@@ -981,7 +952,7 @@ namespace AZ
                 shaderVariantAsset->GetStableId().GetIndex(), RPI::ShaderVariantAsset::Extension);
 
             AZStd::string assetPath;
-            AzFramework::StringFunc::Path::ConstructFull(tempDirPath.c_str(), filename.c_str(), assetPath, true);
+            AZ::StringFunc::Path::ConstructFull(tempDirPath.c_str(), filename.c_str(), assetPath, true);
 
             if (!AZ::Utils::SaveObjectToFile(assetPath, AZ::DataStream::ST_BINARY, shaderVariantAsset.Get()))
             {
@@ -1073,7 +1044,7 @@ namespace AZ
                 AZStd::string shaderAssetName = AZStd::string::format(
                     "%s_%s_%u.hlsl", creationContext.m_shaderStemNamePrefix.c_str(),
                     creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr(), shaderVariantInfo.m_stableId);
-                AzFramework::StringFunc::Path::Join(
+                AZ::StringFunc::Path::Join(
                     creationContext.m_tempDirPath.c_str(), shaderAssetName.c_str(), variantShaderSourcePath, true, true);
 
                 auto outcome = Utils::WriteFile(variantShaderSourceString, variantShaderSourcePath);
@@ -1117,7 +1088,7 @@ namespace AZ
                 RHI::ShaderPlatformInterface::StageDescriptor descriptor;
                 bool shaderWasCompiled = creationContext.m_shaderPlatformInterface.CompilePlatformInternal(
                     creationContext.m_platformInfo, variantShaderSourcePath, shaderEntryName, assetBuilderShaderType,
-                    creationContext.m_tempDirPath, descriptor, creationContext.m_shaderCompilerArguments);
+                    creationContext.m_tempDirPath, descriptor, creationContext.m_shaderBuildArguments);
 
                 if (!shaderWasCompiled)
                 {
@@ -1142,10 +1113,163 @@ namespace AZ
                 }
             }
 
+            if (shaderVariantInfo.m_enableRegisterAnalysis)
+            {
+                if (creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
+                {
+                    AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+
+                    AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
+                    spirvPath /= AZ::IO::FixedMaxPathString::format(
+                        "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
+
+                    AZStd::string rgaCommand = AZStd::string::format(
+                        "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_asic.c_str());
+
+                    AZStd::string RgaPath;
+                    if (creationContext.m_platformInfo.m_identifier == "pc")
+                    {
+                        RgaPath = "\\_deps\\rga-src\\rga.exe";
+                    }
+                    else
+                    {
+                        RgaPath = "/_deps/rga-src/rga";
+                    }
+
+                    AZStd::string command = AZStd::string::format(
+                        "%s%s %s %s", projectBuildPath.c_str(), RgaPath.c_str(), rgaCommand.c_str(), spirvPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
+
+                    AZStd::vector<AZStd::string> fullCommand;
+                    fullCommand.push_back(command);
+                    AZStd::string failMessage;
+                    if (LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
+                    {
+                        // add rga output to the by product list
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                    }
+                    else
+                    {
+                        AZ_Warning(ShaderVariantAssetBuilderName, false, "%s", failMessage.c_str());
+                    }
+                }
+                else
+                {
+                    AZ_Warning(
+                        ShaderVariantAssetBuilderName,
+                        false,
+                        "Current platform is %s, register analysis is only available on Vulkan for now.",
+                        creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr());
+                }
+            }
+
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             variantCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
         }
 
+        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
+        {
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::move(command));
+            processLaunchInfo.m_workingDirectory = workingDirectory;
+            processLaunchInfo.m_showWindow = false;
+            AzFramework::ProcessWatcher* watcher =
+                AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
+            if (!watcher)
+            {
+                failMessage = AZStd::string("Rga executable can not be launched");
+                return false;
+            }
+
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
+
+            AZStd::string errorMessages;
+            AZStd::string outputMessages;
+            auto pumpOuputStreams = [&watcherPtr, &errorMessages, &outputMessages]()
+            {
+                auto communicator = watcherPtr->GetCommunicator();
+
+                // Instead of collecting all the output in a giant string, it would be better to report
+                // the chunks of messages as they arrive, but this should be good enough for now.
+                if (auto byteCount = communicator->PeekError())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadError(chunk.data(), byteCount);
+                    errorMessages += chunk;
+                }
+
+                if (auto byteCount = communicator->PeekOutput())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadOutput(chunk.data(), byteCount);
+                    outputMessages += chunk;
+                }
+            };
+
+            uint32_t exitCode = 0;
+            bool timedOut = false;
+
+            const AZStd::sys_time_t maxWaitTimeSeconds = 5;
+            const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
+
+            while (watcherPtr->IsProcessRunning(&exitCode))
+            {
+                const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
+                if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
+                {
+                    timedOut = true;
+                    static const uint32_t TimeOutExitCode = 121;
+                    exitCode = TimeOutExitCode;
+                    watcherPtr->TerminateProcess(TimeOutExitCode);
+                    break;
+                }
+                else
+                {
+                    pumpOuputStreams();
+                }
+            }
+
+            AZ_Assert(!watcherPtr->IsProcessRunning(), "Rga execution failed to terminate");
+
+            // Pump one last time to make sure the streams have been flushed
+            pumpOuputStreams();
+
+            if (timedOut)
+            {
+                failMessage = AZStd::string("Rga execution timed out");
+                return false;
+            }
+
+            if (exitCode != 0)
+            {
+                failMessage = AZStd::string::format("Rga process failed, exit code %u", exitCode);
+                return false;
+            }
+
+            if (!errorMessages.empty())
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", errorMessages.c_str());
+                return false;
+            }
+
+            if (!outputMessages.empty() && outputMessages.contains("Error"))
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", outputMessages.c_str());
+                return false;
+            }
+
+            return true;
+        }
     } // ShaderBuilder
 } // AZ

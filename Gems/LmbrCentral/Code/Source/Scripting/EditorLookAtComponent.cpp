@@ -33,6 +33,7 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::Category, "Gameplay")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/LookAt.svg")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/LookAt.svg")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/look-at/")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
 
@@ -180,7 +181,7 @@ namespace LmbrCentral
                 sourceTM.SetRotation(lookAtTransform.GetRotation());
                 sourceTM.SetTranslation(lookAtTransform.GetTranslation());
 
-                EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, lookAtTransform);
+                AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, lookAtTransform);
                 AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, sourceTM);
             }
             AZ::TransformNotificationBus::MultiHandler::BusConnect(GetEntityId());

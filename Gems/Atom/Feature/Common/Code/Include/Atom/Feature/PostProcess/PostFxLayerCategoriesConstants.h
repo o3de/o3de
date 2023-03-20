@@ -17,7 +17,7 @@ namespace AZ
         namespace PostFx
         {
             using LayerCategoriesMap = AZStd::map<AZStd::string, int>;
-            static const char* DefaultLayerCategory = "Default";
+            static constexpr const char* DefaultLayerCategory = "Default";
             static const int DefaultLayerCategoryValue = std::numeric_limits<int>::max();
         }
     }

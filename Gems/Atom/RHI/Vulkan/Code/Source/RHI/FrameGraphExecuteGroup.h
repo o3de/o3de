@@ -31,7 +31,7 @@ namespace AZ
             using Base = FrameGraphExecuteGroupBase;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuteGroup, AZ::SystemAllocator);
             AZ_RTTI(FrameGraphExecuteGroup, "{D3BDC3AC-06A7-4067-9E71-0DBB3A80B188}", Base);
 
             FrameGraphExecuteGroup() = default;
@@ -44,8 +44,8 @@ namespace AZ
 
             //////////////////////////////////////////////////////////////////////////
             // FrameGraphExecuteGroupBase
-            AZStd::array_view<const Scope*> GetScopes() const override;
-            AZStd::array_view<RHI::Ptr<CommandList>> GetCommandLists() const override;
+            AZStd::span<const Scope* const> GetScopes() const override;
+            AZStd::span<const RHI::Ptr<CommandList>> GetCommandLists() const override;
             //////////////////////////////////////////////////////////////////////////
 
             //! Set the render context and subpass that will be used by this execute group.

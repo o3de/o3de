@@ -8,14 +8,25 @@
 
 #pragma once
 
+// This is disabled by default because it puts in costly runtime checking of casted values.
+// You can either change it here to enable it across the engine, or use push/pop_macro to enable per file/feature.
+// Note that if using push/pop_macro, you may get some of the functions not inline and the definition coming from
+// another compilation unit, in such case, you will have to push/pop_macro on that compilation unit as well.
+// #define AZ_NUMERICCAST_ENABLED 1
+
+#if !AZ_NUMERICCAST_ENABLED
+
+#define aznumeric_cast static_cast
+
+#else
+
+#include <AzCore/Casting/numeric_cast_internal.h>
 #include <AzCore/std/typetraits/is_arithmetic.h>
 #include <AzCore/std/typetraits/is_class.h>
 #include <AzCore/std/typetraits/is_enum.h>
 #include <AzCore/std/typetraits/is_floating_point.h>
 #include <AzCore/std/typetraits/is_integral.h>
-#include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/std/typetraits/is_signed.h>
-#include <AzCore/std/typetraits/is_unsigned.h>
 #include <AzCore/std/typetraits/remove_cvref.h>
 #include <AzCore/std/typetraits/underlying_type.h>
 #include <AzCore/std/utils.h>
@@ -28,7 +39,7 @@
 // enabled.
 //
 // Because we can't do partial function specialization, I'm using enable_if to chop up the implementation into one of these
-// implementations. If none of these fit, then we will get a compile error because it is an unknown conversionr.
+// implementations. If none of these fit, then we will get a compile error because it is an unknown conversion.
 //
 //--------------------------------------------
 //              TYPE <- TYPE         DigitLoss
@@ -51,85 +62,7 @@
 // (K)    Floating      Floating         Y
 */
 
-// This is disabled by default because it puts in costly runtime checking of casted values.
-// You can either change it here to enable it across the engine, or use push/pop_macro to enable per file/feature.
-// Note that if using push/pop_macro, you may get some of the functions not inline and the definition coming from
-// another compilation unit, in such case, you will have to push/pop_macro on that compilation unit as well.
-// #define AZ_NUMERICCAST_ENABLED 1
-
-#if AZ_NUMERICCAST_ENABLED
 #define AZ_NUMERIC_ASSERT(expr, ...) AZ_Assert(expr, __VA_ARGS__)
-#else
-#define AZ_NUMERIC_ASSERT(expr, ...) void(0)
-#endif
-
-#pragma push_macro("max")
-#undef max
-
-namespace NumericCastInternal
-{
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    !AZStd::is_integral<FromType>::value || !AZStd::is_floating_point<ToType>::value
-    , bool> ::type UnderflowsToType(const FromType& value)
-    {
-        return (value < static_cast<FromType>(std::numeric_limits<ToType>::lowest()));
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    AZStd::is_integral<FromType>::value && AZStd::is_floating_point<ToType>::value
-    , bool> ::type UnderflowsToType(const FromType& value)
-    {
-        return (static_cast<ToType>(value) < std::numeric_limits<ToType>::lowest());
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    !AZStd::is_integral<FromType>::value || !AZStd::is_floating_point<ToType>::value
-    , bool> ::type OverflowsToType(const FromType& value)
-    {
-        return (value > static_cast<FromType>(std::numeric_limits<ToType>::max()));
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    AZStd::is_integral<FromType>::value && AZStd::is_floating_point<ToType>::value
-    , bool> ::type OverflowsToType(const FromType& value)
-    {
-        return (static_cast<ToType>(value) > std::numeric_limits<ToType>::max());
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    AZStd::is_integral<FromType>::value && AZStd::is_integral<ToType>::value
-    && std::numeric_limits<FromType>::digits <= std::numeric_limits<ToType>::digits
-    && AZStd::is_signed<FromType>::value && AZStd::is_unsigned<ToType>::value
-    , bool> ::type FitsInToType(const FromType& value)
-    {
-        return !NumericCastInternal::UnderflowsToType<ToType>(value);
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    AZStd::is_integral<FromType>::value && AZStd::is_integral<ToType>::value
-    && (std::numeric_limits<FromType>::digits > std::numeric_limits<ToType>::digits)
-    && AZStd::is_unsigned<FromType>::value
-    , bool> ::type FitsInToType(const FromType& value)
-    {
-        return !NumericCastInternal::OverflowsToType<ToType>(value);
-    }
-
-    template <typename ToType, typename FromType>
-    inline constexpr typename AZStd::enable_if<
-    (!AZStd::is_integral<FromType>::value || !AZStd::is_integral<ToType>::value)
-    || ((std::numeric_limits<FromType>::digits <= std::numeric_limits<ToType>::digits) && (AZStd::is_unsigned<FromType>::value || AZStd::is_signed<ToType>::value))
-    || ((std::numeric_limits<FromType>::digits > std::numeric_limits<ToType>::digits) && AZStd::is_signed<FromType>::value)
-    , bool> ::type FitsInToType(const FromType& value)
-    {
-        return !NumericCastInternal::OverflowsToType<ToType>(value) && !NumericCastInternal::UnderflowsToType<ToType>(value);
-    }
-} // namespace AZ
 
 // INTEGER -> INTEGER
 // (A) Not losing digits or risking sign loss
@@ -276,8 +209,10 @@ inline constexpr auto aznumeric_cast(FromType&& value) ->
     return static_cast<ToType>(value);
 }
 
+#endif
+
 // This is a helper class that lets us induce the destination type of a numeric cast
-// It should never be directly used by anything other than azlossy_caster.
+// It should never be directly used by anything other than aznumeric_caster.
 namespace AZ
 {
     template <typename FromType>
@@ -295,7 +230,7 @@ namespace AZ
 
         FromType m_value;
     };
-}
+} // namespace AZ
 
 // This is the primary function we should use when doing numeric casting, since it induces the
 // type we need to cast to from the code rather than requiring an explicit coupling in the source.
@@ -305,4 +240,3 @@ inline constexpr AZ::NumericCasted<FromType> aznumeric_caster(FromType value)
     return AZ::NumericCasted<FromType>(value);
 }
 
-#pragma pop_macro("max")

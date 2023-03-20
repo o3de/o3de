@@ -11,10 +11,10 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsupportedTypesSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonUnsupportedTypesSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonVariantSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonOptionalSerializer, SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonBitsetSerializer, SystemAllocator);
 
     JsonSerializationResult::Result JsonUnsupportedTypesSerializer::Load(void*, const Uuid&, const rapidjson::Value&,
         JsonDeserializerContext& context)
@@ -30,13 +30,6 @@ namespace AZ
         return context.Report(JSR::Tasks::WriteValue, JSR::Outcomes::Invalid, GetMessage());
     }
 
-    AZStd::string_view JsonAnySerializer::GetMessage() const
-    {
-        return "The Json Serialization doesn't support AZStd::any by design. The Json Serialization attempts to minimize the use of $type, "
-               "in particular the guid version, but no way has yet been found to use AZStd::any without explicitly and always requiring "
-               "one.";
-    }
-
     AZStd::string_view JsonVariantSerializer::GetMessage() const
     {
         return "The Json Serialization doesn't support AZStd::variant by design. The Json Serialization attempts to minimize the use of "
@@ -48,5 +41,11 @@ namespace AZ
     {
         return "The Json Serialization doesn't support AZStd::optional by design. No JSON format has yet been found that wasn't deemed too "
                "complex or overly verbose.";
+    }
+
+    AZStd::string_view JsonBitsetSerializer::GetMessage() const
+    {
+        return "The Json Serialization doesn't support AZStd::bitset by design. No JSON format has yet been found that is content creator "
+               "friendly i.e., easy to comprehend the intent.";
     }
 } // namespace AZ

@@ -191,7 +191,7 @@
       </size>
      </property>
      <property name="styleSheet">
-      <string notr="true">background-color:rgb(51, 51, 51)</string>
+      <string notr="true">QWidget#m_darkBox { background-color:rgb(51, 51, 51) }</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_4">
       <property name="spacing">
@@ -443,6 +443,9 @@
         </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">background-color:rgb(51, 51, 51)</string>
         </property>
        </widget>
       </item>

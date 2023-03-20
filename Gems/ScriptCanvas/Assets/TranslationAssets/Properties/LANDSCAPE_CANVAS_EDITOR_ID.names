@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "LANDSCAPE_CANVAS_EDITOR_ID",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Editor Id",
+                "category": "Constants/Landscape Canvas"
+            },
+            "methods": [
+                {
+                    "base": "GetLANDSCAPE_CANVAS_EDITOR_ID",
+                    "details": {
+                        "name": "Editor Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+                            "details": {
+                                "name": "Crc 32"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

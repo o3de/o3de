@@ -6,12 +6,10 @@
  *
  */
 
-#include <AzTest/AzTest.h>
-
 #include <Framework/ServiceJobUtil.h>
 #include <TestFramework/AWSCoreFixture.h>
 
-using ServiceJobUtilTest = UnitTest::ScopedAllocatorSetupFixture;
+using ServiceJobUtilTest = AWSCoreFixture;
 
 TEST_F(ServiceJobUtilTest, DetermineRegionFromRequestUrl_DefaultUrlFormat_Success)
 {

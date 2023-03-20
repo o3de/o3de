@@ -12,6 +12,7 @@
 // AZ
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
@@ -42,7 +43,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString AssetWeightSelectorNode::TITLE = QObject::tr("Vegetation Asset Weight Selector");
+    const char* AssetWeightSelectorNode::TITLE = "Vegetation Asset Weight Selector";
 
     AssetWeightSelectorNode::AssetWeightSelectorNode(GraphModel::GraphPtr graph)
         : BaseNode(graph)
@@ -56,28 +57,22 @@ namespace LandscapeCanvas
         return BaseNode::VegetationAreaSelector;
     }
 
-    const bool AssetWeightSelectorNode::ShouldShowEntityName() const
-    {
-        // Don't show the entity name for Area Selectors since they will
-        // be wrapped on a Vegetation Area it would be redundant
-        return false;
-    }
-
     const char* AssetWeightSelectorNode::GetTitle() const
     {
-        return TITLE.toUtf8().constData();
+        return TITLE;
     }
 
     void AssetWeightSelectorNode::RegisterSlots()
     {
-        GraphModel::DataTypePtr invalidEntityDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::InvalidEntity);
-        GraphModel::DataTypePtr gradientDataType = GraphContext::GetInstance()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
+        GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType, invalidEntityDataType },
-            gradientDataType->GetDefaultValue(),
-            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData()));
+            INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId())));
     }
 } // namespace LandscapeCanvas

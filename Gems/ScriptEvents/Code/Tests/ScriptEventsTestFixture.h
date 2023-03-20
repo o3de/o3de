@@ -16,7 +16,6 @@
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
@@ -26,7 +25,7 @@
 
 #include <ScriptEvents/Internal/VersionedProperty.h>
 #include <ScriptEvents/ScriptEventParameter.h>
-#include <ScriptEvents/ScriptEventMethod.h>
+#include <ScriptEvents/ScriptEventsMethod.h>
 #include <ScriptEvents/ScriptEventsAsset.h>
 
 #include "ScriptEventTestUtilities.h"
@@ -38,19 +37,15 @@ namespace ScriptEventsTests
     class ScriptEventsTestFixture
         : public ::testing::Test
     {
-        static const bool s_enableMemoryLeakChecking;
-
         static ScriptEventsTests::Application* GetApplication();
 
     protected:
 
         static ScriptEventsTests::Application* s_application;
-        static UnitTest::AllocatorsBase s_allocatorSetup;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             if (s_application == nullptr)
             {
                 AZ::ComponentApplication::StartupParameters appStartup;
@@ -58,7 +53,6 @@ namespace ScriptEventsTests
 
                 {
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false; // We'll manage our own driller in these tests
                     descriptor.m_useExistingAllocator = true; // Use the SystemAllocator we own in this test.
 
                     appStartup.m_createStaticModulesCallback =
@@ -98,7 +92,7 @@ namespace ScriptEventsTests
                 s_application = nullptr;
             }
 
-            s_allocatorSetup.TeardownAllocator();
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         void SetUp() override

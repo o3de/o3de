@@ -6,16 +6,17 @@
  *
  */
 
-// The heatmap will change color as the light count increases up to TileCountMax, at which point and beyond it will be white.
+// The heatmap will change color as the light count increases up to TileCountMax
 static const int TileCountMax = 75;
+static const int OverflowDisplayNumber = 999;
 
 
-
-static const float3 BARELY_USED_COLOR = float3(0.05, 0.05, 0.20);
-static const float3 LIGHTLY_USED_COLOR = float3(0.05, 0.05, 0.60);
-static const float3 MODERATELY_USED_COLOR = float3(0.05, 0.60, 0.05);
-static const float3 HEAVILY_USED_COLOR = float3(1.00, 1.00, 0.05);
-static const float3 OVER_USED_COLOR = float3(1.00, 0.05, 0.05);
+static const float3 BarelyUsedColor = float3(0.05, 0.05, 0.20);         // Deep dark blue
+static const float3 LightlyUsedColor = float3(0.05, 0.05, 0.60);        // Deep blue
+static const float3 ModeratelyUsedColor = float3(0.05, 0.60, 0.05);     // Green
+static const float3 HeavilyUsedColor = float3(1.00, 1.00, 0.05);        // Yellow
+static const float3 OverUsedColor = float3(1.00, 0.05, 0.05);           // Red
+static const float3 OverflowColor = float3(1.0, 1.0, 1.0);              // White
 
 
 #include <Atom/Features/SrgSemantics.azsli>
@@ -174,30 +175,33 @@ uint PrintNumbersInsideTile(uint x, uint2 origin, uint2 uv, uint scale)
 }
    
 
-float3 ComputeTileColor(uint2 uv, uint print_me, uint maximum)
+float3 ComputeTileColor(const uint2 uv, const uint print_me, const bool overflow)
 {
     int2 local_uv = int2( uv % uint2(TILE_DIM_X, TILE_DIM_Y) );
 
-    float x = float(print_me) / float(maximum);
+    float x = float(print_me) / float(TileCountMax);
     x = sqrt(x);
     x = saturate(x);
 
     float3 color;
 
-    if( x <= 0.0 )
+    if (overflow)
+    {
+        color = OverflowColor;
+    }
+    else if( x <= 0.0 )
     {
         color = float3(0.0, 0.0, 0.0);        
     }
     else if( x >= 1.0 )
     {
-        color = float3(1.0, 1.0, 1.0);    
+        color = OverUsedColor;
     }
     else
     {
-        color = lerp(BARELY_USED_COLOR, LIGHTLY_USED_COLOR, saturate((x - 0.00) * 4.0));
-        color = lerp(color, MODERATELY_USED_COLOR, saturate((x - 0.25) * 4.0));
-        color = lerp(color, HEAVILY_USED_COLOR, saturate((x - 0.50) * 4.0));
-        color = lerp(color, OVER_USED_COLOR, saturate((x - 0.75) * 4.0));
+        color = lerp(BarelyUsedColor, LightlyUsedColor, saturate((x - 0.00) * 4.0));
+        color = lerp(color, ModeratelyUsedColor, saturate((x - 0.33) * 4.0));
+        color = lerp(color, HeavilyUsedColor, saturate((x - 0.66) * 4.0));
     }
 
     float border = (local_uv.x == TILE_DIM_X - 1 || local_uv.y == TILE_DIM_Y - 1) ? 1.0 : 0.0;
@@ -226,12 +230,18 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 
 PSOutput MainPS(VSOutput IN)
 {
-    uint2 tileId = ComputeTileId(IN.m_position.xy);
+    const uint2 tileId = ComputeTileId(IN.m_position.xy);
     
-    // We subtract NUM_LIGHT_TYPES because it includes termination markers
-    uint lightCount = PassSrg::m_tileLightData[tileId].w - NUM_LIGHT_TYPES;
+    const uint tileLightDataW = PassSrg::m_tileLightData[tileId].w;
 
-    float3 tileColor = ComputeTileColor(IN.m_position.xy, lightCount, TileCountMax);
+    // check to see if we are overflowing the number of lights per tile
+    // expect the lighting to flicker if this happens
+    const bool overflow = (tileLightDataW >> 31);    
+
+    // We subtract NUM_LIGHT_TYPES because it includes termination markers
+    const uint lightCount = overflow ? OverflowDisplayNumber : tileLightDataW - NUM_LIGHT_TYPES;
+
+    const float3 tileColor = ComputeTileColor(IN.m_position.xy, lightCount, overflow);
                              
     PSOutput OUT;
     OUT.m_color.rgb = tileColor; 

@@ -11,14 +11,13 @@
 #include "EMotionFXConfig.h"
 #include "AnimGraphNodeGroup.h"
 
-
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator)
 
     AnimGraphNodeGroup::AnimGraphNodeGroup()
-        : mColor(AZ::Color::CreateU32(255, 255, 255, 255))
-        , mIsVisible(true)
+        : m_color(AZ::Color::CreateU32(255, 255, 255, 255))
+        , m_isVisible(true)
     {
     }
 
@@ -26,15 +25,17 @@ namespace EMotionFX
     AnimGraphNodeGroup::AnimGraphNodeGroup(const char* groupName)
     {
         SetName(groupName);
-        mIsVisible = true;
+        m_isVisible = true;
+        m_nameEditOngoing = false;
     }
 
 
-    AnimGraphNodeGroup::AnimGraphNodeGroup(const char* groupName, uint32 numNodes)
+    AnimGraphNodeGroup::AnimGraphNodeGroup(const char* groupName, size_t numNodes)
     {
         SetName(groupName);
         SetNumNodes(numNodes);
-        mIsVisible = true;
+        m_isVisible = true;
+        m_nameEditOngoing = false;
     }
 
 
@@ -46,7 +47,7 @@ namespace EMotionFX
 
     void AnimGraphNodeGroup::RemoveAllNodes()
     {
-        mNodeIds.clear();
+        m_nodeIds.clear();
     }
 
 
@@ -55,11 +56,11 @@ namespace EMotionFX
     {
         if (groupName)
         {
-            mName = groupName;
+            m_name = groupName;
         }
         else
         {
-            mName.clear();
+            m_name.clear();
         }
     }
 
@@ -67,63 +68,63 @@ namespace EMotionFX
     // get the name of the group as character buffer
     const char* AnimGraphNodeGroup::GetName() const
     {
-        return mName.c_str();
+        return m_name.c_str();
     }
 
 
     // get the name of the string as mcore string object
     const AZStd::string& AnimGraphNodeGroup::GetNameString() const
     {
-        return mName;
+        return m_name;
     }
 
 
     // set the color of the group
     void AnimGraphNodeGroup::SetColor(const AZ::u32& color)
     {
-        mColor = color;
+        m_color = color;
     }
 
 
     // get the color of the group
     AZ::u32 AnimGraphNodeGroup::GetColor() const
     {
-        return mColor;
+        return m_color;
     }
 
 
     // set the visibility flag
     void AnimGraphNodeGroup::SetIsVisible(bool isVisible)
     {
-        mIsVisible = isVisible;
+        m_isVisible = isVisible;
     }
 
 
     // set the number of nodes
-    void AnimGraphNodeGroup::SetNumNodes(uint32 numNodes)
+    void AnimGraphNodeGroup::SetNumNodes(size_t numNodes)
     {
-        mNodeIds.resize(numNodes);
+        m_nodeIds.resize(numNodes);
     }
 
 
     // get the number of nodes
-    uint32 AnimGraphNodeGroup::GetNumNodes() const
+    size_t AnimGraphNodeGroup::GetNumNodes() const
     {
-        return static_cast<uint32>(mNodeIds.size());
+        return m_nodeIds.size();
     }
 
 
     // set a given node to a given node number
-    void AnimGraphNodeGroup::SetNode(uint32 index, AnimGraphNodeId nodeId)
+    void AnimGraphNodeGroup::SetNode(size_t index, AnimGraphNodeId nodeId)
     {
-        mNodeIds[index] = nodeId;
+        m_nodeIds[index] = nodeId;
     }
 
 
     // get the node number of a given index
-    AnimGraphNodeId AnimGraphNodeGroup::GetNode(uint32 index) const
+    AnimGraphNodeId AnimGraphNodeGroup::GetNode(size_t index) const
     {
-        return mNodeIds[index];
+        return m_nodeIds[index];
     }
 
 
@@ -133,7 +134,7 @@ namespace EMotionFX
         // add the node in case it is not in yet
         if (Contains(nodeId) == false)
         {
-            mNodeIds.push_back(nodeId);
+            m_nodeIds.push_back(nodeId);
         }
     }
 
@@ -142,14 +143,14 @@ namespace EMotionFX
     void AnimGraphNodeGroup::RemoveNodeById(AnimGraphNodeId nodeId)
     {
         const AZ::u64 convertedId = nodeId;
-        mNodeIds.erase(AZStd::remove(mNodeIds.begin(), mNodeIds.end(), convertedId), mNodeIds.end());
+        m_nodeIds.erase(AZStd::remove(m_nodeIds.begin(), m_nodeIds.end(), convertedId), m_nodeIds.end());
     }
 
 
     // remove a given array element from the list of nodes
-    void AnimGraphNodeGroup::RemoveNodeByGroupIndex(uint32 index)
+    void AnimGraphNodeGroup::RemoveNodeByGroupIndex(size_t index)
     {
-        mNodeIds.erase(mNodeIds.begin() + index);
+        m_nodeIds.erase(m_nodeIds.begin() + index);
     }
 
 
@@ -157,25 +158,45 @@ namespace EMotionFX
     bool AnimGraphNodeGroup::Contains(AnimGraphNodeId nodeId) const
     {
         const AZ::u64 convertedId = nodeId;
-        return AZStd::find(mNodeIds.begin(), mNodeIds.end(), convertedId) != mNodeIds.end();
+        return AZStd::find(m_nodeIds.begin(), m_nodeIds.end(), convertedId) != m_nodeIds.end();
     }
 
 
     // init from another group
     void AnimGraphNodeGroup::InitFrom(const AnimGraphNodeGroup& other)
     {
-        mNodeIds        = other.mNodeIds;
-        mColor          = other.mColor;
-        mName           = other.mName;
-        mIsVisible      = other.mIsVisible;
+        m_nodeIds = other.m_nodeIds;
+        m_color = other.m_color;
+        m_name = other.m_name;
+        m_isVisible = other.m_isVisible;
+        m_nameEditOngoing = other.m_nameEditOngoing;
     }
 
 
     bool AnimGraphNodeGroup::GetIsVisible() const
     {
-        return mIsVisible;
+        return m_isVisible;
     }
 
+    void AnimGraphNodeGroup::SetNameEditOngoing(bool nameEditOngoing)
+    {
+        m_nameEditOngoing = nameEditOngoing;
+    }
+
+    bool AnimGraphNodeGroup::IsNameEditOngoing() const
+    {
+        return m_nameEditOngoing;
+    }
+
+    AnimGraphNodeId AnimGraphNodeGroup::GetParentNodeId() const
+    {
+        return m_parentNodeId;
+    }
+
+    void AnimGraphNodeGroup::SetParentNodeId(AnimGraphNodeId nodeId)
+    {
+        m_parentNodeId = nodeId;
+    }
 
     void AnimGraphNodeGroup::Reflect(AZ::ReflectContext* context)
     {
@@ -187,9 +208,11 @@ namespace EMotionFX
 
         serializeContext->Class<AnimGraphNodeGroup>()
             ->Version(1)
-            ->Field("nodes", &AnimGraphNodeGroup::mNodeIds)
-            ->Field("name", &AnimGraphNodeGroup::mName)
-            ->Field("color", &AnimGraphNodeGroup::mColor)
-            ->Field("isVisible", &AnimGraphNodeGroup::mIsVisible);
+            ->Field("nodes", &AnimGraphNodeGroup::m_nodeIds)
+            ->Field("name", &AnimGraphNodeGroup::m_name)
+            ->Field("color", &AnimGraphNodeGroup::m_color)
+            ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible)
+            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing)
+            ->Field("parentNodeId", &AnimGraphNodeGroup::m_parentNodeId);
     }
 } // namespace EMotionFX

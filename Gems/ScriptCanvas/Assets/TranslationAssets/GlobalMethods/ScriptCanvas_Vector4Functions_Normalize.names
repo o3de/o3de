@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector4Functions_Normalize",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Normalize",
+                "category": "Math/Vector4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector4Functions_Normalize",
+                    "details": {
+                        "name": "Normalize",
+                        "tooltip": "Returns a unit length vector in the same direction as the source, or (1,0,0,0) if the source length is too small."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

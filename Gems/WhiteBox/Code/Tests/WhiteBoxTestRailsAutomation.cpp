@@ -158,8 +158,6 @@ namespace UnitTest
         // the initial starting position of the entity (in front and to the left of the camera)
         const AZ::Transform initialEntityTransformWorld =
             AZ::Transform::CreateTranslation(AZ::Vector3(-10.0f, 10.0f, 0.0f));
-        // world space delta we will be moving the polygon face
-        const auto worldTranslationDelta = AZ::Vector3::CreateAxisX(20.0f);
         // the face handle we will use to get the parent polygon from
         const int faceHandle = 7;
         // the polygon vertex handle we will be dragging

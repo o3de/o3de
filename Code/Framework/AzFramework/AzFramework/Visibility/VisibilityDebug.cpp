@@ -91,7 +91,7 @@ namespace AzFramework
                                          const AZ::Frustum::PlaneId planeId3)
         {
             AZ::Vector3 corner = AZ::Vector3::CreateZero();
-            const auto intersectionOkay = AZ::ShapeIntersection::IntersectThreePlanes(
+            [[maybe_unused]] const auto intersectionOkay = AZ::ShapeIntersection::IntersectThreePlanes(
                 frustum.GetPlane(planeId1), frustum.GetPlane(planeId2), frustum.GetPlane(planeId3), corner);
             AZ_Assert(intersectionOkay, "Plane intersection of Frustum failed");
 

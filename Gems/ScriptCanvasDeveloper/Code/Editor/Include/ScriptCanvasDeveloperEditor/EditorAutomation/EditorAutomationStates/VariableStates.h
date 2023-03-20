@@ -25,7 +25,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/VariableActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will create a variable and give it a name(assuming one is provided), using the specified creation method.
@@ -34,6 +34,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateVariableState, AZ::SystemAllocator)
         CreateVariableState(AutomationStateModelId dataTypeId, AutomationStateModelId nameId, bool errorOnNameMismatch = true, CreateVariableAction::CreationType creationType = CreateVariableAction::CreationType::AutoComplete, AutomationStateModelId outputId = "");
         ~CreateVariableState() override = default;
 
@@ -60,6 +61,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CreateVariableNodeFromGraphPaletteState, AZ::SystemAllocator)
         CreateVariableNodeFromGraphPaletteState(AutomationStateModelId variableNameId, AutomationStateModelId scenePoint, Qt::KeyboardModifier modifier, AutomationStateModelId outputId);
         ~CreateVariableNodeFromGraphPaletteState() override = default;
 

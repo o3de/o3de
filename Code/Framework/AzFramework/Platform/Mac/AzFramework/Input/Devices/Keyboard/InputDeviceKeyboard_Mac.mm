@@ -421,7 +421,7 @@ namespace AzFramework
     public:
         ////////////////////////////////////////////////////////////////////////////////////////////
         // Allocator
-        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardMac, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InputDeviceKeyboardMac, AZ::SystemAllocator);
 
         ////////////////////////////////////////////////////////////////////////////////////////////
         //! Constructor
@@ -648,7 +648,7 @@ namespace AzFramework
             break;
             case NSEventTypeFlagsChanged:
             {
-                QueueRawModifierKeyEvent(nsEvent.keyCode, nsEvent.modifierFlags);
+                QueueRawModifierKeyEvent(nsEvent.keyCode, static_cast<AZ::u32>(nsEvent.modifierFlags));
             }
             break;
             default:

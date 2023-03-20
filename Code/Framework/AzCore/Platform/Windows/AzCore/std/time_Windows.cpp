@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/time.h>
 #include <AzCore/PlatformIncl.h>
 
@@ -45,17 +46,66 @@ namespace AZStd
         return timeNowSecond;
     }
 
-    AZ::u64 GetTimeUTCMilliSecond()
+    AZStd::chrono::microseconds GetCpuThreadTimeNowMicrosecond()
     {
-        AZ::u64 utc;
-        FILETIME UTCFileTime;
-        GetSystemTimeAsFileTime(&UTCFileTime);
-        // store time in 100 of nanoseconds since January 1, 1601 UTC
-        utc = (AZ::u64)UTCFileTime.dwHighDateTime << 32 | UTCFileTime.dwLowDateTime;
-        // convert to since 1970/01/01 00:00:00 UTC
-        utc -= 116444736000000000;
-        // convert to millisecond
-        utc /= 10000;
-        return utc;
+        auto ComputeTimestampCounterPerMicrosecond = []() -> int64_t
+        {
+            static int64_t timeStampCounterPerMicrosecond = 0;
+            if (timeStampCounterPerMicrosecond > 0)
+            {
+                return timeStampCounterPerMicrosecond;
+            }
+
+            // To measure the Cpu time with microsecond precision
+            // on Windows Intel CPUs, the QueryThreadCycleTime is being used
+            // despite the documentation indicating that this function
+            // shouldn't be used to convert to elapsed time
+            // https://learn.microsoft.com/en-us/windows/win32/api/realtimeapiset/nf-realtimeapiset-querythreadcycletime#remarks
+
+            // What is being done here is to measure the processor timestamp difference
+            // over a period of 50 milliseconds and use that as the rate at which the thread ticks per microsecond
+            static const unsigned long long initialProcessorTimestamp = __rdtsc();
+            static const AZStd::chrono::steady_clock::time_point initialTime = AZStd::chrono::steady_clock::now();
+            const unsigned long long processorTimestamp = __rdtsc();
+            const auto elapsedTimeSinceFirstCall =
+                AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(AZStd::chrono::steady_clock::now() - initialTime);
+
+            // Wait 50 milliseconds after the first call to this function
+            // to measure the thread difference in the time-stamp counter for the processor
+            if (elapsedTimeSinceFirstCall <= AZStd::chrono::milliseconds(50))
+            {
+                // return 0 until more accurate data can be gathered
+                return 0;
+            }
+
+            // elapsedTimeSinceFirstCall is in microseconds
+            timeStampCounterPerMicrosecond = static_cast<int64_t>((processorTimestamp - initialProcessorTimestamp) / elapsedTimeSinceFirstCall.count());
+            return timeStampCounterPerMicrosecond;
+        };
+
+        if (int64_t timeStampCounterPerMicrosecond = ComputeTimestampCounterPerMicrosecond();
+            timeStampCounterPerMicrosecond > 0)
+        {
+            unsigned long long threadCycleCount;
+            BOOL result = ::QueryThreadCycleTime(GetCurrentThread(), &threadCycleCount);
+            if (!result)
+            {
+                auto FormatFunc = [](wchar_t* buffer, size_t size)
+                {
+                    return ::FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, nullptr, GetLastError(), 0, buffer, static_cast<DWORD>(size),
+                        nullptr);
+                };
+                constexpr size_t messageBufferSize = 1024;
+                AZStd::fixed_wstring<messageBufferSize> errorMessage;
+                errorMessage.resize_and_overwrite(errorMessage.capacity(), AZStd::move(FormatFunc));
+                AZ_Assert(false, "Failed to query thread cycle time through QueryThreadCycleTime: "
+                    AZ_TRAIT_FORMAT_STRING_PRINTF_WSTRING "\n", errorMessage.c_str());
+                return AZStd::chrono::microseconds::zero();
+            }
+            return AZStd::chrono::microseconds(threadCycleCount / timeStampCounterPerMicrosecond);
+        }
+
+        // return 0 until more accurate data can be gathered
+        return AZStd::chrono::microseconds::zero();
     }
 }

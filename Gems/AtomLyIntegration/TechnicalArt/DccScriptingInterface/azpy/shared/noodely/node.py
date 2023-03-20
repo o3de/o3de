@@ -47,13 +47,13 @@ from azpy.constants import ENVAR_DCCSI_DEV_MODE
 
 #  global space
 # To Do: update to dynaconf dynamic env and settings?
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _MODULENAME = 'azpy.shared.noodely.node'
 
 _log_level = int(20)
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     _log_level = int(10)
 _LOGGER = azpy.initialize_logger(_MODULENAME,
                                  log_to_file=False,
@@ -66,7 +66,7 @@ _LOGGER.debug('Starting:: {}.'.format({_MODULENAME}))
 # quick test code (remove later)
 from hashids import Hashids
 hashids = Hashids(min_length=16, salt='DCCsi')
-if _G_DEBUG:
+if _DCCSI_GDEBUG:
     print (hashids.encrypt(193487))  # test hash
 # -------------------------------------------------------------------------
 
@@ -107,7 +107,7 @@ class Node(object):
     """Class constructor: makes a node."""
 
     # share the debug state
-    _DEBUG = _G_DEBUG
+    _DEBUG = _DCCSI_GDEBUG
 
     # logger
     _LOGGER = _G_LOGGER

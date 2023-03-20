@@ -5,8 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
-#define AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+#pragma once
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Uuid.h>
@@ -34,6 +33,9 @@ namespace AzToolsFramework
         : public AZ::EBusTraits
     {
     public:
+        // This bus itself is thread safe, and function like GetEditorEntityContextId() is thread safe. But be careful
+        // with function like AddEntity, DestroyEntity - those might not be thread safe due the implementation.
+        static constexpr bool LocklessDispatch = true;
 
         virtual ~EditorEntityContextRequests() {}
 
@@ -63,8 +65,11 @@ namespace AzToolsFramework
         /// Registers an existing set of entities with the editor context.
         virtual void AddEditorEntities(const EntityList& entities) = 0;
 
-        /// Registers an existing set of entities with the editor context.
+        /// Triggers registered callbacks for an existing set of entities with the editor context.
         virtual void HandleEntitiesAdded(const EntityList& entities) = 0;
+
+        /// Creates an editor ready entity, and sends out notification for the creation.
+        virtual void FinalizeEditorEntity(AZ::Entity* entity) = 0;
 
         /// Destroys an entity in the editor context.
         /// \return whether or not the entity was destroyed. A false return value signifies the entity did not belong to the game context.
@@ -177,6 +182,9 @@ namespace AzToolsFramework
         //! Fired when the editor finishes going into 'Simulation' mode.
         virtual void OnStartPlayInEditor() {}
 
+        //! Fired when the editor begins coming out of 'Simulation' mode.
+        virtual void OnStopPlayInEditorBegin() {}
+
         //! Fired when the editor comes out of 'Simulation' mode
         virtual void OnStopPlayInEditor() {}
 
@@ -201,11 +209,8 @@ namespace AzToolsFramework
         //! Fired after the EditorEntityContext fails to export the root level slice to the game stream
         virtual void OnSaveStreamForGameFailure(AZStd::string_view /*failureString*/) {}
 
-        //! Fired when the user triggers a clone of ComponentEntity object(s), before operation begins
-        virtual void OnEntitiesAboutToBeCloned() {}
-
-        //! Fires when the user triggers a clone of ComponentEntity object(s)), after operation completes
-        virtual void OnEntitiesCloned() {}
+        //! Preserve entity order when re-parenting entities
+        virtual void SetForceAddEntitiesToBackFlag(bool /*forceAddToBack*/) {}
 
     };
 
@@ -229,4 +234,4 @@ namespace AzToolsFramework
     using EditorLegacyGameModeNotificationBus = AZ::EBus<EditorLegacyGameModeNotifications>;
 } // namespace AzToolsFramework
 
-#endif // AZTOOLSFRAMEWORK_EDITORENTITYCONTEXTBUS_H
+DECLARE_EBUS_EXTERN(AzToolsFramework::EditorEntityContextRequests);

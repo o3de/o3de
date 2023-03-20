@@ -9,30 +9,14 @@
 #include "EditorDefs.h"
 #include <AzTest/AzTest.h>
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/UnitTest/UnitTest.h>
 #include <EditorEnvironment.h>
 
 #include <QApplication>
 
 class EditorLibTestEnvironment
-    : public AZ::Test::ITestEnvironment
+    : public ::UnitTest::TraceBusHook
 {
-public:
-    ~EditorLibTestEnvironment() override = default;
-
-protected:
-    void SetupEnvironment() override
-    {
-        AZ::Environment::Create(nullptr);
-        AttachEditorAZEnvironment(AZ::Environment::GetInstance());
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-    }
-
-    void TeardownEnvironment() override
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        DetachEditorAZEnvironment();
-        AZ::Environment::Destroy();
-    }
 };
 
 AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)

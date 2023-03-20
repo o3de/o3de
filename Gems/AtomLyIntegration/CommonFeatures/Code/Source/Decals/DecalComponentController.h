@@ -52,6 +52,8 @@ namespace AZ
             void SetAttenuationAngle(float intensity) override;
             float GetOpacity() const override;
             void SetOpacity(float opacity) override;
+            float GetNormalMapOpacity() const override;
+            void SetNormalMapOpacity(float opacity) override;
             uint8_t GetSortKey() const override;
             void SetSortKey(uint8_t sortKeys) override;
             void SetMaterialAssetId(Data::AssetId) override;
@@ -60,6 +62,7 @@ namespace AZ
             void ConfigurationChanged();
             void AttenuationAngleChanged();
             void OpacityChanged();
+            void NormalMapOpacityChanged();
             void SortKeyChanged();
             void MaterialChanged();
             void HandleNonUniformScaleChange(const AZ::Vector3& nonUniformScale);

@@ -53,6 +53,8 @@ namespace MCore
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, uint32 count = 1);
 
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, uint32 count = 1);
+
         /**
          * Swap the endian of one or more shorts.
          * @param value The value to convert the endian for.
@@ -178,6 +180,8 @@ namespace MCore
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, EEndianType sourceEndianType, uint32 count = 1);
 
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, EEndianType sourceEndianType, uint32 count = 1);
+
         /**
          * Convert one or more 16 bit short values into the endian used by our current platform.
          * @param value The value(s) to convert. The number of values to follow at the specified address must be at least the number
@@ -272,6 +276,8 @@ namespace MCore
          * @param count The number of objects to convert. This allows conversion of arrays at once.
          */
         static MCORE_INLINE void ConvertUnsignedInt32(uint32* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
+
+        static MCORE_INLINE void ConvertUnsignedInt64(uint64* value, EEndianType sourceEndianType, EEndianType targetEndianType, uint32 count = 1);
 
         /**
          * Convert an 16 bit short into another endian type.

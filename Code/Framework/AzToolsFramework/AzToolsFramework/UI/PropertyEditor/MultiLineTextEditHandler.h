@@ -37,11 +37,11 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MultiLineTextEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MultiLineTextEditHandler, AZ::SystemAllocator);
 
         QWidget* CreateGUI(QWidget* parent) override;
         AZ::u32 GetHandlerName() const override;
-        bool AutoDelete() const;
+        bool AutoDelete() const override;
 
         void ConsumeAttribute(GrowTextEdit* widget, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;
         void WriteGUIValuesIntoProperty(size_t index, GrowTextEdit* GUI, property_t& instance, AzToolsFramework::InstanceDataNode* node) override;

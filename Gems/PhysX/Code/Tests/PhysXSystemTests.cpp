@@ -18,7 +18,7 @@ namespace PhysX
 {
     namespace Internal
     {
-        static constexpr const char* DefaultSceneNameFormat = "scene-%d";
+        static constexpr const char* DefaultSceneNameFormat = "scene-%u";
     }
     //setup a test fixture with no default created scene
     class PhysXSystemFixture
@@ -41,6 +41,17 @@ namespace PhysX
             m_sceneConfigs.clear();
 
             TestUtils::ResetPhysXSystem();
+        }
+
+        size_t GetNumScenesInSystem() const
+        {
+            auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
+            const AzPhysics::SceneList& sceneList = physicsSystem->GetAllScenes();
+
+            size_t scenesNum = AZStd::count_if(sceneList.begin(), sceneList.end(),
+                [](const auto& scenePtr){ return scenePtr != nullptr;});
+
+            return scenesNum;
         }
 
         static constexpr AZ::u64 NumScenes = 10;
@@ -88,7 +99,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, AddScenes_createsAllScenesRequested)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -107,7 +118,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemovedScene_IsRemoved)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -122,7 +133,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemoveManyScenes_AllRemoved)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -148,7 +159,7 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, RemovingScene_FreesSceneHandle_ForNextCreatedScene)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(m_sceneConfigs);
@@ -169,12 +180,12 @@ namespace PhysX
     TEST_F(PhysXSystemFixture, AddingScenes_PastLimitFails)
     {
         auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get();
-        EXPECT_TRUE(physicsSystem->GetAllScenes().size() == 0); //there should be no scenes currently created
+        EXPECT_EQ(GetNumScenesInSystem(), 0); //there should be no scenes currently created
 
         //generate the max number of scenes
         AzPhysics::SceneConfigurationList sceneConfigs;
         AzPhysics::SceneConfiguration config;
-        for (int i = 0; i < std::numeric_limits<AzPhysics::SceneIndex>::max(); i++)
+        for (AZ::u32 i = 0; i < AzPhysics::MaxNumberOfScenes; i++)
         {
             config.m_sceneName = AZStd::string::format(Internal::DefaultSceneNameFormat, i);
             sceneConfigs.push_back(config);
@@ -184,7 +195,7 @@ namespace PhysX
         //add all scene configs
         AzPhysics::SceneHandleList sceneHandles = physicsSystem->AddScenes(sceneConfigs);
         //Verify we've added the max number and all are valid
-        EXPECT_EQ(sceneHandles.size(), std::numeric_limits<AzPhysics::SceneIndex>::max());
+        EXPECT_EQ(sceneHandles.size(), AzPhysics::MaxNumberOfScenes);
         for (auto& handle : sceneHandles)
         {
             EXPECT_TRUE(handle != AzPhysics::InvalidSceneHandle);

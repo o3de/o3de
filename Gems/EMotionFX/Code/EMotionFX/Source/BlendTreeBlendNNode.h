@@ -12,7 +12,11 @@
 #include "AnimGraphNode.h"
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/utils.h>
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace EMotionFX
 {
@@ -49,7 +53,7 @@ namespace EMotionFX
         AZ_RTTI(BlendTreeBlendNNode, "{CBFFDE41-008D-45A1-AC2A-E9A25C8CE62A}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_POSE_0    = 0,
             INPUTPORT_POSE_1    = 1,
@@ -65,7 +69,7 @@ namespace EMotionFX
             OUTPUTPORT_POSE     = 0
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_POSE_0 = 0,
             PORTID_INPUT_POSE_1 = 1,
@@ -94,8 +98,8 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mIndexA = InvalidIndex32;
-            uint32 mIndexB = InvalidIndex32;
+            uint32 m_indexA = InvalidIndex32;
+            uint32 m_indexB = InvalidIndex32;
         };
 
         BlendTreeBlendNNode();
@@ -116,7 +120,6 @@ namespace EMotionFX
 
         void FindBlendNodes(AnimGraphInstance* animGraphInstance, AnimGraphNode** outNodeA, AnimGraphNode** outNodeB, uint32* outIndexA, uint32* outIndexB, float* outWeight) const;
 
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
         static void Reflect(AZ::ReflectContext* context);
         void SetSyncMode(ESyncMode syncMode);
         void SetEventMode(EEventMode eventMode);

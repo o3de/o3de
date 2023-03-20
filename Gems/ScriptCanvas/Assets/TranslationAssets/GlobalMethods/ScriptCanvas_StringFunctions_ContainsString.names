@@ -1,0 +1,61 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_StringFunctions_ContainsString",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Contains String",
+                "category": "String"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_StringFunctions_ContainsString",
+                    "details": {
+                        "name": "Contains String",
+                        "tooltip": "Finds the first substring equal to the given pattern."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Source",
+                                "tooltip": "The string to search in."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Pattern",
+                                "tooltip": "The substring to search for."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Search From End",
+                                "tooltip": "Start the match checking from the end of a string."
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Case Sensitive",
+                                "tooltip": "Take into account the case of the string when searching."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Result",
+                                "tooltip": "Position of the first character of the found substring or npos if no such substring is found."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

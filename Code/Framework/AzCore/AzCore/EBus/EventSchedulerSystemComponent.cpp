@@ -60,7 +60,7 @@ namespace AZ
 
     void EventSchedulerSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        TimeMs startTime = GetElapsedTimeMs();
+        TimeMs startTime = AZ::GetElapsedTimeMs();
         bool usingTimeslice = bg_maxScheduledEventProcessTimeMs != TimeMs{ 0 };
 
         while (!m_queue.empty())
@@ -76,7 +76,7 @@ namespace AZ
 
         while (!m_pendingQueue.empty())
         {
-            if (usingTimeslice && (GetElapsedTimeMs() - startTime > bg_maxScheduledEventProcessTimeMs))
+            if (usingTimeslice && (AZ::GetElapsedTimeMs() - startTime > bg_maxScheduledEventProcessTimeMs))
             {
                 AZLOG_WARN("Failed to trigger all pending scheduled events, %u events remain on the pending queue", aznumeric_cast<uint32_t>(m_pendingQueue.size()));
                 break;
@@ -103,13 +103,13 @@ namespace AZ
             durationMs = TimeMs{ 0 };
         }
 
-        TimeMs currentMilliseconds = GetElapsedTimeMs();
+        TimeMs currentMilliseconds = AZ::GetElapsedTimeMs();
         if (timedEvent->m_handle == nullptr)
         {
             timedEvent->m_handle = AllocateHandle();
         }
         const bool ownsScheduledEvent = false;
-        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
+        timedEvent->m_handle = new (timedEvent->m_handle) ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
         return timedEvent->m_handle;
@@ -122,10 +122,10 @@ namespace AZ
             durationMs = TimeMs{ 0 };
         }
 
-        TimeMs currentMilliseconds = GetElapsedTimeMs();
+        TimeMs currentMilliseconds = AZ::GetElapsedTimeMs();
         ScheduledEvent* timedEvent = AllocateManagedEvent(callback, eventName);
         const bool ownsScheduledEvent = true;
-        *(timedEvent->m_handle) = ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
+        timedEvent->m_handle = new (timedEvent->m_handle) ScheduledEventHandle(TimeMs(currentMilliseconds + durationMs), durationMs, timedEvent, ownsScheduledEvent);
         timedEvent->m_timeInserted = currentMilliseconds;
         m_queue.push(timedEvent->m_handle);
     }

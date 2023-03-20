@@ -9,6 +9,7 @@
 #include <PostProcess/ShapeWeightModifier/ShapeWeightModifierComponentController.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Asset/AssetSerializer.h>
 
 namespace AZ
 {
@@ -23,10 +24,6 @@ namespace AZ
                 serializeContext->Class<ShapeWeightModifierComponentController>()
                     ->Version(0)
                     ->Field("Configuration", &ShapeWeightModifierComponentController::m_configuration);
-            }
-
-            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
             }
         }
 

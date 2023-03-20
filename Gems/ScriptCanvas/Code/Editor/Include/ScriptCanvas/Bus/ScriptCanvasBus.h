@@ -9,7 +9,6 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <ScriptCanvas/Data/Data.h>
 
@@ -22,13 +21,13 @@ namespace ScriptCanvasEditor
     public:
         static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-        virtual void AddAsyncJob(AZStd::function<void()>&& jobFunc) = 0;
-
         // Inserts into the supplied set types that are creatable within the editor
         virtual void GetEditorCreatableTypes(AZStd::unordered_set<ScriptCanvas::Data::Type>& outCreatableTypes) = 0;
 
         // Creates all editor components needed to associate the script canvas engine with an entity
         virtual void CreateEditorComponentsOnEntity(AZ::Entity* entity, const AZ::Data::AssetType& assetType) = 0;
+
+        virtual void RequestGarbageCollect() = 0;
     };
 
     using SystemRequestBus = AZ::EBus<SystemRequests>;
@@ -41,6 +40,8 @@ namespace ScriptCanvasEditor
         virtual QMainWindow* GetMainWindow() = 0;
 
         virtual void OpenValidationPanel() = 0;
+
+        virtual void RefreshSelection() = 0;
     };
 
     using UIRequestBus = AZ::EBus<UIRequests>;

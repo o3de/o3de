@@ -17,12 +17,14 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    AZ::Transform ApplySpace(const AZ::Transform& localTransform, const AZ::Transform& space, const AZ::Vector3& nonUniformScale);
+
     //! Handles location for manipulators which have a global space but no local transformation.
     class ManipulatorSpace
     {
     public:
         AZ_TYPE_INFO(ManipulatorSpace, "{5D4B8974-8F98-4268-8D6B-3214A77C6382}")
-        AZ_CLASS_ALLOCATOR(ManipulatorSpace, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorSpace, AZ::SystemAllocator)
 
         const AZ::Transform& GetSpace() const;
         void SetSpace(const AZ::Transform& space);
@@ -42,7 +44,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(ManipulatorSpaceWithLocalPosition, "{47BE15AF-60A8-436B-8F3F-7DDFB97220E6}")
-        AZ_CLASS_ALLOCATOR(ManipulatorSpaceWithLocalPosition, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorSpaceWithLocalPosition, AZ::SystemAllocator)
 
         const AZ::Vector3& GetLocalPosition() const;
         void SetLocalPosition(const AZ::Vector3& localPosition);
@@ -56,7 +58,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(ManipulatorSpaceWithLocalTransform, "{6D100797-1DD8-45B0-A21C-8893B770C0BC}")
-        AZ_CLASS_ALLOCATOR(ManipulatorSpaceWithLocalTransform, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ManipulatorSpaceWithLocalTransform, AZ::SystemAllocator)
 
         const AZ::Vector3& GetLocalPosition() const;
         void SetLocalPosition(const AZ::Vector3& localPosition);

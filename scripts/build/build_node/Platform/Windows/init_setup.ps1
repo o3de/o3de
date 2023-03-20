@@ -12,6 +12,9 @@ Set-MpPreference -DisableRealtimeMonitoring $true
 New-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name EnableLUA -PropertyType DWord -Value 0 -Force
 New-ItemProperty -Path HKLM:Software\Microsoft\Windows\CurrentVersion\policies\system -Name ConsentPromptBehaviorAdmin -PropertyType DWord -Value 0 -Force
 
+# Enable crash reporting (defaults to %LOCALAPPDATA%\CrashDumps as minidumps)
+New-Item -Path HKLM:Software\Microsoft\Windows\Windows Error Reporting\LocalDumps
+
 # Increase port number availablity (for P4) 
 netsh int ipv4 set dynamicport tcp start=1025 num=64511
 

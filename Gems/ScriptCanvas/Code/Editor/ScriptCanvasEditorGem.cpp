@@ -19,14 +19,11 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/SimpleAsset.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
-
-#include <Debugger/Debugger.h>
 
 #include <Editor/ReflectComponent.h>
 #include <Editor/SystemComponent.h>
@@ -81,7 +78,7 @@ namespace ScriptCanvas
             ScriptCanvasEditor::EditorAssetSystemComponent::CreateDescriptor(),
             ScriptCanvasEditor::EditorScriptCanvasComponent::CreateDescriptor(),
             ScriptCanvasEditor::EntityMimeDataHandler::CreateDescriptor(),
-            ScriptCanvasEditor::Graph::CreateDescriptor(),
+            ScriptCanvasEditor::EditorGraph::CreateDescriptor(),
             ScriptCanvasEditor::IconComponent::CreateDescriptor(),
             ScriptCanvasEditor::ReflectComponent::CreateDescriptor(),
             ScriptCanvasEditor::SystemComponent::CreateDescriptor(),

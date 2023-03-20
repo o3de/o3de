@@ -12,7 +12,11 @@
 #include "AnimGraphNode.h"
 #include "AnimGraphNodeData.h"
 #include "PlayBackInfo.h"
-#include <AzCore/Serialization/SerializeContext.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace EMotionFX
 {
@@ -32,7 +36,7 @@ namespace EMotionFX
         AZ_RTTI(AnimGraphMotionNode, "{B8B8AAE6-E532-4BF8-898F-3D40AA41BC82}", AnimGraphNode)
         AZ_CLASS_ALLOCATOR_DECL
 
-        enum
+        enum : uint16
         {
             INPUTPORT_PLAYSPEED                 = 0,
             INPUTPORT_INPLACE                   = 1,
@@ -41,7 +45,7 @@ namespace EMotionFX
             OUTPUTPORT_MOTION                   = 1
         };
 
-        enum
+        enum : uint16
         {
             PORTID_INPUT_PLAYSPEED              = 0,
             PORTID_INPUT_INPLACE                = 1,
@@ -72,10 +76,10 @@ namespace EMotionFX
             void Update() override;
 
         public:
-            uint32 mMotionSetID = InvalidIndex32;
-            uint32 mActiveMotionIndex = InvalidIndex32;
-            MotionInstance* mMotionInstance = nullptr;
-            bool mReload = false;
+            uint32 m_motionSetId = InvalidIndex32;
+            uint32 m_activeMotionIndex = InvalidIndex32;
+            MotionInstance* m_motionInstance = nullptr;
+            bool m_reload = false;
         };
 
         AnimGraphMotionNode();
@@ -143,7 +147,6 @@ namespace EMotionFX
 
         static void Reflect(AZ::ReflectContext* context);
         static void InitializeDefaultMotionIdsRandomWeights(const AZStd::vector<AZStd::string>& motionIds, AZStd::vector<AZStd::pair<AZStd::string, float> >& motionIdsRandomWeights);
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
 
     private:
         static const float                                  s_defaultWeight;

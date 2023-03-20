@@ -18,25 +18,11 @@
 #include <QSettings>
 
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <AzCore/JSON/document.h>
+#include <AzCore/Console/IConsole.h>
 
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
-
-struct SGizmoSettings
-{
-    float axisGizmoSize;
-    bool axisGizmoText;
-    int axisGizmoMaxCount;
-
-    float helpersScale;
-    float tagpointScaleMulti;
-
-    // Scale size and transparency for debug spheres when using Ruler tool
-    float rulerSphereScale;
-    float rulerSphereTrans;
-
-    SGizmoSettings();
-};
 
 //////////////////////////////////////////////////////////////////////////
 // Settings for snapping in the viewports.
@@ -130,12 +116,8 @@ struct SViewportsSettings
     bool bAlwaysShowRadiuses;
     //! True if 2D viewports will be synchronized with same view and origin.
     bool bSync2DViews;
-    //! Camera FOV for perspective View.
-    float fDefaultFov;
     //! Camera Aspect Ratio for perspective View.
     float fDefaultAspectRatio;
-    //! Show safe frame.
-    bool bShowSafeFrame;
     //! To highlight selected geometry.
     bool bHighlightSelectedGeometry;
     //! To highlight selected vegetation.
@@ -151,13 +133,6 @@ struct SViewportsSettings
     bool bDrawEntityLabels;
     //! Show Trigger bounds.
     bool bShowTriggerBounds;
-    //! Show Icons in viewport.
-    bool bShowIcons;
-    //! Scale icons with distance, so they aren't a fixed size no matter how far away you are
-    bool bDistanceScaleIcons;
-
-    //! Show Size-based Icons in viewport.
-    bool bShowSizeBasedIcons;
 
     //! Show Helpers in viewport for frozen objects.
     int nShowFrozenHelpers;
@@ -203,12 +178,6 @@ struct SSelectObjectDialogSettings
 //////////////////////////////////////////////////////////////////////////
 struct SGUI_Settings
 {
-    bool bWindowsVista;        // true when running on windows Vista
-    QFont hSystemFont;         // Default system GUI font.
-    QFont hSystemFontBold;     // Default system GUI bold font.
-    QFont hSystemFontItalic;   // Default system GUI italic font.
-    int nDefaultFontHieght;    // Default font height for 8 logical units.
-
     int nToolbarIconSize;      // Override size of the toolbar icons
 };
 
@@ -228,6 +197,11 @@ struct SExperimentalFeaturesSettings
 struct SSliceSettings
 {
     bool dynamicByDefault;
+};
+
+struct SLevelSaveSettings
+{
+    AzToolsFramework::Prefab::SaveAllPrefabsPreference saveAllPrefabsPreference;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -270,6 +244,7 @@ struct SSmartOpenDialogSettings
 //////////////////////////////////////////////////////////////////////////
 /** Various editor settings.
 */
+AZ_CVAR_EXTERNED(int64_t, ed_backgroundSystemTickCap);
 AZ_PUSH_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 struct SANDBOX_API SEditorSettings
     : AzToolsFramework::EditorSettingsAPIBus::Handler
@@ -277,7 +252,7 @@ struct SANDBOX_API SEditorSettings
 AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SEditorSettings();
     ~SEditorSettings() = default;
-    void    Save();
+    void    Save(bool isEditorClosing = false);
     void    Load();
     void    LoadCloudSettings();
 
@@ -289,7 +264,8 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SettingOutcome GetValue(const AZStd::string_view path) override;
     SettingOutcome SetValue(const AZStd::string_view path, const AZStd::any& value) override;
     AzToolsFramework::ConsoleColorTheme GetConsoleColorTheme() const override;
-    int GetMaxNumberOfItemsShownInSearchView() const override;
+    AZ::u64 GetMaxNumberOfItemsShownInSearchView() const override;
+    void SaveSettingsRegistryFile() override;
 
     void ConvertPath(const AZStd::string_view sourcePath, AZStd::string& category, AZStd::string& attribute);
 
@@ -299,12 +275,9 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     // need to expose updating of the source control enable/disable flag
     // because its state is updateable through the main status bar
     void SaveEnableSourceControlFlag(bool triggerUpdate = false);
-
     void LoadEnableSourceControlFlag();
 
     void PostInitApply();
-
-    bool BrowseTerrainTexture(bool bIsSave);
 
     //////////////////////////////////////////////////////////////////////////
     // Variables.
@@ -315,7 +288,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     bool m_showCircularDependencyError;
     bool bAutoloadLastLevelAtStartup;
     bool bMuteAudio;
-    bool bEnableGameModeVR;
 
     //! Speed of camera movement.
     float cameraMoveSpeed;
@@ -350,8 +322,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! how many save backups to keep
     int backupOnSaveMaxCount;
 
-    int useLowercasePaths;
-
     //////////////////////////////////////////////////////////////////////////
     // Autobackup.
     //////////////////////////////////////////////////////////////////////////
@@ -365,14 +335,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     int autoRemindTime;
     //////////////////////////////////////////////////////////////////////////
 
-    //////////////////////////////////////////////////////////////////////////
-    // Asset Browser Search View.
-    //////////////////////////////////////////////////////////////////////////
-    //! Current maximum number of items that can be displayed in the AssetBrowser Search View.
-    int maxNumberOfItemsShownInSearch;
-    //////////////////////////////////////////////////////////////////////////
-
-
     //! If true preview windows is displayed when browsing geometries.
     bool bPreviewGeometryWindow;
 
@@ -381,13 +343,11 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     //! Keeps the editor active even if no focus is set
     int keepEditorActive;
 
-    SGizmoSettings gizmo;
-
     // Settings of the snapping.
     SSnapSettings snap;
 
     //! Source Control Enabling.
-    bool enableSourceControl;
+    bool enableSourceControl = false;
     bool clearConsoleOnGameModeStart;
 
     //! Text editor.
@@ -408,13 +368,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    bool              bApplyConfigSpecInEditor;
-
-    ESystemConfigSpec editorConfigSpec;
-
-    //! Terrain Texture Export/Import filename.
-    QString terrainTextureExport;
-
     // Read only parameter.
     // Refects the status of GetIEditor()->GetOperationMode
     // To change current operation mode use GetIEditor()->SetOperationMode
@@ -431,9 +384,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SAssetBrowserSettings sAssetBrowserSettings;
 
     SSelectObjectDialogSettings selectObjectDialog;
-
-    // For Terrain Texture Generation Multiplier.
-    float fBrMultiplier;
 
     AzToolsFramework::ConsoleColorTheme consoleBackgroundColorTheme;
 
@@ -453,8 +403,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     bool bSettingsManagerMode;
 
-    bool bAutoSaveTagPoints;
-
     bool bNavigationContinuousUpdate;
     bool bNavigationShowAreas;
     bool bNavigationDebugDisplay;
@@ -465,6 +413,8 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     const char* g_TemporaryLevelName;
 
     SSliceSettings sliceSettings;
+
+    SLevelSaveSettings levelSaveSettings;
 
     bool prefabSystem = true;                  ///< Toggle to enable/disable the Prefab system for level entities.
 
@@ -479,23 +429,8 @@ private:
     void LoadValue(const char* sSection, const char* sKey, float& value);
     void LoadValue(const char* sSection, const char* sKey, bool& value);
     void LoadValue(const char* sSection, const char* sKey, QString& value);
-    void LoadValue(const char* sSection, const char* sKey, ESystemConfigSpec& value);
 
     void SaveCloudSettings();
-
-    void SaveSettingsRegistryFile();
-
-    //! Set a boolean setting value from the registry.
-    //! \param key[in] The key to set.
-    //! \param value[in] The new value for the setting.
-    //! \return Whether the value for the key was correctly set in the registry.
-    bool SetSettingsRegistry_Bool(const char* key, bool value);
-
-    //! Gets a boolean setting value from the registry.
-    //! \param key[in] The key to query.
-    //! \param value[out] The variable the queried value will be saved to, by reference.
-    //! \return Whether a value for the key was found in the registry.
-    bool GetSettingsRegistry_Bool(const char* key, bool& value);
 };
 
 //! Single instance of editor settings for fast access.

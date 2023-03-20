@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public SceneContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveUnusedElementsMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveUnusedElementsMenuAction, AZ::SystemAllocator);
         
         RemoveUnusedElementsMenuAction(QObject* parent);
         virtual ~RemoveUnusedElementsMenuAction() = default;
@@ -25,6 +25,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using SceneContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -32,7 +33,7 @@ namespace GraphCanvas
         : public SceneContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveUnusedNodesMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveUnusedNodesMenuAction, AZ::SystemAllocator);
 
         RemoveUnusedNodesMenuAction(QObject* parent);
         virtual ~RemoveUnusedNodesMenuAction() = default;
@@ -40,6 +41,7 @@ namespace GraphCanvas
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
 
+        using SceneContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

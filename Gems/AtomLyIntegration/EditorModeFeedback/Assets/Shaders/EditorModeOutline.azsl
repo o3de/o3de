@@ -1,0 +1,83 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <EditorModeCommon.azsli>
+#include <EditorModeDepthTransition.azsli>
+
+partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
+{    
+    //! Outline line thickness.
+    float m_lineThickness;
+
+    //! Outline line color.
+    float4 m_lineColor;
+
+    //! Outline style to use (0 = OutlineStyle::Always, 1 = OutlineStyle::Visible)
+    uint m_outlineStyle;
+}
+
+//! Applies an outline effect to the entity mask of the specified line thickness.
+//! @returns The outlines of both the visible entities of interest fragments (red) and visible and
+//! occluded entities of interest fragments (green) channels of the entity mask.
+float2 Outliner(const float2 uv, const float lineThickness)
+{
+    const float2 unormalizedUv = float2(uv.x * PassSrg::m_maskDimensions.x, uv.y * PassSrg::m_maskDimensions.y);
+    float2 outlines = float2(0., 0.);
+    
+    // Outliner kernel
+    for(float u = -lineThickness; u <= lineThickness; u+=1.)
+    {
+        for(float v = -lineThickness; v <= lineThickness; v+=1.)
+        {
+            outlines += PassSrg::m_entityMask.Sample(PassSrg::PointSampler, (unormalizedUv + float2(u,v)) * PassSrg::m_maskDimensions.zw).rg;
+        }
+    }
+    
+    return min(float2(1.0, 1.0), (outlines / (lineThickness * lineThickness)));
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    PSOutput OUT;
+
+    const float3 inColor = PassSrg::m_framebuffer.Sample(PassSrg::LinearSampler, IN.m_texCoord).rgb;
+    const float2 mask = PassSrg::m_entityMask.Sample(PassSrg::PointSampler, IN.m_texCoord);
+
+    // Only attempt to outline fragments that lie outside of the entity mask
+    if((mask.r * mask.g) > 0.0)
+    {
+        // Fragment lies with the mask, early exit with passthrough color
+        OUT.m_color.rgb = inColor;
+        return OUT;
+    }
+
+    // Apply the depth transition to the blend amount
+    const float zDepth =  PassSrg::m_depth.Sample(PassSrg::PointSampler, IN.m_texCoord).r;
+    float t = PassSrg::CalculateTransitionBlendAmountFromDepth(zDepth, mask.r);
+
+    // Outline effect
+    const float lineThickness = PassSrg::m_lineThickness;
+    const float2 outlines = Outliner(IN.m_texCoord, lineThickness) * (1.0 - mask);
+
+    float outline = 0.0;
+    if(PassSrg::m_outlineStyle == 0)
+    {
+        // OutlineStyle::Always
+        outline = outlines.g;
+    }
+    else if(PassSrg::m_outlineStyle == 1)
+    {
+        // OutlineStyle::Visible
+        outline = outlines.r;
+    }
+
+    // Apply the visual effect to non-mask entities, leaving mask entities untouched
+    OUT.m_color = PassSrg::CalculateFinalBlendAmountAndOutputColor(inColor, PassSrg::m_lineColor.rgb, outline);
+
+    return OUT;
+}

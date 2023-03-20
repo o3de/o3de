@@ -23,7 +23,7 @@ namespace AZ
             : public Job
         {
         public:
-            AZ_CLASS_ALLOCATOR(JobNotify, ThreadPoolAllocator, 0)
+            AZ_CLASS_ALLOCATOR(JobNotify, ThreadPoolAllocator);
 
             JobNotify(AZStd::atomic<bool>* notifyFlag, JobContext* context = nullptr)
                 : Job(false, context)
@@ -31,7 +31,7 @@ namespace AZ
             {
             }
         protected:
-            virtual void Process()
+            void Process() override
             {
                 m_notifyFlag->store(true, AZStd::memory_order_release);
             }

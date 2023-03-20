@@ -13,6 +13,7 @@
 
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
+#include <Atom/RHI.Edit/ShaderBuildOptions.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
@@ -23,10 +24,11 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 #include <CommonFiles/Preprocessor.h>
-#include <CommonFiles/GlobalBuildOptions.h>
-#include <Editor/AtomShaderCapabilitiesConfigFile.h>
+
+#include "HashedVariantListSourceData.h"
 
 namespace AZ
 {
@@ -44,9 +46,9 @@ namespace AZ
 
             PreprocessorOptions::Reflect(context);
             RHI::ShaderCompilerProfiling::Reflect(context);
-            AtomShaderConfig::CapabilitiesConfigFile::Reflect(context);
-            GlobalBuildOptions::Reflect(context);
-            RHI::ShaderCompilerArguments::Reflect(context);
+            RHI::ShaderBuildArguments::Reflect(context);
+            RHI::ShaderBuildOptions::Reflect(context);
+            HashedVariantListSourceData::Reflect(context);
         }
 
         void AzslShaderBuilderSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
@@ -81,8 +83,7 @@ namespace AZ
             // Register Shader Asset Builder
             AssetBuilderSDK::AssetBuilderDesc shaderAssetBuilderDescriptor;
             shaderAssetBuilderDescriptor.m_name = "Shader Asset Builder";
-            shaderAssetBuilderDescriptor.m_version = 102; // ATOM-15472
-            // .shader file changes trigger rebuilds
+            shaderAssetBuilderDescriptor.m_version = 118; // material pipeline MATERIAL_TYPE_AZSLI_FILE_PATH trick
             shaderAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern( AZStd::string::format("*.%s", RPI::ShaderSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             shaderAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderAssetBuilder>();
             shaderAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderAssetBuilder::CreateJobs, &m_shaderAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -91,24 +92,49 @@ namespace AZ
             m_shaderAssetBuilder.BusConnect(shaderAssetBuilderDescriptor.m_busId);
             AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderAssetBuilderDescriptor);
 
-            // Register Shader Variant Asset Builder
-            AssetBuilderSDK::AssetBuilderDesc shaderVariantAssetBuilderDescriptor;
-            shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
-            // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
-            // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
-            shaderVariantAssetBuilderDescriptor.m_version = 24; // ATOM-15978
-            shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
-            shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
-            shaderVariantAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::CreateJobs, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
-            shaderVariantAssetBuilderDescriptor.m_processJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::ProcessJob, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+            // If, either the SettingsRegistry doesn't exist, or the property @EnableShaderVariantAssetBuilderRegistryKey is not found,
+            // the default is to enable the ShaderVariantAssetBuilder.
+            m_enableShaderVariantAssetBuilder = true;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(m_enableShaderVariantAssetBuilder, EnableShaderVariantAssetBuilderRegistryKey);
+            }
 
-            m_shaderVariantAssetBuilder.BusConnect(shaderVariantAssetBuilderDescriptor.m_busId);
-            AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderVariantAssetBuilderDescriptor);
+            if (m_enableShaderVariantAssetBuilder)
+            {
+                // Register Shader Variant Asset Builder
+                AssetBuilderSDK::AssetBuilderDesc shaderVariantAssetBuilderDescriptor;
+                shaderVariantAssetBuilderDescriptor.m_name = "Shader Variant Asset Builder";
+                // Both "Shader Variant Asset Builder" and "Shader Asset Builder" produce ShaderVariantAsset products. If you update
+                // ShaderVariantAsset you will need to update BOTH version numbers, not just "Shader Variant Asset Builder".
+                shaderVariantAssetBuilderDescriptor.m_version = 33; // // material pipeline MATERIAL_TYPE_AZSLI_FILE_PATH trick
+                shaderVariantAssetBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", RPI::ShaderVariantListSourceData::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+                shaderVariantAssetBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantAssetBuilder>();
+                shaderVariantAssetBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::CreateJobs, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+                shaderVariantAssetBuilderDescriptor.m_processJobFunction = AZStd::bind(&ShaderVariantAssetBuilder::ProcessJob, &m_shaderVariantAssetBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+
+                m_shaderVariantAssetBuilder.BusConnect(shaderVariantAssetBuilderDescriptor.m_busId);
+                AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderVariantAssetBuilderDescriptor);
+
+                // Register Shader Variant List Builder
+                AssetBuilderSDK::AssetBuilderDesc shaderVariantListBuilderDescriptor;
+                shaderVariantListBuilderDescriptor.m_name = "Shader Variant List Builder";
+                shaderVariantListBuilderDescriptor.m_version = 1; // First version of ShaderVariantListBuilder
+                shaderVariantListBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", ShaderVariantListBuilder::Extension/*RPI::ShaderVariantListSourceData::Extension*/), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+                shaderVariantListBuilderDescriptor.m_busId = azrtti_typeid<ShaderVariantListBuilder>();
+                shaderVariantListBuilderDescriptor.m_createJobFunction = AZStd::bind(&ShaderVariantListBuilder::CreateJobs, &m_shaderVariantListBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+                shaderVariantListBuilderDescriptor.m_processJobFunction = AZStd::bind(&ShaderVariantListBuilder::ProcessJob, &m_shaderVariantListBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
+
+                m_shaderVariantListBuilder.BusConnect(shaderVariantListBuilderDescriptor.m_busId);
+                AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Handler::RegisterBuilderInformation, shaderVariantListBuilderDescriptor);
+
+            }
 
             // Register Precompiled Shader Builder
             AssetBuilderSDK::AssetBuilderDesc precompiledShaderBuilderDescriptor;
             precompiledShaderBuilderDescriptor.m_name = "Precompiled Shader Builder";
-            precompiledShaderBuilderDescriptor.m_version = 10; // ATOM-15472
+            precompiledShaderBuilderDescriptor.m_version = 13; // GHI-7898, added check for API on product dependency
             precompiledShaderBuilderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern(AZStd::string::format("*.%s", AZ::PrecompiledShaderBuilder::Extension), AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
             precompiledShaderBuilderDescriptor.m_busId = azrtti_typeid<PrecompiledShaderBuilder>();
             precompiledShaderBuilderDescriptor.m_createJobFunction = AZStd::bind(&PrecompiledShaderBuilder::CreateJobs, &m_precompiledShaderBuilder, AZStd::placeholders::_1, AZStd::placeholders::_2);
@@ -121,7 +147,12 @@ namespace AZ
         void AzslShaderBuilderSystemComponent::Deactivate()
         {
             m_shaderAssetBuilder.BusDisconnect();
-            m_shaderVariantAssetBuilder.BusDisconnect();
+            if (m_enableShaderVariantAssetBuilder)
+            {
+                m_shaderVariantAssetBuilder.BusDisconnect();
+                m_shaderVariantListBuilder.BusDisconnect();
+
+            }
             m_precompiledShaderBuilder.BusDisconnect();
 
             RHI::ShaderPlatformInterfaceRegisterBus::Handler::BusDisconnect();

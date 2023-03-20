@@ -1,0 +1,74 @@
+{
+    "entries": [
+        {
+            "base": "AreaSystemRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "category": "Area System"
+            },
+            "methods": [
+                {
+                    "base": "GetInstanceCountInAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Instance Count In AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetInstance Count In AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get Instance Count In AABB"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "Instance Count"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetInstancesInAabb",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Instances In AABB"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Instances In AABB is invoked"
+                    },
+                    "details": {
+                        "name": "Get Instances In AABB"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+                            "details": {
+                                "name": "AABB"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{F323EFB3-042D-51E9-ABE8-0B55D587CC8E}",
+                            "details": {
+                                "name": "Instances"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

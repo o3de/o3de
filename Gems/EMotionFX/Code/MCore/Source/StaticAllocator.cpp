@@ -12,10 +12,10 @@
 
 namespace MCore
 {
-    StaticAllocator::pointer_type StaticAllocator::allocate(size_type byteSize, size_type alignment, int flags)
+    StaticAllocator::pointer StaticAllocator::allocate(size_type byteSize, size_type alignment, int flags)
     {
         AZ_UNUSED(flags);
-        AZ::OSAllocator::pointer_type address = AZ_OS_MALLOC(byteSize, alignment);
+        AZ::OSAllocator::pointer address = AZ_OS_MALLOC(byteSize, alignment);
 
         if (address == nullptr)
         {
@@ -25,21 +25,21 @@ namespace MCore
         return address;
     }
 
-    void StaticAllocator::deallocate(pointer_type ptr, size_type byteSize, size_type alignment)
+    void StaticAllocator::deallocate(pointer ptr, size_type byteSize, size_type alignment)
     {
         AZ_UNUSED(byteSize);
         AZ_UNUSED(alignment);
         AZ_OS_FREE(ptr);
     }
 
-    StaticAllocator::size_type StaticAllocator::resize(pointer_type ptr, size_type newSize)
+    StaticAllocator::size_type StaticAllocator::resize(pointer ptr, size_type newSize)
     {
         AZ_UNUSED(ptr);
         AZ_UNUSED(newSize);
         return 0;
     }
 
-    StaticAllocator::size_type StaticAllocator::get_max_size() const
+    StaticAllocator::size_type StaticAllocator::max_size() const
     {
         return 0;
     }

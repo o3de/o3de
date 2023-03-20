@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "GradientSurfaceDataComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "GradientSurfaceDataComponent"
+            }
+        }
+    ]
+}

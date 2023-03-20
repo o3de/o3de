@@ -20,7 +20,7 @@
 #include <Atom/RPI.Reflect/Model/ModelLodAsset.h>
 #include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AtomCore/std/containers/vector_set.h>
 
 #include <AzCore/std/containers/fixed_vector.h>
@@ -75,6 +75,7 @@ namespace AZ
                 StreamInfoList m_streamInfo;
 
                 ModelMaterialSlot::StableId m_materialSlotStableId = ModelMaterialSlot::InvalidStableId;
+                AZ::Name m_materialSlotName;
                 
                 //! The default material assigned to the mesh by the asset.
                 Data::Instance<Material> m_material;
@@ -83,7 +84,7 @@ namespace AZ
             using StreamBufferViewList = AZStd::fixed_vector<RHI::StreamBufferView, RHI::Limits::Pipeline::StreamCountMax>;
 
             AZ_INSTANCE_DATA(ModelLod, "{3C796FC9-2067-4E0F-A660-269F8254D1D5}");
-            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelLod, AZ::SystemAllocator);
 
             static Data::Instance<ModelLod> FindOrCreate(const Data::Asset<ModelLodAsset>& lodAsset, const Data::Asset<ModelAsset>& modelAsset);
 
@@ -92,7 +93,7 @@ namespace AZ
             //! Blocks the CPU until pending buffer uploads have completed.
             void WaitForUpload();
 
-            AZStd::array_view<Mesh> GetMeshes() const;
+            AZStd::span<const Mesh> GetMeshes() const;
 
             //! Compares a ShaderInputContract to the mesh's available streams, and if any of them are optional, sets the corresponding "*_isBound" shader option.
             //! Call this function to update the ShaderOptionKey before fetching a ShaderVariant, to find a variant that is compatible with this mesh's streams.
@@ -165,8 +166,6 @@ namespace AZ
 
             // The buffer instances loaded by this ModelLod
             AZStd::vector<Data::Instance<Buffer>> m_buffers;
-
-            uint32_t m_loadedBuffersCount = 0;
 
             // Tracks whether buffers have all been streamed up to the GPU.
             bool m_isUploadPending = false;

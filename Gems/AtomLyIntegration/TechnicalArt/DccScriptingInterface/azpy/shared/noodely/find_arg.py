@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print ('~ find_arg.py ... Running script as __main__')
     print ("# ----------------------------------------------------------------------- #\r")
 
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
 
     from test_foo import Foo
 
@@ -102,7 +102,7 @@ if __name__ == "__main__":
                 self._kwargsDict[key] = value
                 # synthesize(self, '{0}'.format(key), value)  <-- I have a method,
                 # which synthesizes properties... with gettr, settr, etc.
-                if _G_DEBUG:
+                if _DCCSI_GDEBUG:
                     print("{0}:{1}".format(key, value))
 
         # representation

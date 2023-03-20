@@ -71,7 +71,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(NetworkFileIO, "{A863335E-9330-44E2-AD89-B5309F3B8B93}", FileIOBase);
-            AZ_CLASS_ALLOCATOR(NetworkFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NetworkFileIO, OSAllocator);
 
             NetworkFileIO();
             virtual ~NetworkFileIO();
@@ -102,6 +102,7 @@ namespace AZ
             Result FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback) override;
             void SetAlias(const char* alias, const char* path) override;
             void ClearAlias(const char* alias) override;
+            void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
             AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
             bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
             using FileIOBase::ConvertToAlias;
@@ -126,7 +127,7 @@ namespace AZ
         class RemoteFileCache
         {
         public:
-            AZ_CLASS_ALLOCATOR(RemoteFileCache, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoteFileCache, OSAllocator);
 
             RemoteFileCache() = default;
             RemoteFileCache(const RemoteFileCache& other) = default;
@@ -174,7 +175,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(RemoteFileIO, "{E2939E15-3B83-402A-A6DA-A436EDAB2ED2}", NetworkFileIO);
-            AZ_CLASS_ALLOCATOR(RemoteFileIO, OSAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemoteFileIO, OSAllocator);
 
             RemoteFileIO(FileIOBase* excludedFileIO = nullptr);
             virtual ~RemoteFileIO();
@@ -194,6 +195,7 @@ namespace AZ
             void SetAlias(const char* alias, const char* path) override;
             const char* GetAlias(const char* alias) const override;
             void ClearAlias(const char* alias) override;
+            void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) override;
             AZStd::optional<AZ::u64> ConvertToAlias(char* inOutBuffer, AZ::u64 bufferLength) const override;
             bool ConvertToAlias(AZ::IO::FixedMaxPath& convertedPath, const AZ::IO::PathView& path) const override;
             using FileIOBase::ConvertToAlias;

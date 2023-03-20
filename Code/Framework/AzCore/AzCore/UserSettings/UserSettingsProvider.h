@@ -96,7 +96,7 @@ namespace AZ
      */
     struct UserSettingsContainer
     {
-        AZ_CLASS_ALLOCATOR(UserSettingsContainer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UserSettingsContainer, SystemAllocator);
         AZ_TYPE_INFO(UserSettingsContainer, "{42C087CF-4F19-4DAF-B2B1-2927D94AA295}")
 
         typedef AZStd::unordered_map<AZ::u32, AZStd::intrusive_ptr<UserSettings> >  MapType;
@@ -116,9 +116,9 @@ namespace AZ
 
         //////////////////////////////////////////////////////////////////////////
         // UserSettingsBus
-        virtual AZStd::intrusive_ptr<UserSettings>  FindUserSettings(u32 id);
-        virtual void                                AddUserSettings(u32 id, UserSettings* settings);
-        virtual bool                                Save(const char* settingsPath, SerializeContext* sc);
+        AZStd::intrusive_ptr<UserSettings>  FindUserSettings(u32 id) override;
+        void                                AddUserSettings(u32 id, UserSettings* settings) override;
+        bool                                Save(const char* settingsPath, SerializeContext* sc) override;
         //////////////////////////////////////////////////////////////////////////
 
         static void Reflect(ReflectContext* reflection);

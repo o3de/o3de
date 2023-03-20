@@ -7,6 +7,7 @@
  */
 
 #include <AWSMetricsConstant.h>
+#include <Framework/JsonWriter.h>
 #include <MetricsEvent.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
@@ -14,7 +15,7 @@
 namespace AWSMetrics
 {
     class MetricsEventTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         static constexpr int NumTestMetrics = 10;

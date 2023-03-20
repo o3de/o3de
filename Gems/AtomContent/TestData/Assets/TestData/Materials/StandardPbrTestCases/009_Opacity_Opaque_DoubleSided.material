@@ -1,0 +1,8 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "propertyValues": {
+        "baseColor.textureMap": "@gemroot:Atom_Feature_Common@/Assets/Textures/Default/checker_uv_basecolor.png",
+        "general.doubleSided": true
+    }
+}

@@ -8,6 +8,7 @@
 
 #include <Source/Debug/MultiplayerDebugModule.h>
 #include <Source/Debug/MultiplayerDebugSystemComponent.h>
+#include <Source/Debug/MultiplayerConnectionViewportMessageSystemComponent.h>
 
 namespace Multiplayer
 {
@@ -16,6 +17,7 @@ namespace Multiplayer
     {
         m_descriptors.insert(m_descriptors.end(), {
             MultiplayerDebugSystemComponent::CreateDescriptor(),
+            MultiplayerConnectionViewportMessageSystemComponent::CreateDescriptor()
         });
     }
 
@@ -24,8 +26,12 @@ namespace Multiplayer
         return AZ::ComponentTypeList
         {
             azrtti_typeid<MultiplayerDebugSystemComponent>(),
+            azrtti_typeid<MultiplayerConnectionViewportMessageSystemComponent>()
         };
     }
 }
 
-AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Imgui, Multiplayer::MultiplayerDebugModule);
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug_Client, Multiplayer::MultiplayerDebugModule);
+#endif
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Debug, Multiplayer::MultiplayerDebugModule);

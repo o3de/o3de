@@ -42,16 +42,16 @@ namespace PhysX
                     "PhysX Character Controller Configuration", "PhysX Character Controller Configuration")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &CharacterControllerConfiguration::m_slopeBehaviour,
-                        "Slope Behaviour", "Behaviour of the controller on surfaces above the maximum slope")
+                        "Slope Behavior", "Behavior of the controller on surfaces that exceed the Maximum Slope Angle.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     ->EnumAttribute(SlopeBehaviour::PreventClimbing, "Prevent Climbing")
                     ->EnumAttribute(SlopeBehaviour::ForceSliding, "Force Sliding")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_contactOffset,
-                        "Contact Offset", "Extra distance outside the controller used for smoother contact resolution")
+                        "Contact Offset", "Distance from the controller boundary where contact with surfaces can be resolved.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ->DataElement(AZ::Edit::UIHandlers::Default, &CharacterControllerConfiguration::m_scaleCoefficient,
-                        "Scale", "Scalar coefficient used to scale the controller, usually slightly smaller than 1")
+                        "Scale", "Scales the controller. Usually less than 1.0 to ensure visual contact between the character and surface.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
                     ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
                     ;
@@ -120,6 +120,16 @@ namespace PhysX
             ? m_objectPreFilter(filterData, shape, actor, queryFlags)
             : physx::PxQueryHitType::Enum::eBLOCK;
     }
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+    physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
+        const physx::PxFilterData& filterData, const physx::PxQueryHit& hit,
+        [[maybe_unused]] const physx::PxShape* shape,
+        [[maybe_unused]] const physx::PxRigidActor* actor)
+    {
+        return postFilter(filterData, hit);
+    }
+#endif
 
     physx::PxQueryHitType::Enum CharacterControllerCallbackManager::postFilter(
         const physx::PxFilterData& filterData, const physx::PxQueryHit& hit)
@@ -212,6 +222,13 @@ namespace PhysX
         AZ_Assert(m_pxController, "pxController should not be null.");
         m_pxControllerFilters.mFilterCallback = m_callbackManager.get();
         m_pxControllerFilters.mCCTFilterCallback = m_callbackManager.get();
+
+        SetFilterFlags(physx::PxQueryFlag::eSTATIC | physx::PxQueryFlag::eDYNAMIC | physx::PxQueryFlag::ePREFILTER);
+        if (m_callbackManager)
+        {
+            m_callbackManager->SetControllerFilter(CollisionLayerBasedControllerFilter);
+            m_callbackManager->SetObjectPreFilter(CollisionLayerBasedObjectPreFilter);
+        }
     }
 
     void CharacterController::SetFilterDataAndShape(const Physics::CharacterConfiguration& characterConfig)
@@ -380,7 +397,6 @@ namespace PhysX
         }
 
         m_pxController = nullptr;
-        m_material = nullptr;
     }
 
     // Physics::Character
@@ -593,24 +609,34 @@ namespace PhysX
         return m_colliderTag;
     }
 
-    void CharacterController::AddVelocity(const AZ::Vector3& velocity)
+    void CharacterController::AddVelocityForTick(const AZ::Vector3& velocity)
     {
-        m_requestedVelocity += velocity;
+        m_requestedVelocityForTick += velocity;
     }
 
-    void CharacterController::ApplyRequestedVelocity(float deltaTime)
+    void CharacterController::AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity)
     {
-        const AZ::Vector3 oldPosition = GetBasePosition();
-        const AZ::Vector3 clampedVelocity = m_requestedVelocity.GetLength() > m_maximumSpeed
-            ? m_maximumSpeed * m_requestedVelocity.GetNormalized()
-            : m_requestedVelocity;
-        const AZ::Vector3 deltaPosition = clampedVelocity * deltaTime;
+        m_requestedVelocityForPhysicsTimestep += velocity;
+    }
 
+    void CharacterController::ResetRequestedVelocityForTick()
+    {
+        m_requestedVelocityForTick = AZ::Vector3::CreateZero();
+    }
+
+    void CharacterController::ResetRequestedVelocityForPhysicsTimestep()
+    {
+        m_requestedVelocityForPhysicsTimestep = AZ::Vector3::CreateZero();
+    }
+
+    void CharacterController::Move(const AZ::Vector3& requestedMovement, float deltaTime)
+    {
         if (m_pxController)
         {
+            const AZ::Vector3 oldPosition = GetBasePosition();
             {
                 PHYSX_SCENE_WRITE_LOCK(m_pxController->getScene());
-                m_pxController->move(PxMathConvert(deltaPosition), m_minimumMovementDistance, deltaTime, m_pxControllerFilters);
+                m_pxController->move(PxMathConvert(requestedMovement), m_minimumMovementDistance, deltaTime, m_pxControllerFilters);
                 if (m_shadowBody)
                 {
                     m_shadowBody->SetKinematicTarget(AZ::Transform::CreateTranslation(GetBasePosition()));
@@ -619,8 +645,17 @@ namespace PhysX
             const AZ::Vector3 newPosition = GetBasePosition();
             m_observedVelocity = deltaTime > 0.0f ? (newPosition - oldPosition) / deltaTime : AZ::Vector3::CreateZero();
         }
+    }
 
-        m_requestedVelocity = AZ::Vector3::CreateZero();
+    void CharacterController::ApplyRequestedVelocity(float deltaTime)
+    {
+        const AZ::Vector3 totalRequestedVelocity = m_requestedVelocityForTick + m_requestedVelocityForPhysicsTimestep;
+        const AZ::Vector3 clampedVelocity = totalRequestedVelocity.GetLength() > m_maximumSpeed
+            ? m_maximumSpeed * totalRequestedVelocity.GetNormalized()
+            : totalRequestedVelocity;
+        const AZ::Vector3 deltaPosition = clampedVelocity * deltaTime;
+
+        Move(deltaPosition, deltaTime);
     }
 
     void CharacterController::SetRotation(const AZ::Quaternion& rotation)
@@ -963,5 +998,50 @@ namespace PhysX
     void CharacterController::SetFilterFlags(physx::PxQueryFlags filterFlags)
     {
         m_pxControllerFilters.mFilterFlags = filterFlags;
+    }
+
+    bool CollisionLayerBasedControllerFilter(const physx::PxController& controllerA, const physx::PxController& controllerB)
+    {
+        PHYSX_SCENE_READ_LOCK(controllerA.getActor()->getScene());
+        physx::PxRigidDynamic* actorA = controllerA.getActor();
+        physx::PxRigidDynamic* actorB = controllerB.getActor();
+
+        if (actorA && actorA->getNbShapes() > 0 && actorB && actorB->getNbShapes() > 0)
+        {
+            physx::PxShape* shapeA = nullptr;
+            actorA->getShapes(&shapeA, 1, 0);
+            physx::PxFilterData filterDataA = shapeA->getSimulationFilterData();
+            physx::PxShape* shapeB = nullptr;
+            actorB->getShapes(&shapeB, 1, 0);
+            physx::PxFilterData filterDataB = shapeB->getSimulationFilterData();
+            return PhysX::Utils::Collision::ShouldCollide(filterDataA, filterDataB);
+        }
+
+        return true;
+    }
+
+    physx::PxQueryHitType::Enum CollisionLayerBasedObjectPreFilter(
+        const physx::PxFilterData& filterData,
+        const physx::PxShape* shape,
+        const physx::PxRigidActor* actor,
+        [[maybe_unused]] physx::PxHitFlags& queryFlags)
+    {
+        // non-kinematic dynamic bodies should not impede the movement of the character
+        if (actor->getConcreteType() == physx::PxConcreteType::eRIGID_DYNAMIC)
+        {
+            const physx::PxRigidDynamic* rigidDynamic = static_cast<const physx::PxRigidDynamic*>(actor);
+            if (!(rigidDynamic->getRigidBodyFlags() & physx::PxRigidBodyFlag::eKINEMATIC))
+            {
+                return physx::PxQueryHitType::eNONE;
+            }
+        }
+
+        // all other cases should be determined by collision filters
+        if (PhysX::Utils::Collision::ShouldCollide(filterData, shape->getSimulationFilterData()))
+        {
+            return physx::PxQueryHitType::eBLOCK;
+        }
+
+        return physx::PxQueryHitType::eNONE;
     }
 } // namespace PhysX

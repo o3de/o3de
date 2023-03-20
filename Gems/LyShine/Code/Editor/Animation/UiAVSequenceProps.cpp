@@ -45,7 +45,7 @@ CUiAVSequenceProps::~CUiAVSequenceProps()
 // CUiAVSequenceProps message handlers
 bool CUiAVSequenceProps::OnInitDialog()
 {
-    QString name = m_pSequence->GetName();
+    QString name = QString::fromUtf8(m_pSequence->GetName().c_str());
     ui->NAME->setText(name);
 
     ui->MOVE_SCALE_KEYS->setChecked(false);
@@ -55,7 +55,7 @@ bool CUiAVSequenceProps::OnInitDialog()
 
     Range timeRange = m_pSequence->GetTimeRange();
 
-    m_timeUnit = 1;
+    m_timeUnit = 0;
     ui->START_TIME->setValue(timeRange.start);
     ui->END_TIME->setValue(timeRange.end);
 
@@ -119,7 +119,7 @@ void CUiAVSequenceProps::OnOK()
     timeRange.start = aznumeric_cast<float>(ui->START_TIME->value());
     timeRange.end = aznumeric_cast<float>(ui->END_TIME->value());
 
-    if (m_timeUnit == 0)
+    if (m_timeUnit == 1)
     {
         float invFPS = 1.0f / m_FPS;
         timeRange.start = aznumeric_cast<float>(ui->START_TIME->value() * invFPS);
@@ -129,13 +129,13 @@ void CUiAVSequenceProps::OnOK()
     m_pSequence->SetTimeRange(timeRange);
 
     CUiAnimationContext* ac = nullptr;
-    EBUS_EVENT_RESULT(ac, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(ac, &UiEditorAnimationBus::Events::GetAnimationContext);
     if (ac)
     {
         ac->UpdateTimeRange();
     }
 
-    QString seqName = m_pSequence->GetName();
+    QString seqName = QString::fromUtf8(m_pSequence->GetName().c_str());
     if (name != seqName)
     {
         // Rename sequence.

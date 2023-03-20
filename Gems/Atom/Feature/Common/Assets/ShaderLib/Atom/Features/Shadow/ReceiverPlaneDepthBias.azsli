@@ -1,0 +1,38 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// Use ddx/ddy to attempt to predict the slope of the receiver plane (the triangle we are shading) and adjust the pcf comparision depth accordingly
+// See Section 20.5 Large Pcf Kernels in "Introduction to 3D Game Programming with DirectX 12" for a good explanation and diagrams of the problem
+// Solution from:
+// https://web.archive.org/web/20120220010450/http://developer.amd.com/media/gpu_assets/Isidoro-ShadowMapping.pdf
+// Another implementation example: https://github.com/TheRealMJP/Shadows
+float2 ComputeReceiverPlaneDepthBias(float3 projCoordsDDX, float3 projCoordsDDY)
+{
+    const float invDet = 1.0f / ((projCoordsDDX.x * projCoordsDDY.y) - (projCoordsDDX.y * projCoordsDDY.x));
+
+    float2 receiverPlaneDepthBias;
+    
+    receiverPlaneDepthBias.x = projCoordsDDY.y * projCoordsDDX.z - projCoordsDDX.y * projCoordsDDY.z;
+    receiverPlaneDepthBias.y = projCoordsDDX.x * projCoordsDDY.z - projCoordsDDY.x * projCoordsDDX.z;
+    receiverPlaneDepthBias *= invDet;
+    
+    return receiverPlaneDepthBias;
+}
+
+// For each sample in the Pcf kernel, offset the z comparison depth value by the amount returned by this function.
+// receiverPlaneDepthBias should be the input from ComputeReceiverPlaneDepthBias()
+float ApplyReceiverPlaneDepthBias(const float2 receiverPlaneDepthBias, const float2 texCoordOffset)
+{  
+    float fragmentDepthBias = dot(receiverPlaneDepthBias, texCoordOffset);
+    // Because ddx/ddy can only give us a very rough approximation of the underlying surface, we might introduce acne by biasing away from the camera.
+    // Clamping this will remove this effect
+    fragmentDepthBias = min(fragmentDepthBias, 0.0);
+    return fragmentDepthBias;
+}

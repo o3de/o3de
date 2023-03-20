@@ -6,8 +6,9 @@
  *
  */
 #include <RHI/CommandPool.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -46,7 +47,7 @@ namespace AZ
             if (m_nativeCommandPool != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkDestroyCommandPool(device.GetNativeDevice(), m_nativeCommandPool, nullptr);
+                device.GetContext().DestroyCommandPool(device.GetNativeDevice(), m_nativeCommandPool, VkSystemAllocator::Get());
                 m_nativeCommandPool = VK_NULL_HANDLE;
             }
             Base::Shutdown();
@@ -62,7 +63,8 @@ namespace AZ
             createInfo.flags = 0;
             createInfo.queueFamilyIndex = m_descriptor.m_queueFamilyIndex;
 
-            const VkResult result = vkCreateCommandPool(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeCommandPool);
+            const VkResult result = device.GetContext().CreateCommandPool(
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeCommandPool);
             AssertSuccess(result);
 
             return ConvertResult(result);
@@ -121,7 +123,7 @@ namespace AZ
             }
             m_freeCommandLists.insert(m_freeCommandLists.end(), AZStd::make_move_iterator(m_commandLists.begin()), AZStd::make_move_iterator(m_commandLists.end()));
             m_commandLists.clear();
-            AssertSuccess(vkResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0));
+            AssertSuccess(device.GetContext().ResetCommandPool(device.GetNativeDevice(), m_nativeCommandPool, 0));
         }        
     }
 }

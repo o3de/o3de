@@ -306,8 +306,8 @@ namespace AzFramework
 
         namespace ConnectionIdentifiers
         {
-            static const char* Editor = "EDITOR";
-            static const char* Game = "GAME";
+            static constexpr const char* Editor = "EDITOR";
+            static constexpr const char* Game = "GAME";
         }
 
         //! AssetSystemStatusBusTraits
@@ -338,3 +338,5 @@ namespace AzFramework
     using AssetSystemConnectionNotificationsBus = AZ::EBus<AssetSystem::AssetSystemConnectionNotifications>;
     using AssetSystemStatusBus = AZ::EBus<AssetSystem::AssetSystemStatus>;
 } // namespace AzFramework
+
+DECLARE_EBUS_EXTERN(AzFramework::AssetSystem::AssetSystemRequests);

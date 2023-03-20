@@ -35,14 +35,12 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 Gem::GraphModel.Editor.Static
                 Gem::GradientSignal.Editor
                 Gem::SurfaceData.Editor
-                Gem::Vegetation.Editor
                 Gem::LmbrCentral.Editor
             PUBLIC
                 Gem::GraphCanvasWidgets
         RUNTIME_DEPENDENCIES
             Gem::GradientSignal.Editor
             Gem::SurfaceData.Editor
-            Gem::Vegetation.Editor
             Gem::LmbrCentral.Editor
     )
     ly_add_target(
@@ -71,7 +69,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::GraphModel.Editor
             Gem::GradientSignal.Editor
             Gem::SurfaceData.Editor
-            Gem::Vegetation.Editor
     )
 
     # by default, load the above "Gem::LandscapeCanvas.Editor" module in dev applications

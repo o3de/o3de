@@ -31,7 +31,7 @@ def validate_android_deployment_arguments(build_dir_name):
 
     @param build_dir_name:  The name of the build directory relative to the current working directory
     @param game_name:       The name of the game project to deploy
-    @return: Tuple of (resolved pathlib, game name, asset mode, asset_type, platform_settings object, Android SDK path, embedded_assets (bool) )
+    @return: Tuple of (resolved pathlib, game name, asset mode, asset_type, platform_settings object, Android SDK path, embedded_assets, is_unit_test (bool) )
     """
 
     build_dir = pathlib.Path(os.getcwd()) / build_dir_name
@@ -90,6 +90,10 @@ def main(args):
                         help='Option to enable debug messages',
                         action='store_true')
 
+    parser.add_argument('--kill-adb-server',
+                        help='Kills adb server at the end of deployment',
+                        action='store_true')
+
     parsed_args = parser.parse_args(args)
 
     # Prepare the logging
@@ -109,7 +113,8 @@ def main(args):
                                                       clean_deploy=parsed_args.clean,
                                                       android_sdk_path=android_sdk_path,
                                                       deployment_type=parsed_args.deployment_type,
-                                                      is_unit_test=is_unit_test)
+                                                      is_unit_test=is_unit_test,
+                                                      kill_adb_server=parsed_args.kill_adb_server)
 
     deployment.execute()
 

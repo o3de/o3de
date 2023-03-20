@@ -26,7 +26,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SlopeAlignmentModifierConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SlopeAlignmentModifierConfig, AZ::SystemAllocator);
         AZ_RTTI(SlopeAlignmentModifierConfig, "{73BA7B92-1061-4DDB-AA5B-A0D87303CBC8}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         bool m_allowOverrides = false;
@@ -35,7 +35,7 @@ namespace Vegetation
         GradientSignal::GradientSampler m_gradientSampler;
     };
 
-    static const AZ::Uuid SlopeAlignmentModifierComponentTypeId = "{08831F9F-E720-4FBD-9CC5-0EF09212B0A0}";
+    inline constexpr AZ::TypeId SlopeAlignmentModifierComponentTypeId{ "{08831F9F-E720-4FBD-9CC5-0EF09212B0A0}" };
 
     /**
     * Component implementing VegetationModifierRequestBus that alignsto slope

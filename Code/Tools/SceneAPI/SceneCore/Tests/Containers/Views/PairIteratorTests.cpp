@@ -19,6 +19,18 @@
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Tests/Containers/Views/IteratorTestsBase.h>
 
+// This test gives trouble with /permissive-, the following instantiation workarounds the missing resolution
+namespace std
+{
+    template<>
+    void iter_swap(
+        AZ::SceneAPI::Containers::Views::PairIterator<int*, int*, std::random_access_iterator_tag> lhs,
+        AZ::SceneAPI::Containers::Views::PairIterator<int*, int*, std::random_access_iterator_tag> rhs)
+    {
+        AZStd::iter_swap(lhs, rhs);
+    }
+}
+
 namespace AZ
 {
     namespace SceneAPI

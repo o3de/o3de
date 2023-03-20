@@ -70,7 +70,7 @@ public:
 
     // UiEditorAnimationStateInterface
     UiEditorAnimationStateInterface::UiEditorAnimationEditState GetCurrentEditState() override;
-    void RestoreCurrentEditState(const UiEditorAnimationStateInterface::UiEditorAnimationEditState& animEditState);
+    void RestoreCurrentEditState(const UiEditorAnimationStateInterface::UiEditorAnimationEditState& animEditState) override;
     // ~UiEditorAnimationStateInterface
 
     // UiEditorAnimListenerInterface
@@ -81,6 +81,8 @@ public:
     void UpdateDopeSheetTime(CUiAnimViewSequence* pSequence);
 
     const CUiAnimViewDopeSheetBase& GetUiAnimViewDopeSheet() const { return *m_wndDopeSheet; }
+
+    void EditorAboutToClose();
 
 public slots:
     void OnPlay();
@@ -136,11 +138,22 @@ protected slots:
 
 protected:
     void keyPressEvent(QKeyEvent* event) override;
+    void closeEvent(QCloseEvent* event) override;
+    void showEvent(QShowEvent* event) override;
 
 private slots:
     void ReadLayouts();
 
 private:
+
+    enum class ViewMode
+    {
+        TrackView = 1,
+        CurveEditor = 2,
+        Both = 3
+    };
+
+    void SetViewMode(ViewMode);
     void UpdateActions();
     void ReloadSequencesComboBox();
 
@@ -167,11 +180,11 @@ private:
     virtual void OnNodeSelectionChanged(CUiAnimViewSequence* pSequence) override;
     virtual void OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOldName) override;
 
-    virtual void OnSequenceAdded(CUiAnimViewSequence* pSequence);
-    virtual void OnSequenceRemoved(CUiAnimViewSequence* pSequence);
+    void OnSequenceAdded(CUiAnimViewSequence* pSequence) override;
+    void OnSequenceRemoved(CUiAnimViewSequence* pSequence) override;
 
-    virtual void BeginUndoTransaction();
-    virtual void EndUndoTransaction();
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
     void SaveSequenceTimingToXML();
 
     // Instance
@@ -187,6 +200,7 @@ private:
     CUiAnimViewDopeSheetBase*   m_wndDopeSheet;
     QDockWidget* m_wndCurveEditorDock;
     UiAnimViewCurveEditorDialog*    m_wndCurveEditor;
+    QDockWidget* m_wndKeyPropertiesDock = nullptr; 
     CUiAnimViewKeyPropertiesDlg* m_wndKeyProperties;
     CUiAnimViewFindDlg* m_findDlg;
     QToolBar* m_mainToolBar;
@@ -220,4 +234,5 @@ private:
     std::vector<CUiAnimParamType> m_toolBarParamTypes;
 
     QHash<int, QAction*> m_actions;
+    ViewMode m_lastMode = ViewMode::TrackView;
 };

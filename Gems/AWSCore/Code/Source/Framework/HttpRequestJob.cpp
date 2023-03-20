@@ -42,7 +42,7 @@ namespace AWSCore
 
         // This will run the code fed to the macro, and then assign 0 to a static int (note the ,0 at the end)
 #define AWS_CORE_ONCE_PASTE(x) (x)
-#define AWS_CORE_ONCE(x) static int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
+#define AWS_CORE_ONCE(x) [[maybe_unused]] static int AZ_JOIN(init, __LINE__)((AWS_CORE_ONCE_PASTE(x), 0))
 
 #define AWS_CORE_HTTP_METHOD_ENTRY(x)   { HttpRequestJob::HttpMethod::HTTP_##x, HttpMethodInfo{ Aws::Http::HttpMethod::HTTP_##x, #x } }
 
@@ -418,7 +418,7 @@ namespace AWSCore
                 {
                     auto callback = AZStd::make_shared<SuccessFn>(AZStd::move(m_successCallback));
                     auto fn = AZStd::function<void()>([callbackResponse, callback]() { (*callback)(callbackResponse); });
-                    EBUS_QUEUE_FUNCTION(AZ::TickBus, fn);
+                    AZ::TickBus::QueueFunction(fn);
                 }
             }
         }
@@ -427,7 +427,7 @@ namespace AWSCore
         {
             auto callback = AZStd::make_shared<SuccessFn>(AZStd::move(m_failureCallback));
             auto fn = AZStd::function<void()>([callbackResponse, callback]() { (*callback)(callbackResponse); });
-            EBUS_QUEUE_FUNCTION(AZ::TickBus, fn);
+            AZ::TickBus::QueueFunction(fn);
         }
     }
 

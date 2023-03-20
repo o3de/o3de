@@ -7,16 +7,22 @@
  */
 
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
-#include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/ComponentModes/ViewportEditUtilities.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 #include <AzFramework/Viewport/ViewportConstants.h>
 
 namespace AzToolsFramework
 {
+    namespace BoxViewportEditConstants
+    {
+        const float MinBoxDimension = 0.001f;
+    } // namespace BoxViewportEditConstants
+
     const AZStd::array<AZ::Vector3, 6> s_boxAxes =
     { {
         AZ::Vector3::CreateAxisX(), -AZ::Vector3::CreateAxisX(),
@@ -24,53 +30,81 @@ namespace AzToolsFramework
         AZ::Vector3::CreateAxisZ(), -AZ::Vector3::CreateAxisZ()
     } };
 
-    /// Pass a single axis, and return not of elements
-    /// Example: In -> (1, 0, 0) Out -> (0, 1, 1)
-    static AZ::Vector3 NotAxis(const AZ::Vector3& offset)
+    BoxViewportEdit::BoxViewportEdit(bool allowAsymmetricalEditing)
+        : m_allowAsymmetricalEditing(allowAsymmetricalEditing)
     {
-        return AZ::Vector3::CreateOne() - AZ::Vector3(
-            fabsf(Sign(offset.GetX())),
-            fabsf(Sign(offset.GetY())),
-            fabsf(Sign(offset.GetZ())));
+    }
+
+    void BoxViewportEdit::InstallGetBoxDimensions(AZStd::function<AZ::Vector3()> getBoxDimensions)
+    {
+        m_getBoxDimensions = AZStd::move(getBoxDimensions);
+    }
+
+    void BoxViewportEdit::InstallSetBoxDimensions(AZStd::function<void(const AZ::Vector3&)> setBoxDimensions)
+    {
+        m_setBoxDimensions = AZStd::move(setBoxDimensions);
+    }
+
+    AZ::Vector3 BoxViewportEdit::GetBoxDimensions() const
+    {
+        if (m_getBoxDimensions)
+        {
+            return m_getBoxDimensions();
+        }
+        AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for GetBoxDimensions");
+        return AZ::Vector3::CreateOne();
+    }
+
+    void BoxViewportEdit::SetBoxDimensions(const AZ::Vector3& boxDimensions)
+    {
+        if (m_setBoxDimensions)
+        {
+            m_setBoxDimensions(boxDimensions);
+        }
+        else
+        {
+            AZ_ErrorOnce("BoxViewportEdit", false, "No implementation provided for SetBoxDimensions");
+        }
     }
 
     void BoxViewportEdit::UpdateManipulators()
     {
-        AZ::Transform boxWorldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            boxWorldFromLocal, m_entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
-
-        AZ::Vector3 boxScale = AZ::Vector3::CreateOne();
-        BoxManipulatorRequestBus::EventResult(
-            boxScale, m_entityComponentIdPair, &BoxManipulatorRequests::GetBoxScale);
-
-        AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
-        BoxManipulatorRequestBus::EventResult(
-            boxDimensions, m_entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
-
-        // ensure we apply the entity scale to the box dimensions so
-        // the manipulators appear in the correct location
-        boxDimensions *= boxScale;
+        const AZ::Transform manipulatorSpace = GetManipulatorSpace();
+        const AZ::Vector3 nonUniformScale = GetNonUniformScale();
+        const AZ::Vector3 boxDimensions = GetBoxDimensions();
+        const AZ::Transform boxLocalTransform = GetLocalTransform();
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
             if (auto& linearManipulator = m_linearManipulators[manipulatorIndex])
             {
-                linearManipulator->SetSpace(boxWorldFromLocal);
+                linearManipulator->SetSpace(manipulatorSpace);
                 linearManipulator->SetLocalTransform(
-                    AZ::Transform::CreateTranslation(s_boxAxes[manipulatorIndex] * 0.5f * boxDimensions));
+                    boxLocalTransform * AZ::Transform::CreateTranslation(s_boxAxes[manipulatorIndex] * 0.5f * boxDimensions));
+                linearManipulator->SetNonUniformScale(nonUniformScale);
                 linearManipulator->SetBoundsDirty();
             }
         }
     }
 
-    void BoxViewportEdit::Setup(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    void BoxViewportEdit::AddEntityComponentIdPairImpl(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        m_entityComponentIdPair = entityComponentIdPair;
+        for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
+        {
+            if (auto& linearManipulator = m_linearManipulators[manipulatorIndex]; linearManipulator)
+            {
+                linearManipulator->AddEntityComponentIdPair(entityComponentIdPair);
+            }
+            else
+            {
+                AZ_WarningOnce("BoxViewportEdit", false, "Attempting to AddEntityComponentIdPair before manipulators have been created");
+            }
+        }
+    }
 
-        AZ::Transform worldFromLocal = AZ::Transform::CreateIdentity();
-        BoxManipulatorRequestBus::EventResult(
-            worldFromLocal, entityComponentIdPair, &BoxManipulatorRequests::GetCurrentTransform);
+    void BoxViewportEdit::Setup(const ManipulatorManagerId manipulatorManagerId)
+    {
+        const AZ::Transform worldFromLocal = GetManipulatorSpace();
 
         for (size_t manipulatorIndex = 0; manipulatorIndex < m_linearManipulators.size(); ++manipulatorIndex)
         {
@@ -79,48 +113,48 @@ namespace AzToolsFramework
             if (linearManipulator == nullptr)
             {
                 linearManipulator = LinearManipulator::MakeShared(worldFromLocal);
-
-                linearManipulator->AddEntityComponentIdPair(entityComponentIdPair);
                 linearManipulator->SetAxis(s_boxAxes[manipulatorIndex]);
 
                 ManipulatorViews views;
                 views.emplace_back(CreateManipulatorViewQuadBillboard(
-                    AzFramework::ViewportColors::DefaultManipulatorHandleColor, AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
+                    AzFramework::ViewportColors::DefaultManipulatorHandleColor,
+                    AzFramework::ViewportConstants::DefaultManipulatorHandleSize));
                 linearManipulator->SetViews(AZStd::move(views));
 
                 linearManipulator->InstallMouseMoveCallback(
-                    [this, entityComponentIdPair](
-                        const LinearManipulator::Action& action)
+                    [this,
+                     transformScale{ linearManipulator->GetSpace().GetUniformScale() },
+                     nonUniformScale{ linearManipulator->GetNonUniformScale() }](const LinearManipulator::Action& action)
                 {
-                    // calculate the amount of displacement along an axis this manipulator has moved
-                    // clamp movement so it cannot go negative based on axis direction
-                    const AZ::Vector3 axisDisplacement =
-                        action.LocalPosition().GetAbs() * 2.0f
-                        * AZ::GetMax<float>(0.0f, action.LocalPosition().GetNormalized().Dot(action.m_fixed.m_axis));
+                    const bool symmetrical = !m_allowAsymmetricalEditing || action.m_modifiers.IsHeld(DefaultSymmetricalEditingModifier);
 
-                    AZ::Vector3 boxScale = AZ::Vector3::CreateOne();
-                    BoxManipulatorRequestBus::EventResult(
-                        boxScale, entityComponentIdPair, &BoxManipulatorRequests::GetBoxScale);
+                    const AZ::Transform boxLocalTransform = GetLocalTransform();
+                    const AZ::Vector3 manipulatorPosition = GetPositionInManipulatorFrame(transformScale, boxLocalTransform, action);
+                    const AZ::Vector3 boxDimensions = GetBoxDimensions();
 
-                    AZ::Vector3 boxDimensions = AZ::Vector3::CreateZero();
-                    BoxManipulatorRequestBus::EventResult(
-                        boxDimensions, entityComponentIdPair, &BoxManipulatorRequests::GetDimensions);
+                    // factor of 2 for symmetrical editing because both ends of the box move
+                    const float symmetryFactor = symmetrical ? 2.0f : 1.0f; 
 
-                    // ensure we take into account the entity scale using the axis displacement
-                    const AZ::Vector3 scaledAxisDisplacement =
-                        axisDisplacement / boxScale;
+                    const float newAxisLength = AZ::GetMax(
+                        0.5f * BoxViewportEditConstants::MinBoxDimension, symmetryFactor * manipulatorPosition.Dot(action.m_fixed.m_axis));
+                    const float oldAxisLength = 0.5f * symmetryFactor * boxDimensions.Dot(action.m_fixed.m_axis.GetAbs());
+                    const AZ::Vector3 dimensionsDelta = (newAxisLength - oldAxisLength) * action.m_fixed.m_axis.GetAbs();
 
-                    // update dimensions - preserve dimensions not effected by this
-                    // axis, and update current axis displacement
-                    BoxManipulatorRequestBus::Event(
-                        entityComponentIdPair, &BoxManipulatorRequests::SetDimensions,
-                        (NotAxis(action.m_fixed.m_axis) * boxDimensions).GetMax(scaledAxisDisplacement));
+                    SetBoxDimensions(boxDimensions + dimensionsDelta);
+
+                    if (!symmetrical)
+                    {
+                        const AZ::Vector3 transformedAxis = nonUniformScale * boxLocalTransform.TransformVector(action.m_fixed.m_axis);
+                        const AZ::Vector3 translationOffsetDelta = 0.5f * (newAxisLength - oldAxisLength) * transformedAxis;
+                        const AZ::Vector3 translationOffset = GetTranslationOffset();
+                        SetTranslationOffset(translationOffset + translationOffsetDelta);
+                    }
 
                     UpdateManipulators();
                 });
             }
 
-            linearManipulator->Register(g_mainManipulatorManagerId);
+            linearManipulator->Register(manipulatorManagerId);
         }
 
         UpdateManipulators();
@@ -136,5 +170,11 @@ namespace AzToolsFramework
                 linearManipulator.reset();
             }
         }
+    }
+
+    void BoxViewportEdit::ResetValuesImpl()
+    {
+        SetBoxDimensions(AZ::Vector3::CreateOne());
+        SetTranslationOffset(AZ::Vector3::CreateZero());
     }
 } // namespace AzToolsFramework

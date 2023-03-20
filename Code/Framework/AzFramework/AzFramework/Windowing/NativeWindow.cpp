@@ -10,6 +10,17 @@
 
 #include <AzCore/Console/IConsole.h>
 
+void OnVsyncIntervalChanged(uint32_t const& interval)
+{
+    AzFramework::WindowNotificationBus::Broadcast(
+        &AzFramework::WindowNotificationBus::Events::OnVsyncIntervalChanged, AZ::GetClamp(interval, 0u, 4u));
+}
+
+// NOTE: On change, broadcasts the new requested vsync interval to all windows.
+// The value of the vsync interval is constrained between 0 and 4
+// Vsync intervals greater than 1 are not currently supported on the Vulkan RHI (see #2061 for discussion)
+AZ_CVAR(uint32_t, vsync_interval, 1, OnVsyncIntervalChanged, AZ::ConsoleFunctorFlags::Null, "Set swapchain vsync interval");
+
 namespace AzFramework
 {
     //////////////////////////////////////////////////////////////////////////
@@ -92,9 +103,14 @@ namespace AzFramework
         return m_pimpl->GetClientAreaSize();
     }
 
-    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize)
+    void NativeWindow::ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options)
     {
-        m_pimpl->ResizeClientArea(clientAreaSize);
+        m_pimpl->ResizeClientArea(clientAreaSize, options);
+    }
+
+    bool NativeWindow::SupportsClientAreaResize() const
+    {
+        return m_pimpl->SupportsClientAreaResize();
     }
 
     bool NativeWindow::GetFullScreenState() const
@@ -120,6 +136,38 @@ namespace AzFramework
     float NativeWindow::GetDpiScaleFactor() const
     {
         return m_pimpl->GetDpiScaleFactor();
+    }
+
+    uint32_t NativeWindow::GetDisplayRefreshRate() const
+    {
+        return m_pimpl->GetDisplayRefreshRate();
+    }
+
+    uint32_t NativeWindow::GetSyncInterval() const
+    {
+        return vsync_interval;
+    }
+
+    bool NativeWindow::SetSyncInterval(uint32_t newSyncInterval)
+    {
+        vsync_interval = newSyncInterval;
+        return true;
+    }
+
+    /*static*/ bool NativeWindow::SupportsClientAreaResizeOfDefaultWindow()
+    {
+        NativeWindowHandle defaultWindowHandle = nullptr;
+        WindowSystemRequestBus::BroadcastResult(defaultWindowHandle,
+                                                &WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+
+        bool supportsClientAreaResizeOfDefaultWindow = false;
+        if (defaultWindowHandle)
+        {
+            WindowRequestBus::EventResult(supportsClientAreaResizeOfDefaultWindow,
+                                          defaultWindowHandle,
+                                          &WindowRequestBus::Events::SupportsClientAreaResize);
+        }
+        return supportsClientAreaResizeOfDefaultWindow;
     }
 
     /*static*/ bool NativeWindow::GetFullScreenStateOfDefaultWindow()
@@ -213,8 +261,16 @@ namespace AzFramework
         return WindowSize(m_width, m_height);
     }
 
-    void NativeWindow::Implementation::ResizeClientArea([[maybe_unused]] WindowSize clientAreaSize)
+    void NativeWindow::Implementation::ResizeClientArea(
+        [[maybe_unused]] WindowSize clientAreaSize,
+        [[maybe_unused]] const WindowPosOptions& options)
     {
+    }
+
+    bool NativeWindow::Implementation::SupportsClientAreaResize() const
+    {
+        // Default to client area resize is unsupported, supported platforms will override this function
+        return false;
     }
 
     bool NativeWindow::Implementation::GetFullScreenState() const
@@ -238,6 +294,12 @@ namespace AzFramework
     {
         // For platforms that aren't DPI-aware, we simply return a 1.0 ratio for no scaling
         return 1.0f;
+    }
+
+    uint32_t NativeWindow::Implementation::GetDisplayRefreshRate() const
+    {
+        // Default to 60
+        return 60;
     }
 
 } // namespace AzFramework

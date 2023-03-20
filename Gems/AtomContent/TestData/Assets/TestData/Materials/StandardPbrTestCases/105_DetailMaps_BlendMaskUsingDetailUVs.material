@@ -1,0 +1,27 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/EnhancedPBR.materialtype",
+    "materialTypeVersion": 6,
+    "propertyValues": {
+        "baseColor.textureMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_bronze_BaseColor.png",
+        "baseColor.textureMapUv": "Unwrapped",
+        "detailLayerGroup.baseColorDetailMap": "../../Textures/cc0/Concrete019_1K_Color.jpg",
+        "detailLayerGroup.blendDetailMask": "../../Textures/checker2x2_128.png",
+        "detailLayerGroup.detailUV.center": [
+            0.0,
+            0.0
+        ],
+        "detailLayerGroup.detailUV.scale": 10.0,
+        "detailLayerGroup.enableBaseColor": true,
+        "detailLayerGroup.enableDetailLayer": true,
+        "detailLayerGroup.enableNormals": true,
+        "detailLayerGroup.normalDetailMap": "../../Textures/cc0/Concrete019_1K_Normal.jpg",
+        "detailLayerGroup.normalDetailStrength": 1.5,
+        "metallic.textureMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_bronze_Metallic.png",
+        "metallic.textureMapUv": "Unwrapped",
+        "normal.flipY": true,
+        "normal.textureMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_Normal.png",
+        "normal.textureMapUv": "Unwrapped",
+        "roughness.textureMap": "@gemroot:CommonFeaturesAtom@/Assets/Objects/Hermanubis/Hermanubis_bronze_Roughness.png",
+        "roughness.textureMapUv": "Unwrapped"
+    }
+}

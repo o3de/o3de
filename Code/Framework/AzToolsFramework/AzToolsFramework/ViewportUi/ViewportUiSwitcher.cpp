@@ -9,6 +9,9 @@
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiSwitcher.h>
 
+#include <QBitmap>
+#include <QPainter>
+
 namespace AzToolsFramework::ViewportUi::Internal
 {
     ViewportUiSwitcher::ViewportUiSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup)
@@ -22,8 +25,6 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         // Add am empty active button (is set in the call to SetActiveMode)
         m_activeButton = new QToolButton();
-        // No hover effect for the main button as it's not clickable
-        m_activeButton->setProperty("IconHasHoverEffect", false);
         m_activeButton->setCheckable(false);
         m_activeButton->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
         addWidget(m_activeButton);
@@ -45,19 +46,29 @@ namespace AzToolsFramework::ViewportUi::Internal
         delete m_activeButton;
     }
 
+    static QPixmap RemoveIconColor(const char* buttonIconPath)
+    {
+        QPainter painter;
+        QPixmap buttonPixmap = QPixmap(QString(buttonIconPath));
+
+        painter.begin(&buttonPixmap);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceIn);
+        painter.fillRect(buttonPixmap.rect(), Qt::white);
+        painter.end();
+
+        return buttonPixmap;
+    }
+
     void ViewportUiSwitcher::AddButton(Button* button)
     {
         QAction* action = new QAction();
-        action->setCheckable(true);
-        action->setIcon(QIcon(QString(button->m_icon.c_str())));
+        action->setCheckable(false);
+        action->setIcon(RemoveIconColor(button->m_icon.c_str()));
 
         if (!action)
         {
             return;
         }
-
-        // set hover to true by default
-        action->setProperty("IconHasHoverEffect", true);
 
         // add the action
         addAction(action);
@@ -107,6 +118,7 @@ namespace AzToolsFramework::ViewportUi::Internal
             resize(minimumSizeHint());
 
             m_buttonActionMap.erase(buttonId);
+            m_buttonGroup->RemoveButton(buttonId);
 
             // reset current active mode if its the button being removed
             if (buttonId == m_activeButtonId)
@@ -121,6 +133,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     void ViewportUiSwitcher::Update()
     {
+        QToolBar::repaint();
         m_widgetCallbacks.Update();
     }
 
@@ -139,7 +152,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         if (auto buttonIt = AZStd::find_if(buttons.begin(), buttons.end(), found); buttonIt != buttons.end())
         {
             QString buttonName = ((*buttonIt)->m_name).c_str();
-            QIcon buttonIcon = QIcon(QString(((*buttonIt)->m_icon).c_str()));
+            QIcon buttonIcon = RemoveIconColor(((*buttonIt)->m_icon).c_str());
+
             m_activeButton->setIcon(buttonIcon);
             m_activeButton->setText(buttonName);
         }
@@ -161,5 +175,16 @@ namespace AzToolsFramework::ViewportUi::Internal
         }
 
         m_activeButtonId = buttonId;
+    }
+
+    void ViewportUiSwitcher::SetButtonTooltip(const ButtonId buttonId, const AZStd::string& tooltip)
+    {
+        // get the action corresponding to the buttonId
+        if (auto actionEntry = m_buttonActionMap.find(buttonId); actionEntry != m_buttonActionMap.end())
+        {
+            // update the tooltip
+            auto action = actionEntry->second;
+            action->setToolTip(QString((tooltip).c_str()));
+        }
     }
 } // namespace AzToolsFramework::ViewportUi::Internal

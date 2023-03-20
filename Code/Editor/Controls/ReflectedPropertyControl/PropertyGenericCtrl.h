@@ -29,7 +29,7 @@ class GenericPopupPropertyEditor
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(GenericPopupPropertyEditor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GenericPopupPropertyEditor, AZ::SystemAllocator);
     GenericPopupPropertyEditor(QWidget* pParent = nullptr, bool showTwoButtons = false);
 
     void SetValue(const QString& value, bool notify = true);
@@ -56,7 +56,7 @@ class GenericPopupWidgetHandler
     , public AzToolsFramework::PropertyHandler < CReflectedVarGenericProperty, GenericPopupPropertyEditor >
 {
 public:
-    AZ_CLASS_ALLOCATOR(GenericPopupWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GenericPopupWidgetHandler, AZ::SystemAllocator);
     virtual bool IsDefaultHandler() const override { return false; }
 
     virtual AZ::u32 GetHandlerName(void) const override  { return CRC; }
@@ -65,7 +65,8 @@ public:
         GenericPopupPropertyEditor* newCtrl = aznew T(pParent);
         connect(newCtrl, &GenericPopupPropertyEditor::ValueChanged, newCtrl, [newCtrl]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
         return newCtrl;
     }
@@ -94,15 +95,6 @@ public:
         GUI->SetValue(val.m_value.c_str(), false);
         return false;
     }
-};
-
-class ReverbPresetPropertyEditor
-    : public GenericPopupPropertyEditor
-{
-public:
-    ReverbPresetPropertyEditor(QWidget* pParent = nullptr)
-        : GenericPopupPropertyEditor(pParent){}
-    void onEditClicked() override;
 };
 
 class MissionObjPropertyEditor
@@ -155,7 +147,6 @@ public:
 // So we use our own
 #define CONST_AZ_CRC(name, value) AZ::u32(value)
 
-using ReverbPresetPropertyHandler = GenericPopupWidgetHandler<ReverbPresetPropertyEditor, CONST_AZ_CRC("ePropertyReverbPreset", 0x51469f38)>;
 using MissionObjPropertyHandler = GenericPopupWidgetHandler<MissionObjPropertyEditor, CONST_AZ_CRC("ePropertyMissionObj", 0x4a2d0dc8)>;
 using SequencePropertyHandler = GenericPopupWidgetHandler<SequencePropertyEditor, CONST_AZ_CRC("ePropertySequence", 0xdd1c7d44)>;
 using SequenceIdPropertyHandler = GenericPopupWidgetHandler<SequenceIdPropertyEditor, CONST_AZ_CRC("ePropertySequenceId", 0x05983dcc)>;
@@ -166,7 +157,7 @@ class ListEditWidget : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(ListEditWidget, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ListEditWidget, AZ::SystemAllocator);
     ListEditWidget(QWidget *pParent = nullptr);
 
     void SetValue(const QString &value, bool notify = true);
@@ -193,7 +184,7 @@ template <class T, AZ::u32 CRC>
 class ListEditWidgetHandler : public QObject, public AzToolsFramework::PropertyHandler < CReflectedVarGenericProperty, ListEditWidget >
 {
 public:
-    AZ_CLASS_ALLOCATOR(ListEditWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(ListEditWidgetHandler, AZ::SystemAllocator);
     virtual bool IsDefaultHandler() const override { return false; }
 
     virtual AZ::u32 GetHandlerName(void) const override  { return CRC; }
@@ -201,9 +192,10 @@ public:
     {
         ListEditWidget* newCtrl = aznew T(pParent);
         connect(newCtrl, &ListEditWidget::ValueChanged, newCtrl, [newCtrl]()
-        {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-        });
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+            });
         return newCtrl;
     }
     virtual void ConsumeAttribute(ListEditWidget* GUI, AZ::u32 attrib, AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override {

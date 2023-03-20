@@ -26,7 +26,7 @@ namespace AZ
 
         RHI::ResultCode TimestampQueryPool::BeginQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::array_view<RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
             AZ::RHI::Ptr<AZ::RHI::Query> beginQuery = rhiQueryArray[rhiQueryIndices.m_min];
 
             return beginQuery->WriteTimestamp(commandList);
@@ -34,7 +34,7 @@ namespace AZ
 
         RHI::ResultCode TimestampQueryPool::EndQueryInternal(RHI::Interval rhiQueryIndices, RHI::CommandList& commandList)
         {
-            AZStd::array_view<RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
+            AZStd::span<const RHI::Ptr<RHI::Query>> rhiQueryArray = GetRhiQueryArray();
             AZ::RHI::Ptr<AZ::RHI::Query> endQuery = rhiQueryArray[rhiQueryIndices.m_max];
 
             return endQuery->WriteTimestamp(commandList);

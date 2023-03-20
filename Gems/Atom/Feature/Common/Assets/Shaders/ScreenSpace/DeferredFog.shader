@@ -13,7 +13,7 @@
         }
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
@@ -21,11 +21,6 @@
     },
 
     "DrawList" : "forward",
-
-    "CompilerHints" : { 
-        "DxcDisableOptimizations" : false,
-        "DxcGenerateDebugInfo" : false
-    },
 
     "ProgramSettings":
     {

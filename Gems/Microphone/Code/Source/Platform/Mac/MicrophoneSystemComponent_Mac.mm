@@ -84,7 +84,11 @@ public:
         AudioObjectPropertyAddress theAddress = {
             kAudioHardwarePropertyDefaultInputDevice,
             kAudioObjectPropertyScopeGlobal,
+#if __MAC_OS_X_VERSION_MAX_ALLOWED >= 120000 // Needs to be 120000 instead of __MAC_12_0 because that will not be defined in earlier versions on the SDK.
+            kAudioObjectPropertyElementMain
+#else
             kAudioObjectPropertyElementMaster
+#endif
         };
         
         status = AudioObjectGetPropertyData(kAudioObjectSystemObject,
@@ -241,13 +245,14 @@ public:
 
     AZStd::size_t GetData(void** outputData, AZStd::size_t numFrames, const SAudioInputConfig& targetConfig, bool shouldDeinterleave) override
     {
-        bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
-        bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
-        bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
 #if defined(USE_LIBSAMPLERATE)
 // pending port of LIBSAMPLERATE to MacOS
         return {};
 #else
+        bool changeSampleType = (targetConfig.m_sampleType != m_config.m_sampleType);
+        bool changeSampleRate = (targetConfig.m_sampleRate != m_config.m_sampleRate);
+        bool changeNumChannels = (targetConfig.m_numChannels != m_config.m_numChannels);
+
         if (changeSampleType || changeNumChannels)
         {
             // Without the SRC library, any change is unsupported!
@@ -323,9 +328,7 @@ private:
         
         // Obtain recorded samples
         
-        OSStatus status;
-        
-        status = AudioUnitRender(impl->m_audioUnit, 
+        AudioUnitRender(impl->m_audioUnit, 
             ioActionFlags, 
             inTimeStamp, 
             inBusNumber, 

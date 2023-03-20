@@ -32,6 +32,9 @@ namespace AZ
     * @param v The Vector2 to convert
     * 
     * @return A Vector3 created from the given Vector2 with 0 for the Z component
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector3 constructor
     */
     Vector3 Vector2ToVector3(const Vector2& v);
     /**
@@ -41,6 +44,9 @@ namespace AZ
     * @param z The new value for the resulting Vector3's Z component
     *
     * @return A Vector3 created from the given values
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector3 constructor
     */
     Vector3 Vector2ToVector3(const Vector2& v, const float z);
 
@@ -50,6 +56,9 @@ namespace AZ
     * @param v The Vector2 to convert
     *
     * @return A Vector4 created from the given Vector2 with 0 for the Z and W components
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector4 constructor
     */
     Vector4 Vector2ToVector4(const Vector2& v);
     /**
@@ -59,6 +68,9 @@ namespace AZ
     * @param z The new value for the resulting Vector4's Z component
     *
     * @return A Vector4 created from the given values with a 0 for the W component
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector4 constructor
     */
     Vector4 Vector2ToVector4(const Vector2& v, const float z);
     /**
@@ -69,6 +81,9 @@ namespace AZ
     * @param w The new value for the resulting Vector4's W component
     *
     * @return A Vector4 created from the given values
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector4 constructor
     */
     Vector4 Vector2ToVector4(const Vector2& v, const float z, const float w);
 
@@ -84,6 +99,9 @@ namespace AZ
     * @param v The Vector3 to convert to a Vector2
     *
     * @return A Vector2 created from the given Vector2
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector2 constructor
     */
     Vector2 Vector3ToVector2(const Vector3& v);
     /**
@@ -92,6 +110,9 @@ namespace AZ
     * @param v The Vector3 to convert to a Vector4
     *
     * @return A Vector4 created from the given Vector3 with a 0 for the W component
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector4 constructor
     */
     Vector4 Vector3ToVector4(const Vector3& v);
     /**
@@ -101,6 +122,9 @@ namespace AZ
     * @param w The new value for the resulting Vector4's W component
     *
     * @return A Vector4 created from the given values
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector4 constructor
     */
     Vector4 Vector3ToVector4(const Vector3& v, const float w);
 
@@ -116,6 +140,9 @@ namespace AZ
     * @param v The Vector2 to convert to a Vector4
     *
     * @return A Vector4 created from the given Vector2 with 0s for the Z and W components
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector2 constructor
     */
     Vector2 Vector4ToVector2(const Vector4& v);
     /**
@@ -126,6 +153,9 @@ namespace AZ
     * @param v The Vector3 to convert to a Vector4
     *
     * @return A Vector4 created from the given Vector3 with a 0 for the W component
+    *
+    * O3DE_DEPRECATION_NOTICE(GHI-10596)
+    * @deprecated use AZ::Vector3 constructor
     */
     Vector3 Vector4ToVector3(const Vector4& v);
 

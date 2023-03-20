@@ -10,10 +10,10 @@
 #define CRYINCLUDE_EDITOR_UTILS_REFLECTEDVAR_H
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
 #include <algorithm>
 #include <limits>
 #include "Util/VariablePropertyType.h"
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Vector2.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Vector4.h>
@@ -79,7 +79,7 @@ class CReflectedVarAny
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarAny<T>, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarAny, "{EE8293C3-9B1E-470B-9922-2CBB8DA13D78}", T), CReflectedVar);
 
     CReflectedVarAny(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -102,7 +102,7 @@ class CReflectedVarRanged
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar)
+    AZ_RTTI((CReflectedVarRanged, "{6AB4EC29-E17B-4B3B-A153-BFDAA48B8CF8}", T, R), CReflectedVar);
 
     CReflectedVarRanged(const AZStd::string& name, const T& val = T())
         : CReflectedVar(name)
@@ -169,7 +169,7 @@ class CReflectedVarEnum
     : public CReflectedVar
 {
 public:
-    AZ_RTTI((CReflectedVarEnum<T>, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar)
+    AZ_RTTI((CReflectedVarEnum, "{40AE7D74-7E3A-41A9-8F71-2BBC3067118B}", T), CReflectedVar);
 
     CReflectedVarEnum(const AZStd::string& name)
         : CReflectedVar(name) {}
@@ -265,32 +265,8 @@ public:
     AZ::Vector3 m_color;
 };
 
-//Class to hold ePropertyAnimation (IVariable::DT_ANIMATION )
-class CReflectedVarAnimation
-    : public CReflectedVar
-{
-public:
-    AZ_RTTI(CReflectedVarAnimation, "{635D982E-23EC-463F-8F33-4FC2C19D5673}", CReflectedVar)
-
-    CReflectedVarAnimation(const AZStd::string& name)
-        : CReflectedVar(name)
-        , m_entityID(0)
-    {}
-    CReflectedVarAnimation()
-        : m_entityID(0){}
-
-    AZStd::string varName() const { return m_varName; }
-    AZStd::string description() const { return m_description; }
-
-    AZStd::string m_animation;
-    AZ::EntityId m_entityID;
-};
-
 //Class to hold:
 // ePropertyTexture          (IVariable::DT_TEXTURE)
-// ePropertyMaterial         (IVariable::DT_MATERIAL)
-// ePropertyModel            (IVariable::DT_OBJECT)
-// ePropertyGeomCache        (IVariable::DT_GEOM_CACHE)
 // ePropertyAudioTrigger        (IVariable::DT_AUDIO_TRIGGER)
 // ePropertyAudioSwitch         (IVariable::DT_AUDIO_SWITCH )
 // ePropertyAudioSwitchState    (IVariable::DT_AUDIO_SWITCH_STATE)
@@ -344,7 +320,6 @@ public:
     AZStd::vector<AZStd::string> m_itemDescriptions;
 };
 
-//Class to hold ePropertyAnimation (IVariable::DT_ANIMATION )
 class CReflectedVarSpline
     : public CReflectedVar
 {
@@ -413,11 +388,9 @@ public:
     AZ_RTTI(CReflectedVarMotion, "{66397EFB-620A-40B8-8C66-D6AECF690DF5}", CReflectedVar)
 
     CReflectedVarMotion(const AZStd::string& name)
-        : CReflectedVar(name)
-        , m_assetId(0) {}
+        : CReflectedVar(name) {}
 
-    CReflectedVarMotion()
-        : m_assetId(0) {}
+    CReflectedVarMotion() = default;
 
     AZStd::string varName() const { return m_varName; }
     AZStd::string description() const { return m_description; }

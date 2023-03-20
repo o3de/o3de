@@ -65,7 +65,7 @@ namespace UnitTest
         {
             // clearing up memory
             m_notificationSink = EditorPythonBindingsNotificationBusSink();
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
 
             // shutdown time!
             PythonTestingFixture::TearDown();
@@ -323,7 +323,9 @@ sys.version
             auto registry = AZ::SettingsRegistry::Get();
             auto projectPathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
                 + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             m_app.RegisterComponentDescriptor(EditorPythonBindings::PythonSystemComponent::CreateDescriptor());
@@ -333,7 +335,7 @@ sys.version
         {
             // clearing up memory
             m_notificationSink = EditorPythonBindingsNotificationBusSink();
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
 
             // shutdown time!
             PythonTestingFixture::TearDown();

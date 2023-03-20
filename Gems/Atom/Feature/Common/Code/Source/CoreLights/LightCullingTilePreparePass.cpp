@@ -62,7 +62,7 @@ namespace AZ
         {
             AZ_Assert(GetInputBinding(0).m_name == AZ::Name("Depth"), "LightCullingTilePrepare: Expecting slot 0 to be the depth buffer");
 
-            const RPI::PassAttachment* attachment = GetInputBinding(0).m_attachment.get();
+            const RPI::PassAttachment* attachment = GetInputBinding(0).GetAttachment().get();
             return attachment->m_descriptor.m_image.m_size;
         }
 
@@ -112,7 +112,7 @@ namespace AZ
         {
             AZ_Assert(GetInputBinding(0).m_name == AZ::Name("Depth"), "LightCullingTilePrepare: Expecting slot 0 to be the depth buffer");
 
-            const RPI::PassAttachment* attachment = GetInputBinding(0).m_attachment.get();
+            const RPI::PassAttachment* attachment = GetInputBinding(0).GetAttachment().get();
             return attachment->m_descriptor.m_image.m_multisampleState;
         }
 

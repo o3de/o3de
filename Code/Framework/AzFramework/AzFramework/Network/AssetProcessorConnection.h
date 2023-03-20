@@ -93,6 +93,8 @@ namespace AzFramework
             //! @return returns a value that can be passed to /ref RemoveMessageHandler .
             SocketConnection::TMessageCallbackHandle AddMessageHandler(AZ::u32 typeId, TMessageCallback callback) override;
             void RemoveMessageHandler(AZ::u32 typeId, TMessageCallbackHandle callbackHandle) override;
+            AZ::s32 GetLastResult() const override;
+            AZStd::string GetLastErrorMessage() const override;
             //////////////////////////////////////////////////////////////////////////
 
             bool NegotiationFailed() { return m_negotiationFailed; } //hold whether the last connection attempt failed negotiation or not
@@ -208,7 +210,8 @@ namespace AzFramework
             // has yet to finish cleaning everything up.
             AZStd::atomic_bool m_isBusyDisconnecting;
 
-            
+            AZ::s32 m_lastErrorResult = 0;
+            AZStd::string m_lastErrorMessage;
         };
 
         typedef AZStd::vector<AZ::u8, AZ::OSStdAllocator> MessageBuffer;

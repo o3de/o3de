@@ -1,17 +1,12 @@
 {
-    "Source": "LightCullingTilePrepare",
-
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
-    },
+    "Source": "LightCullingTilePrepare.azsl",
     
     "ProgramSettings" : 
     {
         "EntryPoints":
         [
             {
-                "name": "MainCS",
+                "name":  "MainCS",
                 "type" : "Compute"
             }
         ] 
@@ -21,8 +16,9 @@
     [
         {
             "Name": "NoMSAA",
-            "PlusArguments": "--no-ms",
-            "MinusArguments": ""
+            "AddBuildArguments": {
+                "azslc": ["--no-ms"]
+            }
         }
     ]
 }

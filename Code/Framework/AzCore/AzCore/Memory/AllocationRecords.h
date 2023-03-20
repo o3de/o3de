@@ -9,6 +9,7 @@
 
 #include <AzCore/base.h>
 #include <AzCore/std/algorithm.h>
+#include <AzCore/std/allocator_stateless.h>
 
 #include <AzCore/std/function/function_fwd.h> // for callbacks
 
@@ -27,21 +28,21 @@ namespace AZ
         struct AllocationInfo
         {
             size_t          m_byteSize{};
-            unsigned int    m_alignment{};
             const char*     m_name{};
-
             const char*     m_fileName{};
             int             m_lineNum{};
+            unsigned int    m_alignment{};
             void*           m_namesBlock{}; ///< Memory block if m_name and m_fileName have been allocated specifically for this allocation record
             size_t          m_namesBlockSize{};
 
             AZ::Debug::StackFrame*  m_stackFrames{};
+            unsigned int m_stackFramesCount{};
 
             AZ::u64         m_timeStamp{}; ///< Timestamp for sorting/tracking allocations
         };
 
         // We use OSAllocator which uses system calls to allocate memory, they are not recorded or tracked!
-        typedef AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, OSStdAllocator>  AllocationRecordsType;
+        using AllocationRecordsType = AZStd::unordered_map<void*, AllocationInfo, AZStd::hash<void*>, AZStd::equal_to<void*>, AZStd::stateless_allocator>;
 
         /**
          * Records enumeration callback
@@ -50,7 +51,7 @@ namespace AZ
          * \param unsigned char number of stack records/levels, if AllocationInfo::m_stackFrames != NULL.
          * \returns true if you want to continue traverse of the records and false if you want to stop.
          */
-        typedef AZStd::function<bool (void*, const AllocationInfo&, unsigned char)> AllocationInfoCBType;
+        using AllocationInfoCBType = AZStd::function<bool (void*, const AllocationInfo&, unsigned char)>;
         /**
          * Example of records enumeration callback.
          */
@@ -64,7 +65,7 @@ namespace AZ
             bool m_isDetailed;      ///< True to print allocation line and allocation callstack, otherwise false.
             bool m_includeNameAndFilename;  /// < True to print the source name and source filename, otherwise skip
         };
-        
+
         /**
          * Guard value is used to guard different memory allocations for stomping.
          */
@@ -75,35 +76,6 @@ namespace AZ
             ~GuardValue()   { m_value = 0xf00d8bad; }
             bool Validate() const { return m_value == (m_defValue ^ (u32)((size_t) this)); }
             void ValidateWithAssert() const { AZ_Assert(m_value == m_defValue, "Guard value doesn't match! Value: 0x%08x should be: 0x%08x", m_value, m_defValue); }
-        private:
-            u32     m_value;
-        };
-
-        /**
-         * Memory magic value 16 bit. Used to detect correctness of memory.
-         */
-        struct Magic16
-        {
-            static const u16 m_defValue = 0xfeed;
-            AZ_FORCE_INLINE Magic16()  { m_value = (m_defValue ^ (u16)((size_t) this)); }
-            AZ_FORCE_INLINE ~Magic16() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue^ (u16)((size_t) this)); }
-        private:
-            u16     m_value;
-        };
-
-        /**
-        * Memory magic value 32 bit. Used to detect correctness of memory.
-        */
-        struct Magic32
-        {
-            static const u32 m_defValue = 0xfeedf00d;
-            AZ_FORCE_INLINE Magic32()
-            {
-                m_value = (m_defValue ^ (u32)((size_t) this));
-            }
-            AZ_FORCE_INLINE ~Magic32() { m_value = 0; }
-            AZ_FORCE_INLINE bool Validate() const { return m_value == (m_defValue ^ (u32)((size_t) this)); }
         private:
             u32     m_value;
         };
@@ -121,10 +93,7 @@ namespace AZ
         */
         class AllocationRecords
         {
-            friend class MemoryDriller;
-            AZ_CLASS_ALLOCATOR(AllocationRecords, OSAllocator, 0);
-
-        public:
+         public:
             enum Mode : int
             {
                 RECORD_NO_RECORDS,              ///< Never record any information.
@@ -140,7 +109,6 @@ namespace AZ
              */
 
             AllocationRecords(unsigned char stackRecordLevels, bool isMemoryGuard, bool isMarkUnallocatedMemory, const char* allocatorName);
-            ~AllocationRecords();
 
             unsigned int  MemoryGuardSize() const               { return m_memoryGuardSize; }
 
@@ -164,7 +132,7 @@ namespace AZ
             AZ_FORCE_INLINE Debug::AllocationRecordsType& GetMap()  { return m_records; }
 
             /// Enumerates all allocations in a thread safe manner.
-            void    EnumerateAllocations(AllocationInfoCBType cb);
+            void    EnumerateAllocations(AllocationInfoCBType cb) const;
 
             /// If marking is enabled it will set all memory we deallocate with 0xcd
             void    MarkUallocatedMemory(bool isMark)           { m_isMarkUnallocatedMemory = isMark; }
@@ -179,7 +147,7 @@ namespace AZ
             /// Returns peak of requested memory. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t  RequestedBytesPeak() const                  { return m_requestedBytesPeak; }
             /// Reset the peak allocation to the current requested memory.
-            void    ResetPeakBytes()                            { m_requestedBytesPeak = m_requestedBytes; }
+            void    ResetPeakBytes()                            { m_requestedBytesPeak.store(m_requestedBytes); }
             /// Return requested user bytes. IMPORTANT: This is user requested memory! Any allocator overhead is NOT included.
             size_t  RequestedBytes() const                      { return m_requestedBytes; }
             /// Returns total number of requested allocations.
@@ -187,18 +155,18 @@ namespace AZ
 
             const char* GetAllocatorName() const                { return m_allocatorName; }
 
-        protected:
-
             // @{ Allocation tracking management - we assume this functions are called with the lock locked.
-            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, unsigned int stackSuppressCount);
+            const AllocationInfo*   RegisterAllocation(void* address, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             void    UnregisterAllocation(void* address, size_t byteSize, size_t alignment, AllocationInfo* info);
             // the address of the variable will not change we are just updating the statistics.
             void    ResizeAllocation(void* address, size_t newSize);
+
+            void RegisterReallocation(void* address, void* newAddress, size_t byteSize, size_t alignment, unsigned int stackSuppressCount);
             // @}
 
-            void    IntegrityCheckNoLock() const;
-
+        protected:
             Debug::AllocationRecordsType    m_records;
+            mutable AZStd::spin_mutex       m_recordsMutex;
             Mode                            m_mode;
             bool                            m_isAutoIntegrityCheck;
             bool                            m_isMarkUnallocatedMemory;      ///< True if we want to set value 0xcd in unallocated memory.
@@ -206,9 +174,9 @@ namespace AZ
             bool                            m_decodeImmediately;
             unsigned char                   m_numStackLevels;
             unsigned int                    m_memoryGuardSize;
-            size_t                          m_requestedAllocs;
-            size_t                          m_requestedBytes;
-            size_t                          m_requestedBytesPeak;
+            AZStd::atomic<size_t>           m_requestedAllocs;
+            AZStd::atomic<size_t>           m_requestedBytes;
+            AZStd::atomic<size_t>           m_requestedBytesPeak;
 
             const char*                     m_allocatorName;
         };

@@ -40,7 +40,7 @@ namespace AZ::SceneAPI::SceneBuilder
         // This code re-combines them to match previous FBX SDK behavior,
         // so they can be separated by engine code instead.
         int vertOffset = 0;
-        for (int m = 0; m < currentNode->mNumMeshes; ++m)
+        for (unsigned int m = 0; m < currentNode->mNumMeshes; ++m)
         {
             const aiMesh* mesh = scene->mMeshes[currentNode->mMeshes[m]];
 
@@ -50,7 +50,7 @@ namespace AZ::SceneAPI::SceneBuilder
                 assImpMatIndexToLYIndex.insert(AZStd::pair<int, int>(mesh->mMaterialIndex, lyMeshIndex++));
             }
 
-            for (int vertIdx = 0; vertIdx < mesh->mNumVertices; ++vertIdx)
+            for (unsigned int vertIdx = 0; vertIdx < mesh->mNumVertices; ++vertIdx)
             {
                 AZ::Vector3 vertex(mesh->mVertices[vertIdx].x, mesh->mVertices[vertIdx].y, mesh->mVertices[vertIdx].z);
 
@@ -68,21 +68,22 @@ namespace AZ::SceneAPI::SceneBuilder
                 }
             }
 
-            for (int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
+            for (unsigned int faceIdx = 0; faceIdx < mesh->mNumFaces; ++faceIdx)
             {
                 aiFace face = mesh->mFaces[faceIdx];
                 AZ::SceneAPI::DataTypes::IMeshData::Face meshFace;
-                if (face.mNumIndices != 3)
+                if (face.mNumIndices > 3)
                 {
                     // AssImp should have triangulated everything, so if this happens then someone has
                     // probably changed AssImp's import settings. The engine only supports triangles.
                     AZ_Error(Utilities::ErrorWindow, false,
-                        "Mesh on node %s has a face with %d vertices, only 3 vertices are supported per face.",
+                        "Mesh on node %s has a face with %d vertices, only 3 vertices are supported per face. You could "
+                        "fix it by triangulating the meshes in the dcc tool.",
                         currentNode->mName.C_Str(),
                         face.mNumIndices);
                     continue;
                 }
-                for (int idx = 0; idx < face.mNumIndices; ++idx)
+                for (unsigned int idx = 0; idx < face.mNumIndices; ++idx)
                 {
                     meshFace.vertexIndex[idx] = face.mIndices[idx] + vertOffset;
                 }

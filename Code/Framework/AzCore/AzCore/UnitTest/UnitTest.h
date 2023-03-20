@@ -60,6 +60,7 @@ namespace UnitTest
             m_isAssertTest = true;
             m_numAssertsFailed = 0;
         }
+
         int  StopAssertTests()
         {
             m_isAssertTest = false;
@@ -68,7 +69,21 @@ namespace UnitTest
             return numAssertsFailed;
         }
 
+        void ResetSuppressionSettingsToDefault()
+        {
+            m_suppressErrors = true;
+            m_suppressWarnings = true;
+            m_suppressAsserts = true;
+            m_suppressOutput = true;
+            m_suppressPrintf = true;
+        }
+
         bool m_isAssertTest;
+        bool m_suppressErrors = true;
+        bool m_suppressWarnings = true;
+        bool m_suppressAsserts = true;
+        bool m_suppressOutput = true;
+        bool m_suppressPrintf = true;
         int  m_numAssertsFailed;
     };
 
@@ -114,7 +129,7 @@ namespace UnitTest
 
     // utility classes that you can derive from or contain, which suppress AZ_Asserts
     // and AZ_Errors to the below macros (processAssert, etc)
-    // If TraceBusHook or TraceBusRedirector have been started in your unit tests, 
+    // If TraceBusHook or TraceBusRedirector have been started in your unit tests,
     //  use AZ_TEST_START_TRACE_SUPPRESSION and AZ_TEST_STOP_TRACE_SUPPRESSION(numExpectedAsserts) macros to perform AZ_Assert and AZ_Error suppression
     class TraceBusRedirector
         : public AZ::Debug::TraceMessageBus::Handler
@@ -124,16 +139,19 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressAsserts)
             {
                 GTEST_MESSAGE_AT_(file, line, message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true;
+
+            return false;
         }
         bool OnAssert(const char* /*message*/) override
         {
-            return true; // stop processing
+            return UnitTest::TestRunner::Instance().m_suppressAsserts; // stop processing
         }
         bool OnPreError(const char* /*window*/, const char* file, int line, const char* /*func*/, const char* message) override
         {
@@ -142,6 +160,7 @@ namespace UnitTest
                 UnitTest::TestRunner::Instance().ProcessAssert(message, file, line, false);
                 return true;
             }
+
             return false;
         }
         bool OnError(const char* /*window*/, const char* message) override
@@ -149,12 +168,15 @@ namespace UnitTest
             if (UnitTest::TestRunner::Instance().m_isAssertTest)
             {
                 UnitTest::TestRunner::Instance().ProcessAssert(message, __FILE__, __LINE__, UnitTest::AssertionExpr(false));
+                return true;
             }
-            else
+            else if (UnitTest::TestRunner::Instance().m_suppressErrors)
             {
                 GTEST_MESSAGE_(message, ::testing::TestPartResult::kNonFatalFailure);
+                return true;
             }
-            return true; // stop processing
+
+            return false;
         }
         bool OnPreWarning(const char* /*window*/, const char* /*fileName*/, int /*line*/, const char* /*func*/, const char* /*message*/) override
         {
@@ -163,21 +185,21 @@ namespace UnitTest
         }
         bool OnWarning(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressWarnings;
         }
 
         bool OnOutput(const char* /*window*/, const char* /*message*/) override
         {
-            return true;
+            return UnitTest::TestRunner::Instance().m_suppressOutput;
         }
 
         bool OnPrintf(const char* window, const char* message) override
         {
             if (AZStd::string_view(window) == "Memory") // We want to print out the memory leak's stack traces
             {
-                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message); 
+                ColoredPrintf(COLOR_RED, "[  MEMORY  ] %s", message);
             }
-            return true; 
+            return UnitTest::TestRunner::Instance().m_suppressPrintf;
         }
     };
 
@@ -188,17 +210,6 @@ namespace UnitTest
     public:
         void SetupEnvironment() override
         {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-            AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-            AZ::Environment::Attach(inst);
-            m_createdAllocator = false;
-#else
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ::AllocatorInstance<AZ::OSAllocator>::Create(); // used by the bus
-                m_createdAllocator = true;
-            }
-#endif
             BusConnect();
 
             m_environmentSetup = true;
@@ -210,56 +221,58 @@ namespace UnitTest
             {
                 BusDisconnect();
 
-                if (m_createdAllocator)
+                // Leak detection. We need to collect the allocators and then shutdown the environment to remove all
+                // variables that are there before we can detect leaks.
+                AZStd::vector<AZ::IAllocator*, AZStd::stateless_allocator> allocators;
                 {
-                    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy(); // used by the bus
-                }
-
-                // At this point, the AllocatorManager should not have any allocators left. If we happen to have any,
-                // we exit the test with an error code (this way the test process does not return 0 and the test run
-                // is considered a failure).
-                AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
-                const int numAllocators = allocatorManager.GetNumAllocators();
-                int invalidAllocatorCount = 0;
-
-                for (int i = 0; i < numAllocators; ++i)
-                {
-                    if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
+                    AZ::AllocatorManager& allocatorManager = AZ::AllocatorManager::Instance();
+                    const int numAllocators = allocatorManager.GetNumAllocators();
+                    // Iterate in reverse order since some allocators could depend on others to do garbage collection.
+                    // If allocatorB depends on allocatorA, allocatorA will be registered before into the allocator manager.
+                    for (int i = numAllocators - 1; i >= 0; --i)
                     {
-                        invalidAllocatorCount++;
+                        allocatorManager.GetAllocator(i)->GarbageCollect();
                     }
-                }
 
-                if (invalidAllocatorCount && m_createdAllocator)
-                {
-                    // Print the name of the allocators still in the AllocatorManager
-                    ColoredPrintf(COLOR_RED, "[     FAIL ] There are still %d registered non-lazy allocators:\n", invalidAllocatorCount);
+                    allocators.reserve(numAllocators);
                     for (int i = 0; i < numAllocators; ++i)
                     {
-                        if (!allocatorManager.GetAllocator(i)->IsLazilyCreated())
-                        {
-                            ColoredPrintf(COLOR_RED, "\t\t%s\n", allocatorManager.GetAllocator(i)->GetName());
-                        }
+                        allocators.push_back(allocatorManager.GetAllocator(i));
                     }
+                }
 
-                    AZ::AllocatorManager::Destroy();
-                    m_environmentSetup = false;
+                bool allocationsLeft = false;
 
+                // Fail with errors if any of the ones with tracking have allocations left
+                for (AZ::IAllocator* allocator : allocators)
+                {
+                    const auto records = allocator->GetRecords();
+                    if (records && records->RequestedBytes() > 0)
+                    {
+                        if (!allocationsLeft)
+                        {
+                            ColoredPrintf(COLOR_RED, "[     FAIL ] There are still allocations\n");
+                            allocationsLeft = true;
+                        }
+                        ColoredPrintf(COLOR_RED, "\t\t%s, Request size left: %zu bytes\n", allocator->GetName(), records->RequestedBytes());
+                        records->EnumerateAllocations(AZ::Debug::PrintAllocationsCB{true, true});
+                    }
+                }
+
+                m_environmentSetup = false;
+
+                if (allocationsLeft)
+                {
 #if AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
                     std::raise(SIGTERM);
 #endif // AZ_TRAIT_COMPILER_SUPPORT_CSIGNAL
                 }
-
-                AZ::AllocatorManager::Destroy();
-                m_environmentSetup = false;
             }
         }
 
     private:
         bool m_environmentSetup = false;
-        bool m_createdAllocator = false;
     };
-
 }
 
 

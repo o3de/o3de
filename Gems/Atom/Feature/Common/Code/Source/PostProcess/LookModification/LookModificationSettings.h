@@ -33,7 +33,10 @@ namespace AZ
             //! Asset ID of LUT
             Data::Asset<RPI::AnyAsset> m_assetId;
             //! Shaper preset type
-            ShaperPresetType m_shaperPreset = AZ::Render::ShaperPresetType::Log2_48_nits;
+            ShaperPresetType m_shaperPreset = AZ::Render::ShaperPresetType::Log2_48Nits;
+            //! When shaper preset is custom, these values set min and max exposure.
+            float m_customMinExposure = -6.5;
+            float m_customMaxExposure = 6.5;
             HashValue64 GetHash(HashValue64 seed) const;
         };
 
@@ -47,7 +50,7 @@ namespace AZ
 
         public:
             AZ_RTTI(LookModificationSettings, "{244F5635-C5CA-412F-AD3D-49D55A771EB1}", LookModificationSettingsInterface, PostProcessBase);
-            AZ_CLASS_ALLOCATOR(LookModificationSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LookModificationSettings, SystemAllocator);
 
             static const uint32_t MaxBlendLuts = 4;
 

@@ -31,16 +31,6 @@
 
 namespace SimulatedObjectSetupTests
 {
-    namespace AZStd
-    {
-        using namespace ::AZStd;
-    } // namespace AZStd
-
-    namespace AZ
-    {
-        using namespace ::AZ;
-    } // namespace AZ
-
     // Import real implementations
     namespace EMotionFX
     {
@@ -53,24 +43,14 @@ namespace SimulatedObjectSetupTests
 
 #include <Tests/Prefabs/LeftArmSkeleton.h>
 
-#include <EMotionFX/Source/SimulatedObjectSetup.cpp>
+#include <EMotionFX/Source/SimulatedObjectSetup_Interface.inl>
+#include <EMotionFX/Source/SimulatedObjectSetup_Impl.inl>
 
     using namespace EMotionFX;
 
     class SimulatedObjectSetupTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<ActorAllocator>::Create();
-        }
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<ActorAllocator>::Destroy();
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     TEST_F(SimulatedObjectSetupTestsFixture, TestSimulatedObjectSetup_AddSimulatedObject)
@@ -156,8 +136,8 @@ namespace SimulatedObjectSetupTests
 
     struct AddSimulatedJointAndChildrenParams
     {
-        AZ::u32 jointIndex;
-        size_t expectedSimulatedJointCount;
+        AZ::u32 m_jointIndex;
+        size_t m_expectedSimulatedJointCount;
     };
 
     class AddSimulatedJointAndChildrenFixture
@@ -177,8 +157,8 @@ namespace SimulatedObjectSetupTests
         SimulatedObjectSetup setup(&actor);
         SimulatedObject* object = setup.AddSimulatedObject();
 
-        object->AddSimulatedJointAndChildren(GetParam().jointIndex);
-        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().expectedSimulatedJointCount);
+        object->AddSimulatedJointAndChildren(GetParam().m_jointIndex);
+        EXPECT_EQ(object->GetSimulatedJoints().size(), GetParam().m_expectedSimulatedJointCount);
     }
 
     INSTANTIATE_TEST_CASE_P(Test, AddSimulatedJointAndChildrenFixture,
@@ -406,7 +386,6 @@ namespace SimulatedObjectSetupTests
         const float newGravityFactor = 1.2f;
         const float newFriction = 0.3f;
         const bool newPinned = true;
-        const bool newStretchable = true;
 
         joint.SetConeAngleLimit(newConeAngleLimit);
         joint.SetMass(newMass);

@@ -21,7 +21,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(AlignSelectionMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AlignSelectionMenuAction, AZ::SystemAllocator);
     
         static void CreateAlignmentSubMenu(EditorContextMenu* contextMenu);
     
@@ -30,7 +30,8 @@ namespace GraphCanvas
         
         bool IsInSubMenu() const override;
         AZStd::string GetSubMenuPath() const override;
-    
+
+        using AlignmentContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:

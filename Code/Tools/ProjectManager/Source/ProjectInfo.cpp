@@ -9,14 +9,13 @@
 #include <ProjectInfo.h>
 #include <ProjectManagerDefs.h>
 
-#include <QDir>
-
 namespace O3DE::ProjectManager
 {
     ProjectInfo::ProjectInfo(
         const QString& path,
         const QString& projectName,
         const QString& displayName,
+        const QString& id,
         const QString& origin,
         const QString& summary,
         const QString& iconPath,
@@ -26,6 +25,7 @@ namespace O3DE::ProjectManager
         : m_path(path)
         , m_projectName(projectName)
         , m_displayName(displayName)
+        , m_id(id)
         , m_origin(origin)
         , m_summary(summary)
         , m_iconPath(iconPath)
@@ -45,7 +45,19 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
+        if (m_engineName != rhs.m_engineName)
+        {
+            return false;
+        }
+        if (m_enginePath != rhs.m_enginePath)
+        {
+            return false;
+        }
         if (m_displayName != rhs.m_displayName)
+        {
+            return false;
+        }
+        if (m_id != rhs.m_id)
         {
             return false;
         }
@@ -69,6 +81,10 @@ namespace O3DE::ProjectManager
         {
             return false;
         }
+        if (m_version != rhs.m_version)
+        {
+            return false;
+        }
 
         return true;
     }
@@ -80,7 +96,7 @@ namespace O3DE::ProjectManager
 
     bool ProjectInfo::IsValid() const
     {
-        return !m_path.isEmpty() && !m_projectName.isEmpty();
+        return !m_path.isEmpty() && !m_projectName.isEmpty() && !m_id.isEmpty();
     }
 
     const QString& ProjectInfo::GetProjectDisplayName() const

@@ -15,13 +15,13 @@
 
 #include <AtomLyIntegration/AtomFont/GlyphBitmap.h>
 #include <AtomLyIntegration/AtomFont/FFont.h>
+
 #include <ft2build.h>
 #pragma push_macro("generic")
 #define generic GenericFromFreeTypeLibrary
 #include <freetype/freetype.h>
 #undef generic
 #pragma pop_macro("generic")
-
 
 // Corresponds to the Unicode character set. This value covers all versions of the Unicode repertoire,
 // including ASCII and Latin-1. Most fonts include a Unicode charmap, but not all of them.
@@ -60,7 +60,7 @@ namespace AZ
         FontRenderer();
         ~FontRenderer();
 
-        int         LoadFromFile(const string& fileName);
+        int         LoadFromFile(const AZStd::string& fileName);
         int         LoadFromMemory(unsigned char* buffer, int bufferSize);
         int         Release();
 
@@ -78,8 +78,6 @@ namespace AZ
         //! \param glyphBitmap The FreeType glyph buffer is essentially copied into this GlyphBitmap buffer
         int         GetGlyph(GlyphBitmap* glyphBitmap, int* horizontalAdvance, uint8_t* glyphWidth, uint8_t* glyphHeight, int32_t& m_characterOffsetX, int32_t& m_characterOffsetY, int iX, int iY, int characterCode, const FFont::FontHintParams& glyphFlags = FFont::FontHintParams());
         int         GetGlyphScaled(GlyphBitmap* glyphBitmap, int* glyphWidth, int* glyphHeight, int iX, int iY, float scaleX, float scaleY, int characterCode);
-
-        void GetMemoryUsage([[maybe_unused]] ICrySizer* sizer) const {}
 
         bool GetMonospaced() const { return FT_IS_FIXED_WIDTH(m_face) != 0; }
 

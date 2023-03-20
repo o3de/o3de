@@ -1,0 +1,610 @@
+{
+    "entries": [
+        {
+            "base": "UiFlipbookAnimationBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Flipbook Animation",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetLoopType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Loop Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Loop Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Loop Type",
+                        "tooltip": "Gets the type of looping behavior for the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetReverseDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Reverse Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Reverse Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Get Reverse Delay",
+                        "tooltip": "Gets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetIsAutoPlay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Is Auto Play Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Is Auto Play Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Set Is Auto Play Enabled",
+                        "tooltip": "Sets whether the animation will begin playing as soon as the element is activated",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto Play",
+                                "tooltip": "Indicates whether the animation will begin playing as soon as the element is activated"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetCurrentFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Current Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Current Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Set Current Frame",
+                        "tooltip": "Sets the frame to immediately display for the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Frame",
+                                "tooltip": "The frame to immediately display for the animation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLoopStartFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Loop Start Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Loop Start Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Get Loop Start Frame",
+                        "tooltip": "Gets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\"",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLoopType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Loop Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Loop Type is invoked"
+                    },
+                    "details": {
+                        "name": "Set Loop Type",
+                        "tooltip": "Sets the type of looping behavior for this animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Loop Type",
+                                "tooltip": "The looping behavior for the animation (0=None, 1=Linear, 2=Ping Pong)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStartDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Start Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Start Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Get Start Delay",
+                        "tooltip": "Gets the delay (in seconds) before playing the flipbook (applied only once during playback)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetStartDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Start Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Start Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Set Start Delay",
+                        "tooltip": "Sets the delay (in seconds) before playing the flipbook (applied only once during playback)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Start Delay",
+                                "tooltip": "The delay (in seconds) before playing the flipbook"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCurrentFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Current Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Current Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Get Current Frame",
+                        "tooltip": "Gets the frame of the animation currently displayed",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFramerate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Framerate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Framerate is invoked"
+                    },
+                    "details": {
+                        "name": "Get Framerate",
+                        "tooltip": "Gets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLoopDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Loop Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Loop Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Set Loop Delay",
+                        "tooltip": "Sets the delay (in seconds) before playing the loop sequence",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Loop Delay",
+                                "tooltip": "The delay (in seconds) before playing the loop sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetStartFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Start Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Start Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Get Start Frame",
+                        "tooltip": "Gets the first frame to display when starting the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFramerateUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Framerate Unit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Framerate Unit is invoked"
+                    },
+                    "details": {
+                        "name": "Set Framerate Unit",
+                        "tooltip": "Sets the framerate unit (0 = Frames per second, 1 = Seconds per frame)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Framerate Unit",
+                                "tooltip": "The framerate unit (0 = Frames per second, 1 = Seconds per frame)"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsPlaying",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Playing"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Playing is invoked"
+                    },
+                    "details": {
+                        "name": "Is Playing",
+                        "tooltip": "Returns whether the animation is currently playing",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetEndFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set End Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set End Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Set End Frame",
+                        "tooltip": "Sets the last frame to display for the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Frame",
+                                "tooltip": "The last frame to display for the animation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetLoopStartFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Loop Start Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Loop Start Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Set Loop Start Frame",
+                        "tooltip": "Sets the first frame that is displayed within an animation loop. Applicable only when the \"Loop Type\" is set to anything other than \"None\"",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Frame",
+                                "tooltip": "The first frame that is displayed within an animation loop"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetReverseDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Reverse Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Reverse Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Set Reverse Delay",
+                        "tooltip": "Sets the delay (in seconds) before playing the reverse loop sequence (PingPong loop types only)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Reverse Delay",
+                                "tooltip": "The delay (in seconds) before playing the reverse loop sequence"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Stop",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Stop"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Stop is invoked"
+                    },
+                    "details": {
+                        "name": "Stop",
+                        "tooltip": "Ends the animation",
+                        "subtitle": "UI Flipbook"
+                    }
+                },
+                {
+                    "base": "SetFramerate",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Framerate"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Framerate is invoked"
+                    },
+                    "details": {
+                        "name": "Set Framerate",
+                        "tooltip": "Sets the speed used to determine when to transition to the next frame. Framerate is defined relative to unit of time, specified by FramerateUnits",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Framerate",
+                                "tooltip": "The framerate in whatever units are specified by Set Framerate Unit"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetIsAutoPlay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Is Auto Play Enabled"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Is Auto Play Enabled is invoked"
+                    },
+                    "details": {
+                        "name": "Is Auto Play Enabled",
+                        "tooltip": "Returns whether the animation will begin playing as soon as the element is activated",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Start",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Start"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Start is invoked"
+                    },
+                    "details": {
+                        "name": "Start",
+                        "tooltip": "Begins playing the flipbook animation",
+                        "subtitle": "UI Flipbook"
+                    }
+                },
+                {
+                    "base": "SetStartFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Start Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Start Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Set Start Frame",
+                        "tooltip": "Sets the first frame to display when starting the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Frame",
+                                "tooltip": "The first frame to display when starting the animation"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetEndFrame",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get End Frame"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get End Frame is invoked"
+                    },
+                    "details": {
+                        "name": "Get End Frame",
+                        "tooltip": "Gets the last frame to display for the animation",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFramerateUnit",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Framerate Unit"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Framerate Unit is invoked"
+                    },
+                    "details": {
+                        "name": "Get Framerate Unit",
+                        "tooltip": "Gets the framerate unit (0 = Frames per second, 1 = Seconds per frame)",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetLoopDelay",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Loop Delay"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Loop Delay is invoked"
+                    },
+                    "details": {
+                        "name": "Get Loop Delay",
+                        "tooltip": "Gets the delay (in seconds) before playing the loop sequence",
+                        "subtitle": "UI Flipbook"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

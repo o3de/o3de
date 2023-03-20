@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/OrderedSequencer.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OrderedSequencer"
-	       QualifiedName="ScriptCanvas::Nodes::Logic::OrderedSequencer"
-	       PreferredClassName="Ordered Sequencer"
-           Uuid="{BAFDA139-49A8-453B-A556-D4F4BA213B5C}"
-           Base="ScriptCanvas::Node"
-           Category="Logic"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)">
+        QualifiedName="ScriptCanvas::Nodes::Logic::OrderedSequencer"
+        PreferredClassName="Ordered Sequencer"
+        Uuid="{BAFDA139-49A8-453B-A556-D4F4BA213B5C}"
+        Category="Logic"
+        Description="Triggers the execution outputs in the specified ordered. The next line will trigger once the first line reaches a break in execution(either through latent node, or a terminal endpoint)">
         <In Name="In" Description=""/>
         <Out Name="Out 0" Description="Output 0"/>
     </Class>

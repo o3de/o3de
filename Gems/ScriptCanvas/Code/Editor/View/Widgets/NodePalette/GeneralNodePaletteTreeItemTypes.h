@@ -10,6 +10,9 @@
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/DraggableNodePaletteTreeItem.h>
 
 #include "CreateNodeMimeEvent.h"
+#include "NodePaletteModel.h"
+#include <Source/Translation/TranslationBus.h>
+#include "TranslationGeneration.h"
 
 namespace ScriptCanvasEditor
 {
@@ -21,7 +24,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateClassMethodMimeEvent, "{20641353-0513-4399-97D4-5509377BF0C8}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateClassMethodMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateClassMethodMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -43,7 +46,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(ClassMethodEventPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClassMethodEventPaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(ClassMethodEventPaletteTreeItem, "{96F93970-F38A-4F08-8DC5-D52FCCE34E25}", GraphCanvas::DraggableNodePaletteTreeItem);
 
         ClassMethodEventPaletteTreeItem(AZStd::string_view className, AZStd::string_view methodName, bool isOverload, ScriptCanvas::PropertyStatus propertyStatus);
@@ -55,6 +58,9 @@ namespace ScriptCanvasEditor
         AZStd::string GetMethodName() const;
         bool IsOverload() const;
         ScriptCanvas::PropertyStatus GetPropertyStatus() const;
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         bool m_isOverload = false;
@@ -71,18 +77,19 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateGlobalMethodMimeEvent, "{5225DC7E-FF12-4D17-8B72-D772D44DFFA0}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateGlobalMethodMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateGlobalMethodMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
         CreateGlobalMethodMimeEvent() = default;
-        CreateGlobalMethodMimeEvent(AZStd::string methodName);
+        CreateGlobalMethodMimeEvent(AZStd::string methodName, bool isProperty);
 
     protected:
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
 
     //! GlobalMethod Node Palette Tree Item
@@ -92,7 +99,7 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(GlobalMethodEventPaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlobalMethodEventPaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(GlobalMethodEventPaletteTreeItem, "{C6C633FC-605B-4161-8FAE-65E4807D1147}", GraphCanvas::DraggableNodePaletteTreeItem);
 
         GlobalMethodEventPaletteTreeItem(const GlobalMethodNodeModelInformation& nodeModelInformation);
@@ -101,8 +108,13 @@ namespace ScriptCanvasEditor
 
         const AZStd::string& GetMethodName() const;
 
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
+
+
     private:
         AZStd::string m_methodName;
+        bool m_isProperty;
     };
     //! <GlobalMethod>
 
@@ -112,7 +124,7 @@ namespace ScriptCanvasEditor
     {
     public:
         AZ_RTTI(CreateCustomNodeMimeEvent, "{7130C89B-2F2D-493F-AA5C-8B72968D4200}", CreateNodeMimeEvent);
-        AZ_CLASS_ALLOCATOR(CreateCustomNodeMimeEvent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateCustomNodeMimeEvent, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -125,7 +137,7 @@ namespace ScriptCanvasEditor
         ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
 
     private:
-        AZ::Uuid m_typeId;
+        AZ::Uuid m_typeId = AZ::Uuid::CreateNull();
         AZStd::string m_styleOverride;
         AZStd::string m_titlePalette;
     };
@@ -134,18 +146,66 @@ namespace ScriptCanvasEditor
         : public GraphCanvas::DraggableNodePaletteTreeItem
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomNodePaletteTreeItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodePaletteTreeItem, AZ::SystemAllocator);
         AZ_RTTI(CustomNodePaletteTreeItem, "{50E75C4D-F59C-4AF6-A6A3-5BAD557E335C}", GraphCanvas::DraggableNodePaletteTreeItem);
 
-        CustomNodePaletteTreeItem(const AZ::Uuid& typeId, AZStd::string_view nodeName);
+        explicit CustomNodePaletteTreeItem(const ScriptCanvasEditor::CustomNodeModelInformation&);
         ~CustomNodePaletteTreeItem() = default;
 
         GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
 
         AZ::Uuid GetTypeId() const;
+        const ScriptCanvasEditor::CustomNodeModelInformation& GetInfo() const { return m_info; }
+
+        AZ::IO::Path GetTranslationDataPath() const override;
+        void GenerateTranslationData() override;
 
     private:
         AZ::Uuid m_typeId;
+        ScriptCanvasEditor::CustomNodeModelInformation m_info;
+    };
+
+    // </CustomNode>
+
+    // <DataDrivenNode>
+    class CreateDataDrivenNodeMimeEvent : public CreateNodeMimeEvent
+    {
+    public:
+        AZ_RTTI(CreateDataDrivenNodeMimeEvent, "{AD78B758-2F30-4379-B1fD-7AD17F16975F}", CreateNodeMimeEvent);
+        AZ_CLASS_ALLOCATOR(CreateDataDrivenNodeMimeEvent, AZ::SystemAllocator);
+
+        static void Reflect(AZ::ReflectContext* reflectContext);
+
+        CreateDataDrivenNodeMimeEvent() = default;
+        CreateDataDrivenNodeMimeEvent(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData);
+        ~CreateDataDrivenNodeMimeEvent() = default;
+
+    protected:
+        ScriptCanvasEditor::NodeIdPair CreateNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId) const override;
+
+    private:
+        ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData m_nodeData;
+    };
+
+    class DataDrivenNodePaletteTreeItem : public GraphCanvas::DraggableNodePaletteTreeItem
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(DataDrivenNodePaletteTreeItem, AZ::SystemAllocator);
+        AZ_RTTI(DataDrivenNodePaletteTreeItem, "{0A9BC500-D4A9-4B86-8804-96F576CDF0FC}", GraphCanvas::DraggableNodePaletteTreeItem);
+
+        explicit DataDrivenNodePaletteTreeItem(const ScriptCanvasEditor::DataDrivenNodeModelInformation&);
+        ~DataDrivenNodePaletteTreeItem() = default;
+
+        GraphCanvas::GraphCanvasMimeEvent* CreateMimeEvent() const override;
+
+        const ScriptCanvasEditor::DataDrivenNodeModelInformation& GetInfo() const
+        {
+            return m_nodeModelInformation;
+        }
+
+    private:
+        ScriptCanvasEditor::DataDrivenNodeModelInformation m_nodeModelInformation;
+
     };
 
     // </CustomNode>

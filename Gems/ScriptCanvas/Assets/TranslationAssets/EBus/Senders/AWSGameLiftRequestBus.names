@@ -1,0 +1,81 @@
+{
+    "entries": [
+        {
+            "base": "AWSGameLiftRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Requests",
+                "category": "AWS Game Lift"
+            },
+            "methods": [
+                {
+                    "base": "ConfigureGameLiftClient",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Configure Game Lift Client"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Configure Game Lift Client is invoked"
+                    },
+                    "details": {
+                        "name": "Configure Game Lift Client"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CreatePlayerId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Create Player Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Create Player Id is invoked"
+                    },
+                    "details": {
+                        "name": "Create Player Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Include Brackets"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Include Dashes"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Player Id"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

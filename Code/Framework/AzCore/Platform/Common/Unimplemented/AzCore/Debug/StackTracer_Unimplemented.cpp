@@ -17,6 +17,11 @@ namespace AZ
             return false; 
         }
 
+        unsigned int StackConverter::FromNative(StackFrame*, unsigned int, void*)
+        {
+            return 0;
+        }
+
         void SymbolStorage::LoadModuleData(const void*, unsigned int)
         {}
 

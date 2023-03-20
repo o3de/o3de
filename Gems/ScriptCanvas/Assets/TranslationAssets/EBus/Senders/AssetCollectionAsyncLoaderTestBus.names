@@ -1,0 +1,162 @@
+{
+    "entries": [
+        {
+            "base": "AssetCollectionAsyncLoaderTestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Asset Collection Async Loader Test"
+            },
+            "methods": [
+                {
+                    "base": "GetPendingAssetsList",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetPendingAssetsList"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetPendingAssetsList is invoked"
+                    },
+                    "details": {
+                        "name": "GetPendingAssetsList"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetCountOfPendingAssets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetCountOfPendingAssets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetCountOfPendingAssets is invoked"
+                    },
+                    "details": {
+                        "name": "GetCountOfPendingAssets"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "unsigned int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ValidateAssetWasLoaded",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ValidateAssetWasLoaded"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ValidateAssetWasLoaded is invoked"
+                    },
+                    "details": {
+                        "name": "ValidateAssetWasLoaded"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CancelLoadingAssets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CancelLoadingAssets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CancelLoadingAssets is invoked"
+                    },
+                    "details": {
+                        "name": "CancelLoadingAssets"
+                    }
+                },
+                {
+                    "base": "StartLoadingAssetsFromAssetList",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StartLoadingAssetsFromAssetList"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StartLoadingAssetsFromAssetList is invoked"
+                    },
+                    "details": {
+                        "name": "StartLoadingAssetsFromAssetList"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{99DAD0BC-740E-5E82-826B-8FC7968CC02C}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "StartLoadingAssetsFromJsonFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke StartLoadingAssetsFromJsonFile"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after StartLoadingAssetsFromJsonFile is invoked"
+                    },
+                    "details": {
+                        "name": "StartLoadingAssetsFromJsonFile"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

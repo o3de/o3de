@@ -1,0 +1,88 @@
+{
+    "entries": [
+        {
+            "base": "AnimAudioComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Audio",
+                "category": "Animation"
+            },
+            "methods": [
+                {
+                    "base": "AddTriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Add Trigger Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Add Trigger Event is invoked"
+                    },
+                    "details": {
+                        "name": "Add Trigger Event",
+                        "tooltip": "Adds audio support to when an animation event is fired"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Event Name"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Trigger Name"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Joint Name"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearTriggerEvents",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Trigger Events"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Trigger Events is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Trigger Events",
+                        "tooltip": "Clears all audio support for animation events"
+                    }
+                },
+                {
+                    "base": "RemoveTriggerEvent",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Remove Trigger Event"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Remove Trigger Event is invoked"
+                    },
+                    "details": {
+                        "name": "Remove Trigger Event",
+                        "tooltip": "Removes audio support from an anim event"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Event Name"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

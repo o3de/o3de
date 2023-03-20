@@ -8,6 +8,7 @@
 #pragma once
 #include <SceneAPI/SDKWrapper/SceneWrapper.h>
 #include <assimp/Importer.hpp>
+#include <assimp/scene.h>
 
 struct aiScene;
 
@@ -21,14 +22,16 @@ namespace AZ
             AZ_RTTI(AssImpSceneWrapper, "{43A61F62-DCD4-4132-B80B-F2FBC80740BC}", SDKScene::SceneWrapperBase);
             AssImpSceneWrapper();
             AssImpSceneWrapper(aiScene* aiScene);
-            ~AssImpSceneWrapper();
+            ~AssImpSceneWrapper() override = default;
 
             bool LoadSceneFromFile(const char* fileName) override;
             bool LoadSceneFromFile(const AZStd::string& fileName) override;
 
             const std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() const override;
             std::shared_ptr<SDKNode::NodeWrapper> GetRootNode() override;
+            virtual const aiScene* GetAssImpScene() const;
             void Clear() override;
+            void CalculateAABBandVertices(const aiScene* scene, aiAABB& aabb, uint32_t& vertices);
 
             enum class AxisVector
             {
@@ -42,13 +45,17 @@ namespace AZ
             AZStd::pair<AxisVector, int32_t> GetFrontVectorAndSign() const;
 
             AZStd::string GetSceneFileName() const { return m_sceneFileName; }
+            aiAABB GetAABB() const { return m_aabb; }
+            uint32_t GetVertices() const { return m_vertices; }
         protected:
-
-            Assimp::Importer m_importer;
+            const aiScene* m_assImpScene = nullptr;
+            AZStd::unique_ptr<Assimp::Importer> m_importer;
 
             // FBX SDK automatically resolved relative paths to textures based on the current file location.
             // AssImp does not, so it needs to be specifically handled.
             AZStd::string m_sceneFileName;
+            aiAABB m_aabb;
+            uint32_t m_vertices;
         };
 
     } // namespace AssImpSDKWrapper

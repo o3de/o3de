@@ -38,7 +38,7 @@ namespace GradientSignal
     {
         if (m_configuration.m_layers.empty())
         {
-            m_configuration.m_layers.push_back();
+            m_configuration.m_layers.emplace_back();
             m_configuration.m_layers.front().m_operation = MixedGradientLayer::MixingOperation::Initialize;
             SetDirty();
         }

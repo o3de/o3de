@@ -6,40 +6,51 @@
  *
  */
 
+#include <MultiplayerToolsSystemComponent.h>
+#include <AzNetworking/Framework/NetworkingSystemComponent.h>
+#include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/SimplePlayerSpawnerComponent.h>
 #include <Source/MultiplayerGem.h>
 #include <Source/MultiplayerSystemComponent.h>
+#include <Source/MultiplayerStatSystemComponent.h>
 #include <Source/AutoGen/AutoComponentTypes.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
-#include <Multiplayer/Components/NetBindComponent.h>
-#include <AzNetworking/Framework/NetworkingSystemComponent.h>
 
 namespace Multiplayer
 {
     MultiplayerModule::MultiplayerModule()
         : AZ::Module()
     {
-        m_descriptors.insert(m_descriptors.end(), {
-            AzNetworking::NetworkingSystemComponent::CreateDescriptor(),
-            MultiplayerSystemComponent::CreateDescriptor(),
-            NetBindComponent::CreateDescriptor(),
-            NetBindMarkerComponent::CreateDescriptor(),
-            NetworkSpawnableHolderComponent::CreateDescriptor(),
-        });
+        m_descriptors.insert(
+            m_descriptors.end(),
+            {
+                MultiplayerSystemComponent::CreateDescriptor(),
+                MultiplayerStatSystemComponent::CreateDescriptor(),
+                NetBindComponent::CreateDescriptor(),
+                SimplePlayerSpawnerComponent::CreateDescriptor(),
+#ifdef MULTIPLAYER_EDITOR
+                MultiplayerToolsSystemComponent::CreateDescriptor(),
+#endif
+            });
 
         CreateComponentDescriptors(m_descriptors);
     }
 
     AZ::ComponentTypeList MultiplayerModule::GetRequiredSystemComponents() const
     {
-        return AZ::ComponentTypeList
-        {
-            azrtti_typeid<AzNetworking::NetworkingSystemComponent>(),
+        return AZ::ComponentTypeList{
             azrtti_typeid<MultiplayerSystemComponent>(),
+            azrtti_typeid<MultiplayerStatSystemComponent>(),
+#ifdef MULTIPLAYER_EDITOR
+            azrtti_typeid<MultiplayerToolsSystemComponent>(),
+#endif
         };
     }
-}
+} // namespace Multiplayer
 
 #if !defined(MULTIPLAYER_EDITOR)
+#if defined(AZ_MONOLITHIC_BUILD)
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Client, Multiplayer::MultiplayerModule);
+AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer_Server, Multiplayer::MultiplayerModule);
+#endif
 AZ_DECLARE_MODULE_CLASS(Gem_Multiplayer, Multiplayer::MultiplayerModule);
 #endif

@@ -56,6 +56,7 @@ namespace AZ
             : public DisplayMapperFeatureProcessorInterface
         {
         public:
+            AZ_CLASS_ALLOCATOR(AcesDisplayMapperFeatureProcessor, AZ::SystemAllocator)
             enum OutputDeviceTransformFlags
             {
                 AlterSurround = 0x1, // Apply gamma adjustment to compensate for dim surround
@@ -78,7 +79,7 @@ namespace AZ
 
             static OutputDeviceTransformType GetOutputDeviceTransformType(RHI::Format bufferFormat);
             static void GetAcesDisplayMapperParameters(DisplayMapperParameters* displayMapperParameters, OutputDeviceTransformType odtType);
-            static ShaperParams GetShaperParameters(ShaperPresetType shaperPreset);
+            static ShaperParams GetShaperParameters(ShaperPresetType shaperPreset, float customMinEv = 0.0f, float customMaxEv = 0.0f);
             static void GetDefaultDisplayMapperConfiguration(DisplayMapperConfigurationDescriptor& config);
 
             // DisplayMapperFeatureProcessorInteface overrides...
@@ -102,8 +103,6 @@ namespace AZ
 
             static constexpr const char* FeatureProcessorName = "AcesDisplayMapperFeatureProcessor";
 
-            static const int LutSize = 32;
-            static const RHI::Format LutFormat = RHI::Format::R16G16B16A16_FLOAT;
             static const int ImagePoolBudget = 1 << 20; // 1 Megabyte
 
             // LUTs that are baked through shaders

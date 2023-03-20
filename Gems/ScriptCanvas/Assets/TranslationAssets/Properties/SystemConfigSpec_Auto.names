@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "SystemConfigSpec_Auto",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Auto",
+                "category": "Constants/System Spec"
+            },
+            "methods": [
+                {
+                    "base": "GetSystemConfigSpec_Auto",
+                    "details": {
+                        "name": "Auto"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -72,6 +72,7 @@ namespace JsonSerializationTests
             TupleSerializerTestsInternal::ConfigureFeatures(features);
         }
 
+        using JsonSerializerConformityTestDescriptor<AZStd::pair<int, double>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->Class<PairPlaceholder>()->Field("pair", &PairPlaceholder::m_pair);
@@ -126,6 +127,7 @@ namespace JsonSerializationTests
             TupleSerializerTestsInternal::ConfigureFeatures(features);
         }
 
+        using JsonSerializerConformityTestDescriptor<Tuple>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Tuple>();
@@ -142,7 +144,7 @@ namespace JsonSerializationTests
     class TupleClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TupleClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TupleClass, AZ::SystemAllocator);
         AZ_RTTI(TupleClass, "{DF7BDAFC-34D5-48EE-85CB-845856971D9E}");
 
         int m_var1{ 142 };
@@ -164,7 +166,7 @@ namespace JsonSerializationTests
     class TupleBaseClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TupleBaseClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TupleBaseClass, AZ::SystemAllocator);
         AZ_RTTI(TupleBaseClass, "{1073A9F8-6D99-4FBB-958D-E29D2A66C6E7}");
 
         int m_var1{ 142 };
@@ -180,7 +182,7 @@ namespace JsonSerializationTests
         : public TupleBaseClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TupleDefaultDerivedClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TupleDefaultDerivedClass, AZ::SystemAllocator);
         AZ_RTTI(TupleDefaultDerivedClass, "{979B6935-5779-461C-A537-A03472315D8D}", TupleBaseClass);
         ~TupleDefaultDerivedClass() override = default;
 
@@ -191,7 +193,7 @@ namespace JsonSerializationTests
         : public TupleBaseClass
     {
     public:
-        AZ_CLASS_ALLOCATOR(TupleDerivedClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TupleDerivedClass, AZ::SystemAllocator);
         AZ_RTTI(TupleDerivedClass, "{8D2515EC-F85F-4D61-9024-7E1C184E135E}", TupleBaseClass);
 
         double m_var2{ 242.0 };
@@ -344,6 +346,7 @@ namespace JsonSerializationTests
             features.m_enableNewInstanceTests = false;
         }
 
+        using JsonSerializerConformityTestDescriptor::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->Class<TupleClass>()
@@ -477,6 +480,7 @@ namespace JsonSerializationTests
             features.m_typeToInject = rapidjson::kNullType;
         }
 
+        using JsonSerializerConformityTestDescriptor<Tuple>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Tuple>();
@@ -515,7 +519,7 @@ namespace JsonSerializationTests
         TupleTestDescription,
         ComplexTupleTestDescription,
         NestedTupleTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(Tuple, JsonSerializerConformityTests, TupleConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Tuple, JsonSerializerConformityTests, TupleConformityTestTypes));
 
     class JsonTupleSerializerTests
         : public BaseJsonSerializerFixture
@@ -535,6 +539,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             SimpleClass::Reflect(serializeContext, true);

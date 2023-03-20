@@ -11,5 +11,4 @@ set(FILES
     Tests/GestureRecognizerClickOrTapTests.cpp
     Tests/GestureRecognizerPinchTests.cpp
     Tests/GesturesTest.cpp
-    Mocks/IRecognizerMock.h
 )

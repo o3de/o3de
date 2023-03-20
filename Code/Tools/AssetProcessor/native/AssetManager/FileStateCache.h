@@ -14,9 +14,12 @@
 #include <QSet>
 #include <QFileInfo>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/EBus/Event.h>
 
 namespace AssetProcessor
 {
+    struct AssetFileInfo;
+
     struct FileStateInfo
     {
         FileStateInfo() = default;
@@ -45,16 +48,23 @@ namespace AssetProcessor
         virtual ~IFileStateRequests() = default;
 
         using FileHash = AZ::u64;
+        static constexpr FileHash InvalidFileHash = 0;
 
         /// Fetches info on the file/directory if it exists.  Returns true if it exists, false otherwise
         virtual bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const = 0;
         /// Convenience function to check if a file or directory exists.
         virtual bool Exists(const QString& absolutePath) const = 0;
         virtual bool GetHash(const QString& absolutePath, FileHash* foundHash) = 0;
+        
+        //! Called when the caller knows a hash and file info already.
+        //! This can for example warm up the cache so that it can return hashes without actually hashing.
+        //! (optional for implementations)
+        virtual void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = InvalidFileHash) = 0;
+        virtual void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) = 0;
 
         AZ_DISABLE_COPY_MOVE(IFileStateRequests);
     };
-    
+
     class FileStateBase
         : public IFileStateRequests
     {
@@ -80,6 +90,8 @@ namespace AssetProcessor
 
         /// Removes a file from the cache
         virtual void RemoveFile(const QString& /*absolutePath*/) {}
+        
+        virtual void WarmUpCache(const AssetFileInfo& /*existingInfo*/, const FileHash /*hash*/) {}
     };
 
     /// Caches file state information retrieved by the file scanner and file watcher
@@ -89,16 +101,18 @@ namespace AssetProcessor
     {
     public:
 
-
         // FileStateRequestBus implementation
         bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const override;
         bool Exists(const QString& absolutePath) const override;
         bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) override;
 
         void AddInfoSet(QSet<AssetFileInfo> infoSet) override;
         void AddFile(const QString& absolutePath) override;
         void UpdateFile(const QString& absolutePath) override;
         void RemoveFile(const QString& absolutePath) override;
+        
+        void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = IFileStateRequests::InvalidFileHash) override;
 
     private:
 
@@ -116,8 +130,10 @@ namespace AssetProcessor
 
         mutable AZStd::recursive_mutex m_mapMutex;
         QHash<QString, FileStateInfo> m_fileInfoMap;
-        
+
         QHash<QString, FileHash> m_fileHashMap;
+
+        AZ::Event<FileStateInfo> m_deleteEvent;
 
         using LockGuardType = AZStd::lock_guard<decltype(m_mapMutex)>;
     };
@@ -131,5 +147,10 @@ namespace AssetProcessor
         bool GetFileInfo(const QString& absolutePath, FileStateInfo* foundFileInfo) const override;
         bool Exists(const QString& absolutePath) const override;
         bool GetHash(const QString& absolutePath, FileHash* foundHash) override;
+        void RegisterForDeleteEvent(AZ::Event<FileStateInfo>::Handler& handler) override;
+
+        void SignalDeleteEvent(const QString& absolutePath) const;
+    protected:
+        AZ::Event<FileStateInfo> m_deleteEvent;
     };
 } // namespace AssetProcessor

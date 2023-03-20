@@ -22,7 +22,8 @@ import sys
 import subprocess
 import pathlib
 
-from distutils.version import LooseVersion
+from packaging.version import Version
+
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -30,13 +31,18 @@ if ROOT_DEV_PATH not in sys.path:
     sys.path.append(ROOT_DEV_PATH)
 
 from cmake.Tools import common
+from cmake.Tools.layout_tool import remove_link
 
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
-    '4.2.0': {'min_gradle_version': '6.7.1',
-              'sdk_build': '30.0.2',
+    '4.2.2': {'min_gradle_version': '6.7.1',
+              'sdk_build': '30.0.3',
               'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.20'}
+              'min_cmake_version': '3.20'},
+    '7.3.1': {'min_gradle_version': '7.5.1',
+              'sdk_build': '33.0.0',
+              'default_ndk': '25.1.8937393',
+              'min_cmake_version': '3.24'},
 }
 
 APP_NAME = 'app'
@@ -60,7 +66,7 @@ DEFAULT_CONFIG_CHANGES = [
 ]
 
 TEST_RUNNER_PROJECT = 'AzTestRunner'
-TEST_RUNNER_PACKAGE_NAME = 'com.lumberyard.tests'
+TEST_RUNNER_PACKAGE_NAME = 'org.o3de.tests'
 
 # Android Orientation Constants
 ORIENTATION_LANDSCAPE = 1 << 0
@@ -99,13 +105,14 @@ class AndroidProjectManifestEnvironment(object):
     that were passed in or calculated from the command line arguments.
     """
 
-    def __init__(self, engine_root, project_path, android_sdk_version_number, is_test:bool):
+    def __init__(self, engine_root, project_path, android_sdk_version_number, oculus_project:bool, is_test:bool):
         """
         Initialize the object with the project specific parameters and values for the game project
 
         :param engine_root:                 The path where the engine is located
         :param project_path:                The path were the project is located
         :param android_sdk_version_number:  The android SDK platform version
+        :param oculus_project:              Indicates if it's an oculus project
         :param is_test:                     Indicates if theAzTestRunner application should be run
         """
 
@@ -149,6 +156,8 @@ class AndroidProjectManifestEnvironment(object):
             # Multiview options require special processing
             multi_window_options = AndroidProjectManifestEnvironment.process_android_multi_window_options(android_settings)
 
+            oculus_intent_filter_category = '<category android:name="com.oculus.intent.category.VR" />' if oculus_project else ''
+
             self.internal_dict = {
                 'ANDROID_PACKAGE':                  package_name,
                 'ANDROID_PACKAGE_PATH':             package_path,
@@ -175,7 +184,9 @@ class AndroidProjectManifestEnvironment(object):
 
                 'SAMSUNG_DEX_KEEP_ALIVE':           multi_window_options['SAMSUNG_DEX_KEEP_ALIVE'],
                 'SAMSUNG_DEX_LAUNCH_WIDTH':         multi_window_options['SAMSUNG_DEX_LAUNCH_WIDTH'],
-                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT']
+                'SAMSUNG_DEX_LAUNCH_HEIGHT':        multi_window_options['SAMSUNG_DEX_LAUNCH_HEIGHT'],
+
+                'OCULUS_INTENT_FILTER_CATEGORY':    oculus_intent_filter_category
             }
         except KeyError as e:
             raise common.LmbrCmdError(f"Missing key from android project settings for project at {project_path}:'{e}' ")
@@ -352,13 +363,19 @@ NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR = """
 
 CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
     task copyNativeLibs{config}(type: Copy) {{
+
+        logger.info('Deleting outputs/native-lib/{abi}')
         delete 'outputs/native-lib/{abi}'
 
-        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
+        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}',
+            include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so')
         into  'outputs/native-lib/{abi}'
+        eachFile {{
+            logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
+        }}
     }}
 
-    compile{config}Sources.dependsOn copyNativeLibs{config}
+    merge{config}JniLibFolders.dependsOn copyNativeLibs{config}
 
     copyNativeLibs{config}.mustRunAfter {{
         tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
@@ -372,9 +389,29 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR = """
     }}
 
     compile{config}Sources.dependsOn copyNativeArtifacts{config}
+"""
+
+CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_DEPENDENCY_FORMAT_STR = """
 
     copyNativeArtifacts{config}.mustRunAfter {{
-        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
+    }}
+"""
+
+CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR = """
+     task copyRegistryFolder{config}(type: Copy) {{
+        from ('build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}/Registry')
+        into ('{asset_layout_folder}/registry')
+        include ('*.setreg')
+    }}
+
+    merge{config}Assets.dependsOn copyRegistryFolder{config}
+"""
+
+CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR = """
+
+    copyRegistryFolder{config}.mustRunAfter {{
+        tasks.findAll {{ task->task.name.contains('syncLYLayoutMode{config}') }}
     }}
 """
 
@@ -383,7 +420,13 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
+
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
+
+    syncLYLayoutMode{config}.mustRunAfter {{
+        tasks.findAll {{ task->task.name.contains('externalNativeBuild{config}') }}
+    }}
+
 """
 
 
@@ -444,8 +487,10 @@ class AndroidProjectGenerator(object):
 
     def __init__(self, engine_root, build_dir, android_sdk_path, build_tool, android_sdk_platform, android_native_api_level, android_ndk,
                  project_path, third_party_path, cmake_version, override_cmake_path, override_gradle_path, gradle_version, gradle_plugin_version,
-                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, is_test_project=False,
-                 overwrite_existing=True, unity_build_enabled=False):
+                 override_ninja_path, include_assets_in_apk, asset_mode, asset_type, signing_config, native_build_path, vulkan_validation_path,
+                 extra_cmake_configure_args, is_test_project=False,
+                 overwrite_existing=True, unity_build_enabled=False,
+                 oculus_project=False):
         """
         Initialize the object with all the required parameters needed to create an Android Project. The parameters should be verified before initializing this object
 
@@ -468,8 +513,13 @@ class AndroidProjectGenerator(object):
         :param asset_mode:
         :param asset_type:
         :param signing_config:          Optional signing configuration arguments
+        :param native_build_path:       Override the native build staging path in gradle
+        :param vulkan_validation_path:  Override the path to where the Vulkan Validation Layers libraries are (required when using NDK r23+)
+        :param extra_cmake_configure_args Additional arguments to supply cmake when configuring a project
         :param is_test_project:         Flag to indicate if this is a unit test runner project. (If true, project_path, asset_mode, asset_type, and include_assets_in_apk are ignored)
         :param overwrite_existing:      Flag to overwrite existing project files when being generated, or skip if they already exist.
+        :param unity_build_enabled:     Flag to enable unity build.
+        :param oculus_project:          Flag to indicate if this is an oculus project
         """
         self.env = {}
 
@@ -508,6 +558,10 @@ class AndroidProjectGenerator(object):
 
         self.native_build_path = native_build_path
 
+        self.vulkan_validation_path = vulkan_validation_path
+
+        self.extra_cmake_configure_args = extra_cmake_configure_args
+
         self.asset_mode = asset_mode
 
         self.asset_type = asset_type
@@ -519,6 +573,8 @@ class AndroidProjectGenerator(object):
         self.overwrite_existing = overwrite_existing
 
         self.unity_build_enabled = unity_build_enabled
+
+        self.oculus_project = oculus_project
 
     def execute(self):
         """
@@ -590,7 +646,7 @@ class AndroidProjectGenerator(object):
         gradle_wrapper_cmd.extend(['wrapper', '-p', str(self.build_dir.resolve())])
 
         proc_result = subprocess.run(gradle_wrapper_cmd,
-                                     shell=True)
+                                     shell=(platform.system() == 'Windows'))
         if proc_result.returncode != 0:
             raise common.LmbrCmdError("Gradle was unable to generate a gradle wrapper for this project (code {}): {}"
                                       .format(proc_result.returncode, proc_result.stderr or ""),
@@ -741,6 +797,8 @@ class AndroidProjectGenerator(object):
         # We must always delete 'src' any existing copied AzAndroid projects since building may pick up stale java sources
         lumberyard_app_src = az_android_dst_path / 'src'
         if lumberyard_app_src.exists():
+            # special case the 'assets' directory before cleaning the whole directory tree
+            remove_link(lumberyard_app_src / 'main' / 'assets')
             common.remove_dir_path(lumberyard_app_src)
 
         logging.debug("Copying AzAndroid to '%s'", az_android_dst_path.resolve())
@@ -787,9 +845,12 @@ class AndroidProjectGenerator(object):
                 '"-GNinja"',
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
+
+            if self.vulkan_validation_path:
+                cmake_argument_list.append(f'"-DLY_ANDROID_VULKAN_VALIDATION_PATH={pathlib.PurePath(self.vulkan_validation_path).as_posix()}"')
 
             if not self.is_test_project:
                 cmake_argument_list.append(f'"-DLY_PROJECTS={pathlib.PurePath(self.project_path).as_posix()}"')
@@ -808,12 +869,19 @@ class AndroidProjectGenerator(object):
             if self.override_ninja_path:
                 cmake_argument_list.append(f'"-DCMAKE_MAKE_PROGRAM={common.normalize_path_for_settings(self.override_ninja_path)}"')
 
+            if self.oculus_project:
+                cmake_argument_list.append('"-DANDROID_USE_OCULUS_OPENXR=ON"')
+
+            if self.extra_cmake_configure_args:
+                cmake_argument_list.extend(map(json.dumps, self.extra_cmake_configure_args))
+
             # Query the project_path from the project.json file
             project_name = common.read_project_name_from_project_json(self.project_path)
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
-                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(targets_section=f'targets "{project_name}.GameLauncher"'
-                if project_name and not self.is_test_project else "", arguments=','.join(cmake_argument_list))
+                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(arguments=','.join(cmake_argument_list),
+                    targets_section=f'targets "{project_name}.GameLauncher"'
+                        if project_name and not self.is_test_project else 'targets "TEST_SUITE_main"')
 
             if project_name:
                 # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
@@ -832,25 +900,34 @@ class AndroidProjectGenerator(object):
                                                                                        asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
                                                                                        file_includes='Test.Assets/**/*.*')
             else:
-                # Copy over settings registry files from the Registry folder with build output directory
-                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
-                    CUSTOM_GRADLE_COPY_NATIVE_CONFIG_BUILD_ARTIFACTS_FORMAT_STR.format(config=native_config,
-                                                                                       config_lower=native_config_lower,
-                                                                                       asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
-                                                                                       file_includes='**/Registry/*.setreg')
+                # If assets must be included inside the APK do the assets layout under
+                # 'main' folder so they will be included into the APK. Otherwise
+                # do the layout under a different folder so it's created, but not
+                # copied into the APK.
+                if self.include_assets_in_apk:
+                    layout_folder = 'app/src/main/assets'
+                else:
+                    layout_folder = 'app/src/assets'
 
-            if self.include_assets_in_apk:
-                if not self.is_test_project:
-                    gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
-                        CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
-                                                                         python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
-                                                                         asset_type=self.asset_type,
-                                                                         project_path=self.project_path.as_posix(),
-                                                                         asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
-                                                                         asset_layout_folder=(self.build_dir / 'app/src/main/assets').resolve().as_posix(),
-                                                                         config=native_config)
-            else:
-                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = ''
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] = \
+                    CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR.format(working_dir=common.normalize_path_for_settings(self.engine_root / 'cmake/Tools'),
+                                                                     python_full_path=common.normalize_path_for_settings(self.engine_root / 'python' / PYTHON_SCRIPT),
+                                                                     asset_type=self.asset_type,
+                                                                     project_path=self.project_path.as_posix(),
+                                                                     asset_mode=self.asset_mode if native_config != 'Release' else 'PAK',
+                                                                     asset_layout_folder=(self.build_dir / layout_folder).resolve().as_posix(),
+                                                                     config=native_config)
+                # Copy over settings registry files from the Registry folder with build output directory
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
+                    CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_FORMAT_STR.format(config=native_config,
+                                                                        config_lower=native_config_lower,
+                                                                        asset_layout_folder=(self.build_dir / layout_folder).resolve().as_posix())
+                gradle_build_env[f'CUSTOM_APPLY_ASSET_LAYOUT_{native_config_upper}_TASK'] += \
+                    CUSTOM_GRADLE_COPY_REGISTRY_FOLDER_DEPENDENCY_FORMAT_STR.format(config=native_config)
+
+
+
+
             if self.signing_config:
                 gradle_build_env[f'SIGNING_{native_config_upper}_CONFIG'] = f'signingConfig signingConfigs.{native_config_lower}' if self.signing_config else ''
             else:
@@ -870,7 +947,7 @@ class AndroidProjectGenerator(object):
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
                                                template_env=gradle_build_env,
-                                               dst_file=az_android_dst_path / 'build.gradle')
+                                               dst_file=az_android_gradle_file)
 
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'
@@ -878,6 +955,7 @@ class AndroidProjectGenerator(object):
         az_android_package_env = AndroidProjectManifestEnvironment(engine_root=self.engine_root,
                                                                    project_path=self.project_path,
                                                                    android_sdk_version_number=self.android_sdk_platform,
+                                                                   oculus_project=self.oculus_project,
                                                                    is_test=self.is_test_project)
         self.create_file_from_project_template(src_template_file=ANDROID_MANIFEST_FILE,
                                                template_env=az_android_package_env,
@@ -1481,16 +1559,16 @@ class AndroidGradlePluginInfo(object):
                                       f"Only the following version(s) are supported: {','.join(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
 
         details = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP[android_gradle_plugin_version]
-        self.default_sdk_build_tools_version = LooseVersion(details.get('sdk_build'))
+        self.default_sdk_build_tools_version = Version(details.get('sdk_build'))
 
-        self.default_ndk_version = LooseVersion(details.get('default_ndk'))
+        self.default_ndk_version = Version(details.get('default_ndk'))
 
-        self.min_gradle_version = LooseVersion(details.get('min_gradle_version'))
+        self.min_gradle_version = Version(details.get('min_gradle_version'))
 
-        self.min_cmake_version = LooseVersion(details.get('min_cmake_version'))
+        self.min_cmake_version = Version(details.get('min_cmake_version'))
 
         max_cmake_version_number = details.get('max_cmake_version')
-        self.max_cmake_version = None if max_cmake_version_number is None else LooseVersion(max_cmake_version_number)
+        self.max_cmake_version = None if max_cmake_version_number is None else Version(max_cmake_version_number)
 
 
 class AndroidSDKResolver(object):
@@ -1498,39 +1576,51 @@ class AndroidSDKResolver(object):
     Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
     """
 
-    class InstalledPackage(object):
+    class BasePackage(object):
+        def __init__(self, components):
+            self.path = components[0]
+            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self.description = components[2]
+
+    class InstalledPackage(BasePackage):
         def __init__(self, installed_package_components):
+            super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.path = installed_package_components[0]
-            self.version = LooseVersion(installed_package_components[1])
-            self.description = installed_package_components[2]
             self.location = installed_package_components[3]
 
-    class AvailablePackage(object):
+    class AvailablePackage(BasePackage):
         def __init__(self, available_package_components):
+            super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
-            self.path = available_package_components[0]
-            self.version = LooseVersion(available_package_components[1])
-            self.description = available_package_components[2]
 
-    class AvailableUpdate(object):
+    class AvailableUpdate(BasePackage):
         def __init__(self, available_update_components):
+            super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
-            self.path = available_update_components[0]
-            self.version = LooseVersion(available_update_components[1])
-            self.available = available_update_components[2]
 
-    def __init__(self, android_sdk_path):
+    def __init__(self, android_sdk_path, command_line_tools_version):
 
         self.android_sdk_path = android_sdk_path or os.environ.get(ANDROID_SDK_ENV_NAME)
         if not self.android_sdk_path:
             raise common.LmbrCmdError(f"Android SDK path not set or it was not passed into the command to generate the android project")
         if not os.path.isdir(self.android_sdk_path):
             raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid")
-        if platform.system() == 'Windows':
-            self.sdk_manager_path = pathlib.Path(self.android_sdk_path) / 'tools' / 'bin' / 'sdkmanager.bat'
+
+        sdk_root = pathlib.Path(self.android_sdk_path)
+
+        tools_path = sdk_root / 'cmdline-tools'
+        if tools_path.exists():
+            tools_path = tools_path / command_line_tools_version
+            if not tools_path.exists():
+                raise common.LmbrCmdError(f"The desired version of the Android 'cmdline-tools' ({command_line_tools_version}) is not detected")
         else:
-            raise common.LmbrCmdError(f"This tool is not supported on the current platform {platform.system()}")
+            tools_path =  sdk_root / 'tools'
+
+        ext = ''
+        if platform.system() == 'Windows':
+            ext = '.bat'
+        self.sdk_manager_path =  tools_path / 'bin' / f'sdkmanager{ext}'
+
         if not self.sdk_manager_path.is_file():
             raise common.LmbrCmdError(f"Android SDK path {self.android_sdk_path} is not valid or complete. Missing {self.sdk_manager_path}")
 

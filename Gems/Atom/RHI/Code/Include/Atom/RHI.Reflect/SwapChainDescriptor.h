@@ -43,19 +43,27 @@ namespace AZ
         public:
             virtual ~SwapChainDescriptor() = default;
             AZ_RTTI(SwapChainDescriptor, "{214C7DD0-C380-45B6-8021-FD0C43CF5C05}", ResourcePoolDescriptor);
+            AZ_CLASS_ALLOCATOR(SwapChainDescriptor, SystemAllocator)
             static void Reflect(AZ::ReflectContext* context);
 
-            /// The dimensions and format of the swap chain images.
+            // The dimensions and format of the swap chain images.
             SwapChainDimensions m_dimensions;
 
-            /// 0: disable VSync. >= 1: sync N vertical blanks.
+            // 0: disable VSync. >= 1: sync N vertical blanks.
             uint32_t m_verticalSyncInterval = 0;
 
-            /// [Not Reflected] API dependent handle to the OS window to attach the swap chain.
+            // [Not Reflected] API dependent handle to the OS window to attach the swap chain.
             WindowHandle m_window;
 
-            /// ID for the SwapChain's attachment
+            // ID for the SwapChain's attachment.
             RHI::AttachmentId m_attachmentId;
+
+            // Dictates if it is a XR swapchain.
+            bool m_isXrSwapChain = false;
+
+            // Return the index of a XR swapchain
+            // as you can have multiple XR swapchains (one per view).
+            uint32_t m_xrSwapChainIndex = 0;
         };
     }
 }

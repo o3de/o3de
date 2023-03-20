@@ -220,7 +220,7 @@ namespace AZStd
             friend class Internal::concurrent_hash_table_storage<Traits>;
         public:
             typedef typename Traits::key_type       key_type;
-            typedef typename Traits::key_eq         key_eq;
+            typedef typename Traits::key_equal      key_equal;
             typedef typename Traits::hasher         hasher;
 
             typedef typename Traits::allocator_type                 allocator_type;
@@ -238,7 +238,7 @@ namespace AZStd
             typedef typename storage_type::vector_value_type        vector_value_type;
             typedef typename storage_type::vector_type              vector_type;
 
-            AZ_FORCE_INLINE explicit concurrent_hash_table(const hasher& hash, const key_eq& keyEqual, const allocator_type& alloc = allocator_type())
+            AZ_FORCE_INLINE explicit concurrent_hash_table(const hasher& hash, const key_equal& keyEqual, const allocator_type& alloc = allocator_type())
                 : m_storage(alloc)
                 , m_keyEqual(keyEqual)
                 , m_hasher(hash)
@@ -266,7 +266,7 @@ namespace AZStd
             size_type size() const { return m_numElements.load(memory_order_acquire); }
             bool empty() const     { return (size() == 0); }
 
-            key_eq key_equal() const  { return m_keyEqual; }
+            key_equal key_eq() const  { return m_keyEqual; }
             hasher get_hasher() const { return m_hasher; }
 
             float max_load_factor() const                { return m_storage.max_load_factor(); }
@@ -489,24 +489,26 @@ namespace AZStd
                 {
                     return;
                 }
-
-                float loadFactor = (float)m_numElements.load(memory_order_acquire) / (float)m_storage.get_num_buckets();
-                if (loadFactor > max_load_factor())
+                else
                 {
-                    acquire_all();
-
-                    //check the load factor again, as another thread may have beaten us to the rehash
-                    size_type numElements = m_numElements.load(memory_order_acquire);
-                    float maxLoadFactor = max_load_factor();
-                    size_type numBuckets = m_storage.get_num_buckets();
-                    loadFactor = (float)numElements / (float)numBuckets;
-                    if (loadFactor > maxLoadFactor)
+                    float loadFactor = (float)m_numElements.load(memory_order_acquire) / (float)m_storage.get_num_buckets();
+                    if (loadFactor > max_load_factor())
                     {
-                        size_type minNumBuckets = (size_type)((float)numElements / maxLoadFactor);
-                        m_storage.rehash(this, minNumBuckets);
-                    }
+                        acquire_all();
 
-                    release_all();
+                        // check the load factor again, as another thread may have beaten us to the rehash
+                        size_type numElements = m_numElements.load(memory_order_acquire);
+                        float maxLoadFactor = max_load_factor();
+                        size_type numBuckets = m_storage.get_num_buckets();
+                        loadFactor = (float)numElements / (float)numBuckets;
+                        if (loadFactor > maxLoadFactor)
+                        {
+                            size_type minNumBuckets = (size_type)((float)numElements / maxLoadFactor);
+                            m_storage.rehash(this, minNumBuckets);
+                        }
+
+                        release_all();
+                    }
                 }
             }
 
@@ -539,7 +541,7 @@ namespace AZStd
             static_assert((num_locks & (num_locks - 1)) == 0, "must be power of 2");
 
             storage_type m_storage;
-            key_eq m_keyEqual;
+            key_equal m_keyEqual;
             hasher m_hasher;
             atomic<size_type> m_numElements;
             mutex m_locks[num_locks];

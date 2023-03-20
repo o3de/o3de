@@ -12,6 +12,7 @@
 #include <AzCore/Math/Quaternion.h>
 #include <AzCore/Math/Transform.h>
 #include <LmbrCentral/Animation/SkeletalHierarchyRequestBus.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
 
 namespace AZ
 {
@@ -70,7 +71,7 @@ namespace AZ
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ->Attribute(
                             AZ::Edit::Attributes::HelpPageURL,
-                            "https://o3de.org/docs/user-guide/components/reference/attachment/")
+                            "https://o3de.org/docs/user-guide/components/reference/animation/attachment/")
                         ->DataElement(0, &EditorAttachmentComponent::m_targetId, "Target entity", "Attach to this entity.")
                         ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorAttachmentComponent::OnTargetIdChanged)
                         ->DataElement(
@@ -228,7 +229,8 @@ namespace AZ
 
         AZ::u32 EditorAttachmentComponent::OnTargetOffsetChanged()
         {
-            EBUS_EVENT_ID(GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, SetAttachmentOffset, GetTargetOffset());
+            LmbrCentral::AttachmentComponentRequestBus::Event(
+                GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::SetAttachmentOffset, GetTargetOffset());
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 
@@ -249,12 +251,17 @@ namespace AZ
         {
             if (m_attachedInitially && m_targetId.IsValid())
             {
-                EBUS_EVENT_ID(
-                    GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, Attach, m_targetId, m_targetBoneName.c_str(), GetTargetOffset());
+                LmbrCentral::AttachmentComponentRequestBus::Event(
+                    GetEntityId(),
+                    &LmbrCentral::AttachmentComponentRequestBus::Events::Attach,
+                    m_targetId,
+                    m_targetBoneName.c_str(),
+                    GetTargetOffset());
             }
             else
             {
-                EBUS_EVENT_ID(GetEntityId(), LmbrCentral::AttachmentComponentRequestBus, Detach);
+                LmbrCentral::AttachmentComponentRequestBus::Event(
+                    GetEntityId(), &LmbrCentral::AttachmentComponentRequestBus::Events::Detach);
             }
         }
     } // namespace Render

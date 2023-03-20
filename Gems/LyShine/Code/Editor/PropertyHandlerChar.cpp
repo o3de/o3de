@@ -9,13 +9,16 @@
 
 #include "PropertyHandlerChar.h"
 
+#include <AzCore/std/string/conversions.h>
+
 QWidget* PropertyHandlerChar::CreateGUI(QWidget* pParent)
 {
     AzToolsFramework::PropertyStringLineEditCtrl* ctrl = aznew AzToolsFramework::PropertyStringLineEditCtrl(pParent);
     ctrl->setMaxLen(1);
     QObject::connect(ctrl, &AzToolsFramework::PropertyStringLineEditCtrl::valueChanged, this, [ctrl]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, ctrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, ctrl);
         });
 
     return ctrl;
@@ -25,29 +28,23 @@ void PropertyHandlerChar::ConsumeAttribute(AzToolsFramework::PropertyStringLineE
 {
 }
 
-void PropertyHandlerChar::WriteGUIValuesIntoProperty(size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+void PropertyHandlerChar::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
-    (int)index;
     AZStd::string str = GUI->value();
-    uint32_t character = '\0';
-    if (!str.empty())
-    {
-        Unicode::CIterator<const char*, false> pChar(str.c_str());
-        character = *pChar;
-    }
+    wchar_t character = '\0';
+    AZStd::to_wstring(&character, 1, str.c_str());
     instance = character;
 }
 
-bool PropertyHandlerChar::ReadValuesIntoGUI(size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+bool PropertyHandlerChar::ReadValuesIntoGUI([[maybe_unused]] size_t index, AzToolsFramework::PropertyStringLineEditCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
 {
-    (int)index;
-
     GUI->blockSignals(true);
     {
         // NOTE: this assumes the uint32_t can be interpreted as a wchar_t, it seems to
         // work for cases tested but may not in general.
         wchar_t wcharString[2] = { static_cast<wchar_t>(instance), 0 };
-        AZStd::string val(CryStringUtils::WStrToUTF8(wcharString));
+        AZStd::string val;
+        AZStd::to_string(val, wcharString);
         GUI->setValue(val);
     }
     GUI->blockSignals(false);
@@ -57,7 +54,8 @@ bool PropertyHandlerChar::ReadValuesIntoGUI(size_t index, AzToolsFramework::Prop
 
 void PropertyHandlerChar::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerChar());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerChar());
 }
 
 #include <moc_PropertyHandlerChar.cpp>

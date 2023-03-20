@@ -1,0 +1,8 @@
+{
+    "values": [
+        {
+            "$type": "ScriptProcessorRule",
+            "scriptFilename": "Editor/Scripts/auto_lod.py"
+        }
+    ]
+}

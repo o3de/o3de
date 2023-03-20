@@ -7,7 +7,7 @@
 #
 
 set(FILES
-    ../Common/Unimplemented/SaveData_SystemComponent_Unimplemented.cpp
+    SaveData_SystemComponent_Linux.cpp
     SaveData_Traits_Platform.h
     SaveData_Traits_Linux.h
 )

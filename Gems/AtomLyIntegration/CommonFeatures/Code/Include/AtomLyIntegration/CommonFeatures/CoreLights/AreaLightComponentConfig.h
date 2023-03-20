@@ -21,6 +21,7 @@ namespace AZ
         struct AreaLightComponentConfig final
             : public ComponentConfig
         {
+            AZ_CLASS_ALLOCATOR(AreaLightComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::AreaLightComponentConfig, "{11C08FED-7F94-4926-8517-46D08E4DD837}", ComponentConfig);
             static void Reflect(AZ::ReflectContext* context);
 
@@ -36,6 +37,12 @@ namespace AZ
                 SimpleSpot,
 
                 LightTypeCount,
+            };
+
+            enum class ShadowCachingMode : uint8_t
+            {
+                NoCaching,
+                UpdateOnChange,
             };
 
             static constexpr float CutoffIntensity = 0.1f;
@@ -56,14 +63,18 @@ namespace AZ
 
             // Shadows (only used for supported shapes)
             bool m_enableShadow = false;
+            ShadowCachingMode m_shadowCachingMode = ShadowCachingMode::NoCaching;
+            mutable bool m_cacheShadows = false; // proxy property used for the edit context.
             float m_bias = 0.1f;
+            float m_normalShadowBias = 0.0f;
             ShadowmapSize m_shadowmapMaxSize = ShadowmapSize::Size256;
             ShadowFilterMethod m_shadowFilterMethod = ShadowFilterMethod::None;
-            PcfMethod m_pcfMethod = PcfMethod::Bicubic;
-            float m_boundaryWidthInDegrees = 0.25f;
-            uint16_t m_predictionSampleCount = 4;
             uint16_t m_filteringSampleCount = 12;
             float m_esmExponent = 87.0f;
+
+            // Global Illumination
+            bool m_affectsGI = true;
+            float m_affectsGIFactor = 1.0f;
 
             // The following functions provide information to an EditContext...
 
@@ -94,7 +105,10 @@ namespace AZ
 
             //! Returns true if the light type supports shadows.
             bool SupportsShadows() const;
-            
+
+            //! Returns true if the light type can be configured to affect global illumination.
+            bool SupportsAffectsGI() const;
+
             //! Returns true if shadows are turned on
             bool ShadowsDisabled() const;
 
@@ -119,9 +133,6 @@ namespace AZ
             //! Returns true if pcf shadows are disabled.
             bool IsShadowPcfDisabled() const;
             
-            //! Returns true if pcf boundary search is disabled.
-            bool IsPcfBoundarySearchDisabled() const;
-
             //! Returns true if exponential shadow maps are disabled.
             bool IsEsmDisabled() const;
         };

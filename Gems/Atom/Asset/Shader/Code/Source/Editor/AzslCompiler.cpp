@@ -17,9 +17,10 @@
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
 #include <Atom/RHI.Edit/Utils.h>
 
+#include <Atom/RPI.Edit/Common/JsonUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/IO/FileOperations.h> // [GFX TODO] Remove when [ATOM-15472]
@@ -31,6 +32,9 @@
 #include <AzslCompiler.h>
 #include <CommonFiles/CommonTypes.h>
 #include <ShaderBuilder_Traits_Platform.h>
+
+// To quickly test changes to the AZSL compiler, this settings registry key may be used to override the executable used
+constexpr static const char* AzslCompilerOverridePath = "/O3DE/Atom/AzslCompilerOverridePath";
 
 namespace AZ
 {
@@ -48,8 +52,18 @@ namespace AZ
         bool AzslCompiler::Compile(const AZStd::string& compilerParams, const AZStd::string& outputFilePath) const
         {
             // Shader compiler executable
-            AZStd::string azslcRelativePath = "Builders/AZSLc/";
-            azslcRelativePath += AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC;
+            AZStd::string azslcPath = "Builders/AZSLc/";
+            azslcPath += AZ_TRAIT_ATOM_SHADERBUILDER_AZSLC;
+
+            if (auto setReg = AZ::Interface<SettingsRegistryInterface>::Get())
+            {
+                AZStd::string overridePath;
+                if (setReg->Get(overridePath, AzslCompilerOverridePath))
+                {
+                    AZ_TraceOnce("AzslCompiler", "AZSLc executable override specified, using %s", azslcPath.c_str());
+                    azslcPath = AZStd::move(overridePath);
+                }
+            }
 
             // Compilation parameters
             AZStd::string azslcCommandOptions = AZStd::string::format("\"%s\"", m_inputFilePath.c_str());
@@ -70,7 +84,7 @@ namespace AZ
             }
 
             // Run Shader Compiler
-            if (!RHI::ExecuteShaderCompiler(azslcRelativePath, azslcCommandOptions, m_inputFilePath, "AZSLc"))
+            if (!RHI::ExecuteShaderCompiler(azslcPath, azslcCommandOptions, m_inputFilePath, "AZSLc"))
             {
                 return false;
             }
@@ -119,9 +133,10 @@ namespace AZ
 
         namespace SubProducts = ShaderBuilderUtility::AzslSubProducts;
 
-        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::string& parameters, const AZStd::string& outputFile /* = ""*/) const
+        Outcome<SubProducts::Paths> AzslCompiler::EmitFullData(const AZStd::vector<AZStd::string>& azslcArguments, const AZStd::string& outputFile /* = ""*/) const
         {
-            bool success = Compile("--full " + parameters, outputFile);
+            const auto azslArgsStr = RHI::ShaderBuildArguments::ListAsString(azslcArguments);
+            bool success = Compile(azslArgsStr, outputFile);
             if (!success)
             {
                 return Failure();
@@ -211,11 +226,11 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    inputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "rows")
                                 {
-                                    inputStructParams.m_variable.m_rows = itr2->value.GetInt();
+                                    inputStructParams.m_variable.m_rows = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {
@@ -304,7 +319,7 @@ namespace AZ
                             case rapidjson::kNumberType:
                                 if (name == "cols")
                                 {
-                                    outputStructParams.m_variable.m_cols = itr2->value.GetInt();
+                                    outputStructParams.m_variable.m_cols = static_cast<uint8_t>(itr2->value.GetInt());
                                 }
                                 else if (name == "semanticIndex")
                                 {
@@ -403,18 +418,18 @@ namespace AZ
 
         bool AzslCompiler::ParseSrgPopulateRootConstantData(const rapidjson::Document& input, RootConstantData& rootConstantData) const
         {
-            if (input.HasMember("InlineConstantBuffer"))
+            if (input.HasMember("RootConstantBuffer"))
             {
-                const rapidjson::Value& rootConstantBufferValue = input["InlineConstantBuffer"];
-                AZ_Assert(rootConstantBufferValue.IsObject(), "InlineConstantBuffer is not an object");
+                const rapidjson::Value& rootConstantBufferValue = input["RootConstantBuffer"];
+                AZ_Assert(rootConstantBufferValue.IsObject(), "RootConstantBuffer is not an object");
                 for (rapidjson::Value::ConstMemberIterator itr = rootConstantBufferValue.MemberBegin(); itr != rootConstantBufferValue.MemberEnd(); ++itr)
                 {
                     AZStd::string_view rootConstantBufferMemberName = itr->name.GetString();
                     const rapidjson::Value& rootConstantBufferMemberValue = itr->value;
 
-                    if (rootConstantBufferMemberName == "bufferForInlineConstants")
+                    if (rootConstantBufferMemberName == "bufferForRootConstants")
                     {
-                        AZ_Assert(rootConstantBufferMemberValue.IsObject(), "bufferForInlineConstants is not an object");
+                        AZ_Assert(rootConstantBufferMemberValue.IsObject(), "bufferForRootConstants is not an object");
 
                         for (rapidjson::Value::ConstMemberIterator itr2 = rootConstantBufferMemberValue.MemberBegin(); itr2 != rootConstantBufferMemberValue.MemberEnd(); ++itr2)
                         {
@@ -441,14 +456,14 @@ namespace AZ
                             }
                         }
                     }
-                    else if (rootConstantBufferMemberName == "inputsForInlineConstants")
+                    else if (rootConstantBufferMemberName == "inputsForRootConstants")
                     {
-                        AZ_Assert(rootConstantBufferMemberValue.IsArray(), "inputsForInlineConstants is not an array");
+                        AZ_Assert(rootConstantBufferMemberValue.IsArray(), "inputsForRootConstants is not an array");
 
                         for (rapidjson::Value::ConstValueIterator itr2 = rootConstantBufferMemberValue.Begin(); itr2 != rootConstantBufferMemberValue.End(); ++itr2)
                         {
                             const rapidjson::Value& rootConstantBufferValue2 = *itr2;
-                            AZ_Assert(rootConstantBufferValue2.IsObject(), "Entry in inputsForInlineConstants is not an object");
+                            AZ_Assert(rootConstantBufferValue2.IsObject(), "Entry in inputsForRootConstants is not an object");
 
                             SrgConstantData rootConstantInputs;
 
@@ -599,6 +614,10 @@ namespace AZ
                                 {
                                     inputsForImageViews.m_registerId = itr4->value.GetInt();
                                 }
+                                else if (attributeArrayMemberName == "space")
+                                {
+                                    inputsForImageViews.m_spaceId = itr4->value.GetInt();
+                                }
                             }
                             srgData.m_textures.push_back(inputsForImageViews);
                         }
@@ -690,6 +709,10 @@ namespace AZ
                                 {
                                     sampler.m_registerId = itr4->value.GetInt();
                                 }
+                                else if (AzFramework::StringFunc::Equal(attributeArrayMemberName, "space"))
+                                {
+                                    sampler.m_spaceId = itr4->value.GetInt();
+                                }
                             }
                             sampler.m_descriptor = samplerStateDesc;
                             srgData.m_samplers.push_back(sampler);
@@ -737,6 +760,10 @@ namespace AZ
                                     {
                                         constantBuffer.m_registerId = itr4->value.GetInt();
                                     }
+                                    else if (attributeArrayMemberName == "space")
+                                    {
+                                        constantBuffer.m_spaceId = itr4->value.GetInt();
+                                    }
                                 }
                                 srgData.m_constantBuffers.push_back(constantBuffer);
                             }
@@ -748,9 +775,7 @@ namespace AZ
 
                                     if (attributeArrayMemberName == "count")
                                     {
-                                        uint32_t count = itr4->value.GetInt();
-                                        AZ_Assert(count == 1, "Invalid buffer count %d", count);
-                                        buffer.m_count = count;
+                                        buffer.m_count = itr4->value.GetInt();
                                     }
                                     else if (attributeArrayMemberName == "id")
                                     {
@@ -782,6 +807,10 @@ namespace AZ
                                     else if (attributeArrayMemberName == "index")
                                     {
                                         buffer.m_registerId = itr4->value.GetInt();
+                                    }
+                                    else if (attributeArrayMemberName == "space")
+                                    {
+                                        buffer.m_spaceId = itr4->value.GetInt();
                                     }
                                 }
                                 srgData.m_buffers.push_back(buffer);
@@ -850,7 +879,10 @@ namespace AZ
                             {
                                 srgData.m_srgConstantDataRegisterId = itr3->value.GetInt();
                             }
-                            // The logical space attribute ("space") is also available when using the --use-spaces argument.
+                            else if (attributeArrayMemberName == "space")
+                            {
+                                srgData.m_srgConstantDataSpaceId = itr3->value.GetInt();
+                            }
                         }
                     }
                 }
@@ -908,9 +940,9 @@ namespace AZ
                 AZ_Assert(optionEntry.IsObject(), "Expected option entry to be an object!");
 
                 Name defaultValueId = optionEntry.HasMember("defaultValue") ? Name(optionEntry["defaultValue"].GetString()) : Name();
-                const AZStd::string optionName   = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
-                const bool valuesAreRange        = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
-                const bool isPredefinedType      = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
+                const AZStd::string optionName             = optionEntry.HasMember("name")         ? optionEntry["name"].GetString()                 : "";
+                [[maybe_unused]] const bool valuesAreRange = optionEntry.HasMember("range")        ? optionEntry["range"].GetBool()                  : false;
+                const bool isPredefinedType                = optionEntry.HasMember("kind")         ? AzFramework::StringFunc::Equal(optionEntry["kind"].GetString(), "predefined") : false;
 
                 auto optionType = RPI::ShaderOptionType::Unknown;
                 if (isPredefinedType && optionEntry.HasMember("type"))
@@ -1032,7 +1064,8 @@ namespace AZ
             return PrepareJsonDocument(output, "bindingdep.json") == BuildResult::Success;
         }
 
-        bool AzslCompiler::ParseBindingdepPopulateBindingDependencies(const rapidjson::Document& input, BindingDependencies& bindingDependencies) const
+        bool AzslCompiler::ParseBindingdepPopulateBindingDependencies(
+            const rapidjson::Document& input, BindingDependencies& bindingDependencies) const
         {
             for (rapidjson::Value::ConstMemberIterator itr = input.MemberBegin(); itr != input.MemberEnd(); ++itr)
             {
@@ -1096,8 +1129,7 @@ namespace AZ
 
                             binding->m_registerId = registerId;
                             binding->m_registerSpan = registerSpan;
-                            // [ATOM-5914] The registerSpace should be at the SRG level not per resource.
-                            srg.m_registerSpace = registerSpace;
+                            binding->m_registerSpace = registerSpace;
                         }
                         else if (srgMemberName == "dependentFunctions")
                         {
@@ -1149,7 +1181,7 @@ namespace AZ
                 return BuildResult::CompilationFailed;
             }
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {
@@ -1170,7 +1202,7 @@ namespace AZ
             AZStd::string outputFile = m_inputFilePath;
             AzFramework::StringFunc::Path::ReplaceExtension(outputFile, outputExtension);
 
-            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile);
+            auto readJsonResult = JsonSerializationUtils::ReadJsonFile(outputFile, AZ::RPI::JsonUtils::DefaultMaxFileSize);
 
             if (readJsonResult.IsSuccess())
             {

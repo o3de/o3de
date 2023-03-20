@@ -54,7 +54,9 @@ namespace AudioControls
     //-------------------------------------------------------------------------------------------//
     void CAudioWwiseLoader::LoadSoundBanks(const AZStd::string_view rootFolder, const AZStd::string_view subPath, bool isLocalized)
     {
-        auto foundFiles = Audio::FindFilesInPath(rootFolder, "*");
+        AZ::IO::FixedMaxPath searchPath(rootFolder);
+        searchPath /= subPath;
+        auto foundFiles = Audio::FindFilesInPath(searchPath.Native(), "*");
         bool isLocalizedLoaded = isLocalized;
 
         for (const auto& filePath : foundFiles)
@@ -71,7 +73,7 @@ namespace AudioControls
                     // same content (in the future we want to have a
                     // consistency report to highlight if this is not the case)
                     m_localizationFolder.assign(fileName.Native().data(), fileName.Native().size());
-                    LoadSoundBanks(rootFolder, m_localizationFolder, true);
+                    LoadSoundBanks(searchPath.Native(), m_localizationFolder, true);
                     isLocalizedLoaded = true;
                 }
             }

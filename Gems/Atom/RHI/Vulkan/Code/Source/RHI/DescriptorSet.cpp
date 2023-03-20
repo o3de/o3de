@@ -8,7 +8,7 @@
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/DescriptorPool.h>
 #include <RHI/DescriptorSetLayout.h>
 #include <RHI/DescriptorSet.h>
@@ -39,7 +39,7 @@ namespace AZ
             }            
         }
 
-        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::BufferView>>& bufViews)
+        void DescriptorSet::UpdateBufferViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::BufferView>>& bufViews)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
             VkDescriptorType type = layout.GetDescriptorType(layoutIndex);
@@ -119,7 +119,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::array_view<RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
+        void DescriptorSet::UpdateImageViews(uint32_t layoutIndex, const AZStd::span<const RHI::ConstPtr<RHI::ImageView>>& imageViews, RHI::ShaderInputImageType imageType)
         {
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
 
@@ -149,16 +149,17 @@ namespace AZ
                 {
                     imageInfo.imageView = imageView->GetNativeImageView();
 
-                    // Depending on the access (read or readwrite) and if it's a depth/stencil image, we choose the expected layout.
-                    switch (layout.GetDescriptorType(layoutIndex))
+                    // always set VK_IMAGE_LAYOUT_GENERAL if the Image is ShaderWrite, even if the descriptor layout wants a read-only input
+                    if (layout.GetDescriptorType(layoutIndex) == VK_DESCRIPTOR_TYPE_STORAGE_IMAGE ||
+                        RHI::CheckBitsAny(imageView->GetImage().GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
                     {
-                    case VK_DESCRIPTOR_TYPE_STORAGE_IMAGE:
                         imageInfo.imageLayout = VK_IMAGE_LAYOUT_GENERAL;
-                        break;
-                    default:
+                    }
+                    else
+                    {
+                        // if we are reading from a depth/stencil texture, then we use the depth/stencil read optimal layout instead of the generic shader read one
                         imageInfo.imageLayout = RHI::CheckBitsAny(imageView->GetImage().GetAspectFlags(), RHI::ImageAspectFlags::DepthStencil) ?
                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                        break;
                     }
                 }
                 
@@ -168,7 +169,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::array_view<RHI::SamplerState>& samplers)
+        void DescriptorSet::UpdateSamplers(uint32_t layoutIndex, const AZStd::span<const RHI::SamplerState>& samplers)
         {
             auto& device = static_cast<Device&>(GetDevice());
 
@@ -188,7 +189,7 @@ namespace AZ
             m_updateData.push_back(AZStd::move(data));
         }
 
-        void DescriptorSet::UpdateConstantData(AZStd::array_view<uint8_t> rawData)
+        void DescriptorSet::UpdateConstantData(AZStd::span<const uint8_t> rawData)
         {
             AZ_Assert(m_constantDataBuffer, "Null constant buffer");
             const DescriptorSetLayout& layout = *m_descriptor.m_descriptorSetLayout;
@@ -233,7 +234,8 @@ namespace AZ
                 allocInfo.descriptorSetCount = 1;
                 allocInfo.pSetLayouts = &nativeLayout;
 
-                VkResult result = vkAllocateDescriptorSets(descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
+                VkResult result = descriptor.m_device->GetContext().AllocateDescriptorSets(
+                    descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet);
                 if (result == VK_ERROR_FRAGMENTED_POOL)
                 {
                     // fragmented pool will be re-created subsequently in DescriptorSetAllocator, so warning only 
@@ -292,7 +294,8 @@ namespace AZ
             {
                 AZ_Assert(m_descriptor.m_descriptorPool, "Descriptor pool is null.");
                 auto& device = static_cast<Device&>(GetDevice());
-                AssertSuccess(vkFreeDescriptorSets(device.GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet));
+                AssertSuccess(device.GetContext().FreeDescriptorSets(
+                    device.GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet));
                 m_nativeDescriptorSet = VK_NULL_HANDLE;
             }
             m_constantDataBufferView = nullptr;
@@ -388,7 +391,8 @@ namespace AZ
             if (!writeDescSetDescs.empty())
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                vkUpdateDescriptorSets(device.GetNativeDevice(), static_cast<uint32_t>(writeDescSetDescs.size()), writeDescSetDescs.data(), 0, nullptr);
+                device.GetContext().UpdateDescriptorSets(
+                    device.GetNativeDevice(), static_cast<uint32_t>(writeDescSetDescs.size()), writeDescSetDescs.data(), 0, nullptr);
             }
 
             m_updateData.clear();
@@ -428,7 +432,11 @@ namespace AZ
                         // release existing descriptor set if necessary
                         if (m_nativeDescriptorSet)
                         {
-                            AssertSuccess(vkFreeDescriptorSets(m_descriptor.m_device->GetNativeDevice(), m_descriptor.m_descriptorPool->GetNativeDescriptorPool(), 1, &m_nativeDescriptorSet));
+                            AssertSuccess(m_descriptor.m_device->GetContext().FreeDescriptorSets(
+                                m_descriptor.m_device->GetNativeDevice(),
+                                m_descriptor.m_descriptorPool->GetNativeDescriptorPool(),
+                                1,
+                                &m_nativeDescriptorSet));
                             m_nativeDescriptorSet = VK_NULL_HANDLE;
                         }
                     }
@@ -452,7 +460,8 @@ namespace AZ
                 allocInfo.descriptorSetCount = 1;
                 allocInfo.pSetLayouts = &nativeLayout;
 
-                AssertSuccess(vkAllocateDescriptorSets(m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet));
+                AssertSuccess(m_descriptor.m_device->GetContext().AllocateDescriptorSets(
+                    m_descriptor.m_device->GetNativeDevice(), &allocInfo, &m_nativeDescriptorSet));
 
                 m_currentUnboundedArrayAllocation = unboundedArraySize;
                 SetName(GetName());
@@ -466,7 +475,7 @@ namespace AZ
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkDescriptorImageInfo& descriptorInfo)
         {
-            return descriptorInfo.imageView == VK_NULL_HANDLE;
+            return (descriptorInfo.imageView == VK_NULL_HANDLE && descriptorInfo.sampler == VK_NULL_HANDLE);
         }
 
         bool DescriptorSet::IsNullDescriptorInfo(const VkBufferView& descriptorInfo)

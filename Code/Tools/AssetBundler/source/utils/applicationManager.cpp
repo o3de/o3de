@@ -13,7 +13,6 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Jobs/Algorithms.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
@@ -23,7 +22,6 @@
 #include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetCatalogComponent.h>
-#include <AzFramework/Driller/RemoteDrillerInterface.h>
 #include <AzFramework/Entity/GameEntityContextComponent.h>
 #include <AzFramework/FileTag/FileTagComponent.h>
 #include <AzFramework/Input/System/InputSystemComponent.h>
@@ -55,9 +53,14 @@ namespace AssetBundler
     bool ApplicationManager::Init()
     {
         AZ::Debug::TraceMessageBus::Handler::BusConnect();
-        Start(AzFramework::Application::Descriptor());
+
+        ComponentApplication::StartupParameters startupParameters;
+        // The AssetBundler does not need to load gems
+        startupParameters.m_loadDynamicModules = false;
+        Start(AzFramework::Application::Descriptor(), startupParameters);
+
         AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         AzToolsFramework::AssetSeedManager::Reflect(context);
         AzToolsFramework::AssetFileInfoListComparison::Reflect(context);
@@ -169,7 +172,6 @@ namespace AssetBundler
             if (*iter == azrtti_typeid<AzFramework::GameEntityContextComponent>() ||
                 *iter == azrtti_typeid<AzFramework::AzFrameworkConfigurationSystemComponent>() ||
                 *iter == azrtti_typeid<AzFramework::InputSystemComponent>() ||
-                *iter == azrtti_typeid<AzFramework::DrillerNetworkAgentComponent>() ||
                 *iter == azrtti_typeid<AZ::SliceSystemComponent>())
             {
                 // Asset Bundler does not require the above components to be active
@@ -1399,9 +1401,8 @@ namespace AssetBundler
         // If no platform was specified, defaulting to platforms specified in the asset processor config files
         AzFramework::PlatformFlags platformFlags = GetEnabledPlatformFlags(
             AZStd::string_view{ AZ::Utils::GetEnginePath() },
-            AZStd::string_view{ AZ::Utils::GetEnginePath() },
             AZStd::string_view{ AZ::Utils::GetProjectPath() });
-        auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
+        [[maybe_unused]] auto platformsString = AzFramework::PlatformHelper::GetCommaSeparatedPlatformList(platformFlags);
 
         AZ_TracePrintf(AppWindowName, "No platform specified, defaulting to platforms ( %s ).\n", platformsString.c_str());
         return platformFlags;
@@ -2145,6 +2146,16 @@ namespace AssetBundler
                     return false;
                 }
 
+                if (!AZ::IO::FileIOBase::GetInstance()->Exists(params.m_assetListFile.AbsolutePath().c_str()))
+                {
+                    AZ_Error(
+                        AppWindowName,
+                        false,
+                        "Cannot load Asset List file ( %.*s ): File does not exist.\n",
+                        AZ_STRING_ARG(params.m_assetListFile.AbsolutePath()));
+                    return false;
+                }
+
                 AZStd::vector<FilePath> allAssetListFilePaths = GetAllPlatformSpecificFilesOnDisk(params.m_assetListFile, params.m_platformFlags);
 
                 // Create temporary Bundle Settings structs for every Asset List file
@@ -2766,9 +2777,9 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "    --%-25s-Edits the Comparison Step at the input line number using values from other input arguments.\n", EditComparisonStepArg);
         AZ_Printf(AppWindowName, "%-31s---When editing, other input arguments may only contain one input value.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of Comparison types.\n", ComparisonTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Delta), 1 (Union), 2 (Intersection), 3 (Complement), 4 (FilePattern).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: delta, union, intersection, complement, filepattern.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file pattern matching types.\n", ComparisonFilePatternTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Wildcard), 1 (Regex).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: wildcard, regex.\n", "");
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file patterns.\n", ComparisonFilePatternArg);
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
@@ -2788,9 +2799,9 @@ namespace AssetBundler
         AZ_Printf(AppWindowName, "%-31s---When entering input and output values, input the single '$' character to use the default values defined in the file.\n", "");
         AZ_Printf(AppWindowName, "%-31s---All additional comparison rules specified in this command will be done after the comparison operations loaded from the rules file.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of comparison types.\n", ComparisonTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Delta), 1 (Union), 2 (Intersection), 3 (Complement), 4 (FilePattern), 5 (IntersectionCount).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: delta, union, intersection, complement, filepattern, intersectioncount.\n", "");
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file pattern matching types.\n", ComparisonFilePatternTypeArg);
-        AZ_Printf(AppWindowName, "%-31s---Valid inputs: 0 (Wildcard), 1 (Regex).\n", "");
+        AZ_Printf(AppWindowName, "%-31s---Valid inputs: wildcard, regex.\n", "");
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);
         AZ_Printf(AppWindowName, "    --%-25s-A comma seperated list of file patterns.\n", ComparisonFilePatternArg);
         AZ_Printf(AppWindowName, "%-31s---Must match the number of FilePattern comparisons specified in ( --%s ) argument list.\n", "", ComparisonTypeArg);

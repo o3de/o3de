@@ -12,6 +12,8 @@
 
 class QGraphicsLayout;
 class QGraphicsLayoutItem;
+class QGraphicsLinearLayout;
+class QGraphicsWidget;
 
 namespace GraphCanvas
 {
@@ -44,6 +46,11 @@ namespace GraphCanvas
         using BusIdType = AZ::EntityId;
 
         virtual QGraphicsLayoutItem* GetGraphicsLayoutItem() = 0;
+
+        virtual QGraphicsLinearLayout* GetLinearLayout(const SlotGroup& slotGroup) = 0;
+
+        virtual QGraphicsWidget* GetSpacer(const SlotGroup& slotGroup) = 0;
+
     };
 
     using NodeSlotsRequestBus = AZ::EBus<NodeSlotsRequests>;

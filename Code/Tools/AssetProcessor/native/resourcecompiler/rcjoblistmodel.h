@@ -67,13 +67,17 @@ namespace AssetProcessor
         int columnCount(const QModelIndex& parent = QModelIndex()) const override;
         int rowCount(const QModelIndex& parent = QModelIndex()) const override;
         QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
-        QVariant data(const QModelIndex& index, int role) const;
+        QVariant data(const QModelIndex& index, int role) const override;
 
         void markAsProcessing(RCJob* rcJob);
         void markAsStarted(RCJob* rcJob);
         void markAsCompleted(RCJob* rcJob);
         void markAsCataloged(const AssetProcessor::QueueElementID& check);
         unsigned int jobsInFlight() const;
+        // Returns how many jobs in the queue have the missing dependency flag set.
+        unsigned int jobsInQueueWithoutMissingDependencies() const;
+        // Returns how many finished jobs that haven't been updated in the catalog.
+        unsigned int jobsPendingCatalog() const;
 
         void UpdateJobEscalation(AssetProcessor::RCJob* rcJob, int jobPrioririty);
         void UpdateRow(int jobIndex);
@@ -90,10 +94,10 @@ namespace AssetProcessor
 
         int itemCount() const;
         RCJob* getItem(int index) const;
-        int GetIndexOfProcessingJob(const QueueElementID& elementId);
+        int GetIndexOfJobByState(const QueueElementID& elementId, RCJob::JobState jobState);
 
         ///! EraseJobs expects the database name of the source file.
-        void EraseJobs(QString sourceFileDatabaseName, AZStd::vector<RCJob*>& pendingJobs);
+        void EraseJobs(const SourceAssetReference& sourceAssetReference, AZStd::vector<RCJob*>& pendingJobs);
 
     private:
 

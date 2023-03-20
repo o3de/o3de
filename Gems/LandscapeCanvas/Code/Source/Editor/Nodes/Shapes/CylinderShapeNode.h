@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class CylinderShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CylinderShapeNode, AZ::SystemAllocator);
         AZ_RTTI(CylinderShapeNode, "{5F0DD9F7-BCB8-4428-A3BD-8FEC3141E2D0}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         CylinderShapeNode() = default;
         explicit CylinderShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

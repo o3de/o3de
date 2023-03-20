@@ -105,7 +105,7 @@ namespace UnitTest
     {
         EXPECT_FALSE(m_disabled);
 
-        AZStd::for_each(m_expectedErrors.begin(), m_expectedErrors.end(), [this](ExpectedError& expectedError) { expectedError.m_gotCount = 0; });
+        AZStd::for_each(m_expectedErrors.begin(), m_expectedErrors.end(), [](ExpectedError& expectedError) { expectedError.m_gotCount = 0; });
 
         m_checked = false;
     }

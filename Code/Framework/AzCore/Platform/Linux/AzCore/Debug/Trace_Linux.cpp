@@ -7,16 +7,13 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/std/string/string_view.h>
+#include <iostream>
 
-namespace AZ
+namespace AZ::Debug::Platform
 {
-    namespace Debug
+    void OutputToDebugger([[maybe_unused]] AZStd::string_view title, [[maybe_unused]] AZStd::string_view message)
     {
-        namespace Platform
-        {
-            void OutputToDebugger(const char*, const char*)
-            {
-            }
-        }
+        // std::cout << title << ": " << message;
     }
-}
+} // namespace AZ::Debug::Platform

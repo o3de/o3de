@@ -14,9 +14,14 @@
 #include <AzToolsFramework/ViewportUi/ViewportUiDisplayLayout.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
 
+#include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzFramework/Viewport/ViewportBus.h>
+
 #include <QLabel>
 #include <QMainWindow>
 #include <QPointer>
+#include <QToolButton>
+#include <QMargins>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QGridLayout>
@@ -29,6 +34,10 @@ namespace AzToolsFramework::ViewportUi::Internal
     //! Used to track info for each widget in the Viewport UI.
     struct ViewportUiElementInfo
     {
+        ViewportUiElementInfo();
+        ViewportUiElementInfo(AZStd::shared_ptr<QWidget> widget, ViewportUiElementId elementId,
+            bool anchored);
+        ~ViewportUiElementInfo();
         AZStd::shared_ptr<QWidget> m_widget; //!< Reference to the widget.
         ViewportUiElementId m_viewportUiElementId; //!< Corresponding ViewportUiElementId of the widget.
         bool m_anchored = true; //!< Whether the widget is anchored to one position or moves with camera/entity.
@@ -47,7 +56,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
     //! Creates a transparent widget over a viewport render overlay, and adds/manages other Qt widgets
     //! to display on top of the viewport.
-    class ViewportUiDisplay
+    class ViewportUiDisplay : private AzFramework::ViewportImGuiNotificationBus::Handler
     {
     public:
         ViewportUiDisplay(QWidget* parent, QWidget* renderOverlay);
@@ -62,6 +71,7 @@ namespace AzToolsFramework::ViewportUi::Internal
 
         void AddSwitcher(AZStd::shared_ptr<ButtonGroup> buttonGroup, Alignment alignment);
         void AddSwitcherButton(ViewportUiElementId switcherId, Button* button);
+        void SetSwitcherButtonTooltip(ViewportUiElementId clusterId, ButtonId buttonId, const AZStd::string& tooltip);
         void RemoveSwitcherButton(ViewportUiElementId switcherId, ButtonId buttonId);
         void UpdateSwitcher(ViewportUiElementId switcherId);
         void SetSwitcherActiveButton(ViewportUiElementId switcherId, ButtonId buttonId);
@@ -89,11 +99,17 @@ namespace AzToolsFramework::ViewportUi::Internal
         AZStd::shared_ptr<QWidget> GetViewportUiElement(ViewportUiElementId elementId);
         bool IsViewportUiElementVisible(ViewportUiElementId elementId);
 
-        void CreateComponentModeBorder(const AZStd::string& borderTitle);
-        void RemoveComponentModeBorder();
+        void CreateViewportBorder(const AZStd::string& borderTitle, AZStd::optional<ViewportUiBackButtonCallback> backButtonCallback);
+        void ChangeViewportBorderText(const char* borderTitle);
+        void RemoveViewportBorder();
+        bool GetViewportBorderVisible() const;
 
     private:
         void PrepareWidgetForViewportUi(QPointer<QWidget> widget);
+
+        // ViewportImGuiNotificationBus overrides ...
+        void OnImGuiActivated() override;
+        void OnImGuiDeactivated() override;
 
         ViewportUiElementId AddViewportUiElement(AZStd::shared_ptr<QWidget> widget);
         ViewportUiElementId GetViewportUiElementId(QPointer<QWidget> widget);
@@ -102,6 +118,8 @@ namespace AzToolsFramework::ViewportUi::Internal
         void PositionViewportUiElementAnchored(ViewportUiElementId elementId, const Qt::Alignment alignment);
         void PositionUiOverlayOverRenderViewport();
 
+        //! Returns the margin required for Viewport elements.
+        QMargins ViewportElementMargins() const;
         bool UiDisplayEnabled() const;
         void SetUiOverlayContents(QPointer<QWidget> widget);
         void SetUiOverlayContentsAnchored(QPointer<QWidget>, Qt::Alignment aligment);
@@ -113,12 +131,17 @@ namespace AzToolsFramework::ViewportUi::Internal
         QWidget m_uiOverlay; //!< The UI Overlay which displays Viewport UI Elements.
         QGridLayout m_fullScreenLayout; //!< The layout which extends across the full screen.
         ViewportUiDisplayLayout m_uiOverlayLayout; //!< The layout used for optionally anchoring Viewport UI Elements.
-        QLabel m_componentModeBorderText; //!< The text used for the Component Mode border.
+        QLabel m_viewportBorderText; //!< The text used for the viewport highlight border.
+        QToolButton m_viewportBorderBackButton; //!< The button to return from the viewport highlight border (only displayed if callback provided).
+        //! The optional callback for when the viewport highlight border back button is pressed.
+        AZStd::optional<ViewportUiBackButtonCallback> m_viewportBorderBackButtonCallback;
 
         QWidget* m_renderOverlay;
         QPointer<QWidget> m_fullScreenWidget; //!< Reference to the widget attached to m_fullScreenLayout if any.
         int64_t m_numViewportElements = 0;
         int m_viewportId = 0;
+
+        bool m_imGuiActive = false;
 
         ViewportUiElementIdInfoLookup m_viewportUiElements;
     };

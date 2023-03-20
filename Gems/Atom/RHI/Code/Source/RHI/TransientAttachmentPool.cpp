@@ -117,7 +117,7 @@ namespace AZ
             return m_compileFlags;
         }
 
-        void TransientAttachmentPool::CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::array_view<TransientAttachmentStatistics::Heap> heapStats)
+        void TransientAttachmentPool::CollectHeapStats(AliasedResourceTypeFlags typeMask, AZStd::span<const TransientAttachmentStatistics::Heap> heapStats)
         {
             // [GFX_TODO][ATOM-4162] Report the memory allocated stat correctly (or as close as possible) when the heap
             // supports multiple resource types. Right now we are assigning all the memory used to one resource type.

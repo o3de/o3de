@@ -147,12 +147,8 @@ namespace ProjectSettingsTool
         // The process used to reconfigure settings
         QProcess m_reconfigureProcess;
 
-        AZStd::string m_devRoot;
         AZStd::string m_projectRoot;
         AZStd::string m_projectName;
-
-        // Used to initialize the settings container's pLists
-        ProjectSettingsContainer::PlistInitVector m_plistsInitVector;
 
         // Container to manage settings files per platform
         AZStd::unique_ptr<ProjectSettingsContainer> m_settingsContainer;

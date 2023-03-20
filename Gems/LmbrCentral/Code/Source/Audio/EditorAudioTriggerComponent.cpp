@@ -20,12 +20,11 @@ namespace LmbrCentral
         if (serializeContext)
         {
             serializeContext->Class<EditorAudioTriggerComponent, EditorComponentBase>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("Play Trigger", &EditorAudioTriggerComponent::m_defaultPlayTrigger)
                 ->Field("Stop Trigger", &EditorAudioTriggerComponent::m_defaultStopTrigger)
                 ->Field("Obstruction Type", &EditorAudioTriggerComponent::m_obstructionType)
                 ->Field("Plays Immediately", &EditorAudioTriggerComponent::m_playsImmediately)
-                ->Field("Send Finished Event", &EditorAudioTriggerComponent::m_notifyWhenTriggerFinishes)
                 ;
 
             if (auto editContext = serializeContext->GetEditContext())
@@ -43,12 +42,11 @@ namespace LmbrCentral
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/AudioTrigger.svg")
                         ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio-trigger/")
+                        ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/audio/trigger/")
                     ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultPlayTrigger, "Default 'play' Trigger", "The default ATL Trigger control used by 'Play'")
                     ->DataElement("AudioControl", &EditorAudioTriggerComponent::m_defaultStopTrigger, "Default 'stop' Trigger", "The default ATL Trigger control used by 'Stop'")
                     ->DataElement(AZ::Edit::UIHandlers::ComboBox, &EditorAudioTriggerComponent::m_obstructionType, "Obstruction Type", "Ray-casts used in calculation of obstruction and occlusion")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioTriggerComponent::m_playsImmediately, "Plays immediately", "Play when this component is Activated")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorAudioTriggerComponent::m_notifyWhenTriggerFinishes, "Send Finished Event", "Send a notification event when the trigger finishes")
                     ;
             }
         }
@@ -64,7 +62,7 @@ namespace LmbrCentral
     //=========================================================================
     void EditorAudioTriggerComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<AudioTriggerComponent>(m_defaultPlayTrigger.m_controlName, m_defaultStopTrigger.m_controlName, m_obstructionType, m_playsImmediately, m_notifyWhenTriggerFinishes);
+        gameEntity->CreateComponent<AudioTriggerComponent>(m_defaultPlayTrigger.m_controlName, m_defaultStopTrigger.m_controlName, m_obstructionType, m_playsImmediately);
     }
 
 } // namespace LmbrCentral

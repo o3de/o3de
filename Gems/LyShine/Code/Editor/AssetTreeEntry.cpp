@@ -46,7 +46,9 @@ bool UISliceLibraryFilter::MatchInternal(const AzToolsFramework::AssetBrowser::A
         return false;
     }
     // entry must be located within m_pathToSearch
-    if (AzFramework::StringFunc::Find(product->GetRelativePath().c_str(), m_pathToSearch.c_str()) == AZStd::string::npos)
+    AZStd::string relativePath = product->GetRelativePath();
+    AzFramework::StringFunc::AssetDatabasePath::Normalize(relativePath);
+    if (AzFramework::StringFunc::Find(relativePath, m_pathToSearch.c_str()) == AZStd::string::npos)
     {
         return false;
     }
@@ -75,7 +77,7 @@ void AssetTreeEntry::Insert(const AZStd::string& path, const AZStd::string& menu
         AZStd::string folderName;
         AZStd::string remainderPath;
         size_t separator = path.find('/');
-        if (separator == string::npos)
+        if (separator == AZStd::string::npos)
         {
             folderName = path;
         }

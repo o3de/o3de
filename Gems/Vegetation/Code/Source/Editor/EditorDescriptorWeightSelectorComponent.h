@@ -26,6 +26,6 @@ namespace Vegetation
         static constexpr const char* const s_componentDescription = "Selects vegetation assets based on their weight";
         static constexpr const char* const s_icon = "Editor/Icons/Components/Vegetation.svg";
         static constexpr const char* const s_viewportIcon = "Editor/Icons/Components/Viewport/Vegetation.svg";
-        static constexpr const char* const s_helpUrl = "https://o3de.org/docs/user-guide/components/reference/";
+        static constexpr const char* const s_helpUrl = "https://www.o3de.org/docs/user-guide/components/reference/vegetation/vegetation-asset-weight-selector/";
     };
 }

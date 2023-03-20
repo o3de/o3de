@@ -17,10 +17,16 @@
 #include <Source/PythonSymbolsBus.h>
 
 #include <pybind11/embed.h>
+#include <pybind11/pybind11.h>
+#include <pybind11/eval.h>
 
 #include <AzCore/PlatformDef.h>
+#include <AzCore/JSON/rapidjson.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/RTTI/AttributeReader.h>
+#include <AzCore/Serialization/Json/JsonSerialization.h>
+#include <AzCore/Serialization/Json/JsonSerializationSettings.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 namespace EditorPythonBindings
 {
@@ -90,7 +96,7 @@ namespace EditorPythonBindings
 
             // replace common core template types and name spaces like AZStd
             StripReplace(syntaxName, "AZStd::basic_string<", '<', '>', "string");
-            AZ::StringFunc::Replace(syntaxName, "AZStd", "");            
+            AZ::StringFunc::Replace(syntaxName, "AZStd", "");
 
             AZStd::vector<AZStd::string> tokens;
             AZ::StringFunc::Tokenize(syntaxName, tokens, invalidCharacters, false, false);
@@ -267,7 +273,7 @@ namespace EditorPythonBindings
         return pybind11::cast<pybind11::none>(Py_None);
     }
 
-    bool PythonProxyObject::SetByTypeName(const char* typeName) 
+    bool PythonProxyObject::SetByTypeName(const char* typeName)
     {
         const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(AZStd::string(typeName));
         if (behaviorClass)
@@ -282,8 +288,8 @@ namespace EditorPythonBindings
         const AZ::BehaviorClass* behaviorClass = AZ::BehaviorContextHelper::GetClass(m_wrappedObject.m_typeId);
         if (behaviorClass)
         {
-            auto behaviorMethodIter = behaviorClass->m_methods.find(methodName);
-            if (behaviorMethodIter != behaviorClass->m_methods.end())
+            if (auto behaviorMethodIter = behaviorClass->m_methods.find(methodName);
+                behaviorMethodIter != behaviorClass->m_methods.end())
             {
                 AZ::BehaviorMethod* method = behaviorMethodIter->second;
                 AZ_Error("python", method, "%s is not a method in class %s!", methodName, m_wrappedObjectTypeName.c_str());
@@ -291,6 +297,33 @@ namespace EditorPythonBindings
                 if (method && PythonProxyObjectManagement::IsMemberLike(*method, m_wrappedObject.m_typeId))
                 {
                     return EditorPythonBindings::Call::ClassMethod(method, m_wrappedObject, pythonArgs);
+                }
+            }
+            else if (behaviorClass->m_unwrapper != nullptr)
+            {
+                // Check if the Behavior Class acts as a wrapper for a pointer type
+
+                AZ::BehaviorObject rawObject;
+                behaviorClass->m_unwrapper(m_wrappedObject.m_address, rawObject, behaviorClass->m_unwrapperUserData);
+                // Check if the rawObject object contains a valid address and typeid
+                if (rawObject.IsValid())
+                {
+                    // Check if the specified method exist on the raw object type being wrapped
+                    if (behaviorClass = AZ::BehaviorContextHelper::GetClass(rawObject.m_typeId);
+                        behaviorClass != nullptr)
+                    {
+                        if (auto rawMethodIter = behaviorClass->m_methods.find(methodName);
+                            rawMethodIter != behaviorClass->m_methods.end())
+                        {
+                            AZ::BehaviorMethod* method = rawMethodIter->second;
+                            AZ_Error("python", method, "%s is not a method in class %s!", methodName, behaviorClass->m_name.c_str());
+
+                            if (method && PythonProxyObjectManagement::IsMemberLike(*method, rawObject.m_typeId))
+                            {
+                                return EditorPythonBindings::Call::ClassMethod(method, rawObject, pythonArgs);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -314,7 +347,7 @@ namespace EditorPythonBindings
         }
         return AZStd::nullopt;
     }
-    
+
     void PythonProxyObject::PrepareWrappedObject(const AZ::BehaviorClass& behaviorClass)
     {
         m_ownership = Ownership::Owned;
@@ -521,6 +554,12 @@ namespace EditorPythonBindings
         return GetWrappedObjectRepr();
     }
 
+    pybind11::ssize_t PythonProxyObject::GetWrappedObjectHash()
+    {
+        pybind11::object result = GetWrappedObjectRepr();
+        return pybind11::hash(result.release());
+    }
+
     void PythonProxyObject::ReleaseWrappedObject()
     {
         if (m_wrappedObject.IsValid() && m_ownership == Ownership::Owned)
@@ -569,6 +608,37 @@ namespace EditorPythonBindings
             return result.cast<bool>();
         }
         return false;
+    }
+
+    pybind11::object PythonProxyObject::ToJson()
+    {
+        rapidjson::Document document;
+        AZ::JsonSerializerSettings settings;
+        settings.m_keepDefaults = true;
+
+        auto resultCode =
+            AZ::JsonSerialization::Store(document, document.GetAllocator(), m_wrappedObject.m_address, nullptr, m_wrappedObject.m_typeId, settings);
+
+        if (resultCode.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
+        {
+            AZ_Error("PythonProxyObject", false, "Failed to serialize to json");
+            return pybind11::cast<pybind11::none>(Py_None);
+        }
+
+        AZStd::string jsonString;
+        AZ::Outcome<void, AZStd::string> outcome = AZ::JsonSerializationUtils::WriteJsonString(document, jsonString);
+
+        if (!outcome.IsSuccess())
+        {
+            AZ_Error("PythonProxyObject", false, "Failed to write json string: %s", outcome.GetError().c_str());
+            return pybind11::cast<pybind11::none>(Py_None);
+        }
+
+        jsonString.erase(AZStd::remove(jsonString.begin(), jsonString.end(), '\n'), jsonString.end());
+        auto pythonCode = AZStd::string::format(
+            R"PYTHON(exec("import json") or json.loads("""%s"""))PYTHON", jsonString.c_str());
+
+        return pybind11::eval(pythonCode.c_str());
     }
 
     bool PythonProxyObject::DoComparisonEvaluation(pybind11::object pythonOther, Comparison comparison)
@@ -624,7 +694,7 @@ namespace EditorPythonBindings
         }
         return false;
     }
-    
+
     namespace PythonProxyObjectManagement
     {
         bool IsMemberLike(const AZ::BehaviorMethod& method, const AZ::TypeId& typeId)
@@ -756,7 +826,7 @@ namespace EditorPythonBindings
                             }
 
                             AZStd::string subModuleName = pybind11::cast<AZStd::string>(subModule.attr("__name__"));
-                            PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClassMethod, subModuleName, globalMethodName, behaviorClass, behaviorMethod);
+                            PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassMethod, subModuleName, globalMethodName, behaviorClass, behaviorMethod);
                         }
                         else
                         {
@@ -782,7 +852,7 @@ namespace EditorPythonBindings
                         pybind11::setattr(subModule, constantPropertyName.c_str(), constantValue);
 
                         AZStd::string subModuleName = pybind11::cast<AZStd::string>(subModule.attr("__name__"));
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, constantPropertyName, behaviorProperty);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogGlobalProperty, subModuleName, constantPropertyName, behaviorProperty);
                     }
                 }
 
@@ -809,11 +879,11 @@ namespace EditorPythonBindings
                         {
                             return ConstructPythonProxyObjectByTypename(behaviorClassName, pythonArgs);
                         });
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, properSyntax);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClassWithName, subModuleName, behaviorClass, syntaxName.value());
                     }
                     else
                     {
-                        PythonSymbolEventBus::Broadcast(&PythonSymbolEventBus::Events::LogClass, subModuleName, behaviorClass);
+                        PythonSymbolEventBus::QueueBroadcast(&PythonSymbolEventBus::Events::LogClass, subModuleName, behaviorClass);
                     }
                 }
             }
@@ -912,6 +982,7 @@ namespace EditorPythonBindings
                 .def("set_property", &PythonProxyObject::SetPropertyValue)
                 .def("get_property", &PythonProxyObject::GetPropertyValue)
                 .def("invoke", &PythonProxyObject::Invoke)
+                .def("to_json", &PythonProxyObject::ToJson)
                 .def(Operator::s_isEqual, [](PythonProxyObject& self, pybind11::object rhs)
                 {
                     return self.DoEqualityEvaluation(rhs);
@@ -938,6 +1009,7 @@ namespace EditorPythonBindings
                 })
                 .def("__setattr__", &PythonProxyObject::SetPropertyValue)
                 .def("__getattr__", &PythonProxyObject::GetPropertyValue)
+                .def("__hash__", &PythonProxyObject::GetWrappedObjectHash)
                 .def(Builtins::s_repr, [](PythonProxyObject& self)
                 {
                     return self.GetWrappedObjectRepr();

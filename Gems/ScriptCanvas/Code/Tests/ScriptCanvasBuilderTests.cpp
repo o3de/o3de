@@ -6,9 +6,10 @@
  *
  */
 
-
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <AssetBuilderSDK/SerializationDependencies.h>
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -17,12 +18,13 @@
 #include <AzTest/AzTest.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
 
-#include "ScriptCanvas/Asset/RuntimeAsset.h"
-#include "AssetBuilderSDK/SerializationDependencies.h"
+#include <ScriptCanvas/Core/GraphData.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
 
 struct MockAsset
     : public AZ::Data::AssetData
 {
+    AZ_CLASS_ALLOCATOR(MockAsset, AZ::SystemAllocator)
     AZ_RTTI(MockAsset, "{D1E5A5DA-89D3-4B1F-8194-3E84CA6991DF}", AZ::Data::AssetData);
 
     static void Reflect(AZ::ReflectContext* reflection)
@@ -65,7 +67,7 @@ struct MockAssetRefComponent
 };
 
 class ScriptCanvasBuilderTests
-    : public UnitTest::AllocatorsFixture
+    : public UnitTest::LeakDetectionFixture
     , public AZ::ComponentApplicationBus::Handler
 {
 protected:
@@ -88,20 +90,15 @@ protected:
     AZ::SerializeContext* GetSerializeContext() override { return m_serializeContext; }
     AZ::BehaviorContext*  GetBehaviorContext() override { return nullptr; }
     AZ::JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-    const char* GetAppRoot() const override { return nullptr; }
     const char* GetEngineRoot() const override { return nullptr; }
     const char* GetExecutableFolder() const override { return nullptr; }
-    AZ::Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
     void EnumerateEntities(const AZ::ComponentApplicationRequests::EntityCallback& /*callback*/) override {}
     void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
     //////////////////////////////////////////////////////////////////////////
 
     void SetUp() override
     {
-        UnitTest::AllocatorsFixture::SetUp();
-
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
+        UnitTest::LeakDetectionFixture::SetUp();
 
         m_serializeContext = aznew AZ::SerializeContext(true, true);
         AZ::ComponentApplicationBus::Handler::BusConnect();
@@ -132,10 +129,7 @@ protected:
 
         delete m_serializeContext;
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-
-        UnitTest::AllocatorsFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
     AZ::SerializeContext* m_serializeContext = nullptr;
@@ -154,11 +148,10 @@ TEST_F(ScriptCanvasBuilderTests, ScriptCanvasWithAssetReference_GatherProductDep
     graphEntity->AddComponent(assetComponent);
 
     ScriptCanvas::RuntimeData runtimeData;
-    //runtimeData.m_graphData.m_nodes.emplace(graphEntity);
-
+    
     AZ::Data::Asset<ScriptCanvas::RuntimeAsset> runtimeAsset;
     runtimeAsset.Create(AZ::Uuid::CreateRandom());
-    runtimeAsset.Get()->SetData(runtimeData);
+    runtimeAsset.Get()->m_runtimeData = runtimeData;
 
     AZStd::vector<AssetBuilderSDK::ProductDependency> productDependencies;
     AssetBuilderSDK::ProductPathDependencySet productPathDependencySet;

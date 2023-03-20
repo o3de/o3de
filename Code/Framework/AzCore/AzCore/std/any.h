@@ -29,7 +29,7 @@ namespace AZStd
         // Size of small buffer optimization buffer
         enum { ANY_SBO_BUF_SIZE = 32 };
     }
-    
+
     /// distinguishes between any Extension constructor calls
     struct transfer_ownership_t { explicit transfer_ownership_t() = default; };
     const transfer_ownership_t s_transfer_ownership{};
@@ -43,8 +43,8 @@ namespace AZStd
     class any
     {
     public:
-        AZ_TYPE_INFO(any, "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}");
-        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(AZStd::any, "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}");
+        AZ_CLASS_ALLOCATOR(any, AZ::SystemAllocator);
 
         /// Typed used to identify other types (acquired via azrtti_typeid<Type>())
         using type_id = AZ::Uuid;
@@ -62,7 +62,7 @@ namespace AZStd
             Copy,
             // dest: The any to move into. If using heap space, \ref Reserve must have already been called. source: The any to move from (NOTE: const is removed from source when calling Move).
             Move,
-            // dest: The any to destruct, occurs before Destroy 
+            // dest: The any to destruct, occurs before Destroy
             Destruct,
             // dest: The any to destroy. The heap space is freed, and buffer is 0'ed. source: unused
             Destroy,
@@ -114,15 +114,15 @@ namespace AZStd
             temp.m_typeInfo = typeInfo;
 
             // since the copy will be from m_pointer
-            temp.m_typeInfo.m_useHeap = true; 
-            
+            temp.m_typeInfo.m_useHeap = true;
+
             // Call copy-from so that we don't try to clear temp
             copy_from(temp, typeInfo, Action::Copy);
 
             // Make sure temp doesn't try to clear memory (we don't own it)
             temp.m_typeInfo = type_info();
         }
-                
+
         /// [Extension] Create an any with a custom typeinfo (takes ownership of value in pointer using typeInfo)
         any(transfer_ownership_t, void* pointer, const type_info& typeInfo)
         {
@@ -139,11 +139,11 @@ namespace AZStd
                 temp.m_pointer = const_cast<void*>(pointer);
                 temp.m_typeInfo = typeInfo;
                 // since the copy will be from m_pointer
-                temp.m_typeInfo.m_useHeap = true; 
-                
+                temp.m_typeInfo.m_useHeap = true;
+
                 // the Action::Reserve in the SBO handler should do nothing
                 copy_from(temp, typeInfo, Action::Move);
-                
+
                 // don't modify the source (like by calling a destructor on it)
                 temp.m_typeInfo = type_info();
             }
@@ -190,8 +190,8 @@ namespace AZStd
             // Reserve heap space if necessary
             m_typeInfo.m_handler(Action::Reserve, this, nullptr);
 
-            // Call copy constructor 
-            construct<decay_t<ValueType>>(this, forward<ValueType>(val));
+            // Call copy constructor
+            construct<decay_t<ValueType>>(this, AZStd::forward<ValueType>(val));
         }
 
 
@@ -246,7 +246,7 @@ namespace AZStd
         template <typename ValueType, typename = enable_if_t<!is_same<decay_t<ValueType>, any>::value>>
         any& operator=(ValueType&& val)
         {
-            any(forward<ValueType>(val)).swap(*this);
+            any(AZStd::forward<ValueType>(val)).swap(*this);
             return *this;
         }
 
@@ -287,7 +287,7 @@ namespace AZStd
         template<typename ValueType, typename ParamType> // ParamType must be deduced to allow universal ref
         static void construct(AZStd::any* dest, ParamType&& value, AZStd::enable_if_t<AZStd::is_constructible_v<ValueType, ParamType>, AZStd::true_type*> = nullptr /* AZStd::is_constructible_v<ValueType, ParamType>*/)
         {
-            new (dest->get_data()) ValueType(forward<ParamType>(value));
+            new (dest->get_data()) ValueType(AZStd::forward<ParamType>(value));
         }
 
         // The ValueType is not copy constructible in this case
@@ -356,7 +356,7 @@ namespace AZStd
                 {
                     AZ_Assert(source == nullptr, "Internal error: Destroy called with non-nullptr source.");
                     AZ_Assert(!dest->empty() && dest->get_data(), "Internal error: dest is invalid.");
-                    
+
                     // Clear memory
                     if (dest->m_typeInfo.m_useHeap)
                     {
@@ -384,7 +384,7 @@ namespace AZStd
          */
         union
         {
-            AZ_ALIGN(char m_buffer[Internal::ANY_SBO_BUF_SIZE], 32); // Used for objects smaller than SBO_BUF_SIZE
+            alignas(32) char m_buffer[Internal::ANY_SBO_BUF_SIZE]; // Used for objects smaller than SBO_BUF_SIZE
             void* m_pointer; // Pointer to large objects
         };
         type_info m_typeInfo;

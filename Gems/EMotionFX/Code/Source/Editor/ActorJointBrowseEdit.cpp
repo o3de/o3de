@@ -15,7 +15,7 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ActorJointBrowseEdit, AZ::SystemAllocator)
 
     ActorJointBrowseEdit::ActorJointBrowseEdit(QWidget* parent)
         : AzQtComponents::BrowseEdit(parent)
@@ -66,6 +66,7 @@ namespace EMStudio
         m_jointSelectionWindow = new NodeSelectionWindow(this, m_singleJointSelection);
         connect(m_jointSelectionWindow, &NodeSelectionWindow::rejected, this, &ActorJointBrowseEdit::OnSelectionRejected);
         connect(m_jointSelectionWindow->GetNodeHierarchyWidget()->GetTreeWidget(), &QTreeWidget::itemSelectionChanged, this, &ActorJointBrowseEdit::OnSelectionChanged);
+        connect(m_jointSelectionWindow->GetNodeHierarchyWidget(), &NodeHierarchyWidget::OnSelectionDone, this, &ActorJointBrowseEdit::OnSelectionDone);
 
         NodeSelectionWindow::connect(m_jointSelectionWindow, &QDialog::finished, [=]([[maybe_unused]] int resultCode)
             {
@@ -154,8 +155,8 @@ namespace EMStudio
         EMotionFX::Actor* actor = selectionList.GetSingleActor();
         if (actor)
         {
-            const uint32 numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
-            for (uint32 i = 0; i < numActorInstances; ++i)
+            const size_t numActorInstances = EMotionFX::GetActorManager().GetNumActorInstances();
+            for (size_t i = 0; i < numActorInstances; ++i)
             {
                 EMotionFX::ActorInstance* actorInstance2 = EMotionFX::GetActorManager().GetActorInstance(i);
                 if (actorInstance2->GetActor() == actor)

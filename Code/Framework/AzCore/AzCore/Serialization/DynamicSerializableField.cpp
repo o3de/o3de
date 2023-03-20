@@ -52,7 +52,7 @@ namespace AZ
             // that created our data and use that to query for the proper destructor info.
             if (!useContext)
             {
-                EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+                ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be deleted without it!");
             }
             if (useContext)
@@ -86,7 +86,7 @@ namespace AZ
         {
             if (!useContext)
             {
-                EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+                ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be deleted without it!");
             }
             if (useContext)
@@ -98,14 +98,14 @@ namespace AZ
         return nullptr;
     }
     //-------------------------------------------------------------------------
-    void DynamicSerializableField::CopyDataFrom(const DynamicSerializableField& other)
+    void DynamicSerializableField::CopyDataFrom(const DynamicSerializableField& other, SerializeContext* useContext)
     {
         DestroyData();
         m_typeId    = other.m_typeId;        
-        m_data      = other.CloneData();
+        m_data      = other.CloneData(useContext);
     }
     //-------------------------------------------------------------------------
-    bool DynamicSerializableField::IsEqualTo(const DynamicSerializableField& other, SerializeContext* useContext)
+    bool DynamicSerializableField::IsEqualTo(const DynamicSerializableField& other, SerializeContext* useContext) const
     {
         if (other.m_typeId != m_typeId)
         {
@@ -116,7 +116,7 @@ namespace AZ
 
         if (!useContext)
         {
-            EBUS_EVENT_RESULT(useContext, ComponentApplicationBus, GetSerializeContext);
+            ComponentApplicationBus::BroadcastResult(useContext, &ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Error("DynamicSerializableField", useContext, "Can't find valid serialize context. Dynamic data cannot be compared without it!");
         }        
 

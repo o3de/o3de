@@ -1,0 +1,154 @@
+{
+    "description": "A material for rendering terrain with a physically-based rendering (PBR) material shading model.",
+    "version": 1,
+    "propertyLayout": {
+        "groups": [
+            {
+                "id": "settings",
+                "displayName": "Settings"
+            }
+        ],
+        "properties": {
+            "general": [
+                {
+                    "id": "applySpecularAA",
+                    "displayName": "Apply Specular AA",
+                    "description": "Whether to apply specular anti-aliasing in the shader.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_applySpecularAA"
+                    }
+                },
+                {
+                    "id": "enableShadows",
+                    "displayName": "Enable Shadows",
+                    "description": "Whether to use the shadow maps.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableShadows"
+                    }
+                },
+                {
+                    "id": "enableDirectionalLights",
+                    "displayName": "Enable Directional Lights",
+                    "description": "Whether to use directional lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableDirectionalLights"
+                    }
+                },
+                {
+                    "id": "enablePunctualLights",
+                    "displayName": "Enable Punctual Lights",
+                    "description": "Whether to use punctual lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enablePunctualLights"
+                    }
+                },
+                {
+                    "id": "enableAreaLights",
+                    "displayName": "Enable Area Lights",
+                    "description": "Whether to use area lights.",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableAreaLights"
+                    }
+                },
+                {
+                    "id": "enableIBL",
+                    "displayName": "Enable IBL",
+                    "description": "Whether to use Image Based Lighting (IBL).",
+                    "type": "Bool",
+                    "defaultValue": true,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_enableIBL"
+                    }
+                },
+                {
+                    "id": "forwardPassIBLSpecular",
+                    "displayName": "Forward Pass IBL Specular",
+                    "description": "Whether to apply IBL specular in the forward pass.",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "connection": {
+                        "type": "ShaderOption",
+                        "id": "o_materialUseForwardPassIBLSpecular"
+                    }
+                }
+            ],
+            "baseColor": [
+                {
+                    "name": "color",
+                    "displayName": "Color",
+                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
+                    "type": "Color",
+                    "defaultValue": [ 1.0, 1.0, 1.0 ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_baseColor"
+                    }
+                }
+            ],
+            "settings": [
+                {
+                    "id": "detailTextureMultiplier",
+                    "displayName": "Detail Texture UV Multiplier",
+                    "description": "How many times to repeat the detail texture per sector",
+                    "type": "Float",
+                    "defaultValue": 0.5,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailTextureMultiplier"
+                    }
+                },
+                {
+                    "id": "detailFadeDistance",
+                    "displayName": "Detail Fade Distance (meters)",
+                    "description": "The distance in meters that the detail texture starts to fade",
+                    "type": "Float",
+                    "defaultValue": 100.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailFadeDistance"
+                    }
+                },
+                {
+                    "id": "detailFadeLength",
+                    "displayName": "Detail Fade Length",
+                    "description": "How far beyond Detail Fade Distance where the detail texture no longer applies.",
+                    "type": "Float",
+                    "defaultValue": 50.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "id": "m_detailFadeLength"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "../../Shaders/Terrain/TerrainPBR_ForwardPass.shader"
+        },
+        {
+            "file": "../../Shaders/Terrain/Terrain_Shadowmap.shader"
+        },
+        {
+            "file": "../../Shaders/Terrain/Terrain_DepthPass.shader"
+        }
+    ],
+    "functors": [
+    ]
+}

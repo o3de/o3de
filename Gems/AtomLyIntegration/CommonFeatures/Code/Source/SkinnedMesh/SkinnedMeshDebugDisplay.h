@@ -48,7 +48,7 @@ namespace AZ
             // CVar for toggling the display of the scene stats
             int r_skinnedMeshDisplaySceneStats = 0;
             // SceneId to query for the stats
-            RPI::SceneId m_sceneId = RPI::SceneId::CreateNull();
+            RPI::SceneId m_sceneId;
         };
     }// namespace Render
 }// namespace AZ

@@ -8,25 +8,26 @@
 
 #pragma once
 
-#include "ColliderSubComponentMode.h"
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 #include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 
 namespace PhysX
 {
     /// Sub component mode for modifying the box dimensions on a collider.
-    class ColliderBoxMode
-        : public PhysX::ColliderSubComponentMode
+    class ColliderBoxMode : public PhysXSubComponentModeBase
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        // ColliderSubComponentMode ...
+        ColliderBoxMode();
+
+        // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
         void Refresh(const AZ::EntityComponentIdPair& idPair) override;
         void Teardown(const AZ::EntityComponentIdPair& idPair) override;
         void ResetValues(const AZ::EntityComponentIdPair& idPair) override;
 
     private:
-        AzToolsFramework::BoxViewportEdit m_boxEdit;
+        AZStd::unique_ptr<AzToolsFramework::BoxViewportEdit> m_boxEdit;
     };
 } //namespace PhysX

@@ -17,7 +17,7 @@
 
 namespace AZ::IO::ZipDir
 {
-    bool FindFile::FindFirst(AZStd::string_view szWildcard)
+    bool FindFile::FindFirst(AZ::IO::PathView szWildcard)
     {
         if (!PreFind(szWildcard))
         {
@@ -29,7 +29,7 @@ namespace AZ::IO::ZipDir
         return SkipNonMatchingFiles();
     }
 
-    bool FindDir::FindFirst(AZStd::string_view szWildcard)
+    bool FindDir::FindFirst(AZ::IO::PathView szWildcard)
     {
         if (!PreFind(szWildcard))
         {
@@ -42,37 +42,20 @@ namespace AZ::IO::ZipDir
     }
 
     // matches the file wildcard in the m_szWildcard to the given file/dir name
-    // this takes into account the fact that xxx. is the alias name for xxx
-    bool FindData::MatchWildcard(AZStd::string_view szName)
+    bool FindData::MatchWildcard(AZ::IO::PathView szName)
     {
-        if (AZStd::wildcard_match(m_szWildcard, szName))
-        {
-            return true;
-        }
-
-        // check if the file object name contains extension sign (.)
-        size_t extensionOffset = szName.find('.');
-        if (extensionOffset != AZStd::string_view::npos)
-        {
-            return false;
-        }
-
-        // no extension sign - add it
-        AZStd::fixed_string<AZ_MAX_PATH_LEN> szAlias{ szName };
-        szAlias.push_back('.');
-
-        return AZStd::wildcard_match(m_szWildcard, szAlias);
+        return szName.Match(m_szWildcard.Native());
     }
 
 
-    FileEntry* FindFile::FindExact(AZStd::string_view szPath)
+    FileEntry* FindFile::FindExact(AZ::IO::PathView szPath)
     {
         if (!PreFind(szPath))
         {
             return nullptr;
         }
 
-        FileEntryTree::FileMap::iterator itFile = m_pDirHeader->FindFile(m_szWildcard.c_str());
+        FileEntryTree::FileMap::iterator itFile = m_pDirHeader->FindFile(m_szWildcard);
         if (itFile == m_pDirHeader->GetFileEnd())
         {
             m_pDirHeader = nullptr; // we didn't find it, fail the search
@@ -84,7 +67,7 @@ namespace AZ::IO::ZipDir
         return m_pDirHeader->GetFileEntry(m_itFile);
     }
 
-    FileEntryTree* FindDir::FindExact(AZStd::string_view szPath)
+    FileEntryTree* FindDir::FindExact(AZ::IO::PathView szPath)
     {
         if (!PreFind(szPath))
         {
@@ -97,40 +80,50 @@ namespace AZ::IO::ZipDir
 
     //////////////////////////////////////////////////////////////////////////
     // after this call returns successfully (with true returned), the m_szWildcard
-    // contains the file name/wildcard and m_pDirHeader contains the directory where
+    // contains the file name/glob and m_pDirHeader contains the directory where
     // the file (s) are to be found
-    bool FindData::PreFind(AZStd::string_view szWildcard)
+    bool FindData::PreFind(AZ::IO::PathView pathGlob)
     {
         if (!m_pRoot)
         {
             return false;
         }
 
-        // start the search from the root
-        m_pDirHeader = m_pRoot;
-        m_szWildcard = szWildcard;
-
-        // for each path directory, copy it into the wildcard buffer and try to find the subdirectory
-        for (AZStd::optional<AZStd::string_view> pathEntry = AZ::StringFunc::TokenizeNext(szWildcard, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR); pathEntry;
-            pathEntry = AZ::StringFunc::TokenizeNext(szWildcard, AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR))
+        FileEntryTree* entryTreeHeader = m_pRoot;
+        // If there is a root path in the glob path, attempt to locate it from the root
+        if (AZ::IO::PathView rootPath = m_szWildcard.RootPath(); !rootPath.empty())
         {
-            // Update wildcard to new path entry
-            m_szWildcard = *pathEntry; 
-
-            // If the wildcard parameter that has been passed to TokenizeNext is empty
-            // Then pathEntry is the final portion of the path
-            if (!szWildcard.empty())
+            FileEntryTree* dirEntry = entryTreeHeader->FindDir(rootPath);
+            if (dirEntry == nullptr)
             {
-                FileEntryTree* dirEntry = m_pDirHeader->FindDir(*pathEntry);
-                if (!dirEntry)
-                {
-                    m_pDirHeader = nullptr; // an intermediate directory has not been found continue the search
-                    return false;
-                }
-                m_pDirHeader = dirEntry->GetDirectory();
+                return false;
             }
+
+            entryTreeHeader = dirEntry->GetDirectory();
+            pathGlob = pathGlob.RelativePath();
+        }
+
+
+        AZ::IO::PathView filenameSegment = pathGlob;
+        // Recurse through the directories within the file tree for each remaining parent path segment
+        // of pathGlob parameter
+        auto parentPathIter = pathGlob.begin();
+        for (auto filenamePathIter = parentPathIter == pathGlob.end() ? pathGlob.end() : AZStd::next(parentPathIter, 1);
+            filenamePathIter != pathGlob.end(); ++parentPathIter, ++filenamePathIter)
+        {
+            FileEntryTree* dirEntry = entryTreeHeader->FindDir(*parentPathIter);
+            if (dirEntry == nullptr)
+            {
+                return false;
+            }
+            entryTreeHeader = dirEntry->GetDirectory();
+            filenameSegment = *filenamePathIter;
         }
        
+        // At this point the all the intermediate directories have been found
+        // so update the directory header to point at the last file entry tree
+        m_pDirHeader = entryTreeHeader;
+        m_szWildcard = filenameSegment;
         return true;
     }
 

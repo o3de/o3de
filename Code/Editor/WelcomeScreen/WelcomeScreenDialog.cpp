@@ -25,8 +25,6 @@
 
 #include <AzCore/Utils/Utils.h>
 
-// AzFramework
-#include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
@@ -34,6 +32,7 @@
 // AzQtComponents
 #include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <AzQtComponents/Utilities/PixmapScaleUtilities.h>
 
 // Editor
 #include "Settings.h"
@@ -79,8 +78,11 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     {
         projectPreviewPath = ":/WelcomeScreenDialog/DefaultProjectImage.png";
     }
+
     ui->activeProjectIcon->setPixmap(
-        QPixmap(projectPreviewPath).scaled(
+        AzQtComponents::ScalePixmapForScreenDpi(
+            QPixmap(projectPreviewPath),
+            screen(),
             ui->activeProjectIcon->size(),
             Qt::KeepAspectRatioByExpanding,
             Qt::SmoothTransformation
@@ -97,8 +99,8 @@ WelcomeScreenDialog::WelcomeScreenDialog(QWidget* pParent)
     ui->recentLevelTable->setIconSize(QSize(20, 20));
     installEventFilter(this);
 
-    auto projectName = AZ::Utils::GetProjectName();
-    ui->currentProjectName->setText(projectName.c_str());
+    auto projectDisplayName = AZ::Utils::GetProjectDisplayName();
+    ui->currentProjectName->setText(projectDisplayName.c_str());
 
     ui->newLevelButton->setDefault(true);
 
@@ -160,6 +162,24 @@ bool WelcomeScreenDialog::eventFilter(QObject *watched, QEvent *event)
     return QDialog::eventFilter(watched, event);
 }
 
+bool WelcomeScreenDialog::IsValidLevelName(const QString& path)
+{
+    QStringList pathParts = Path::SplitIntoSegments(path);
+
+    QString levelName = pathParts.at(pathParts.size() - 1);
+
+    if (levelName.endsWith(".prefab", Qt::CaseInsensitive))
+    {
+        // If the level is a prefab, check the container name.
+        levelName = pathParts.at(pathParts.size() - 2);
+    }
+
+    QRegExpValidator validator(QRegExp("^[a-zA-Z0-9_\\-./]*$"));
+
+    int pos = 0;
+    return validator.validate(levelName, pos);
+}
+
 void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
 {
     if (!pList)
@@ -168,9 +188,6 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
     }
 
     m_pRecentList = pList;
-
-    const char* engineRoot;
-    EBUS_EVENT_RESULT(engineRoot, AzFramework::ApplicationRequests::Bus, GetEngineRoot);
 
     auto projectPath = AZ::Utils::GetProjectPath();
     QString gamePath{projectPath.c_str()};
@@ -187,7 +204,7 @@ void WelcomeScreenDialog::SetRecentFileList(RecentFileList* pList)
      for (int i = 0; i < recentListSize; ++i)
     {
         const QString& recentFile = pList->m_arrNames[i];
-        if (recentFile.endsWith(m_levelExtension))
+        if (recentFile.endsWith(m_levelExtension) && IsValidLevelName(recentFile))
         {
             if (CFileUtil::Exists(recentFile, false))
             {
@@ -306,9 +323,16 @@ void WelcomeScreenDialog::OnNewLevelBtnClicked([[maybe_unused]] bool checked)
     accept();
 }
 
-void WelcomeScreenDialog::OnNewLevelLabelClicked([[maybe_unused]] const QString& path)
+void WelcomeScreenDialog::OnNewLevelLabelClicked(const QString& path)
 {
-    OnNewLevelBtnClicked(true);
+    if (path == "Create")
+    {
+        OnNewLevelBtnClicked(true);
+    }
+    else
+    {
+        OnOpenLevelBtnClicked(true);
+    }
 }
 
 void WelcomeScreenDialog::OnOpenLevelBtnClicked([[maybe_unused]] bool checked)

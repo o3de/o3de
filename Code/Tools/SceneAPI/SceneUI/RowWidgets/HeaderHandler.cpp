@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/EBus/EBus.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 #include <SceneAPI/SceneUI/RowWidgets/HeaderHandler.h>
 
 namespace AZ
@@ -16,7 +15,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(HeaderHandler, SystemAllocator);
 
             HeaderHandler* HeaderHandler::s_instance = nullptr;
 
@@ -76,6 +75,18 @@ namespace AZ
                     delete s_instance;
                     s_instance = nullptr;
                 }
+            }
+
+            bool HeaderHandler::ModifyTooltip(QWidget* widget, QString& toolTipString)
+            {
+                HeaderWidget* headerWidget = qobject_cast<HeaderWidget*>(widget);
+                if (!headerWidget)
+                {
+                    return false;
+                }
+
+                return headerWidget->ModifyTooltip(toolTipString);
+                
             }
         } // UI
     } // SceneAPI

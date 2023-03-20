@@ -28,7 +28,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString CompoundShapeNode::TITLE = QObject::tr("Compound Shape");
+    const char* CompoundShapeNode::TITLE = "Compound Shape";
 
     CompoundShapeNode::CompoundShapeNode(GraphModel::GraphPtr graph)
         : BaseShapeNode(graph)

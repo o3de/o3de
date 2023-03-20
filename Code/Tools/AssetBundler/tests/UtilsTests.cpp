@@ -18,21 +18,21 @@
 namespace AssetBundler
 {
     class MockUtilsTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public AzFramework::ApplicationRequests::Bus::Handler
     {
     public:
         void SetUp() override
         {
-            ScopedAllocatorSetupFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
             m_localFileIO = aznew AZ::IO::LocalFileIO();
             m_priorFileIO = AZ::IO::FileIOBase::GetInstance();
-            // we need to set it to nullptr first because otherwise the 
+            // we need to set it to nullptr first because otherwise the
             // underneath code assumes that we might be leaking the previous instance
             AZ::IO::FileIOBase::SetInstance(nullptr);
             AZ::IO::FileIOBase::SetInstance(m_localFileIO);
-            m_tempDir = new UnitTest::ScopedTemporaryDirectory();
+            m_tempDir = new AZ::Test::ScopedAutoTempDirectory();
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry == nullptr)
             {
@@ -59,7 +59,7 @@ namespace AssetBundler
             delete m_localFileIO;
             AZ::IO::FileIOBase::SetInstance(m_priorFileIO);
             AzFramework::ApplicationRequests::Bus::Handler::BusDisconnect();
-            ScopedAllocatorSetupFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         // AzFramework::ApplicationRequests::Bus::Handler interface
@@ -67,14 +67,14 @@ namespace AssetBundler
         void NormalizePathKeepCase(AZStd::string& /*path*/) override {}
         void CalculateBranchTokenForEngineRoot(AZStd::string& /*token*/) const override {}
 
-        const char* GetEngineRoot() const override
+        const char* GetTempDir() const
         {
             return m_tempDir->GetDirectory();
         }
 
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;
         AZ::IO::FileIOBase* m_localFileIO = nullptr;
-        UnitTest::ScopedTemporaryDirectory* m_tempDir = nullptr;
+        AZ::Test::ScopedAutoTempDirectory* m_tempDir = nullptr;
         AZStd::unique_ptr<AZ::SettingsRegistryInterface> m_settingsRegistry;
         AZ::IO::Path m_oldEngineRoot;
     };
@@ -83,7 +83,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, DISABLED_TestFilePath_StartsWithAFileSeparator_Valid)
     {
         AZ::IO::Path relFilePath = "Foo/foo.xml";
-        AZ::IO::Path absoluteFilePath = AZ::IO::PathView(GetEngineRoot()).RootPath();
+        AZ::IO::Path absoluteFilePath = AZ::IO::PathView(GetTempDir()).RootPath();
         absoluteFilePath /= relFilePath;
         absoluteFilePath = absoluteFilePath.LexicallyNormal();
 
@@ -95,7 +95,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, TestFilePath_RelativePath_Valid)
     {
         AZ::IO::Path relFilePath = "Foo\\foo.xml";
-        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
         FilePath filePath(relFilePath.Native());
         EXPECT_EQ(AZ::IO::PathView{ filePath.AbsolutePath() }, absoluteFilePath);
     }
@@ -107,8 +107,8 @@ namespace AssetBundler
         AZ::IO::Path relFilePath = "Foo\\Foo.xml";
         AZ::IO::Path wrongCaseRelFilePath = "Foo\\foo.xml";
 
-        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
-        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / wrongCaseRelFilePath).LexicallyNormal();
+        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / wrongCaseRelFilePath).LexicallyNormal();
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::FileIOBase::GetInstance()->Open(correctAbsoluteFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle);
@@ -121,7 +121,7 @@ namespace AssetBundler
     TEST_F(MockUtilsTest, TestFilePath_NoFileExists_NoError_valid)
     {
         AZ::IO::Path relFilePath = "Foo\\Foo.xml";
-        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path absoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
 
         FilePath filePath(absoluteFilePath.Native(), true, false);
         EXPECT_TRUE(filePath.IsValid());
@@ -132,8 +132,8 @@ namespace AssetBundler
     {
         AZStd::string relFilePath = "Foo\\Foo.xml";
         AZStd::string wrongCaseRelFilePath = "Foo\\foo.xml";
-        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / relFilePath).LexicallyNormal();
-        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetEngineRoot()) / wrongCaseRelFilePath).LexicallyNormal();
+        AZ::IO::Path correctAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / relFilePath).LexicallyNormal();
+        AZ::IO::Path wrongCaseAbsoluteFilePath = (AZ::IO::Path(GetTempDir()) / wrongCaseRelFilePath).LexicallyNormal();
 
         AZ::IO::HandleType fileHandle = AZ::IO::InvalidHandle;
         AZ::IO::FileIOBase::GetInstance()->Open(correctAbsoluteFilePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath, fileHandle);

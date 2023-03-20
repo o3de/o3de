@@ -15,6 +15,7 @@
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Viewport/ViewportTypes.h>
 #include <AzCore/Math/MathUtils.h>
+#include <AzCore/Console/IConsole.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/Bootstrap/BootstrapRequestBus.h>
 
@@ -68,20 +69,28 @@ namespace AtomToolsFramework
         {
             return false;
         }
+        const AzFramework::ViewportId newId = m_viewportContext->GetId();
 
         SetControllerList(AZStd::make_shared<AzFramework::ViewportControllerList>());
 
         AZ::Name cameraName = AZ::Name(AZStd::string::format("Viewport %i Default Camera", m_viewportContext->GetId()));
-        m_defaultCamera = AZ::RPI::View::CreateView(cameraName, AZ::RPI::View::UsageFlags::UsageCamera);
-        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushView(m_viewportContext->GetName(), m_defaultCamera);
+        m_defaultCameraGroup = AZStd::make_shared<AZ::RPI::ViewGroup>();
+        m_defaultCameraGroup->Init(AZ::RPI::ViewGroup::Descriptor{ nullptr, nullptr });
+        m_defaultCameraGroup->CreateMainView(cameraName);
+        m_defaultCameraGroup->CreateStereoscopicViews(cameraName);
+        AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get()->PushViewGroup(m_viewportContext->GetName(), m_defaultCameraGroup);
 
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusConnect(GetId());
+        m_viewportInteractionImpl = AZStd::make_unique<ViewportInteractionImpl>(GetDefaultCamera());
+        m_viewportInteractionImpl->m_deviceScalingFactorFn = [this] { return aznumeric_cast<float>(devicePixelRatioF()); };
+        m_viewportInteractionImpl->m_screenSizeFn = [this] { return AzFramework::ScreenSize(width(), height()); };
+        m_viewportInteractionImpl->Connect(newId);
+
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusConnect(GetId());
         AzFramework::InputChannelEventListener::Connect();
         AZ::TickBus::Handler::BusConnect();
         AzFramework::WindowRequestBus::Handler::BusConnect(params.windowHandle);
 
-        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, id);
+        m_inputChannelMapper = new AzToolsFramework::QtEventToAzInputMapper(this, newId);
 
         // Forward input events to our controller list.
         QObject::connect(m_inputChannelMapper, &AzToolsFramework::QtEventToAzInputMapper::InputChannelUpdated, this,
@@ -107,7 +116,7 @@ namespace AtomToolsFramework
         AZ::TickBus::Handler::BusDisconnect();
         AzFramework::InputChannelEventListener::Disconnect();
         AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Handler::BusDisconnect();
-        AzToolsFramework::ViewportInteraction::ViewportInteractionRequestBus::Handler::BusDisconnect();
+        m_viewportInteractionImpl->Disconnect();
     }
 
     void RenderViewportWidget::LockRenderTargetSize(uint32_t width, uint32_t height)
@@ -137,6 +146,24 @@ namespace AtomToolsFramework
             m_viewportContext->SetRenderScene(nullptr);
             return;
         }
+
+        // Check if the scene already has an atom scene attached. In this case we don't need to create a new atom scene.
+        if (auto existingScene = scene->FindSubsystem<AZ::RPI::ScenePtr>())
+        {
+            m_viewportContext->SetRenderScene(*existingScene);
+
+            // If we have a render pipeline, use it and ensure an AuxGeom feature processor is installed.
+            // Otherwise, fall through and ensure a render pipeline is installed for this scene.
+            if (m_viewportContext->GetCurrentPipeline())
+            {
+                if (auto auxGeomFP = existingScene->get()->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
+                {
+                    m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
+                }
+                return;
+            }
+        }
+
         AZ::RPI::ScenePtr atomScene;
         auto initializeScene = [&](AZ::Render::Bootstrap::Request* bootstrapRequests)
         {
@@ -152,18 +179,18 @@ namespace AtomToolsFramework
         m_viewportContext->SetRenderScene(atomScene);
         if (auto auxGeomFP = atomScene->GetFeatureProcessor<AZ::RPI::AuxGeomFeatureProcessorInterface>())
         {
-            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(m_defaultCamera.get());
+            m_auxGeom = auxGeomFP->GetOrCreateDrawQueueForView(GetDefaultCamera().get());
         }
     }
 
     AZ::RPI::ViewPtr RenderViewportWidget::GetDefaultCamera()
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     AZ::RPI::ConstViewPtr RenderViewportWidget::GetDefaultCamera() const
     {
-        return m_defaultCamera;
+        return m_defaultCameraGroup->GetView();
     }
 
     bool RenderViewportWidget::OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel)
@@ -194,58 +221,81 @@ namespace AtomToolsFramework
         m_controllerList->UpdateViewport({GetId(), AzFramework::FloatSeconds(deltaTime), m_time});
     }
 
-    void RenderViewportWidget::resizeEvent([[maybe_unused]] QResizeEvent* event)
-    {
-        // We need to wait until the window is activated, so the underlying surface
-        // has been created and has the correct size.
-        if (windowHandle()->isActive())
-        {
-            SendWindowResizeEvent();
-        }
-        else
-        {
-            m_windowResizedEvent = true;
-        }
-    }
-
     bool RenderViewportWidget::event(QEvent* event)
     {
-        // Check if we have a pending resize event.
-        // At this point the surface has been created and has
-        // the proper dimensions.
-        if (event->type() == QEvent::WindowActivate && m_windowResizedEvent)
+        switch (event->type()) 
         {
-            SendWindowResizeEvent();
-        }
+            case QEvent::Resize:
 
+            // This event exists to capture the case where a resize event is missed "after" the underlying surface is 
+            // modified by Qt (Seen during level load in Editor)
+            case QEvent::ShowToParent:  
+
+            // Qt is sending this event as the final events after a viewport change. The resize signal is sent multiple
+            // times per viewport (one for ShowToParent, one for Resize). The final resize will correctly set the
+            // swapchain dimensions, but there is an issue on vulkan where even though the swap chain is created and
+            // updated after the last resize, it does not refresh to the viewport widget. We need to also invoke a resize
+            // after the UpdateLater event to force this.
+            case QEvent::UpdateLater:   
+            {
+                SendWindowResizeEvent();
+                break;
+            }
+            case QEvent::PlatformSurface:
+            {
+                //Surface is about to be destroyed by QT. Lets close the window
+                QPlatformSurfaceEvent* surfaceEvent = static_cast<QPlatformSurfaceEvent*>(event);
+                if (surfaceEvent->surfaceEventType() == QPlatformSurfaceEvent::SurfaceAboutToBeDestroyed)
+                {
+                    SendWindowCloseEvent();
+                }
+                break;
+            }
+            default:
+                break;
+        }
         return QWidget::event(event);
     }
 
-    void RenderViewportWidget::enterEvent([[maybe_unused]] QEvent* event)
+
+    void RenderViewportWidget::enterEvent(QEvent* event)
     {
-        m_mouseOver = true;
+        if (const auto eventType = event->type();
+            eventType == QEvent::Type::MouseMove)
+        {
+            const auto* mouseEvent = static_cast<const QMouseEvent*>(event);
+            m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
+        }
     }
 
     void RenderViewportWidget::leaveEvent([[maybe_unused]] QEvent* event)
     {
-        m_mouseOver = false;
+        m_mousePosition.reset();
     }
 
-    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* event)
+    void RenderViewportWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
     {
-        m_mousePosition = event->localPos();
+        m_mousePosition = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(mouseEvent->pos());
     }
 
     void RenderViewportWidget::SendWindowResizeEvent()
     {
         // Scale the size by the DPI of the platform to
         // get the proper size in pixels.
+        const auto pixelRatio = devicePixelRatioF();
         const QSize uiWindowSize = size();
-        const QSize windowSize = uiWindowSize * devicePixelRatioF();
+        const QSize windowSize = uiWindowSize * pixelRatio;
 
         const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
-        AzFramework::WindowNotificationBus::Event(windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
-        m_windowResizedEvent = false;
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowResized, windowSize.width(), windowSize.height());
+    }
+
+    void RenderViewportWidget::SendWindowCloseEvent()
+    {
+        const AzFramework::NativeWindowHandle windowId = reinterpret_cast<AzFramework::NativeWindowHandle>(winId());
+        AzFramework::WindowNotificationBus::Event(
+            windowId, &AzFramework::WindowNotifications::OnWindowClosed);
     }
 
     AZ::Name RenderViewportWidget::GetCurrentContextName() const
@@ -295,107 +345,23 @@ namespace AtomToolsFramework
 
     AzFramework::CameraState RenderViewportWidget::GetCameraState()
     {
-        AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-        if (currentView == nullptr)
-        {
-            return {};
-        }
-
-        // Build camera state from Atom camera transforms
-        AzFramework::CameraState cameraState = AzFramework::CreateCameraFromWorldFromViewMatrix(
-            currentView->GetViewToWorldMatrix(),
-            AZ::Vector2{aznumeric_cast<float>(width()), aznumeric_cast<float>(height())}
-        );
-        AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(cameraState, currentView->GetViewToClipMatrix());
-
-        // Convert from Z-up
-        AZStd::swap(cameraState.m_forward, cameraState.m_up);
-        cameraState.m_forward = -cameraState.m_forward;
-
-        return cameraState;
-    }
-
-    bool RenderViewportWidget::GridSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::GridSize()
-    {
-        return m_viewportSettings ? m_viewportSettings->GridSize() : 0.0f;
-    }
-
-    bool RenderViewportWidget::ShowGrid()
-    {
-        return m_viewportSettings ? m_viewportSettings->ShowGrid() : false;
-    }
-
-    bool RenderViewportWidget::AngleSnappingEnabled()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleSnappingEnabled() : false;
-    }
-
-    float RenderViewportWidget::AngleStep()
-    {
-        return m_viewportSettings ? m_viewportSettings->AngleStep() : 0.0f;
-    }
-
-    void RenderViewportWidget::SetViewportSettings(const AzToolsFramework::ViewportInteraction::ViewportSettings* viewportSettings)
-    {
-        m_viewportSettings = viewportSettings;
+        return m_viewportInteractionImpl->GetCameraState();
     }
 
     AzFramework::ScreenPoint RenderViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
     {
-        if (AZ::RPI::ViewPtr currentView = m_viewportContext->GetDefaultView();
-            currentView == nullptr)
-        {
-            return AzFramework::ScreenPoint(0, 0);
-        }
-
-        return AzFramework::WorldToScreen(worldPosition, GetCameraState());
+        return m_viewportInteractionImpl->ViewportWorldToScreen(worldPosition);
     }
 
-    AZStd::optional<AZ::Vector3> RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition, float depth)
+    AZ::Vector3 RenderViewportWidget::ViewportScreenToWorld(const AzFramework::ScreenPoint& screenPosition)
     {
-        const auto& cameraProjection = m_viewportContext->GetCameraProjectionMatrix();
-        const auto& cameraView = m_viewportContext->GetCameraViewMatrix();
-
-        const AZ::Vector4 normalizedScreenPosition {
-            screenPosition.m_x * 2.f / width() - 1.0f,
-            (height() - screenPosition.m_y) * 2.f / height() - 1.0f,
-            1.f - depth, // [GFX TODO] [ATOM-1501] Currently we always assume reverse depth
-            1.f
-        };
-
-        AZ::Matrix4x4 worldFromScreen = cameraProjection * cameraView;
-        worldFromScreen.InvertFull();
-
-        const AZ::Vector4 projectedPosition = worldFromScreen * normalizedScreenPosition;
-        if (projectedPosition.GetW() == 0.0f)
-        {
-            return {};
-        }
-
-        return projectedPosition.GetAsVector3() / projectedPosition.GetW();
+        return m_viewportInteractionImpl->ViewportScreenToWorld(screenPosition);
     }
 
-    AZStd::optional<AzToolsFramework::ViewportInteraction::ProjectedViewportRay> RenderViewportWidget::ViewportScreenToWorldRay(
+    AzToolsFramework::ViewportInteraction::ProjectedViewportRay RenderViewportWidget::ViewportScreenToWorldRay(
         const AzFramework::ScreenPoint& screenPosition)
     {
-        auto pos0 = ViewportScreenToWorld(screenPosition, 0.f);
-        auto pos1 = ViewportScreenToWorld(screenPosition, 1.f);
-        if (!pos0.has_value() || !pos1.has_value())
-        {
-            return {};
-        }
-
-        pos0 = m_viewportContext->GetDefaultView()->GetViewToWorldMatrix().GetTranslation();
-        AZ::Vector3 rayOrigin = pos0.value();
-        AZ::Vector3 rayDirection = pos1.value() - pos0.value();
-        rayDirection.Normalize();
-
-        return AzToolsFramework::ViewportInteraction::ProjectedViewportRay{rayOrigin, rayDirection};
+        return m_viewportInteractionImpl->ViewportScreenToWorldRay(screenPosition);
     }
 
     float RenderViewportWidget::DeviceScalingFactor()
@@ -403,24 +369,39 @@ namespace AtomToolsFramework
         return aznumeric_cast<float>(devicePixelRatioF());
     }
 
-    AzFramework::ScreenPoint RenderViewportWidget::ViewportCursorScreenPosition()
-    {
-        return AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(m_mousePosition.toPoint());
-    }
-
     bool RenderViewportWidget::IsMouseOver() const
     {
-        return m_mouseOver;
+        return m_mousePosition.has_value();
+    }
+
+    AZStd::optional<AzFramework::ScreenPoint> RenderViewportWidget::MousePosition() const
+    {
+        return m_mousePosition;
     }
 
     void RenderViewportWidget::BeginCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(true);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeCaptured);
     }
 
     void RenderViewportWidget::EndCursorCapture()
     {
-        m_inputChannelMapper->SetCursorCaptureEnabled(false);
+        m_inputChannelMapper->SetCursorMode(AzToolsFramework::CursorInputMode::CursorModeNone);
+    }
+
+    void RenderViewportWidget::SetCursorMode(AzToolsFramework::CursorInputMode mode) 
+    {
+        m_inputChannelMapper->SetCursorMode(mode);
+    }
+
+    void RenderViewportWidget::SetOverrideCursor(AzToolsFramework::ViewportInteraction::CursorStyleOverride cursorStyleOverride)
+    {
+        m_inputChannelMapper->SetOverrideCursor(cursorStyleOverride);
+    }
+
+    void RenderViewportWidget::ClearOverrideCursor()
+    {
+        m_inputChannelMapper->ClearOverrideCursor();
     }
 
     void RenderViewportWidget::SetWindowTitle(const AZStd::string& title)
@@ -433,10 +414,15 @@ namespace AtomToolsFramework
         return AzFramework::WindowSize{aznumeric_cast<uint32_t>(width()), aznumeric_cast<uint32_t>(height())};
     }
 
-    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize)
+    void RenderViewportWidget::ResizeClientArea(AzFramework::WindowSize clientAreaSize, [[maybe_unused]] const AzFramework::WindowPosOptions& options)
     {
         const QSize targetSize = QSize{aznumeric_cast<int>(clientAreaSize.m_width), aznumeric_cast<int>(clientAreaSize.m_height)};
         resize(targetSize);
+    }
+
+    bool RenderViewportWidget::SupportsClientAreaResize() const
+    {
+        return true;
     }
 
     bool RenderViewportWidget::GetFullScreenState() const
@@ -464,5 +450,26 @@ namespace AtomToolsFramework
     float RenderViewportWidget::GetDpiScaleFactor() const
     {
         return aznumeric_cast<float>(devicePixelRatioF());
+    }
+
+    uint32_t RenderViewportWidget::GetDisplayRefreshRate() const
+    {
+        return 60;
+    }
+
+    uint32_t RenderViewportWidget::GetSyncInterval() const
+    {
+        uint32_t vsyncInterval = 1;
+        if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+        {
+            console->GetCvarValue("vsync_interval", vsyncInterval);
+        }
+        return vsyncInterval;
+    }
+
+    // Editor ignores requests to change the sync interval
+    bool RenderViewportWidget::SetSyncInterval([[maybe_unused]] uint32_t newSyncInterval)
+    {
+        return false;
     }
 } //namespace AtomToolsFramework

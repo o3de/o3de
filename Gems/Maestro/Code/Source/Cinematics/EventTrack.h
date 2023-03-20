@@ -24,7 +24,7 @@ class CEventTrack
     : public TAnimTrack<IEventKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CEventTrack, AZ::SystemAllocator);
     AZ_RTTI(CEventTrack, "{CA9D004F-7003-46E7-AB85-7D3846E8C10B}", IAnimTrack);
 
     CEventTrack();
@@ -33,9 +33,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides of IAnimTrack.
     //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void SetKey(int index, IKey* key);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+    void SetKey(int index, IKey* key) override;
     void InitPostLoad(IAnimSequence* sequence) override;
 
     static void Reflect(AZ::ReflectContext* context);

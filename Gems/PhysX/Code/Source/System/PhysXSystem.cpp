@@ -5,25 +5,38 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <AzCore/Math/MathUtils.h>
-#include <AzCore/Memory/SystemAllocator.h>
-
-#include <Scene/PhysXScene.h>
 #include <System/PhysXSystem.h>
-#include <System/PhysXAllocator.h>
-#include <System/PhysXCpuDispatcher.h>
-#include <PhysX/Debug/PhysXDebugConfiguration.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/Debug/PhysXDebugConfiguration.h>
+#include <Scene/PhysXScene.h>
+#include <System/PhysXAllocator.h>
+#include <System/PhysXCpuDispatcher.h>
+
+#include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
+#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/PerformanceCollector.h>
+#include <AzCore/Debug/Profiler.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/PlatformId/PlatformId.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 // only enable physx timestep warning when not running debug or in Release
 #if !defined(DEBUG) && !defined(RELEASE)
 #define ENABLE_PHYSX_TIMESTEP_WARNING
 #endif
 
+
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator, 0);
+    AZ_CVAR(bool, physx_batchTransformSync, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+        "Batch entity transform syncs for the entire simulation pass. "
+        "True: Sync entity transform once per Simulate call. "
+        "False: Sync entity transform for every simulation sub-step.");
+
+    AZ_CLASS_ALLOCATOR_IMPL(PhysXSystem, AZ::SystemAllocator);
 
 #ifdef ENABLE_PHYSX_TIMESTEP_WARNING
     namespace FrameTimeWarning
@@ -33,55 +46,97 @@ namespace PhysX
         static int NumSamplesOverLimit = 0;
         static float LostTime = 0.0f;
     }
+
+    AZ_CVAR(bool, physx_reportTimestepWarnings, false, nullptr, AZ::ConsoleFunctorFlags::Null, "A flag providing ability to turn on/off reporting of PhysX timestep warnings");
 #endif
 
-    PhysXSystem::MaterialLibraryAssetHelper::MaterialLibraryAssetHelper(OnMaterialLibraryReloadedCallback callback)
-        : m_onMaterialLibraryReloadedCallback(callback)
+    // A helper function.
+    AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType)
     {
-
-    }
-
-    void PhysXSystem::MaterialLibraryAssetHelper::Connect(const AZ::Data::AssetId& materialLibraryId)
-    {
-        if (!AZ::Data::AssetBus::Handler::BusIsConnectedId(materialLibraryId))
+        if (newCaptureType.starts_with('a') || newCaptureType.starts_with('A'))
         {
-            AZ::Data::AssetBus::Handler::BusDisconnect();
-            AZ::Data::AssetBus::Handler::BusConnect(materialLibraryId);
+            return AZ::Debug::PerformanceCollector::DataLogType::LogAllSamples;
+        }
+        else
+        {
+            return AZ::Debug::PerformanceCollector::DataLogType::LogStatistics;
         }
     }
 
-    void PhysXSystem::MaterialLibraryAssetHelper::Disconnect()
-    {
-        AZ::Data::AssetBus::Handler::BusDisconnect();
-    }
+    AZ_CVAR(AZ::u32, physx_metricsFrameCountPerCaptureBatch, 60,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateFrameCountPerCaptureBatch(newValue);
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "Number of frames in which performance will be measured per batch.");
 
-    void PhysXSystem::MaterialLibraryAssetHelper::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        m_onMaterialLibraryReloadedCallback(asset);
-    }
-    
-    PhysXSystem::PhysXSystem(PhysXSettingsRegistryManager* registryManager, const physx::PxCookingParams& cookingParams)
-        : m_registryManager(*registryManager)
-        , m_materialLibraryAssetHelper(
-            [this](const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-            {
-                UpdateMaterialLibrary(materialLibrary);
-            })
+    AZ_CVAR(AZ::u32, physx_metricsNumberOfCaptureBatches, 0,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateNumberOfCaptureBatches(newValue);
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate,
+            "Collects and reports PhysX performance in this number of batches. "
+            "Starts at 0, which means do not capture performance data. "
+            "When this variable changes to > 0 we'll start performance capture.");
+
+    AZ_CVAR(AZ::CVarFixedString, physx_metricsDataLogType, "statistical",
+        [](const AZ::CVarFixedString& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateDataLogType(GetDataLogTypeFromCVar(newValue));
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "Defines the kind of data collection and logging. "
+            "If starts with 's' it will log statistical summaries (average, min, max, stdev), "
+            "if starts with 'a' or 'A' will log all samples of data (high verbosity). Default=s");
+
+    AZ_CVAR(AZ::u32, physx_metricsWaitTimePerCaptureBatch, 0,
+        [](const AZ::u32& newValue)
+        {
+            PhysX::GetPhysXSystem()->GetPerformanceCollector()->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(newValue));
+        },
+        AZ::ConsoleFunctorFlags::DontReplicate, "How many seconds to wait before each batch of performance capture.");
+
+
+    PhysXSystem::PhysXSystem(AZStd::unique_ptr<PhysXSettingsRegistryManager> registryManager, const physx::PxCookingParams& cookingParams)
+        : m_registryManager(AZStd::move(registryManager))
         , m_sceneInterface(this)
     {
         // Start PhysX allocator
-        PhysXAllocator::Descriptor allocatorDescriptor;
-        allocatorDescriptor.m_custom = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        AZ::AllocatorInstance<PhysXAllocator>::Create();
-
         InitializePhysXSdk(cookingParams);
+
+        InitializePerformanceCollector();
+    }
+
+    void PhysXSystem::InitializePerformanceCollector()
+    {
+        auto performanceMetrics = AZStd::to_array<AZStd::string_view>({
+            PerformanceSpecPhysXSimulationTime,
+        });
+
+        AZStd::string platformName = AZ::GetPlatformName(AZ::g_currentPlatform);
+        auto logCategory =
+            AZStd::string::format("%.*s-%s", AZ_STRING_ARG(PerformanceLogCategory), platformName.c_str());
+        auto fileExtension =
+            AZStd::string::format("%.*s.json", AZ_STRING_ARG(PerformanceLogCategory));
+        AZStd::to_lower(fileExtension.begin(), fileExtension.end());
+        m_performanceCollector = AZStd::make_unique<AZ::Debug::PerformanceCollector>(
+            logCategory,
+            performanceMetrics,
+            [](AZ::u32)
+            {
+            },
+            fileExtension);
+
+        m_performanceCollector->UpdateDataLogType(GetDataLogTypeFromCVar(physx_metricsDataLogType));
+        m_performanceCollector->UpdateFrameCountPerCaptureBatch(physx_metricsFrameCountPerCaptureBatch);
+        m_performanceCollector->UpdateWaitTimeBeforeEachBatch(AZStd::chrono::seconds(physx_metricsWaitTimePerCaptureBatch));
+        m_performanceCollector->UpdateNumberOfCaptureBatches(physx_metricsNumberOfCaptureBatches);
     }
 
     PhysXSystem::~PhysXSystem()
     {
         Shutdown();
         ShutdownPhysXSdk();
-        AZ::AllocatorInstance<PhysXAllocator>::Destroy();
     }
 
     void PhysXSystem::Initialize(const AzPhysics::SystemConfiguration* config)
@@ -96,8 +151,6 @@ namespace PhysX
         {
             m_systemConfig = *physXConfig;
         }
-
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 
         m_state = State::Initialized;
         m_initializeEvent.Signal(&m_systemConfig);
@@ -118,19 +171,13 @@ namespace PhysX
 
         RemoveAllScenes();
 
-        AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
-        m_materialLibraryAssetHelper.Disconnect();
-        // Clear the asset reference in deactivate. The asset system is shut down before destructors are called
-        // for system components, causing any hanging asset references to become crashes on shutdown in release builds.
-        m_systemConfig.m_materialLibraryAsset.Reset();
-
         m_accumulatedTime = 0.0f;
         m_state = State::Shutdown;
     }
 
     void PhysXSystem::Simulate(float deltaTime)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Physics);
+        AZ_PROFILE_FUNCTION(Physics);
 
         if (m_state != State::Initialized)
         {
@@ -144,6 +191,7 @@ namespace PhysX
             {
                 if (scenePtr != nullptr && scenePtr->IsEnabled())
                 {
+                    AZ::Debug::ScopeDuration performanceScopeDuration(m_performanceCollector.get(), PerformanceSpecPhysXSimulationTime);
                     scenePtr->StartSimulation(timeStep);
                     scenePtr->FinishSimulation();
                 }
@@ -162,7 +210,7 @@ namespace PhysX
         }
         else
         {
-            AZ_Warning("PhysXSystem", FrameTimeWarning::NumSamplesOverLimit <= 0,
+            AZ_Warning("PhysXSystem", !physx_reportTimestepWarnings || FrameTimeWarning::NumSamplesOverLimit <= 0,
                 "[%d] of [%d] frames had a deltatime over the Max physics timestep[%.6f]. Physx timestep was clamped on those frames, losing [%.6f] seconds.",
                 FrameTimeWarning::NumSamplesOverLimit, FrameTimeWarning::NumSamples, m_systemConfig.m_maxTimestep, FrameTimeWarning::LostTime);
             FrameTimeWarning::NumSamples = 0;
@@ -193,6 +241,22 @@ namespace PhysX
 
             simulateScenes(tickTime);
         }
+        
+        // Flush performance data for this tick
+        m_performanceCollector->FrameTick();
+        
+        if (physx_batchTransformSync)
+        {
+            for (auto& scenePtr : m_sceneList)
+            {
+                if (scenePtr != nullptr && scenePtr->IsEnabled())
+                {
+                    PhysXScene* physxScene = static_cast<PhysXScene*>(scenePtr.get());
+                    physxScene->FlushTransformSync();
+                }
+            }
+        }
+
         m_postSimulateEvent.Signal(tickTime);
     }
 
@@ -217,15 +281,15 @@ namespace PhysX
             return sceneHandle;
         }
 
-        if (m_sceneList.size() < std::numeric_limits<AzPhysics::SceneIndex>::max()) //add a new scene if it is under the limit
+        if (m_sceneList.size() < AzPhysics::MaxNumberOfScenes) //add a new scene if it is under the limit
         {
             const AzPhysics::SceneHandle sceneHandle(AZ::Crc32(config.m_sceneName), static_cast<AzPhysics::SceneIndex>(m_sceneList.size()));
             m_sceneList.emplace_back(AZStd::make_unique<PhysXScene>(config, sceneHandle));
             m_sceneAddedEvent.Signal(sceneHandle);
             return sceneHandle;
         }
-        AZ_Warning("Physx", false, "Scene Limit reached[%d], unable to add new scene [%s]",
-            std::numeric_limits<AzPhysics::SceneIndex>::max(),
+        AZ_Warning("Physx", false, "Scene Limit reached[%u], unable to add new scene [%s]",
+            AzPhysics::MaxNumberOfScenes,
             config.m_sceneName.c_str());
         return AzPhysics::InvalidSceneHandle;
     }
@@ -251,7 +315,7 @@ namespace PhysX
 
         if (sceneItr != m_sceneList.end())
         {
-            return AzPhysics::SceneHandle((*sceneItr)->GetId(), AZStd::distance(m_sceneList.begin(), sceneItr));
+            return AzPhysics::SceneHandle((*sceneItr)->GetId(), static_cast<AzPhysics::SceneIndex>(AZStd::distance(m_sceneList.begin(), sceneItr)));
         }
         return AzPhysics::InvalidSceneHandle;
     }
@@ -312,7 +376,7 @@ namespace PhysX
                 {
                     m_sceneRemovedEvent.Signal(handle);
                     m_sceneList[index].reset();
-                    m_freeSceneSlots.push(index);
+                    m_freeSceneSlots.push(static_cast<AzPhysics::SceneIndex>(index));
                 }
             }
         }
@@ -362,40 +426,15 @@ namespace PhysX
         return &m_systemConfig;
     }
 
-    void PhysXSystem::OnCatalogLoaded([[maybe_unused]]const char* catalogFile)
-    {
-        // now that assets can be resolved, lets load the default material library.
-        
-        if (!m_systemConfig.m_materialLibraryAsset.GetId().IsValid())
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::InvalidId);
-        }
-
-        bool success = LoadMaterialLibrary();
-        if (!success)
-        {
-            m_onMaterialLibraryLoadErrorEvent.Signal(AzPhysics::SystemEvents::MaterialLibraryLoadErrorType::ErrorLoading);
-        }
-    }
-
     void PhysXSystem::UpdateConfiguration(const AzPhysics::SystemConfiguration* newConfig, [[maybe_unused]] bool forceReinitialization /*= false*/)
     {
         if (const auto* physXConfig = azdynamic_cast<const PhysXSystemConfiguration*>(newConfig);
             m_systemConfig != (*physXConfig))
         {
-            const bool newMaterialLibrary = m_systemConfig.m_materialLibraryAsset != physXConfig->m_materialLibraryAsset;
             m_systemConfig = (*physXConfig);
             m_configChangeEvent.Signal(physXConfig);
 
             //LYN-1146 -- Restarting the simulation if required
-
-            if (newMaterialLibrary)
-            {
-                LoadMaterialLibrary();
-                m_onMaterialLibraryChangedEvent.Signal(m_systemConfig.m_materialLibraryAsset.GetId());
-            }
-            // This function is not called from reloading the material library asset,
-            // which means we don't need to check if the materials inside the library have been modified.
         }
     }
 
@@ -417,13 +456,7 @@ namespace PhysX
         m_physXSdk.m_cooking = PxCreateCooking(PX_PHYSICS_VERSION, *m_physXSdk.m_foundation, cookingParams);
 
         // Set up CPU dispatcher
-#if defined(AZ_PLATFORM_LINUX)
-        // Temporary workaround for linux. At the moment using AzPhysXCpuDispatcher results in an assert at
-        // PhysX mutex indicating it must be unlocked only by the thread that has already acquired lock.
-        m_cpuDispatcher = physx::PxDefaultCpuDispatcherCreate(0);
-#else
         m_cpuDispatcher = PhysXCpuDispatcherCreate();
-#endif
 
         PxSetProfilerCallback(&m_pxAzProfilerCallback);
     }
@@ -469,52 +502,7 @@ namespace PhysX
 
     const PhysXSettingsRegistryManager& PhysXSystem::GetSettingsRegistryManager() const
     {
-        return m_registryManager;
-    }
-
-    void PhysXSystem::UpdateMaterialLibrary(const AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary)
-    {
-        if (m_systemConfig.m_materialLibraryAsset == materialLibrary)
-        {
-            // Same library asset, check if its data has changed.
-            if (m_systemConfig.m_materialLibraryAsset->GetMaterialsData() != materialLibrary->GetMaterialsData())
-            {
-                m_systemConfig.m_materialLibraryAsset = materialLibrary;
-                m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-            }
-        }
-        else
-        {
-            // New material library asset
-            m_systemConfig.m_materialLibraryAsset = materialLibrary;
-
-            LoadMaterialLibrary();
-            m_onMaterialLibraryChangedEvent.Signal(materialLibrary.GetId());
-        }
-    }
-
-    bool PhysXSystem::LoadMaterialLibrary()
-    {
-        AZ::Data::Asset<Physics::MaterialLibraryAsset>& materialLibrary = m_systemConfig.m_materialLibraryAsset;
-        const AZ::Data::AssetId& materialLibraryId = materialLibrary.GetId();
-        if (!materialLibraryId.IsValid())
-        {
-            AZ_Warning("PhysX", false,
-                "LoadDefaultMaterialLibrary: Default Material Library asset ID is invalid.");
-            return false;
-        }
-        // Listen for material library asset modification events
-        m_materialLibraryAssetHelper.Connect(materialLibraryId);
-
-        const AZ::Data::AssetFilterCB assetLoadFilterCB = nullptr;
-        materialLibrary = AZ::Data::AssetManager::Instance().GetAsset<Physics::MaterialLibraryAsset>(materialLibrary.GetId(), materialLibrary.GetAutoLoadBehavior(), AZ::Data::AssetLoadParameters{ assetLoadFilterCB });
-
-        materialLibrary.BlockUntilLoadComplete();
-
-        AZ_Warning("PhysX", (materialLibrary.GetData() != nullptr),
-            "LoadDefaultMaterialLibrary: Default Material Library asset data is invalid.");
-        
-        return materialLibrary.GetData() != nullptr && !materialLibrary.IsError();
+        return *m_registryManager;
     }
 
     //TEMP -- until these are fully moved over here
@@ -526,6 +514,11 @@ namespace PhysX
     void PhysXSystem::CreateCollisionGroup(const AZStd::string& groupName, const AzPhysics::CollisionGroup& group)
     {
         m_systemConfig.m_collisionConfig.m_collisionGroups.CreateGroup(groupName, group);
+    }
+
+    AZ::Debug::PerformanceCollector* PhysXSystem::GetPerformanceCollector()
+    {
+        return m_performanceCollector.get();
     }
 
     PhysXSystem* GetPhysXSystem()

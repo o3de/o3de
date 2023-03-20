@@ -16,10 +16,10 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabLoad, LoadPrefab_Basic)(::benchmark::State& state)
     {
-        const unsigned int numTemplates = state.range();
+        const unsigned int numTemplates = static_cast<unsigned int>(state.range());
         CreateFakePaths(numTemplates);
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -29,7 +29,7 @@ namespace Benchmark
 
             state.ResumeTiming();
 
-            for (int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
+            for (unsigned int templateCounter = 0; templateCounter < numTemplates; ++templateCounter)
             {
                 m_prefabLoaderInterface->LoadTemplateFromFile(m_paths[templateCounter]);
             }

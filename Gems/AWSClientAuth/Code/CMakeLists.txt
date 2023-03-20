@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME AWSClientAuth.Static STATIC
@@ -15,9 +15,9 @@ ly_add_target(
         awsclientauth_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
-            Include/Public
+            Include
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -26,9 +26,6 @@ ly_add_target(
             Gem::HttpRequestor
             3rdParty::AWSNativeSDK::AWSClientAuth
             3rdParty::AWSNativeSDK::Core
-    RUNTIME_DEPENDENCIES
-        Gem::AWSCore
-        Gem::HttpRequestor
 )
 
 ly_add_target( 
@@ -38,7 +35,7 @@ ly_add_target(
         awsclientauth_shared_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
-            Include/Private
+            Source
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -48,17 +45,85 @@ ly_add_target(
             3rdParty::AWSNativeSDK::Core
         PUBLIC
             Gem::AWSClientAuth.Static
-    RUNTIME_DEPENDENCIES
-        Gem::AWSCore
-        Gem::HttpRequestor
 )
 
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+
+ly_add_target( 
+    NAME AWSClientAuth.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        awsclientauth_editor_files.cmake
+        awsclientauth_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PRIVATE
+            Include
+            Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AWSCLIENTAUTH_EDITOR
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::AWSCore
+            Gem::HttpRequestor
+            3rdParty::AWSNativeSDK::AWSClientAuth
+            3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+        Gem::AWSClientAuth
+)
+
+endif()
+
+
 # Load the "Gem::AWSClientAuth" module in all types of applications.
-ly_create_alias(NAME AWSClientAuth.Servers NAMESPACE Gem TARGETS Gem::AWSClientAuth)
-ly_create_alias(NAME AWSClientAuth.Clients NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+ly_create_alias(
+    NAME AWSClientAuth.Servers
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Servers
+        Gem::HttpRequestor.Servers
+)
+
+ly_create_alias(
+    NAME AWSClientAuth.Clients
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Clients
+        Gem::HttpRequestor.Clients
+)
+
+ly_create_alias(
+    NAME AWSClientAuth.Unified
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSClientAuth
+        Gem::AWSCore.Unified
+        Gem::HttpRequestor.Unified
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
-    ly_create_alias(NAME AWSClientAuth.Tools NAMESPACE Gem TARGETS Gem::AWSClientAuth)
-    ly_create_alias(NAME AWSClientAuth.Builders NAMESPACE Gem TARGETS Gem::AWSClientAuth)
+    ly_create_alias(
+        NAME AWSClientAuth.Tools
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSClientAuth.Editor
+            Gem::AWSCore.Tools
+            Gem::HttpRequestor.Tools
+    )
+
+    ly_create_alias(
+        NAME AWSClientAuth.Builders
+        NAMESPACE Gem
+        TARGETS
+            Gem::AWSClientAuth
+            Gem::AWSCore.Builders
+            Gem::HttpRequestor.Builders
+    )
 endif()
 
 ################################################################################
@@ -72,8 +137,8 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             awsclientauth_test_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
-                "Include/Private"
-                "Include/Public"
+                Source
+                Include
                 Tests
         BUILD_DEPENDENCIES
             PRIVATE
@@ -81,16 +146,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 3rdParty::AWSNativeSDK::AWSClientAuth
                 AZ::AzCore
                 AZ::AzFramework
-                AZ::AWSNativeSDKInit
+                AZ::AWSNativeSDKTestLibs
                 Gem::AWSClientAuth.Static
                 Gem::AWSCore
                 Gem::HttpRequestor
         RUNTIME_DEPENDENCIES
             Gem::AWSCore
-            AZ::AWSNativeSDKInit
             Gem::HttpRequestor
    )
    ly_add_googletest(
         NAME Gem::AWSClientAuth.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

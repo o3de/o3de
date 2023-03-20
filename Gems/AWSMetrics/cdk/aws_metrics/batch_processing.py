@@ -5,8 +5,13 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
+
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Duration,
+    Fn,
+    RemovalPolicy,
     aws_kinesisfirehose as kinesisfirehose,
     aws_iam as iam,
     aws_lambda as lambda_,
@@ -25,12 +30,14 @@ class BatchProcessing:
     the Kinesis Data Firehose delivery stream for batch processing.
     """
     def __init__(self,
-                 stack: core.Construct,
+                 stack: Construct,
+                 application_name: str,
                  input_stream_arn: str,
                  analytics_bucket_arn: str,
                  events_database_name: str,
                  events_table_name) -> None:
         self._stack = stack
+        self._application_name = application_name
         self._input_stream_arn = input_stream_arn
         self._analytics_bucket_arn = analytics_bucket_arn
         self._events_database_name = events_database_name
@@ -53,13 +60,20 @@ class BatchProcessing:
             function_name=events_processing_lambda_name,
             log_retention=logs.RetentionDays.ONE_MONTH,
             memory_size=aws_metrics_constants.LAMBDA_MEMORY_SIZE_IN_MB,
-            runtime=lambda_.Runtime.PYTHON_3_7,
-            timeout=core.Duration.minutes(aws_metrics_constants.LAMBDA_TIMEOUT_IN_MINUTES),
+            runtime=lambda_.Runtime.PYTHON_3_9,
+            timeout=Duration.minutes(aws_metrics_constants.LAMBDA_TIMEOUT_IN_MINUTES),
             handler='events_processing.lambda_handler',
             code=lambda_.Code.from_asset(
                     os.path.join(os.path.dirname(__file__), 'lambdas', 'events_processing_lambda')),
             role=self._events_processing_lambda_role
         )
+
+        CfnOutput(
+            self._stack,
+            id='EventProcessingLambdaName',
+            description='Lambda function for processing metrics events data.',
+            export_name=f"{self._application_name}:EventProcessingLambda",
+            value=self._events_processing_lambda.function_name)
 
     def _create_events_processing_lambda_role(self, function_name: str) -> None:
         """
@@ -76,7 +90,7 @@ class BatchProcessing:
                     ],
                     effect=iam.Effect.ALLOW,
                     resources=[
-                        core.Fn.sub(
+                        Fn.sub(
                             'arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:'
                             '/aws/lambda/${FunctionName}*',
                             variables={
@@ -199,7 +213,7 @@ class BatchProcessing:
             id='FirehoseLogGroup',
             log_group_name=resource_name_sanitizer.sanitize_resource_name(
                 f'{self._stack.stack_name}-FirehoseLogGroup', 'cloudwatch_log_group'),
-            removal_policy=core.RemovalPolicy.DESTROY,
+            removal_policy=RemovalPolicy.DESTROY,
             retention=logs.RetentionDays.ONE_MONTH
         )
 
@@ -208,7 +222,7 @@ class BatchProcessing:
             id='FirehoseS3DeliveryLogStream',
             log_group=self._firehose_delivery_stream_log_group,
             log_stream_name=f'{self._stack.stack_name}-FirehoseS3DeliveryLogStream',
-            removal_policy=core.RemovalPolicy.DESTROY
+            removal_policy=RemovalPolicy.DESTROY
         )
 
     def _create_data_firehose_role(self) -> None:
@@ -279,16 +293,16 @@ class BatchProcessing:
             ],
             effect=iam.Effect.ALLOW,
             resources=[
-                core.Fn.sub(
+                Fn.sub(
                     'arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:catalog'
                 ),
-                core.Fn.sub(
+                Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:table/${EventsDatabase}/*',
                     variables={
                         'EventsDatabase': self._events_database_name
                     }
                 ),
-                core.Fn.sub(
+                Fn.sub(
                     body='arn:${AWS::Partition}:glue:${AWS::Region}:${AWS::AccountId}:database/${EventsDatabase}',
                     variables={
                         'EventsDatabase': self._events_database_name
@@ -338,5 +352,3 @@ class BatchProcessing:
     @property
     def delivery_stream_log_group_name(self) -> logs.LogGroup.log_group_name:
         return self._firehose_delivery_stream_log_group.log_group_name
-
-

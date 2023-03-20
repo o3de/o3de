@@ -41,7 +41,7 @@ namespace AzToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyEntityIdCtrl, AZ::SystemAllocator);
 
         PropertyEntityIdCtrl(QWidget *pParent = NULL);
         virtual ~PropertyEntityIdCtrl();
@@ -72,6 +72,9 @@ namespace AzToolsFramework
 
         void SetAcceptedEntityContext(AzFramework::EntityContextId contextId);
 
+        void SetHasClearButton(bool value){ m_hasClearButton = value; }
+        bool HasClearButton(){ return m_hasClearButton; }
+
     signals:
         void OnEntityIdChanged(AZ::EntityId newEntityId);
 
@@ -99,6 +102,7 @@ namespace AzToolsFramework
         AzFramework::EntityContextId m_acceptedEntityContextId;
         AZStd::list<AZStd::string> m_componentsSatisfyingServices;
 
+        bool m_hasClearButton{ true };
         QIcon m_pickerIcon;
     };
 
@@ -107,7 +111,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdPropertyHandler, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override { return AZ::Edit::UIHandlers::EntityId; }
         virtual bool IsDefaultHandler() const override { return true; }

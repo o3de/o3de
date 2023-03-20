@@ -34,7 +34,7 @@ namespace AZ
 
                 QWidget* CreateGUI(QWidget* parent) override;
                 u32 GetHandlerName() const override;
-                bool AutoDelete() const;
+                bool AutoDelete() const override;
                 
                 void ConsumeAttribute(ManifestNameWidget* widget, u32 attrib,
                     AzToolsFramework::PropertyAttributeReader* attrValue, const char* debugName) override;

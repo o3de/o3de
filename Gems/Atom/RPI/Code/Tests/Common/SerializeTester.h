@@ -23,6 +23,7 @@ namespace UnitTest
             : m_serializeContext{serializeContext}
             , m_outStream{&m_buffer}
         {}
+        virtual ~SerializeTester() = default;
 
         // Serializes an object out to a the internal stream. Resets the stream with each call.
         virtual void SerializeOut(T* object, AZ::DataStream::StreamType streamType = AZ::DataStream::ST_XML);
@@ -76,7 +77,7 @@ namespace UnitTest
             m_assetHandler = AZ::Data::AssetManager::Instance().GetHandler(AssetDataT::RTTI_Type());
         }
 
-        ~AssetTester() = default;
+        virtual ~AssetTester() = default;
 
         void SerializeOut(AZ::Data::Asset<AssetDataT> assetToSave)
         {

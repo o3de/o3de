@@ -8,6 +8,7 @@
 
 
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/FileOperations.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -78,13 +79,9 @@ namespace AzToolsFramework
         AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(entitiesAndDescendants,
             &AzToolsFramework::ToolsApplicationRequestBus::Events::GatherEntitiesAndAllDescendents, AzToolsFramework::EntityIdList{ entityId });
 
-        // Retrieve the game folder so we can use that as a root with the passed in relative path
-        const char* gameFolder = nullptr;
-        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(gameFolder, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAbsoluteDevGameFolderPath);
-
         // Join our relative path with the game folder to get a full path to the desired asset
-        AZStd::string assetFullPath;
-        AzFramework::StringFunc::Path::Join(gameFolder, assetPath, assetFullPath);
+        AZ::IO::FixedMaxPath assetFullPath = AZ::Utils::GetProjectPath();
+        assetFullPath /= assetPath;
 
         // Call SliceUtilities::MakeNewSlice with all user input prompts disabled
         bool success = AzToolsFramework::SliceUtilities::MakeNewSlice(entitiesAndDescendants,

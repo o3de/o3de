@@ -7,8 +7,6 @@
 #
 
 set(FILES
-    include/LmbrCentral/Rendering/EditorCameraCorrectionBus.h
-    include/LmbrCentral/Rendering/EditorLightComponentBus.h
     include/LmbrCentral/Shape/EditorPolygonPrismShapeComponentBus.h
     include/LmbrCentral/Shape/EditorSplineComponentBus.h
     include/LmbrCentral/Shape/EditorTubeShapeComponentBus.h
@@ -50,6 +48,10 @@ set(FILES
     Source/Shape/EditorDiskShapeComponent.cpp
     Source/Shape/EditorBoxShapeComponent.h
     Source/Shape/EditorBoxShapeComponent.cpp
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.h
+    Source/Shape/EditorAxisAlignedBoxShapeComponent.cpp
+    Source/Shape/EditorAxisAlignedBoxShapeComponentMode.h
+    Source/Shape/EditorAxisAlignedBoxShapeComponentMode.cpp
     Source/Shape/EditorCylinderShapeComponent.h
     Source/Shape/EditorCylinderShapeComponent.cpp
     Source/Shape/EditorCapsuleShapeComponent.h
@@ -58,6 +60,8 @@ set(FILES
     Source/Shape/EditorCompoundShapeComponent.cpp
     Source/Shape/EditorQuadShapeComponent.h
     Source/Shape/EditorQuadShapeComponent.cpp
+    Source/Shape/EditorReferenceShapeComponent.h
+    Source/Shape/EditorReferenceShapeComponent.cpp
     Source/Shape/EditorSplineComponent.h
     Source/Shape/EditorSplineComponent.cpp
     Source/Shape/EditorSplineComponentMode.h
@@ -72,16 +76,8 @@ set(FILES
     Source/Shape/EditorPolygonPrismShapeComponentMode.cpp
     Source/Shape/EditorShapeComponentConverters.h
     Source/Shape/EditorShapeComponentConverters.cpp
-    Source/Ai/EditorNavigationSeedComponent.h
-    Source/Ai/EditorNavigationSeedComponent.cpp
-    Source/Ai/EditorNavigationAreaComponent.h
-    Source/Ai/EditorNavigationAreaComponent.cpp
-    Source/Ai/EditorNavigationUtil.h
-    Source/Ai/EditorNavigationUtil.cpp
     Source/Editor/EditorCommentComponent.h
     Source/Editor/EditorCommentComponent.cpp
-    Source/Ai/NavigationComponent.h
-    Source/Ai/NavigationComponent.cpp
     Source/Scripting/SpawnerComponent.h
     Source/Scripting/SpawnerComponent.cpp
     Source/Shape/TubeShape.h
@@ -104,18 +100,10 @@ set(FILES
     Source/Builders/CopyDependencyBuilder/XmlBuilderWorker/XmlBuilderWorker.h
     Source/Builders/CopyDependencyBuilder/XmlFormattedAssetBuilderWorker.cpp
     Source/Builders/CopyDependencyBuilder/XmlFormattedAssetBuilderWorker.h
-    Source/Builders/DependencyBuilder/DependencyBuilderComponent.cpp
-    Source/Builders/DependencyBuilder/DependencyBuilderComponent.h
-    Source/Builders/DependencyBuilder/DependencyBuilderWorker.cpp
-    Source/Builders/DependencyBuilder/DependencyBuilderWorker.h
-    Source/Builders/DependencyBuilder/SeedBuilderWorker/SeedBuilderWorker.cpp
-    Source/Builders/DependencyBuilder/SeedBuilderWorker/SeedBuilderWorker.h
     Source/Builders/LevelBuilder/LevelBuilderComponent.cpp
     Source/Builders/LevelBuilder/LevelBuilderComponent.h
     Source/Builders/LevelBuilder/LevelBuilderWorker.cpp
     Source/Builders/LevelBuilder/LevelBuilderWorker.h
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.cpp
-    Source/Builders/MaterialBuilder/MaterialBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderComponent.cpp
     Source/Builders/SliceBuilder/SliceBuilderComponent.h
     Source/Builders/SliceBuilder/SliceBuilderWorker.cpp

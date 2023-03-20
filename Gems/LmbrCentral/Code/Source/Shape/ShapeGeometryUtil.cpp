@@ -10,7 +10,6 @@
 
 #include <AzCore/Math/IntersectPoint.h>
 #include <AzCore/Math/IntersectSegment.h>
-#include <AzCore/Math/VectorConversions.h>
 #include <AzCore/Math/Quaternion.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <Shape/ShapeDisplay.h>
@@ -31,8 +30,14 @@ namespace LmbrCentral
         return vertices + 1;
     }
 
-    void DrawShape(AzFramework::DebugDisplayRequests& debugDisplay, const ShapeDrawParams& shapeDrawParams, const ShapeMesh& shapeMesh)
+    void DrawShape(
+        AzFramework::DebugDisplayRequests& debugDisplay,
+        const ShapeDrawParams& shapeDrawParams,
+        const ShapeMesh& shapeMesh,
+        const AZ::Vector3& shapeOffset)
     {
+        debugDisplay.PushMatrix(AZ::Transform::CreateTranslation(shapeOffset));
+
         if (shapeDrawParams.m_filled)
         {
             if (!shapeMesh.m_vertexBuffer.empty() && !shapeMesh.m_indexBuffer.empty())
@@ -45,6 +50,8 @@ namespace LmbrCentral
         {
             debugDisplay.DrawLines(shapeMesh.m_lineBuffer, shapeDrawParams.m_wireColor);
         }
+
+        debugDisplay.PopMatrix();
     }
 
     /// Determine if a list of vertices constitute a simple polygon
@@ -77,10 +84,10 @@ namespace LmbrCentral
                 float aa, bb;
                 AZ::Vector3 a, b;
                 AZ::Intersect::ClosestSegmentSegment(
-                    AZ::Vector2ToVector3(vertices[i]),
-                    AZ::Vector2ToVector3(vertices[(i + 1) % vertexCount]),
-                    AZ::Vector2ToVector3(vertices[j]),
-                    AZ::Vector2ToVector3(vertices[(j + 1) % vertexCount]),
+                    AZ::Vector3(vertices[i]),
+                    AZ::Vector3(vertices[(i + 1) % vertexCount]),
+                    AZ::Vector3(vertices[j]),
+                    AZ::Vector3(vertices[(j + 1) % vertexCount]),
                     aa, bb, a, b);
 
                 if ((a - b).GetLength() < 0.001f)
@@ -152,26 +159,27 @@ namespace LmbrCentral
                 const AZ::Vector2 edgeAfter = next - curr;
 
                 const float triangleArea = Wedge(edgeBefore, edgeAfter);
+                const float tolerance = 0.001f;
                 const bool interiorVertex = triangleArea <= 0.0f;
 
-                // if triangle is not an 'ear', continue.
-                if (!interiorVertex)
+                // if triangle is not an 'ear' and we have other vertices, continue.
+                if (!interiorVertex && vertices.size() > 3)
                 {
                     continue;
                 }
 
-                // check no other vertices are inside the triangle formed
-                // by these three vertices, if so, continue to next vertex.
-                if (vertices.size() > 3)
+                // check if this is a large enough triangle, that there are no other vertices
+                // inside the triangle formed, otherwise, continue to next vertex.
+                if (vertices.size() > 3 && !AZ::IsClose(triangleArea, 0.f, tolerance))
                 {
                     bool pointInside = false;
                     for (size_t j = (nextIndex + 1) % vertices.size(); j != prevIndex; j = (j + 1) % vertices.size())
                     {
                         if (AZ::Intersect::TestPointTriangle(
-                            AZ::Vector2ToVector3(vertices[j]),
-                            AZ::Vector2ToVector3(prev),
-                            AZ::Vector2ToVector3(curr),
-                            AZ::Vector2ToVector3(next)))
+                            AZ::Vector3(vertices[j]),
+                            AZ::Vector3(prev),
+                            AZ::Vector3(curr),
+                            AZ::Vector3(next)))
                         {
                             pointInside = true;
                             break;
@@ -185,9 +193,9 @@ namespace LmbrCentral
                 }
 
                 // form new triangle from 'ear'
-                triangles.push_back(AZ::Vector2ToVector3(prev));
-                triangles.push_back(AZ::Vector2ToVector3(curr));
-                triangles.push_back(AZ::Vector2ToVector3(next));
+                triangles.push_back(AZ::Vector3(prev));
+                triangles.push_back(AZ::Vector3(curr));
+                triangles.push_back(AZ::Vector3(next));
 
                 // if work is still do be done, remove vertex from list and iterate again
                 if (vertices.size() > 3)
@@ -353,10 +361,10 @@ namespace LmbrCentral
             const AZ::u32 sides, const AZ::u32 segments, const AZ::u32 capSegments,
             AZ::u32* indices)
         {
-            const auto capSegmentTipVerts = capSegments > 0 ? 1 : 0;
-            const auto totalSegments = segments + capSegments * 2;
-            const auto numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
-            const auto hasEnds = capSegments > 0;
+            const AZ::u32 capSegmentTipVerts = capSegments > 0 ? 1 : 0;
+            const AZ::u32 totalSegments = segments + capSegments * 2;
+            const AZ::u32 numVerts = sides * (totalSegments + 1) + 2 * capSegmentTipVerts;
+            const AZ::u32 hasEnds = capSegments > 0;
 
             // Start Faces (start point of tube)
             // Each starting face shares the same vertex at the beginning of the vertex buffer
@@ -365,8 +373,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = i + 1;
                     AZ::u32 b = a + 1;
@@ -383,9 +390,9 @@ namespace LmbrCentral
             // Middle Faces
             // 2 triangles per face.
             // 1 face per side.
-            for (auto i = 0; i < totalSegments; ++i)
+            for (AZ::u32 i = 0; i < totalSegments; ++i)
             {
-                for (auto j = 0; j < sides; ++j)
+                for (AZ::u32 j = 0; j < sides; ++j)
                 {
                     // 4 corners for each face
                     // a ------ d
@@ -416,7 +423,7 @@ namespace LmbrCentral
             // 1 face per side
             if (hasEnds)
             {
-                for (auto i = 0; i < sides; ++i)
+                for (AZ::u32 i = 0; i < sides; ++i)
                 {
                     AZ::u32 a = totalSegments * sides + i + 1;
                     AZ::u32 b = a + 1;

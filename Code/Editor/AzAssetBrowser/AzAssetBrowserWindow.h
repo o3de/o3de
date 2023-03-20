@@ -11,6 +11,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 
 #include <QWidget>
+#include <QMenu>
 #endif
 
 class QItemSelection;
@@ -24,15 +25,17 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        class AssetBrowserEntry;
         class AssetBrowserFilterModel;
         class AssetBrowserTableModel;
         class AssetBrowserModel;
         class AssetBrowserTableFilterModel;
+        class AssetBrowserTreeView;
 
         enum class AssetBrowserDisplayState : int
         {
-            ExpandedMode,
-            DefaultMode,
+            TreeViewMode,
+            ListViewMode,
             Invalid
         };
     } // namespace AssetBrowser
@@ -42,7 +45,7 @@ class AzAssetBrowserWindow : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AzAssetBrowserWindow, AZ::SystemAllocator);
 
     explicit AzAssetBrowserWindow(QWidget* parent = nullptr);
     virtual ~AzAssetBrowserWindow();
@@ -53,32 +56,50 @@ public:
 
     static QObject* createListenerForShowAssetEditorEvent(QObject* parent);
 
+    bool ViewWidgetBelongsTo(QWidget* viewWidget);
+
+Q_SIGNALS:
+    void SizeChangedSignal(int newWidth);
+
+protected:
+    void resizeEvent(QResizeEvent* resizeEvent) override;
+
 private:
-    void OnInitViewToggleButton();
     void UpdateDisplayInfo();
+    void SetNarrowMode(bool narrow);
+
 protected slots:
-    void CreateSwitchViewMenu();
-    void SetExpandedAssetBrowserMode();
-    void SetDefaultAssetBrowserMode();
-    void UpdateTableModelAfterFilter();
-    void SetTableViewVisibleAfterFilter();
+    void CreateToolsMenu();
+    void AddCreateMenu();
+    void SetTreeViewMode();
+    void SetListViewMode();
+    void UpdateWidgetAfterFilter();
+    void SetTwoColumnMode(QWidget* viewToShow);
+    void SetOneColumnMode();
 
 private:
     QScopedPointer<Ui::AzAssetBrowserWindowClass> m_ui;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserFilterModel> m_filterModel;
     QScopedPointer<AzToolsFramework::AssetBrowser::AssetBrowserTableModel> m_tableModel;
     AzToolsFramework::AssetBrowser::AssetBrowserModel* m_assetBrowserModel;
-    QMenu* m_viewSwitchMenu = nullptr;
-    QAction* m_expandedAssetBrowserMode = nullptr;
-    QAction* m_defaultAssetBrowserMode = nullptr;
+    QMenu* m_toolsMenu = nullptr;
+    QMenu* m_createMenu = nullptr;
+    QAction* m_treeViewMode = nullptr;
+    QAction* m_listViewMode = nullptr;
     AzToolsFramework::AssetBrowser::AssetBrowserDisplayState m_assetBrowserDisplayState =
-        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::DefaultMode;
+        AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::ListViewMode;
 
-    void UpdatePreview() const;
+
+    //! Updates breadcrumbs with the selectedEntry relative path if it's a folder or with the
+    //! relative path of the first folder parent of the passed entry.
+    //! Clears breadcrumbs if nullptr is passed or there's no folder parent.
+    void UpdateBreadcrumbs(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const;
+    bool m_inNarrowMode = false;
 
 private Q_SLOTS:
-    void SelectionChangedSlot(const QItemSelection& selected, const QItemSelection& deselected) const;
+    void CurrentIndexChangedSlot(const QModelIndex& idx) const;
     void DoubleClickedItem(const QModelIndex& element);
+    void BreadcrumbsPathChangedSlot(const QString& path) const;
 };
 
 extern const char* AZ_ASSET_BROWSER_PREVIEW_NAME;

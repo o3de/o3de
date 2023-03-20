@@ -8,7 +8,7 @@
 
 
 #include "UiEditorAnimationBus.h"
-#include "UiEditorDLLBus.h"
+#include <LyShine/UiEditorDLLBus.h>
 #include "UiAnimViewAnimNode.h"
 #include "UiAnimViewTrack.h"
 #include "UiAnimViewSequence.h"
@@ -127,7 +127,7 @@ CUiAnimViewAnimNode::CUiAnimViewAnimNode(IUiAnimSequence* pSequence, IUiAnimNode
         }
 
         // Set owner to update entity UI Animation system entity IDs and remove it again
-        EBUS_EVENT_ID_RESULT(m_nodeEntityId, m_pAnimNode.get(), UiAnimNodeBus, GetAzEntityId);
+        UiAnimNodeBus::EventResult(m_nodeEntityId, m_pAnimNode.get(), &UiAnimNodeBus::Events::GetAzEntityId);
 
         m_pAnimNode->SetNodeOwner(nullptr);
     }
@@ -149,12 +149,10 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
 
     bool valueChanged = false;
 
-    const float time = GetSequence()->GetTime();
-
     if (m_nodeEntityId.IsValid() && !m_azEntityDataCache.empty())
     {
         AZ::Entity* pNodeEntity = nullptr;
-        EBUS_EVENT_RESULT(pNodeEntity, AZ::ComponentApplicationBus, FindEntity, m_nodeEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(pNodeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_nodeEntityId);
 
         // Check that the entity referenced by this AnimNode exists. There is a possiblity that
         // it has been deleted (in which case this anim node is drawn in red).
@@ -162,7 +160,7 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
         {
             // The entity still exists, compare with cached data to see what changed
             AZ::SerializeContext* context = nullptr;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialization context found");
 
             AZ::IO::ByteContainerStream<const AZStd::string> charStream(&m_azEntityDataCache);
@@ -180,8 +178,8 @@ void CUiAnimViewAnimNode::UiElementPropertyChanged()
                     AZ::Component* oldComponent = oldComponents[componentIndex];
                     AZ::Component* newComponent = newComponents[componentIndex];
 
-                    AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
-                    AZ::Uuid newComponentType = newComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid oldComponentType = oldComponent->RTTI_GetType();
+                    [[maybe_unused]] AZ::Uuid newComponentType = newComponent->RTTI_GetType();
 
                     AZ_Assert(oldComponentType == newComponentType, "Components have different types");
 
@@ -249,7 +247,7 @@ void CUiAnimViewAnimNode::AzEntityPropertyChanged(
     CUiAnimViewTrack* track = GetTrackForParameterAz(param);
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
 
     if (!track && pAnimationContext->IsRecording())
     {
@@ -300,7 +298,7 @@ void CUiAnimViewAnimNode::AzCreateCompoundTrackIfNeeded(
     CUiAnimViewTrack* track = GetTrackForParameterAz(param);
 
     CUiAnimationContext* pAnimationContext = nullptr;
-    EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+    UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
 
     if (!track && pAnimationContext->IsRecording())
     {
@@ -369,7 +367,7 @@ void CUiAnimViewAnimNode::SetComponentParamValueAz(float time,
         // it is not a float
 
         AZ::SerializeContext* context = nullptr;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialization context found");
 
         // it is not a float
@@ -466,7 +464,7 @@ bool CUiAnimViewAnimNode::HasComponentParamValueAzChanged(
     {
         // it is not a float
         AZ::SerializeContext* context = nullptr;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialization context found");
 
         const AZ::SerializeContext::ClassData* classData = context->FindClassData(element.m_typeId);
@@ -537,9 +535,6 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
 
     CUiAnimViewSequenceNotificationContext context(GetSequence());
 
-    CUiAnimViewAnimNode* pDirector = GetDirector();
-    const bool bBelongsToActiveDirector = pDirector ? pDirector->IsActiveDirector() : true;
-
     // if this node represents an AZ entity then register for updates
     if (m_nodeEntityId.IsValid())
     {
@@ -549,7 +544,7 @@ void CUiAnimViewAnimNode::BindToEditorObjects()
             UiElementChangeNotificationBus::Handler::BusConnect(m_nodeEntityId);
 
             AZ::Entity* pNodeEntity = nullptr;
-            EBUS_EVENT_RESULT(pNodeEntity, AZ::ComponentApplicationBus, FindEntity, m_nodeEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(pNodeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_nodeEntityId);
             if (pNodeEntity)
             {
                 // save a cache of the current values of all the entities properties
@@ -1072,7 +1067,7 @@ void CUiAnimViewAnimNode::Animate(const SUiAnimContext& animContext)
     if (m_nodeEntityId.IsValid())
     {
         AZ::Entity* pNodeEntity = nullptr;
-        EBUS_EVENT_RESULT(pNodeEntity, AZ::ComponentApplicationBus, FindEntity, m_nodeEntityId);
+        AZ::ComponentApplicationBus::BroadcastResult(pNodeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_nodeEntityId);
         if (pNodeEntity)
         {
             AZ::IO::ByteContainerStream<AZStd::string> saveStream(&m_azEntityDataCache);
@@ -1099,7 +1094,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         }
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimNode->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -1107,7 +1102,7 @@ bool CUiAnimViewAnimNode::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -1126,7 +1121,7 @@ void CUiAnimViewAnimNode::SetNodeEntityAz(AZ::Entity* pEntity)
     if (m_pAnimNode)
     {
         m_pAnimNode->SetNodeOwner(this);
-        EBUS_EVENT_ID(m_pAnimNode.get(), UiAnimNodeBus, SetAzEntity, pEntity);
+        UiAnimNodeBus::Event(m_pAnimNode.get(), &UiAnimNodeBus::Events::SetAzEntity, pEntity);
     }
 
     GetSequence()->OnNodeChanged(this, IUiAnimViewSequenceListener::eNodeChangeType_NodeOwnerChanged);
@@ -1141,7 +1136,7 @@ AZ::Entity* CUiAnimViewAnimNode::GetNodeEntityAz([[maybe_unused]] const bool bSe
         if (m_nodeEntityId.IsValid())
         {
             AZ::Entity* pNodeEntity = nullptr;
-            EBUS_EVENT_RESULT(pNodeEntity, AZ::ComponentApplicationBus, FindEntity, m_nodeEntityId);
+            AZ::ComponentApplicationBus::BroadcastResult(pNodeEntity, &AZ::ComponentApplicationBus::Events::FindEntity, m_nodeEntityId);
             return pNodeEntity;
         }
     }
@@ -1246,7 +1241,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 {
     CUiAnimViewAnimNodeBundle bundle;
 
-    QString nodeName = GetName();
+    QString nodeName = QString::fromUtf8(GetName().c_str());
     if (GetNodeType() == eUiAVNT_AnimNode && QString::compare(pName, nodeName, Qt::CaseInsensitive) == 0)
     {
         bundle.AppendAnimNode(this);
@@ -1266,17 +1261,15 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::GetAnimNodesByName(const char* pN
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
+AZStd::string CUiAnimViewAnimNode::GetParamName(const CUiAnimParamType& paramType) const
 {
-    const char* pName = m_pAnimNode->GetParamName(paramType);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamName(paramType);
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
+AZStd::string CUiAnimViewAnimNode::GetParamNameForTrack(const CUiAnimParamType& paramType, const IUiAnimTrack* track) const
 {
-    const char* pName = m_pAnimNode->GetParamNameForTrack(paramType, track);
-    return pName ? pName : "";
+    return m_pAnimNode->GetParamNameForTrack(paramType, track);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1312,7 +1305,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::AddSelectedUiElements()
     // Add selected nodes.
     // Need some way to communicate with the UiCanvasEditor here
     LyShine::EntityArray selectedElements;
-    EBUS_EVENT_RESULT(selectedElements, UiEditorDLLBus, GetSelectedElements);
+    UiEditorDLLBus::BroadcastResult(selectedElements, &UiEditorDLLBus::Events::GetSelectedElements);
 
     for (AZ::Entity* entity : selectedElements)
     {
@@ -1333,7 +1326,7 @@ CUiAnimViewAnimNodeBundle CUiAnimViewAnimNode::AddSelectedUiElements()
 
         // Since entity names in canvases do not tend to be unique add the element ID
         LyShine::ElementId elementId = 0;
-        EBUS_EVENT_ID_RESULT(elementId, entity->GetId(), UiElementBus, GetElementId);
+        UiElementBus::EventResult(elementId, entity->GetId(), &UiElementBus::Events::GetElementId);
         QString nodeName = entity->GetName().c_str();
         char suffix[10];
         azsnprintf(suffix, 10, " (%d)", elementId);
@@ -1413,7 +1406,7 @@ void CUiAnimViewAnimNode::UpdateDynamicParams()
 void CUiAnimViewAnimNode::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks)
 {
     XmlNodeRef childNode = xmlNode->createNode("Node");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     childNode->setAttr("type", GetType());
 
     for (auto iter = m_childNodes.begin(); iter != m_childNodes.end(); ++iter)
@@ -1482,7 +1475,7 @@ bool CUiAnimViewAnimNode::PasteNodesFromClipboard(QWidget* context)
     const bool bLightAnimationSetActive = GetSequence()->GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
 
     const unsigned int numNodes = animNodesRoot->getChildCount();
-    for (int i = 0; i < numNodes; ++i)
+    for (unsigned int i = 0; i < numNodes; ++i)
     {
         XmlNodeRef xmlNode = animNodesRoot->getChild(i);
 
@@ -1557,7 +1550,7 @@ bool CUiAnimViewAnimNode::IsValidReparentingTo(CUiAnimViewAnimNode* pNewParent)
     }
 
     // Check if the new parent already contains a node with this name
-    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName());
+    CUiAnimViewAnimNodeBundle foundNodes = pNewParent->GetAnimNodesByName(GetName().c_str());
     if (foundNodes.GetCount() > 1 || (foundNodes.GetCount() == 1 && foundNodes.GetNode(0) != this))
     {
         return false;
@@ -1632,7 +1625,7 @@ void CUiAnimViewAnimNode::OnSelectionChanged(const bool bSelected)
 {
     if (m_pAnimNode)
     {
-        const EUiAnimNodeType animNodeType = GetType();
+        [[maybe_unused]] const EUiAnimNodeType animNodeType = GetType();
         assert(animNodeType == eUiAnimNodeType_Camera || animNodeType == eUiAnimNodeType_Entity || animNodeType == eUiAnimNodeType_GeomCache);
 
         const EUiAnimNodeFlags flags = (EUiAnimNodeFlags)m_pAnimNode->GetFlags();

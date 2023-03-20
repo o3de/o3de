@@ -22,33 +22,12 @@ namespace AZ
             : public PassData
         {
             AZ_RTTI(CopyPassData, "{A0E4DBBF-2FE7-4027-B6B1-4F15AEB03B04}", PassData);
-            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CopyPassData, SystemAllocator);
 
             CopyPassData() = default;
             virtual ~CopyPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<CopyPassData, PassData>()
-                        ->Version(0)
-                        ->Field("BufferSize", &CopyPassData::m_bufferSize)
-                        ->Field("BufferSourceOffset", &CopyPassData::m_bufferSourceOffset)
-                        ->Field("BufferSourceBytesPerRow", &CopyPassData::m_bufferSourceBytesPerRow)
-                        ->Field("BufferSourceBytesPerImage", &CopyPassData::m_bufferSourceBytesPerImage)
-                        ->Field("BufferDestinationOffset", &CopyPassData::m_bufferDestinationOffset)
-                        ->Field("BufferDestinationBytesPerRow", &CopyPassData::m_bufferDestinationBytesPerRow)
-                        ->Field("BufferDestinationBytesPerImage", &CopyPassData::m_bufferDestinationBytesPerImage)
-                        ->Field("ImageSourceSize", &CopyPassData::m_sourceSize)
-                        ->Field("ImageSourceSubresource", &CopyPassData::m_imageSourceSubresource)
-                        ->Field("ImageSourceOrigin", &CopyPassData::m_imageSourceOrigin)
-                        ->Field("ImageDestinationSubresource", &CopyPassData::m_imageDestinationSubresource)
-                        ->Field("ImageDestinationOrigin", &CopyPassData::m_imageDestinationOrigin)
-                        ->Field("CloneInput", &CopyPassData::m_cloneInput)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             // Size
             uint32_t m_bufferSize = 0;
@@ -75,6 +54,9 @@ namespace AZ
             // If set to true, pass will automatically create a transient output attachment based on input
             // If false, the output target of the copy will need to be specified
             bool m_cloneInput = true;
+
+            // Whether the pass should use the copy queue.
+            bool m_useCopyQueue = false;
         };
     } // namespace RPI
 } // namespace AZ

@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include "MeshBuilder.h"
 #include "MeshBuilderSkinningInfo.h"
 #include "MeshBuilderSubMesh.h"
@@ -14,7 +15,7 @@
 
 namespace AZ::MeshBuilder
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSubMesh, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshBuilderSubMesh, AZ::SystemAllocator)
 
     MeshBuilderSubMesh::MeshBuilderSubMesh(size_t materialIndex, MeshBuilder* mesh)
         : m_materialIndex(materialIndex)

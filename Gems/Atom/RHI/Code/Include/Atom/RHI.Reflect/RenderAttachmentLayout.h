@@ -13,7 +13,7 @@
 #include <Atom/RHI.Reflect/Limits.h>
 #include <AzCore/Utils/TypeHash.h>
 #include <AzCore/std/containers/array.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -23,7 +23,6 @@ namespace AZ
     {
         static const uint32_t InvalidRenderAttachmentIndex = Limits::Pipeline::RenderAttachmentCountMax;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         //! Describes one render attachment that is part of a layout.
         struct RenderAttachmentDescriptor
         {
@@ -40,6 +39,21 @@ namespace AZ
             uint32_t m_resolveAttachmentIndex = InvalidRenderAttachmentIndex;
             //! Load and store action of the attachment.
             AttachmentLoadStoreAction m_loadStoreAction;
+        };
+
+        //! Describes a subpass input attachment.
+        struct SubpassInputDescriptor
+        {
+            AZ_TYPE_INFO(SubpassInputDescriptor, "{5E5B933D-8209-4722-8AC5-C3FEA1D75BB3}");
+            static void Reflect(ReflectContext* context);
+
+            bool operator==(const SubpassInputDescriptor& other) const;
+            bool operator!=(const SubpassInputDescriptor& other) const;
+
+            //! Attachment index that this subpass input references.
+            uint32_t m_attachmentIndex = 0;
+            //! Aspects that are used by the input (needed by some implementations, like Vulkan, when creating a renderpass with a subpass input)
+            RHI::ImageAspectFlags m_aspectFlags = RHI::ImageAspectFlags::None;
         };
 
         //! Describes the attachments of one subpass as part of a render target layout.
@@ -59,9 +73,11 @@ namespace AZ
             //! List of render targets used by the subpass.
             AZStd::array<RenderAttachmentDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_rendertargetDescriptors;
             //! List of subpass inputs used by the subpass.
-            AZStd::array<uint32_t, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputIndices = { {} };
-            //! Descriptor of the depth/stencil attachment. Invalid if not used.
+            AZStd::array<SubpassInputDescriptor, Limits::Pipeline::AttachmentColorCountMax> m_subpassInputDescriptors = { {} };
+            //! Descriptor of the depth/stencil attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
             RenderAttachmentDescriptor m_depthStencilDescriptor;
+            //! Descriptor of the shading rate attachment. If not used, the attachment index is InvalidRenderAttachmentIndex.
+            RenderAttachmentDescriptor m_shadingRateDescriptor;
         };
 
         //! A RenderAttachmentLayout consist of a description of one or more subpasses.
@@ -91,7 +107,6 @@ namespace AZ
             //! List with the layout of each subpass.
             AZStd::array<SubpassRenderAttachmentLayout, Limits::Pipeline::SubpassCountMax> m_subpassLayouts;
         };
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         //! Describes the layout of a collection of subpasses and it defines which of the subpasses this
         //! configuration will be using.

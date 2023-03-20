@@ -8,31 +8,23 @@
 
 #pragma once
 
-#include <AzCore/Component/TickBus.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Math/Quaternion.h>
 
-#include <AzFramework/Entity/EntityDebugDisplayBus.h>
-#include <AzFramework/Physics/Shape.h>
-#include <AzFramework/Physics/ShapeConfiguration.h>
-#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
-#include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
+#include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
-#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Manipulators/BoxManipulatorRequestBus.h>
+#include <AzToolsFramework/Manipulators/ShapeManipulatorRequestBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-
-#include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
-#include <AzToolsFramework/UI/PropertyEditor/ComponentEditor.hxx>
 
 #include <PhysX/ColliderShapeBus.h>
 #include <PhysX/EditorColliderComponentRequestBus.h>
-#include <PhysX/MeshAsset.h>
-#include <PhysX/MeshColliderComponentBus.h>
-#include <System/PhysXSystem.h>
 
 #include <Editor/DebugDraw.h>
 
@@ -44,33 +36,64 @@ namespace AzPhysics
 
 namespace PhysX
 {
-    struct EditorProxyAssetShapeConfig
+    //! Legacy edit context wrapper for the physics asset and asset specific parameters in the shape configuration.
+    //!
+    //! O3DE_DEPRECATION_NOTICE(GHI-14718)
+    //! Physics asset shape is now handled by EditorMeshColliderComponent.
+    //! This class is only used to keep the serialization data intact inside
+    //! EditorColliderComponent so it can be converted to EditorMeshColliderComponent
+    //! when running the console command 'ed_physxUpdatePrefabsWithColliderComponents'.
+    struct LegacyEditorProxyAssetShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyAssetShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
+        AZ_CLASS_ALLOCATOR(LegacyEditorProxyAssetShapeConfig, AZ::SystemAllocator);
+        AZ_TYPE_INFO(LegacyEditorProxyAssetShapeConfig, "{C1B46450-C2A3-4115-A2FB-E5FF3BAAAD15}");
         static void Reflect(AZ::ReflectContext* context);
-        virtual ~EditorProxyAssetShapeConfig() = default;
 
         AZ::Data::Asset<Pipeline::MeshAsset> m_pxAsset{ AZ::Data::AssetLoadBehavior::QueueLoad };
         Physics::PhysicsAssetShapeConfiguration m_configuration;
     };
 
+    //! Edit context wrapper for cylinder specific parameters and cached geometry.
+    struct EditorProxyCylinderShapeConfig
+    {
+        AZ_CLASS_ALLOCATOR(EditorProxyCylinderShapeConfig, AZ::SystemAllocator);
+        AZ_TYPE_INFO(EditorProxyCylinderShapeConfig, "{2394B3D0-E7A1-4B66-8C42-0FFDC1FCAA26}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        //! Cylinder specific parameters.
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
+        float m_height = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_radius = Physics::ShapeConstants::DefaultCylinderRadius;
+
+        //! Configuration stores the convex geometry for the cylinder and shape scale.
+        Physics::CookedMeshShapeConfiguration m_configuration;
+    };
+
     //! Proxy container for only displaying a specific shape configuration depending on the shapeType selected.
     struct EditorProxyShapeConfig
     {
-        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator, 0);
-        AZ_RTTI(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
+        AZ_CLASS_ALLOCATOR(EditorProxyShapeConfig, AZ::SystemAllocator);
+        AZ_TYPE_INFO(EditorProxyShapeConfig, "{531FB42A-42A9-4234-89BA-FD349EF83D0C}");
         static void Reflect(AZ::ReflectContext* context);
 
         EditorProxyShapeConfig() = default;
         EditorProxyShapeConfig(const Physics::ShapeConfiguration& shapeConfiguration);
-        virtual ~EditorProxyShapeConfig() = default;
 
+        // O3DE_DEPRECATION_NOTICE(GHI-14718)
+        // Initial value for m_shapeType needs to remain PhysicsAsset
+        // to support command to convert EditorColliderComponent to
+        // EditorMeshColliderComponent. This is because prefabs do not
+        // store in JSON the default values and therefore the converter
+        // would lose the ability to know if the type was PhysX Asset
+        // before to convert the component to a Editor Mesh Collider.
+        // The initial value can be changed to Box when GHI-14718 deprecation
+        // task is done.
         Physics::ShapeType m_shapeType = Physics::ShapeType::PhysicsAsset;
         Physics::SphereShapeConfiguration m_sphere;
         Physics::BoxShapeConfiguration m_box;
         Physics::CapsuleShapeConfiguration m_capsule;
-        EditorProxyAssetShapeConfig m_physicsAsset;
+        EditorProxyCylinderShapeConfig m_cylinder;
+        LegacyEditorProxyAssetShapeConfig m_legacyPhysicsAsset; // O3DE_DEPRECATION_NOTICE(GHI-14718)
         bool m_hasNonUniformScale = false; //!< Whether there is a non-uniform scale component on this entity.
         AZ::u8 m_subdivisionLevel = 4; //!< The level of subdivision if a primitive shape is replaced with a convex mesh due to scaling.
         Physics::CookedMeshShapeConfiguration m_cookedMesh;
@@ -78,126 +101,138 @@ namespace PhysX
         bool IsSphereConfig() const;
         bool IsBoxConfig() const;
         bool IsCapsuleConfig() const;
-        bool IsAssetConfig() const;
+        bool IsCylinderConfig() const;
         Physics::ShapeConfiguration& GetCurrent();
         const Physics::ShapeConfiguration& GetCurrent() const;
 
         AZStd::shared_ptr<Physics::ShapeConfiguration> CloneCurrent() const;
 
-        bool ShowingSubdivisionLevel() const;
+        bool IsNonUniformlyScaledPrimitive() const;
 
+    private:
+        bool ShowingSubdivisionLevel() const;
+        AZ::u32 OnShapeTypeChanged();
         AZ::u32 OnConfigurationChanged();
+
+        Physics::ShapeType m_lastShapeType = Physics::ShapeType::Box;
     };
 
-    class EditorColliderComponentDescriptor;
-    //! Editor PhysX Collider Component.
-    //!
+    //! Editor PhysX Primitive Collider Component.
     class EditorColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
+        , public AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , protected DebugDraw::DisplayCallback
         , protected AzToolsFramework::EntitySelectionEvents::Bus::Handler
         , private AzToolsFramework::BoxManipulatorRequestBus::Handler
-        , private AZ::Data::AssetBus::MultiHandler
-        , private PhysX::MeshColliderComponentRequestsBus::Handler
+        , private AzToolsFramework::ShapeManipulatorRequestBus::Handler
         , private AZ::TransformNotificationBus::Handler
         , private PhysX::ColliderShapeRequestBus::Handler
-        , private AZ::Render::MeshComponentNotificationBus::Handler
         , private PhysX::EditorColliderComponentRequestBus::Handler
+        , private PhysX::EditorPrimitiveColliderComponentRequestBus::Handler
         , private AzPhysics::SimulatedBodyComponentRequestsBus::Handler
+        , public AzFramework::BoundsRequestBus::Handler
     {
     public:
-        AZ_RTTI(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}", AzToolsFramework::Components::EditorComponentBase);
-        AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorColliderComponent);
-
-        AZ_CLASS_ALLOCATOR(EditorColliderComponent, AZ::SystemAllocator, 0);
-        friend class EditorColliderComponentDescriptor;
+        AZ_EDITOR_COMPONENT(EditorColliderComponent, "{FD429282-A075-4966-857F-D0BBF186CFE6}");
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
-        static AZ::ComponentDescriptor* CreateDescriptor();
 
         EditorColliderComponent() = default;
         EditorColliderComponent(
             const Physics::ColliderConfiguration& colliderConfiguration,
             const Physics::ShapeConfiguration& shapeConfiguration);
 
-        // these functions are made virtual because we call them from other modules
-        virtual const EditorProxyShapeConfig& GetShapeConfiguration() const;
-        virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
-        virtual Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        const EditorProxyShapeConfig& GetShapeConfiguration() const;
+        const Physics::ColliderConfiguration& GetColliderConfiguration() const;
+        Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+        Physics::ColliderConfiguration GetColliderConfigurationNoOffset() const;
+
+        bool IsDebugDrawDisplayFlagEnabled() const;
+
+        // BoundsRequestBus overrides ...
+        AZ::Aabb GetWorldBounds() override;
+        AZ::Aabb GetLocalBounds() override;
+
+        // EditorComponentSelectionRequestsBus overrides ...
+        AZ::Aabb GetEditorSelectionBoundsViewport(const AzFramework::ViewportInfo& viewportInfo) override;
+        bool EditorSelectionIntersectRayViewport(
+            const AzFramework::ViewportInfo& viewportInfo, const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        bool SupportsEditorRayIntersect() override;
 
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
-        AZ_DISABLE_COPY_MOVE(EditorColliderComponent)
-        // AZ::Component
+        AZ_DISABLE_COPY_MOVE(EditorColliderComponent);
+
+        // AZ::Component overrides ...
+        void Init() override;
         void Activate() override;
         void Deactivate() override;
 
-        //! AzToolsFramework::EntitySelectionEvents
+        void UpdateShapeConfiguration();
+
+        // AzToolsFramework::EntitySelectionEvents overrides ...
         void OnSelected() override;
         void OnDeselected() override;
 
-        // DisplayCallback
-        void Display(AzFramework::DebugDisplayRequests& debugDisplay) const;
-        void DisplayMeshCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
+        // DisplayCallback overrides ...
+        void Display(const AzFramework::ViewportInfo& viewportInfo,
+            AzFramework::DebugDisplayRequests& debugDisplay) const override;
+
+        void DisplayCylinderCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayUnscaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
         void DisplayScaledPrimitiveCollider(AzFramework::DebugDisplayRequests& debugDisplay) const;
 
-        // AZ::Data::AssetBus::Handler
-        void OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-        // PhysXMeshColliderComponentRequestBus
-        AZ::Data::Asset<Pipeline::MeshAsset> GetMeshAsset() const override;
-        Physics::MaterialId GetMaterialId() const override;
-        void SetMeshAsset(const AZ::Data::AssetId& id) override;
-        void SetMaterialId(const Physics::MaterialId& id) override;
-        void UpdateMaterialSlotsFromMeshAsset();
-
-        // TransformBus
+        // TransformBus overrides ...
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 
         // non-uniform scale handling
         void OnNonUniformScaleChanged(const AZ::Vector3& nonUniformScale);
 
-        // AzToolsFramework::BoxManipulatorRequestBus
-        AZ::Vector3 GetDimensions() override;
+        // AzToolsFramework::BoxManipulatorRequestBus overrides ...
+        AZ::Vector3 GetDimensions() const override;
         void SetDimensions(const AZ::Vector3& dimensions) override;
-        AZ::Transform GetCurrentTransform() override;
-        AZ::Vector3 GetBoxScale() override;
+        AZ::Transform GetCurrentLocalTransform() const override;
 
-        // AZ::Render::MeshComponentNotificationBus
-        void OnModelReady(const AZ::Data::Asset<AZ::RPI::ModelAsset>& modelAsset,
-            const AZ::Data::Instance<AZ::RPI::Model>& model) override;
+        // AzToolsFramework::ShapeManipulatorRequestBus overrides ...
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
+        AZ::Transform GetManipulatorSpace() const override;
+        AZ::Quaternion GetRotationOffset() const override;
 
-        // PhysX::ColliderShapeBus
+        // PhysX::ColliderShapeBus overrides ...
         AZ::Aabb GetColliderShapeAabb() override;
         bool IsTrigger() override;
 
-        // PhysX::EditorColliderComponentBus
+        // PhysX::EditorColliderComponentRequestBus overrides ...
         void SetColliderOffset(const AZ::Vector3& offset) override;
-        AZ::Vector3 GetColliderOffset() override;
+        AZ::Vector3 GetColliderOffset() const override;
         void SetColliderRotation(const AZ::Quaternion& rotation) override;
-        AZ::Quaternion GetColliderRotation() override;
-        AZ::Transform GetColliderWorldTransform() override;
+        AZ::Quaternion GetColliderRotation() const override;
+        AZ::Transform GetColliderWorldTransform() const override;
+        Physics::ShapeType GetShapeType() const override;
+        
+        // PhysX::EditorPrimitiveColliderComponentRequestBus overrides ...
         void SetShapeType(Physics::ShapeType shapeType) override;
-        Physics::ShapeType GetShapeType() override;
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override;
+        AZ::Vector3 GetBoxDimensions() const override;
         void SetSphereRadius(float radius) override;
-        float GetSphereRadius() override;
+        float GetSphereRadius() const override;
         void SetCapsuleRadius(float radius) override;
-        float GetCapsuleRadius() override;
+        float GetCapsuleRadius() const override;
         void SetCapsuleHeight(float height) override;
-        float GetCapsuleHeight() override;
-        void SetAssetScale(const AZ::Vector3& scale) override;
-        AZ::Vector3 GetAssetScale() override;
+        float GetCapsuleHeight() const override;
+        void SetCylinderRadius(float radius) override;
+        float GetCylinderRadius() const override;
+        void SetCylinderHeight(float height) override;
+        float GetCylinderHeight() const override;
+        void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override;
+        AZ::u8 GetCylinderSubdivisionCount() const override;
 
         AZ::Transform GetColliderLocalTransform() const;
-
-        EditorProxyShapeConfig m_shapeConfiguration;
-        Physics::ColliderConfiguration m_configuration;
 
         AZ::u32 OnConfigurationChanged();
         void UpdateShapeConfigurationScale();
@@ -211,18 +246,16 @@ namespace PhysX
         AzPhysics::SimulatedBodyHandle GetSimulatedBodyHandle() const override;
         AzPhysics::SceneQueryHit RayCast(const AzPhysics::RayCastRequest& request) override;
 
-        // Mesh collider
-        void UpdateMeshAsset();
-        bool IsAssetConfig() const;
+        // Cylinder collider
+        void UpdateCylinderCookedMesh();
 
+        void UpdateCollider();
         void CreateStaticEditorCollider();
-        void ClearStaticEditorCollider();
 
         void BuildDebugDrawMesh() const;
 
-        void ValidateRigidBodyMeshGeometryType();
-
-        AZ::ComponentDescriptor::StringWarningArray GetComponentWarnings() const { return m_componentWarnings; };
+        EditorProxyShapeConfig m_proxyShapeConfiguration;
+        Physics::ColliderConfiguration m_configuration;
 
         using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
         ComponentModeDelegate m_componentModeDelegate; //!< Responsible for detecting ComponentMode activation
@@ -232,21 +265,9 @@ namespace PhysX
         AzPhysics::SceneHandle m_editorSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SimulatedBodyHandle m_editorBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
 
-        // Auto-assigning collision mesh utility functions
-        bool ShouldUpdateCollisionMeshFromRender() const;
-        void SetCollisionMeshFromRender();
-        AZ::Data::Asset<AZ::Data::AssetData> GetRenderMeshAsset() const;
-
-        AZ::Data::AssetId FindMatchingPhysicsAsset(const AZ::Data::Asset<AZ::Data::AssetData>& renderMeshAsset,
-            const AZStd::vector<AZ::Data::AssetId>& physicsAssets);
-
-        void ValidateAssetMaterials();
-
-        void InitEventHandlers();
         DebugDraw::Collider m_colliderDebugDraw;
 
         AzPhysics::SystemEvents::OnConfigurationChangedEvent::Handler m_physXConfigChangedHandler;
-        AzPhysics::SystemEvents::OnMaterialLibraryChangedEvent::Handler m_onMaterialLibraryChangedEventHandler;
         AZ::Transform m_cachedWorldTransform;
 
         AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler; //!< Responds to changes in non-uniform scale.
@@ -255,26 +276,6 @@ namespace PhysX
         mutable AZStd::optional<Physics::CookedMeshShapeConfiguration> m_scaledPrimitive; //!< Approximation for non-uniformly scaled primitive.
         AZ::Aabb m_cachedAabb = AZ::Aabb::CreateNull(); //!< Cache the Aabb to avoid recalculating it.
         bool m_cachedAabbDirty = true; //!< Track whether the cached Aabb needs to be recomputed.
-
-        AZ::ComponentDescriptor::StringWarningArray m_componentWarnings;
-    };
-
-    class EditorColliderComponentDescriptor :
-        public AZ::ComponentDescriptorHelper<EditorColliderComponent>
-    {
-    public:
-        AZ_CLASS_ALLOCATOR(EditorColliderComponentDescriptor, AZ::SystemAllocator, 0);
-        AZ_TYPE_INFO(EditorColliderComponentDescriptor, "{E099B5D6-B03F-436C-AB8E-7ADE4DAD74A0}");
-
-        EditorColliderComponentDescriptor() = default;
-
-        void Reflect(AZ::ReflectContext* reflection) const override;
-
-        void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided, const AZ::Component* instance) const override;
-        void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent, const AZ::Component* instance) const override;
-        void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required, const AZ::Component* instance) const override;
-        void GetWarnings(AZ::ComponentDescriptor::StringWarningArray& warnings, const AZ::Component* instance) const override;
-
     };
 
 } // namespace PhysX

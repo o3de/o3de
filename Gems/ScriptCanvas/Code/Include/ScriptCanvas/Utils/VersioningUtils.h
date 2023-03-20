@@ -29,15 +29,17 @@ namespace ScriptCanvas
     using ReplacementEndpointPairs = AZStd::unordered_set<AZStd::pair<Endpoint, Endpoint>>;
     using ReplacementConnectionMap = AZStd::unordered_map<AZ::EntityId, ReplacementEndpointPairs>;
 
-    struct NodeUpdateSlotReport
+    struct NodeUpdateReport
     {
-        AZStd::unordered_set<SlotId> m_deletedOldSlots;
-        AZStd::unordered_map<SlotId, AZStd::vector<SlotId>> m_oldSlotsToNewSlots;
+        ScriptCanvas::Node* m_newNode = nullptr;
+        AZStd::unordered_set<ScriptCanvas::SlotId> m_deletedOldSlots;
+        AZStd::unordered_map<ScriptCanvas::SlotId, AZStd::vector<ScriptCanvas::SlotId>> m_oldSlotsToNewSlots;
 
+        void Clear();
         bool IsEmpty() const;
     };
 
-    struct GraphUpdateSlotReport
+    struct GraphUpdateReport
     {
         AZStd::unordered_set<Endpoint> m_deletedOldSlots;
         AZStd::unordered_map<Endpoint, AZStd::vector<Endpoint>> m_oldSlotsToNewSlots;
@@ -47,11 +49,11 @@ namespace ScriptCanvas
         bool IsEmpty() const;
     };
 
-    void MergeUpdateSlotReport(const AZ::EntityId& scriptCanvasNodeId, GraphUpdateSlotReport& report, const NodeUpdateSlotReport& source);
+    void MergeUpdateSlotReport(const AZ::EntityId& scriptCanvasNodeId, GraphUpdateReport& report, const NodeUpdateReport& source);
 
     AZStd::vector<AZStd::pair<Endpoint, Endpoint>> CollectEndpoints(const AZStd::vector<AZ::Entity*>& connections, bool logEntityNames = false);
 
-    void UpdateConnectionStatus(Graph& graph, const GraphUpdateSlotReport& report);
+    void UpdateConnectionStatus(Graph& graph, const GraphUpdateReport& report);
 
     class VersioningUtils
     {

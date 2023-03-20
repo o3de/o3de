@@ -43,7 +43,7 @@ namespace Presence
         ////////////////////////////////////////////////////////////////////////
         //! PresenceRequestBus interface implementation
         void SetPresence(const SetPresenceParams& params) override;
-        void QueryPresence(const QueryPresenceParams& params);
+        void QueryPresence(const QueryPresenceParams& params) override;
 
     public:
         ////////////////////////////////////////////////////////////////////////
@@ -51,7 +51,7 @@ namespace Presence
         class Implementation
         {
         public: 
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             static Implementation* Create(PresenceSystemComponent& presenceSystemComponent);
             Implementation(PresenceSystemComponent& presenceSystemComponent);

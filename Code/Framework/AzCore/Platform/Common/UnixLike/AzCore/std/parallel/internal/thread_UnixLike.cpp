@@ -21,6 +21,7 @@ namespace AZStd
         void PreCreateSetThreadAffinity(int cpuId, pthread_attr_t& attr);
         void SetThreadPriority(int priority, pthread_attr_t& attr);
         void PostCreateThread(pthread_t tId, const char * name, int cpuId);
+        uint8_t GetDefaultThreadPriority();
     }
 
     namespace Internal
@@ -35,7 +36,6 @@ namespace AZStd
 
             destroy_thread_info(ti);
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadExit, this_thread::get_id());
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadExit, this_thread::get_id());
             pthread_exit(nullptr);
             return nullptr;
         }
@@ -59,10 +59,15 @@ namespace AZStd
                 {
                     priority = desc->m_priority;
                 }
+                else
+                {
+                    priority = Platform::GetDefaultThreadPriority();
+                }
                 if (desc->m_name)
                 {
                     name = desc->m_name;
                 }
+                ti->m_name = name;
                 cpuId = desc->m_cpuId;
 
                 pthread_attr_setdetachstate(&attr, desc->m_isJoinable ? PTHREAD_CREATE_JOINABLE : PTHREAD_CREATE_DETACHED);
@@ -77,14 +82,13 @@ namespace AZStd
             pthread_t tId;
             int res = pthread_create(&tId, &attr, &thread_run_function, ti);
             (void)res;
-            AZ_Assert(res == 0, "pthread failed %s", strerror(errno));
+            AZ_Assert(res == 0, "pthread failed with code %d: %s", res, strerror(res));
             pthread_attr_destroy(&attr);
 
             // Platform specific post thread creation action (setting thread name on some, affinity on others)
             Platform::PostCreateThread(tId, name, cpuId);
 
             ThreadEventBus::Broadcast(&ThreadEventBus::Events::OnThreadEnter, thread::id(tId), desc);
-            ThreadDrillerEventBus::Broadcast(&ThreadDrillerEventBus::Events::OnThreadEnter, thread::id(tId), desc);
             return tId;
         }
     }

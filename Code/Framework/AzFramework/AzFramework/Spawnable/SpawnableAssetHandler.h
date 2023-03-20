@@ -19,8 +19,8 @@ namespace AzFramework
         , public AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SpawnableAssetHandler, AZ::SystemAllocator, 0);
-        AZ_RTTI(AZ::SpawnableAssetHandler, "{BF6E2D17-87C9-4BB1-A205-3656CF6D551D}", AZ::Data::AssetHandler);
+        AZ_CLASS_ALLOCATOR(SpawnableAssetHandler, AZ::SystemAllocator);
+        AZ_RTTI(SpawnableAssetHandler, "{BF6E2D17-87C9-4BB1-A205-3656CF6D551D}", AZ::Data::AssetHandler);
 
         SpawnableAssetHandler();
         ~SpawnableAssetHandler() override;
@@ -50,5 +50,7 @@ namespace AzFramework
             const AZ::Data::Asset<AZ::Data::AssetData>& asset,
             AZStd::shared_ptr<AZ::Data::AssetDataStream> stream,
             const AZ::Data::AssetFilterCB& assetLoadFilterCB) override;
+
+    private:
     };
 } // namespace AzFramework

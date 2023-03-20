@@ -18,14 +18,14 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
     {
     public:
         SpawnableMetaDataBuilder& Add(AZStd::string_view key, bool value);
-        SpawnableMetaDataBuilder& Add(AZStd::string_view key, uint64_t value);
-        SpawnableMetaDataBuilder& Add(AZStd::string_view key, int64_t value);
+        SpawnableMetaDataBuilder& Add(AZStd::string_view key, AZ::u64 value);
+        SpawnableMetaDataBuilder& Add(AZStd::string_view key, AZ::s64 value);
         SpawnableMetaDataBuilder& Add(AZStd::string_view key, double value);
         SpawnableMetaDataBuilder& Add(AZStd::string_view key, AZStd::string value);
 
         SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, bool value);
-        SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, uint64_t value);
-        SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, int64_t value);
+        SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, AZ::u64 value);
+        SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, AZ::s64 value);
         SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, double value);
         SpawnableMetaDataBuilder& AppendArray(AZStd::string_view arrayKey, AZStd::string value);
 

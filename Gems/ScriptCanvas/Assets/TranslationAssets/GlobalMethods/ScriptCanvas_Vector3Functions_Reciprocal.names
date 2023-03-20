@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector3Functions_Reciprocal",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Reciprocal",
+                "category": "Math/Vector3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector3Functions_Reciprocal",
+                    "details": {
+                        "name": "Reciprocal",
+                        "tooltip": "Returns the vector (1/x, 1/y, 1/z) with elements from Source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

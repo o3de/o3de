@@ -36,6 +36,7 @@ namespace SceneUnitTest
     class TestComponentConfig : public AZ::ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(TestComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(TestComponentConfig, "{DCD12D72-3BFE-43A9-9679-66B745814CAF}", ComponentConfig);
 
         typedef void(*ActivateFunction)(TestComponent* component);
@@ -45,7 +46,7 @@ namespace SceneUnitTest
         DeactivateFunction m_deactivateFunction = nullptr;
     };
 
-    static const AZ::TypeId TestComponentTypeId = "{DC096267-4815-47D1-BA23-A1CDF0D72D9D}";
+    static constexpr AZ::TypeId TestComponentTypeId{ "{DC096267-4815-47D1-BA23-A1CDF0D72D9D}" };
     class TestComponent : public AZ::Component
     {
     public:
@@ -95,14 +96,11 @@ namespace SceneUnitTest
     // Fixture that creates a bare-bones app with only the system components necesary.
 
     class SceneTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -113,7 +111,6 @@ namespace SceneUnitTest
             m_app.RegisterComponentDescriptor(AZ::StreamerComponent::CreateDescriptor());
 
             AZ::ComponentApplication::Descriptor desc;
-            desc.m_enableDrilling = false; // the unit test framework already adds a driller
             m_systemEntity = m_app.Create(desc);
             m_systemEntity->Init();
 
@@ -134,9 +131,6 @@ namespace SceneUnitTest
             m_app.Destroy();
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
         }
 
         AZ::IO::LocalFileIO m_fileIO;
@@ -230,7 +224,7 @@ namespace SceneUnitTest
 
         // Check to make sure there are no more active scenes.
         size_t index = 0;
-        m_sceneSystem->IterateActiveScenes([&index, &scenes](const AZStd::shared_ptr<Scene>&)
+        m_sceneSystem->IterateActiveScenes([&index](const AZStd::shared_ptr<Scene>&)
             {
                 index++;
                 return true;
@@ -251,7 +245,7 @@ namespace SceneUnitTest
             scenes[i].reset();
         }
         index = 0;
-        m_sceneSystem->IterateZombieScenes([&index, &scenes](Scene&) {
+        m_sceneSystem->IterateZombieScenes([&index](Scene&) {
             index++;
             return true;
         });

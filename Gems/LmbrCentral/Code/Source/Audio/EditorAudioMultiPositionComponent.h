@@ -52,7 +52,7 @@ namespace LmbrCentral
     private:
         //! Serialized Data
         AZStd::vector<AZ::EntityId> m_entityRefs;
-        Audio::MultiPositionBehaviorType m_behaviorType;
+        Audio::MultiPositionBehaviorType m_behaviorType = Audio::MultiPositionBehaviorType::Separate;
     };
 
 } // namespace LmbrCentral

@@ -32,7 +32,7 @@ namespace AZ::IO
         MOCK_METHOD0(ExecuteRequests, bool());
         
         MOCK_CONST_METHOD1(UpdateStatus, void(Status& status));
-        MOCK_METHOD4(UpdateCompletionEstimates, void(AZStd::chrono::system_clock::time_point,
+        MOCK_METHOD4(UpdateCompletionEstimates, void(AZStd::chrono::steady_clock::time_point,
             AZStd::vector<FileRequest*>&, StreamerContext::PreparedQueue::iterator, StreamerContext::PreparedQueue::iterator));
 
         MOCK_CONST_METHOD1(CollectStatistics, void(AZStd::vector<Statistic>&));

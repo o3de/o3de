@@ -1,0 +1,69 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+// This #define magic allows you to use the EvaluateVertexGeometry function in this file without making it the final
+// EvaluateVertexGeometry used in your shader. Simply #define EvaluateVertexGeometry before including this file
+//
+#ifndef EvaluateVertexGeometry
+#define EvaluateVertexGeometry EvaluateVertexGeometry_MaterialGraphName
+#endif
+
+#include <Atom/RPI/TangentSpace.azsli>
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(
+    float3 position,
+    float3 normal,
+    float4 tangent,
+    float2 uv0,
+    float2 uv1)
+{
+    const float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    const float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
+    const float3 bitangent = cross(normal, (float3)tangent);
+
+    float3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+
+    const float3 O3DE_MC_POSITION = position;
+    const float3 O3DE_MC_NORMAL = normal;
+    const float3 O3DE_MC_TANGENT = tangent;
+    const float3 O3DE_MC_BITANGENT = bitangent;
+    const float3 O3DE_MC_POSITION_WS = positionWS;
+    const float3 O3DE_MC_NORMAL_WS = normalWS;
+    const float3 O3DE_MC_TANGENT_WS = tangentWS;
+    const float3 O3DE_MC_BITANGENT_WS = bitangentWS;
+    #define O3DE_MC_UV(index) (index == 0 ? uv0 : uv1);
+
+    // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inPositionOffset
+    float3 inPositionOffset = {0.0, 0.0, 0.0};
+    // O3DE_GENERATED_INSTRUCTIONS_END
+
+    #undef O3DE_MC_UV
+
+    VsOutput output;
+    output.worldPosition = (float3)positionWS + (float3)inPositionOffset;
+    output.position = mul(ViewSrg::m_viewProjectionMatrix, float4(output.worldPosition, 1.0));
+    output.uvs[0] = uv0;
+    output.uvs[1] = uv1;
+    output.normal = normal;
+    output.tangent = tangent;
+    return output;
+}
+
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
+{
+    return EvaluateVertexGeometry_MaterialGraphName(
+        IN.position,
+        IN.normal,
+        IN.tangent,
+        IN.uv0,
+        IN.uv1);
+}

@@ -1,18 +1,19 @@
 Paths are broken up to avoid having them show up as relative path results.
+All references are to other text files in this folder, extensions are omitted to make sure only UUID scanning finds these references.
 
-This is the UUID for Materials / Default / AM_UV_v1_1K_source . png
-C67BEA9F-09FF-59AA-A7F0-A52B8F987508
-This is the UUID for libs / particles / milestone2particles . xml. This tests UUIDs without separators.
-6BDE282B49C957F7B0714B26579BCA9A
-This is the UUID for SelfReferenceUUID.txt. This tests UUIDs with mixed casing.
+This is the UUID for InvalidAssetIdNoReport
+E68A85B0-131D-5A82-B2D5-BC58EE4062AE
+This is the UUID for InvalidRelativePathsNoReport. This tests UUIDs without separators.
+B3EF12DD306C520EB0A8A6B0D031A195
+This is the UUID for SelfReferenceUUID. This tests UUIDs with mixed casing.
 33bcee02F3225688ABEE534F6058593F
-This is a UUID mid-line B076CDDC-14DF-50F4-A5E9-7518ABB3E851, for project . json
+This is a UUID mid-line DD587FBE-16C8-5B98-AE3C-A9F8750B2692, for SelfReferencePath
 
-Two UUIDs on the same line
-Two UUIDs 345E5C660D6254FF8D0F7C8EE66A2249 mixed on A26C73D1837E5AE59E68F916FA7C3699 the same line
+InvalidUUIDNoReport and MaxIteration31Deep
+Two UUIDs 837412DF-D05F-576D-81AA-ACF360463749 mixed on 3F642A0FDC825696A70A1DA5709744DF the same line
 
 Test UUIDs and Asset IDs mixed on the same line. Relative paths are handled in the relative path tests.
-UUID: slices / MuzzleFlash . slice, AssetID: TestsAssets / WildcardScanTest1 . txt
-This 747D31D71E62553592226173C49CF97E uuid is on the line with 1CB10C43F3245B93A294C602ADEF95F9:[0] a valid asset ID
-UUID: Objects / Lumbertank_turret . cgf, AssetID: TestsAssets / WildcardScanTest2 . txt
-This D92C4661C8985E19BD3597CB2318CFA6:[0] uuid is on the line with 37108522F50459499CD6C8D47A960CF1 a valid asset ID
+OnlyMatchesCorrectLengthUUIDs and WildcardScanTest1
+This 2545AD8B-1B9B-5F93-859D-D8DC1DC2B480 uuid is on the line with 1CB10C43F3245B93A294C602ADEF95F9:[0] a valid asset ID
+RelativeProductPathsNotDependencies and WildcardScanTest2
+This B772953CA08A5D209491530E87D11504:[0] uuid is on the line with D92C4661C8985E19BD3597CB2318CFA6 a valid asset ID

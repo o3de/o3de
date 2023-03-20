@@ -14,11 +14,11 @@
 
 namespace AzToolsFramework
 {
-    AZ_CVAR(bool, cl_manipulatorDrawDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable debug drawing for Manipulators");
+    AZ_CVAR(bool, ed_manipulatorDrawDebug, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable debug drawing for Manipulators");
 
     const AZ::Color BaseManipulator::s_defaultMouseOverColor = AZ::Color(1.0f, 1.0f, 0.0f, 1.0f); // yellow
 
-    AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BaseManipulator, AZ::SystemAllocator)
 
     static bool EntityIdAndEntityComponentIdComparison(const AZ::EntityId entityId, const AZ::EntityComponentIdPair& entityComponentId)
     {
@@ -33,13 +33,13 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnLeftMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_onLeftMouseDownImpl)
         {
             BeginAction();
             ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "ManipulatorLeftMouseDown");
+                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Manipulator Left Mouse Down");
 
             for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
             {
@@ -59,13 +59,13 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnRightMouseDown(const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_onRightMouseDownImpl)
         {
             BeginAction();
             ToolsApplicationRequests::Bus::BroadcastResult(
-                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "ManipulatorRightMouseDown");
+                m_undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "Manipulator Right Mouse Down");
 
             for (const AZ::EntityComponentIdPair& entityComponentId : m_entityComponentIdPairs)
             {
@@ -87,7 +87,7 @@ namespace AzToolsFramework
     // attached as no active manipulator will have been set in ManipulatorManager.
     void BaseManipulator::OnLeftMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirty();
 
@@ -98,7 +98,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::OnRightMouseUp(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirty();
 
@@ -109,7 +109,7 @@ namespace AzToolsFramework
 
     bool BaseManipulator::OnMouseOver(const ManipulatorId manipulatorId, const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         UpdateMouseOver(manipulatorId);
         OnMouseOverImpl(manipulatorId, interaction);
@@ -125,7 +125,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::OnMouseMove(const ViewportInteraction::MouseInteraction& interaction)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_performingAction)
         {
@@ -142,7 +142,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::SetBoundsDirty()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         SetBoundsDirtyImpl();
     }
@@ -190,7 +190,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::EndAction()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (!m_performingAction)
         {
@@ -235,7 +235,7 @@ namespace AzToolsFramework
 
     void BaseManipulator::NotifyEntityComponentPropertyChanged()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (const AZ::EntityComponentIdPair& entityComponentIdPair : m_entityComponentIdPairs)
         {
@@ -268,7 +268,7 @@ namespace AzToolsFramework
 
     AZStd::unordered_set<AZ::EntityComponentIdPair>::iterator BaseManipulator::RemoveEntityId(const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         auto afterErased = m_entityComponentIdPairs.end();
 
@@ -297,7 +297,7 @@ namespace AzToolsFramework
     AZStd::unordered_set<AZ::EntityComponentIdPair>::iterator BaseManipulator::RemoveEntityComponentIdPair(
         const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const auto entityIdIt = m_entityComponentIdPairs.find(entityComponentIdPair);
 

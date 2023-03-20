@@ -19,8 +19,7 @@ namespace Benchmark
     class BM_MathVector3
         : public benchmark::Fixture
     {
-    public:
-        void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             m_vecDataArray.resize(1000);
 
@@ -37,6 +36,15 @@ namespace Benchmark
                 return vecData;
             });
         }
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
 
         struct VecData
         {
@@ -50,7 +58,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetSet)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZ::Vector3 v1, v2, v3;
             float x = 0.0f, y = 0.0f, z = 0.0f;
@@ -90,7 +98,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, ElementAccess)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             AZ::Vector3 v1, v2, v3;
             float x = 0.0f, y = 0.0f, z = 0.0f;
@@ -130,7 +138,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, CreateSelectCmpEqual)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -142,7 +150,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, CreateSelectCmpGreaterEqual)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -154,7 +162,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, CreateSelectCmpGreater)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -166,7 +174,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetNormalized)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -178,7 +186,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetNormalizedEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -190,7 +198,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, NormalizeWithLength)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -202,7 +210,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, NormalizeWithLengthEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -214,7 +222,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetNormalizedSafe)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -226,7 +234,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetNormalizedSafeEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -238,7 +246,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetDistance)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -250,7 +258,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetDistanceEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -262,7 +270,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Lerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -286,7 +294,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Slerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -310,7 +318,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Nlerp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -334,7 +342,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Dot)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -346,7 +354,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Cross)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -358,7 +366,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Equality)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -370,7 +378,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Inequality)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -382,7 +390,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, IsLessThan)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -394,7 +402,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, IsLessEqualThan)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -406,7 +414,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, IsGreaterThan)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -418,7 +426,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, IsGreaterEqualThan)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -430,7 +438,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetMin)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -442,7 +450,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetMax)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -454,7 +462,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetClamp)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -466,7 +474,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Sub)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -478,7 +486,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Sum)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -490,7 +498,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Mul)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -502,7 +510,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Div)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -514,7 +522,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetSin)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -526,7 +534,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetCos)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -538,7 +546,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetSinCos)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -552,7 +560,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetAcos)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -564,7 +572,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetAtan)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -576,7 +584,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetAngleMod)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -588,7 +596,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, Angle)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -600,7 +608,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, AngleDeg)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -612,7 +620,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetAbs)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -624,7 +632,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetReciprocal)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -636,7 +644,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetReciprocalEstimate)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -648,7 +656,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, IsPerpendicular)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -660,7 +668,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetOrthogonalVector)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {
@@ -672,7 +680,7 @@ namespace Benchmark
 
     BENCHMARK_F(BM_MathVector3, GetProjected)(benchmark::State& state)
     {
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (auto& vecData : m_vecDataArray)
             {

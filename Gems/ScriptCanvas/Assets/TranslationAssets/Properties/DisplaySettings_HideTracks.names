@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "DisplaySettings_HideTracks",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Hide Tracks",
+                "category": "Constants/Display Settings"
+            },
+            "methods": [
+                {
+                    "base": "GetDisplaySettings_HideTracks",
+                    "details": {
+                        "name": "Get Hide Tracks"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

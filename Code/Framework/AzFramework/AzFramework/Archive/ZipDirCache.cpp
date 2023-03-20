@@ -9,7 +9,7 @@
 
 #include <AzCore/Console/Console.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/SystemFile.h>
+#include <AzCore/Math/Crc.h>
 #include <AzCore/std/string/conversions.h>
 
 #include <AzFramework/Archive/ZipFileFormat.h>
@@ -36,27 +36,11 @@ namespace AZ::IO::ZipDir
 
     namespace ZipDirCacheInternal
     {
-        static AZStd::intrusive_ptr<AZ::IO::MemoryBlock> CreateMemoryBlock(size_t size, const char* usage)
+        [[nodiscard]] static AZStd::intrusive_ptr<AZ::IO::MemoryBlock> CreateMemoryBlock(size_t size)
         {
-            if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                AZ_Error("Archive", false, "OSAllocator is not ready. It cannot be used to allocate a MemoryBlock");
-                return {};
-            }
-            AZ::IAllocatorAllocate* allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-            AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ new (allocator->Allocate(sizeof(AZ::IO::MemoryBlock), alignof(AZ::IO::MemoryBlock))) AZ::IO::MemoryBlock{AZ::IO::MemoryBlockDeleter{ &AZ::AllocatorInstance<AZ::OSAllocator>::Get() }} };
-            auto CreateFunc = [](size_t byteSize, size_t byteAlignment, const char* name)
-            {
-                return reinterpret_cast<uint8_t*>(AZ::AllocatorInstance<AZ::OSAllocator>::Get().Allocate(byteSize, byteAlignment, 0, name));
-            };
-            auto DeleterFunc = [](uint8_t* ptrArray)
-            {
-                if (ptrArray)
-                {
-                    AZ::AllocatorInstance<AZ::OSAllocator>::Get().DeAllocate(ptrArray);
-                }
-            };
-            memoryBlock->m_address = AZ::IO::MemoryBlock::AddressPtr{ CreateFunc(size, alignof(uint8_t), usage), AZ::IO::MemoryBlock::AddressDeleter{DeleterFunc} };
+            AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock{ aznew AZ::IO::MemoryBlock{} };
+
+            memoryBlock->m_address.reset(reinterpret_cast<uint8_t*>(azmalloc(size, alignof(uint8_t))));
             memoryBlock->m_size = size;
 
             return memoryBlock;
@@ -75,7 +59,7 @@ namespace AZ::IO::ZipDir
                 for (i = 0; i < AZ_ARRAY_SIZE(szBuf) - 1; ++i)
                 {
                     int r = distrib(gen);
-                    szBuf[i] = r > 9 ? (r - 10) + 'a' : '0' + r;
+                    szBuf[i] = static_cast<char>(r > 9 ? (r - 10) + 'a' : '0' + r);
                 }
                 szBuf[i] = '\0';
                 return szBuf;
@@ -102,26 +86,24 @@ namespace AZ::IO::ZipDir
         FileEntry* operator -> () { return m_pFileEntry; }
         FileEntryTransactionAdd(Cache* pCache, AZStd::string_view szRelativePath)
             : m_pCache(pCache)
+            , m_szRelativePath(AZ::IO::PosixPathSeparator)
             , m_bCommitted(false)
         {
-            AZ::IO::PathString normalizedPath{ szRelativePath };
-            AZ::StringFunc::Path::Normalize(normalizedPath);
-            AZStd::to_lower(AZStd::begin(normalizedPath), AZStd::end(normalizedPath));
             // Update the cache string pool with the relative path to the file
-            auto pathIt = m_pCache->m_relativePathPool.emplace(normalizedPath);
+            auto pathIt = m_pCache->m_relativePathPool.emplace(AZ::IO::PathView(szRelativePath, AZ::IO::PosixPathSeparator).LexicallyNormal());
             m_szRelativePath = *pathIt.first;
             // this is the name of the directory - create it or find it
-            m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath);
+            m_pFileEntry = m_pCache->GetRoot()->Add(m_szRelativePath.Native());
             if (m_pFileEntry && az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%s")", normalizedPath.c_str(), pCache->GetFilePath());
+                AZ_TracePrintf("Archive", R"(File "%s" has been added to archive at root "%s")", pathIt.first->c_str(), pCache->GetFilePath());
             }
         }
         ~FileEntryTransactionAdd()
         {
             if (m_pFileEntry && !m_bCommitted)
             {
-                m_pCache->RemoveFile(m_szRelativePath);
+                m_pCache->RemoveFile(m_szRelativePath.Native());
                 m_pCache->m_relativePathPool.erase(m_szRelativePath);
             }
         }
@@ -131,29 +113,16 @@ namespace AZ::IO::ZipDir
         }
         AZStd::string_view GetRelativePath() const
         {
-            return m_szRelativePath;
+            return m_szRelativePath.Native();
         }
     private:
         Cache* m_pCache;
-        AZStd::string_view m_szRelativePath;
+        AZ::IO::PathView m_szRelativePath;
         FileEntry* m_pFileEntry;
         bool m_bCommitted;
     };
 
-    Cache::Cache()
-        : Cache{ !AZ::AllocatorInstance<AZ::OSAllocator>::IsReady() ? &AZ::AllocatorInstance<AZ::OSAllocator>::Get() : nullptr }
-    {
-    }
-
-    Cache::Cache(AZ::IAllocatorAllocate* allocator)
-        : m_fileHandle(AZ::IO::InvalidHandle)
-        , m_nFlags(0)
-        , m_lCDROffset(0)
-        , m_encryptedHeaders(ZipFile::HEADERS_NOT_ENCRYPTED)
-        , m_allocator{ allocator }
-    {
-        AZ_Assert(allocator, "IAllocatorAllocate object is required in order to allocated memory for the ZipDir Cache operations");
-    }
+    Cache::Cache() = default;
 
     void Cache::Close()
     {
@@ -181,7 +150,6 @@ namespace AZ::IO::ZipDir
                 m_fileHandle = AZ::IO::InvalidHandle;
             }
         }
-        m_allocator = nullptr;
         m_treeDir.Clear();
     }
 
@@ -218,7 +186,7 @@ namespace AZ::IO::ZipDir
         const size_t maxChunk = 1 << 20;
         size_t sizeLeft = size;
         size_t sizeToWrite;
-        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(maxChunk, "ZipDir::Cache::WriteNullData");
+        AZStd::intrusive_ptr<AZ::IO::MemoryBlock> memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(maxChunk);
         if (memoryBlock)
         {
             return ZD_ERROR_IO_FAILED;
@@ -275,7 +243,7 @@ namespace AZ::IO::ZipDir
         {
         case ZipFile::METHOD_DEFLATE:
             nSizeCompressed = GetCompressedSizeEstimate(nSize, codec);
-            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(nSizeCompressed, "Cache::UpdateFile");
+            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(nSizeCompressed);
             pCompressed = memoryBlock->m_address.get();
             dataBuffer = pCompressed;
 
@@ -386,7 +354,7 @@ namespace AZ::IO::ZipDir
             if (!AZ::IO::FileIOBase::GetDirectInstance()->Write(m_fileHandle, ptr, sizeToWrite))
             {
                 char error[1024];
-                azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
+                [[maybe_unused]] auto azStrErrorResult = azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
                 AZ_Warning("Archive", false, "Cannot write to zip file!! error = (%d): %s", errno, error);
                 return ZD_ERROR_IO_FAILED;
             }
@@ -534,7 +502,7 @@ namespace AZ::IO::ZipDir
         if (!WriteCompressedData((uint8_t*)pUncompressed, nSegmentSize, encrypt))
         {
             char error[1024];
-            azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
+            [[maybe_unused]] auto azStrErrorResult = azstrerror_s(error, AZ_ARRAY_SIZE(error), errno);
             AZ_Warning("Archive", false, "Cannot write to zip file!! error = (%d): %s", errno, error);
             return ZD_ERROR_IO_FAILED;
         }
@@ -587,34 +555,27 @@ namespace AZ::IO::ZipDir
     // deletes the file from the archive
     ErrorEnum Cache::RemoveFile(AZStd::string_view szRelativePathSrc)
     {
-        // Normalize and lower case the relative path
-        AZ::IO::PathString szRelativePath{ szRelativePathSrc };
-        AZ::StringFunc::Path::Normalize(szRelativePath);
-        AZStd::to_lower(AZStd::begin(szRelativePath), AZStd::end(szRelativePath));
-        AZStd::string_view normalizedRelativePath = szRelativePath;
-
-        // find the last slash in the path
-        size_t slashOffset = normalizedRelativePath.find_last_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+        AZ::IO::PathView szRelativePath{ szRelativePathSrc };
 
         AZStd::string_view fileName; // the name of the file to delete
 
         FileEntryTree* pDir; // the dir from which the subdir will be deleted
 
-        if (slashOffset != AZStd::string_view::npos)
+        if (szRelativePath.HasParentPath())
         {
             FindDir fd(GetRoot());
             // the directory to remove
-            pDir = fd.FindExact(normalizedRelativePath.substr(0, slashOffset));
+            pDir = fd.FindExact(szRelativePath.ParentPath());
             if (!pDir)
             {
                 return ZD_ERROR_DIR_NOT_FOUND;// there is no such directory
             }
-            fileName = normalizedRelativePath.substr(slashOffset + 1);
+            fileName = szRelativePath.Filename().Native();
         }
         else
         {
             pDir = GetRoot();
-            fileName = normalizedRelativePath;
+            fileName = szRelativePath.Native();
         }
 
         ErrorEnum e = pDir->RemoveFile(fileName);
@@ -625,7 +586,7 @@ namespace AZ::IO::ZipDir
             if (az_archive_zip_directory_cache_verbosity)
             {
                 AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%s")",
-                    aznumeric_cast<int>(fileName.size()), fileName.data(), GetFilePath());
+                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
             }
         }
         return e;
@@ -635,45 +596,38 @@ namespace AZ::IO::ZipDir
     // deletes the directory, with all its descendants (files and subdirs)
     ErrorEnum Cache::RemoveDir(AZStd::string_view szRelativePathSrc)
     {
-        // Normalize and lower case the relative path
-        AZ::IO::PathString szRelativePath{ szRelativePathSrc };
-        AZ::StringFunc::Path::Normalize(szRelativePath);
-        AZStd::to_lower(AZStd::begin(szRelativePath), AZStd::end(szRelativePath));
-        AZStd::string_view normalizedRelativePath = szRelativePath;
-
-        // find the last slash in the path
-        size_t slashOffset = normalizedRelativePath.find_last_of(AZ_CORRECT_AND_WRONG_FILESYSTEM_SEPARATOR);
+        AZ::IO::PathView szRelativePath{ szRelativePathSrc };
 
         AZStd::string_view dirName; // the name of the dir to delete
 
         FileEntryTree* pDir; // the dir from which the subdir will be deleted
 
-        if (slashOffset != AZStd::string_view::npos)
+        if (szRelativePath.HasParentPath())
         {
             FindDir fd(GetRoot());
             // the directory to remove
-            pDir = fd.FindExact(normalizedRelativePath.substr(0, slashOffset));
+            pDir = fd.FindExact(szRelativePath.ParentPath());
             if (!pDir)
             {
                 return ZD_ERROR_DIR_NOT_FOUND;// there is no such directory
             }
-            dirName = normalizedRelativePath.substr(slashOffset + 1);
+            dirName = szRelativePath.Filename().Native();
         }
         else
         {
             pDir = GetRoot();
-            dirName = normalizedRelativePath;
+            dirName = szRelativePath.Native();
         }
 
-        ErrorEnum e = pDir->RemoveDir(normalizedRelativePath);
+        ErrorEnum e = pDir->RemoveDir(dirName);
         if (e == ZD_ERROR_SUCCESS)
         {
             m_nFlags |= FLAGS_UNCOMPACTED | FLAGS_CDR_DIRTY;
 
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", R"(File "%.*s" has been remove from archive at root "%s")",
-                    aznumeric_cast<int>(normalizedRelativePath.size()), normalizedRelativePath.data(), GetFilePath());
+                AZ_TracePrintf("Archive", R"(Directory "%.*s" has been remove from archive at root "%s")",
+                    AZ_STRING_ARG(szRelativePath.Native()), GetFilePath());
             }
         }
         return e;
@@ -735,7 +689,7 @@ namespace AZ::IO::ZipDir
                 return ZD_ERROR_INVALID_CALL;
             }
 
-            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(pFileEntry->desc.lSizeCompressed, "Cache::ReadFile");
+            memoryBlock = ZipDirCacheInternal::CreateMemoryBlock(pFileEntry->desc.lSizeCompressed);
             pBuffer = memoryBlock->m_address.get();
         }
 
@@ -758,6 +712,16 @@ namespace AZ::IO::ZipDir
                 {
                     return ZD_ERROR_CORRUPTED_DATA;
                 }
+                if (pFileEntry->bCheckCRCNextRead)
+                {
+                    pFileEntry->bCheckCRCNextRead = false;
+                    uLong uCRC32 = AZ::Crc32((Bytef*)pUncompressed, nSizeUncompressed);
+                    if (uCRC32 != pFileEntry->desc.lCRC32)
+                    {
+                        AZ_Warning("Archive", false, "ZD_ERROR_CRC32_CHECK: Uncompressed stream CRC32 check failed");
+                        return ZD_ERROR_CRC32_CHECK;
+                    }
+                }
             }
         }
 
@@ -769,9 +733,7 @@ namespace AZ::IO::ZipDir
     // finds the file by exact path
     FileEntry* Cache::FindFile(AZStd::string_view szPathSrc, [[maybe_unused]] bool bFullInfo)
     {
-        AZ::IO::PathString szPath{ szPathSrc };
-        AZ::StringFunc::Path::Normalize(szPath);
-        AZStd::to_lower(AZStd::begin(szPath), AZStd::end(szPath));
+        AZ::IO::PathView szPath{ szPathSrc };
 
         ZipDir::FindFile fd(GetRoot());
         FileEntry* fileEntry = fd.FindExact(szPath);
@@ -779,17 +741,11 @@ namespace AZ::IO::ZipDir
         {
             if (az_archive_zip_directory_cache_verbosity)
             {
-                AZ_TracePrintf("Archive", "FindExact failed to find file %s at root %s", szPath.c_str(), GetFilePath());
+                AZ_TracePrintf("Archive", "FindExact failed to find file %.*s at root %s", AZ_STRING_ARG(szPath.Native()), GetFilePath());
             }
             return {};
         }
         return fileEntry;
-    }
-
-    // returns the size of memory occupied by the instance referred to by this cache
-    size_t Cache::GetSize() const
-    {
-        return sizeof(*this) + m_strFilePath.capacity() + m_treeDir.GetSize() - sizeof(m_treeDir);
     }
 
     // refreshes information about the given file entry into this file entry
@@ -800,7 +756,7 @@ namespace AZ::IO::ZipDir
             return ZD_ERROR_INVALID_CALL;
         }
 
-        if (pFileEntry->nFileDataOffset != pFileEntry->INVALID_DATA_OFFSET)
+        if (pFileEntry->nFileDataOffset != FileEntryBase::INVALID_DATA_OFFSET)
         {
             return ZD_ERROR_SUCCESS; // the data offset has been successfully read..
         }
@@ -826,7 +782,7 @@ namespace AZ::IO::ZipDir
         FileRecordList arrFiles(GetRoot());
         //arrFiles.SortByFileOffset();
         size_t nSizeCDR = arrFiles.GetStats().nSizeCDR;
-        void* pCDR = m_allocator->Allocate(nSizeCDR, alignof(uint8_t), 0, "Cache::WriteCDR");
+        void* pCDR = azmalloc(nSizeCDR, alignof(uint8_t));
         [[maybe_unused]] size_t nSizeCDRSerialized = arrFiles.MakeZipCDR(m_lCDROffset, pCDR);
         AZ_Assert(nSizeCDRSerialized == nSizeCDR, "Serialized CDR size %zu does not match size in memory %zu", nSizeCDRSerialized, nSizeCDR);
         if (m_encryptedHeaders == ZipFile::HEADERS_ENCRYPTED_TEA)
@@ -887,7 +843,6 @@ namespace AZ::IO::ZipDir
     {
         FileRecordList arrFiles(GetRoot());
         arrFiles.SortByFileOffset();
-        FileRecordList::ZipStats Stats = arrFiles.GetStats();
 
         // we back up our file entries, because we'll need to restore them
         // in case the operation fails
@@ -918,7 +873,7 @@ namespace AZ::IO::ZipDir
             }
 
             // allocate memory for the file compressed data
-            FileDataRecordPtr pFile = FileDataRecord::New(*it, m_allocator);
+            FileDataRecordPtr pFile = aznew FileDataRecord(*it);
 
             if (!pFile)
             {

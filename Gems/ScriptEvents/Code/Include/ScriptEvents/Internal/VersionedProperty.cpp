@@ -9,7 +9,6 @@
 #include "VersionedProperty.h"
 
 #include <AzCore/Script/ScriptContext.h>
-#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Script/ScriptProperty.h>

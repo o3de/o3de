@@ -14,15 +14,14 @@
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <Tests/AZTestShared/Utils/Utils.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/UnitTest/ToolsTestApplication.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzTest/AzTest.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
-#include <Utils/Utils.h>
 
-namespace 
+namespace
 {
     static const int s_totalAssets = 12;
 }
@@ -30,7 +29,7 @@ namespace
 namespace UnitTest
 {
     class PlatformAddressedAssetCatalogManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -44,24 +43,22 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto cacheProjectRootFolder = AZ::IO::Path{ m_tempDir.GetDirectory() } / "Cache";
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
             m_application->Start(AzFramework::Application::Descriptor());
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+            // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
             AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
-            // By default @assets@ is setup to include the platform at the end. But this test is going to
+            // By default @products@ is setup to include the platform at the end. But this test is going to
             // loop over all platforms and it will be included as part of the relative path of the file.
             // So the asset folder for these tests have to point to the cache project root folder, which
             // doesn't include the platform.
-            AZ::IO::FileIOBase::GetInstance()->SetAlias("@assets@", cacheProjectRootFolder.c_str());
+            AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", cacheProjectRootFolder.c_str());
 
             for (int platformNum = AzFramework::PlatformId::PC; platformNum < AzFramework::PlatformId::NumPlatformIds; ++platformNum)
             {
@@ -119,7 +116,7 @@ namespace UnitTest
 
         AzToolsFramework::PlatformAddressedAssetCatalogManager* m_PlatformAddressedAssetCatalogManager = nullptr;
         ToolsTestApplication* m_application = nullptr;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
         AZ::IO::FileIOStream m_fileStreams[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
 
         AZ::Data::AssetId m_assets[AzFramework::PlatformId::NumPlatformIds][s_totalAssets];
@@ -164,12 +161,13 @@ namespace UnitTest
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
     {
     public:
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogMessageTest, AZ::SystemAllocator)
         PlatformAddressedAssetCatalogMessageTest(AzFramework::PlatformId platformId) :  AzToolsFramework::PlatformAddressedAssetCatalog(platformId)
         {
 
         }
-        MOCK_METHOD1(AssetChanged, void(AzFramework::AssetSystem::AssetNotificationMessage message));
-        MOCK_METHOD1(AssetRemoved, void(AzFramework::AssetSystem::AssetNotificationMessage message));
+        MOCK_METHOD2(AssetChanged, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message, bool isCatalogInitialize));
+        MOCK_METHOD1(AssetRemoved, void(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& message));
     };
 
     class PlatformAddressedAssetCatalogManagerMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalogManager
@@ -183,7 +181,7 @@ namespace UnitTest
     };
 
     class MessageTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -195,10 +193,7 @@ namespace UnitTest
             ArgumentContainer argContainer{ {} };
 
             // Append Command Line override for the Project Cache Path
-            AZ::IO::Path cacheProjectRootFolder{ m_tempDir.GetDirectory() };
-            auto projectCachePathOverride = FixedValueString::format(R"(--project-cache-path="%s")", cacheProjectRootFolder.c_str());
-            auto projectPathOverride = FixedValueString{ R"(--project-path=AutomatedTesting)" };
-            argContainer.push_back(projectCachePathOverride.data());
+            auto projectPathOverride = FixedValueString::format(R"(--project-path="%s")", m_tempDir.GetDirectory());
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("MessageTest", aznumeric_caster(argContainer.size()), argContainer.data());
 
@@ -211,7 +206,7 @@ namespace UnitTest
         }
         ToolsTestApplication* m_application = nullptr;
         AZStd::unique_ptr<AzToolsFramework::PlatformAddressedAssetCatalogManager> m_platformAddressedAssetCatalogManager;
-        UnitTest::ScopedTemporaryDirectory m_tempDir;
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
     };
 
     TEST_F(MessageTest, PlatformAddressedAssetCatalogManagerMessageTest_MessagesForwarded_CountsMatch)
@@ -227,23 +222,23 @@ namespace UnitTest
         catalogHolder.reset(mockCatalog);
 
         m_platformAddressedAssetCatalogManager->TakeSingleCatalog(AZStd::move(catalogHolder));
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "android";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(1);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(1);
+        notificationInterface->AssetChanged({ testMessage });
 
         testMessage.m_platform = "pc";
-        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_)).Times(0);
-        notificationInterface->AssetChanged(testMessage);
+        EXPECT_CALL(*mockCatalog, AssetChanged(testing::_, false)).Times(0);
+        notificationInterface->AssetChanged({ testMessage });
 
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(0);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
 
         testMessage.m_platform = "android";
         EXPECT_CALL(*mockCatalog, AssetRemoved(testing::_)).Times(1);
-        notificationInterface->AssetRemoved(testMessage);
+        notificationInterface->AssetRemoved({ testMessage });
     }
 
 }

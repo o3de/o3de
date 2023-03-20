@@ -42,7 +42,7 @@ namespace Achievements
         ////////////////////////////////////////////////////////////////////////////////////////
         // AchievementsRequestBus interface implementation
         void UnlockAchievement(const UnlockAchievementParams& params) override;
-        void QueryAchievementDetails(const QueryAchievementParams& params);
+        void QueryAchievementDetails(const QueryAchievementParams& params) override;
     
     public:
         ////////////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +50,7 @@ namespace Achievements
         class Implementation
         {
         public:
-            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Implementation, AZ::SystemAllocator);
 
             static Implementation* Create(AchievementsSystemComponent& achievementsSystemComponent);
             Implementation(AchievementsSystemComponent& achievementsSystemComponent);

@@ -1,0 +1,109 @@
+{
+    "entries": [
+        {
+            "base": "AWSCognitoAuthorizationRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AWS Cognito Authorization",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "Reset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reset is invoked"
+                    },
+                    "details": {
+                        "name": "Reset"
+                    }
+                },
+                {
+                    "base": "GetIdentityId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetIdentityId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetIdentityId is invoked"
+                    },
+                    "details": {
+                        "name": "Get Identity Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Identity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "HasPersistedLogins",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke HasPersistedLogins"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after HasPersistedLogins is invoked"
+                    },
+                    "details": {
+                        "name": "Has Persisted Logins"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Has Persisted Logins"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "Initialize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Initialize"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Initialize is invoked"
+                    },
+                    "details": {
+                        "name": "Initialize"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Initialized"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RequestAWSCredentialsAsync",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke RequestAWSCredentialsAsync"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after RequestAWSCredentialsAsync is invoked"
+                    },
+                    "details": {
+                        "name": "Request AWS Credentials Async"
+                    }
+                }
+            ]
+        }
+    ]
+}

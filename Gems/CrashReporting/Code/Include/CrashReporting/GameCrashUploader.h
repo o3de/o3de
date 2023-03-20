@@ -17,7 +17,7 @@ namespace O3de
     {
     public:
         GameCrashUploader(int& argcount, char** argv);
-        virtual bool CheckConfirmation(const crashpad::CrashReportDatabase::Report& report) override;
+        bool CheckConfirmation(const crashpad::CrashReportDatabase::Report& report) override;
 
         static std::string GetRootFolder();
     };

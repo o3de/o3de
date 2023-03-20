@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "ProviderNameEnum_LoginWithAmazon",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Amazon",
+                "category": "Constants/Provider Name"
+            },
+            "methods": [
+                {
+                    "base": "GetProviderNameEnum_LoginWithAmazon",
+                    "details": {
+                        "name": "Amazon"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

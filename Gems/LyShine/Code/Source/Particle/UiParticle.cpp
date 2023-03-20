@@ -10,7 +10,6 @@
 #include "UiParticleEmitterComponent.h"
 
 #include <LyShine/ISprite.h>
-#include <IRenderer.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiParticle::Init(UiParticle::UiParticleInitialParameters* initialParams)
@@ -99,7 +98,7 @@ void UiParticle::Update(float deltaTime, const UiParticleUpdateParameters& updat
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-bool UiParticle::FillVertices(SVF_P2F_C4B_T2F_F4B* outputVertices, const UiParticleRenderParameters& renderParameters, const AZ::Matrix4x4& transform)
+bool UiParticle::FillVertices(LyShine::UiPrimitiveVertex* outputVertices, const UiParticleRenderParameters& renderParameters, const AZ::Matrix4x4& transform)
 {
     float particleLifetimePercentage = (renderParameters.isParticleInfinite ? 0.0f : m_particleAge / m_particleLifetime);
     float alphaStrength = 1.0f;

@@ -8,12 +8,11 @@
 
 #pragma once
 
-// AZ
+#include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 
-// Graph Model
 #include <GraphModel/Model/Node.h>
 
 namespace AZ
@@ -32,7 +31,7 @@ namespace LandscapeCanvas
     class BaseNode : public GraphModel::Node
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseNode, AZ::SystemAllocator);
         AZ_RTTI(BaseNode, "{94ECF2FF-C46C-4CCA-878C-5C47B943B6B7}", Node);
 
         using BaseNodePtr = AZStd::shared_ptr<BaseNode>;
@@ -45,6 +44,9 @@ namespace LandscapeCanvas
             Gradient,
             GradientGenerator,
             GradientModifier,
+            TerrainArea,
+            TerrainExtender,
+            TerrainSurfaceExtender,
             VegetationAreaModifier,
             VegetationAreaFilter,
             VegetationAreaSelector
@@ -60,19 +62,24 @@ namespace LandscapeCanvas
         const AZ::EntityId& GetVegetationEntityId() const { return m_vegetationEntityId; }
         void SetVegetationEntityId(const AZ::EntityId& entityId);
 
+        /// Refresh the name in the entity name property slot
+        void RefreshEntityName();
+
         const AZ::ComponentId& GetComponentId() const { return m_componentId; }
         void SetComponentId(const AZ::ComponentId& componentId);
+
+        virtual AZ::ComponentDescriptor::DependencyArrayType GetOptionalRequiredServices() const;
 
         /// Retrieve a pointer to the Component on the respective Entity that
         /// this Node represents
         AZ::Component* GetComponent() const;
 
-        /// By default our Landscape Canvas nodes will have a property display
-        /// to show the name of the Entity the component lives on
-        virtual const bool ShouldShowEntityName() const { return true; }
-
         /// Returns whether or not this node is a Vegetation Area Extender (Filter/Modifier/Selector)
         bool IsAreaExtender() const;
+
+        /// Override the PostLoadSetup calls to ensure the entity name is refreshed correctly.
+        void PostLoadSetup(GraphModel::GraphPtr graph, GraphModel::NodeId id) override;
+        void PostLoadSetup() override;
 
     protected:
         /// Create the property slot on our node to show the Entity name

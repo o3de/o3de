@@ -8,7 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
-#include <Azcore/PlatformIncl.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/std/algorithm.h>
 #include <vulkan/vulkan.h>
 #include <limits.h>

@@ -67,24 +67,6 @@ QString CErrorRecord::GetErrorText() const
     {
         str += QString("\t ");
     }
-    if (pItem)
-    {
-        switch (pItem->GetType())
-        {
-        case EDB_TYPE_MATERIAL:
-            str += QString("\t Material=\"");
-            break;
-        case EDB_TYPE_PARTICLE:
-            str += QString("\t Particle=\"");
-            break;
-        case EDB_TYPE_MUSIC:
-            str += QString("\t Music=\"");
-            break;
-        default:
-            str += QString("\t Item=\"");
-        }
-        str += pItem->GetFullName() + "\"";
-    }
     if (pObject)
     {
         str += QString("\t Object=\"") + pObject->GetName() + "\"";
@@ -101,7 +83,6 @@ CErrorReport::CErrorReport()
     m_bImmediateMode = true;
     m_bShowErrors = true;
     m_pObject = nullptr;
-    m_pItem = nullptr;
     m_pParticle = nullptr;
 }
 
@@ -136,13 +117,9 @@ void CErrorReport::ReportError(CErrorRecord& err)
     }
     else
     {
-        if (err.pObject == NULL && m_pObject != NULL)
+        if (err.pObject == nullptr && m_pObject != nullptr)
         {
             err.pObject = m_pObject;
-        }
-        else if (err.pItem == NULL && m_pItem != NULL)
-        {
-            err.pItem = m_pItem;
         }
         m_errors.push_back(err);
     }
@@ -250,69 +227,9 @@ void CErrorReport::SetImmediateMode(bool bEnable)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CErrorReport::Report(SValidatorRecord& record)
-{
-    if ((record.flags & VALIDATOR_FLAG_IGNORE_IN_EDITOR))
-    {
-        return;
-    }
-
-    CErrorRecord err;
-    if (record.text)
-    {
-        err.error = record.text;
-    }
-    if (record.description)
-    {
-        err.description = record.description;
-    }
-    if (record.file)
-    {
-        err.file = record.file;
-    }
-    else
-    {
-        err.file = m_currentFilename;
-    }
-    err.severity = (CErrorRecord::ESeverity)record.severity;
-
-    err.assetScope = record.assetScope;
-
-    err.flags = 0;
-    if (record.flags & VALIDATOR_FLAG_FILE)
-    {
-        err.flags |= CErrorRecord::FLAG_NOFILE;
-    }
-    if (record.flags & VALIDATOR_FLAG_TEXTURE)
-    {
-        err.flags |= CErrorRecord::FLAG_TEXTURE;
-    }
-    if (record.flags & VALIDATOR_FLAG_SCRIPT)
-    {
-        err.flags |= CErrorRecord::FLAG_SCRIPT;
-    }
-    if (record.flags & VALIDATOR_FLAG_AI)
-    {
-        err.flags |= CErrorRecord::FLAG_AI;
-    }
-
-    err.module = record.module;
-    err.pObject = m_pObject;
-    err.pItem = m_pItem;
-
-    ReportError(err);
-}
-
-//////////////////////////////////////////////////////////////////////////
 void CErrorReport::SetCurrentValidatorObject(CBaseObject* pObject)
 {
     m_pObject = pObject;
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CErrorReport::SetCurrentValidatorItem(CBaseLibraryItem* pItem)
-{
-    m_pItem = pItem;
 }
 
 //////////////////////////////////////////////////////////////////////////

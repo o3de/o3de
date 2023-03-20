@@ -17,8 +17,8 @@
 
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Math/MathUtils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-#include <AzFramework/StringFunc/StringFunc.h>
 
 namespace AWSMetrics
 {
@@ -106,7 +106,7 @@ namespace AWSMetrics
         AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
         m_metricsQueue.AddMetrics(metricsEvent);
 
-        if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+        if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
         {
             // Flush the metrics queue when the accumulated metrics size hits the limit
             m_waitEvent.release();
@@ -172,17 +172,17 @@ namespace AWSMetrics
                 if (outcome.IsSuccess())
                 {
                     // Generate response records for success call to keep consistency with the Service API response
-                    ServiceAPI::MetricsEventSuccessResponsePropertyEvents responseRecords;
+                    ServiceAPI::PostMetricsEventsResponseEntries responseEntries;
                     int numMetricsEventsInRequest = metricsQueue->GetNumMetrics();
                     for (int index = 0; index < numMetricsEventsInRequest; ++index)
                     {
-                        ServiceAPI::MetricsEventSuccessResponseRecord responseRecord;
-                        responseRecord.result = AwsMetricsSuccessResponseRecordResult;
+                        ServiceAPI::PostMetricsEventsResponseEntry responseEntry;
+                        responseEntry.m_result = AwsMetricsPostMetricsEventsResponseEntrySuccessResult;
 
-                        responseRecords.emplace_back(responseRecord);
+                        responseEntries.emplace_back(responseEntry);
                     }
 
-                    OnResponseReceived(*metricsQueue, responseRecords);
+                    OnResponseReceived(*metricsQueue, responseEntries);
 
                     AZ::TickBus::QueueFunction([requestId]()
                     {
@@ -209,19 +209,19 @@ namespace AWSMetrics
     {
         int requestId = ++m_sendMetricsId;
 
-        ServiceAPI::PostProducerEventsRequestJob* requestJob = ServiceAPI::PostProducerEventsRequestJob::Create(
-            [this, requestId](ServiceAPI::PostProducerEventsRequestJob* successJob)
+        ServiceAPI::PostMetricsEventsRequestJob* requestJob = ServiceAPI::PostMetricsEventsRequestJob::Create(
+            [this, requestId](ServiceAPI::PostMetricsEventsRequestJob* successJob)
             {
-                OnResponseReceived(successJob->parameters.data, successJob->result.events);
+                OnResponseReceived(successJob->parameters.m_metricsQueue, successJob->result.m_responseEntries);
 
                 AZ::TickBus::QueueFunction([requestId]()
                 {
                     AWSMetricsNotificationBus::Broadcast(&AWSMetricsNotifications::OnSendMetricsSuccess, requestId);
                 });
             },
-            [this, requestId](ServiceAPI::PostProducerEventsRequestJob* failedJob)
+            [this, requestId](ServiceAPI::PostMetricsEventsRequestJob* failedJob)
             {
-                OnResponseReceived(failedJob->parameters.data);
+                OnResponseReceived(failedJob->parameters.m_metricsQueue);
 
                 AZStd::string errorMessage = failedJob->error.message;
                 AZ::TickBus::QueueFunction([requestId, errorMessage]()
@@ -230,11 +230,11 @@ namespace AWSMetrics
                 });
             });
 
-        requestJob->parameters.data = AZStd::move(metricsQueue);
+        requestJob->parameters.m_metricsQueue = AZStd::move(metricsQueue);
         requestJob->Start();
     }
 
-    void MetricsManager::OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::MetricsEventSuccessResponsePropertyEvents& responseRecords)
+    void MetricsManager::OnResponseReceived(const MetricsQueue& metricsEventsInRequest, const ServiceAPI::PostMetricsEventsResponseEntries& responseEntries)
     {
         MetricsQueue metricsEventsForRetry;
         int numMetricsEventsInRequest = metricsEventsInRequest.GetNumMetrics();
@@ -242,7 +242,7 @@ namespace AWSMetrics
         {
             MetricsEvent metricsEvent = metricsEventsInRequest[index];
 
-            if (responseRecords.size() > 0 && responseRecords[index].result == AwsMetricsSuccessResponseRecordResult)
+            if (responseEntries.size() > 0 && responseEntries[index].m_result == AwsMetricsPostMetricsEventsResponseEntrySuccessResult)
             {
                 // The metrics event is sent to the backend successfully.
                 if (metricsEvent.GetNumFailures() == 0)
@@ -393,7 +393,7 @@ namespace AWSMetrics
         if (!enable && submitLocalMetrics)
         {
             SubmitLocalMetricsAsync();
-        }       
+        }
     }
 
     void MetricsManager::SubmitLocalMetricsAsync()
@@ -431,7 +431,7 @@ namespace AWSMetrics
                 AZStd::lock_guard<AZStd::mutex> lock(m_metricsMutex);
                 m_metricsQueue.AddMetrics(offlineRecords[index]);
 
-                if (m_metricsQueue.GetSizeInBytes() >= m_clientConfiguration->GetMaxQueueSizeInBytes())
+                if (m_metricsQueue.GetSizeInBytes() >= static_cast<size_t>(m_clientConfiguration->GetMaxQueueSizeInBytes()))
                 {
                     // Flush the metrics queue when the accumulated metrics size hits the limit
                     m_waitEvent.release();

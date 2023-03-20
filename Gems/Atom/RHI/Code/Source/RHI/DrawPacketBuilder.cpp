@@ -18,7 +18,7 @@ namespace AZ
 {
     namespace RHI
     {
-        void DrawPacketBuilder::Begin(IAllocatorAllocate* allocator)
+        void DrawPacketBuilder::Begin(IAllocator* allocator)
         {
             m_allocator = allocator ? allocator : &AllocatorInstance<SystemAllocator>::Get();
         }
@@ -33,29 +33,29 @@ namespace AZ
             m_indexBufferView = indexBufferView;
         }
 
-        void DrawPacketBuilder::SetRootConstants(AZStd::array_view<uint8_t> rootConstants)
+        void DrawPacketBuilder::SetRootConstants(AZStd::span<const uint8_t> rootConstants)
         {
             m_rootConstants = rootConstants;
         }
 
-        void DrawPacketBuilder::SetScissors(AZStd::array_view<Scissor> scissors)
+        void DrawPacketBuilder::SetScissors(AZStd::span<const Scissor> scissors)
         {
             m_scissors = decltype(m_scissors)(scissors.begin(), scissors.end());
         }
 
         void DrawPacketBuilder::SetScissor(const Scissor& scissor)
         {
-            SetScissors(AZStd::array_view<Scissor>(&scissor, 1));
+            SetScissors(AZStd::span<const Scissor>(&scissor, 1));
         }
 
-        void DrawPacketBuilder::SetViewports(AZStd::array_view<Viewport> viewports)
+        void DrawPacketBuilder::SetViewports(AZStd::span<const Viewport> viewports)
         {
             m_viewports = decltype(m_viewports)(viewports.begin(), viewports.end());
         }
 
         void DrawPacketBuilder::SetViewport(const Viewport& viewport)
         {
-            SetViewports(AZStd::array_view<Viewport>(&viewport, 1));
+            SetViewports(AZStd::span<const Viewport>(&viewport, 1));
         }
 
         void DrawPacketBuilder::AddShaderResourceGroup(const ShaderResourceGroup* shaderResourceGroup)
@@ -76,11 +76,6 @@ namespace AZ
             {
                 m_shaderResourceGroups.push_back(shaderResourceGroup);
             }
-        }
-
-        void DrawPacketBuilder::SetDrawFilterMask(DrawFilterMask filterMask)
-        {
-            m_drawFilterMask = filterMask;
         }
 
         void DrawPacketBuilder::AddDrawItem(const DrawRequest& request)
@@ -119,7 +114,7 @@ namespace AZ
             LinearAllocator linearAllocator;
             linearAllocator.Init(linearAllocatorDesc);
 
-            const VirtualAddress drawPacketOffset = linearAllocator.Allocate(
+            [[maybe_unused]] const VirtualAddress drawPacketOffset = linearAllocator.Allocate(
                 sizeof(DrawPacket),
                 AZStd::alignment_of<DrawPacket>::value);
 
@@ -134,6 +129,10 @@ namespace AZ
             const VirtualAddress drawListTagsOffset = linearAllocator.Allocate(
                 sizeof(DrawListTag) * m_drawRequests.size(),
                 AZStd::alignment_of<DrawListTag>::value);
+
+            const VirtualAddress drawFilterMasksOffset = linearAllocator.Allocate(
+                sizeof(DrawFilterMask) * m_drawRequests.size(),
+                AZStd::alignment_of<DrawFilterMask>::value);
 
             const VirtualAddress shaderResourceGroupsOffset = linearAllocator.Allocate(
                 sizeof(const ShaderResourceGroup*) * m_shaderResourceGroups.size(),
@@ -166,7 +165,6 @@ namespace AZ
             drawPacket->m_allocator = m_allocator;
             drawPacket->m_indexBufferView =  m_indexBufferView;
             drawPacket->m_drawListMask = m_drawListMask;
-            drawPacket->m_drawFilterMask = m_drawFilterMask;
 
             if (shaderResourceGroupsOffset.IsValid())
             {
@@ -220,16 +218,19 @@ namespace AZ
             auto drawItems = reinterpret_cast<DrawItem*>(allocationData + drawItemsOffset.m_ptr);
             auto drawItemSortKeys = reinterpret_cast<DrawItemSortKey*>(allocationData + drawItemSortKeysOffset.m_ptr);
             auto drawListTags = reinterpret_cast<DrawListTag*>(allocationData + drawListTagsOffset.m_ptr);
+            auto drawFilterMasks = reinterpret_cast<DrawFilterMask*>(allocationData + drawFilterMasksOffset.m_ptr);
             drawPacket->m_drawItemCount = aznumeric_caster(m_drawRequests.size());
             drawPacket->m_drawItems = drawItems;
             drawPacket->m_drawItemSortKeys = drawItemSortKeys;
             drawPacket->m_drawListTags = drawListTags;
+            drawPacket->m_drawFilterMasks = drawFilterMasks;
 
             for (size_t i = 0; i < m_drawRequests.size(); ++i)
             {
                 const DrawRequest& drawRequest = m_drawRequests[i];
 
                 drawListTags[i] = drawRequest.m_listTag;
+                drawFilterMasks[i] = drawRequest.m_drawFilterMask;
                 drawItemSortKeys[i] = drawRequest.m_sortKey;
 
                 DrawItem& drawItem = drawItems[i];
@@ -290,7 +291,35 @@ namespace AZ
             m_rootConstants = {};
             m_scissors.clear();
             m_viewports.clear();
-            m_drawFilterMask = DrawFilterMaskDefaultValue;
+        }
+
+        const DrawPacket* DrawPacketBuilder::Clone(const DrawPacket* original)
+        {
+            Begin(original->m_allocator);
+            SetDrawArguments(original->GetDrawItem(0).m_item->m_arguments);
+            SetIndexBufferView(original->m_indexBufferView);
+            SetRootConstants(AZStd::span<const uint8_t>(original->m_rootConstants, original->m_rootConstantSize));
+            SetScissors(AZStd::span<const Scissor>(original->m_scissors, original->m_scissorsCount));
+            SetViewports(AZStd::span<const Viewport>(original->m_viewports, original->m_viewportsCount));
+            for (uint8_t i = 0; i < original->m_shaderResourceGroupCount; ++i)
+            {
+                const ShaderResourceGroup* const* srg = original->m_shaderResourceGroups + i;
+                AddShaderResourceGroup(*srg);
+            }
+            for (uint8_t i = 0; i < original->m_drawItemCount; ++i)
+            {
+                const DrawItem* drawItem = original->m_drawItems + i;
+                DrawRequest drawRequest;
+                drawRequest.m_drawFilterMask = *(original->m_drawFilterMasks + i);
+                drawRequest.m_listTag = *(original->m_drawListTags + i);
+                drawRequest.m_pipelineState = drawItem->m_pipelineState;
+                drawRequest.m_sortKey = *(original->m_drawItemSortKeys + i);
+                drawRequest.m_stencilRef = drawItem->m_stencilRef;
+                drawRequest.m_streamBufferViews = AZStd::span(drawItem->m_streamBufferViews, drawItem->m_streamBufferViewCount);
+                drawRequest.m_uniqueShaderResourceGroup = drawItem->m_uniqueShaderResourceGroup;
+                AddDrawItem(drawRequest);
+            }
+            return End();
         }
     }
 }

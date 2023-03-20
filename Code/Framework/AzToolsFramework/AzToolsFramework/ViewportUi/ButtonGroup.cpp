@@ -6,8 +6,10 @@
  *
  */
 
+#include <AzCore/std/algorithm.h>
 #include <AzToolsFramework/ViewportUi/Button.h>
 #include <AzToolsFramework/ViewportUi/ButtonGroup.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
@@ -27,21 +29,66 @@ namespace AzToolsFramework::ViewportUi::Internal
         return m_viewportUiId;
     }
 
-    void ButtonGroup::SetHighlightedButton(ButtonId buttonId)
+    void ButtonGroup::SetDisabledButton(ButtonId buttonId, bool disabled)
     {
         if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
         {
-            for (auto& button : m_buttons)
+            switch (buttonEntry->second->m_state)
             {
-                button.second->m_state = Button::State::Deselected;
+            case Button::State::Selected:
+                ClearHighlightedButton();
+                [[fallthrough]];
+            default:
+                buttonEntry->second->m_state = disabled ? Button::State::Disabled : Button::State::Deselected;
+                break;
             }
+        }
+    }
+
+    void ButtonGroup::SetHighlightedButton(ButtonId buttonId)
+    {
+        if (buttonId == m_highlightedButtonId) // the requested button is highlighted, so do nothing.
+        {
+            return;
+        }
+
+        if (auto buttonEntry = m_buttons.find(buttonId); buttonEntry != m_buttons.end())
+        {
+            if(buttonEntry->second->m_state == Button::State::Disabled)
+            {
+                return;
+            }
+
+            ClearHighlightedButton();
             buttonEntry->second->m_state = Button::State::Selected;
+            m_highlightedButtonId = buttonId;
+        }
+    }
+
+    void ButtonGroup::ClearHighlightedButton()
+    {
+        if (m_highlightedButtonId == InvalidButtonId)
+        {
+            return;
+        }
+        if (auto buttonEntry = m_buttons.find(m_highlightedButtonId); buttonEntry != m_buttons.end())
+        {
+            buttonEntry->second->m_state = Button::State::Deselected;
+            m_highlightedButtonId = InvalidButtonId;
         }
     }
 
     ButtonId ButtonGroup::AddButton(const AZStd::string& icon, const AZStd::string& name)
     {
-        auto buttonId = ButtonId(m_buttons.size() + 1);
+        const auto lastButtonIdIt = AZStd::ranges::max_element(
+            m_buttons,
+            [](const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairA,
+               const AZStd::pair<ButtonId, AZStd::unique_ptr<Button>>& buttonPairB)
+            {
+                return buttonPairA.first < buttonPairB.first;
+            });
+
+        auto buttonId = ButtonId(lastButtonIdIt->first + 1);
 
         if (name.empty())
         {
@@ -52,6 +99,11 @@ namespace AzToolsFramework::ViewportUi::Internal
             m_buttons.insert({ buttonId, AZStd::make_unique<Button>(icon, name, buttonId) });
         }
         return buttonId;
+    }
+
+    bool ButtonGroup::RemoveButton(ButtonId buttonId)
+    {
+        return m_buttons.erase(buttonId) != 0;
     }
 
     Button* ButtonGroup::GetButton(ButtonId buttonId)

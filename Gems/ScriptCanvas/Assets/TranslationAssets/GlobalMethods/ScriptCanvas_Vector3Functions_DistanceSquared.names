@@ -1,0 +1,44 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector3Functions_DistanceSquared",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Distance Squared",
+                "category": "Math/Vector3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector3Functions_DistanceSquared",
+                    "details": {
+                        "name": "Distance Squared",
+                        "tooltip": "Returns the distance squared from B to A, (generally faster than the actual distance if only needed for comparison)."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "A"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "B"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

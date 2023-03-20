@@ -8,6 +8,7 @@
 #pragma once
 
 #include <cmath>
+#include <AzCore/Math/MathUtils.h>
 
 #include <qpoint.h>
 
@@ -30,16 +31,16 @@ namespace GraphCanvas
         {
             return QPointF(point.y(), -point.x());
         }
-        
+
         static float GetLength(const QPointF& point)
         {
             return sqrtf(aznumeric_cast<float>(point.x() * point.x() + point.y() * point.y()));
         }
-        
+
         static QPointF Normalize(const QPointF& point)
         {
             float length = GetLength(point);
-            
+
             if (length > 0.0f)
             {
                 return point/length;
@@ -58,17 +59,7 @@ namespace GraphCanvas
             }
 
             // Find the line between the two rectangles.
-            QPointF direction = rectA.center() - rectB.center();
             QLineF directionLine(rectA.center(), rectB.center());
-
-            QLineF aLine1;
-            QLineF aLine2;
-            QLineF aFinalLine;
-
-            QLineF bLine1;
-            QLineF bLine2;
-            QLineF bFinalLine;
-
 
             // Not strictly correct, but correct enough.
             //

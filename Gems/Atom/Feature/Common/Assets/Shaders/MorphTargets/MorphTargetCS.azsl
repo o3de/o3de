@@ -17,9 +17,6 @@ rootconstant uint s_targetPositionOffset;
 rootconstant uint s_targetNormalOffset;
 rootconstant uint s_targetTangentOffset;
 rootconstant uint s_targetBitangentOffset;
-rootconstant uint s_targetColorOffset;
-
-option bool o_hasColorDeltas = false;
 
 void WriteDeltaToAccumulationBuffer(float3 delta, uint offset, uint morphedVertexIndex)
 {
@@ -87,18 +84,5 @@ void MainCS(uint3 thread_id: SV_DispatchThreadID)
         // Now that we have the compressed bitangents, unpack them and write them to the accumulation buffer      
         float3 bitangentDelta = DecodeTBNDelta(compressedBitangentDelta) * s_weight;
         WriteDeltaToAccumulationBuffer(bitangentDelta, s_targetBitangentOffset, morphedVertexIndex);
-
-        if (o_hasColorDeltas)
-        {
-            uint4 compressedColorDelta;
-            // Colors are in the least significant 24 bits (8 bits per channel)
-            compressedColorDelta.r = (delta.m_compressedColorDeltaRGBA >> 24) & 0x000000FF;
-            compressedColorDelta.g = (delta.m_compressedColorDeltaRGBA >> 16) & 0x000000FF;
-            compressedColorDelta.b = (delta.m_compressedColorDeltaRGBA >> 8)  & 0x000000FF;
-            compressedColorDelta.a =  delta.m_compressedColorDeltaRGBA        & 0x000000FF;
-
-            float4 colorDelta = DecodeColorDelta(compressedColorDelta) * s_weight;
-            WriteDeltaToAccumulationBuffer(colorDelta, s_targetColorOffset, morphedVertexIndex);
-        }
     }
 }

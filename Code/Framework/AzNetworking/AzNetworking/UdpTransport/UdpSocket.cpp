@@ -62,7 +62,7 @@ namespace AzNetworking
             if (!IsOpen())
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to create socket (%d:%s)", error, GetNetworkErrorDesc(error));
                 m_socketFd = InvalidSocketFd;
                 return false;
             }
@@ -78,18 +78,16 @@ namespace AzNetworking
             if (::bind(static_cast<int32_t>(m_socketFd), (const sockaddr *)&hints, sizeof(hints)) != 0)
             {
                 const int32_t error = GetLastNetworkError();
-                AZLOG_ERROR("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to bind UDP socket to port %u (%d:%s)", uint32_t(port), error, GetNetworkErrorDesc(error));
+                Close();
                 return false;
             }
         }
 
-        if (!SetSocketBufferSizes(m_socketFd, net_UdpSendBufferSize, net_UdpRecvBufferSize))
+        if (!SetSocketBufferSizes(m_socketFd, net_UdpSendBufferSize, net_UdpRecvBufferSize)
+         || !SetSocketNonBlocking(m_socketFd))
         {
-            return false;
-        }
-
-        if (!SetSocketNonBlocking(m_socketFd))
-        {
+            Close();
             return false;
         }
 
@@ -137,7 +135,7 @@ namespace AzNetworking
         int32_t sentBytes = size;
 
 #ifdef ENABLE_LATENCY_DEBUG
-        if (connectionQuality.m_latencyMs <= AZ::TimeMs{ 0 })
+        if (connectionQuality.m_latencyMs <= AZ::Time::ZeroTimeMs)
 #endif
         {
             sentBytes = SendInternal(address, data, size, encrypt, dtlsEndpoint);
@@ -151,16 +149,15 @@ namespace AzNetworking
                     return SocketOpResultSuccess;
                 }
 
-                AZLOG_ERROR("Failed to write to socket (%d:%s)", error, GetNetworkErrorDesc(error));
+                AZLOG_WARN("Failed to write to socket (%d:%s)", error, GetNetworkErrorDesc(error));
             }
         }
 #ifdef ENABLE_LATENCY_DEBUG
-        else if ((connectionQuality.m_latencyMs > AZ::TimeMs{ 0 }) || (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }))
+        else if ((connectionQuality.m_latencyMs > AZ::Time::ZeroTimeMs) || (connectionQuality.m_varianceMs > AZ::Time::ZeroTimeMs))
         {
-            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::TimeMs{ 0 }
+            const AZ::TimeMs jitterMs = aznumeric_cast<AZ::TimeMs>(m_random.GetRandom()) % (connectionQuality.m_varianceMs > AZ::Time::ZeroTimeMs
                                       ? connectionQuality.m_varianceMs
                                       : AZ::TimeMs{ 1 });
-            const AZ::TimeMs currTimeMs = AZ::GetElapsedTimeMs();
             const AZ::TimeMs deferTimeMs = (connectionQuality.m_latencyMs) + jitterMs;
 
             DeferredData deferred = DeferredData(address, data, size, encrypt, dtlsEndpoint);
@@ -188,7 +185,7 @@ namespace AzNetworking
         sockaddr_in from;
         socklen_t   fromLen = sizeof(from);
 
-        const int32_t receivedBytes = recvfrom(static_cast<int32_t>(m_socketFd), reinterpret_cast<char*>(outData), static_cast<int32_t>(size), 0, (sockaddr*)&from, &fromLen);
+        const int32_t receivedBytes = static_cast<int32_t>(recvfrom(static_cast<int32_t>(m_socketFd), reinterpret_cast<char*>(outData), static_cast<int32_t>(size), 0, (sockaddr*)&from, &fromLen));
 
         outAddress = IpAddress(ByteOrder::Network, from.sin_addr.s_addr, from.sin_port);
 
@@ -214,7 +211,7 @@ namespace AzNetworking
                 }
             }
 
-            AZLOG_ERROR("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
+            AZLOG_WARN("Failed to read from socket (%d:%s)", error, GetNetworkErrorDesc(error));
         }
 
         if (receivedBytes <= 0)
@@ -235,7 +232,7 @@ namespace AzNetworking
         destAddr.sin_family = AF_INET;
         destAddr.sin_addr.s_addr = address.GetAddress(ByteOrder::Network);
         destAddr.sin_port = address.GetPort(ByteOrder::Network);
-        return sendto(static_cast<int32_t>(m_socketFd), reinterpret_cast<const char*>(data), size, 0, (sockaddr*)&destAddr, sizeof(destAddr));
+        return static_cast<int32_t>(sendto(static_cast<int32_t>(m_socketFd), reinterpret_cast<const char*>(data), size, 0, (sockaddr*)&destAddr, sizeof(destAddr)));
     }
 
 #ifdef ENABLE_LATENCY_DEBUG

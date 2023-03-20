@@ -22,9 +22,9 @@
 #include <SceneAPIExt/Rules/MotionCompressionSettingsRule.h>
 #include <SceneAPIExt/Rules/MotionMetaDataRule.h>
 #include <SceneAPIExt/Rules/MotionSamplingRule.h>
-#include <SceneAPIExt/Rules/MotionScaleRule.h>
 #include <SceneAPIExt/Rules/MotionRangeRule.h>
 #include <SceneAPIExt/Rules/MorphTargetRule.h>
+#include <SceneAPIExt/Rules/RootMotionExtractionRule.h>
 
 namespace EMotionFX
 {
@@ -42,7 +42,6 @@ namespace EMotionFX
                 Rule::MotionMetaData::Reflect(context);
                 Rule::MotionMetaDataRule::Reflect(context);
                 Rule::MotionSamplingRule::Reflect(context);
-                Rule::MotionScaleRule::Reflect(context);
                 Rule::MorphTargetRuleReadOnly::Reflect(context);
                 
                 AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
@@ -85,10 +84,6 @@ namespace EMotionFX
                     {
                         existingRules.insert(rules.GetRule(i)->RTTI_GetType());
                     }
-                    if (existingRules.find(Rule::MotionScaleRule::TYPEINFO_Uuid()) == existingRules.end())
-                    {
-                        modifiers.push_back(Rule::MotionScaleRule::TYPEINFO_Uuid());
-                    }
                     if (existingRules.find(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>()) == existingRules.end())
                     {
                         modifiers.push_back(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>());
@@ -104,6 +99,10 @@ namespace EMotionFX
                     if (existingRules.find(Rule::MotionSamplingRule::TYPEINFO_Uuid()) == existingRules.end())
                     {
                         modifiers.push_back(Rule::MotionSamplingRule::TYPEINFO_Uuid());
+                    }
+                    if (existingRules.find(Rule::RootMotionExtractionRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(Rule::RootMotionExtractionRule::TYPEINFO_Uuid());
                     }
                 }
             }
@@ -178,7 +177,8 @@ namespace EMotionFX
                 //      in the same way again. To guarantee the same uuid, generate a stable one instead.
                 group->OverrideId(AZ::SceneAPI::DataTypes::Utilities::CreateStableUuid(scene, Group::MotionGroup::TYPEINFO_Uuid()));
 
-                EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+                AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(
+                    &AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
                 scene.GetManifest().AddEntry(AZStd::move(group));
 
                 return AZ::SceneAPI::Events::ProcessingResult::Success;

@@ -11,7 +11,16 @@
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Math/VertexContainerInterface.h>
 #include <AzCore/std/sort.h>
+#include <AzFramework/Viewport/ViewportScreen.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/API/ComponentModeCollectionInterface.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -20,6 +29,7 @@
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <AzToolsFramework/ViewportUi/ViewportUiRequestBus.h>
+
 #include <QApplication>
 #include <QDoubleValidator>
 #include <QMessageBox>
@@ -63,6 +73,204 @@ namespace AzToolsFramework
     static const char* const s_deselectVerticesTitle = "Deselect Vertices";
     static const char* const s_deselectVerticesDesc = "Deselect current vertex selection";
 
+    bool IsVertexSelectionEmpty()
+    {
+        auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+        AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+        bool emptySelection = true;
+
+        componentModeCollectionInterface->EnumerateActiveComponents(
+            [&emptySelection](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+            {
+                int count = 0;
+                EditorVertexSelectionVariableRequestBus::EventResult(
+                    count, entityComponentIdPair, &EditorVertexSelectionVariableRequests::GetSelectedVerticesCount);
+
+                emptySelection = emptySelection && count == 0;
+            }
+        );
+
+        return emptySelection;
+    }
+
+    void OnVertexSelectionCountChanged()
+    {
+        if (AzToolsFramework::IsNewActionManagerEnabled())
+        {
+            auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+            AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface.");
+            actionManagerInterface->TriggerActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+        }
+    }
+
+    void EditorVertexSelectionActionManagement::RegisterEditorVertexSelectionActions()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(
+            actionManagerInterface,
+            "EditorVertexSelection - could not get ActionManagerInterface on RegisterActions.");
+
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        AZ_Assert(
+            hotKeyManagerInterface,
+            "EditorVertexSelection - could not get HotKeyManagerInterface on RegisterActions.");
+
+        actionManagerInterface->RegisterActionUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier);
+
+        // Duplicate Vertices
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.duplicate";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_duplicateVerticesTitle;
+            actionProperties.m_description = s_duplicateVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DuplicateSelectedVertices);
+                        }
+                    );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+D");
+        }
+
+        // Delete Vertices
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.delete";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_deleteVerticesTitle;
+            actionProperties.m_description = s_deleteVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::DeleteSelectedVertices);
+                        }
+                    );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Delete");
+        }
+
+        // Clear Vertex Selection
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.vertexSelection.clearSelection";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = s_deselectVerticesTitle;
+            actionProperties.m_description = s_deselectVerticesDesc;
+            actionProperties.m_category = "Vertex Selection";
+            actionProperties.m_menuVisibility = ActionVisibility::OnlyInActiveMode;
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                []
+                {
+                    auto componentModeCollectionInterface = AZ::Interface<ComponentModeCollectionInterface>::Get();
+                    AZ_Assert(componentModeCollectionInterface, "Could not retrieve component mode collection.");
+
+                    componentModeCollectionInterface->EnumerateActiveComponents(
+                        [](const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid&)
+                        {
+                            EditorVertexSelectionVariableRequestBus::Event(
+                                entityComponentIdPair, &EditorVertexSelectionVariableRequests::ClearVertexSelection);
+                        }
+                    );
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                []
+                {
+                    return !IsVertexSelectionEmpty();
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Esc");
+        }
+    }
+
+    void EditorVertexSelectionActionManagement::BindEditorVertexSelectionActionsToMenus()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        AZ_Assert(
+            menuManagerInterface,
+            "EditorVertexSelection - could not get MenuManagerInterface on BindActionsToMenus.");
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.duplicate", 6000);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.delete", 6001);
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EditMenuIdentifier, "o3de.action.vertexSelection.clearSelection", 6002);
+    }
+
+    void EditorVertexSelectionActionManagement::DisableComponentModeEndOnVertexSelection()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorVertexSelection - could not get ActionManagerInterface on DisableComponentModeEndOnVertexSelection.");
+
+        // Install an Enabled State Callback to the End Component Mode action to disable it when Vertex Selection is non-empty.
+        actionManagerInterface->InstallEnabledStateCallback(
+            "o3de.action.componentMode.end",
+            []() -> bool
+            {
+                return IsVertexSelectionEmpty();
+            }
+        );
+        actionManagerInterface->AddActionToUpdater(
+            EditorIdentifiers::VertexSelectionChangedUpdaterIdentifier, "o3de.action.componentMode.end");
+    }
+
     static void RefreshUiAfterAddRemove(const AZ::EntityComponentIdPair& entityComponentIdPair)
     {
         // ensure editor entity model (entity inspector) is refreshed
@@ -83,12 +291,12 @@ namespace AzToolsFramework
             break;
         case State::Translating:
             {
-                if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Left() &&
+                if (mouseInteraction.m_mouseInteraction.m_mouseButtons.Middle() &&
                     mouseInteraction.m_mouseEvent == ViewportInteraction::MouseEvent::Down &&
                     mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Shift() &&
                     mouseInteraction.m_mouseInteraction.m_keyboardModifiers.Ctrl())
                 {
-                    SnapVerticesToTerrain(mouseInteraction);
+                    SnapVerticesToSurface(mouseInteraction);
                     return true;
                 }
 
@@ -108,29 +316,23 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
-    void EditorVertexSelectionBase<Vertex>::SnapVerticesToTerrain(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
+    void EditorVertexSelectionBase<Vertex>::SnapVerticesToSurface(const ViewportInteraction::MouseInteractionEvent& mouseInteraction)
     {
         ScopedUndoBatch surfaceSnapUndo("Snap to Surface");
         ScopedUndoBatch::MarkEntityDirty(GetEntityId());
 
         const int viewportId = mouseInteraction.m_mouseInteraction.m_interactionId.m_viewportId;
-        // get unsnapped terrain position (world space)
-        AZ::Vector3 worldSurfacePosition = AZ::Vector3::CreateZero();
-        ;
-        ViewportInteraction::MainEditorViewportInteractionRequestBus::EventResult(
-            worldSurfacePosition, viewportId, &ViewportInteraction::MainEditorViewportInteractionRequestBus::Events::PickTerrain,
-            mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates);
+        // get unsnapped surface position (world space)
+        const AZ::Vector3 worldSurfacePosition = FindClosestPickIntersection(
+            viewportId, mouseInteraction.m_mouseInteraction.m_mousePick.m_screenCoordinates, EditorPickRayLength,
+            GetDefaultEntityPlacementDistance());
 
         AZ::Transform worldFromLocal;
         AZ::TransformBus::EventResult(worldFromLocal, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
         const AZ::Transform localFromWorld = worldFromLocal.GetInverse();
 
-        // convert to local space - snap if enabled
-        const GridSnapParameters gridSnapParams = GridSnapSettings(viewportId);
-        const AZ::Vector3 localFinalSurfacePosition = gridSnapParams.m_gridSnap
-            ? CalculateSnappedTerrainPosition(worldSurfacePosition, worldFromLocal, viewportId, gridSnapParams.m_gridSize)
-            : localFromWorld.TransformPoint(worldSurfacePosition);
-
+        // convert to local space
+        const AZ::Vector3 localFinalSurfacePosition = localFromWorld.TransformPoint(worldSurfacePosition);
         SetSelectedPosition(localFinalSurfacePosition);
 
         OnEntityComponentPropertyChanged(GetEntityComponentIdPair());
@@ -147,7 +349,7 @@ namespace AzToolsFramework
         const AZ::Vector3& localManipulatorStartPosition,
         const AZ::Vector3& localManipulatorOffset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // bind FixedVerticesRequestBus for improved performance
         typename AZ::FixedVerticesRequestBus<Vertex>::BusPtr fixedVertices;
@@ -180,7 +382,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void InitializeVertexLookup(IndexedTranslationManipulator<Vertex>& translationManipulator, const AZ::EntityId entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // bind FixedVerticesRequestBus for improved performance
         typename AZ::FixedVerticesRequestBus<Vertex>::BusPtr fixedVertices;
@@ -210,7 +412,7 @@ namespace AzToolsFramework
         const Vertex& vertex,
         size_t vertexIndex)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // if we have a vertex (translation) manipulator active, ensure
         // it gets removed when clicking on another selection manipulator
@@ -226,6 +428,7 @@ namespace AzToolsFramework
         m_translationManipulator = AZStd::make_shared<IndexedTranslationManipulator<Vertex>>(
             Dimensions(), vertexIndex, vertex, WorldFromLocalWithUniformScale(entityComponentIdPair.GetEntityId()),
             GetNonUniformScale(entityComponentIdPair.GetEntityId()));
+        m_translationManipulator->m_manipulator.SetLineBoundWidth(AzToolsFramework::ManipulatorLineBoundWidth());
 
         // setup how the manipulator should look
         m_manipulatorConfiguratorFn(&m_translationManipulator->m_manipulator);
@@ -342,7 +545,7 @@ namespace AzToolsFramework
         const EditorBoxSelect& editorBoxSelect,
         const AZStd::vector<AZStd::shared_ptr<SelectionManipulator>>& selectionManipulators)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // refresh selection manipulators and box select data when modifiers change
         // (switching from additive to subtractive)
@@ -362,9 +565,7 @@ namespace AzToolsFramework
             boxSelectData.m_activeSelection = boxSelectData.m_startSelection;
         }
 
-        // set the widget context before calls to ViewportWorldToScreen so we are not
-        // going to constantly be pushing/popping the widget context
-        ViewportInteraction::WidgetContextGuard widgetContextGuard(viewportId);
+        const AzFramework::CameraState cameraState = GetCameraState(viewportId);
 
         // box select active (clicking and dragging)
         if (editorBoxSelect.BoxRegion())
@@ -384,7 +585,7 @@ namespace AzToolsFramework
                     found, fixedVertices, &AZ::FixedVerticesRequestBus<Vertex>::Handler::GetVertex, vertexIndex, localVertex);
 
                 const AZ::Vector3 worldVertex = worldFromLocal.TransformPoint(AZ::AdaptVertexOut<Vertex>(localVertex));
-                const AzFramework::ScreenPoint screenPosition = GetScreenPosition(viewportId, worldVertex);
+                const AzFramework::ScreenPoint screenPosition = AzFramework::WorldToScreen(worldVertex, cameraState);
 
                 // check if a vertex is inside the box select region
                 if (editorBoxSelect.BoxRegion()->contains(ViewportInteraction::QPointFromScreenPoint(screenPosition)))
@@ -481,7 +682,7 @@ namespace AzToolsFramework
         const TranslationManipulators::Dimensions dimensions,
         const TranslationManipulatorConfiguratorFn translationManipulatorConfigurator)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_dimensions = dimensions;
         m_manipulatorManagerId = managerId;
@@ -647,6 +848,12 @@ namespace AzToolsFramework
                 // centered on current selection)
                 RefreshTranslationManipulator();
 
+                if (!vertexBoxSelectData->m_deltaSelection.empty())
+                {
+                    // update actions that depend on vertex selection count
+                    OnVertexSelectionCountChanged();
+                }
+
                 // restore state once box select has completed
                 vertexBoxSelectData->m_startSelection.clear();
                 vertexBoxSelectData->m_deltaSelection.clear();
@@ -657,8 +864,7 @@ namespace AzToolsFramework
         m_editorBoxSelect.InstallDisplayScene(
             [this, vertexBoxSelectData](const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& /*debugDisplay*/)
             {
-                const auto keyboardModifiers = ViewportInteraction::KeyboardModifiers(
-                    ViewportInteraction::TranslateKeyboardModifiers(QApplication::queryKeyboardModifiers()));
+                const auto keyboardModifiers = AzToolsFramework::ViewportInteraction::QueryKeyboardModifiers();
 
                 // when modifiers change ensure we refresh box selection for immediate update
                 if (keyboardModifiers != m_editorBoxSelect.PreviousModifiers())
@@ -705,7 +911,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::ClearSelected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // if translation manipulator is active, remove it when receiving this event and enable
         // the hover manipulator bounds again so points can be inserted again
@@ -736,7 +942,7 @@ namespace AzToolsFramework
     void EditorVertexSelectionBase<Vertex>::DisplayEntityViewport(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_editorBoxSelect.DisplayScene(viewportInfo, debugDisplay);
 
@@ -747,7 +953,7 @@ namespace AzToolsFramework
     void EditorVertexSelectionBase<Vertex>::DisplayViewport2d(
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         m_editorBoxSelect.Display2d(viewportInfo, debugDisplay);
     }
@@ -756,7 +962,7 @@ namespace AzToolsFramework
     template<typename V, typename AZStd::enable_if<AZStd::is_same<V, AZ::Vector3>::value>::type*>
     void EditorVertexSelectionBase<Vertex>::UpdateManipulatorSpace(const AzFramework::ViewportInfo& viewportInfo)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // check if 'shift' is being held to move to parent space
         bool worldSpace = false;
@@ -803,7 +1009,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionVariable<Vertex>::DestroySelected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         const AZ::EntityId entityId = EditorVertexSelectionBase<Vertex>::GetEntityId();
 
@@ -853,9 +1059,41 @@ namespace AzToolsFramework
     }
 
     template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::DuplicateSelectedVertices()
+    {
+        DuplicateSelected();
+    }
+
+    template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::DeleteSelectedVertices()
+    {
+        DestroySelected();
+    }
+
+    template<typename Vertex>
+    void EditorVertexSelectionVariable<Vertex>::ClearVertexSelection()
+    {
+        EditorVertexSelectionBase<Vertex>::ClearSelected();
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
+    }
+
+    template<typename Vertex>
+    int EditorVertexSelectionVariable<Vertex>::GetSelectedVerticesCount()
+    {
+        if (EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return aznumeric_cast<int>(EditorVertexSelectionBase<Vertex>::m_translationManipulator->m_vertices.size());
+        }
+
+        return 0;
+    }
+
+    template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::SetSelectedPosition(const AZ::Vector3& localPosition)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_translationManipulator)
         {
@@ -884,7 +1122,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::RefreshTranslationManipulator()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // bind FixedVerticesRequestBus for improved performance
         typename AZ::FixedVerticesRequestBus<Vertex>::BusPtr fixedVertices;
@@ -895,7 +1133,7 @@ namespace AzToolsFramework
             // calculate average position of selected vertices for translation manipulator
             MidpointCalculator midpointCalculator;
             m_translationManipulator->Process(
-                [this, &midpointCalculator, fixedVertices](typename IndexedTranslationManipulator<Vertex>::VertexLookup& vertex)
+                [&midpointCalculator, fixedVertices](typename IndexedTranslationManipulator<Vertex>::VertexLookup& vertex)
                 {
                     Vertex v;
                     bool found = false;
@@ -915,7 +1153,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::RefreshLocal()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // we do not want to refresh our local state while a batch movement is in progress,
         // even if we have been signalled to do so by a callback
@@ -955,23 +1193,23 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::RefreshSpace(const AZ::Transform& worldFromLocal, const AZ::Vector3& nonUniformScale)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (auto& manipulator : m_selectionManipulators)
         {
-            manipulator->SetSpace(TransformUniformScale(worldFromLocal));
+            manipulator->SetSpace(worldFromLocal);
             manipulator->SetNonUniformScale(nonUniformScale);
         }
 
         if (m_translationManipulator)
         {
-            m_translationManipulator->m_manipulator.SetSpace(TransformUniformScale(worldFromLocal));
+            m_translationManipulator->m_manipulator.SetSpace(worldFromLocal);
             m_translationManipulator->m_manipulator.SetNonUniformScale(nonUniformScale);
         }
 
         if (m_hoverSelection)
         {
-            m_hoverSelection->SetSpace(TransformUniformScale(worldFromLocal));
+            m_hoverSelection->SetSpace(worldFromLocal);
             m_hoverSelection->SetNonUniformScale(nonUniformScale);
             m_hoverSelection->Refresh();
         }
@@ -982,7 +1220,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionBase<Vertex>::SetBoundsDirty()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         for (auto& manipulator : m_selectionManipulators)
         {
@@ -1008,7 +1246,7 @@ namespace AzToolsFramework
         const AZ::EntityComponentIdPair& entityComponentIdPair,
         const ManipulatorManagerId managerId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         Vertex vertex;
         bool found = false;
@@ -1066,6 +1304,9 @@ namespace AzToolsFramework
             // manipulator at this vertex
             CreateTranslationManipulator(entityComponentIdPair, managerId, vertex, vertexIndex);
         }
+
+        // update actions that depend on vertex selection count
+        OnVertexSelectionCountChanged();
     }
 
     // configure the selection manipulator for fixed editor selection - this configures the view and action
@@ -1078,7 +1319,7 @@ namespace AzToolsFramework
         const ManipulatorManagerId managerId,
         const size_t vertexIndex)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> selectionView = AzToolsFramework::CreateManipulatorViewSphere(
@@ -1105,6 +1346,21 @@ namespace AzToolsFramework
             });
     }
 
+    template<typename Vertex>
+    EditorVertexSelectionVariable<Vertex>::EditorVertexSelectionVariable(const AZ::EntityComponentIdPair& entityComponentIdPair)
+    {
+        EditorVertexSelectionVariableRequestBus::Handler::BusConnect(entityComponentIdPair);
+    }
+
+    template<typename Vertex>
+    EditorVertexSelectionVariable<Vertex>::~EditorVertexSelectionVariable()
+    {
+        if (EditorVertexSelectionVariableRequestBus::Handler::BusIsConnected())
+        {
+            EditorVertexSelectionVariableRequestBus::Handler::BusDisconnect();
+        }
+    }
+
     // configure the selection manipulator for variable editor selection - this configures the view and action
     // of interacting with the selection manipulator. In this case, hovering the mouse with a modifier key held
     // will indicate removal, and clicking with a modifier key will remove the vertex.
@@ -1115,7 +1371,7 @@ namespace AzToolsFramework
         const ManipulatorManagerId managerId,
         const size_t vertexIndex)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // setup selection manipulator
         const AZStd::shared_ptr<ManipulatorViewSphere> manipulatorView = AzToolsFramework::CreateManipulatorViewSphere(
@@ -1223,7 +1479,7 @@ namespace AzToolsFramework
     Vertex EditorVertexSelectionVariable<Vertex>::InsertSelectedInPlace(
         AZStd::vector<typename IndexedTranslationManipulator<Vertex>::VertexLookup>& manipulators)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // utility to calculate the center point of the selected vertices after duplication
         MidpointCalculator midpointCalculator;
@@ -1267,7 +1523,13 @@ namespace AzToolsFramework
     template<typename Vertex>
     void EditorVertexSelectionVariable<Vertex>::DuplicateSelected()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+
+        // if no vertex is selected, early out
+        if (!EditorVertexSelectionBase<Vertex>::m_translationManipulator)
+        {
+            return;
+        }
 
         ScopedUndoBatch duplicateUndo("Duplicate Vertices");
         ScopedUndoBatch::MarkEntityDirty(EditorVertexSelectionBase<Vertex>::GetEntityId());
@@ -1306,7 +1568,7 @@ namespace AzToolsFramework
     void EditorVertexSelectionVariable<Vertex>::PrepareActions()
     {
         ActionOverride deleteAction = CreateDeleteAction(
-            s_deleteVerticesTitle, s_duplicateVerticesDesc,
+            s_deleteVerticesTitle, s_deleteVerticesDesc,
             [this]()
             {
                 DestroySelected();
@@ -1346,7 +1608,7 @@ namespace AzToolsFramework
     template<typename Vertex>
     void InsertVertexAfter(const AZ::EntityComponentIdPair& entityComponentIdPair, const size_t vertexIndex, const Vertex& localPosition)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         size_t size = 0;
         AZ::VariableVerticesRequestBus<Vertex>::EventResult(
@@ -1385,10 +1647,10 @@ namespace AzToolsFramework
     template void SafeRemoveVertex<AZ::Vector2>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
     template void SafeRemoveVertex<AZ::Vector3>(const AZ::EntityComponentIdPair& entityComponentIdPair, size_t vertexIndex);
 
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionFixed<AZ::Vector3>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector2>, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(EditorVertexSelectionVariable<AZ::Vector3>, AZ::SystemAllocator)
 
     template class EditorVertexSelectionBase<AZ::Vector2>;
     template class EditorVertexSelectionBase<AZ::Vector3>;

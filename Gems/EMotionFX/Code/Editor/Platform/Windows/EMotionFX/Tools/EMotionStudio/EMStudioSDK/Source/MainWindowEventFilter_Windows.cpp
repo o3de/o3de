@@ -22,7 +22,7 @@ namespace EMStudio
             {
                 // The reason why there are multiple of such messages is because it emits messages for all related hardware nodes.
                 // But we do not know the name of the hardware to look for here either, so we can't filter that.
-                emit m_MainWindow->HardwareChangeDetected();
+                emit m_mainWindow->HardwareChangeDetected();
             }
         }
 

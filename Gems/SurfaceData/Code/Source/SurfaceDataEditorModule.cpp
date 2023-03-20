@@ -7,7 +7,7 @@
  */
 
 #include <SurfaceDataEditorModule.h>
-#include <SurfaceDataSystemComponent.h>
+#include <SurfaceData/Components/SurfaceDataSystemComponent.h>
 #include <Editor/EditorSurfaceDataSystemComponent.h>
 #include <Editor/EditorSurfaceDataColliderComponent.h>
 #include <Editor/EditorSurfaceDataShapeComponent.h>

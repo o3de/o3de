@@ -19,6 +19,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QScrollArea>
 #include <QtWidgets/QApplication>
+#include <QPainter>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 'QTextFormat::d': class 'QSharedDataPointer<QTextFormatPrivate>' needs to have dll-interface to be used by clients of class 'QTextFormat'
 #include <QtWidgets/QInputDialog>
 AZ_POP_DISABLE_WARNING
@@ -29,6 +30,9 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    // Add implementation of IPropertyEditor RTTI virtual functions in the cpp file along with the ReflectedPropertyEditor
+    AZ_RTTI_NO_TYPE_INFO_IMPL(IPropertyEditor);
+    AZ_RTTI_NO_TYPE_INFO_IMPL(ReflectedPropertyEditor, IPropertyEditor);
     const AZ::SerializeContext::ClassData* CreateContainerElementSelectClassCallback(const AZ::Uuid& classId, const AZ::Uuid& typeId, AZ::SerializeContext* context)
     {
         AZStd::vector<const AZ::SerializeContext::ClassData*> derivedClasses;
@@ -170,7 +174,7 @@ namespace AzToolsFramework
         InstanceDataHierarchy::ValueComparisonFunction m_valueComparisonFunction;
         ReflectedPropertyEditor::WidgetList m_widgets;
         ReflectedPropertyEditor::WidgetList m_specialGroupWidgets;
-        InstanceDataNode* groupSourceNode = nullptr;
+        InstanceDataNode* m_groupSourceNode = nullptr;
         RowContainerType m_widgetsInDisplayOrder;
         UserWidgetToDataMap m_userWidgetsToData;
         VisibilityCallback m_visibilityCallback;
@@ -253,9 +257,9 @@ namespace AzToolsFramework
         void QueueInvalidationIfSharedData(InternalReflectedPropertyEditorEvents* sender, PropertyModificationRefreshLevel level, const AZStd::set<void*>& sourceInstanceSet) override;
 
         // PropertyEditorGUIMessages::Bus::Handler
-        virtual void RequestWrite(QWidget* editorGUI) override;
-        virtual void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
-        virtual void RequestRefresh(PropertyModificationRefreshLevel) override;
+        void RequestWrite(QWidget* editorGUI) override;
+        void AddElementsToParentContainer(QWidget* editorGUI, size_t numElements, const InstanceDataNode::FillDataClassCallback& fillDataCallback) override;
+        void RequestRefresh(PropertyModificationRefreshLevel) override;
         void RequestPropertyNotify(QWidget* editorGUI) override;
         void OnEditingFinished(QWidget* editorGUI) override;
     };
@@ -264,7 +268,7 @@ namespace AzToolsFramework
         : public AZ::UserSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectedPropertyEditorState, AZ::SystemAllocator);
         AZ_RTTI(ReflectedPropertyEditorState, "{A229B615-622B-4C0B-A17C-A1F5C3144D6E}", AZ::UserSettings);
 
         AZStd::unordered_set<AZ::u32> m_expandedElements; // crc of them + their parents.
@@ -356,7 +360,7 @@ namespace AzToolsFramework
 
     ReflectedPropertyEditor::~ReflectedPropertyEditor()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->InternalReflectedPropertyEditorEvents::Bus::Handler::BusDisconnect();
         m_impl->PropertyEditorGUIMessages::Bus::Handler::BusDisconnect();
@@ -430,8 +434,7 @@ namespace AzToolsFramework
         }
         else
         {
-            m_impl->m_instances.push_back();
-            m_impl->m_instances.back().SetValueComparisonFunction(m_impl->m_valueComparisonFunction);
+            m_impl->m_instances.emplace_back().SetValueComparisonFunction(m_impl->m_valueComparisonFunction);
             m_impl->m_instances.back().AddRootInstance(instance, classId);
 
             if (compareInstance)
@@ -484,7 +487,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::ClearInstances()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         m_impl->SaveExpansion();
         m_impl->ReturnAllToPool();
@@ -513,21 +516,22 @@ namespace AzToolsFramework
                     widgetEntry = CreateOrPullFromPool();
                     widgetEntry->SetFilterString(m_editor->GetFilterString());
 
-                    // Initialized normally if the group does not have a member variable attached to it,
+                    // Initialized normally if the group does not have a member variable attached to it
+                    // or if the source node for the toggle group is null,
                     // otherwise initialize it as a group that will have a toggle switch.
-                    if (groupElementData->IsClassElement())
+                    if (groupElementData->IsClassElement() || !m_groupSourceNode)
                     {
                         widgetEntry->Initialize(groupName, parent, depth, m_propertyLabelWidth);
                     }
                     else
                     {
-                        widgetEntry->InitializeToggleGroup(groupName, parent, depth, groupSourceNode, m_propertyLabelWidth);
+                        widgetEntry->InitializeToggleGroup(groupName, parent, depth, m_groupSourceNode, m_propertyLabelWidth);
                         QWidget* toggleSwitch = widgetEntry->GetToggle();
                         PropertyHandlerBase* pHandler = widgetEntry->GetHandler();
-                        m_userWidgetsToData[toggleSwitch] = groupSourceNode;
-                        m_specialGroupWidgets[groupSourceNode] = widgetEntry;
-                        pHandler->ConsumeAttributes_Internal(toggleSwitch, groupSourceNode);
-                        pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, groupSourceNode);
+                        m_userWidgetsToData[toggleSwitch] = m_groupSourceNode;
+                        m_specialGroupWidgets[m_groupSourceNode] = widgetEntry;
+                        pHandler->ConsumeAttributes_Internal(toggleSwitch, m_groupSourceNode);
+                        pHandler->ReadValuesIntoGUI_Internal(toggleSwitch, m_groupSourceNode);
                         widgetEntry->OnValuesUpdated();
                         isToggleGroup = true;
                     }
@@ -538,7 +542,7 @@ namespace AzToolsFramework
 
                     for (const AZ::Edit::AttributePair& attribute : groupElementData->m_attributes)
                     {
-                        InstanceDataNode* readerNode = (isToggleGroup) ? groupSourceNode : node;
+                        InstanceDataNode* readerNode = (isToggleGroup) ? m_groupSourceNode : node;
                         PropertyAttributeReader reader(readerNode->GetParent()->FirstInstance(), attribute.second);
                         QString descriptionOut;
                         bool foundDescription = false;
@@ -579,7 +583,7 @@ namespace AzToolsFramework
 
         return result;
     }
-    
+
     bool IsParentAssociativeContainer(InstanceDataNode* node)
     {
         return node->GetParent() && node->GetParent()->GetClassMetadata()->m_container && node->GetParent()->GetClassMetadata()->m_container->GetAssociativeContainerInterface();
@@ -715,7 +719,7 @@ namespace AzToolsFramework
             return;
         }
 
-        
+
         ReflectedPropertyEditorUpdateSentinel updateSentinel(m_editor, &m_editor->m_updateDepth);
 
         const bool isParentAssociativeContainer = IsParentAssociativeContainer(node);
@@ -725,7 +729,7 @@ namespace AzToolsFramework
         const bool isAssociativeContainerPair = isParentAssociativeContainer &&
             IsPairContainer(node) &&
             node->FindAttribute(AZ::Edit::InternalAttributes::ElementInstances);
-        
+
         PropertyRowWidget* pWidget = nullptr;
         if (visibility == NodeDisplayVisibility::Visible || visibility == NodeDisplayVisibility::HideChildren)
         {
@@ -794,7 +798,7 @@ namespace AzToolsFramework
                 // Save the last InstanceDataNode that is a Group ClassElement so that we can use it as the source node for its widget.
                 if (node->GetElementEditMetadata() && (node->GetElementEditMetadata()->m_elementId == AZ::Edit::ClassElements::Group))
                 {
-                    groupSourceNode = node;
+                    m_groupSourceNode = node;
                 }
             }
         }
@@ -871,7 +875,7 @@ namespace AzToolsFramework
     /// Must call after Add/Remove instance for the change to be applied
     void ReflectedPropertyEditor::InvalidateAll(const char* filter)
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         setUpdatesEnabled(false);
         m_impl->m_selectedRow = nullptr;
@@ -889,7 +893,7 @@ namespace AzToolsFramework
         {
             instance.Build(m_impl->m_context, AZ::SerializeContext::ENUM_ACCESS_FOR_READ, m_impl->m_dynamicEditDataProvider, m_impl->m_editorParent);
             m_impl->FilterNode(instance.GetRootNode(), filter);
-            m_impl->AddProperty(instance.GetRootNode(), NULL, 0);
+            m_impl->AddProperty(instance.GetRootNode(), nullptr, 0);
         }
 
         m_impl->UpdateExpansionState();
@@ -1007,7 +1011,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::InvalidateAttributesAndValues()
     {
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         for (InstanceDataHierarchy& instance : m_impl->m_instances)
         {
@@ -1037,12 +1041,12 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::InvalidateValues()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
-        m_releasePrompt = true;
+        Q_EMIT releasePrompt();
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:InstancesRefreshDataCompare");
             for (InstanceDataHierarchy& instance : m_impl->m_instances)
             {
                 const bool dataIdentical = instance.RefreshComparisonData(
@@ -1056,7 +1060,7 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:RowWidgetGuiUpdate");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "ReflectedPropertyEditor::InvalidateValues:RowWidgetGuiUpdate");
             for (auto it = m_impl->m_userWidgetsToData.begin(); it != m_impl->m_userWidgetsToData.end(); ++it)
             {
                 auto rowWidget = m_impl->m_widgets.find(it->second);
@@ -1076,7 +1080,7 @@ namespace AzToolsFramework
 
     PropertyRowWidget* ReflectedPropertyEditor::Impl::CreateOrPullFromPool()
     {
-        PropertyRowWidget* newWidget = NULL;
+        PropertyRowWidget* newWidget = nullptr;
         if (m_widgetPool.empty())
         {
             newWidget = aznew PropertyRowWidget(m_containerWidget);
@@ -1183,7 +1187,7 @@ namespace AzToolsFramework
     {
         // re-create the tab order, based on vertical position in the list.
 
-        QWidget* pLastWidget = NULL;
+        QWidget* pLastWidget = nullptr;
 
         for (AZStd::size_t pos = 0; pos < m_impl->m_widgetsInDisplayOrder.size(); ++pos)
         {
@@ -1199,7 +1203,7 @@ namespace AzToolsFramework
         m_impl->m_queuedTabOrderRefresh = false;
     }
 
-    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key)
+    void ReflectedPropertyEditor::SetSavedStateKey(AZ::u32 key, [[maybe_unused]] AZStd::string propertyEditorName)
     {
         if (m_impl->m_savedStateKey != key)
         {
@@ -1343,7 +1347,7 @@ namespace AzToolsFramework
 
     // calculate the index/offset of the instance data node in the container
     // (useful for notifying which element in a vector was modified/removed)
-    static size_t CalculateElementIndexInContainer(
+    static int CalculateElementIndexInContainer(
         InstanceDataNode* node, void* parentInstanceNode,
         AZ::SerializeContext::IDataContainer* container, AZStd::vector<void*>& nodeInstancesOut)
     {
@@ -1358,7 +1362,7 @@ namespace AzToolsFramework
             }
         }
 
-        size_t elementIndex = 0;
+        int elementIndex = 0;
         void* elementPtr = nodeInstancesOut.empty() ? nullptr : nodeInstancesOut.front();
 
         // find the index of the element we are about to remove
@@ -1400,15 +1404,14 @@ namespace AzToolsFramework
             PropertyHandlerBase* handler = widget->GetHandler();
             if (handler)
             {
-                if (rowWidget->second->ShouldPreValidatePropertyChange())
+                if (widget->ShouldPreValidatePropertyChange())
                 {
-                    void* tempValue = rowWidget->first->GetClassMetadata()->m_factory->Create("Validate Attribute");
+                    AZStd::any tempValue = m_context->CreateAny(node->GetClassMetadata()->m_typeId);
+                    void* tempValueRef = AZStd::any_cast<void>(&tempValue);
 
-                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValue, rowWidget->first->GetClassMetadata()->m_typeId, rowWidget->first->GetSerializeContext());
+                    handler->WriteGUIValuesIntoTempProperty_Internal(editorGUI, tempValueRef, node->GetClassMetadata()->m_typeId, m_context);
 
-                    bool validated = rowWidget->second->ValidatePropertyChange(tempValue, rowWidget->first->GetClassMetadata()->m_typeId);
-
-                    rowWidget->first->GetClassMetadata()->m_factory->Destroy(tempValue);
+                    bool validated = widget->ValidatePropertyChange(tempValueRef, node->GetClassMetadata()->m_typeId);
 
                     // Validate the change to make sure everything is okay before actually modifying the value on anything
                     if (!validated)
@@ -1429,7 +1432,7 @@ namespace AzToolsFramework
 
                 // if the element being modified exists in a container, calculate
                 // the index to be passed through to PropertyNotify
-                const auto calculateElementIndex = [](InstanceDataNode* node) -> size_t {
+                const auto calculateElementIndex = [](InstanceDataNode* node) -> int {
                     if (InstanceDataNode* parent = node->GetParent())
                     {
                         if (AZ::SerializeContext::IDataContainer* container = parent->GetClassMetadata()->m_container)
@@ -1656,6 +1659,221 @@ namespace AzToolsFramework
             AzToolsFramework::Refresh_EntireTree);
     }
 
+    InstanceDataNode* ReflectedPropertyEditor::FindContainerNodeForNode(InstanceDataNode* node) const
+    {
+        // Locate the owning container. There may be a level of indirection due to wrappers, such as DynamicSerializableField.
+        InstanceDataNode* pContainerNode = node->GetParent();
+        if (!pContainerNode)
+        {
+            return nullptr;
+        }
+
+        while (pContainerNode && !pContainerNode->GetClassMetadata()->m_container)
+        {
+            pContainerNode = pContainerNode->GetParent();
+            node = node->GetParent();
+        }
+
+        // Check for pContainerNode again, can happen if a node is deleted during operation.
+        if (!pContainerNode)
+        {
+            return nullptr;
+        }
+
+        if (IsParentAssociativeContainer(pContainerNode) && IsPairContainer(pContainerNode))
+        {
+            // Go up one more level to the associative container, we'll remove the pair from that container
+            pContainerNode = pContainerNode->GetParent();
+            node = node->GetParent();
+        }
+
+        AZ_Assert(
+            pContainerNode, "Failed to locate parent container for element \"%s\" of type %s.",
+            node->GetElementMetadata() ? node->GetElementMetadata()->m_name : node->GetClassMetadata()->m_name,
+            node->GetClassMetadata()->m_typeId.ToString<AZStd::string>().c_str());
+
+        return pContainerNode;
+    }
+
+    InstanceDataNode* ReflectedPropertyEditor::GetNodeAtIndex(int index)
+    {
+        if (index >= m_impl->m_widgetsInDisplayOrder.size())
+        {
+            return nullptr;
+        }
+
+        return GetNodeFromWidget(m_impl->m_widgetsInDisplayOrder[index]);
+    }
+
+    QSet<PropertyRowWidget*> ReflectedPropertyEditor::GetTopLevelWidgets()
+    {
+        return m_impl->getTopLevelWidgets();
+    }
+
+    void ReflectedPropertyEditor::ChangeNodeIndex(InstanceDataNode* containerNode, InstanceDataNode* node, int fromIndex, int toIndex)
+    {
+        auto container = containerNode->GetElementMetadata()
+            ? containerNode->GetElementMetadata()->m_genericClassInfo->GetClassData()->m_container
+            : nullptr;
+
+        if (fromIndex == toIndex)
+        {
+            return;
+        }
+
+        if (!container || container->GetAssociativeContainerInterface())
+        {
+            return;
+        }
+
+        AZ::Uuid typeId = node->GetClassMetadata()->m_typeId;
+
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->BeforePropertyModified(containerNode);
+        }
+
+        const AZ::SerializeContext::ClassElement* containerClassElement = container->GetElement(container->GetDefaultElementNameCrc());
+
+        AZ::SerializeContext* serializeContext = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        // Backup the item we're moving.
+        void* srcElement = nullptr;
+        void* destElement = nullptr;
+
+        int destIndex = -1;
+        int srcIndex = fromIndex;
+
+        srcElement = container->GetElementByIndex(containerNode->GetInstance(0), containerClassElement, srcIndex);
+
+        void* tmpBuffer = serializeContext->CloneObject(srcElement, typeId);
+
+        // Shuffle all intervening items up (or down).
+        int indexOffset = (toIndex < fromIndex) ? -1 : 1;
+
+        while (destIndex != toIndex - indexOffset)
+        {
+            destIndex = srcIndex;
+            srcIndex += indexOffset;
+
+            destElement = srcElement;
+
+            srcElement = container->GetElementByIndex(containerNode->GetInstance(0), containerClassElement, srcIndex);
+
+            serializeContext->CloneObjectInplace(destElement, srcElement, typeId);
+        }
+
+        // Now replace the final element with the one backed up previously.
+        destElement = srcElement;
+
+        serializeContext->CloneObjectInplace(destElement, tmpBuffer, typeId);
+
+        if (m_impl->m_ptrNotify)
+        {
+            m_impl->m_ptrNotify->AfterPropertyModified(containerNode);
+            m_impl->m_ptrNotify->SealUndoStack();
+        }
+
+        // Need to refresh any pinned inspectors as well to keep the container state in sync
+        QueueInvalidation(Refresh_Values);
+        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeToIndex(InstanceDataNode* node, int index)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        if (!pContainerNode)
+        {
+            return;
+        }
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        const int elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        ChangeNodeIndex(pContainerNode, node, elementIndex, index);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeBefore(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(nodeToMove);
+        InstanceDataNode* pContainerNodeTarget = FindContainerNodeForNode(nodeToMoveBefore);
+
+        if (nodeToMove == nodeToMoveBefore)
+        {
+            return;
+        }
+
+        // Can only move nodes within the same parent.
+        if (pContainerNode != pContainerNodeTarget)
+        {
+            return;
+        }
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        int elementIndex = CalculateElementIndexInContainer(nodeToMove, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+        nodeInstancesOut.clear();
+        int elementIndexTarget =
+            CalculateElementIndexInContainer(nodeToMoveBefore, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex < elementIndexTarget)
+        {
+            elementIndexTarget -= 1;
+        }
+
+        ChangeNodeIndex(pContainerNode, nodeToMove, elementIndex, elementIndexTarget);
+    }
+
+    void ReflectedPropertyEditor::MoveNodeAfter(InstanceDataNode* nodeToMove, InstanceDataNode* nodeToMoveBefore)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(nodeToMove);
+        InstanceDataNode* pContainerNodeTarget = FindContainerNodeForNode(nodeToMoveBefore);
+
+        if (nodeToMove == nodeToMoveBefore)
+        {
+            return;
+        }
+
+        // Can only move nodes within the same parent.
+        if (pContainerNode != pContainerNodeTarget)
+        {
+            return;
+        }
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        int elementIndex = CalculateElementIndexInContainer(nodeToMove, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+        nodeInstancesOut.clear();
+        int elementIndexTarget =
+            CalculateElementIndexInContainer(nodeToMoveBefore, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        if (elementIndex > elementIndexTarget)
+        {
+            elementIndexTarget += 1;
+        }
+
+        ChangeNodeIndex(pContainerNode, nodeToMove, elementIndex, elementIndexTarget);
+    }
+
+    int ReflectedPropertyEditor::GetNodeIndexInContainer(InstanceDataNode* node)
+    {
+        InstanceDataNode* pContainerNode = FindContainerNodeForNode(node);
+
+        AZ::SerializeContext::IDataContainer* container = pContainerNode->GetClassMetadata()->m_container;
+
+        AZStd::vector<void*> nodeInstancesOut;
+        int elementIndex = CalculateElementIndexInContainer(node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
+
+        return elementIndex;
+    }
+
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerRemoveItem(PropertyRowWidget* widget, InstanceDataNode* node)
     {
         // Locate the owning container. There may be a level of indirection due to wrappers, such as DynamicSerializableField.
@@ -1690,7 +1908,7 @@ namespace AzToolsFramework
 
         // the index of the element being removed
         AZStd::vector<void*> nodeInstancesOut;
-        const size_t elementIndex = CalculateElementIndexInContainer(
+        const int elementIndex = CalculateElementIndexInContainer(
             node, pContainerNode->GetInstance(0), container, nodeInstancesOut);
 
         // pass the context as the last parameter to actually delete the related data.
@@ -1791,6 +2009,9 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::OnPropertyRowRequestContainerAddItem(PropertyRowWidget* widget, InstanceDataNode* pContainerNode)
     {
+        // Release the last prompt if its present
+        Q_EMIT releasePrompt();
+
         // Do expansion before modifying container as container modifications will invalidate and disallow the expansion until a later queued refresh
         OnPropertyRowExpandedOrContracted(widget, pContainerNode, true, true);
 
@@ -1898,6 +2119,11 @@ namespace AzToolsFramework
             int dialogFlag = -1;
             connect(buttonBox, &QDialogButtonBox::accepted, &dialog, [&dialogFlag]() {dialogFlag = 1; });
             connect(buttonBox, &QDialogButtonBox::rejected, &dialog, [&dialogFlag]() {dialogFlag = 0; });
+            connect(this, &ReflectedPropertyEditor::releasePrompt, &dialog, [&dialogFlag, &dialog]() 
+            {
+                dialog.reject();
+                dialogFlag = 0;
+            });
             layout->addWidget(buttonBox);
 
             // Make sure the dialog stays on top ready for dropping onto
@@ -1905,16 +2131,8 @@ namespace AzToolsFramework
             dialog.show();
             dialog.adjustSize();
 
-            m_releasePrompt = false;
-
             while (dialogFlag < 0)
             {
-                if (m_releasePrompt)
-                {
-                    dialogFlag = 0;
-                    dialog.reject();
-                    break;
-                }
 
                 qApp->processEvents();
             }
@@ -1925,7 +2143,7 @@ namespace AzToolsFramework
         AZStd::shared_ptr<void> keyToAdd(nullptr);
 
         bool createdElement = pContainerNode->CreateContainerElement(CreateContainerElementSelectClassCallback,
-            [this, pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
+            [pContainerNode, promptForValue, &keyToAdd](void* dataPtr, const AZ::SerializeContext::ClassElement* classElement, bool noDefaultData, AZ::SerializeContext*) -> bool
         {
             bool handled = false;
 
@@ -2037,7 +2255,7 @@ namespace AzToolsFramework
         // potentially before the second caller is ready for them.  This case should get examined to see why nested calls
         // are happening.  Either m_preventRefresh might need to turn into a refcount to allow nesting, or the assert might
         // be invalid, or the nesting shouldn't occur at all.
-        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent), 
+        AZ_Assert(!(m_impl->m_preventRefresh && shouldPrevent),
                   "PreventRefresh set to 'true' twice.  If multiple different callers are setting this, it might need to become a refcount.");
 
         // Prevent property refreshes while we're disabled This avoids us accidentally refreshing during a destructive change.
@@ -2078,7 +2296,7 @@ namespace AzToolsFramework
 
     void ReflectedPropertyEditor::DoRefresh()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_impl->m_preventRefresh || (m_impl->m_queuedRefreshLevel == Refresh_None))
         {

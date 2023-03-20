@@ -32,3 +32,4 @@
 
 #define AZ_GFX_TEXTURE2D_PARAM(Name, MemberName, DefaultValue)                                          \
         AZ_GFX_COMMON_PARAM(AZStd::string, Name, MemberName, DefaultValue)                              \
+

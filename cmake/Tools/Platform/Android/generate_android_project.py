@@ -14,7 +14,7 @@ import platform
 import re
 import sys
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
 if ROOT_DEV_PATH not in sys.path:
@@ -23,9 +23,17 @@ if ROOT_DEV_PATH not in sys.path:
 from cmake.Tools import common
 from cmake.Tools.Platform.Android import android_support
 
+
+O3DE_SCRIPTS_PATH = os.path.join(ROOT_DEV_PATH, 'scripts', 'o3de')
+if O3DE_SCRIPTS_PATH not in sys.path:
+    sys.path.append(O3DE_SCRIPTS_PATH)
+
+from o3de import manifest
+
+
 GRADLE_ARGUMENT_NAME = '--gradle-install-path'
-GRADLE_MIN_VERSION = LooseVersion('6.5')
-GRADLE_MAX_VERSION = LooseVersion('7.0.0')
+GRADLE_MIN_VERSION = Version('6.5')
+GRADLE_MAX_VERSION = Version('7.5.1')
 GRADLE_VERSION_REGEX = re.compile(r"Gradle\s(\d+.\d+.?\d*)")
 GRADLE_EXECUTABLE = 'gradle.bat' if platform.system() == 'Windows' else 'gradle'
 
@@ -45,7 +53,7 @@ def verify_gradle(override_gradle_path=None):
 
 
 CMAKE_ARGUMENT_NAME = '--cmake-install-path'
-CMAKE_MIN_VERSION = LooseVersion('3.20.0')
+CMAKE_MIN_VERSION = Version('3.20.0')
 CMAKE_VERSION_REGEX = re.compile(r'cmake version (\d+.\d+.?\d*)')
 CMAKE_EXECUTABLE = 'cmake'
 
@@ -102,6 +110,7 @@ def build_optional_signing_profile(store_file, store_password, key_alias, key_pa
 ANDROID_SDK_ARGUMENT_NAME = '--android-sdk-path'
 ANDROID_SDK_PLATFORM_ARGUMENT_NAME = '--android-sdk-platform'
 ANDROID_SDK_PREFERRED_TOOL_VER = '--android-sdk-build-tool-version'
+ANDROID_SDK_COMMAND_LINE_TOOLS_VER = '--android-sdk-command-line-tools-version'
 
 ANDROID_NATIVE_API_LEVEL = '--android-native-api-level'
 
@@ -113,7 +122,7 @@ MIN_NATIVE_API_LEVEL = 24       # The minimum Native API level that is supported
 ANDROID_NDK_PLATFORM_ARGUMENT_NAME = '--android-ndk-version'
 
 ANDROID_GRADLE_PLUGIN_ARGUMENT_NAME = '--gradle-plugin-version'
-ANDROID_GRADLE_MIN_PLUGIN_VERSION = LooseVersion("4.2.0")
+ANDROID_GRADLE_MIN_PLUGIN_VERSION = Version("4.2.2")
 
 # Constants for asset-related options for APK generation
 INCLUDE_APK_ASSETS_ARGUMENT_NAME = "--include-apk-assets"
@@ -125,14 +134,17 @@ ALL_ASSET_MODES = [ASSET_MODE_PAK, ASSET_MODE_LOOSE, ASSET_MODE_VFS]
 ASSET_TYPE_ARGUMENT_NAME = '--asset-type'
 DEFAULT_ASSET_TYPE = 'android'
 
+manifest_json = manifest.load_o3de_manifest()
+DEFAULT_3RD_PARTY_PATH = pathlib.Path(manifest_json.get('default_third_party_folder', manifest.get_o3de_third_party_folder()))
+
 
 def wrap_parsed_args(parsed_args):
     """
     Function to add a method to the parsed argument object to transform a long-form argument name to and get the
     parsed values based on the input long form.
 
-    This will allow us to read an argument like '--foo-bar=Orange' by using the built in method rather than looking for
-    the argparsed transformed attrobite 'foo_bar'
+    This will allow us to read an argument like '--foo-bar=Orange' by using the built-in method rather than looking for
+    the argparsed transformed attribute 'foo_bar'.
 
     :param parsed_args: The parsed args object to wrap
     """
@@ -163,8 +175,9 @@ def main(args):
                         required=True)
 
     parser.add_argument('--third-party-path',
-                        help='The path to the 3rd Party root directory',
-                        required=True)
+                        help=f'The path to the 3rd Party root directory (defaults to {DEFAULT_3RD_PARTY_PATH})',
+                        type=pathlib.Path,
+                        default=DEFAULT_3RD_PARTY_PATH)
 
     parser.add_argument(ANDROID_SDK_ARGUMENT_NAME,
                         help='The path to the android SDK',
@@ -180,11 +193,16 @@ def main(args):
                         default=-1)
 
     parser.add_argument(ANDROID_NATIVE_API_LEVEL,
-                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_ANDROID_SDK_PLATFORM})',
+                        help=f'The android native API level to use for the APK. If not set, this will default to the android SDK platform. (Minimum {MIN_NATIVE_API_LEVEL})',
                         type=int,
                         default=-1)
 
     # Override arguments
+    parser.add_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER,
+                        default='latest',
+                        help='The android SDK command line tools version.',
+                        required=False)
+
     parser.add_argument(ANDROID_SDK_PREFERRED_TOOL_VER,
                         help='The android SDK build tools version.',
                         required=False)
@@ -216,6 +234,14 @@ def main(args):
                         help='Custom path to place native build artifacts.',
                         default=None,
                         required=False)
+
+    parser.add_argument('--vulkan-validation-path',
+                        help='Override path to where the Vulkan Validation Layers libraries are.  Required for use with NDK r23+',
+                        default=None,
+                        required=False)
+    parser.add_argument('--extra-cmake-configure-args',
+                        help='Extra arguments to supply to the cmake configure step',
+                        nargs='*')
 
     # Asset Options
     parser.add_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME,
@@ -264,6 +290,10 @@ def main(args):
                         action='store_true',
                         help='Enable unity build')
 
+    parser.add_argument('--oculus-project',
+                        action='store_true',
+                        help='Generate android project for Oculus app.')
+
     parsed_args = parser.parse_args(args)
     wrap_parsed_args(parsed_args)
 
@@ -304,7 +334,8 @@ def main(args):
                                   f"({android_gradle_plugin_version}).")
 
     # Use the SDK Resolver to make sure the build tools and ndk
-    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME))
+    android_sdk = android_support.AndroidSDKResolver(android_sdk_path=parsed_args.get_argument(ANDROID_SDK_ARGUMENT_NAME),
+                                                     command_line_tools_version=parsed_args.get_argument(ANDROID_SDK_COMMAND_LINE_TOOLS_VER))
 
     # If no SDK platform is provided, check for any installed one
     if android_sdk_platform_version < 0:
@@ -368,7 +399,6 @@ def main(args):
     if not third_party_path.is_dir():
         raise common.LmbrCmdError(f"Invalid --third-party-path '{parsed_args.third_party_path}'.",
                                   common.ERROR_CODE_INVALID_PARAMETER)
-    third_party_path = third_party_path.parent
 
     build_dir = parsed_args.build_dir
 
@@ -396,14 +426,17 @@ def main(args):
                                                         gradle_version=gradle_version,
                                                         gradle_plugin_version=android_gradle_plugin_version,
                                                         override_ninja_path=override_ninja_path,
-                                                        include_assets_in_apk=parsed_args.get_argument(INCLUDE_APK_ASSETS_ARGUMENT_NAME),
+                                                        include_assets_in_apk=parsed_args.include_apk_assets,
                                                         asset_mode=parsed_args.get_argument(ASSET_MODE_ARGUMENT_NAME),
                                                         asset_type=parsed_args.get_argument(ASSET_TYPE_ARGUMENT_NAME),
                                                         signing_config=signing_config,
                                                         is_test_project=is_test_project,
                                                         overwrite_existing=parsed_args.overwrite_existing,
                                                         unity_build_enabled=parsed_args.enable_unity_build,
-                                                        native_build_path=parsed_args.native_build_path)
+                                                        oculus_project=parsed_args.oculus_project,
+                                                        native_build_path=parsed_args.native_build_path,
+                                                        vulkan_validation_path=parsed_args.vulkan_validation_path,
+                                                        extra_cmake_configure_args=parsed_args.extra_cmake_configure_args)
     generator.execute()
 
 

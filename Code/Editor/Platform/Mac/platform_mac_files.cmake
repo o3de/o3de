@@ -7,11 +7,12 @@
 #
 
 set(FILES
-    ../../Core/QtEditorApplication_mac.mm
+    Editor/Core/QtEditorApplication_mac.mm
     ../../LogFile_mac.mm
     ../../WindowObserver_mac.h
     ../../WindowObserver_mac.mm
     ../../MainWindow_mac.mm
     ../../RenderViewport_mac.mm
     ../Common/Unimplemented/Util/Mailer_Unimplemented.cpp
+    ../../Util/Platform/Mac/FileUtil_Mac.cpp
 )

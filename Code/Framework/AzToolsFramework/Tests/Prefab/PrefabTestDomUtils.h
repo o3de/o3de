@@ -22,11 +22,11 @@ namespace UnitTest
     {
         using namespace AzToolsFramework::Prefab;
 
-        inline static const char* ComponentsValueName = "Components";
-        inline static const char* ComponentIdName = "Id";
-        inline static const char* EntitiesValueName = "Entities";
-        inline static const char* EntityNameValueName = "Name";
-        inline static const char* BoolPropertyName = "BoolProperty";
+        inline static constexpr const char* ComponentsValueName = "Components";
+        inline static constexpr const char* ComponentIdName = "Id";
+        inline static constexpr const char* EntitiesValueName = "Entities";
+        inline static constexpr const char* EntityNameValueName = "Name";
+        inline static constexpr const char* BoolPropertyName = "BoolProperty";
 
         inline PrefabDomPath GetPrefabDomEntitiesPath()
         {
@@ -118,7 +118,7 @@ namespace UnitTest
             const PrefabDomValue& patches);
 
         void ValidateInstances(
-            const TemplateId& templateId,
+            TemplateId templateId,
             const PrefabDomValue& expectedContent,
             const PrefabDomPath& contentPath,
             bool isContentAnInstance = false,
@@ -147,12 +147,12 @@ namespace UnitTest
         void ComparePrefabDomValues(PrefabDomValueConstReference valueA, PrefabDomValueConstReference valueB);
 
         void ValidateEntitiesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<EntityAlias>& entityAliases);
 
         void ValidateNestedInstancesOfInstances(
-            const AzToolsFramework::Prefab::TemplateId& templateId,
+            AzToolsFramework::Prefab::TemplateId templateId,
             const AzToolsFramework::Prefab::PrefabDom& expectedPrefabDom,
             const AZStd::vector<InstanceAlias>& nestedInstanceAliases);
 

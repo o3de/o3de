@@ -6,13 +6,6 @@
  *
  */
 
-
-// In Mac, including ILog without including platform.h first fails because platform.h 
-// includes CryThread.h which includes CryThread_pthreads.h which uses ILog. 
-// So plaform.h needs the contents of ILog.h.
-// By including platform.h outside of the guard, we give platform.h the right include order
-#include <platform.h>
-
 #ifndef CRYINCLUDE_CRYCOMMON_ILOG_H
 #define CRYINCLUDE_CRYCOMMON_ILOG_H
 #pragma once
@@ -23,9 +16,6 @@
 // this code is disable by default due it's runtime cost
 //#define SUPPORT_LOG_IDENTER
 
-// forward declarations
-class ICrySizer;
-
 // Summary:
 //   Callback interface to the ILog.
 struct ILogCallback
@@ -33,9 +23,9 @@ struct ILogCallback
     // <interfuscator:shuffle>
     virtual ~ILogCallback() {}
     //OnWrite will always be called even if verbosity settings cause OnWriteToConsole and OnWriteToFile to not be called.
-    virtual void OnWrite(const char* sText, IMiniLog::ELogType type) = 0;
-    virtual void OnWriteToConsole(const char* sText, bool bNewLine) = 0;
-    virtual void OnWriteToFile(const char* sText, bool bNewLine) = 0;
+    virtual void OnWrite(AZStd::string_view sText, IMiniLog::ELogType type) = 0;
+    virtual void OnWriteToConsole(AZStd::string_view sText, bool bNewLine) = 0;
+    virtual void OnWriteToFile(AZStd::string_view sText, bool bNewLine) = 0;
     // </interfuscator:shuffle>
 };
 
@@ -84,8 +74,8 @@ struct ILog
     virtual void    LogError(const char* szCommand, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
-    //   Logs the text both to the end of file and console.
-    virtual void    LogPlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    //   Logs the text both to the end of file and console by appending with the previous line.
+    virtual void    LogAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
     //   Logs to the file specified in SetFileName.
@@ -93,15 +83,15 @@ struct ILog
     //   SetFileName
     virtual void    LogToFile(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
-    //
-    virtual void    LogToFilePlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    // Logs the text to the end of the file by appending it to the last line
+    virtual void    LogToFileAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     // Summary:
     //   Logs to console only.
     virtual void    LogToConsole(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
-    //
-    virtual void    LogToConsolePlus(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
+    // Log the text to the end of the console by appending with the last line
+    virtual void    LogToConsoleAppendWithPrevLine(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
 
     //
     virtual void    UpdateLoadingScreen(const char* command, ...) PRINTF_PARAMS(2, 3) = 0;
@@ -128,10 +118,6 @@ struct ILog
 
     virtual const char* GetModuleFilter() = 0;
 
-    // Notes:
-    //   Collect memory statistics in CrySizer
-    virtual void GetMemoryUsage(ICrySizer* pSizer) const = 0;
-
     // Asset scope strings help to figure out asset dependencies in case of asset loading errors.
     // Should not be used directly, only by using define CRY_DEFINE_ASSET_SCOPE
     // @see CRY_DEFINE_ASSET_SCOPE
@@ -145,9 +131,8 @@ struct ILog
     virtual void Unindent(class CLogIndenter* indenter) = 0;
 #endif
 
-#if !defined(RESOURCE_COMPILER)
     virtual void FlushAndClose() = 0;
-#endif
+    virtual void Flush() = 0;
 };
 
 #if !defined(SUPPORT_LOG_IDENTER)

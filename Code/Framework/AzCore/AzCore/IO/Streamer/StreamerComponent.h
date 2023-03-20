@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#ifndef AZCORE_STREAMER_COMPONENT_H
-#define AZCORE_STREAMER_COMPONENT_H
+
+#pragma once
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
@@ -34,22 +34,15 @@ namespace AZ
         static AZStd::unique_ptr<AZ::IO::Scheduler> CreateStreamerStack(AZStd::string_view profile = {});
 
     private:
-        //////////////////////////////////////////////////////////////////////////
-        // Component base
         void Activate() override;
         void Deactivate() override;
-        //////////////////////////////////////////////////////////////////////////
 
         // TickBus
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        /// \ref ComponentDescriptor::GetProvidedServices
         static void GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided);
-        /// \ref ComponentDescriptor::GetIncompatibleServices
         static void GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible);
-        /// \ref ComponentDescriptor::GetDependentServices
         static void GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent);
-        /// \red ComponentDescriptor::Reflect
         static void Reflect(ReflectContext* reflection);
 
         static AZStd::unique_ptr<AZ::IO::Scheduler> CreateSimpleStreamerStack();
@@ -67,6 +60,3 @@ namespace AZ
         int m_deviceThreadPriority;
     };
 }
-
-#endif // AZCORE_STREAMER_COMPONENT_H
-#pragma once

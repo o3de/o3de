@@ -38,13 +38,13 @@ namespace AzPhysics
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBodyConfiguration, AZ::SystemAllocator);
 
     void SimulatedBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->ClassDeprecate("WorldBodyConfiguration", "{6EEB377C-DC60-4E10-AF12-9626C0763B2D}", &Internal::DeprecateWorldBodyConfiguration);
+            serializeContext->ClassDeprecate("WorldBodyConfiguration", AZ::Uuid("{6EEB377C-DC60-4E10-AF12-9626C0763B2D}"), &Internal::DeprecateWorldBodyConfiguration);
             serializeContext->Class<SimulatedBodyConfiguration>()
                 ->Version(2, &Internal::SimulatedBodyVersionConverter)
                 ->Field("name", &SimulatedBodyConfiguration::m_debugName)

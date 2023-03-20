@@ -7,8 +7,6 @@
  */
 #include <RHI/Conversions.h>
 #include <RHI/Device.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace DX12
@@ -30,12 +28,12 @@ namespace AZ
         RHI::Ptr<Memory> MemoryPageFactory::CreateObject()
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            if (!heapMemoryUsage.TryReserveMemory(m_descriptor.m_pageSizeInBytes))
+            if (!heapMemoryUsage.CanAllocate(m_descriptor.m_pageSizeInBytes))
             {
                 return nullptr;
             }
 
-            AZ_TRACE_METHOD_NAME("Create Buffer Page");
+            AZ_PROFILE_SCOPE(RHI, "Create Buffer Page");
 
             D3D12_RESOURCE_STATES initialResourceState = ConvertInitialResourceState(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
             if (RHI::CheckBitsAny(m_descriptor.m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
@@ -50,12 +48,8 @@ namespace AZ
 
             if (memoryView.IsValid())
             {
-                heapMemoryUsage.m_residentInBytes += m_descriptor.m_pageSizeInBytes;
-                memoryView.SetName("BufferPage");
-            }
-            else
-            {
-                heapMemoryUsage.m_reservedInBytes -= m_descriptor.m_pageSizeInBytes;
+                heapMemoryUsage.m_totalResidentInBytes += m_descriptor.m_pageSizeInBytes;
+                memoryView.SetName(L"BufferPage");
             }
 
             return memoryView.GetMemory();
@@ -64,8 +58,8 @@ namespace AZ
         void MemoryPageFactory::ShutdownObject(Memory& memory, bool isPoolShutdown)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
-            heapMemoryUsage.m_residentInBytes -= m_descriptor.m_pageSizeInBytes;
-            heapMemoryUsage.m_reservedInBytes -= m_descriptor.m_pageSizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= m_descriptor.m_pageSizeInBytes;
+            heapMemoryUsage.Validate();
 
             if (isPoolShutdown)
             {

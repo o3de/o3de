@@ -178,7 +178,7 @@ TEST_F(AuthenticationProviderManagerScriptCanvasTest, GetTokensWithRefreshAsync_
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 600);
     EXPECT_CALL(*cognitoProviderMock, GetAuthenticationTokens()).Times(1).WillOnce(testing::Return(tokens));
     EXPECT_CALL(*cognitoProviderMock, RefreshTokensAsync()).Times(0);
@@ -215,7 +215,7 @@ TEST_F(AuthenticationProviderManagerScriptCanvasTest, GetTokens_Success)
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
 
     EXPECT_CALL(*cognitoProviderMock, GetAuthenticationTokens()).Times(1).WillOnce(testing::Return(tokens));
@@ -230,7 +230,7 @@ TEST_F(AuthenticationProviderManagerScriptCanvasTest, IsSignedIn_Success)
     testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>* cognitoProviderMock = (testing::NiceMock<AWSClientAuthUnitTest::AuthenticationProviderMock>*)m_mockController->m_authenticationProvidersMap[AWSClientAuth::ProviderNameEnum::AWSCognitoIDP].get();
 
      AWSClientAuth::AuthenticationTokens tokens(
-        AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN, AWSClientAuthUnitTest::TEST_TOKEN,
+        AWSClientAuthUnitTest::TEST_ACCESS_TOKEN, AWSClientAuthUnitTest::TEST_REFRESH_TOKEN, AWSClientAuthUnitTest::TEST_ID_TOKEN,
         AWSClientAuth::ProviderNameEnum::AWSCognitoIDP, 60);
     EXPECT_CALL(*cognitoProviderMock, GetAuthenticationTokens()).Times(1).WillOnce(testing::Return(tokens));
     m_mockController->IsSignedIn(AWSClientAuth::ProvideNameEnumStringAWSCognitoIDP);

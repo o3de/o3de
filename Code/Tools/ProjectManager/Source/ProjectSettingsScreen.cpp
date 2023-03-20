@@ -16,9 +16,9 @@
 #include <QFrame>
 #include <QHBoxLayout>
 #include <QVBoxLayout>
-#include <QLabel>
 #include <QLineEdit>
 #include <QStandardPaths>
+#include <QScrollArea>
 
 namespace O3DE::ProjectManager
 {
@@ -33,19 +33,27 @@ namespace O3DE::ProjectManager
         // if we don't set this in a frame (just use a sub-layout) all the content will align incorrectly horizontally
         QFrame* projectSettingsFrame = new QFrame(this);
         projectSettingsFrame->setObjectName("projectSettings");
-        m_verticalLayout = new QVBoxLayout();
 
-        // you cannot remove content margins in qss
-        m_verticalLayout->setContentsMargins(0, 0, 0, 0);
+        QScrollArea* scrollArea = new QScrollArea(this);
+        scrollArea->setWidgetResizable(true);
+
+        QWidget* scrollWidget = new QWidget(this);
+        scrollArea->setWidget(scrollWidget);
+
+        m_verticalLayout = new QVBoxLayout();
+        m_verticalLayout->setMargin(0);
         m_verticalLayout->setAlignment(Qt::AlignTop);
+        scrollWidget->setLayout(m_verticalLayout);
 
         m_projectName = new FormLineEditWidget(tr("Project name"), "", this);
-        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::ValidateProjectName);
+        connect(m_projectName->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectNameUpdated);
         m_verticalLayout->addWidget(m_projectName);
 
+        m_projectVersion = new FormLineEditWidget(tr("Project version"), "1.0.0", this);
+        m_verticalLayout->addWidget(m_projectVersion);
+
         m_projectPath = new FormFolderBrowseEditWidget(tr("Project Location"), "", this);
-        m_projectPath->lineEdit()->setReadOnly(true);
-        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::Validate);
+        connect(m_projectPath->lineEdit(), &QLineEdit::textChanged, this, &ProjectSettingsScreen::OnProjectPathUpdated);
         m_verticalLayout->addWidget(m_projectPath);
 
         projectSettingsFrame->setLayout(m_verticalLayout);
@@ -79,13 +87,14 @@ namespace O3DE::ProjectManager
     {
         ProjectInfo projectInfo;
         projectInfo.m_projectName = m_projectName->lineEdit()->text();
+        projectInfo.m_version = m_projectVersion->lineEdit()->text();
         // currently we don't have separate fields for changing the project name and display name 
         projectInfo.m_displayName = projectInfo.m_projectName;
         projectInfo.m_path = m_projectPath->lineEdit()->text();
         return projectInfo;
     }
 
-    bool ProjectSettingsScreen::ValidateProjectName()
+    bool ProjectSettingsScreen::ValidateProjectName() const
     {
         bool projectNameIsValid = true;
         if (m_projectName->lineEdit()->text().isEmpty())
@@ -110,30 +119,44 @@ namespace O3DE::ProjectManager
         m_projectName->setErrorLabelVisible(!projectNameIsValid);
         return projectNameIsValid;
     }
-    bool ProjectSettingsScreen::ValidateProjectPath()
+
+    bool ProjectSettingsScreen::ValidateProjectPath() const
     {
         bool projectPathIsValid = true;
-        if (m_projectPath->lineEdit()->text().isEmpty())
+        QDir path(m_projectPath->lineEdit()->text());
+        if (!path.isAbsolute())
         {
             projectPathIsValid = false;
-            m_projectPath->setErrorLabelText(tr("Please provide a valid location."));
+            m_projectPath->setErrorLabelText(tr("Please provide an absolute path for the project location."));
         }
-        else
+        else if (path.exists() && !path.isEmpty())
         {
-            QDir path(m_projectPath->lineEdit()->text());
-            if (path.exists() && !path.isEmpty())
-            {
-                projectPathIsValid = false;
-                m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
-            }
+            projectPathIsValid = false;
+            m_projectPath->setErrorLabelText(tr("This folder exists and isn't empty.  Please choose a different location."));
         }
 
         m_projectPath->setErrorLabelVisible(!projectPathIsValid);
         return projectPathIsValid;
     }
 
-    bool ProjectSettingsScreen::Validate()
+    void ProjectSettingsScreen::OnProjectNameUpdated()
     {
-        return ValidateProjectName() && ValidateProjectPath();
+        ValidateProjectName();
+    }
+
+    void ProjectSettingsScreen::OnProjectPathUpdated()
+    {
+        ValidateProjectName() && ValidateProjectPath();
+    }
+
+    AZ::Outcome<void, QString> ProjectSettingsScreen::Validate() const
+    {
+        if (ValidateProjectName() && ValidateProjectPath())
+        {
+            return AZ::Success();
+        }
+
+        // Returning empty string to use the default error message
+        return AZ::Failure<QString>("");
     }
 } // namespace O3DE::ProjectManager

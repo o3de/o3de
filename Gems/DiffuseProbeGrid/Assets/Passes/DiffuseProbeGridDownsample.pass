@@ -1,0 +1,115 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridDownsamplePassTemplate",
+            "PassClass": "DiffuseProbeGridDownsamplePass",
+            "Slots": [
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DepthStencilTextureInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ImageViewDesc": {
+                        "AspectFlags": [
+                            "Depth"
+                        ]
+                    }
+                },
+                {
+                    "Name": "DownsampledDepthOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "DepthStencil",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare",
+                        "LoadActionStencil": "DontCare"
+                    }
+                },
+                {
+                    "Name": "DownsampledNormalOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget",
+                    "LoadStoreAction": {
+                        "LoadAction": "DontCare"
+                    }
+                }
+            ],
+            "ImageAttachments": [
+                {
+                    "Name": "DownsampledDepthImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "Parent",
+                            "Attachment": "DepthStencilInputOutput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.25,
+                            "HeightMultiplier": 0.25
+                        }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthStencilInputOutput"
+                    },
+                    "FormatSource": {
+                        "Pass": "Parent",
+                        "Attachment": "DepthStencilInputOutput"
+                    },
+                    "ImageDescriptor": {
+                        "SharedQueueMask": "Graphics"
+                    }
+                },
+                {
+                    "Name": "DownsampledNormalImage",
+                    "SizeSource": {
+                        "Source": {
+                            "Pass": "This",
+                            "Attachment": "NormalInput"
+                        },
+                        "Multipliers": {
+                            "WidthMultiplier": 0.25,
+                            "HeightMultiplier": 0.25
+                        }
+                    },
+                    "MultisampleSource": {
+                        "Pass": "This",
+                        "Attachment": "NormalInput"
+                    },
+                    "ImageDescriptor": {
+                        "Format": "R16G16B16A16_FLOAT",
+                        "SharedQueueMask": "Graphics"
+                    }
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "DownsampledNormalOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledNormalImage"
+                    }
+                },
+                {
+                    "LocalSlot": "DownsampledDepthOutput",
+                    "AttachmentRef": {
+                        "Pass": "This",
+                        "Attachment": "DownsampledDepthImage"
+                    }
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridDownsample.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

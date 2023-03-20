@@ -8,17 +8,20 @@
 
 #pragma once
 
+#include <Multiplayer/IMultiplayer.h>
+#include <Multiplayer/MultiplayerEditorServerBus.h>
+#include <Multiplayer/Editor/MultiplayerPythonEditorEventsBus.h>
 #include <IEditor.h>
-
-#include <Editor/MultiplayerEditorConnection.h>
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Console/IConsole.h>
-#include <AzCore/Console/ILogger.h>
 #include <AzFramework/Entity/GameEntityContextBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
+#include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
+#include <AzFramework/Viewport/ScreenGeometry.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
+#include <AzToolsFramework/Editor/EditorContextMenuBus.h>
 
 namespace AzNetworking
 {
@@ -27,12 +30,30 @@ namespace AzNetworking
 
 namespace Multiplayer
 {
+    //! A component to reflect scriptable commands for the Editor
+    class PythonEditorFuncs : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(PythonEditorFuncs, "{22AEEA59-94E6-4033-B67D-7C8FBB84DF0D}")
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        // AZ::Component ...
+        void Activate() override {}
+        void Deactivate() override {}
+    };
+
     //! Multiplayer system component wraps the bridging logic between the game and transport layer.
     class MultiplayerEditorSystemComponent final
         : public AZ::Component
-        , private AzFramework::GameEntityContextEventBus::Handler
+        , public MultiplayerEditorLayerPythonRequestBus::Handler
         , private AzToolsFramework::EditorEvents::Bus::Handler
         , private IEditorNotifyListener
+        , private MultiplayerEditorServerRequestBus::Handler
+        , private AZ::TickBus::Handler
+        , private AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler
+        , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
+        , private AzToolsFramework::EditorContextMenuBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -45,6 +66,9 @@ namespace Multiplayer
         MultiplayerEditorSystemComponent();
         ~MultiplayerEditorSystemComponent() override = default;
 
+        //! Called once the editor receives the server's accept packet
+        void OnServerAcceptanceReceived();
+
         //! AZ::Component overrides.
         //! @{
         void Activate() override;
@@ -56,20 +80,69 @@ namespace Multiplayer
         void NotifyRegisterViews() override;
         //! @}
 
-    private:    
+        //! MultiplayerEditorLayerPythonRequestBus::Handler overrides.
+        //! @{
+        void EnterGameMode() override;
+        bool IsInGameMode() override;
+        //! @}
+
+    private:
+        bool LaunchEditorServer();
+        bool FindServerLauncher(AZ::IO::FixedMaxPath& serverPath);
+        void Connect();
+
+        //! AzToolsFramework::EditorEntityContextNotificationBus::Handler overrides
+        //! @{
+        void OnStartPlayInEditorBegin() override;
+        void OnStartPlayInEditor() override;
+        //! @}
+
+        //! AzToolsFramework::EditorContextMenu::Bus::Handler overrides
+        //! @{
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
+        int GetMenuPosition() const override;
+        void OnStopPlayInEditorBegin() override;
+        //! @}
+
+        //! AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler overrides
+        //! @{
+        void OnPreparingInMemorySpawnableFromPrefab(const AzFramework::Spawnable& spawnable, const AZStd::string& assetHint) override;
+        //! @}
+
         //! EditorEvents::Handler overrides
         //! @{
         void OnEditorNotifyEvent(EEditorNotifyEvent event) override;
         //! @}
-        
-        //!  GameEntityContextEventBus::Handler overrides
+
+        //! MultiplayerEditorServerRequestBus::Handler
         //! @{
-        void OnGameEntitiesStarted() override;
-        void OnGameEntitiesReset() override;
+        void SendEditorServerLevelDataPacket(AzNetworking::IConnection* connection) override;
         //! @}
 
+        //! AZ::TickBus::Handler
+        //! @{
+        void OnTick(float, AZ::ScriptTimePoint) override;
+        //! @}
+
+        //! Context menu handler
+        void ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition);
+
         IEditor* m_editor = nullptr;
-        AzFramework::ProcessWatcher* m_serverProcess = nullptr;
+        AZStd::unique_ptr<AzFramework::ProcessWatcher> m_serverProcessWatcher = nullptr;
+        AZStd::unique_ptr<ProcessCommunicatorTracePrinter> m_serverProcessTracePrinter = nullptr;
         AzNetworking::ConnectionId m_editorConnId;
+
+        ServerAcceptanceReceivedEvent::Handler m_serverAcceptanceReceivedHandler;
+        AZ::ScheduledEvent m_connectionEvent = AZ::ScheduledEvent([this]{this->Connect();}, AZ::Name("MultiplayerEditorConnect"));
+        uint16_t m_connectionAttempts = 0;
+
+        struct PreAliasedSpawnableData
+        {
+            AZStd::unique_ptr<AzFramework::Spawnable> spawnable;
+            AZStd::string assetHint;
+            AZ::Data::AssetId assetId;
+        };
+        
+        AZStd::vector<PreAliasedSpawnableData> m_preAliasedSpawnablesForServer;
     };
 }

@@ -37,7 +37,7 @@ namespace AZ
         {
         public: // functions
 
-            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator);
 
             AuxGeomDrawQueue() = default;
             ~AuxGeomDrawQueue() override = default;
@@ -60,18 +60,25 @@ namespace AZ
             // Fixed shape draws
             void DrawQuad(float width, float height, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawSphere(const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawHemisphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawDisk(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawCone(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawCylinder(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawAabb(const AZ::Aabb& aabb, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawAabb(const AZ::Aabb& aabb, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawObb(const AZ::Obb& obb, const AZ::Vector3& position, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawObb(const AZ::Obb& obb, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawFrustum(const AZ::Frustum& frustum, const AZ::Color& color, bool drawNormals, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
 
             //! Switch clients of AuxGeom to using a different buffer and return the filled buffer for processing
             AuxGeomBufferData* Commit();
 
         private: // functions
+
+            void DrawCylinderCommon(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex, bool drawEnds);
+            void DrawSphereCommon(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex, bool isHemisphere);
 
             //! Clear the current buffers
             void ClearCurrentBufferData();

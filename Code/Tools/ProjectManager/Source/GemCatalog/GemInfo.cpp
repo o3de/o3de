@@ -8,11 +8,13 @@
 
 #include "GemInfo.h"
 
+#include <QObject>
+
 namespace O3DE::ProjectManager
 {
     GemInfo::GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded)
         : m_name(name)
-        , m_creator(creator)
+        , m_origin(creator)
         , m_summary(summary)
         , m_platforms(platforms)
         , m_isAdded(isAdded)
@@ -29,17 +31,17 @@ namespace O3DE::ProjectManager
         switch (platform)
         {
         case Android:
-            return "Android";
+            return QObject::tr("Android");
         case iOS:
-            return "iOS";
+            return QObject::tr("iOS");
         case Linux:
-            return "Linux";
+            return QObject::tr("Linux");
         case macOS:
-            return "macOS";
+            return QObject::tr("macOS");
         case Windows:
-            return "Windows";
+            return QObject::tr("Windows");
         default:
-            return "<Unknown Platform>";
+            return QObject::tr("<Unknown Platform>");
         }
     }
 
@@ -48,13 +50,13 @@ namespace O3DE::ProjectManager
         switch (type)
         {
         case Asset:
-            return "Asset";
+            return QObject::tr("Asset");
         case Code:
-            return "Code";
+            return QObject::tr("Code");
         case Tool:
-            return "Tool";
+            return QObject::tr("Tool");
         default:
-            return "<Unknown Type>";
+            return QObject::tr("<Unknown Type>");
         }
     }
 
@@ -62,14 +64,32 @@ namespace O3DE::ProjectManager
     {
         switch (origin)
         {
-        case Open3DEEngine:
-            return "Open 3D Engine";
+        case Open3DEngine:
+            return QObject::tr("Open 3D Engine");
         case Local:
-            return "Local";
+            return QObject::tr("Local");
+        case Remote:
+            return QObject::tr("Remote");
         default:
-            return "<Unknown Gem Origin>";
+            return QObject::tr("<Unknown Gem Origin>");
         }
     }
+
+    QString GemInfo::GetDownloadStatusString(DownloadStatus status)
+    {
+        switch (status)
+        {
+        case NotDownloaded:
+            return QObject::tr("Not Downloaded");
+        case Downloading:
+            return QObject::tr("Downloading");
+        case Downloaded:
+            return QObject::tr("Downloaded");
+        case UnknownDownloadStatus:
+        default:
+            return QObject::tr("<Unknown Download Status>");
+        }
+    };
 
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {
@@ -79,5 +99,57 @@ namespace O3DE::ProjectManager
     bool GemInfo::operator<(const GemInfo& gemInfo) const
     {
         return (m_displayName < gemInfo.m_displayName);
+    }
+
+    GemInfo::Platforms GemInfo::GetPlatformFromString(const QString& platformText)
+    {
+        if(platformText == "Windows")
+        {
+            return GemInfo::Platform::Windows;
+        }
+        else if(platformText == "Linux")
+        {
+            return GemInfo::Platform::Linux;
+        }
+        else if(platformText == "Android")
+        {
+            return GemInfo::Platform::Android;
+        }
+        else if(platformText == "iOS")
+        {
+            return GemInfo::Platform::iOS;
+        }
+        else if(platformText == "macOS")
+        {
+            return GemInfo::Platform::macOS;
+        }
+        else
+        {
+            return GemInfo::Platforms();
+        }
+    }
+
+    GemInfo::Platforms GemInfo::GetPlatformsFromStringList(const QStringList& platformStrings)
+    {
+        GemInfo::Platforms newPlatforms = GemInfo::Platforms();
+        for(const QString& platform : platformStrings)
+        {
+            newPlatforms |= GetPlatformFromString(platform);
+        }
+        return newPlatforms;
+    }
+
+    QStringList GemInfo::GetPlatformsAsStringList() const
+    {
+        QStringList platformStrings;
+        for (int i = 0; i < GemInfo::NumPlatforms; ++i)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(m_platforms & platform)
+            {
+                platformStrings << GetPlatformString(platform);
+            }
+        }
+        return platformStrings;
     }
 } // namespace O3DE::ProjectManager

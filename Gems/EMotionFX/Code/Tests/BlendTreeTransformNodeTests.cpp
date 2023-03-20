@@ -89,13 +89,13 @@ namespace EMotionFX
 
         translate_amount->SetValue(0.5f);
         Evaluate();
-        expected.mPosition = AZ::Vector3(5.0f, 0.0f, 0.0f);
+        expected.m_position = AZ::Vector3(5.0f, 0.0f, 0.0f);
         outputRoot = GetOutputTransform();
         ASSERT_EQ(expected, outputRoot);
 
         translate_amount->SetValue(1.0f);
         Evaluate();
-        expected.mPosition = AZ::Vector3(10.0f, 0.0f, 0.0f);
+        expected.m_position = AZ::Vector3(10.0f, 0.0f, 0.0f);
         outputRoot = GetOutputTransform();
         ASSERT_EQ(expected, outputRoot);
     }

@@ -26,15 +26,15 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
-                // No need for validation for a null renderer
-                if (IsNullRenderer())
+                // No need for validation for a null rhi
+                if (IsNullRHI())
                 {
                     return;
                 }
 
                 if (!isDataValid)
                 {
-                    AZ_Warning("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
+                    AZ_Error("BufferPoolBase", false, "Failed to map buffer '%s'.", buffer.GetName().GetCStr());
                 }
                 ++buffer.m_mapRefCount;
                 ++m_mapRefCount;
@@ -45,8 +45,8 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
-                // No need for validation for a null renderer
-                if (IsNullRenderer())
+                // No need for validation for a null rhi
+                if (IsNullRHI())
                 {
                     return true;
                 }

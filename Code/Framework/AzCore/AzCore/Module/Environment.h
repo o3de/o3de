@@ -8,13 +8,16 @@
 #ifndef AZCORE_ENVIRONMENT_INCLUDE_H
 #define AZCORE_ENVIRONMENT_INCLUDE_H 1
 
-#include <AzCore/std/smart_ptr/sp_convertible.h>
+#include <AzCore/std/concepts/concepts_assignable.h>
+#include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/parallel/mutex.h>
 #include <AzCore/std/parallel/spin_mutex.h>
-#include <AzCore/std/parallel/lock.h>
-#include <AzCore/std/typetraits/alignment_of.h>
-#include <AzCore/std/typetraits/has_virtual_destructor.h>
+#include <AzCore/std/smart_ptr/sp_convertible.h>
 #include <AzCore/std/typetraits/aligned_storage.h>
+#include <AzCore/std/typetraits/alignment_of.h>
+#include <AzCore/std/typetraits/config.h>
+#include <AzCore/std/typetraits/has_virtual_destructor.h>
+#include <AzCore/O3DEKernelConfiguration.h>
 
 namespace AZ
 {
@@ -109,40 +112,15 @@ namespace AZ
         EnvironmentVariable<T>  FindVariable(const char* uniqueName);
 
         /// Returns the environment so you can share it with \ref AttachEnvironment
-        EnvironmentInstance GetInstance();
+        O3DEKERNEL_API EnvironmentInstance GetInstance();
 
         /// Returns module id (non persistent)
-        void* GetModuleId();
-
-        /**
-         * Create Environment with customer allocator interface. You don't have to call create or destroy as they will
-         * created on demand, but is such case the module allocator will used. For example on Windows if you link the CRT
-         * two environments will end up on different heaps.
-         * \returns true if Create was successful, false if environment is already created/attached.
-         */
-        bool Create(AllocatorInterface* allocator);
-
-        /**
-         * Explicit Destroy, you don't have to call it unless you want to control order. It will be called when the module is unloaded.
-         * Of course no order is guaranteed.
-         */
-        void Destroy();
-
-        /**
-         * Attaches the current module environment from sourceEnvironment.
-         * note: this is not a copy it will actually reference the source environment, so any variables
-         * you add remove will be visible to all shared modules
-         * \param useAsFallback if set to true a new environment will be created and only failures to GetVariable
-         * which check the shared environment. This way you can change the environment.
-         */
-        void Attach(EnvironmentInstance sourceEnvironment, bool useAsGetFallback = false);
-
-        /// Detaches the active environment (if one is attached)
-        void Detach();
-
-        /// Returns true if an environment is attached to this module
-        bool IsReady();
-    };
+        inline const void* GetModuleId()
+        {
+            static const bool uniqueMemoryAddress{};
+            return &uniqueMemoryAddress;
+        }
+    } // namespace Environment
 
     namespace Internal
     {
@@ -192,8 +170,6 @@ namespace AZ
             virtual Environment::AllocatorInterface* GetAllocator() = 0;
 
             virtual void DeleteThis() = 0;
-
-            static EnvironmentInterface*  s_environment;
         };
 
         // Don't use any virtual methods to we make sure we can reuse variables across modules
@@ -235,10 +211,10 @@ namespace AZ
             using DestructFunc = void (*)(EnvironmentVariableHolderBase *, DestroyTarget);
             // Assumes the m_mutex is already locked.
             // On return m_mutex is in an unlocked state.
-            void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
+            O3DEKERNEL_API void UnregisterAndDestroy(DestructFunc destruct, bool moduleRelease);
 
             AZ::Internal::EnvironmentInterface* m_environmentOwner; ///< Used to know which environment we should use to free the variable if we can't transfer ownership
-            void* m_moduleOwner; ///< Used when the variable can't transfered across module and we need to destruct the variable when the module is going away
+            const void* m_moduleOwner; ///< Used when the variable can't transferred across module and we need to destruct the variable when the module is going away
             bool m_canTransferOwnership; ///< True if variable can be allocated in one module and freed in other. Usually true for POD types when they share allocator.
             bool m_isConstructed; ///< When we can't transfer the ownership, and the owning module is destroyed we have to "destroy" the variable.
             u32 m_guid;
@@ -251,16 +227,15 @@ namespace AZ
         class EnvironmentVariableHolder
             : public EnvironmentVariableHolderBase
         {
-            void ConstructImpl(const AZStd::true_type& /* AZStd::has_trivial_constructor<T> */)
-            {
-                memset(&m_value, 0, sizeof(T));
-            }
-
             template<class... Args>
-            void ConstructImpl(const AZStd::false_type& /* AZStd::has_trivial_constructor<T> */, Args&&... args)
+            void ConstructImpl(Args&&... args)
             {
-                // Construction of non-trivial types is left up to the type's constructor.
-                new(&m_value) T(AZStd::forward<Args>(args)...);
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
+                AZStd::construct_at(std::launder(reinterpret_cast<T*>(&m_value)), AZStd::forward<Args>(args)...);
+            #else
+                AZStd::construct_at(reinterpret_cast<T*>(&m_value), AZStd::forward<Args>(args)...);
+            #endif
             }
             static void DestructDispatchNoLock(EnvironmentVariableHolderBase *base, DestroyTarget selfDestruct)
             {
@@ -274,10 +249,12 @@ namespace AZ
                 AZ_Assert(self->m_isConstructed, "Variable is not constructed. Please check your logic and guard if needed!");
                 self->m_isConstructed = false;
                 self->m_moduleOwner = nullptr;
-                if constexpr(!AZStd::is_trivially_destructible_v<T>)
-                {
-                    reinterpret_cast<T*>(&self->m_value)->~T();
-                }
+                // Use std::launder to ensure that the compiler treats the T* reinterpret_cast as a new object
+            #if __cpp_lib_launder
+                AZStd::destroy_at(std::launder(reinterpret_cast<T*>(&self->m_value)));
+            #else
+                AZStd::destroy_at(reinterpret_cast<T*>(&self->m_value));
+            #endif
             }
         public:
             EnvironmentVariableHolder(u32 guid, bool isOwnershipTransfer, Environment::AllocatorInterface* allocator)
@@ -300,18 +277,7 @@ namespace AZ
             {
                 m_mutex.lock();
                 const bool moduleRelease = (--s_moduleUseCount == 0);
-                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease);
-            }
-
-            void Construct()
-            {
-                AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
-                if (!m_isConstructed)
-                {
-                    ConstructImpl(AZStd::is_trivially_constructible<T>{});
-                    m_isConstructed = true;
-                    m_moduleOwner = Environment::GetModuleId();
-                }
+                UnregisterAndDestroy(DestructDispatchNoLock, moduleRelease && m_moduleOwner == AZ::Environment::GetModuleId());
             }
 
             template <class... Args>
@@ -320,7 +286,7 @@ namespace AZ
                 AZStd::lock_guard<AZStd::spin_mutex> lock(m_mutex);
                 if (!m_isConstructed)
                 {
-                    ConstructImpl(typename AZStd::false_type(), AZStd::forward<Args>(args)...);
+                    ConstructImpl(AZStd::forward<Args>(args)...);
                     m_isConstructed = true;
                     m_moduleOwner = Environment::GetModuleId();
                 }
@@ -333,7 +299,7 @@ namespace AZ
             }
 
             // variable storage
-            typename AZStd::aligned_storage<sizeof(T), AZStd::alignment_of<T>::value>::type m_value;
+            AZStd::aligned_storage_for_t<T> m_value;
             static int s_moduleUseCount;
         };
 
@@ -345,16 +311,16 @@ namespace AZ
         * If you provide addedVariableLock you will receive lock if a variable has been created, so you can safely construct the object and then
         * release the lock.
         */
-        EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
+        O3DEKERNEL_API EnvironmentVariableResult AddAndAllocateVariable(u32 guid, size_t byteSize, size_t alignment, AZStd::recursive_mutex** addedVariableLock = nullptr);
 
         /// Returns the value of the variable if found, otherwise nullptr.
-        EnvironmentVariableResult GetVariable(u32 guid);
+        O3DEKERNEL_API EnvironmentVariableResult GetVariable(u32 guid);
 
         /// Returns the allocator used by the current environment.
-        Environment::AllocatorInterface* GetAllocator();
+        O3DEKERNEL_API Environment::AllocatorInterface* GetAllocator();
 
         /// Converts a string name to an ID (using Crc32 function)
-        u32  EnvironmentVariableNameToId(const char* uniqueName);
+        O3DEKERNEL_API u32  EnvironmentVariableNameToId(const char* uniqueName);
     } // namespace Internal
 
     /**
@@ -444,46 +410,45 @@ namespace AZ
 
         T& operator*() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return *reinterpret_cast<T*>(&m_data->m_value);
         }
 
         T* operator->() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return reinterpret_cast<T*>(&m_data->m_value);
         }
 
         T& Get() const
         {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            AZ_Assert(m_data->IsConstructed(), "You are using an invalid variable, the owner has removed it!");
+            AZ_Assert(m_data, "You can't dereference a null pointer");
+            AZ_Assert(IsConstructed(), "You are using an invalid variable, the owner has removed it!");
             return *reinterpret_cast<T*>(&m_data->m_value);
         }
 
-        void Set(const T& value)
+        template<typename U>
+        auto Set(U&& value) -> AZStd::enable_if_t<AZStd::assignable_from<T&, U>>
         {
-            Get() = value;
+            Get() = AZStd::forward<U>(value);
         }
 
         explicit operator bool() const
         {
-            return IsValid();
+            return IsConstructed();
         }
-        bool operator! () const { return !IsValid(); }
+        bool operator! () const
+        {
+            return !IsConstructed();
+        }
 
         void Swap(EnvironmentVariable& rhs)
         {
             HolderType* tmp = m_data;
             m_data = rhs.m_data;
             rhs.m_data = tmp;
-        }
-
-        bool IsValid() const
-        {
-            return m_data;
         }
 
         bool IsOwner() const
@@ -494,12 +459,6 @@ namespace AZ
         bool IsConstructed() const
         {
             return m_data && m_data->IsConstructed();
-        }
-
-        void Construct()
-        {
-            AZ_Assert(IsValid(), "You can't dereference a null pointer");
-            m_data->Construct();
         }
 
     protected:
@@ -545,25 +504,25 @@ namespace AZ
     template <class T>
     bool operator==(EnvironmentVariable<T> const& a, std::nullptr_t)
     {
-        return !a.IsValid();
+        return !a.IsConstructed();
     }
 
     template <class T>
     bool operator!=(EnvironmentVariable<T> const& a, std::nullptr_t)
     {
-        return a.IsValid();
+        return a.IsConstructed();
     }
 
     template <class T>
     bool operator==(std::nullptr_t, EnvironmentVariable<T> const& a)
     {
-        return !a.IsValid();
+        return !a.IsConstructed();
     }
 
     template <class T>
     bool operator!=(std::nullptr_t, EnvironmentVariable<T> const& a)
     {
-        return a.IsValid();
+        return a.IsConstructed();
     }
 
     template <class T>
@@ -640,16 +599,6 @@ namespace AZ
     {
         return FindVariable<T>(AZ::Internal::EnvironmentVariableNameToId(uniqueName));
     }
-
-    namespace Internal
-    {
-        inline void AttachGlobalEnvironment(void* globalEnv)
-        {
-            AZ_Assert(!AZ::Environment::IsReady(), "An environment is already created in this module!");
-            AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(globalEnv));
-        }
-    }
-
 } // namespace AZ
 
 #ifdef AZ_MONOLITHIC_BUILD
@@ -662,11 +611,10 @@ namespace AZ
 /// For more details see:
 /// \ref AZ::InitializeDynamicModuleFunction, \ref AZ::UninitializeDynamicModuleFunction
 #define AZ_DECLARE_MODULE_INITIALIZATION \
-    extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env) \
+    extern "C" AZ_DLL_EXPORT void InitializeDynamicModule() \
     { \
-        AZ::Internal::AttachGlobalEnvironment(env); \
     } \
-    extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule() { AZ::Environment::Detach(); }
+    extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule() { }
 
 #endif // AZ_MONOLITHIC_BUILD
 

@@ -64,7 +64,7 @@ namespace AZ
 
         private:
             ///////////////////////////////////////////////////////////////////
-            // IntrusivePtCountPolicy template overrides
+            // IntrusivePtrCountPolicy template overrides
             void add_ref();
             void release();
             ///////////////////////////////////////////////////////////////////
@@ -89,6 +89,9 @@ namespace AZ
 
             // Tracks the asset type used to create the instance.
             AssetType m_assetType;
+            
+            // Boolean to indicate if the instance has been orphaned from the instance database
+            bool m_isOrphaned = false;
         };
 
         /// @cond EXCLUDE_DOCS

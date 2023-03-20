@@ -7,11 +7,15 @@
  */
 #pragma once
 
+// NOTE: We are careful to include platform headers *before* we include AzCore/Debug/Profiler.h to ensure that d3d12 symbols
+// are defined prior to the inclusion of the pix3 runtime.
+#include <RHI/DX12.h>
+
 #include <Atom/RHI/DeviceObject.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/unordered_map.h>
-#include <RHI/DX12.h>
 
 namespace AZ
 {
@@ -20,6 +24,35 @@ namespace AZ
         class Device;
         class ImageView;
         class BufferView;
+
+        //! Encapsulates a resource barrier with a posible state that is needed for the command list.
+        struct BarrierOp
+        {
+            //! State that the command list needs to be before emitting the barrier.
+            using CommandListState = RHI::MultisampleState;
+            BarrierOp() = default;
+            BarrierOp(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const CommandListState* state)
+            {
+                m_barrier.Transition = barrier;
+                if (state)
+                {
+                    m_cmdListState.emplace(*state);
+                }
+            }
+            BarrierOp(const D3D12_RESOURCE_ALIASING_BARRIER& barrier, const CommandListState* state)
+            {
+                m_barrier.Aliasing = barrier;
+                if (state)
+                {
+                    m_cmdListState.emplace(*state);
+                }
+            }
+
+            //! Resource barrier to be emitted.
+            D3D12_RESOURCE_BARRIER m_barrier;
+            //! Optional state that the command list needs to be before emitting the barrier.
+            AZStd::optional<CommandListState> m_cmdListState;
+        };
 
         class CommandListBase
             : public RHI::DeviceObject
@@ -35,10 +68,30 @@ namespace AZ
 
             bool IsRecording() const;
 
-            void QueueUAVBarrier(ID3D12Resource* resource);
-            void QueueTransitionBarrier(ID3D12Resource* resource, D3D12_RESOURCE_STATES stateBefore, D3D12_RESOURCE_STATES stateAfter);
-            void QueueTransitionBarrier(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier);
-            void QueueAliasingBarrier(const D3D12_RESOURCE_ALIASING_BARRIER& barrier);
+            //! Adds a transition barrier that will be emitted when flusing the barriers.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueTransitionBarrier(
+                ID3D12Resource* resource,
+                D3D12_RESOURCE_STATES stateBefore,
+                D3D12_RESOURCE_STATES stateAfter,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds a transition barrier that will be emitted when flusing the barriers.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueTransitionBarrier(
+                const D3D12_RESOURCE_TRANSITION_BARRIER& barrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds a transition barrier operation that will be emitted when flusing the barriers.
+            void QueueTransitionBarrier(const BarrierOp& op);
+            //! Adds an aliasing barrier that will be emitted when flusing the barriers.
+            //! Can specify a state that the command list need to be before emitting the barrier.
+            //! A null state means that it doesn't matter in which state the command list is.
+            void QueueAliasingBarrier(
+                const D3D12_RESOURCE_ALIASING_BARRIER& barrier,
+                const BarrierOp::CommandListState* state = nullptr);
+            //! Adds an aliasing barrier operation that will be emitted when flusing the barriers.
+            void QueueAliasingBarrier(const BarrierOp& op);
 
             void FlushBarriers();
 
@@ -48,10 +101,14 @@ namespace AZ
 
             RHI::HardwareQueueClass GetHardwareQueueClass() const;
 
-            void SetAftermathEventMarker(const AZStd::string& markerData);
+            void SetAftermathEventMarker(const char* markerData);
 
         protected:
             void Init(Device& device, RHI::HardwareQueueClass hardwareQueueClass, ID3D12CommandAllocator* commandAllocator);
+           //! Sets the state of the command list for emitting a barrier.
+            void SetBarrierState(const BarrierOp::CommandListState& state);
+            //! Sets the sample positions of the command list.
+            void SetSamplePositions(const RHI::MultisampleState& state);
 
             CommandListBase() = default;
 
@@ -63,8 +120,12 @@ namespace AZ
 
             RHI::HardwareQueueClass m_hardwareQueueClass;
             Microsoft::WRL::ComPtr<ID3D12GraphicsCommandListX> m_commandList;
-            AZStd::vector<D3D12_RESOURCE_BARRIER> m_queuedBarriers;
+            AZStd::vector<BarrierOp> m_queuedBarriers;
             bool m_isRecording = false;
+            struct State
+            {
+                RHI::MultisampleState m_customSamplePositions;
+            } m_baseState;
 
             // Nsight Aftermath related command list context
             void* m_aftermathCommandListContext = nullptr;

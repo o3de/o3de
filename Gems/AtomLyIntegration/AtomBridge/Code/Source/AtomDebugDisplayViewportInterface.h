@@ -124,7 +124,7 @@ namespace AZ::AtomBridge
         AZ_RTTI(AtomDebugDisplayViewportInterface, "{09AF6A46-0100-4FBF-8F94-E6B221322D14}", AzFramework::DebugDisplayRequestBus::Handler);
 
         explicit AtomDebugDisplayViewportInterface(AZ::RPI::ViewportContextPtr viewportContextPtr);
-        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress);
+        explicit AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene);
         ~AtomDebugDisplayViewportInterface();
 
         void ResetRenderState();
@@ -135,15 +135,14 @@ namespace AZ::AtomBridge
         // Commented out function prototypes are remaining part of the api
         // waiting to be implemented.
         // work tracked in [ATOM-3459]
-        void SetColor(float r, float g, float b, float a = 1.f) override;
         void SetColor(const AZ::Color& color) override;
-        void SetColor(const AZ::Vector4& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-        void DrawQuad(float width, float height) override;
+        void DrawQuad(float width, float height, bool drawShaded) override;
         void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawWireQuad(float width, float height) override;
         void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
+        void DrawQuad2dGradient(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4, float z, const Color& firstColor, const Color& secondColor) override;
         void DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3) override;
         void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) override;
         void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
@@ -156,6 +155,7 @@ namespace AZ::AtomBridge
         void DrawLine(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector4& col1, const AZ::Vector4& col2) override;
         void DrawLines(const AZStd::vector<AZ::Vector3>& lines, const AZ::Color& color) override;
         void DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled = true) override;
+        void DrawPolyLine(AZStd::span<const AZ::Vector3>, bool cycled = true) override;
         void DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z) override;
         void DrawLine2dGradient(const AZ::Vector2& p1, const AZ::Vector2& p2, float z, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
@@ -168,12 +168,15 @@ namespace AZ::AtomBridge
         void DrawSolidCone(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, float height, bool drawShaded) override;
         void DrawWireCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
         void DrawSolidCylinder(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
+        void DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height) override;
+        void DrawSolidCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height, bool drawShaded) override;
         void DrawWireCapsule(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float heightStraightSection) override;
         void DrawWireSphere(const AZ::Vector3& pos, float radius) override;
         void DrawWireSphere(const AZ::Vector3& pos, const AZ::Vector3 radius) override;
+        void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) override;
         void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
         void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded) override;
-        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
+        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded) override;
         void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float headScale = 1.0f, bool dualEndedArrow = false) override;
         void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
         void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;
@@ -193,6 +196,8 @@ namespace AZ::AtomBridge
         AZ::u32 SetState(AZ::u32 state) override;
         void PushMatrix(const AZ::Transform& tm) override;
         void PopMatrix() override;
+        void PushPremultipliedMatrix(const AZ::Matrix3x4& matrix) override;
+        AZ::Matrix3x4 PopPremultipliedMatrix() override;
 
     private:
 

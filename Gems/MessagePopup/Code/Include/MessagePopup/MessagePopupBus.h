@@ -25,7 +25,7 @@ namespace MessagePopup
         EPopupKind_Toaster
     };
 
-    static const AZ::u32 InvalidId = -1;
+    static const AZ::u32 InvalidId = std::numeric_limits<AZ::u32>::max();
 
     //////////////////////////////////////////////////////////////////////////
     struct MessagePopupInfo

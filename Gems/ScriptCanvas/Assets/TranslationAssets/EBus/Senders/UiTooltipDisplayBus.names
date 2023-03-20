@@ -1,0 +1,389 @@
+{
+    "entries": [
+        {
+            "base": "UiTooltipDisplayBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "UI Tooltip Display",
+                "category": "UI"
+            },
+            "methods": [
+                {
+                    "base": "GetAutoSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto Size is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto Size",
+                        "tooltip": "Returns whether the tooltip display element should be resized so that the text element size matches the size of the string"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTextEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Text Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Text Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Text Entity",
+                        "tooltip": "Gets the text element that is used for resizing"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDelayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Delay Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Delay Time is invoked"
+                    },
+                    "details": {
+                        "name": "Get Delay Time",
+                        "tooltip": "Gets the amount of time to wait before showing the tooltip display element after hover start"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDelayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Delay Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Delay Time is invoked"
+                    },
+                    "details": {
+                        "name": "Set Delay Time",
+                        "tooltip": "Sets the amount of time to wait before showing the tooltip display element after hover start"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Delay Time",
+                                "tooltip": "The amount of time to wait in seconds before showing the tooltip display element after hover start"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetDisplayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Display Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Display Time is invoked"
+                    },
+                    "details": {
+                        "name": "Set Display Time",
+                        "tooltip": "Sets the amount of time the tooltip display element is to remain visible"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Display Time",
+                                "tooltip": "The amount of time in seconds the tooltip display element is to remain visible"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Set Offset",
+                        "tooltip": "Sets the offset from the tooltip display element's pivot to the mouse position"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Offset",
+                                "tooltip": "The offset from the tooltip display element's pivot to the mouse position"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOffset",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Offset"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Offset is invoked"
+                    },
+                    "details": {
+                        "name": "Get Offset",
+                        "tooltip": "Gets the offset from the tooltip display element's pivot to the mouse position"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Vector2"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAutoPositionMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto Position Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto Position Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto Position Mode",
+                        "tooltip": "Gets the auto position mode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAutoPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto Position is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto Position",
+                        "tooltip": "Sets whether the tooltip display element is automatically positioned"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto Position",
+                                "tooltip": "Indicates whether the tooltip display element is automatically positioned"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAutoSize",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto Size"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto Size is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto Size",
+                        "tooltip": "Sets whether the tooltip display element should be resized so that the text element size matches the size of the string"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Auto Size",
+                                "tooltip": "Indicates whether the tooltip display element should be resized so that the text element size matches the size of the string"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetAutoPosition",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Auto Position"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Auto Position is invoked"
+                    },
+                    "details": {
+                        "name": "Get Auto Position",
+                        "tooltip": "Returns whether the tooltip display element is automatically positioned"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTextEntity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Text Entity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Text Entity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Text Entity",
+                        "tooltip": "Sets the text element that is used for resizing"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Text EntityID",
+                                "tooltip": "The text element that is used for resizing"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDisplayTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Display Time"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Display Time is invoked"
+                    },
+                    "details": {
+                        "name": "Get Display Time",
+                        "tooltip": "Gets the amount of time the tooltip display element is to remain visible"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "float"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetTriggerMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke GetTriggerMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after GetTriggerMode is invoked"
+                    },
+                    "details": {
+                        "name": "GetTriggerMode"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetTriggerMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetTriggerMode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetTriggerMode is invoked"
+                    },
+                    "details": {
+                        "name": "SetTriggerMode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetAutoPositionMode",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Auto Position Mode"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Auto Position Mode is invoked"
+                    },
+                    "details": {
+                        "name": "Set Auto Position Mode",
+                        "tooltip": "Sets the auto position mode"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Auto Position Mode",
+                                "tooltip": "The auto position mode (0=Offset From Mouse, 1=Offset From Element)"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

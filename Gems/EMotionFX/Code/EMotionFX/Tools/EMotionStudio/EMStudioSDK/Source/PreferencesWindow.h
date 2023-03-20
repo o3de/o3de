@@ -26,9 +26,6 @@ namespace AzToolsFramework
 
 namespace EMStudio
 {
-    // forward declaration
-    class EMStudioPlugin;
-
     class EMSTUDIO_API PreferencesWindow
         : public QDialog
     {

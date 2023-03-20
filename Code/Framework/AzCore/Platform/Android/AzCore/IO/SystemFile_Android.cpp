@@ -8,7 +8,6 @@
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/IO/FileIOEventBus.h>
 #include <AzCore/IO/Path/Path.h>
 #include <AzCore/Casting/numeric_cast.h>
 
@@ -87,7 +86,6 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
     }
     else
     {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, EINVAL);
         return false;
     }
 
@@ -103,29 +101,24 @@ bool SystemFile::PlatformOpen(int mode, int platformFlags)
     {
         if (isApkFile)
         {
-            EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, ENOSPC);
             return false;
         }
 
         CreatePath(m_fileName.c_str());
     }
 
-    int errorCode = 0;
     if (isApkFile)
     {
         AZ::u64 size = 0;
         m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
-        errorCode = EACCES; // general error when a file can't be opened from inside the APK
     }
     else
     {
         m_handle = fopen(m_fileName.c_str(), openMode);
-        errorCode = errno;
     }
 
     if (m_handle == PlatformSpecificInvalidHandle)
     {
-        EBUS_EVENT(FileIOEventBus, OnError, this, nullptr, errorCode);
         return false;
     }
 
@@ -168,21 +161,7 @@ namespace Platform::Internal
                 entry = readdir(dir);
             }
 
-            int lastError = errno;
-            if (lastError != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, lastError);
-            }
-
             closedir(dir);
-        }
-        else
-        {
-            int lastError = errno;
-            if (lastError != ENOENT)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, nullptr, filter, 0);
-            }
         }
     }
 
@@ -233,11 +212,7 @@ namespace Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            off_t result = fseeko(handle, static_cast<off_t>(offset), mode);
-            if (result != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            fseeko(handle, static_cast<off_t>(offset), mode);
         }
     }
 
@@ -248,7 +223,6 @@ namespace Platform
             off_t result = ftello(handle);
             if (result == (off_t)-1)
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
             return aznumeric_cast<SizeType>(result);
@@ -292,7 +266,6 @@ namespace Platform
 
             if (bytesRead != bytesToRead && ferror(handle))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
 
@@ -311,7 +284,6 @@ namespace Platform
 
             if (bytesWritten != bytesToWrite && ferror(handle))
             {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
                 return 0;
             }
 
@@ -325,10 +297,7 @@ namespace Platform
     {
         if (handle != PlatformSpecificInvalidHandle)
         {
-            if (fflush(handle) != 0)
-            {
-                EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, errno);
-            }
+            fflush(handle);
         }
     }
 
@@ -347,7 +316,6 @@ namespace Platform
                 struct stat fileStat;
                 if (stat(fileName, &fileStat) < 0)
                 {
-                    EBUS_EVENT(FileIOEventBus, OnError, systemFile, nullptr, 0);
                     return 0;
                 }
                 return static_cast<SizeType>(fileStat.st_size);
@@ -368,6 +336,29 @@ namespace Platform
             return access(fileName, F_OK) == 0;
         }
     }
+
+    bool IsDirectory(const char* filePath)
+    {
+        if (AZ::Android::Utils::IsApkPath(filePath))
+        {
+            return AZ::Android::APKFileHandler::IsDirectory(AZ::Android::Utils::StripApkPrefix(filePath).c_str());
+        }
+
+        struct stat result;
+        if (stat(filePath, &result) == 0)
+        {
+            return S_ISDIR(result.st_mode);
+        }
+        return false;
+    }
 } // namespace AZ::IO::Platform
 
 } // namespace AZ::IO
+
+namespace AZ::IO::PosixInternal
+{
+    int Pipe(int(&pipeFileDescriptors)[2], int, OpenFlags pipeFlags)
+    {
+        return pipe2(pipeFileDescriptors, static_cast<int>(pipeFlags));
+    }
+} // namespace AZ::IO::PosixInternal

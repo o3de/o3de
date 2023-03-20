@@ -24,7 +24,7 @@ namespace UnitTest
 {
 #if !AZ_UNIT_TEST_SKIP_STD_ALGORITHMS_TESTS
     class Algorithms
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     };
 
@@ -32,7 +32,7 @@ namespace UnitTest
      *
      */
     class AlgorithmsFindTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static bool SearchCompare(int i1, int i2) { return (i1 == i2); }
@@ -1032,7 +1032,7 @@ namespace UnitTest
         auto CreateArray = []() constexpr -> AZStd::array<int, 3>
         {
             AZStd::array<int, 3> localArray = { {1, 2, 3} };
-            auto resultFunc = AZStd::for_each(localArray.begin(), localArray.end(), [](int& element) { ++element; });
+            AZStd::for_each(localArray.begin(), localArray.end(), [](int& element) { ++element; });
             return localArray;
         };
         constexpr AZStd::array<int, 3> testArray = CreateArray();
@@ -1271,7 +1271,6 @@ namespace UnitTest
 
     TEST_F(Algorithms, Unique_Compile_WhenUsedInConstexpr)
     {
-        constexpr AZStd::array<int, 3> testList = { { 1, 2, 3 } };
         auto TestUnique = []() constexpr
         {
             AZStd::array<int, 6> localArray{ { 1, 2, 2, 5, 5, 6} };

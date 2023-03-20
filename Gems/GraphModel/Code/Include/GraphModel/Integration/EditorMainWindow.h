@@ -28,13 +28,14 @@ namespace GraphModelIntegration
         , protected GraphControllerNotificationBus::MultiHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorMainWindow, AZ::SystemAllocator)
         explicit EditorMainWindow(GraphCanvas::AssetEditorWindowConfig* config, QWidget* parent = nullptr);
         ~EditorMainWindow() override;
 
     protected:
         /// Subclasses must implement this method so that this class can
         /// create graphs on their behalf.
-        virtual GraphModel::IGraphContextPtr GetGraphContext() const = 0;
+        virtual GraphModel::GraphContextPtr GetGraphContext() const = 0;
 
         /// Helper method for retrieving the graph associated with a graphId.
         GraphModel::GraphPtr GetGraphById(GraphCanvas::GraphId graphId) const;

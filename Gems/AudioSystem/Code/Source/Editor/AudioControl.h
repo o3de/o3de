@@ -144,6 +144,8 @@ namespace AudioControls
         void SignalConnectionAdded(IAudioSystemControl* middlewareControl);
         void SignalConnectionRemoved(IAudioSystemControl* middlewareControl);
 
+        bool SwitchStateConnectionCheck(IAudioSystemControl* middlewareControl);
+
     private:
         void SetId(CID id);
         void SetType(EACEControlType type);

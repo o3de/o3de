@@ -19,7 +19,6 @@ namespace AssetProcessor
 
 class BatchApplicationManager
     : public ApplicationManagerBase
-    , public AssetProcessor::MessageInfoBus::Handler
 {
     Q_OBJECT
 public:
@@ -41,6 +40,7 @@ private:
     const char* GetLogBaseName() override;
     RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) override;
     void InitSourceControl() override;
+    void InitUuidManager() override;
 
     void MakeActivationConnections() override;
 

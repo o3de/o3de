@@ -24,8 +24,22 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 
+namespace AZ { class JobCompletion; }
+
 namespace ImGui
 {
+    enum class ImGuiStateBroadcast
+    {
+        Broadcast,
+        NotBroadcast,
+    };
+
+    struct ImGuiBroadcastState
+    {
+        ImGuiStateBroadcast m_activationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+        ImGuiStateBroadcast m_deactivationBroadcastStatus = ImGuiStateBroadcast::NotBroadcast;
+    };
+
     class ImGuiManager
         : public AzFramework::InputChannelEventListener
         , public AzFramework::InputTextEventListener
@@ -48,8 +62,8 @@ namespace ImGui
         void SetClientMenuBarState(DisplayState state) override { m_clientMenuBarState = state; }
         bool IsControllerSupportModeEnabled(ImGuiControllerModeFlags::FlagType controllerMode) const override;
         void EnableControllerSupportMode(ImGuiControllerModeFlags::FlagType controllerMode, bool enable) override;
-        void SetControllerMouseSensitivity(float sensitivity) { m_controllerMouseSensitivity = sensitivity; }
-        float GetControllerMouseSensitivity() const { return m_controllerMouseSensitivity; }
+        void SetControllerMouseSensitivity(float sensitivity) override { m_controllerMouseSensitivity = sensitivity; }
+        float GetControllerMouseSensitivity() const override { return m_controllerMouseSensitivity; }
         bool GetEnableDiscreteInputMode() const override { return m_enableDiscreteInputMode; }
         void SetEnableDiscreteInputMode(bool enabled) override { m_enableDiscreteInputMode = enabled; }
         ImGuiResolutionMode GetResolutionMode() const override { return m_resolutionMode; }
@@ -62,12 +76,13 @@ namespace ImGui
         float GetDpiScalingFactor() const override;
         void Render() override;
         void ToggleThroughImGuiVisibleState() override;
+        void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
         bool OnInputChannelEventFiltered(const AzFramework::InputChannel& inputChannel) override;
         bool OnInputTextEventFiltered(const AZStd::string& textUTF8) override;
-        int GetPriority() const override { return AzFramework::InputChannelEventListener::GetPriorityDebug(); }
+        int GetPriority() const override { return AzFramework::InputChannelEventListener::GetPriorityDebugUI(); }
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
 
         // AzFramework::WindowNotificationBus::Handler overrides...
@@ -76,12 +91,10 @@ namespace ImGui
         // Sets up initial window size and listens for changes
         void InitWindowSize();
 
-        // A function to toggle through the available ImGui Visibility States
-        void ToggleThroughImGuiVisibleState(int controllerIndex);
-
     private:
+        void RenderJob();
+
         ImGuiContext* m_imguiContext = nullptr;
-        int m_fontTextureId = -1;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
 
@@ -97,8 +110,6 @@ namespace ImGui
         std::vector<uint16> m_idxBuffer;
 
         //Controller navigation
-        static const int MaxControllerNumber = 4;
-        int m_currentControllerIndex;
         bool m_button1Pressed, m_button2Pressed, m_menuBarStatusChanged;
 
         bool m_hardwardeMouseConnected = false;
@@ -109,6 +120,10 @@ namespace ImGui
         float m_lastPrimaryTouchPosition[2] = { 0.0f, 0.0f };
         bool m_useLastPrimaryTouchPosition = false;
         bool m_simulateBackspaceKeyPressed = false;
+
+        ImGuiBroadcastState m_imGuiBroadcastState;
+
+        AZ::JobCompletion* m_renderJobCompletion = nullptr;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;

@@ -37,7 +37,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ModelAsset, "{2C7477B6-69C5-45BE-8163-BCD6A275B6D8}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -59,7 +59,7 @@ namespace AZ
             //! Returns the number of Lods in the model
             size_t GetLodCount() const;
 
-            AZStd::array_view<Data::Asset<ModelLodAsset>> GetLodAssets() const;
+            AZStd::span<const Data::Asset<ModelLodAsset>> GetLodAssets() const;
 
             //! Checks a ray for intersection against this model. The ray must be in the same coordinate space as the model.
             //! Important: only to be used in the Editor, it may kick off a job to calculate spatial information.
@@ -77,6 +77,12 @@ namespace AZ
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             void SetReady();
 
             AZ::Name m_name;
@@ -120,8 +126,6 @@ namespace AZ
         public:
             AZ_RTTI(ModelAssetHandler, "{993B8CE3-1BBF-4712-84A0-285DB9AE808F}", AssetHandler<ModelAsset>);
 
-            // AZ::AssetTypeInfoBus::Handler overrides
-            bool HasConflictingProducts(const AZStd::vector<AZ::Data::AssetType>& productAssetTypes) const override;
         };
     } //namespace RPI
 } // namespace AZ

@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "SequenceComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "SequenceComponent"
+            }
+        }
+    ]
+}

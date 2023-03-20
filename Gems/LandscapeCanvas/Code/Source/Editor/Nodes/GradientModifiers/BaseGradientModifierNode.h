@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class BaseGradientModifierNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseGradientModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseGradientModifierNode, AZ::SystemAllocator);
         AZ_RTTI(BaseGradientModifierNode, "{A918BFDF-4871-4100-BDB0-AE575E5287A2}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -30,7 +30,7 @@ namespace LandscapeCanvas
         BaseGradientModifierNode() = default;
         explicit BaseGradientModifierNode(GraphModel::GraphPtr graph);
 
-        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_MODIFIER_TITLE.toUtf8().constData(); }
+        const char* GetSubTitle() const override { return LandscapeCanvas::GRADIENT_MODIFIER_TITLE; }
 
         const BaseNodeType GetBaseNodeType() const override { return BaseNode::GradientModifier; }
 

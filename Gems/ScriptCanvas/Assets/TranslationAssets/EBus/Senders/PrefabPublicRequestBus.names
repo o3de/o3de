@@ -1,0 +1,123 @@
+{
+    "entries": [
+        {
+            "base": "PrefabPublicRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Prefab Public"
+            },
+            "methods": [
+                {
+                    "base": "CreatePrefabInMemory",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreatePrefabInMemory"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreatePrefabInMemory is invoked"
+                    },
+                    "details": {
+                        "name": "CreatePrefabInMemory"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        },
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0E9C062F-96E1-58E9-BCE0-AB93C4C425A1}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "InstantiatePrefab",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke InstantiatePrefab"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after InstantiatePrefab is invoked"
+                    },
+                    "details": {
+                        "name": "InstantiatePrefab"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{7114E998-A8B4-519B-9342-A86D1587B4F7}",
+                            "details": {
+                                "name": ""
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0E9C062F-96E1-58E9-BCE0-AB93C4C425A1}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "DeleteEntitiesAndAllDescendantsInInstance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke DeleteEntitiesAndAllDescendantsInInstance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after DeleteEntitiesAndAllDescendantsInInstance is invoked"
+                    },
+                    "details": {
+                        "name": "DeleteEntitiesAndAllDescendantsInInstance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0D5A4347-BCEC-58D6-A2D5-259F78FA0BF0}",
+                            "details": {
+                                "name": ""
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

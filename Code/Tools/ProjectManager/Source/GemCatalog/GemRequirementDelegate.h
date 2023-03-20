@@ -18,7 +18,7 @@ namespace O3DE::ProjectManager
     class GemRequirementDelegate
         : public GemItemDelegate
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         explicit GemRequirementDelegate(QAbstractItemModel* model, QObject* parent = nullptr);
@@ -29,5 +29,8 @@ namespace O3DE::ProjectManager
 
         const QColor m_backgroundColor = QColor("#444444"); // Outside of the actual gem item
         const QColor m_itemBackgroundColor = QColor("#393939"); // Background color of the gem item
+
+    private:
+        QRect CalcRequirementRect(const QRect& contentRect) const;
     };
 } // namespace O3DE::ProjectManager

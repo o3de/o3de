@@ -12,12 +12,9 @@
 #include "DynamicPrimitiveProcessor.h"
 #include "FixedShapeProcessor.h"
 
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/View.h>
-
-#include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
 {
@@ -31,7 +28,7 @@ namespace AZ
             {
                 serializeContext
                     ->Class<AuxGeomFeatureProcessor, FeatureProcessor>()
-                    ->Version(0);
+                    ->Version(1);
             }
         }
 
@@ -80,7 +77,7 @@ namespace AZ
 
         void AuxGeomFeatureProcessor::Render(const FeatureProcessor::RenderPacket& fpPacket)
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomFeatureProcessor: Render");
 
             // Get the scene data and switch buffers so that other threads can continue to queue requests
             AuxGeomBufferData* bufferData = static_cast<AuxGeomDrawQueue*>(m_sceneDrawQueue.get())->Commit();
@@ -160,15 +157,10 @@ namespace AZ
             m_fixedShapeProcessor->SetUpdatePipelineStates();
         }
 
-        void AuxGeomFeatureProcessor::OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline)
+        void AuxGeomFeatureProcessor::OnRenderPipelineChanged([[maybe_unused]] RPI::RenderPipeline* pipeline,
+            [[maybe_unused]] RPI::SceneNotification::RenderPipelineChangeType changeType)
         {
             OnSceneRenderPipelinesChanged();
         }
-
-        void AuxGeomFeatureProcessor::OnRenderPipelineRemoved([[maybe_unused]] RPI::RenderPipeline* pipeline)
-        {
-            OnSceneRenderPipelinesChanged();
-        }
-
     } // namespace Render
 } // namespace AZ

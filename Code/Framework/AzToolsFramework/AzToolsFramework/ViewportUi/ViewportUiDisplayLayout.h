@@ -13,14 +13,43 @@
 #include <QBoxLayout>
 #include <QGridLayout>
 #include <QPointer>
+#include <QMargins>
+
+namespace AzToolsFramework::ViewportUi
+{
+    //! Margin for the Viewport UI Overlay edges (in pixels)
+    constexpr int ViewportUiOverlayMargin = 5;
+    //! Padding to make space for ImGui (in pixels)
+    constexpr int ViewportUiOverlayTopMarginPadding = 20;
+    //! Size of the top viewport border (in pixels)
+    constexpr int ViewportUiTopBorderSize = 25;
+    //! Size of the left, right and bottom viewport border (in pixels)
+    constexpr int ViewportUiLeftRightBottomBorderSize = 5;
+    //! Complete margin for the Viewport UI Overlay
+    constexpr QMargins ViewportUiOverlayDefaultMargin =
+        QMargins(ViewportUiOverlayMargin, ViewportUiOverlayMargin, ViewportUiOverlayMargin, ViewportUiOverlayMargin);
+    //! Complete margin for Viewport UI Overlay with border
+    constexpr QMargins ViewportUiOverlayBorderMargin = QMargins(
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
+        ViewportUiOverlayMargin + ViewportUiTopBorderSize,
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin);
+    //! Complete margin for Viewport UI Overlay with ImGui
+    constexpr QMargins ViewportUiOverlayImGuiMargin = QMargins(
+        ViewportUiOverlayMargin,
+        ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding,
+        ViewportUiOverlayMargin,
+        ViewportUiOverlayMargin);
+    //! Complete margin for Viewport UI Overlay with ImGui + border
+    constexpr QMargins ViewportUiOverlayImGuiBorderMargin = QMargins(
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
+        ViewportUiTopBorderSize + ViewportUiOverlayMargin + ViewportUiOverlayTopMarginPadding,
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin,
+        ViewportUiLeftRightBottomBorderSize + ViewportUiOverlayMargin);
+} // namespace AzToolsFramework::ViewportUi
 
 namespace AzToolsFramework::ViewportUi::Internal
 {
-    // margin for the Viewport UI Overlay in pixels
-    constexpr int ViewportUiOverlayMargin = 5;
-    // padding to make space for ImGui
-    constexpr int ViewportUiOverlayTopMarginPadding = 20;
-
     //! QGridLayout implementation that uses a grid of QVBox/QHBoxLayouts internally to stack widgets.
     class ViewportUiDisplayLayout : public QGridLayout
     {

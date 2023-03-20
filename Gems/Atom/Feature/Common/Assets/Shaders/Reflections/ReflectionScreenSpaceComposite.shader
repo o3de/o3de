@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceComposite",
+    "Source" : "ReflectionScreenSpaceComposite.azsl",
 
     "RasterState" :
     {
@@ -14,7 +14,7 @@
         }
     },
 
-    "BlendState":
+    "GlobalTargetBlendState":
     {
         "Enable": true,
         "BlendSource": "AlphaSource",
@@ -37,8 +37,5 @@
                 "type": "Fragment"
             }
         ]
-    },
-
-    "ProgramVariants": [
-    ]
+    }
 }

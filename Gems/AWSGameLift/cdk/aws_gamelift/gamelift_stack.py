@@ -5,21 +5,30 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import typing
+from aws_cdk import (
+    CfnOutput,
+    Fn,
+    Stack,
+    aws_gamelift as gamelift
+)
 
-from aws_cdk import core
-from aws_cdk import aws_gamelift as gamelift
+from constructs import Construct
+
+from .flexmatch import matchmaking
+from .game_session_queue import game_session_queue
 
 
-class GameLiftStack(core.Stack):
+class GameLiftStack(Stack):
     """
     The AWS GameLift stack
 
     Defines GameLift resources to use in project
     """
-    def __init__(self, scope: core.Construct, id_: str,
+    def __init__(self, scope: Construct, id_: str,
                  stack_name: str, fleet_configurations: dict,
-                 create_game_session_queue: bool, **kwargs) -> None:
+                 create_game_session_queue: bool,
+                 flex_match: bool,
+                 **kwargs) -> None:
         super().__init__(scope, id_, **kwargs)
 
         self._stack_name = stack_name
@@ -30,7 +39,7 @@ class GameLiftStack(core.Stack):
             fleet_configuration = fleet_configurations[index]
             # Create a new GameLift fleet using the configuration
             fleet_ids.append(self._create_fleet(fleet_configuration, index).attr_fleet_id)
-            destination_arn = core.Fn.sub(
+            destination_arn = Fn.sub(
                 body='arn:${AWS::Partition}:gamelift:${AWS::Region}::fleet/${FleetId}',
                 variables={
                     'FleetId': fleet_ids[index],
@@ -40,7 +49,7 @@ class GameLiftStack(core.Stack):
             if fleet_configuration.get('alias_configuration'):
                 # Create an alias for the fleet if the alias configuration is provided
                 alias = self._create_alias(fleet_configuration['alias_configuration'], fleet_ids[index])
-                destination_arn = core.Fn.sub(
+                destination_arn = Fn.sub(
                     body='arn:${AWS::Partition}:gamelift:${AWS::Region}::alias/${AliasId}',
                     variables={
                         'AliasId': alias.attr_alias_id,
@@ -50,7 +59,7 @@ class GameLiftStack(core.Stack):
             queue_destinations.append(destination_arn)
 
         # Export the GameLift fleet ids as a stack output
-        fleets_output = core.CfnOutput(
+        CfnOutput(
             self,
             id='GameLiftFleets',
             description='List of GameLift fleet ids',
@@ -58,17 +67,13 @@ class GameLiftStack(core.Stack):
             value=','.join(fleet_ids)
         )
 
-        if create_game_session_queue:
-            # Create a game session queue which fulfills game session placement requests using the fleets
-            game_session_queue = self._create_game_session_queue(queue_destinations)
+        game_session_queue_arns = []
+        if flex_match or create_game_session_queue:
+            queue = game_session_queue.GameSessionQueueResources(self, queue_destinations)
+            game_session_queue_arns.append(queue.game_session_queue_arn)
 
-            # Export the game session queue name as a stack output
-            game_session_queue_output = core.CfnOutput(
-                self,
-                id='GameSessionQueue',
-                description='Name of the game session queue',
-                export_name=f'{self._stack_name}:GameSessionQueue',
-                value=game_session_queue.name)
+        if flex_match:
+            matchmaking.MatchmakingResources(self, game_session_queue_arns)
 
     def _create_fleet(self, fleet_configuration: dict, identifier: int) -> gamelift.CfnFleet:
         """
@@ -155,25 +160,3 @@ class GameLiftStack(core.Stack):
         )
 
         return alias
-
-    def _create_game_session_queue(self, destinations: typing.List) -> gamelift.CfnGameSessionQueue:
-        """
-        Create a placement queue that processes requests for new game sessions.
-        :param destinations: Destinations of the queue.
-        :return: Generated GameLift game session queue.
-        """
-        game_session_queue = gamelift.CfnGameSessionQueue(
-            self,
-            id=f'{self._stack_name}-GameLiftQueue',
-            name=f'{self._stack_name}-game-session-queue',
-            destinations=[
-                gamelift.CfnGameSessionQueue.DestinationProperty(
-                    destination_arn=resource_arn
-                ) for resource_arn in destinations
-            ]
-        )
-
-        return game_session_queue
-
-
-

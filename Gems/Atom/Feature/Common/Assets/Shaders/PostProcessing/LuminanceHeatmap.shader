@@ -1,11 +1,11 @@
 { 
-    "Source" : "LuminanceHeatmap",
+    "Source" : "LuminanceHeatmap.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }
     },
     
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true,
         "BlendSource" : "AlphaSource",
         "BlendDest" : "AlphaSourceInverse",
@@ -13,11 +13,6 @@
     },
 
     "DrawList" : "forward",
-    
-    "CompilerHints":
-    {
-        "DisableOptimizations":false
-    },
     
     "ProgramSettings":
     {

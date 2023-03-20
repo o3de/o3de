@@ -11,6 +11,21 @@ from PySide2 import QtCore, QtWidgets, QtGui
 from PySide2.QtCore import QEvent, Qt
 from PySide2.QtWidgets import QAction, QDialog, QHeaderView, QLabel, QLineEdit, QPushButton, QSplitter, QTreeWidget, QTreeWidgetItem, QWidget, QAbstractButton
 
+class OverlayWidget(QWidget):
+    def __init__(self, parent=None):
+        super(OverlayWidget, self).__init__(parent)
+        
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Tool | QtCore.Qt.WindowTransparentForInput | QtCore.Qt.WindowDoesNotAcceptFocus)
+        self.setAttribute(QtCore.Qt.WA_TransparentForMouseEvents)
+        
+        object_name = "OverlayWidget"
+        self.setObjectName(object_name)
+        self.setStyleSheet("#{name} {{ background-color: rgba(100, 65, 164, 128); }}".format(name=object_name))
+        
+    def update_widget(self, hovered_widget):
+        self.resize(hovered_widget.size())
+        self.window().move(hovered_widget.mapToGlobal(QtCore.QPoint(0, 0)))
+
 class InspectPopup(QWidget):
     def __init__(self, parent=None):
         super(InspectPopup, self).__init__(parent)
@@ -151,6 +166,10 @@ class ObjectTreeDialog(QDialog):
         self.inspect_popup = InspectPopup()
         self.inspect_popup.resize(100, 50)
         self.inspect_popup.hide()
+        
+        # Create a widget to highlight the extent of the hovered widget
+        self.hover_extent_widget = OverlayWidget()
+        self.hover_extent_widget.hide()
 
         # Add a footer with a button to switch to widget inspect mode
         self.footer = QWidget()
@@ -209,6 +228,7 @@ class ObjectTreeDialog(QDialog):
                 # consuming the event
                 if event_type == event_type == QEvent.MouseButtonRelease:
                     self.inspect_popup.hide()
+                    self.hover_extent_widget.hide()
                     self.inspect_widget()
                 return True
 
@@ -236,7 +256,6 @@ class ObjectTreeDialog(QDialog):
             if isinstance(child, QAbstractButton):
                 text = child.text()
             
-            
             # Keep track of the pointer address for this object so we can search for it later
             pointer_address = str(int(getCppPointer(child)[0]))
 
@@ -255,11 +274,14 @@ class ObjectTreeDialog(QDialog):
     def update_hovered_widget_popup(self):
         if self.inspect_mode and self.hovered_widget:
             if not self.inspect_popup.isVisible():
+                self.hover_extent_widget.show()
                 self.inspect_popup.show()
 
+            self.hover_extent_widget.update_widget(self.hovered_widget)
             self.inspect_popup.update_widget(self.hovered_widget)
         else:
             self.inspect_popup.hide()
+            self.hover_extent_widget.hide()
 
     def on_inspect_clicked(self):
         self.inspect_mode = True

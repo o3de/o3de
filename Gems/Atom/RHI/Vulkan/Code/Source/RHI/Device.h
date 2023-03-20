@@ -38,6 +38,8 @@
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
 
+#include "BindlessDescriptorPool.h"
+
 namespace AZ
 {
     namespace Vulkan
@@ -53,7 +55,7 @@ namespace AZ
         {
             using Base = RHI::Device;
         public:
-            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
             AZ_RTTI(Device, "C77D578F-841F-41B0-84BB-EE5430FCF8BC", Base);
 
             static RHI::Ptr<Device> Create();
@@ -63,6 +65,8 @@ namespace AZ
             static RawStringList GetRequiredExtensions();
 
             VkDevice GetNativeDevice() const;
+
+            const GladVulkanContext& GetContext() const;
 
             uint32_t FindMemoryTypeIndex(VkMemoryPropertyFlags memoryPropertyFlags, uint32_t memoryTypeBits) const;
 
@@ -87,6 +91,8 @@ namespace AZ
 
             AsyncUploadQueue& GetAsyncUploadQueue();
 
+            BindlessDescriptorPool& GetBindlessDescriptorPool();
+
             RHI::Ptr<Buffer> AcquireStagingBuffer(AZStd::size_t byteCount);
 
             void QueueForRelease(RHI::Ptr<RHI::Object> object);
@@ -100,7 +106,11 @@ namespace AZ
             RHI::Ptr<CommandList> AcquireCommandList(uint32_t familyQueueIndex, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             RHI::Ptr<CommandList> AcquireCommandList(RHI::HardwareQueueClass queueClass, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            RHI::Ptr<Memory> AllocateMemory(uint64_t sizeInBytes, const uint32_t memoryTypeMask, const VkMemoryPropertyFlags flags);
+            RHI::Ptr<Memory> AllocateMemory(
+                uint64_t sizeInBytes,
+                const uint32_t memoryTypeMask,
+                const VkMemoryPropertyFlags flags,
+                const RHI::BufferBindFlags bufferBindFlags = RHI::BufferBindFlags::None);
             
             uint32_t GetCurrentFrameIndex() const;
 
@@ -109,8 +119,20 @@ namespace AZ
             VkBuffer CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const;
             void DestroyBufferResource(VkBuffer vkBuffer) const;
 
+            // Supported modes when specifiying the shading rate through an image.
+            enum class ShadingRateImageMode : uint32_t
+            {
+                None,           // Not supported
+                ImageAttachment,// Using the VK_KHR_fragment_shading_rate extension
+                DensityMap      // Using VK_EXT_fragment_density_map extension
+            };
+
+            ShadingRateImageMode GetImageShadingRateMode() const;
+
+            RHI::Ptr<BufferPool> GetConstantBufferPool();
+
         private:
-            Device() = default;
+            Device();
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::Object
@@ -120,20 +142,22 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal(RHI::PhysicalDevice& physicalDevice) override;
-            RHI::ResultCode PostInitInternal(const RHI::DeviceDescriptor& params) override;
 
             void ShutdownInternal() override;
-            void BeginFrameInternal() override;
+            RHI::ResultCode BeginFrameInternal() override;
             void EndFrameInternal() override;
             void WaitForIdleInternal() override;
             void CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder) override;
-            void UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const override;
+            void UpdateCpuTimingStatisticsInternal() const override;
             AZStd::vector<RHI::Format> GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const override;
             AZStd::chrono::microseconds GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const override;
             void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) override;
+            RHI::ResultCode InitializeLimits() override;
             void PreShutdown() override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor) override;
             RHI::ResourceMemoryRequirements GetResourceMemoryRequirements(const RHI::BufferDescriptor& descriptor) override;
+            void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) override;
+            RHI::ShadingRateImageValue ConvertShadingRate(RHI::ShadingRate rate) const override;
             //////////////////////////////////////////////////////////////////////////
 
             void InitFeaturesAndLimits(const PhysicalDevice& physicalDevice);
@@ -151,7 +175,9 @@ namespace AZ
 
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
-            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = ~0;
+            VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
+
+            GladVulkanContext m_context = {};
 
             AZStd::vector<VkQueueFamilyProperties> m_queueFamilyProperties;
             RHI::Ptr<AsyncUploadQueue> m_asyncUploadQueue;
@@ -161,6 +187,8 @@ namespace AZ
             AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;
+
+            RHI::Ptr<BufferPool> m_constantBufferPool;
 
             ReleaseQueue m_releaseQueue;
             CommandQueueContext m_commandQueueContext;
@@ -182,6 +210,10 @@ namespace AZ
             RHI::ThreadLocalContext<AZStd::lru_cache<uint64_t, VkMemoryRequirements>> m_bufferMemoryRequirementsCache;
 
             RHI::Ptr<NullDescriptorManager> m_nullDescriptorManager;
+            bool m_isXrNativeDevice = false;
+
+            BindlessDescriptorPool m_bindlessDescriptorPool;
+            ShadingRateImageMode m_imageShadingRateMode = ShadingRateImageMode::None;
         };
 
         template<typename ObjectType, typename ...Args>

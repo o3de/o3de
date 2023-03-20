@@ -10,8 +10,8 @@
 #include <RHI/Fence.h>
 #include <RHI/SwapChain.h>
 #include <RHI/Conversions.h>
-#include <AzCore/Debug/EventTraceDrillerBus.h>
-#include <Atom/RHI.Reflect/CpuTimingStatistics.h>
+
+#include <AzCore/Debug/Timer.h>
 
 namespace AZ
 {
@@ -108,9 +108,9 @@ namespace AZ
 
         void CommandQueue::QueueGpuSignal(Fence& fence)
         {
-            QueueCommand([this, &fence](void* commandQueue)
+            QueueCommand([&fence](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "SignalFence");
+                AZ_PROFILE_SCOPE(RHI, "SignalFence");
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
                 dx12CommandQueue->Signal(fence.Get(), fence.GetPendingValue());
             });
@@ -138,8 +138,8 @@ namespace AZ
 
             QueueCommand([=](void* commandQueue)
             {
-                AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzRender, "ExecuteWork");
-                AZ_PROFILE_RHI_VARIABLE(m_lastExecuteDuration);
+                AZ_PROFILE_SCOPE(RHI, "ExecuteWork");
+                AZ::Debug::ScopedTimer executionTimer(m_lastExecuteDuration);
 
                 static const uint32_t CommandListCountMax = 128;
                 ID3D12CommandQueue* dx12CommandQueue = static_cast<ID3D12CommandQueue*>(commandQueue);
@@ -185,7 +185,7 @@ namespace AZ
                     dx12CommandQueue->Signal(fence->Get(), fence->GetPendingValue());
                 }
 
-                AZ_PROFILE_RHI_VARIABLE(m_lastPresentDuration);
+                AZ::Debug::ScopedTimer presentTimer(m_lastPresentDuration);
                 for (RHI::SwapChain* swapChain : request.m_swapChainsToPresent)
                 {
                     swapChain->Present();
@@ -193,43 +193,48 @@ namespace AZ
             });
         }
 
-        void CommandQueue::UpdateTileMappings(CommandList& commandList)
+        void UpdateTileMap(RHI::Ptr<ID3D12CommandQueue> queue, const CommandList::TileMapRequest& request)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
+            // map the source resource to null if the heap is null
+            if (request.m_destinationHeap == nullptr)
             {
-                const uint32_t tileCount = request.m_sourceRegionSize.NumTiles;
-
-                // DX12 requires that we pass the full array of range counts (even though they are all 1).
-                if (m_rangeCounts.size() < tileCount)
-                {
-                    m_rangeCounts.resize(tileCount, 1);
-                }
-
-                // Same with range flags, except that we can skip if they are all 'None'.
-                D3D12_TILE_RANGE_FLAGS* rangeFlags = nullptr;
-                if (!request.m_destinationHeap)
-                {
-                    if (m_rangeFlags.size() < tileCount)
-                    {
-                        m_rangeFlags.resize(tileCount, D3D12_TILE_RANGE_FLAG_NULL);
-                    }
-                    rangeFlags = m_rangeFlags.data();
-                }
-
-                // Maps a single range of source tiles to N disjoint destination tiles on a heap (or null, if no heap is specified).
-                m_queue->UpdateTileMappings(
+                // from: https://docs.microsoft.com/en-us/windows/win32/api/d3d12/nf-d3d12-id3d12commandqueue-updatetilemappings
+                // If pRangeFlags[i] is D3D12_TILE_RANGE_FLAG_NULL,
+                // pRangeTileCounts[i] specifies how many tiles from the tile regions to map to NULL.
+                // If NumRanges is 1, pRangeTileCounts can be NULL and defaults to the total number of tiles
+                // specified by all the tile regions. pHeapRangeStartOffsets[i] is ignored for NULL mappings.
+                auto rangeFlag = D3D12_TILE_RANGE_FLAG_NULL;
+                queue->UpdateTileMappings(
+                    request.m_sourceMemory,
+                    1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
+                    nullptr,
+                    1, &rangeFlag, nullptr, nullptr,
+                    D3D12_TILE_MAPPING_FLAG_NONE);
+            }
+            else
+            {
+                // Maps a single range of source tiles to N disjoint destination tiles on a heap
+                queue->UpdateTileMappings(
                     request.m_sourceMemory,
                     1, &request.m_sourceCoordinate, &request.m_sourceRegionSize,
                     request.m_destinationHeap,
-                    tileCount, rangeFlags, request.m_destinationTileMap.data(), m_rangeCounts.data(),
+                    aznumeric_cast<uint32_t>(request.m_rangeFlags.size()), request.m_rangeFlags.data(), request.m_rangeStartOffsets.data(), request.m_rangeTileCounts.data(),
                     D3D12_TILE_MAPPING_FLAG_NONE);
+            }
+        }
+
+        void CommandQueue::UpdateTileMappings(CommandList& commandList)
+        {
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: UpdateTileMappings");
+            for (const CommandList::TileMapRequest& request : commandList.GetTileMapRequests())
+            {
+                UpdateTileMap(m_queue, request);
             }
         }
         
         void CommandQueue::WaitForIdle()
         {
-            AZ_PROFILE_FUNCTION_IDLE(AZ::Debug::ProfileCategory::AzRender);
+            AZ_PROFILE_SCOPE(RHI, "CommandQueue: WaitForIdle");
 
             Fence fence;
             fence.Init(m_device.get(), RHI::FenceState::Reset);

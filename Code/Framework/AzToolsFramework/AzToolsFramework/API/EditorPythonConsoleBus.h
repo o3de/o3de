@@ -70,8 +70,12 @@ namespace AzToolsFramework
         //! Determines if the caller needs to wait for the Python VM to initialize (non-main thread only)
         virtual void WaitForInitialization() {}
 
-        //! Acquires the Python global interpreter lock (GIL) and executed the callback
+        //! Acquires the Python global interpreter lock (GIL) and execute the callback
         virtual void ExecuteWithLock(AZStd::function<void()> executionCallback) = 0;
+
+        //! Tries to acquire the Python global interpreter lock (GIL) and execute the callback.
+        //! @return Whether it was able to lock the mutex or not.
+        virtual bool TryExecuteWithLock(AZStd::function<void()> executionCallback) = 0;
     };
 
     //! A bus to handle post notifications to the console views of Python output

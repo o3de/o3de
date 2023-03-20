@@ -10,6 +10,7 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzCore/Debug/Budget.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzFramework/Entity/EntityOwnershipServiceBus.h>
 
@@ -17,6 +18,8 @@ namespace AZ
 {
     class Entity;
 }
+
+AZ_DECLARE_BUDGET(AzFramework);
 
 namespace AzFramework
 {
@@ -88,6 +91,13 @@ namespace AzFramework
         virtual void SetEntitiesAddedCallback(OnEntitiesAddedCallback onEntitiesAddedCallback) = 0;
         virtual void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) = 0;
         virtual void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) = 0;
+
+        /**
+         * Called when an entity is in the process of being destroyed
+         *
+         * \param entityId The entity Id of the entity being destroyed.
+         */
+        virtual void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) = 0;
 
         bool m_shouldAssertForLegacySlicesUsage = false;
 

@@ -16,7 +16,7 @@
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/ResourcePoolAsset.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -39,14 +39,14 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(BufferAsset, "{F6C5EA8A-1DB3-456E-B970-B6E2AB262AED}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(BufferAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
             BufferAsset() = default;
             ~BufferAsset() = default;
 
-            AZStd::array_view<uint8_t> GetBuffer() const;
+            AZStd::span<const uint8_t> GetBuffer() const;
 
             const RHI::BufferDescriptor& GetBufferDescriptor() const;
 
@@ -60,6 +60,12 @@ namespace AZ
             const AZStd::string& GetName() const;
 
         private:
+            // AssetData overrides...
+            bool HandleAutoReload() override
+            {
+                return false;
+            }
+
             // Called by asset creators to assign the asset to a ready state.
             void SetReady();
 

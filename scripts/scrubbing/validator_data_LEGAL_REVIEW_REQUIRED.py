@@ -100,14 +100,10 @@ def get_prohibited_platforms_for_package(package):
 def get_bypassed_directories(is_all):
     # Temporarily exempt folders to not fail validation while people is fixing validation errors, they will be removed once the errors are fixed.
     temp_bypass_directories = [
-        'commit_validation',
-        'LauncherTestTools',
-        'AutomatedTesting',
-        'Atom'
+        'commit_validation'
     ]
     bypassed_directories = [
-        'python',
-        'AWSPythonSDK'
+        'python'
     ]
     if not is_all:
         bypassed_directories.extend([
@@ -116,13 +112,7 @@ def get_bypassed_directories(is_all):
             'Cache',
             'logs',
             'AssetProcessorTemp',
-            'JenkinsScripts',
-            'BuildLambdaFunctions',
-            'layouts',
-            '.idea',
             'user/log',
-            'DirectXShaderCompiler',
-            'v-hacd',
             'External'
         ])
         bypassed_directories.extend(temp_bypass_directories)

@@ -46,8 +46,8 @@ namespace AZ
                 const Uuid& GetId() const override;
                 void OverrideId(const Uuid& id);
 
-                Containers::RuleContainer& GetRuleContainer();
-                const Containers::RuleContainer& GetRuleContainerConst() const;
+                Containers::RuleContainer& GetRuleContainer() override;
+                const Containers::RuleContainer& GetRuleContainerConst() const override;
 
                 DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() override;
                 const DataTypes::ISceneNodeSelectionList& GetSceneNodeSelectionList() const override;

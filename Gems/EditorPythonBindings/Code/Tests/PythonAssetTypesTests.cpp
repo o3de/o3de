@@ -17,6 +17,7 @@
 #include <Source/PythonReflectionComponent.h>
 #include <Source/PythonMarshalComponent.h>
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Memory/Memory.h>
@@ -116,7 +117,7 @@ namespace UnitTest
             return AZ::Data::AssetType("{7FD86523-3903-4037-BCD1-542027BFC553}");
         }
 
-        virtual const char* GetFileFilter() const
+        const char* GetFileFilter() const override
         {
             return nullptr;
         }
@@ -140,6 +141,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
         AZ_RTTI(MyTestAssetData, "{B78C6629-95F4-4211-AE7F-4DE58C0D3C33}", AZ::Data::AssetData);
+        AZ_CLASS_ALLOCATOR(MyTestAssetData, AZ::SystemAllocator)
         AZ::u64 m_number = 0;
 
         void SetUseCount(AZ::s32 value)
@@ -284,6 +286,43 @@ namespace UnitTest
             return lhs.GetAssetPath() == rhs.GetAssetPath();
         }
 
+        static pybind11::str AssetBusTestScript(const char* assetId, const char* callback, const char* eventName, const char* input)
+        {
+            auto stringScript = AZStd::string::format(R"(
+                import azlmbr
+                import azlmbr.asset
+                import azlmbr.bus
+                import azlmbr.test
+                import azlmbr.math
+
+                create_asset_id = azlmbr.test.PythonReflectionAssetTypes_create_asset_id
+
+                tester = azlmbr.test.PythonReflectionAssetTypes()
+                assetId = create_asset_id('%s:0')
+                assetType = azlmbr.math.Uuid_CreateString('{ABEE7648-99F1-4F63-9FE2-17BCC1D44C1C}')
+                testAssetData = tester.create_asset_handle(assetId)
+                oldAssetData = tester.create_asset_handle(assetId)
+
+                callbackCount = 0
+                def %s(parameters):
+                    global callbackCount
+                    callbackCount = callbackCount + 1
+
+                handler = azlmbr.asset.AssetBusHandler()
+                handler.connect(assetId)
+                handler.add_callback('%s', %s)
+
+                azlmbr.asset.AssetBus(azlmbr.bus.Event, '%s', assetId, %s)
+                handler.disconnect()
+
+                if (callbackCount != 1):
+                    raise Exception('The %s was never hooked up')
+            )", assetId, callback, eventName, callback, eventName, input, eventName);
+
+            // Support raw string literals by removing common leading whitespace
+            return pybind11::str(pybind11::module_::import("textwrap").attr("dedent")(stringScript.c_str()));
+        }
+
         AZ::Data::Asset<MyTestAssetData> CreateMyTestAssetData()
         {
             m_myTestAssetData = AZStd::make_unique<MyTestAssetData>();
@@ -366,7 +405,7 @@ namespace UnitTest
         void TearDown() override
         {
             // clearing up memory
-            m_testSink = PythonTraceMessageSink();
+            m_testSink.CleanUp();
             PythonTestingFixture::TearDown();
         }
     };
@@ -385,7 +424,7 @@ namespace UnitTest
         EXPECT_TRUE(behaviorClasses.find("Asset<AssetData>") != behaviorClasses.end());
         EXPECT_TRUE(behaviorClasses.find("Asset<MyTestAssetData>") != behaviorClasses.end());
         EXPECT_TRUE(behaviorClasses.find("SimpleAssetReferenceBase") != behaviorClasses.end());
-        EXPECT_TRUE(behaviorClasses.find("SimpleAssetReference<AssetType><FooMockSimpleAsset >") != behaviorClasses.end());
+        EXPECT_TRUE(behaviorClasses.find("SimpleAssetReference<FooMockSimpleAsset>") != behaviorClasses.end());
     }
 
     TEST_F(PythonAssetTypesTests, AssetIdValues)
@@ -654,7 +693,7 @@ namespace UnitTest
 
                 # using FooMockSimpleAsset inside a SimpleAssetReference<> template
                 newFakeAssetPath = 'another/fake/asset_file.foo'
-                simpleRef = azlmbr.object.construct('SimpleAssetReference<AssetType><FooMockSimpleAsset >')
+                simpleRef = azlmbr.object.construct('SimpleAssetReference<FooMockSimpleAsset>')
                 simpleRef.set_asset_path(newFakeAssetPath)
                 if(simpleRef.assetPath == newFakeAssetPath):
                     print('SimpleAssetReference: simpleRef {}'.format(newFakeAssetPath))
@@ -784,5 +823,239 @@ namespace UnitTest
         }
         e.Deactivate();
         EXPECT_EQ(5, m_testSink.m_evaluationMap[static_cast<int>(LogTypes::EqualOperators)]);
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetReady_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF80-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_ready",
+                "OnAssetReady",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetPreReload_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF81-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_pre_reload",
+                "OnAssetPreReload",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetReloaded_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF82-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_reloaded",
+                "OnAssetReloaded",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnOnAssetReloadError_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF83-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_reload_error",
+                "OnAssetReloadError",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetError_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF84-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_error",
+                "OnAssetError",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetContainerReady_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF85-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_container_ready",
+                "OnAssetContainerReady",
+                "testAssetData");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetSaved_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF86-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_saved",
+                "OnAssetSaved",
+                "testAssetData, True");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetUnloaded_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF87-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_unloaded",
+                "OnAssetUnloaded",
+                "assetId, assetType");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
+    }
+
+    TEST_F(PythonAssetTypesTests, AssetBus_OnAssetCanceled_IsInvoked)
+    {
+        PythonReflectionAssetTypes pythonReflectionAssetTypes;
+        pythonReflectionAssetTypes.Reflect(m_app.GetSerializeContext());
+        pythonReflectionAssetTypes.Reflect(m_app.GetBehaviorContext());
+
+        AZ::Entity e;
+        Activate(e);
+        SimulateEditorBecomingInitialized();
+
+        try
+        {
+            auto script = PythonReflectionAssetTypes::AssetBusTestScript(
+                "{3659BF88-EA47-4DEE-98F9-47B3FA0D6F11}",
+                "on_asset_canceled",
+                "OnAssetCanceled",
+                "assetId");
+            pybind11::exec(script);
+        }
+        catch ([[maybe_unused]] const std::exception& e)
+        {
+            AZ_Error("UnitTest", false, "Failed on to run script buffer with %s", e.what());
+        }
+        e.Deactivate();
     }
 }

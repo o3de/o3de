@@ -74,7 +74,6 @@ namespace Metastream
         : m_serverEnabled(0)
         , m_serverOptionsCVar(nullptr)
     {
-        MetastreamAllocatorScope::ActivateAllocators();
         m_descriptors.push_back(MetastreamReflectComponent::CreateDescriptor());
 
         // Initialise the cache
@@ -85,7 +84,6 @@ namespace Metastream
     MetastreamGem::~MetastreamGem()
     {
         MetastreamRequestBus::Handler::BusDisconnect();
-        MetastreamAllocatorScope::DeactivateAllocators();
     }
 
     void MetastreamGem::OnSystemEvent(ESystemEvent event, [[maybe_unused]] UINT_PTR wparam, [[maybe_unused]] UINT_PTR lparam)
@@ -323,7 +321,7 @@ namespace Metastream
         {
             // Initialise and start the HTTP server
             m_server = std::unique_ptr<BaseHttpServer>(new CivetHttpServer(m_cache.get()));
-            string serverOptions = m_serverOptionsCVar->GetString();
+            AZStd::string serverOptions = m_serverOptionsCVar->GetString();
             CryLogAlways("Initializing Metastream: Options=\"%s\"", serverOptions.c_str());
 
             bool result = m_server->Start(serverOptions.c_str());
@@ -339,10 +337,9 @@ namespace Metastream
             // Server already started
             return true;
         }
-#endif // AZ_TRAIT_METASTREAM_USE_CIVET
-
-        // Metastream only supported on PC
+#else
         return false;
+#endif
     }
 
     void Metastream::MetastreamGem::StopHTTPServer()
@@ -360,12 +357,12 @@ namespace Metastream
 
     void Metastream::MetastreamGem::StartHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StartHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StartHTTPServer);
     }
 
     void Metastream::MetastreamGem::StopHTTPServerCmd(IConsoleCmdArgs* /*args*/)
     {
-        EBUS_EVENT(Metastream::MetastreamRequestBus, StopHTTPServer);
+        Metastream::MetastreamRequestBus::Broadcast(&Metastream::MetastreamRequestBus::Events::StopHTTPServer);
     }
 
     // Unit test methods to get at m_cache and status

@@ -17,17 +17,19 @@
 #include <Tests/UI/ModalPopupHandler.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/InputDialogValidatable.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
 #include <Tests/TestAssetCode/SimpleActors.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/PhysicsSetupUtils.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 #include <Editor/ReselectingTreeView.h>
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -35,7 +37,7 @@
 namespace EMotionFX
 {
     class CanAddSimulatedObjectFixture
-        : public UIFixture
+        : public SkeletonOutlinerTestFixture
     {
     public:
         void TearDown() override
@@ -65,7 +67,7 @@ namespace EMotionFX
             EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
 
             // Find the Simulated Object Manager and its button
-            m_simulatedObjectWidget = static_cast<EMotionFX::SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SimulatedObjectWidget::CLASS_ID));
+            m_simulatedObjectWidget = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SimulatedObjectWidget>();
             ASSERT_TRUE(m_simulatedObjectWidget) << "Simulated Object plugin not found!";
 
             QPushButton* addSimulatedObjectButton = m_simulatedObjectWidget->GetDockWidget()->findChild<QPushButton*>("addSimulatedObjectButton");
@@ -81,9 +83,9 @@ namespace EMotionFX
             inputDialog->accept();
 
             // There is one and only one simulated objects
-            ASSERT_EQ(m_actor->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 1);
+            ASSERT_EQ(m_actorAsset->GetActor()->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 1);
             // Check it has the correct name
-            EXPECT_STREQ(m_actor->GetSimulatedObjectSetup()->GetSimulatedObject(0)->GetName().c_str(), objectName);
+            EXPECT_STREQ(m_actorAsset->GetActor()->GetSimulatedObjectSetup()->GetSimulatedObject(0)->GetName().c_str(), objectName);
 
         }
 
@@ -112,14 +114,16 @@ namespace EMotionFX
             });
             ASSERT_NE(addCapsuleColliderAction, addSelectedColliderMenuActions.end());
 
-            size_t numCapsuleColliders = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+            size_t numCapsuleColliders = PhysicsSetupUtils::CountColliders(
+                m_actorAsset->GetActor(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
 
             (*addCapsuleColliderAction)->trigger();
 
             // Delete the context menu, otherwise there it will still be around during this frame as the Qt event loop has not been run.
             delete contextMenu;
 
-            const size_t numCapsuleCollidersAfterAdd = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+            const size_t numCapsuleCollidersAfterAdd = PhysicsSetupUtils::CountColliders(
+                m_actorAsset->GetActor(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
 
             ASSERT_EQ(numCapsuleCollidersAfterAdd, numCapsuleColliders + 1);
 
@@ -127,7 +131,7 @@ namespace EMotionFX
         }
 
     protected:
-        AutoRegisteredActor m_actor;
+        AZ::Data::Asset<Integration::ActorAsset> m_actorAsset;
         EMotionFX::SimulatedObjectWidget* m_simulatedObjectWidget = nullptr;
 
         EMotionFX::SkeletonOutlinerPlugin* m_skeletonOutliner = nullptr;
@@ -136,15 +140,12 @@ namespace EMotionFX
         QModelIndexList m_indexList;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanAddSimulatedObjectFixture, DISABLED_CanAddSimulatedObject)
-#else
     TEST_F(CanAddSimulatedObjectFixture, CanAddSimulatedObject)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C13048820");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(1, "CanAddSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 1, "CanAddSimulatedObjectActor");
 
         CreateSimulateObject("New simulated object");
     }
@@ -153,9 +154,11 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048818");
 
-        AutoRegisteredActor actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(2, "CanAddSimulatedObjectWithJointsActor");
-
-        ActorInstance* actorInstance = ActorInstance::Create(actor.get());
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 2, "CanAddSimulatedObjectWithJointsActor");
+        Actor* actor = actorAsset->GetActor();
+        ActorInstance* actorInstance = ActorInstance::Create(actor);
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
 
@@ -171,7 +174,7 @@ namespace EMotionFX
         QTreeView* treeView = skeletonOutliner->GetDockWidget()->findChild<QTreeView*>("EMFX.SkeletonOutlinerPlugin.SkeletonOutlinerTreeView");
         const QAbstractItemModel* model = treeView->model();
 
-        const QModelIndex rootJointIndex = model->index(0, 0);
+        const QModelIndex rootJointIndex = model->index(0, 0, model->index(0, 0));
         ASSERT_TRUE(rootJointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(rootJointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -216,7 +219,9 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048820a");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5, "CanAddSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 5, "CanAddSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         CreateSimulateObject("sim1");
 
@@ -226,7 +231,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         // Find the 3rd joint in the TreeView and select it
-        const QModelIndex jointIndex = model->index(0, 3);
+        const QModelIndex jointIndex = model->index(0, 3, model->index(0, 0));
         ASSERT_TRUE(jointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(jointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -261,8 +266,8 @@ namespace EMotionFX
         inputDialog->SetText("sim2");
         inputDialog->accept();
 
-        ASSERT_EQ(m_actor->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 2);
-        const auto simulatedObject = m_actor->GetSimulatedObjectSetup()->GetSimulatedObject(1);
+        ASSERT_EQ(actor->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 2);
+        const auto simulatedObject = actor->GetSimulatedObjectSetup()->GetSimulatedObject(1);
         EXPECT_STREQ(simulatedObject->GetName().c_str(), "sim2");
     }
 
@@ -270,7 +275,9 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048816");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5, "CanAddSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 5, "CanAddSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         CreateSimulateObject("sim1");
 
@@ -280,7 +287,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         // Find the 3rd joint in the TreeView and select it
-        const QModelIndex jointIndex = model->index(0, 3);
+        const QModelIndex jointIndex = model->index(0, 3, model->index(0, 0));
         ASSERT_TRUE(jointIndex.isValid()) << "Unable to find a model index for the root joint of the actor";
 
         treeView->selectionModel()->select(jointIndex, QItemSelectionModel::Select | QItemSelectionModel::Rows);
@@ -301,25 +308,25 @@ namespace EMotionFX
         QAction* addCapsuleColliderAction;
         ASSERT_TRUE(UIFixture::GetActionFromContextMenu(addCapsuleColliderAction, addSelectedColliderMenu, "Capsule"));
 
-        size_t numCapsuleColliders = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+        size_t numCapsuleColliders = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
         EXPECT_EQ(numCapsuleColliders, 0);
 
         addCapsuleColliderAction->trigger();
 
         // Check that a collider has been added.
-        size_t numCollidersAfterAddCapsule = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+        size_t numCollidersAfterAddCapsule = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
         ASSERT_EQ(numCollidersAfterAddCapsule, numCapsuleColliders + 1) << "Capsule collider not added.";
 
         QAction* addSphereColliderAction;
         ASSERT_TRUE(UIFixture::GetActionFromContextMenu(addSphereColliderAction, addSelectedColliderMenu, "Sphere"));
 
-        const size_t numSphereColliders = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
+        const size_t numSphereColliders = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
         EXPECT_EQ(numSphereColliders, 0);
 
         addSphereColliderAction->trigger();
 
         // Check that a second collider has been added.
-        const size_t numCollidersAfterAddSphere = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
+        const size_t numCollidersAfterAddSphere = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
         ASSERT_EQ(numCollidersAfterAddSphere, numSphereColliders + 1) << "Sphere collider not added.";
     }
 
@@ -327,7 +334,9 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048821");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(1, "CanRemoveSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 1, "CanRemoveSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         CreateSimulateObject("TestObject1");
 
@@ -350,14 +359,16 @@ namespace EMotionFX
         ASSERT_TRUE(UIFixture::GetActionFromContextMenu(removeObjectAction, contextMenu, "Remove object"));
         removeObjectAction->trigger();
 
-        ASSERT_EQ(m_actor->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 0);
+        ASSERT_EQ(actor->GetSimulatedObjectSetup()->GetNumSimulatedObjects(), 0);
     }
 
     TEST_F(CanAddSimulatedObjectFixture, CanAddColliderToSimulatedObjectFromInspector)
     {
         RecordProperty("test_case_id", "C20385259");
-
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5, "CanAddSimulatedObjectActor");
+        
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 5, "CanAddSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         CreateSimulateObject("sim1");
 
@@ -369,21 +380,24 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         QModelIndexList indexList;
-        RecursiveGetAllChildren(treeView, model->index(0, 0), indexList);
+        RecursiveGetAllChildren(treeView, model->index(0, 0, model->index(0, 0)), indexList);
 
         SelectIndexes(indexList, treeView, 3, 3);
 
-        QDockWidget* simulatedObjectInspectorDock = EMStudio::GetMainWindow()->findChild<QDockWidget*>("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
-        ASSERT_TRUE(simulatedObjectInspectorDock);
-        QPushButton* addColliderButton = simulatedObjectInspectorDock->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+        QDockWidget* simulatedObjectWidget =  EMStudio::GetPluginManager()->FindActivePlugin<SimulatedObjectWidget>()->GetDockWidget();
+        ASSERT_TRUE(simulatedObjectWidget);
+        QPushButton* addColliderButton =
+            simulatedObjectWidget->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
         ASSERT_TRUE(addColliderButton);
         // Send the left button click directly to the button
         QTest::mouseClick(addColliderButton, Qt::LeftButton);
 
-        const size_t numCapsuleColliders = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+        const size_t numCapsuleColliders =
+            PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
         EXPECT_EQ(numCapsuleColliders, 0);
 
-        const size_t numSphereColliders = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
+        const size_t numSphereColliders =
+            PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
         EXPECT_EQ(numSphereColliders, 0);
 
         QMenu* contextMenu = addColliderButton->findChild<QMenu*>("EMFX.AddColliderButton.ContextMenu");
@@ -392,13 +406,15 @@ namespace EMotionFX
         QAction* addCapsuleAction;
         ASSERT_TRUE(UIFixture::GetActionFromContextMenu(addCapsuleAction, contextMenu, "Add capsule"));
         addCapsuleAction->trigger();
-        const size_t numCollidersAfterAddCapsule = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
+        const size_t numCollidersAfterAddCapsule =
+            PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Capsule);
         ASSERT_EQ(numCollidersAfterAddCapsule, numCapsuleColliders + 1) << "Capsule collider not added.";
 
         QAction* addSphereAction;
         ASSERT_TRUE(UIFixture::GetActionFromContextMenu(addSphereAction, contextMenu, "Add sphere"));
         addSphereAction->trigger();
-        const size_t numCollidersAfterAddSphere = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
+        const size_t numCollidersAfterAddSphere =
+            PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider, false, Physics::ShapeType::Sphere);
         ASSERT_EQ(numCollidersAfterAddSphere, numSphereColliders + 1) << "Sphere collider not added.";
     }
 
@@ -406,7 +422,9 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048818");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(7, "CanAddSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 7, "CanAddSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         CreateSimulateObject("ANY");
 
@@ -418,7 +436,7 @@ namespace EMotionFX
         const QAbstractItemModel* model = treeView->model();
 
         QModelIndexList indexList;
-        RecursiveGetAllChildren(treeView, model->index(0, 0), indexList);
+        RecursiveGetAllChildren(treeView, model->index(0, 0, model->index(0, 0)), indexList);
 
         SelectIndexes(indexList, treeView, 3, 5);
 
@@ -442,7 +460,7 @@ namespace EMotionFX
         messageBoxPopupHandler.WaitForPopupPressDialogButton<QMessageBox*>(QDialogButtonBox::No);
         newSimulatedObjectAction->trigger();
 
-        const EMotionFX::SimulatedObject* simulatedObject = m_actor->GetSimulatedObjectSetup()->GetSimulatedObject(0);
+        const EMotionFX::SimulatedObject* simulatedObject = actor->GetSimulatedObjectSetup()->GetSimulatedObject(0);
         EXPECT_EQ(simulatedObject->GetNumSimulatedRootJoints(), 1);
         EXPECT_EQ(simulatedObject->GetNumSimulatedJoints(), 3);
     }
@@ -450,7 +468,9 @@ namespace EMotionFX
     {
         RecordProperty("test_case_id", "C13048817");
 
-        m_actor = ActorFactory::CreateAndInit<SimpleJointChainActor>(5, "CanAddSimulatedObjectActor");
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        m_actorAsset = TestActorAssets::CreateActorAssetAndRegister<SimpleJointChainActor>(actorAssetId, 5, "CanAddSimulatedObjectActor");
+        Actor* actor = m_actorAsset->GetActor();
 
         EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
 
@@ -464,18 +484,18 @@ namespace EMotionFX
 
         m_indexList.clear();
 
-        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonTreeView->model()->index(0, 0), m_indexList);
+        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonModel->index(0, 0, m_skeletonModel->index(0, 0)), m_indexList);
 
         // Add colliders to two joints.
         AddCapsuleColliderToJointIndex(3);
         AddCapsuleColliderToJointIndex(4);
 
-        const size_t numCollidersAfterAdd = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider);
+        const size_t numCollidersAfterAdd = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider);
         EXPECT_EQ(numCollidersAfterAdd, 2);
 
         m_indexList.clear();
 
-        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonTreeView->model()->index(0, 0), m_indexList);
+        m_skeletonTreeView->RecursiveGetAllChildren(m_skeletonModel->index(0, 0, m_skeletonModel->index(0, 0)), m_indexList);
 
         // Reselect joint 3 and pop up the context menu for it.
         m_skeletonTreeView->selectionModel()->clearSelection();
@@ -498,7 +518,7 @@ namespace EMotionFX
         removeAction->trigger();
 
         // Check that one of the colliders is now gone.
-        const size_t numCollidersAfterFirstRemove = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider);
+        const size_t numCollidersAfterFirstRemove = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider);
         ASSERT_EQ(numCollidersAfterFirstRemove, numCollidersAfterAdd - 1) << "RemoveCollider action in Simulated Object Inspector failed.";
 
         // Now do the same thing using the Simulated Object Inspector context menu.
@@ -536,7 +556,7 @@ namespace EMotionFX
         delAction->trigger();
 
         // Check that we have the number of colliders we started we expect.
-        const size_t numCollidersAfterSecondRemove = PhysicsSetupUtils::CountColliders(m_actor.get(), PhysicsSetup::SimulatedObjectCollider);
+        const size_t numCollidersAfterSecondRemove = PhysicsSetupUtils::CountColliders(actor, PhysicsSetup::SimulatedObjectCollider);
         ASSERT_EQ(numCollidersAfterSecondRemove, numCollidersAfterAdd - 2);
     }
 

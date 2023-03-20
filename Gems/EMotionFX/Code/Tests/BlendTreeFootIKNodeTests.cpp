@@ -32,12 +32,13 @@ namespace EMotionFX
 {
     class BlendTreeFootIKNodeTests
         : public JackGraphFixture
-        , private EMotionFX::Integration::RaycastRequestBus::Handler
+        , private EMotionFX::Integration::IRaycastRequests
     {
     public:
-        RaycastRequests::RaycastResult Raycast([[maybe_unused]] AZ::EntityId entityId, const RaycastRequests::RaycastRequest& rayRequest) override
+        IRaycastRequests::RaycastResult Raycast(
+            [[maybe_unused]] AZ::EntityId entityId, const IRaycastRequests::RaycastRequest& rayRequest) override
         {
-            RaycastRequests::RaycastResult result;
+            IRaycastRequests::RaycastResult result;
 
             //
             // z
@@ -79,7 +80,7 @@ namespace EMotionFX
         void TearDown() override
         {
             JackGraphFixture::TearDown();
-            EMotionFX::Integration::RaycastRequestBus::Handler::BusDisconnect();
+            AZ::Interface<IRaycastRequests>::Unregister(this);
         }
 
         void ConstructGraph() override
@@ -129,21 +130,21 @@ namespace EMotionFX
             JackGraphFixture::SetUp();
             
             // Disable raycasts in other handlers, and take over control (muahhahaha *evil laugh*).
-            EMotionFX::Integration::RaycastRequestBus::Broadcast(&EMotionFX::Integration::RaycastRequests::DisableRayRequests);
-            EMotionFX::Integration::RaycastRequestBus::Handler::BusConnect();
+            AZ::Interface<Integration::IRaycastRequests>::Get()->DisableRayRequests();
+            AZ::Interface<Integration::IRaycastRequests>::Register(this);
         }
 
         void ValidateFootHeight(BlendTreeFootIKNode::LegId legId, const char* jointName, float height, float tolerance)
         {
             // Check the left foot height.
-            AZ::u32 footIndex;
+            size_t footIndex = InvalidIndex;
             Skeleton* skeleton = m_actor->GetSkeleton();
             skeleton->FindNodeAndIndexByName(jointName, footIndex);
-            ASSERT_NE(footIndex, MCORE_INVALIDINDEX32);
+            ASSERT_NE(footIndex, InvalidIndex);
             EMotionFX::Transform transform = m_actorInstance->GetTransformData()->GetCurrentPose()->GetWorldSpaceTransform(footIndex);
             const BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<const BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
-            const float correction = (m_actorInstance->GetWorldSpaceTransform().mRotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
-            const float pos = transform.mPosition.GetZ() - correction;
+            const float correction = (m_actorInstance->GetWorldSpaceTransform().m_rotation.TransformVector(AZ::Vector3(0.0f, 0.0f, uniqueData->m_legs[legId].m_footHeight))).GetZ();
+            const float pos = transform.m_position.GetZ() - correction;
             EXPECT_NEAR(pos, height, tolerance);
         }
 
@@ -209,15 +210,15 @@ namespace EMotionFX
         BlendTreeFootIKNode::UniqueData* uniqueData = static_cast<BlendTreeFootIKNode::UniqueData*>(m_animGraphInstance->FindOrCreateUniqueNodeData(m_ikNode));
         ASSERT_TRUE(uniqueData != nullptr);
         ASSERT_TRUE(!uniqueData->GetHasError());
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], MCORE_INVALIDINDEX32);
-        ASSERT_NE(uniqueData->m_hipJointIndex, MCORE_INVALIDINDEX32);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::UpperLeg], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Knee], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Foot], InvalidIndex);
+        ASSERT_NE(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Right].m_jointIndices[BlendTreeFootIKNode::LegJointId::Toe], InvalidIndex);
+        ASSERT_NE(uniqueData->m_hipJointIndex, InvalidIndex);
 
         // Make sure the weights are fully active.
         ASSERT_FLOAT_EQ(uniqueData->m_legs[BlendTreeFootIKNode::LegId::Left].m_weight, 1.0f);
@@ -325,7 +326,7 @@ namespace EMotionFX
         // Rotate the actor instance 180 degrees over the X axis as well.
         EMotionFX::Transform transform;
         transform.Identity();
-        transform.mRotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
+        transform.m_rotation = AZ::Quaternion::CreateFromAxisAngle(AZ::Vector3(1.0f, 0.0f, 0.0f), MCore::Math::pi);
         m_actorInstance->SetLocalSpaceTransform(transform);
 
         // Tests where the leg can reach the target position just fine, make sure the hip adjustment doesn't break it.

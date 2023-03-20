@@ -138,7 +138,7 @@ namespace UnitTest
     }
 
     void DataDrivenHandlerAndCatalog::GetDefaultAssetLoadPriority([[maybe_unused]] AssetType type,
-        AZStd::chrono::milliseconds& defaultDeadline, AZ::IO::IStreamerTypes::Priority& defaultPriority) const
+        AZ::IO::IStreamerTypes::Deadline& defaultDeadline, AZ::IO::IStreamerTypes::Priority& defaultPriority) const
     {
         defaultDeadline = m_defaultDeadline;
         defaultPriority = m_defaultPriority;
@@ -166,8 +166,9 @@ namespace UnitTest
 
         if (!info.m_streamName.empty())
         {
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
-            info.m_dataLen = static_cast<size_t>(IO::SystemFile::Length(fullName.c_str()));
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
+            IO::FileIOBase* io = IO::FileIOBase::GetInstance();
+            io->Size(fullName.c_str(), info.m_dataLen);
         }
         else
         {
@@ -187,8 +188,11 @@ namespace UnitTest
 
         if (!info.m_streamName.empty())
         {
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
-            info.m_dataLen = static_cast<size_t>(IO::SystemFile::Length(fullName.c_str()));
+            IO::FileIOBase* io = AZ::IO::FileIOBase::GetInstance();
+
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
+
+            io->Size(fullName.c_str(), info.m_dataLen);
         }
         else
         {
@@ -267,6 +271,11 @@ namespace UnitTest
         m_loadDelay = loadDelay;
     }
 
+    void DataDrivenHandlerAndCatalog::AddLegacyAssetId(const Uuid& legacyAssetId, const Uuid& canonicalAssetId)
+    {
+        m_legacyAssetIds[AZ::Data::AssetId(legacyAssetId, 0)] = AZ::Data::AssetId(canonicalAssetId, 0);
+    }
+
     Outcome<AZStd::vector<ProductDependency>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllProductDependencies(const AssetId& assetId)
     {
         const auto* def = FindById(assetId);
@@ -306,6 +315,16 @@ namespace UnitTest
     {
         AssetInfo result;
         const auto* def = FindById(assetId);
+
+        if (!def)
+        {
+            auto itr = m_legacyAssetIds.find(assetId);
+
+            if (itr != m_legacyAssetIds.end())
+            {
+                def = FindById(itr->second);
+            }
+        }
 
         if (def && !def->m_noAssetData)
         {

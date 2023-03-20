@@ -14,7 +14,7 @@
 
 #include <Atom/RHI/StreamingImagePool.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 
@@ -48,7 +48,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -64,10 +64,10 @@ namespace AZ
             size_t GetSubImageCount() const;
 
             //! Returns the sub-image data blob for a given mip slice and array slice (local to the group).
-            AZStd::array_view<uint8_t> GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const;
+            AZStd::span<const uint8_t> GetSubImageData(uint32_t mipSlice, uint32_t arraySlice) const;
 
             //! Returns the sub-image data blob for a linear index (local to the group).
-            AZStd::array_view<uint8_t> GetSubImageData(uint32_t subImageIndex) const;
+            AZStd::span<const uint8_t> GetSubImageData(uint32_t subImageIndex) const;
             
             //! Returns the sub-image layout for a single sub-image by index.
             const RHI::ImageSubresourceLayout& GetSubImageLayout(uint32_t subImageIndex) const;
@@ -98,7 +98,7 @@ namespace AZ
             // Array of mip slice pointers; initialized after serialization. Used for constructing the RHI update request.
             MipSliceList m_mipSlices;
 
-            // The list of subresource datas, fixed up from serialization.
+            // The list of subresource data, fixed up from serialization.
             AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
 
             // [Serialized] Topology of sub-images in the mip group.

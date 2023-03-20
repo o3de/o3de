@@ -19,8 +19,9 @@
 
 namespace AWSGameLift
 {
+    AZ_CVAR(bool, sv_useGameLiftServer, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Activate GameLift server manager and SDK");
+
     AWSGameLiftServerSystemComponent::AWSGameLiftServerSystemComponent()
-        : m_gameLiftServerManager(AZStd::make_unique<AWSGameLiftServerManager>())
     {
     }
 
@@ -41,7 +42,6 @@ namespace AWSGameLift
             {
                 ec->Class<AWSGameLiftServerSystemComponent>("AWSGameLiftServer", "Create the GameLift server manager which manages the server process for hosting a game session via GameLiftServerSDK.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -74,46 +74,22 @@ namespace AWSGameLift
 
     void AWSGameLiftServerSystemComponent::Activate()
     {
-        if (m_gameLiftServerManager->InitializeGameLiftServerSDK())
+        if (sv_useGameLiftServer)
         {
-            GameLiftServerProcessDesc serverProcessDesc;
-            UpdateGameLiftServerProcessDesc(serverProcessDesc);
-            m_gameLiftServerManager->NotifyGameLiftProcessReady(serverProcessDesc);
+            m_gameLiftServerManager = AZStd::make_unique<AWSGameLiftServerManager>();
+            m_gameLiftServerManager->InitializeGameLiftServerSDK();
+            m_gameLiftServerManager->ActivateManager();
         }
+        
     }
 
     void AWSGameLiftServerSystemComponent::Deactivate()
     {
-        m_gameLiftServerManager->HandleDestroySession();
-    }
-
-    void AWSGameLiftServerSystemComponent::UpdateGameLiftServerProcessDesc(GameLiftServerProcessDesc& serverProcessDesc)
-    {
-        AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetDirectInstance();
-        if (fileIO)
+        if (m_gameLiftServerManager)
         {
-            const char pathToLogFolder[] = "@log@/";
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            if (fileIO->ResolvePath(pathToLogFolder, resolvedPath, AZ_ARRAY_SIZE(resolvedPath)))
-            {
-                serverProcessDesc.m_logPaths.push_back(resolvedPath);
-            }
-            else
-            {
-                AZ_Error("AWSGameLift", false, "Failed to resolve the path to the log folder.");
-            }
-        }
-        else
-        {
-            AZ_Error("AWSGameLift", false, "Failed to get File IO.");
-        }
-
-        if (auto console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
-        {
-            [[maybe_unused]] AZ::GetValueResult getCvarResult = console->GetCvarValue("sv_port", serverProcessDesc.m_port);
-            AZ_Error(
-                "AWSGameLift", getCvarResult == AZ::GetValueResult::Success, "Lookup of 'sv_port' console variable failed with error %s",
-                AZ::GetEnumString(getCvarResult));
+            m_gameLiftServerManager->DeactivateManager();
+            m_gameLiftServerManager->HandleDestroySession();
+            m_gameLiftServerManager.reset();
         }
     }
 

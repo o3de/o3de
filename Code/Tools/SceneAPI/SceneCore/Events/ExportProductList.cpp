@@ -8,6 +8,7 @@
 
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/limits.h>
 
 namespace AZ
@@ -63,7 +64,7 @@ namespace AZ
                 if (auto* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
                 {
                     behaviorContext->Class<ExportProduct>("ExportProduct")
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Property("filename", BehaviorValueProperty(&ExportProduct::m_filename))
                         ->Property("sourceId", BehaviorValueProperty(&ExportProduct::m_id))
@@ -74,7 +75,7 @@ namespace AZ
                             [](ExportProduct* self, u32 subId) { self->m_subId = AZStd::optional<u32>(subId); });
 
                     behaviorContext->Class<ExportProductList>("ExportProductList")
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("AddProduct", [](ExportProductList& self, ExportProduct& product)
                         {

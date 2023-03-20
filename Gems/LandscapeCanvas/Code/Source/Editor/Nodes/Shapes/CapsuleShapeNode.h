@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class CapsuleShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CapsuleShapeNode, AZ::SystemAllocator);
         AZ_RTTI(CapsuleShapeNode, "{537C20E6-D319-4CEE-BAA5-75C4B52E5BE0}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         CapsuleShapeNode() = default;
         explicit CapsuleShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

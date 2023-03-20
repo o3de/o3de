@@ -31,7 +31,7 @@ namespace GraphCanvas
 
     public:
     
-        AZ_CLASS_ALLOCATOR(GraphCanvasListComboBoxModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasListComboBoxModel, AZ::SystemAllocator);
 
         enum ColumnIndex
         {
@@ -314,7 +314,7 @@ namespace GraphCanvas
         , public ComboBoxItemModelInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphCanvasSortFilterComboBoxProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphCanvasSortFilterComboBoxProxyModel, AZ::SystemAllocator);
 
         void SetModelInterface(ComboBoxItemModelInterface* modelInterface)
         {
@@ -415,7 +415,7 @@ namespace GraphCanvas
             return index(nextRow, GetSortColumn());
         }
 
-        void OnDropDownAboutToShow()
+        void OnDropDownAboutToShow() override
         {
             beginResetModel();
             setSourceModel(m_modelInterface->GetDropDownItemModel());
@@ -424,7 +424,7 @@ namespace GraphCanvas
             invalidate();
         }
 
-        void OnDropDownHidden()
+        void OnDropDownHidden() override
         {
             beginResetModel();
             setSourceModel(nullptr);

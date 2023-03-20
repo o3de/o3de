@@ -1,0 +1,98 @@
+{
+    "entries": [
+        {
+            "base": "SpawnerComponentNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "Spawner",
+                "category": "Gameplay"
+            },
+            "methods": [
+                {
+                    "base": "OnSpawnBegin",
+                    "details": {
+                        "name": "On Spawn Begin"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnEnd",
+                    "details": {
+                        "name": "On Spawn End"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitySpawned",
+                    "details": {
+                        "name": "On Entity Spawned"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        },
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnSpawnedSliceDestroyed",
+                    "details": {
+                        "name": "On Spawned Slice Destroyed"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEntitiesSpawned",
+                    "details": {
+                        "name": "On Entities Spawned"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "Slice Instantiation Ticket"
+                            }
+                        },
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "Entities"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

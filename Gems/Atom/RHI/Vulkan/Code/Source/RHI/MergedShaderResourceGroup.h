@@ -28,7 +28,7 @@ namespace AZ
             friend class MergedShaderResourceGroupPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroup, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MergedShaderResourceGroup, AZ::SystemAllocator);
             AZ_RTTI(MergedShaderResourceGroup, "{5A98B01F-E5AC-4648-B307-08371FD8AA56}", Base);
 
             ~MergedShaderResourceGroup() = default;
@@ -53,7 +53,7 @@ namespace AZ
             // Helper struct for easy initialization of the frame iteration.
             struct FrameIteration
             {
-                uint64_t m_frameIteration = ~0;
+                uint64_t m_frameIteration = std::numeric_limits<uint64_t>::max();
             };
 
             // Utility function that merges multiple ShaderResoruceGroup data into one.

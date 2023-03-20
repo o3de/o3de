@@ -18,7 +18,7 @@
                 },
                 {
                     "Name": "EsmShadowmaps",
-                    "SlotType": "Output",
+                    "SlotType": "InputOutput",
                     "ScopeAttachmentUsage": "Shader",
                     "LoadStoreAction": {
                         "LoadAction": "DontCare",
@@ -40,9 +40,29 @@
                         }
                     ]
                 },
+
                 {
-                    "Name": "HorizontalGaussianFilter",
-                    "TemplateName": "FilterDepthHorizontalTemplate",
+                    "Name": "KawaseBlur0",
+                    "TemplateName": "KawaseShadowBlurTemplate",
+                    "Enabled": true,
+                    "ImageAttachments": [
+                        {
+                            "Name": "FilteredImage",
+                            "SizeSource": {
+                                "Source": {
+                                    "Pass": "This",
+                                    "Attachment": "Input"
+                                }
+                            },
+                            "ArraySizeSource": {
+                                "Pass": "This",
+                                "Attachment": "Input"
+                            },
+                            "ImageDescriptor": {
+                                "Format": "R16_FLOAT"
+                            }
+                        }
+                    ],
                     "Connections": [
                         {
                             "LocalSlot": "Input",
@@ -50,30 +70,36 @@
                                 "Pass": "Exponentiation",
                                 "Attachment": "Exponent"
                             }
+                        },
+                        {
+                            "localSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "This",
+                                "Attachment": "FilteredImage"
+                            }
                         }
                     ]
                 },
                 {
-                    "Name": "VerticalGaussianFiter",
-                    "TemplateName": "FilterDepthVerticalTemplate",
+                    "Name": "KawaseBlur1",
+                    "TemplateName": "KawaseShadowBlurTemplate",
+                    "Enabled": true,
                     "Connections": [
                         {
                             "LocalSlot": "Input",
                             "AttachmentRef": {
-                                "Pass": "HorizontalGaussianFilter",
+                                "Pass": "KawaseBlur0",
                                 "Attachment": "Output"
+                            }
+                        },
+                        {
+                            "localSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "EsmShadowmaps"
                             }
                         }
                     ]
-                }
-            ],
-            "Connections": [
-                {
-                    "LocalSlot": "EsmShadowmaps",
-                    "AttachmentRef": {
-                        "Pass": "VerticalGaussianFiter",
-                        "Attachment": "Output"
-                    }
                 }
             ]
         }

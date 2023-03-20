@@ -61,7 +61,7 @@ namespace AzToolsFramework
             , m_impl(new BaseLogPanel::Impl)
         {
             m_impl->storageID = 0;
-            this->setLayout(aznew LogPanelLayout(NULL));
+            this->setLayout(aznew LogPanelLayout(nullptr));
 
             m_impl->pTabWidget = new AzQtComponents::TabWidget(this);
             m_impl->pTabWidget->setObjectName(QString::fromUtf8("tabWidget"));
@@ -143,7 +143,7 @@ namespace AzToolsFramework
         {
             // user clicked the "Add..." button
 
-            NewLogTabDialog newDialog(this); 
+            NewLogTabDialog newDialog(this);
             if (newDialog.exec() == QDialog::Accepted)
             {
                 // add a new tab with those settings.
@@ -190,9 +190,11 @@ namespace AzToolsFramework
             if (newTab)
             {
                 int newTabIndex = m_impl->pTabWidget->addTab(newTab, QString::fromUtf8(settings.m_tabName.c_str()));
+                AzQtComponents::TabWidget::applySecondaryStyle(m_impl->pTabWidget);
+
                 m_impl->pTabWidget->setCurrentIndex(newTabIndex);
                 m_impl->settingsForTabs.insert(AZStd::make_pair(qobject_cast<QObject*>(newTab), settings));
-                
+
                 connect(newTab, SIGNAL(onLinkActivated(const QString&)), this, SIGNAL(onLinkActivated(const QString&)));
             }
         }
@@ -322,8 +324,7 @@ namespace AzToolsFramework
             {
                 m_numLinesRemoved++; // this line will cause a line to be removed.
             }
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_numLinesAdded;
         }
 
@@ -446,8 +447,7 @@ namespace AzToolsFramework
                 m_linesAdded = 0;
             }
 
-            m_lines.push_back();
-            m_lines.back() = AZStd::move(source);
+            m_lines.emplace_back() = AZStd::move(source);
             ++m_linesAdded;
         }
 
@@ -601,7 +601,7 @@ namespace AzToolsFramework
         {
             if (index >= (int)m_children.size())
             {
-                return NULL;
+                return nullptr;
             }
 
             return m_children[index];
@@ -609,11 +609,11 @@ namespace AzToolsFramework
 
         QLayoutItem* LogPanelLayout::takeAt(int index)
         {
-            QLayoutItem* pItem = NULL;
+            QLayoutItem* pItem = nullptr;
 
             if (index >= (int)m_children.size())
             {
-                return NULL;
+                return nullptr;
             }
 
             pItem = m_children[index];
@@ -657,7 +657,6 @@ namespace AzToolsFramework
                 // if we have any elements, the last element is top right aligned:
                 QLayoutItem* pItem = m_children[m_children.size() - 1];
                 QSize lastItemSize = pItem->minimumSize();
-                QPoint topRight = effectiveRect.topRight();
                 QRect topRightCorner(effectiveRect.topRight() - QPoint(lastItemSize.width(), 0), lastItemSize);
                 pItem->setGeometry(topRightCorner);
             }
@@ -841,8 +840,6 @@ namespace AzToolsFramework
                     richLabel->setTextFormat(Qt::RichText);
                 }
 
-                richLabel->setText(data);
-
                 richLabel->setGeometry(options.rect);
                 richLabel->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::LinksAccessibleByMouse);
                 richLabel->setPalette(options.palette);
@@ -861,12 +858,31 @@ namespace AzToolsFramework
                 return richLabel;
             }
 
-            return NULL;
+            return nullptr;
         }
 
         bool LogPanelItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
         {
             return QStyledItemDelegate::editorEvent(event, model, option, index);
+        }
+
+        // SavedStte class reflection
+        void SavedState::Reflect(AZ::ReflectContext* context)
+        {
+            AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
+            if (serialize)
+            {
+                serialize->Class<SavedState>()
+                    ->Version(1)
+                    ->Field("m_tabSettings", &SavedState::m_tabSettings);
+
+                serialize->Class<TabSettings>()
+                    ->Version(1)
+                    ->Field("window", &TabSettings::m_window)
+                    ->Field("tabName", &TabSettings::m_tabName)
+                    ->Field("textFilter", &TabSettings::m_textFilter)
+                    ->Field("filterFlags", &TabSettings::m_filterFlags);
+            }
         }
 
     } // namespace LogPanel

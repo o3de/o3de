@@ -20,17 +20,13 @@ namespace AzNetworking
     {
     public:
 
-        using StringMap = AZStd::map<AZStd::string, AZStd::string>;
+        using ValueMap = AZStd::map<AZStd::string, AZStd::string>;
 
-        StringifySerializer(char delimeter = ' ', bool outputFieldNames = true, const AZStd::string& seperator = "=");
+        StringifySerializer();
+        ~StringifySerializer() override;
 
-        // GetString
-        // After serializing objects, get the serialized values as a single string
-        const AZStd::string& GetString() const;
-
-        // GetValueMap
-        // After serializing objects, get the serialized values as key value pairs
-        const StringMap& GetValueMap() const;
+        //! After serializing objects, get the serialized values as a map of key/value pairs.
+        const ValueMap& GetValueMap() const;
 
         // ISerializer interfaces
         SerializerMode GetSerializerMode() const override;
@@ -47,8 +43,8 @@ namespace AzNetworking
         bool Serialize(float& value, const char* name, float minValue, float maxValue) override;
         bool Serialize(double& value, const char* name, double minValue, double maxValue) override;
         bool SerializeBytes(uint8_t* buffer, uint32_t bufferCapacity, bool isString, uint32_t& outSize, const char* name) override;
-        bool BeginObject(const char* name, const char* typeName) override;
-        bool EndObject(const char* name, const char* typeName) override;
+        bool BeginObject(const char* name) override;
+        bool EndObject(const char* name) override;
 
         const uint8_t* GetBuffer() const override;
         uint32_t GetCapacity() const override;
@@ -62,15 +58,8 @@ namespace AzNetworking
         template <typename T>
         bool ProcessData(const char* name, const T& value);
 
-    private:
-
-        char m_delimeter;
-        bool m_outputFieldNames = true;
-
-        StringMap m_map;
-        AZStd::string m_string;
+        ValueMap m_valueMap;
         AZStd::string m_prefix;
-        AZStd::string m_separator;
         AZStd::deque<AZStd::size_t> m_prefixSizeStack;
     };
 }

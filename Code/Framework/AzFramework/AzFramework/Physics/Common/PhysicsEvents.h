@@ -55,19 +55,6 @@ namespace AzPhysics
         //! When triggered will send the handle to the old Scene (after this call, the Handle will be invalid).
         using OnSceneRemovedEvent = AZ::Event<AzPhysics::SceneHandle>;
 
-        //! Event that triggers when the material library changes.
-        //! When triggered the event will send the Asset Id of the new material library.
-        using OnMaterialLibraryChangedEvent = AZ::Event<const AZ::Data::AssetId&>;
-
-        enum class MaterialLibraryLoadErrorType : uint8_t
-        {
-            InvalidId,
-            ErrorLoading
-        };
-
-        //! Event that triggers when the default material library has loaded with errors.
-        using OnMaterialLibraryLoadErrorEvent = AZ::Event<MaterialLibraryLoadErrorType>;
-
         //! Event that triggers when the default scene configuration changes.
         //! When triggered the event will send the new default scene configuration.
         using OnDefaultSceneConfigurationChangedEvent = AZ::Event<const SceneConfiguration*>;
@@ -125,8 +112,7 @@ namespace AzPhysics
         //! and only if the SceneConfiguration::m_enableActiveActors is true.
         //! This will not trigger if the scene is not Enabled (Scene::IsEnabled() must return true to trigger).
         //! When triggered, the event will send a handle of the Scene that triggered the event and a list of SimulatedBodyHandles that were updated in this tick.
-        //! @note There may be a performance penalty for enabling the Active Actor Notification.
-        using OnSceneActiveSimulatedBodiesEvent = AZ::Event<AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandleList&>;
+        using OnSceneActiveSimulatedBodiesEvent = AZ::Event<AzPhysics::SceneHandle, const AzPhysics::SimulatedBodyHandleList&, float>;
 
         //! Event triggers with an ordered list of all the collision Begin/Persist/End events that happened during a single sub simulation step.
         //! When triggered the event will send a handle to the Scene that triggers the event and the list of collision events that occurred.

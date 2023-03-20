@@ -8,7 +8,7 @@
 
 #include <Atom/RHI.Edit/Utils.h>
 
-#include <AtomCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzFramework/Process/ProcessCommunicator.h>
 #include <AzFramework/Process/ProcessWatcher.h>
@@ -19,18 +19,18 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include <md5.h>
 
 namespace AZ
 {
     namespace RHI
     {
         static AZStd::mutex s_profilingMutex;
-        static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
+        [[maybe_unused]] static constexpr char ShaderPlatformInterfaceName[] = "ShaderPlatformInterface";
 
         void ShaderCompilerProfiling::Entry::Reflect(ReflectContext* context)
         {
@@ -108,7 +108,7 @@ namespace AZ
         AZStd::string PrependFile(PrependArguments& arguments)
         {
             static const char* executableFolder = nullptr;
-            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string> 
+            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string>
             {
                 if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
                 {
@@ -155,7 +155,12 @@ namespace AZ
                 AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
                 return arguments.m_sourceFile;
             }
-            
+            else if (!prependFileLoadResult.GetValue().ends_with("\n"))
+            {
+                // Add new line to prepend file if not present
+                prependFileLoadResult.GetValue() += "\n";
+            }
+
             auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
             if (!sourceFileAbsolutePath)
             {
@@ -189,6 +194,9 @@ namespace AZ
             }
             combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
 
+            // Make sure the slashes face the right way, so when this command line shows up in a log, the user can easily copy and paste the path.
+            AzFramework::StringFunc::Path::Normalize(combinedFile);
+
             if (arguments.m_destinationStringOpt)
             {
                 *arguments.m_destinationStringOpt = prependFileLoadResult.GetValue().c_str();
@@ -211,11 +219,11 @@ namespace AZ
 
             if (arguments.m_digest)  // if the function's caller requested to compute a digest, let's hash the content and store it in the digest array.
             {            // this is useful for lld/pdb file naming (shader debug symbols) because it's the automatically recognized scheme by PIX and alike.
-                MD5Context md5;
-                MD5Init(&md5);
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
-                MD5Final(*arguments.m_digest, &md5);
+                
+                AZ::Sha1 hasher;
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
+                hasher.GetDigest((reinterpret_cast<AZ::Sha1::DigestType>(*arguments.m_digest)));
             }
 
             return combinedFile;
@@ -264,9 +272,9 @@ namespace AZ
             }
             {
                 AZStd::string contextKey = toolNameForLog + AZStd::string(" Command Line");
-                AZ_TraceContext(contextKey, processLaunchInfo.m_commandlineParameters);
+                AZ_TraceContext(contextKey, processLaunchInfo.GetCommandLineParametersAsString());
             }
-            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.m_commandlineParameters.c_str());
+            AZ_TracePrintf(ShaderPlatformInterfaceName, "Executing '%s' ...", processLaunchInfo.GetCommandLineParametersAsString().c_str());
 
             AzFramework::ProcessWatcher* watcher = AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
             if (!watcher)
@@ -281,8 +289,8 @@ namespace AZ
             auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
             {
                 auto communicator = watcherPtr->GetCommunicator();
-                
-                // Instead of collecting all the output in a giant string, it would be better to report 
+
+                // Instead of collecting all the output in a giant string, it would be better to report
                 // the chunks of messages as they arrive, but this should be good enough for now.
                 if (auto byteCount = communicator->PeekError())
                 {
@@ -304,7 +312,7 @@ namespace AZ
             uint32_t exitCode = 0;
             bool timedOut = false;
 
-            const AZStd::sys_time_t maxWaitTimeSeconds = 120;
+            const AZStd::sys_time_t maxWaitTimeSeconds = 300;
             const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
             const AZStd::sys_time_t startTime = AZStd::GetTimeNowTicks();
 
@@ -330,7 +338,7 @@ namespace AZ
             // Pump one last time to make sure the streams have been flushed
             pumpOuputStreams();
 
-            const bool reportedErrors = ReportErrorMessages(toolNameForLog, errorMessages);
+            const bool reportedErrors = ReportMessages(toolNameForLog, errorMessages, exitCode != 0);
 
             if (timedOut)
             {
@@ -367,32 +375,25 @@ namespace AZ
             return true;
         }
 
-        bool ReportErrorMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages)
+        bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
         {
-            // There are more efficient ways to do this, but this approach is simple and gets us moving for now.
-            AZStd::vector<AZStd::string> lines;
-            AzFramework::StringFunc::Tokenize(errorMessages.data(), lines, "\n\r");
-
-            bool foundErrors = false;
-            
-            for (auto& line : lines)
+            if (errorMessages.empty())
             {
-                if (AZStd::string::npos != AzFramework::StringFunc::Find(line, "error"))
-                {
-                    AZ_Error(window.data(), false, "%s", line.data());
-                    foundErrors = true;
-                }
-                else if (AZStd::string::npos != AzFramework::StringFunc::Find(line, "warning"))
-                {
-                    AZ_Warning(window.data(), false, "%s", line.data());
-                }
-                else 
-                {
-                    AZ_TracePrintf(window.data(), "%s", line.data());
-                }
+                return false;
             }
 
-            return foundErrors;
+            if (reportAsErrors)
+            {
+                AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+            }
+            else
+            {
+                // Using AZ_Warning instead of AZ_TracePrintf because this function is commonly
+                // used to report messages from stderr when executing applications. Applications
+                // when ran successfully, only output to stderr for errors or warnings.
+                AZ_Warning(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
+            }
+            return AZStd::string::npos != AzFramework::StringFunc::Find(errorMessages, "error");
         }
 
         ShaderStage ToRHIShaderStage(ShaderHardwareStage stageType)
@@ -434,7 +435,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(text));
         }
 
@@ -454,7 +455,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(bytes));
         }
 
@@ -479,7 +480,7 @@ namespace AZ
             } while (searchFrom != text.end());
             return count;
         }
-    
+
         AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
                                                                    const AZStd::string& tempFolder,
                                                                    const char* outputExtension)
@@ -508,7 +509,7 @@ namespace AZ
             }
 
             AZStd::string RemoveArgumentsFromCommandLineString(
-                AZStd::array_view<AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
+                AZStd::span<const AZStd::string> listOfArgumentsToRemove, AZStd::string_view commandLineString)
             {
                 AZStd::string customizedArguments = commandLineString;
                 for (const AZStd::string& azslcArgumentName : listOfArgumentsToRemove)

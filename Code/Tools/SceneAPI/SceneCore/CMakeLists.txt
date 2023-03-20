@@ -26,7 +26,6 @@ ly_add_target(
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            AZ::GFxFramework
 )
 
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
@@ -44,7 +43,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::SceneCore
                 AZ::AzFramework
                 AZ::AzToolsFramework
-                AZ::GFxFramework
     )
     ly_add_googletest(
         NAME AZ::SceneCore.Tests

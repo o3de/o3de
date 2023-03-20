@@ -10,9 +10,10 @@
 #include <ACES/Aces.h>
 #include <Atom/Feature/ACES/AcesDisplayMapperFeatureProcessor.h>
 #include <Atom/RPI.Public/Pass/FullscreenTrianglePass.h>
-#include <Atom/RPI.Public/Pass/PassUtils.h>
+#include <Atom/RPI.Public/Pass/PassFilter.h>
 #include <Atom/RPI.Public/Pass/PassFactory.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
+#include <Atom/RPI.Public/Pass/PassUtils.h>
 #include <Atom/RPI.Public/Pass/Specific/SwapChainPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/RPIUtils.h>
@@ -66,22 +67,14 @@ namespace AZ
         {
             // Need to invalidate the CopyToSwapChain pass so that it updates the pipeline state in the event that 
             // the swapchain format changed (for example, moving from LDR to HDR display)
-            auto* passSystem = RPI::PassSystemInterface::Get();
-            const Name fullscreenCopyTemplateName("FullscreenCopyTemplate");
-
-            if (passSystem->HasPassesForTemplateName(fullscreenCopyTemplateName))
-            {
-                const AZStd::vector<RPI::Pass*>& passes = passSystem->GetPassesForTemplateName(fullscreenCopyTemplateName);
-                for (RPI::Pass* pass : passes)
+            const Name copyToSwapChainPassName("CopyToSwapChain");
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassName(copyToSwapChainPassName, GetRenderPipeline());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    RPI::FullscreenTrianglePass* fullscreenTrianglePass = azrtti_cast<RPI::FullscreenTrianglePass*>(pass);
-                    const Name& passName = fullscreenTrianglePass->GetName();
-                    if (passName.GetStringView() == "CopyToSwapChain")
-                    {
-                        fullscreenTrianglePass->QueueForInitialization();
-                    }
-                }
-            }
+                    pass->QueueForInitialization();
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+
             ConfigureDisplayParameters();
         }
 
@@ -89,9 +82,9 @@ namespace AZ
         {
             // [GFX TODO] [ATOM-2450] Logic determine the type of display attached and use it to drive the
             // display mapper parameters.
-            if (m_swapChainAttachmentBinding && m_swapChainAttachmentBinding->m_attachment)
+            if (m_pipelineOutput && m_pipelineOutput->GetAttachment())
             {
-                m_displayBufferFormat = m_swapChainAttachmentBinding->m_attachment->GetTransientImageDescriptor().m_imageDescriptor.m_format;
+                m_displayBufferFormat = m_pipelineOutput->GetAttachment()->m_descriptor.m_image.m_format;
             }
 
             if (m_displayBufferFormat != RHI::Format::Unknown)
@@ -156,11 +149,11 @@ namespace AZ
                 inputPass = m_displayMapperPassthroughPassName;
                 inputPassAttachment = outputName;
             }
-            else if (m_displayMapperOnlyGammaCorrectionPass)
+            else if (m_displayMapperSRGBPass)
             {
-                m_displayMapperOnlyGammaCorrectionPass->SetInputReferencePassName(inputPass);
-                m_displayMapperOnlyGammaCorrectionPass->SetInputReferenceAttachmentName(inputPassAttachment);
-                inputPass = m_displayMapperOnlyGammaCorrectionPassName;
+                m_displayMapperSRGBPass->SetInputReferencePassName(inputPass);
+                m_displayMapperSRGBPass->SetInputReferenceAttachmentName(inputPassAttachment);
+                inputPass = m_displayMapperSRGBPassName;
                 inputPassAttachment = outputName;
             }
             else if (m_outputTransformPass)
@@ -177,7 +170,7 @@ namespace AZ
                 m_ldrGradingLookupTablePass->SetInputReferenceAttachmentName(inputPassAttachment);
             }
 
-            m_swapChainAttachmentBinding = FindAttachmentBinding(Name("SwapChainOutput"));
+            m_pipelineOutput = FindAttachmentBinding(Name("PipelineOutput"));
 
             ParentPass::BuildInternal();
         }
@@ -326,7 +319,7 @@ namespace AZ
             const Name acesOutputTransformLutTemplateName = Name{ "AcesOutputTransformLutTemplate" };
             const Name bakeAcesOutputTransformLutTemplateName = Name{ "BakeAcesOutputTransformLutTemplate" };
             const Name displayMapperPassthroughTemplateName = Name{ "DisplayMapperPassthroughTemplate" };
-            const Name displayMapperOnlyGammaCorrectionTemplateName = Name{ "DisplayMapperOnlyGammaCorrectionTemplate" };
+            const Name displayMapperSRGBTemplateName = Name{ "DisplayMapperSRGBTemplate" };
             const Name hdrGradingLutTemplateName = Name{ "HdrGradingLutTemplate" };
             const Name ldrGradingLutTemplateName = Name{ "LdrGradingLutTemplate" };
             const Name outputTransformTemplateName = Name{ "OutputTransformTemplate" };
@@ -347,7 +340,7 @@ namespace AZ
             const char* acesOuputTransformLutShaderPath = "Shaders/PostProcessing/AcesOutputTransformLut.azshader";
             const char* bakeAcesOuputTransformLutShaderPath = "Shaders/PostProcessing/BakeAcesOutputTransformLutCS.azshader";
             const char* passthroughShaderPath = "Shaders/PostProcessing/FullscreenCopy.azshader";
-            const char* gammaCorrectionShaderPath = "Shaders/PostProcessing/DisplayMapperOnlyGammaCorrection.azshader";
+            const char* sRGBShaderPath = "Shaders/PostProcessing/DisplayMapperSRGB.azshader";
             const char* applyShaperLookupTableShaderFilePath = "Shaders/PostProcessing/ApplyShaperLookupTable.azshader";
             const char* outputTransformShaderPath = "Shaders/PostProcessing/OutputTransform.azshader";
 
@@ -373,11 +366,11 @@ namespace AZ
             m_passthroughTemplate = CreatePassTemplateHelper(
                 displayMapperPassthroughTemplateName, displayMapperFullScreenPassClassName,
                 m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, passthroughShaderPath);
-            // Gamma Correction
-            m_gammaCorrectionTemplate.reset();
-            m_gammaCorrectionTemplate = CreatePassTemplateHelper(
-                displayMapperOnlyGammaCorrectionTemplateName, displayMapperFullScreenPassClassName,
-                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, gammaCorrectionShaderPath);
+            // sRGB
+            m_sRGBTemplate.reset();
+            m_sRGBTemplate = CreatePassTemplateHelper(
+                displayMapperSRGBTemplateName, displayMapperFullScreenPassClassName,
+                m_displayMapperConfigurationDescriptor.m_ldrGradingLutEnabled, outputTransformImageName, sRGBShaderPath);
             // Output Transform
             m_outputTransformTemplate.reset();
             m_outputTransformTemplate = CreatePassTemplateHelper(
@@ -432,8 +425,7 @@ namespace AZ
             }
             else if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::GammaSRGB)
             {
-                // Gamma 2.2
-                m_displayMapperOnlyGammaCorrectionPass = CreatePassHelper<DisplayMapperFullScreenPass>(passSystem, m_gammaCorrectionTemplate, m_displayMapperOnlyGammaCorrectionPassName);
+                m_displayMapperSRGBPass = CreatePassHelper<DisplayMapperFullScreenPass>(passSystem, m_sRGBTemplate, m_displayMapperSRGBPassName);
             }
             else if (m_displayMapperConfigurationDescriptor.m_operationType == DisplayMapperOperationType::Reinhard)
             {
@@ -469,9 +461,9 @@ namespace AZ
             {
                 AddChild(m_displayMapperPassthroughPass);
             }
-            if (m_displayMapperOnlyGammaCorrectionPass)
+            if (m_displayMapperSRGBPass)
             {
-                AddChild(m_displayMapperOnlyGammaCorrectionPass);
+                AddChild(m_displayMapperSRGBPass);
             }
             if (m_outputTransformPass)
             {
@@ -529,7 +521,7 @@ namespace AZ
             m_bakeAcesOutputTransformLutPass = nullptr;
             m_acesOutputTransformLutPass = nullptr;
             m_displayMapperPassthroughPass = nullptr;
-            m_displayMapperOnlyGammaCorrectionPass = nullptr;
+            m_displayMapperSRGBPass = nullptr;
             m_ldrGradingLookupTablePass = nullptr;
             m_outputTransformPass = nullptr;
         }

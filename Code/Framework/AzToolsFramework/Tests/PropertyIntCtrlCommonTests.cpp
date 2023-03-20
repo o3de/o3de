@@ -6,7 +6,9 @@
  *
  */
 
-#include "IntegerPrimtitiveTestConfig.h"
+#include <AzToolsFramework/UI/PropertyEditor/PropertyIntCtrlCommon.h>
+#include <AzToolsFramework/UI/PropertyEditor/QtWidgetLimits.h>
+#include <Tests/IntegerPrimtitiveTestConfig.h>
 
 namespace UnitTest
 {
@@ -14,7 +16,7 @@ namespace UnitTest
 
     template<typename ValueType>
     struct PropertyIntCtrlCommonFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
 
     };

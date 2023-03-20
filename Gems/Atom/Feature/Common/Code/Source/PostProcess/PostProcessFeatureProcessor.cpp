@@ -8,16 +8,12 @@
 
 #include <PostProcess/PostProcessFeatureProcessor.h>
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/View.h>
 
 // Using ebus as a temporary workaround
 #include <AzFramework/Components/CameraBus.h>
-
-#include <AzCore/Debug/EventTrace.h>
 
 namespace AZ
 {
@@ -36,20 +32,35 @@ namespace AZ
 
         void PostProcessFeatureProcessor::Activate()
         {
-            m_currentTime = AZStd::chrono::system_clock::now();
+            m_currentTime = AZStd::chrono::steady_clock::now();
+        }
+
+        void PostProcessFeatureProcessor::Deactivate()
+        {
+            m_viewAliasMap.clear();
         }
 
         void PostProcessFeatureProcessor::UpdateTime()
         {
-            AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+            AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
             AZStd::chrono::duration<float> deltaTime = now - m_currentTime;
             m_currentTime = now;
             m_deltaTime = deltaTime.count();
         }
 
+        void PostProcessFeatureProcessor::SetViewAlias(const AZ::RPI::ViewPtr sourceView, const AZ::RPI::ViewPtr targetView)
+        {
+            m_viewAliasMap[sourceView.get()] = targetView.get();
+        }
+
+        void PostProcessFeatureProcessor::RemoveViewAlias(const AZ::RPI::ViewPtr sourceView)
+        {
+            m_viewAliasMap.erase(sourceView.get());
+        }
+
         void PostProcessFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "PostProcessFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "PostProcessFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             UpdateTime();
@@ -63,7 +74,7 @@ namespace AZ
 
             // simulate both the global and each view's post process settings
             // Ideally, every view should be associated to a post process settings. The global
-            // setting is returned when a view does not have a post process setting. 
+            // setting is returned when a view does not have a post process setting.
             // e.g. Editor Camera, AtomSampleViewer Samples that do not set perViewBlendWeights
             m_globalAggregateLevelSettings->Simulate(m_deltaTime);
             for (auto& settingsPair : m_blendedPerViewSettings)
@@ -74,7 +85,7 @@ namespace AZ
 
         void PostProcessFeatureProcessor::SortPostProcessSettings()
         {
-            // Clear settings from previous frame 
+            // Clear settings from previous frame
             m_sortedFrameSettings.clear();
 
             // Sort post process settings by layer value and priority
@@ -202,8 +213,12 @@ namespace AZ
 
         AZ::Render::PostProcessSettings* PostProcessFeatureProcessor::GetLevelSettingsFromView(AZ::RPI::ViewPtr view)
         {
+            // check for view aliases first
+            auto viewAliasiterator = m_viewAliasMap.find(view.get());
+
+            // Use the view alias if it exists
+            auto settingsIterator = m_blendedPerViewSettings.find(viewAliasiterator != m_viewAliasMap.end() ? viewAliasiterator->second : view.get());
             // If no settings for the view is found, the global settings is returned.
-            auto settingsIterator = m_blendedPerViewSettings.find(view.get());
             return settingsIterator != m_blendedPerViewSettings.end()
                 ? &settingsIterator->second
                 : m_globalAggregateLevelSettings.get();

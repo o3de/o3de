@@ -42,8 +42,8 @@ namespace EMotionFX
             ~UniqueData() override;
 
         public:
-            float   mElapsedTime;       /**< The elapsed time in seconds for the given anim graph instance. */
-            float   mCountDownTime;     /**< The count down time in seconds for the given anim graph instance. */
+            float   m_elapsedTime;       /**< The elapsed time in seconds for the given anim graph instance. */
+            float   m_countDownTime;     /**< The count down time in seconds for the given anim graph instance. */
         };
 
         AnimGraphTimeCondition();

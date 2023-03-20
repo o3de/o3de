@@ -13,6 +13,7 @@
 #include <EMotionFX/Source/AnimGraphNode.h>
 #include <EMotionFX/Source/EventHandler.h>
 #include "../StandardPluginsConfig.h"
+#include "NodePaletteModelUpdater.h"
 #include <QWidget>
 #endif
 
@@ -21,11 +22,14 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
 
 
+namespace GraphCanvas
+{
+    class NodePaletteWidget;
+}
+
 namespace EMStudio
 {
     class AnimGraphPlugin;
-    class NodePaletteModel;
-
 
     class NodePaletteWidget
         : public QWidget
@@ -48,7 +52,7 @@ namespace EMStudio
             void OnRemovedChildNode(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* parentNode) override;
 
         private:
-            NodePaletteWidget*  mWidget;
+            NodePaletteWidget*  m_widget;
         };
 
         NodePaletteWidget(AnimGraphPlugin* plugin);
@@ -56,22 +60,18 @@ namespace EMStudio
 
         void Init(EMotionFX::AnimGraph* animGraph, EMotionFX::AnimGraphNode* node);
 
-        static QIcon GetNodeIcon(const EMotionFX::AnimGraphNode* node);
-
     private slots:
         void OnFocusChanged(const QModelIndex& newFocusIndex, const QModelIndex& newFocusParent, const QModelIndex& oldFocusIndex, const QModelIndex& oldFocusParent);
 
     private:
-        void SaveExpandStates();
-        void RestoreExpandStates();
 
-        AnimGraphPlugin*            mPlugin;
-        NodePaletteModel*           mModel;
-        QTreeView*                  mTreeView;
-        EMotionFX::AnimGraphNode*   mNode;
-        EventHandler*               mEventHandler;
-        QVBoxLayout*                mLayout;
-        QLabel*                     mInitialText;
+        AnimGraphPlugin*            m_plugin;
+        NodePaletteModelUpdater      m_modelUpdater;
+        EMotionFX::AnimGraphNode*   m_node;
+        EventHandler*               m_eventHandler;
+        QVBoxLayout*                m_layout;
+        QLabel*                     m_initialText;
+        GraphCanvas::NodePaletteWidget* m_palette;
 
         // Cache the expanded states.
         AZStd::unordered_set<EMotionFX::AnimGraphObject::ECategory> m_expandedCatagory;

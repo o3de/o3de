@@ -23,7 +23,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::FromVec1(Vec1::FloatArgType value)
         {
-            return value;
+            // Coming from a Vec1 the last 3 elements could be garbage.
+            return Sse::SplatFirst(value);  // {value.x, value.x, value.x, value.x}
         }
 
 
@@ -185,6 +186,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::Div(FloatArgType arg1, FloatArgType arg2)
         {
+            // In Vec2 the last 2 elements can be zero, avoid doing division by zero
+            arg2 = Sse::ReplaceFourth(Sse::ReplaceThird(arg2, 1.0f), 1.0f);
             return Sse::Div(arg1, arg2);
         }
 
@@ -383,31 +386,32 @@ namespace AZ
 
         AZ_MATH_INLINE bool Vec2::CmpAllEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllEq(arg1, arg2, 0x00FF);
+            // Only check the first two bits for Vector2
+            return Sse::CmpAllEq(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllLt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLt(arg1, arg2, 0x00FF);
+            return Sse::CmpAllLt(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllLtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllLtEq(arg1, arg2, 0x00FF);
+            return Sse::CmpAllLtEq(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllGt(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGt(arg1, arg2, 0x00FF);
+            return Sse::CmpAllGt(arg1, arg2, 0b0011);
         }
 
 
         AZ_MATH_INLINE bool Vec2::CmpAllGtEq(FloatArgType arg1, FloatArgType arg2)
         {
-            return Sse::CmpAllGtEq(arg1, arg2, 0x00FF);
+            return Sse::CmpAllGtEq(arg1, arg2, 0b0011);
         }
 
 
@@ -467,6 +471,8 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::Reciprocal(FloatArgType value)
         {
+            // In Vec2 all the elements except the first two can be garbage or 0
+            // Using (value.x, value.y, 1, 1) to avoid divisions by 0.
             value = Sse::ReplaceFourth(Sse::ReplaceThird(value, 1.0f), 1.0f);
             return Sse::Reciprocal(value);
         }
@@ -474,7 +480,10 @@ namespace AZ
 
         AZ_MATH_INLINE Vec2::FloatType Vec2::ReciprocalEstimate(FloatArgType value)
         {
-            return Sse::ReciprocalEstimate(value);
+            // In Vec2 all the elements except the first two can be garbage or 0
+            // Using (value.x, value.y, 1, 1) to avoid divisions by 0.
+            value = Sse::ReplaceFourth(Sse::ReplaceThird(value, 1.0f), 1.0f);
+            return Sse::Reciprocal(value);
         }
 
 

@@ -16,7 +16,7 @@ namespace LandscapeCanvas
     class PolygonPrismShapeNode : public BaseShapeNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(PolygonPrismShapeNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PolygonPrismShapeNode, AZ::SystemAllocator);
         AZ_RTTI(PolygonPrismShapeNode, "{2DF92351-E990-4DCF-920E-4EFF7C061964}", BaseShapeNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -24,7 +24,7 @@ namespace LandscapeCanvas
         PolygonPrismShapeNode() = default;
         explicit PolygonPrismShapeNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
-        const char* GetTitle() const override { return TITLE.toUtf8().constData(); }
+        static const char* TITLE;
+        const char* GetTitle() const override { return TITLE; }
     };
 }

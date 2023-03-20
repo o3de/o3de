@@ -40,13 +40,14 @@ namespace AZ
 
         public:
             AZ_RTTI(BlendColorGradingLutsPass, "{F1E7ED65-27B1-4AF3-AF8D-C29C2BF31EE7}", RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BlendColorGradingLutsPass, SystemAllocator);
             virtual ~BlendColorGradingLutsPass();
 
             /// Creates a DisplayMapperPass
             static RPI::Ptr<BlendColorGradingLutsPass> Create(const RPI::PassDescriptor& descriptor);
 
             void SetShaperParameters(const ShaperParams& shaperParams);
+            AZStd::optional<ShaperParams> GetCommonShaperParams() const;
 
         private:
             explicit BlendColorGradingLutsPass(const RPI::PassDescriptor& descriptor);
@@ -66,6 +67,7 @@ namespace AZ
             void ReleaseLutImage();
 
             void CheckLutBlendSettings();
+            LookModificationSettings* GetLookModificationSettings() const;
 
             bool m_resourcesInitialized = false;
 
@@ -111,8 +113,6 @@ namespace AZ
             AZStd::array<u32, 3> m_blendedLutDimensions;
 
             float m_weights[LookModificationSettings::MaxBlendLuts + 1]; // The first index is reserved for the weight of the non color graded value
-            Data::Asset<RPI::AnyAsset> m_colorGradingLutAssets[LookModificationSettings::MaxBlendLuts];
-            ShaperPresetType m_colorGradingShaperPresets[LookModificationSettings::MaxBlendLuts];
             Render::ShaperParams m_colorGradingShaperParams[LookModificationSettings::MaxBlendLuts];
             Render::DisplayMapperAssetLut m_colorGradingLuts[LookModificationSettings::MaxBlendLuts];
 

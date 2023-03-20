@@ -25,7 +25,6 @@
 namespace EMotionFX
 {
     using CanAddSimpleMotionComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
@@ -66,7 +65,7 @@ namespace EMotionFX
             entity->GetId(),
             AZ::ComponentTypeList{azrtti_typeid<Integration::EditorSimpleMotionComponent>()}
         );
-        EXPECT_TRUE(componentOutcome.IsSuccess()) << componentOutcome.GetError().c_str();
+        ASSERT_TRUE(componentOutcome.IsSuccess()) << componentOutcome.GetError().c_str();
 
         bool hasComponent = false;
         AzToolsFramework::EditorComponentAPIBus::BroadcastResult(

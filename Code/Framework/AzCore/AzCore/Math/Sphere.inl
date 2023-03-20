@@ -16,7 +16,6 @@ namespace AZ
         m_radius = radius;
     }
 
-
     AZ_MATH_INLINE Sphere Sphere::CreateUnitSphere()
     {
         return Sphere(AZ::Vector3::CreateZero(), 1.0f);
@@ -60,13 +59,6 @@ namespace AZ
     {
         m_center = sphere.m_center;
         m_radius = sphere.m_radius;
-    }
-
-
-    AZ_MATH_INLINE Sphere& Sphere::operator=(const Sphere& rhs)
-    {
-        Set(rhs);
-        return *this;
     }
 
 

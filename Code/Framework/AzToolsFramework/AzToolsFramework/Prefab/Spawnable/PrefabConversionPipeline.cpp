@@ -7,7 +7,9 @@
  */
 
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabConversionPipeline.h>
 
 namespace AzToolsFramework::Prefab::PrefabConversionUtils
@@ -49,16 +51,18 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
 
     void PrefabConversionPipeline::ProcessPrefab(PrefabProcessorContext& context)
     {
-        for (auto& processor : m_processors)
+        for (auto&& [name, processor] : m_processors)
         {
+            AZ_TraceContext("Processor", name);
             processor->Process(context);
-        }
+        } 
+        context.ResolveLinks();
     }
     size_t PrefabConversionPipeline::CalculateProcessorFingerprint(AZ::SerializeContext* context)
     {
         size_t fingerprint = 0;
 
-        for (const auto& processor : m_processors)
+        for (auto&& [name, processor] : m_processors)
         {
             const AZ::SerializeContext::ClassData* classData = context->FindClassData(processor->RTTI_GetType());
 
@@ -80,8 +84,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)
         {
             serializeContext->Class<PrefabProcessor>()->Version(1);
-            serializeContext->RegisterGenericType<PrefabProcessorList>();
-            serializeContext->RegisterGenericType<PrefabProcessorListEntry>();
+            serializeContext->RegisterGenericType<PrefabProcessorStack>();
         }  
     }
 

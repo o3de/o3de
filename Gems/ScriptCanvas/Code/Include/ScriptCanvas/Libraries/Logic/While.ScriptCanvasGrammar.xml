@@ -2,23 +2,20 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Logic/While.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="While"
-           QualifiedName="ScriptCanvas::Nodes::Logic::While"
-           PreferredClassName="While"
-           Uuid="{C5BDF392-9669-4928-A0F5-F55B8A5B3BAC}"
-           Base="ScriptCanvas::Node"
-           Category="Logic"
-           Version="0"
-           GeneratePropertyFriend="True"
-           Description="">
+        QualifiedName="ScriptCanvas::Nodes::Logic::While"
+        PreferredClassName="While"
+        Uuid="{C5BDF392-9669-4928-A0F5-F55B8A5B3BAC}"
+        Category="Logic"
+        Description="">
 
-          <In Name="In" Description=""/>
-          <Out Name="Out" Description="Signalled if the condition is false, or if the loop calls the break node"/>
-          <Out Name="Loop" Description="Signalled if the condition is true, and every time the last node of 'Loop' finishes"/>
+        <In Name="In" Description=""/>
+        <Out Name="Out" Description="Signalled if the condition is false, or if the loop calls the break node"/>
+        <Out Name="Loop" Description="Signalled if the condition is true, and every time the last node of 'Loop' finishes"/>
 
-          <Property Name="Condition"
-                 Description="While this condition is true, Loop will signal, otherwise, Out will."
-                 Type="bool"
-                 IsInput="True"
-                 IsOutput="False" />
+        <Property Name="Condition"
+            Description="While this condition is true, Loop will signal, otherwise, Out will."
+            Type="bool"
+            IsInput="True"
+            IsOutput="False" />
     </Class>
 </ScriptCanvas>

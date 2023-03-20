@@ -90,7 +90,7 @@ namespace AZ
             const static AZ::Crc32 GenericValueList = AZ_CRC("GenericValueList", 0x6847012e);
             const static AZ::Crc32 PostChangeNotify = AZ_CRC("PostChangeNotify", 0x456e84c8);
 
-            const static AZ::Crc32 ValueText = AZ_CRC("ValueText", 0x251534d1);
+            const static AZ::Crc32 ValueText = AZ_CRC_CE("ValueText");
 
             const static AZ::Crc32 TrueText = AZ_CRC("TrueText", 0x263d9d95);
             const static AZ::Crc32 FalseText = AZ_CRC("FalseText", 0x5f8c95bd);
@@ -124,6 +124,7 @@ namespace AZ
             //! Container attribute that is used to override labels for its elements given the index of the element
             const static AZ::Crc32 IndexedChildNameLabelOverride = AZ_CRC("IndexedChildNameLabelOverride", 0x5f313ac2);
             const static AZ::Crc32 DescriptionTextOverride = AZ_CRC("DescriptionTextOverride", 0x608b64a8);
+            const static AZ::Crc32 ContainerReorderAllow = AZ_CRC_CE("ContainerReorderAllow");
 
             const static AZ::Crc32 PrimaryAssetType = AZ_CRC("PrimaryAssetType", 0xa400a5ce);
             const static AZ::Crc32 DynamicElementType = AZ_CRC("DynamicElementType", 0x7c0b82f9);
@@ -133,6 +134,8 @@ namespace AZ
             const static AZ::Crc32 AllowClearAsset = AZ_CRC("AllowClearAsset", 0x24827182);
             // Show the name of the asset that was produced from the source asset
             const static AZ::Crc32 ShowProductAssetFileName = AZ_CRC("ShowProductAssetFileName");
+            //! Regular expression pattern filter for source files
+            const static AZ::Crc32 SourceAssetFilterPattern = AZ_CRC_CE("SourceAssetFilterPattern");
 
             //! Component icon attributes
             const static AZ::Crc32 Icon = AZ_CRC("Icon", 0x659429db);
@@ -192,6 +195,9 @@ namespace AZ
             //! For use with slice creation tools. See SliceCreationFlags below for details.
             const static AZ::Crc32 SliceFlags = AZ_CRC("SliceFlags", 0xa447e1fb);
 
+            //! Does the clear button in the LineEdit need to have a test for visibility.
+            const static AZ::Crc32 ShowClearButtonHandler = AZ_CRC_CE("ShowClearButtonHandler");
+
             //! For optional use on Getter Events used for Virtual Properties
             const static AZ::Crc32 PropertyPosition = AZ_CRC("Position", 0x462ce4f5);
             const static AZ::Crc32 PropertyRotation = AZ_CRC("Rotation", 0x297c98f1);
@@ -238,7 +244,7 @@ namespace AZ
             const static AZ::Crc32 EntityId = AZ_CRC("EntityId", 0x63ac0d5e);
             const static AZ::Crc32 LayoutPadding = AZ_CRC("LayoutPadding", 0x87ffd04b);
             const static AZ::Crc32 LineEdit = AZ_CRC("LineEdit", 0x3f15f4ba);
-            const static AZ::Crc32 MultiLineEdit = AZ_CRC("MultiLineEdit", 0xf5d93777);
+            const static AZ::Crc32 MultiLineEdit = AZ_CRC_CE("MultiLineEdit");
             const static AZ::Crc32 Quaternion = AZ_CRC("Quaternion", 0x4be832b9);
             const static AZ::Crc32 Slider = AZ_CRC("Slider", 0xcfc71007);
             const static AZ::Crc32 SpinBox = AZ_CRC("SpinBox", 0xf3fd1c2d);
@@ -246,6 +252,8 @@ namespace AZ
             const static AZ::Crc32 Vector2 = AZ_CRC("Vector2", 0xe6775839);
             const static AZ::Crc32 Vector3 = AZ_CRC("Vector3", 0x917068af);
             const static AZ::Crc32 Vector4 = AZ_CRC("Vector4", 0x0f14fd0c);
+            const static AZ::Crc32 ExeSelectBrowseEdit = AZ_CRC("ExeSelectBrowseEdit", 0xa2feae94);
+            const static AZ::Crc32 Label = AZ_CRC_CE("Label");
 
             // Maintained in the UIHandlers namespace for backwards compatibility; moved to the Attributes namespace now
             const static AZ::Crc32 Handler = Attributes::Handler;
@@ -263,8 +271,17 @@ namespace AZ
         namespace PropertyRefreshLevels
         {
             const static AZ::Crc32 None = AZ_CRC("RefreshNone", 0x98a5045b);
+
+            //! This will only update the values in each row that has a property
             const static AZ::Crc32 ValuesOnly = AZ_CRC("RefreshValues", 0x28e720d4);
+
+            //! This will re-consume all attributes and values, with the exception of the
+            //! Visibility attribute. This is due to the Visibility attribute being consumed
+            //! at a higher level in the system and would be a more expensive operation that
+            //! would essentially be the same as the EntireTree refresh level.
             const static AZ::Crc32 AttributesAndValues = AZ_CRC("RefreshAttributesAndValues", 0xcbc2147c);
+
+            //! Re-create the entire tree of properties.
             const static AZ::Crc32 EntireTree = AZ_CRC("RefreshEntireTree", 0xefbc823c);
         }
 

@@ -9,15 +9,13 @@
 
 #include "AuxGeomDrawQueue.h"
 
-#include <Atom/RHI/CpuProfiler.h>
-
 #include <Atom/RPI.Public/Scene.h>
 
-#include <AzCore/Debug/EventTrace.h>
+#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Matrix4x4.h>
+#include <AzCore/Math/ShapeIntersection.h>
 #include <AzCore/std/functional.h>
-#include <AzCore/Casting/numeric_cast.h>
 
 namespace AZ
 {
@@ -316,15 +314,40 @@ namespace AZ
             AddShape(style, shape);
         }
 
-        void AuxGeomDrawQueue::DrawSphere(
-            const AZ::Vector3& center, 
+        Matrix3x3 CreateMatrix3x3FromDirection(const AZ::Vector3& direction)
+        {
+            Vector3 unitDirection(direction.GetNormalized());
+            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
+            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
+            return Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+        }
+
+        void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, direction, radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawSphere(const AZ::Vector3& center, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, AZ::Vector3::CreateAxisZ(), radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawHemisphere(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawSphereCommon(center, direction, radius, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, true);
+        }
+
+        void AuxGeomDrawQueue::DrawSphereCommon(
+            const AZ::Vector3& center,
+            const AZ::Vector3& direction,
             float radius, 
             const AZ::Color& color, 
             DrawStyle style, 
             DepthTest depthTest, 
             DepthWrite depthWrite, 
             FaceCullMode faceCull, 
-            int32_t viewProjOverrideIndex) 
+            int32_t viewProjOverrideIndex,
+            bool isHemisphere) 
         {
             if (radius <= 0.0f)
             {
@@ -332,12 +355,12 @@ namespace AZ
             }
 
             ShapeBufferEntry shape;
-            shape.m_shapeType = ShapeType_Sphere;
+            shape.m_shapeType = isHemisphere ? ShapeType_Hemisphere : ShapeType_Sphere;
             shape.m_depthRead  = ConvertRPIDepthTestFlag(depthTest);
             shape.m_depthWrite = ConvertRPIDepthWriteFlag(depthWrite);
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
-            shape.m_rotationMatrix = Matrix3x3::CreateIdentity();
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, radius, radius);
             shape.m_pointSize = m_pointSize;
@@ -364,13 +387,9 @@ namespace AZ
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
             // The disk mesh is created with the top of the disk pointing along the positive Y axis. This creates a
             // rotation so that the top of the disk will point along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, 1.0f, radius);
             shape.m_pointSize = m_pointSize;
@@ -403,13 +422,7 @@ namespace AZ
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
-            // The cone mesh is created with the tip of the cone pointing along the positive Y axis. This creates a
-            // rotation so that the tip of the cone will point along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, height, radius);
             shape.m_pointSize = m_pointSize;
@@ -418,17 +431,30 @@ namespace AZ
             AddShape(style, shape);
         }
 
-        void AuxGeomDrawQueue::DrawCylinder(
-            const AZ::Vector3& center, 
-            const AZ::Vector3& direction, 
-            float radius, 
-            float height, 
-            const AZ::Color& color, 
-            DrawStyle style, 
-            DepthTest depthTest, 
-            DepthWrite depthWrite, 
-            FaceCullMode faceCull, 
-            int32_t viewProjOverrideIndex) 
+        void AuxGeomDrawQueue::DrawCylinder(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color,
+            DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawCylinderCommon(center, direction, radius, height, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, true);
+        }
+
+        void AuxGeomDrawQueue::DrawCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& direction, float radius, float height, const AZ::Color& color,
+            DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex)
+        {
+            DrawCylinderCommon(center, direction, radius, height, color, style, depthTest, depthWrite, faceCull, viewProjOverrideIndex, false);
+        }
+
+        void AuxGeomDrawQueue::DrawCylinderCommon(
+            const AZ::Vector3& center,
+            const AZ::Vector3& direction,
+            float radius,
+            float height,
+            const AZ::Color& color,
+            DrawStyle style,
+            DepthTest depthTest,
+            DepthWrite depthWrite,
+            FaceCullMode faceCull,
+            int32_t viewProjOverrideIndex,
+            bool drawEnds)
         {
             if (radius <= 0.0f || height <= 0.0f)
             {
@@ -436,19 +462,15 @@ namespace AZ
             }
 
             ShapeBufferEntry shape;
-            shape.m_shapeType = ShapeType_Cylinder;
-            shape.m_depthRead  = ConvertRPIDepthTestFlag(depthTest);
+            shape.m_shapeType = drawEnds ? ShapeType_Cylinder : ShapeType_CylinderNoEnds;
+            shape.m_depthRead = ConvertRPIDepthTestFlag(depthTest);
             shape.m_depthWrite = ConvertRPIDepthWriteFlag(depthWrite);
             shape.m_faceCullMode = ConvertRPIFaceCullFlag(faceCull);
             shape.m_color = color;
 
-            Vector3 unitDirection(direction.GetNormalized());
-            Vector3 unitOrthogonal(direction.GetOrthogonalVector().GetNormalized());
-            Vector3 unitCross(unitOrthogonal.Cross(unitDirection));
-
             // The cylinder mesh is created with the top end cap of the cylinder facing along the positive Y axis. This creates a
             // rotation so that the top face of the cylinder will face along the given direction vector.
-            shape.m_rotationMatrix = Matrix3x3::CreateFromColumns(unitOrthogonal, unitDirection, unitCross);
+            shape.m_rotationMatrix = CreateMatrix3x3FromDirection(direction);
             shape.m_position = center;
             shape.m_scale = AZ::Vector3(radius, height, radius);
             shape.m_pointSize = m_pointSize;
@@ -563,9 +585,171 @@ namespace AZ
             AddBox(style, box);
         }
 
+        void AuxGeomDrawQueue::DrawFrustum(
+            const Frustum& frustum,
+            const Color& color,
+            bool drawNormals,
+            DrawStyle style,
+            DepthTest depthTest,
+            DepthWrite depthWrite,
+            FaceCullMode faceCull,
+            int32_t viewProjOverrideIndex)
+        {
+
+            Frustum::CornerVertexArray corners;
+            bool validFrustum = frustum.GetCorners(corners);
+
+            if (validFrustum)
+            {
+                // This helps cut down on clutter below. Replace with a using-enum-declaration when c++20 support is required.
+                enum CornerIndices
+                {
+                    NearTopLeft = Frustum::CornerIndices::NearTopLeft,
+                    NearTopRight = Frustum::CornerIndices::NearTopRight,
+                    NearBottomLeft = Frustum::CornerIndices::NearBottomLeft,
+                    NearBottomRight = Frustum::CornerIndices::NearBottomRight,
+                    FarTopLeft = Frustum::CornerIndices::FarTopLeft,
+                    FarTopRight = Frustum::CornerIndices::FarTopRight,
+                    FarBottomLeft = Frustum::CornerIndices::FarBottomLeft,
+                    FarBottomRight = Frustum::CornerIndices::FarBottomRight,
+                };
+
+                RPI::AuxGeomDraw::AuxGeomDynamicIndexedDrawArguments drawArgs;
+                drawArgs.m_verts = corners.data();
+                drawArgs.m_vertCount = 8;
+                drawArgs.m_colors = &color;
+                drawArgs.m_colorCount = 1;
+                drawArgs.m_depthTest = depthTest;
+                drawArgs.m_depthWrite = depthWrite;
+                drawArgs.m_viewProjectionOverrideIndex = viewProjOverrideIndex;
+
+                if (style == DrawStyle::Point)
+                {
+                    DrawPoints(drawArgs);
+                }
+                else
+                {
+                    // Always draw lines if draw style isn't Point.
+                    uint32_t lineIndices[24]{
+                        //near plane
+                        NearTopLeft, NearTopRight,
+                        NearTopRight, NearBottomRight,
+                        NearBottomRight, NearBottomLeft,
+                        NearBottomLeft, NearTopLeft,
+
+                        //Far plane
+                        FarTopLeft, FarTopRight,
+                        FarTopRight, FarBottomRight,
+                        FarBottomRight, FarBottomLeft,
+                        FarBottomLeft, FarTopLeft,
+
+                        //Near-to-Far connecting lines
+                        NearTopLeft, FarTopLeft,
+                        NearTopRight, FarTopRight,
+                        NearBottomLeft, FarBottomLeft,
+                        NearBottomRight, FarBottomRight,
+                    };
+
+                    drawArgs.m_indices = lineIndices;
+                    drawArgs.m_indexCount = 24;
+                    DrawLines(drawArgs);
+
+                    if (style == DrawStyle::Solid || style == DrawStyle::Shaded)
+                    {
+                        // DrawTriangles doesn't support shaded drawing, so we can't support it here either.
+                        AZ_WarningOnce("AuxGeomDrawQueue", style != DrawStyle::Shaded, "Cannot draw frustum with Shaded DrawStyle, using Solid instead.");
+
+                        uint32_t triangleIndices[36]{
+                            //near
+                            NearBottomLeft, NearTopLeft, NearTopRight,
+                            NearBottomLeft, NearTopRight, NearBottomRight,
+
+                            //far
+                            FarBottomRight, FarTopRight, FarTopLeft,
+                            FarBottomRight, FarTopLeft, FarBottomLeft,
+
+                            //left
+                            NearTopLeft, NearBottomLeft, FarBottomLeft,
+                            NearTopLeft, FarBottomLeft, FarTopLeft,
+
+                            //right
+                            NearBottomRight, NearTopRight, FarTopRight,
+                            NearBottomRight, FarTopRight, FarBottomRight,
+
+                            //bottom
+                            FarBottomLeft, NearBottomLeft, NearBottomRight,
+                            FarBottomLeft, NearBottomRight, FarBottomRight,
+
+                            //top
+                            NearTopLeft, FarTopLeft, FarTopRight,
+                            NearTopLeft, FarTopRight, NearTopRight,
+                        };
+
+                        Color transparentColor(color.GetR(), color.GetG(), color.GetB(), color.GetA() * 0.3f);
+                        drawArgs.m_indices = triangleIndices;
+                        drawArgs.m_indexCount = 36;
+                        drawArgs.m_colors = &transparentColor;
+                        DrawTriangles(drawArgs, faceCull);
+                    }
+                }
+
+                if (drawNormals)
+                {
+                    Vector3 planeNormals[] =
+                    {
+                        //near
+                        0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]),
+                        0.25f * (corners[NearBottomLeft] + corners[NearBottomRight] + corners[NearTopLeft] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Near).GetNormal(),
+
+                        //far
+                        0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]),
+                        0.25f * (corners[FarBottomLeft] + corners[FarBottomRight] + corners[FarTopLeft] + corners[FarTopRight]) + frustum.GetPlane(Frustum::PlaneId::Far).GetNormal(),
+
+                        //left
+                        0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]),
+                        0.5f * (corners[NearBottomLeft] + corners[NearTopLeft]) + frustum.GetPlane(Frustum::PlaneId::Left).GetNormal(),
+
+                        //right
+                        0.5f * (corners[NearBottomRight] + corners[NearTopRight]),
+                        0.5f * (corners[NearBottomRight] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Right).GetNormal(),
+
+                        //bottom
+                        0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]),
+                        0.5f * (corners[NearBottomLeft] + corners[NearBottomRight]) + frustum.GetPlane(Frustum::PlaneId::Bottom).GetNormal(),
+
+                        //top
+                        0.5f * (corners[NearTopLeft] + corners[NearTopRight]),
+                        0.5f * (corners[NearTopLeft] + corners[NearTopRight]) + frustum.GetPlane(Frustum::PlaneId::Top).GetNormal(),
+                    };
+
+                    Color planeNormalColors[] =
+                    {
+                        Colors::Red, Colors::Red,       //near
+                        Colors::Green, Colors::Green,   //far
+                        Colors::Blue, Colors::Blue,     //left
+                        Colors::Orange, Colors::Orange, //right
+                        Colors::Pink, Colors::Pink,     //bottom
+                        Colors::MediumPurple, Colors::MediumPurple, //top
+                    };
+
+                    RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments planeNormalLineArgs;
+                    planeNormalLineArgs.m_verts = planeNormals;
+                    planeNormalLineArgs.m_vertCount = 12;
+                    planeNormalLineArgs.m_colors = planeNormalColors;
+                    planeNormalLineArgs.m_colorCount = planeNormalLineArgs.m_vertCount;
+                    planeNormalLineArgs.m_depthTest = depthTest;
+                    DrawLines(planeNormalLineArgs);
+                }
+            }
+            else
+            {
+                AZ_Assert(false, "invalid frustum, cannot draw");
+            }
+        }
+
         AuxGeomBufferData* AuxGeomDrawQueue::Commit()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: Commit");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: Commit");
             // get a mutually exclusive lock and then switch to the next buffer, returning a pointer to the current buffer (before the switch)
 
             // grab the lock
@@ -585,7 +769,7 @@ namespace AZ
 
         void AuxGeomDrawQueue::ClearCurrentBufferData()
         {
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: ClearCurrentBufferData");
+            AZ_PROFILE_SCOPE(AzRender, "AuxGeomDrawQueue: ClearCurrentBufferData");
             // no need for mutex here, this function is only called from a function holding a lock
             AuxGeomBufferData& data = m_buffers[m_currentBufferIndex];
 
@@ -649,8 +833,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-
             // grab a mutex lock for the rest of this function so that a commit cannot happen during it and
             // other threads can't add geometry during it
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_buffersWriteLock);
@@ -661,16 +843,15 @@ namespace AZ
 
             AuxGeomIndex vertexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_vertexBuffer.size());
             AuxGeomIndex indexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_indexBuffer.size());
+            const size_t vertexCountTotal = aznumeric_cast<size_t>(vertexOffset) + vertexCount;
 
-            if (aznumeric_cast<size_t>(vertexOffset) + vertexCount > MaxDynamicVertexCount)
+            if (vertexCountTotal > MaxDynamicVertexCount)
             {
                 AZ_WarningOnce("AuxGeom", false, "Draw function ignored, would exceed maximum allowed index of %d", MaxDynamicVertexCount);
                 return;
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCount);
-            primBuffer.m_indexBuffer.reserve(vertexCount);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -690,8 +871,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;
@@ -720,9 +900,6 @@ namespace AZ
             AZ::u8 width,
             int32_t viewProjOverrideIndex)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("AuxGeom", "AuxGeomDrawQueue: DrawPrimitiveWithSharedVerticesCommon");
-
             AZ_Assert(indexCount >= verticesPerPrimitiveType && (indexCount % verticesPerPrimitiveType == 0),
                 "Index count must be at least %d and must be a multiple of %d",
                 verticesPerPrimitiveType, verticesPerPrimitiveType);
@@ -737,15 +914,15 @@ namespace AZ
 
             AuxGeomIndex vertexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_vertexBuffer.size());
             AuxGeomIndex indexOffset = aznumeric_cast<AuxGeomIndex>(primBuffer.m_indexBuffer.size());
+            const size_t vertexCountTotal = aznumeric_cast<size_t>(vertexOffset) + vertexCount;
 
-            if (aznumeric_cast<size_t>(vertexOffset) + vertexCount > MaxDynamicVertexCount)
+            if (vertexCountTotal > MaxDynamicVertexCount)
             {
                 AZ_WarningOnce("AuxGeom", false, "Draw function ignored, would exceed maximum allowed index of %d", MaxDynamicVertexCount);
                 return;
             }
 
             AZ::Vector3 center(0.0f, 0.0f, 0.0f);
-            primBuffer.m_vertexBuffer.reserve(vertexCount);
             for (uint32_t vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
             {
                 AZ::u32 packedColor = packedColorFunction(vertexIndex);
@@ -756,7 +933,6 @@ namespace AZ
             }
             center /= aznumeric_cast<float>(vertexCount);
 
-            primBuffer.m_indexBuffer.reserve(indexCount);
             for (uint32_t index = 0; index < indexCount; ++index)
             {
                 primBuffer.m_indexBuffer.push_back(vertexOffset + indexFunction(index));
@@ -770,8 +946,7 @@ namespace AZ
             }
             else
             {
-                primBuffer.m_primitiveBuffer.push_back();
-                auto& primitive = primBuffer.m_primitiveBuffer.back();
+                auto& primitive = primBuffer.m_primitiveBuffer.emplace_back();
                 primitive.m_primitiveType = primitiveType;
                 primitive.m_depthReadType = depthRead;
                 primitive.m_depthWriteType = depthWrite;

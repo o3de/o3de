@@ -135,13 +135,15 @@ namespace UnitTest
         RHI::Ptr<RHI::PipelineState> pipelineState = RHI::Factory::Get().CreatePipelineState();
         auto descriptor = CreatePipelineStateDescriptor(0);
         descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputCount = 1;
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 1;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputDescriptors[0].m_attachmentIndex = 1;
         RHI::ResultCode resultCode = pipelineState->Init(*device, descriptor);
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         AZ_TEST_START_ASSERTTEST;
         pipelineState = RHI::Factory::Get().CreatePipelineState();
-        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0].m_subpassInputIndices[0] = 3;
+        descriptor.m_renderAttachmentConfiguration.m_renderAttachmentLayout.m_subpassLayouts[0]
+            .m_subpassInputDescriptors[0]
+            .m_attachmentIndex = 3;
         resultCode = pipelineState->Init(*device, descriptor);
         AZ_TEST_STOP_ASSERTTEST(1);
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -189,12 +191,12 @@ namespace UnitTest
         RHI::Ptr<RHI::Device> device = MakeTestDevice();
 
         RHI::Ptr<RHI::PipelineLibrary> pipelineLibrary = RHI::Factory::Get().CreatePipelineLibrary();
-        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, nullptr);
+        RHI::ResultCode resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
         EXPECT_EQ(resultCode, RHI::ResultCode::Success);
 
         // Second init should fail and throw validation error.
         AZ_TEST_START_ASSERTTEST;
-        resultCode = pipelineLibrary->Init(*device, nullptr);
+        resultCode = pipelineLibrary->Init(*device, RHI::PipelineLibraryDescriptor{});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(resultCode, RHI::ResultCode::InvalidOperation);
@@ -249,7 +251,7 @@ namespace UnitTest
         // Calling library methods with a null handle should early out.
         pipelineStateCache->ResetLibrary({});
         pipelineStateCache->ReleaseLibrary({});
-        EXPECT_EQ(pipelineStateCache->GetLibrarySerializedData({}), nullptr);
+        EXPECT_EQ(pipelineStateCache->GetMergedLibrary({}), nullptr);
         EXPECT_EQ(pipelineStateCache->AcquirePipelineState({}, CreatePipelineStateDescriptor(0)), nullptr);
         pipelineStateCache->Compact();
         ValidateCacheIntegrity(pipelineStateCache);

@@ -6,12 +6,13 @@
  *
  */
 #include <AzCore/Asset/AssetDataStream.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Tests/Streamer/IStreamerMock.h>
 
 class AssetDataStreamTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -20,7 +21,7 @@ public:
         using ::testing::NiceMock;
         using ::testing::Return;
 
-        UnitTest::ScopedAllocatorSetupFixture::SetUp();
+        UnitTest::LeakDetectionFixture::SetUp();
         AZ::Interface<AZ::IO::IStreamer>::Register(&m_mockStreamer);
 
         // Reroute enough mock streamer calls to this class to let us validate the input parameters and mock
@@ -90,7 +91,7 @@ public:
     void TearDown() override
     {
         AZ::Interface<AZ::IO::IStreamer>::Unregister(&m_mockStreamer);
-        UnitTest::ScopedAllocatorSetupFixture::TearDown();
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
 
@@ -297,7 +298,7 @@ TEST_F(AssetDataStreamTest, IsFullyLoaded_FileDoesNotReadAllData_DataIsNotFullyL
     using ::testing::_;
 
     ON_CALL(m_mockStreamer, GetReadRequestResult(_, _, _, _))
-        .WillByDefault([this, incompleteAssetSize](
+        .WillByDefault([this](
             [[maybe_unused]] FileRequestHandle request,
             void*& buffer,
             AZ::u64& numBytesRead,

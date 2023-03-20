@@ -11,6 +11,7 @@
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/UiComponentTypes.h>
+#include <LyShine/UiRenderFormats.h>
 #include <LyShine/IRenderGraph.h>
 
 #include <LyShineExamples/UiCustomImageBus.h>
@@ -19,7 +20,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Math/Vector2.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 class ITexture;
 class ISprite;
@@ -136,7 +137,7 @@ namespace LyShineExamples
         float m_overrideAlpha;
 
         // cached rendering data for performance optimization
-        IRenderer::DynUiPrimitive m_cachedPrimitive;
+        LyShine::UiPrimitive m_cachedPrimitive;
         bool m_isRenderCacheDirty = true;
     };
 }

@@ -1,5 +1,5 @@
 { 
-    "Source" : "FullscreenCopy",
+    "Source" : "FullscreenCopy.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

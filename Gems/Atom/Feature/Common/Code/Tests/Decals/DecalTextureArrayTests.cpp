@@ -24,25 +24,15 @@ namespace UnitTest
     using namespace AZ::Render;
 
     class DecalTextureArrayTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-        }
-
-        void TearDown() override
-        {
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     TEST_F(DecalTextureArrayTests, TestPackingNothing)
     {
         AZ::Render::DecalTextureArray decalTextureArray;
         decalTextureArray.Pack();
-        auto nothing = decalTextureArray.GetPackedTexture();
+        auto nothing = decalTextureArray.GetPackedTexture(AZ::Render::DecalMapType_Diffuse);
         EXPECT_EQ(nothing, nullptr);
     }
 

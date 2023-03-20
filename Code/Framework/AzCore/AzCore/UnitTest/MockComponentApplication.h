@@ -21,7 +21,6 @@ namespace UnitTest
         MockComponentApplication();
         ~MockComponentApplication();
 
-    protected:
         MOCK_METHOD1(FindEntity, AZ::Entity* (const AZ::EntityId&));
         MOCK_METHOD1(AddEntity, bool (AZ::Entity*));
         MOCK_METHOD0(Destroy, void ());
@@ -41,10 +40,8 @@ namespace UnitTest
         MOCK_METHOD0(GetSerializeContext, AZ::SerializeContext* ());
         MOCK_METHOD0(GetJsonRegistrationContext, AZ::JsonRegistrationContext* ());
         MOCK_METHOD0(GetBehaviorContext, AZ::BehaviorContext* ());
-        MOCK_CONST_METHOD0(GetAppRoot, const char* ());
         MOCK_CONST_METHOD0(GetEngineRoot, const char* ());
         MOCK_CONST_METHOD0(GetExecutableFolder, const char* ());
-        MOCK_METHOD0(GetDrillerManager, AZ::Debug::DrillerManager* ());
         MOCK_CONST_METHOD1(QueryApplicationType, void(AZ::ApplicationTypeQuery&));
     };
 } // namespace UnitTest

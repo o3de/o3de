@@ -11,6 +11,8 @@
 // include required headers
 #include "StandardHeaders.h"
 #include "FastMath.h"
+#include <MCore/Source/CompressedQuaternion.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -58,23 +60,17 @@ namespace MCore
     AZ::Vector3 MCORE_API StereographicUnproject(const AZ::Vector2& uv);
 
     //
-    bool MCORE_API PointInPoly(AZ::Vector2* verts, uint32 numVerts, const AZ::Vector2& point);
+    bool MCORE_API PointInPoly(AZ::Vector2* verts, size_t numVerts, const AZ::Vector2& point);
     float MCORE_API DistanceToEdge(const AZ::Vector2& edgePointA, const AZ::Vector2& edgePointB, const AZ::Vector2& testPoint);
-    AZ::Vector2 MCORE_API ClosestPointToPoly(const AZ::Vector2* polyPoints, uint32 numPoints, const AZ::Vector2& testPoint);
+    AZ::Vector2 MCORE_API ClosestPointToPoly(const AZ::Vector2* polyPoints, size_t numPoints, const AZ::Vector2& testPoint);
 
-
-    /**
-     * Calculates the CRC value of a given byte.
-     * It inputs and modifies the current CRC value passed as parameter.
-     * @param byteValue The byte value to generate the CRC for.
-     * @param CRC The CRC value to modify.
-     *
-     * The calculation performed is:
-     * <pre>
-     * CRC = ((CRC) >> 8) ^ MCore::CRC32Table[(byteValue) ^ ((CRC) & 0x000000FF)];
-     * </pre>
-     */
-    //void MCORE_API CalcCRC32(uint8 byteValue, uint32& CRC);
+    // @param data The original data that we want to apply moving-average smooth algorithm on
+    // @param sampleNum The sample number we will take from each data point.
+    // When sampleNum = 1, we are taking 1 sample before the data point, and 1 sample after the data point, 3 samples point in total (include the original data point).
+    // And calculate the average.
+    // When sampleNum = 2, we are taking 5 samples point in total and take the average (2 before, 1 original and 2 after).
+    void MCORE_API MovingAverageSmooth(AZStd::vector<AZ::Vector3>& data, size_t sampleNum);
+    void MCORE_API MovingAverageSmooth(AZStd::vector<MCore::Compressed16BitQuaternion>& data, size_t sampleNum);
 
     /**
      * Calculate the cube root, which basically is pow(x, 1/3).

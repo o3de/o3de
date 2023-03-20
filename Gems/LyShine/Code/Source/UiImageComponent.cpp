@@ -8,14 +8,15 @@
 #include "UiImageComponent.h"
 
 #include <AzCore/Math/Crc.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 
-#include <IRenderer.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
-#include <LyShine/Draw2d.h>
+#include <LyShine/IDraw2d.h>
 #include <LyShine/UiSerializeHelpers.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiCanvasBus.h>
@@ -188,7 +189,7 @@ namespace
 
     //! Set the values for an image vertex
     //! This helper function is used so that we only have to initialize textIndex and texHasColorChannel in one place
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const Vec2& pos, uint32 color, const Vec2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const Vec2& pos, uint32 color, const Vec2& uv)
     {
         vert.xy = pos;
         vert.color.dcolor = color;
@@ -201,7 +202,7 @@ namespace
 
     //! Set the values for an image vertex
     //! This version of the helper function takes AZ vectors
-    void SetVertex(SVF_P2F_C4B_T2F_F4B& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
+    void SetVertex(LyShine::UiPrimitiveVertex& vert, const AZ::Vector2& pos, uint32 color, const AZ::Vector2& uv)
     {
         SetVertex(vert, Vec2(pos.GetX(), pos.GetY()), color, Vec2(uv.GetX(), uv.GetY()));
     }
@@ -215,7 +216,7 @@ namespace
     //! \param packedColor The color value to be put in every vertex
     //! \param transform The transform to be applied to the points
     //! \param xValues The x-values for the edges and borders
-    void FillVerts(SVF_P2F_C4B_T2F_F4B* verts, [[maybe_unused]] uint32 numVerts, uint32 numX, uint32 numY, uint32 packedColor, const AZ::Matrix4x4& transform,
+    void FillVerts(LyShine::UiPrimitiveVertex* verts, [[maybe_unused]] uint32 numVerts, uint32 numX, uint32 numY, uint32 packedColor, const AZ::Matrix4x4& transform,
         float* xValues, float* yValues, float* sValues, float* tValues,
         bool isPixelAligned)
     {
@@ -224,9 +225,9 @@ namespace
         IDraw2d::Rounding pixelRounding = isPixelAligned ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
         float z = 1.0f;
         int i = 0;
-        for (int y = 0; y < numY; ++y)
+        for (uint32 y = 0; y < numY; ++y)
         {
-            for (int x = 0; x < numX; x += 1)
+            for (uint32 x = 0; x < numX; x += 1)
             {
                 AZ::Vector3 point3(xValues[x], yValues[y], z);
                 point3 = transform * point3;
@@ -280,11 +281,7 @@ namespace
         AZ::Data::Instance<AZ::RPI::Image> image;
         if (sprite)
         {
-            CSprite* cSprite = dynamic_cast<CSprite*>(sprite); // LYSHINE_ATOM_TODO - find a different solution from downcasting
-            if (cSprite)
-            {
-                image = cSprite->GetImage();
-            }
+            image = sprite->GetImage();
         }
 
         return image;
@@ -359,7 +356,6 @@ void UiImageComponent::SetOverrideSprite(ISprite* sprite, AZ::u32 cellIndex)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 {
-
     // get fade value (tracked by UiRenderer) and compute the desired alpha for the image
     float fade = renderGraph->GetAlphaFade();
     float desiredAlpha = m_overrideAlpha * fade;
@@ -382,9 +378,8 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
 
         ImageType imageType = m_imageType;
 
-#ifdef LYSHINE_ATOM_TODO // support default white texture
         // if there is no texture we will just use a white texture and want to stretch it
-        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetTexture() == nullptr;
+        const bool spriteOrTextureIsNull = sprite == nullptr || sprite->GetImage() == nullptr;
 
         // Zero texture size may occur even if the UiImageComponent has a valid non-zero-sized texture,
         // because a canvas can be requested to Render() before the texture asset is done loading.
@@ -405,12 +400,6 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         {
             imageType = ImageType::Stretched;
         }
-#else
-        if (sprite == nullptr)
-        {
-            imageType = ImageType::Stretched;
-        }
-#endif
 
         switch (imageType)
         {
@@ -442,7 +431,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (!UiCanvasPixelAlignmentNotificationBus::Handler::BusIsConnected())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             UiCanvasPixelAlignmentNotificationBus::Handler::BusConnect(canvasEntityId);
         }
     }
@@ -463,7 +452,7 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
         if (m_cachedPrimitive.m_vertices[0].color.a != desiredPackedAlpha)
         {
             // go through all the cached vertices and update the alpha values
-            UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
+            LyShine::UCol desiredPackedColor = m_cachedPrimitive.m_vertices[0].color;
             desiredPackedColor.a = desiredPackedAlpha;
             for (int i = 0; i < m_cachedPrimitive.m_numVertices; ++i)
             {
@@ -471,25 +460,12 @@ void UiImageComponent::Render(LyShine::IRenderGraph* renderGraph)
             }
         }
 
-#ifdef LYSHINE_ATOM_TODO // keeping this code for future phase (masks and render targets)
-        ITexture* texture = (sprite) ? sprite->GetTexture() : nullptr;
-        bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
-        bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
-        bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
-
-        renderGraph->AddPrimitive(&m_cachedPrimitive, texture, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-#else
         AZ::Data::Instance<AZ::RPI::Image> image = GetSpriteImage(sprite);
         bool isClampTextureMode = m_imageType == ImageType::Tiled ? false : true;
         bool isTextureSRGB = IsSpriteTypeRenderTarget() && m_isRenderTargetSRGB;
         bool isTexturePremultipliedAlpha = false; // we are not rendering from a render target with alpha in it
 
-        LyShine::RenderGraph* lyRenderGraph = dynamic_cast<LyShine::RenderGraph*>(renderGraph); // LYSHINE_ATOM_TODO - find a different solution from downcasting
-        if (lyRenderGraph)
-        {
-            lyRenderGraph->AddPrimitiveAtom(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
-        }
-#endif
+        renderGraph->AddPrimitive(&m_cachedPrimitive, image, isClampTextureMode, isTextureSRGB, isTexturePremultipliedAlpha, m_blendMode);
     }
 }
 
@@ -583,7 +559,7 @@ void UiImageComponent::SetSprite(ISprite* sprite)
     }
 
     InvalidateLayouts();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,7 +582,7 @@ void UiImageComponent::SetSpritePathname(AZStd::string spritePath)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 {
-    if (gEnv->pLyShine->DoesSpriteTextureAssetExist(spritePath))
+    if (AZ::Interface<ILyShine>::Get()->DoesSpriteTextureAssetExist(spritePath))
     {
         SetSpritePathname(spritePath);
         return true;
@@ -616,19 +592,19 @@ bool UiImageComponent::SetSpritePathnameIfExists(AZStd::string spritePath)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-AZStd::string UiImageComponent::GetRenderTargetName()
+AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> UiImageComponent::GetAttachmentImageAsset()
 {
-    return m_renderTargetName;
+    return m_attachmentImageAsset;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::SetRenderTargetName(AZStd::string renderTargetName)
+void UiImageComponent::SetAttachmentImageAsset(const AZ::Data::Asset<AZ::RPI::AttachmentImageAsset>& attachmentImageAsset)
 {
-    m_renderTargetName = renderTargetName;
+    m_attachmentImageAsset = attachmentImageAsset;
 
     if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
 }
 
@@ -939,7 +915,7 @@ float UiImageComponent::GetTargetHeight(float /*maxHeight*/)
             {
                 // Get element size
                 AZ::Vector2 size(0.0f, 0.0f);
-                EBUS_EVENT_ID_RESULT(size, GetEntityId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+                UiTransformBus::EventResult(size, GetEntityId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
                 targetHeight = textureSize.GetY() * (size.GetX() / textureSize.GetX());
             }
@@ -997,11 +973,11 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
     if (serializeContext)
     {
         serializeContext->Class<UiImageComponent, AZ::Component>()
-            ->Version(7, &VersionConverter)
+            ->Version(8, &VersionConverter)
             ->Field("SpriteType", &UiImageComponent::m_spriteType)
             ->Field("SpritePath", &UiImageComponent::m_spritePathname)
             ->Field("Index", &UiImageComponent::m_spriteSheetCellIndex)
-            ->Field("RenderTargetName", &UiImageComponent::m_renderTargetName)
+            ->Field("AttachmentImageAsset", &UiImageComponent::m_attachmentImageAsset)
             ->Field("IsRenderTargetSRGB", &UiImageComponent::m_isRenderTargetSRGB)
             ->Field("Color", &UiImageComponent::m_color)
             ->Field("Alpha", &UiImageComponent::m_alpha)
@@ -1040,9 +1016,9 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeSpriteSheet)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnIndexChange)
                 ->Attribute("EnumValues", &UiImageComponent::PopulateIndexStringList);
-            editInfo->DataElement(0, &UiImageComponent::m_renderTargetName, "Render target name", "The name of the render target associated with the sprite.")
+            editInfo->DataElement(AZ::Edit::UIHandlers::Default, &UiImageComponent::m_attachmentImageAsset, "Attachment Image Asset", "The render target associated with the sprite.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
-                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteRenderTargetNameChange);
+                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnSpriteAttachmentImageAssetChange);
             editInfo->DataElement(AZ::Edit::UIHandlers::CheckBox, &UiImageComponent::m_isRenderTargetSRGB, "Render Target sRGB", "Check this box if the render target is in sRGB space instead of linear RGB space.")
                 ->Attribute(AZ::Edit::Attributes::Visibility, &UiImageComponent::IsSpriteTypeRenderTarget)
                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &UiImageComponent::OnEditorRenderSettingChange);
@@ -1148,8 +1124,8 @@ void UiImageComponent::Reflect(AZ::ReflectContext* context)
             ->Event("GetSpritePathname", &UiImageBus::Events::GetSpritePathname)
             ->Event("SetSpritePathname", &UiImageBus::Events::SetSpritePathname)
             ->Event("SetSpritePathnameIfExists", &UiImageBus::Events::SetSpritePathnameIfExists)
-            ->Event("GetRenderTargetName", &UiImageBus::Events::GetRenderTargetName)
-            ->Event("SetRenderTargetName", &UiImageBus::Events::SetRenderTargetName)
+            ->Event("GetAttachmentImageAsset", &UiImageBus::Events::GetAttachmentImageAsset)
+            ->Event("SetAttachmentImageAsset", &UiImageBus::Events::SetAttachmentImageAsset)
             ->Event("GetIsRenderTargetSRGB", &UiImageBus::Events::GetIsRenderTargetSRGB)
             ->Event("SetIsRenderTargetSRGB", &UiImageBus::Events::SetIsRenderTargetSRGB)
             ->Event("GetSpriteType", &UiImageBus::Events::GetSpriteType)
@@ -1197,7 +1173,7 @@ void UiImageComponent::Init()
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -1210,14 +1186,14 @@ void UiImageComponent::Init()
         {
             if (!m_spritePathname.GetAssetPath().empty())
             {
-                m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
             }
         }
         else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
         {
-            if (!m_renderTargetName.empty())
+            if (m_attachmentImageAsset)
             {
-                m_sprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+                m_sprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
             }
         }
         else
@@ -1296,7 +1272,7 @@ void UiImageComponent::ResetSpriteSheetCellIndex()
 void UiImageComponent::RenderStretchedSprite(ISprite* sprite, int cellIndex, uint32 packedColor)
 {
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
     if (sprite)
     {
@@ -1340,7 +1316,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
 
     // get the untransformed rect for the element plus it's transform matrix
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     ISprite::Borders cellUvBorders(sprite->GetCellUvBorders(cellIndex));
     float leftBorder = cellUvBorders.m_left;
@@ -1374,7 +1350,7 @@ void UiImageComponent::RenderSlicedSprite(ISprite* sprite, int cellIndex, uint32
     }
 
     AZ::Matrix4x4 transform;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetTransformToViewport, transform);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetTransformToViewport, transform);
 
     if (m_isSlicingStretched)
     {
@@ -1411,10 +1387,10 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     AZ::Vector2 textureSize(sprite->GetCellSize(cellIndex));
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // change width and height to match texture
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1429,7 +1405,7 @@ void UiImageComponent::RenderFixedSprite(ISprite* sprite, int cellIndex, uint32 
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1456,14 +1432,14 @@ void UiImageComponent::RenderTiledSprite(ISprite* sprite, uint32 packedColor)
     AZ::Vector2 textureSize = sprite->GetSize();
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     // scale UV's so that one texel is one pixel on screen
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
     AZ::Vector2 uvScale(rectSize.GetX() / textureSize.GetX(), rectSize.GetY() / textureSize.GetY());
 
     // now apply scale and rotation to points
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched but with UV's adjusted
     const AZ::Vector2 uvs[4] = { AZ::Vector2(0, 0), AZ::Vector2(uvScale.GetX(), 0), AZ::Vector2(uvScale.GetX(), uvScale.GetY()), AZ::Vector2(0, uvScale.GetY()) };
@@ -1483,10 +1459,10 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     AZ::Vector2 textureSize = sprite->GetCellSize(cellIndex);
 
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // scale the texture so it either fits or fills the enclosing rect
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
@@ -1508,7 +1484,7 @@ void UiImageComponent::RenderStretchedToFitOrFillSprite(ISprite* sprite, int cel
     points.BottomLeft() = AZ::Vector2(points.TopLeft().GetX(), points.BottomRight().GetY());
 
     // now apply scale and rotation
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, RotateAndScalePoints, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::RotateAndScalePoints, points);
 
     // now draw the same as Stretched
     const UiTransformInterface::RectPoints& uvCoords = sprite->GetCellUvCoords(cellIndex);
@@ -1535,8 +1511,7 @@ void UiImageComponent::RenderSingleQuad(const AZ::Vector2* positions, const AZ::
     // points are a clockwise quad
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
+    LyShine::UiPrimitiveVertex vertices[numVertices];
     for (int i = 0; i < numVertices; ++i)
     {
         AZ::Vector2 roundedPoint = Draw2dHelper::RoundXY(positions[i], pixelRounding);
@@ -1595,8 +1570,7 @@ void UiImageComponent::RenderLinearFilledQuad(const AZ::Vector2* positions, cons
     // points are a clockwise quad
     IDraw2d::Rounding pixelRounding = IsPixelAligned() ? IDraw2d::Rounding::Nearest : IDraw2d::Rounding::None;
     const uint32 numVertices = 4;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
-    const float z = 1.0f;   // depth test disabled, if writing Z this will write at far plane
+    LyShine::UiPrimitiveVertex vertices[numVertices];
 
     for (int i = 0; i < numVertices; ++i)
     {
@@ -1655,7 +1629,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     // Fill vertices (rotated based on startingEdge).
     const int numVertices = 7; // The maximum amount of vertices that can be used
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
     for (int i = 1; i < 5; ++i)
     {
         int srcIndex = (4 + i + startingEdge) % 4;
@@ -1666,7 +1640,7 @@ void UiImageComponent::RenderRadialFilledQuad(const AZ::Vector2* positions, cons
 
     const int numIndices = 15;
     uint16 indices[numIndices];
-    for (int ix = 0; ix < 5; ++ix)
+    for (uint16 ix = 0; ix < 5; ++ix)
     {
         indices[ix * 3 + firstIndexOffset] = ix + 1;
         indices[ix * 3 + secondIndexOffset] = ix + 2;
@@ -1703,7 +1677,7 @@ void UiImageComponent::RenderRadialCornerFilledQuad(const AZ::Vector2* positions
 {
     // This fills the vertices (rotating them based on the origin edge) similar to RenderSingleQuad, then edits a vertex based on m_fillAmount.
     const uint32 numVerts = 4;
-    SVF_P2F_C4B_T2F_F4B verts[numVerts];
+    LyShine::UiPrimitiveVertex verts[numVerts];
     int vertexOffset = 0;
     if (m_fillCornerOrigin == FillCornerOrigin::TopLeft)
     {
@@ -1756,7 +1730,7 @@ void UiImageComponent::RenderRadialEdgeFilledQuad(const AZ::Vector2* positions, 
 {
     // This fills the vertices (rotating them based on the origin edge) similar to RenderSingleQuad, then edits a vertex based on m_fillAmount.
     const uint32 numVertices = 5; // Need an extra vertex for the origin.
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
     int vertexOffset = 0;
     if (m_fillEdgeOrigin == FillEdgeOrigin::Left)
     {
@@ -1887,7 +1861,7 @@ void UiImageComponent::RenderSlicedFixedSprite(ISprite* sprite, int cellIndex, u
     };
 
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     float sValues[numValues];
     float tValues[numValues];
@@ -1918,7 +1892,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedFillModeNoneSprite
 {
     // fill out the verts
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
     FillVerts(vertices, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
 
     int totalIndices = m_fillCenter ? numIndicesIn9Slice : numIndicesIn9SliceExcludingCenter;
@@ -1934,7 +1908,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedLinearFilledSprite
     // 2. Fill vertices in the same way as a standard sliced sprite
 
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B vertices[numVertices];
+    LyShine::UiPrimitiveVertex vertices[numVertices];
 
     ClipValuesForSlicedLinearFill(numValues, xValues, yValues, sValues, tValues);
 
@@ -1952,7 +1926,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedRadialFilledSprite
 {
     // build the verts on the stack
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
 
     // Fill the vertices with the generated xy and st values.
     FillVerts(verts, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
@@ -1970,7 +1944,7 @@ template<uint32 numValues> void UiImageComponent::RenderSlicedRadialCornerOrEdge
 {
     // build the verts on the stack
     const uint32 numVertices = numValues * numValues;
-    SVF_P2F_C4B_T2F_F4B verts[numVertices];
+    LyShine::UiPrimitiveVertex verts[numVertices];
 
     // Fill the vertices with the generated xy and st values.
     FillVerts(verts, numVertices, numValues, numValues, packedColor, transform, xValues, yValues, sValues, tValues, IsPixelAligned());
@@ -2030,7 +2004,7 @@ void UiImageComponent::ClipValuesForSlicedLinearFill(uint32 numValues, float* xV
     float previousPercentage = 0;
     int previousIndex = startClip;
     int clampIndex = -1; // to clamp all values greater than m_fillAmount in specified direction.
-    for (int arrayPos = 1; arrayPos < numValues; ++arrayPos)
+    for (uint32 arrayPos = 1; arrayPos < numValues; ++arrayPos)
     {
         int currentIndex = startClip + arrayPos * clipInc;
         float thisPercentage = (clipPosition[currentIndex] - clipPosition[startClip]) / totalLength;
@@ -2055,12 +2029,12 @@ void UiImageComponent::ClipValuesForSlicedLinearFill(uint32 numValues, float* xV
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices)
+void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices)
 {
     // 1. Calculate two points of lines from the center to a point based on m_fillAmount and m_fillOrigin.
     // 2. Clip the triangles of the sprite against those lines based on the fill amount.
 
-    SVF_P2F_C4B_T2F_F4B renderVerts[numIndicesIn9Slice * 4]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
+    LyShine::UiPrimitiveVertex renderVerts[numIndicesIn9Slice * 4]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
     uint16 renderIndices[numIndicesIn9Slice * 4] = { 0 };
 
     float fillOffset = AZ::DegToRad(m_fillStartAngle);
@@ -2102,9 +2076,9 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     if (m_fillAmount < 0.5f)
     {
         // Clips against first half line and then rotating line and adds results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
-            SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
+            LyShine::UiPrimitiveVertex intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
             int intermedateVertexOffset = 0;
             int intermediateIndicesUsed = ClipToLine(verts, &indices[currentIndex], intermediateVerts, intermediateIndices, intermedateVertexOffset, 0, lineOrigin, firstHalfFixedLineEnd);
@@ -2118,9 +2092,9 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
     else
     {
         // Clips against first half line and adds results to render list then clips against the second half line and rotating line and also adds those results to render list.
-        for (int currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
+        for (uint32 currentIndex = 0; currentIndex < totalIndices; currentIndex += 3)
         {
-            SVF_P2F_C4B_T2F_F4B intermediateVerts[maxTemporaryVerts];
+            LyShine::UiPrimitiveVertex intermediateVerts[maxTemporaryVerts];
             uint16 intermediateIndices[maxTemporaryIndices];
             indicesUsed = ClipToLine(verts, &indices[currentIndex], renderVerts, renderIndices, vertexOffset, numIndicesToRender, lineOrigin, firstHalfFixedLineEnd);
             numIndicesToRender += indicesUsed;
@@ -2139,12 +2113,12 @@ void UiImageComponent::ClipAndRenderForSlicedRadialFill(uint32 numVertsPerSide, 
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerSide, uint32 numVerts, const SVF_P2F_C4B_T2F_F4B* verts, uint32 totalIndices, const uint16* indices)
+void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVertsPerSide, uint32 numVerts, const LyShine::UiPrimitiveVertex* verts, uint32 totalIndices, const uint16* indices)
 {
     // 1. Calculate two points of a line from either the corner or center of an edge to a point based on m_fillAmount.
     // 2. Clip the triangles of the sprite against that line.
 
-    SVF_P2F_C4B_T2F_F4B renderVerts[numIndicesIn9Slice * 2]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
+    LyShine::UiPrimitiveVertex renderVerts[numIndicesIn9Slice * 2]; // ClipToLine doesn't check for duplicate vertices for speed, so this is the maximum we'll need.
     uint16 renderIndices[numIndicesIn9Slice * 2] = { 0 };
 
     // Generate the start and direction of the line to clip against based on the fill origin and fill amount.
@@ -2201,7 +2175,7 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
 
     int numIndicesToRender = 0;
     int vertexOffset = 0;
-    for (int ix = 0; ix < totalIndices; ix += 3)
+    for (uint32 ix = 0; ix < totalIndices; ix += 3)
     {
         int indicesUsed = ClipToLine(verts, &indices[ix], renderVerts, renderIndices, vertexOffset, numIndicesToRender, lineOrigin, lineEnd);
         numIndicesToRender += indicesUsed;
@@ -2211,11 +2185,11 @@ void UiImageComponent::ClipAndRenderForSlicedRadialCornerOrEdgeFill(uint32 numVe
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, SVF_P2F_C4B_T2F_F4B* renderVertices, uint16* renderIndices, int& vertexOffset, int renderIndexOffset, const Vec2& lineOrigin, const Vec2& lineEnd)
+int UiImageComponent::ClipToLine(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, LyShine::UiPrimitiveVertex* renderVertices, uint16* renderIndices, int& vertexOffset, int renderIndexOffset, const Vec2& lineOrigin, const Vec2& lineEnd)
 {
     Vec2 lineVector = lineEnd - lineOrigin;
-    SVF_P2F_C4B_T2F_F4B lastVertex = vertices[indices[2]];
-    SVF_P2F_C4B_T2F_F4B currentVertex;
+    LyShine::UiPrimitiveVertex lastVertex = vertices[indices[2]];
+    LyShine::UiPrimitiveVertex currentVertex;
     int verticesAdded = 0;
 
     for (int i = 0; i < 3; ++i)
@@ -2237,7 +2211,7 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
             {
                 //add calculated intersection
                 float intersectionDistance = (vertexToLine.x * perpendicularLineVector.x + vertexToLine.y * perpendicularLineVector.y) / (triangleEdgeDirection.x * perpendicularLineVector.x + triangleEdgeDirection.y * perpendicularLineVector.y);
-                SVF_P2F_C4B_T2F_F4B intersectPoint;
+                LyShine::UiPrimitiveVertex intersectPoint;
                 SetVertex(intersectPoint, lastVertex.xy + triangleEdgeDirection * intersectionDistance,
                     lastVertex.color.dcolor, lastVertex.st + (currentVertex.st - lastVertex.st) * intersectionDistance);
 
@@ -2254,7 +2228,7 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
         {
             //add calculated intersection
             float intersectionDistance = (vertexToLine.x * perpendicularLineVector.x + vertexToLine.y * perpendicularLineVector.y) / (triangleEdgeDirection.x * perpendicularLineVector.x + triangleEdgeDirection.y * perpendicularLineVector.y);
-            SVF_P2F_C4B_T2F_F4B intersectPoint;
+            LyShine::UiPrimitiveVertex intersectPoint;
             SetVertex(intersectPoint, lastVertex.xy + triangleEdgeDirection * intersectionDistance,
                 lastVertex.color.dcolor, lastVertex.st + (currentVertex.st - lastVertex.st) * intersectionDistance);
 
@@ -2268,20 +2242,20 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
     int indicesAdded = 0;
     if (verticesAdded == 3)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 1;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 3;
     }
     else if (verticesAdded == 4)
     {
-        renderIndices[renderIndexOffset] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 1] = vertexOffset - 3;
-        renderIndices[renderIndexOffset + 2] = vertexOffset - 2;
+        renderIndices[renderIndexOffset] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 1] = static_cast<uint16>(vertexOffset - 3);
+        renderIndices[renderIndexOffset + 2] = static_cast<uint16>(vertexOffset - 2);
 
-        renderIndices[renderIndexOffset + 3] = vertexOffset - 4;
-        renderIndices[renderIndexOffset + 4] = vertexOffset - 2;
-        renderIndices[renderIndexOffset + 5] = vertexOffset - 1;
+        renderIndices[renderIndexOffset + 3] = static_cast<uint16>(vertexOffset - 4);
+        renderIndices[renderIndexOffset + 4] = static_cast<uint16>(vertexOffset - 2);
+        renderIndices[renderIndexOffset + 5] = static_cast<uint16>(vertexOffset - 1);
         indicesAdded = 6;
     }
 
@@ -2290,12 +2264,12 @@ int UiImageComponent::ClipToLine(const SVF_P2F_C4B_T2F_F4B* vertices, const uint
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, const uint16* indices, int numVertices, int numIndices)
+void UiImageComponent::RenderTriangleList(const LyShine::UiPrimitiveVertex* vertices, const uint16* indices, int numVertices, int numIndices)
 {
     if (numVertices != m_cachedPrimitive.m_numVertices)
     {
         ClearCachedVertices();
-        m_cachedPrimitive.m_vertices = new SVF_P2F_C4B_T2F_F4B[numVertices];
+        m_cachedPrimitive.m_vertices = new LyShine::UiPrimitiveVertex[numVertices];
         m_cachedPrimitive.m_numVertices = numVertices;
     }
 
@@ -2306,7 +2280,7 @@ void UiImageComponent::RenderTriangleList(const SVF_P2F_C4B_T2F_F4B* vertices, c
         m_cachedPrimitive.m_numIndices = numIndices;
     }
 
-    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(SVF_P2F_C4B_T2F_F4B) * numVertices);
+    memcpy(m_cachedPrimitive.m_vertices, vertices, sizeof(LyShine::UiPrimitiveVertex) * numVertices);
     memcpy(m_cachedPrimitive.m_indices, indices, sizeof(uint16) * numIndices);
 
     m_isRenderCacheDirty = false;
@@ -2347,8 +2321,8 @@ void UiImageComponent::MarkRenderGraphDirty()
 {
     // tell the canvas to invalidate the render graph (never want to do this while rendering)
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2369,9 +2343,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // Check that this element is not controlled by a parent layout component
     AZ::EntityId parentElementId;
-    EBUS_EVENT_ID_RESULT(parentElementId, GetEntityId(), UiElementBus, GetParentEntityId);
+    UiElementBus::EventResult(parentElementId, GetEntityId(), &UiElementBus::Events::GetParentEntityId);
     bool isControlledByParent = false;
-    EBUS_EVENT_ID_RESULT(isControlledByParent, parentElementId, UiLayoutBus, IsControllingChild, GetEntityId());
+    UiLayoutBus::EventResult(isControlledByParent, parentElementId, &UiLayoutBus::Events::IsControllingChild, GetEntityId());
     if (isControlledByParent)
     {
         return;
@@ -2380,12 +2354,12 @@ void UiImageComponent::SnapOffsetsToFixedImage()
     // get the anchors and offsets from the element's transform component
     UiTransform2dInterface::Anchors anchors;
     UiTransform2dInterface::Offsets offsets;
-    EBUS_EVENT_ID_RESULT(anchors, GetEntityId(), UiTransform2dBus, GetAnchors);
-    EBUS_EVENT_ID_RESULT(offsets, GetEntityId(), UiTransform2dBus, GetOffsets);
+    UiTransform2dBus::EventResult(anchors, GetEntityId(), &UiTransform2dBus::Events::GetAnchors);
+    UiTransform2dBus::EventResult(offsets, GetEntityId(), &UiTransform2dBus::Events::GetOffsets);
 
     // Get the size of the element rect before scale/rotate
     UiTransformInterface::RectPoints points;
-    EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetCanvasSpacePointsNoScaleRotate, points);
+    UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetCanvasSpacePointsNoScaleRotate, points);
     AZ::Vector2 rectSize = points.GetAxisAlignedSize();
 
     // get the texture size
@@ -2396,7 +2370,7 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     // get the pivot of the element, the fixed image will render the texture aligned with the pivot
     AZ::Vector2 pivot;
-    EBUS_EVENT_ID_RESULT(pivot, GetEntityId(), UiTransformBus, GetPivot);
+    UiTransformBus::EventResult(pivot, GetEntityId(), &UiTransformBus::Events::GetPivot);
 
     // if the anchors are together (no stretching) in either dimension
     // and that dimension is not controlled by a LayoutFitter
@@ -2418,8 +2392,8 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 
     if (offsetsChanged)
     {
-        EBUS_EVENT_ID(GetEntityId(), UiTransform2dBus, SetOffsets, offsets);
-        EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorTransformPropertiesNeedRefresh);
+        UiTransform2dBus::Event(GetEntityId(), &UiTransform2dBus::Events::SetOffsets, offsets);
+        UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorTransformPropertiesNeedRefresh);
     }
 }
 
@@ -2427,9 +2401,9 @@ void UiImageComponent::SnapOffsetsToFixedImage()
 bool UiImageComponent::IsPixelAligned()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
     bool isPixelAligned = true;
-    EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+    UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
     return isPixelAligned;
 }
 
@@ -2503,7 +2477,7 @@ void UiImageComponent::OnEditorSpritePathnameChange()
         SnapOffsetsToFixedImage();
     }
 
-    EBUS_EVENT(UiEditorChangeNotificationBus, OnEditorPropertiesRefreshEntireTree);
+    UiEditorChangeNotificationBus::Broadcast(&UiEditorChangeNotificationBus::Events::OnEditorPropertiesRefreshEntireTree);
     CheckLayoutFitterAndRefreshEditorTransformProperties();
 }
 
@@ -2547,7 +2521,7 @@ void UiImageComponent::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     // if listening for notifications from a current sprite then disconnect
@@ -2567,17 +2541,17 @@ void UiImageComponent::OnSpritePathnameChange()
 
     InvalidateLayouts();
     ResetSpriteSheetCellIndex();
-    EBUS_EVENT_ID(GetEntityId(), UiSpriteSourceNotificationBus, OnSpriteSourceChanged);
+    UiSpriteSourceNotificationBus::Event(GetEntityId(), &UiSpriteSourceNotificationBus::Events::OnSpriteSourceChanged);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
-void UiImageComponent::OnSpriteRenderTargetNameChange()
+void UiImageComponent::OnSpriteAttachmentImageAssetChange()
 {
     ISprite* newSprite = nullptr;
 
-    if (!m_renderTargetName.empty())
+    if (m_attachmentImageAsset)
     {
-        newSprite = gEnv->pLyShine->CreateSprite(m_renderTargetName.c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->CreateSprite(m_attachmentImageAsset);
     }
 
     SAFE_RELEASE(m_sprite);
@@ -2595,7 +2569,7 @@ void UiImageComponent::OnSpriteTypeChange()
     }
     else if (m_spriteType == UiImageInterface::SpriteType::RenderTarget)
     {
-        OnSpriteRenderTargetNameChange();
+        OnSpriteAttachmentImageAssetChange();
     }
     else
     {
@@ -2615,9 +2589,10 @@ void UiImageComponent::OnColorChange()
 void UiImageComponent::InvalidateLayouts()
 {
     AZ::EntityId canvasEntityId;
-    EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
-    EBUS_EVENT_ID(canvasEntityId, UiLayoutManagerBus, MarkToRecomputeLayout, GetEntityId());
+    UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+    UiLayoutManagerBus::Event(
+        canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayoutsAffectedByLayoutCellChange, GetEntityId(), true);
+    UiLayoutManagerBus::Event(canvasEntityId, &UiLayoutManagerBus::Events::MarkToRecomputeLayout, GetEntityId());
 
     MarkRenderCacheDirty();
 }
@@ -2663,18 +2638,7 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() <= 1)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SpritePath"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "Color", "Alpha"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() > 1, "Unsupported UiImageComponent version: %d", classElement.GetVersion());
 
     // conversion from version 1 or 2 to current:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>
@@ -2701,6 +2665,16 @@ bool UiImageComponent::VersionConverter(AZ::SerializeContext& context,
     if (classElement.GetVersion() <= 4)
     {
         if (!LyShine::ConvertSubElementFromVector3ToAzColor(context, classElement, "Color"))
+        {
+            return false;
+        }
+    }
+
+    // conversion to version 8:
+    // - Need to remove render target name as it was replaced with attachment image asset
+    if (classElement.GetVersion() <= 7)
+    {
+        if (!LyShine::RemoveRenderTargetAsString(context, classElement, "RenderTargetName"))
         {
             return false;
         }

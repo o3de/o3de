@@ -30,7 +30,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AttachmentReadback, "{9C70ACD3-8694-4EF3-A556-9DA25BD1237C}");
-            AZ_CLASS_ALLOCATOR(AttachmentReadback, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AttachmentReadback, SystemAllocator);
 
             enum class ReadbackState : uint32_t
             {
@@ -58,6 +58,7 @@ namespace AZ
                 RHI::AttachmentType m_attachmentType;
                 AZStd::shared_ptr<AZStd::vector<uint8_t>> m_dataBuffer;
                 AZ::Name m_name;
+                uint32_t m_userIdentifier;
 
                 // only valid for image attachments
                 RHI::ImageDescriptor m_imageDescriptor;
@@ -71,6 +72,9 @@ namespace AZ
 
             //! Set a callback function which will be called when readback is finished or failed
             void SetCallback(CallbackFunction callback);
+
+            //! Set the using systems identifier tag
+            void SetUserIdentifier(uint32_t userIdentifier);
 
             //! Whether the previous readback is finished
             bool IsFinished() const;
@@ -119,6 +123,7 @@ namespace AZ
             AZStd::fixed_vector<bool, RHI::Limits::Device::FrameCountMax> m_isReadbackComplete;
             uint32_t m_readbackBufferCurrentIndex = 0u;
             AZ::Name m_readbackName;
+            uint32_t m_userIdentifier = static_cast<uint32_t>(-1); // needs to match AZ::Render::InvalidFrameCaptureId
 
             RHI::AttachmentId m_copyAttachmentId;
 

@@ -49,7 +49,7 @@ namespace AZ
                 double totalFramesAtDefaultTimeStep = totalTicks / AssImpAnimationImporter::s_defaultTimeStepBetweenFrames + 1;
                 if (!AZ::IsClose(totalFramesAtDefaultTimeStep, numKeys, 1))
                 {
-                    numKeys = AZStd::ceilf(totalFramesAtDefaultTimeStep);
+                    numKeys = static_cast<AZ::u32>(AZStd::ceilf(static_cast<float>(totalFramesAtDefaultTimeStep)));
                 }
                 return numKeys;
             }
@@ -122,7 +122,7 @@ namespace AZ
                     if (keys[lastIndex + 1].mTime != keys[lastIndex].mTime)
                     {
                         normalizedTimeBetweenFrames =
-                            (time - keys[lastIndex].mTime) / (keys[lastIndex + 1].mTime - keys[lastIndex].mTime);
+                            static_cast<float>((time - keys[lastIndex].mTime) / (keys[lastIndex + 1].mTime - keys[lastIndex].mTime));
                     }
                     else
                     {
@@ -147,7 +147,9 @@ namespace AZ
                 SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context);
                 if (serializeContext)
                 {
-                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(5); // [LYN-4226] Invert PostRotation matrix in animation chains
+                    // Revision 5: [LYN-4226] Invert PostRotation matrix in animation chains
+                    // Revision 6: Handle duplicate blend shape animations
+                    serializeContext->Class<AssImpAnimationImporter, SceneCore::LoadingComponent>()->Version(6);
                 }
             }
 
@@ -434,7 +436,9 @@ namespace AZ
                             createdAnimationData->AddKeyFrame(localTransform);
                         }
 
-                        const AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        AZStd::string stubBoneAnimForMorphName(AZStd::string::format("%s%s", nodeName.c_str(), nodeAnim->mName.C_Str()));
+                        RenamedNodesMap::SanitizeNodeName(stubBoneAnimForMorphName, context.m_scene.GetGraph(), context.m_currentGraphPosition);
+
                         Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
                             context.m_currentGraphPosition, stubBoneAnimForMorphName.c_str(), AZStd::move(createdAnimationData));
                         context.m_scene.GetGraph().MakeEndPoint(addNode);
@@ -443,17 +447,39 @@ namespace AZ
                     return combinedAnimationResult.GetResult();
                 }
 
-                AZStd::unordered_set<AZStd::string> boneList;
+                AZStd::unordered_set<AZStd::string> nonPivotBoneList;
 
-                for (int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
+                for (unsigned int meshIndex = 0; meshIndex < scene->mNumMeshes; ++meshIndex)
                 {
                     aiMesh* mesh = scene->mMeshes[meshIndex];
+                    if (!mesh)
+                    {
+                        AZ_Error(
+                            "AnimationImporter",
+                            false,
+                            "Mesh at index %d is invalid. This scene file may be corrupt and may need to be re-exported.",
+                            meshIndex);
+                        continue;
+                    }
 
-                    for (int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
+                    for (unsigned int boneIndex = 0; boneIndex < mesh->mNumBones; ++boneIndex)
                     {
                         aiBone* bone = mesh->mBones[boneIndex];
+                        if (!bone)
+                        {
+                            AZ_Error(
+                                "AnimationImporter",
+                                false,
+                                "Bone at index %d for mesh %s is invalid. This scene file may be corrupt and may need to be re-exported.",
+                                boneIndex,
+                                mesh->mName.C_Str());
+                            continue;
+                        }
 
-                        boneList.insert(bone->mName.C_Str());
+                        if (!IsPivotNode(bone->mName))
+                        {
+                            nonPivotBoneList.insert(bone->mName.C_Str());
+                        }
                     }
                 }
 
@@ -462,37 +488,34 @@ namespace AZ
                 // Go through all the animations and make sure we create placeholder animations for any bones missing them
                 for (auto&& anim : boneAnimations)
                 {
-                    for (auto boneName : boneList)
+                    for (auto boneName : nonPivotBoneList)
                     {
-                        if (!IsPivotNode(aiString(boneName.c_str())))
+                        if (!boneAnimations.contains(boneName) &&
+                            !fillerAnimations.contains(boneName))
                         {
-                            if (!boneAnimations.contains(boneName) &&
-                                !fillerAnimations.contains(boneName))
-                            {
-                                // Create 1 key for each type that just copies the current transform
-                                ConsolidatedNodeAnim emptyAnimation;
-                                auto node = scene->mRootNode->FindNode(boneName.c_str());
-                                aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
+                            // Create 1 key for each type that just copies the current transform
+                            ConsolidatedNodeAnim emptyAnimation;
+                            auto node = scene->mRootNode->FindNode(boneName.c_str());
+                            aiMatrix4x4 globalTransform = GetConcatenatedLocalTransform(node);
 
-                                aiVector3D position, scale;
-                                aiQuaternion rotation;
+                            aiVector3D position, scale;
+                            aiQuaternion rotation;
 
-                                globalTransform.Decompose(scale, rotation, position);
+                            globalTransform.Decompose(scale, rotation, position);
 
-                                emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
+                            emptyAnimation.mNumRotationKeys = emptyAnimation.mNumPositionKeys = emptyAnimation.mNumScalingKeys = 1;
 
-                                emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
-                                emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
+                            emptyAnimation.m_ownedPositionKeys.emplace_back(0, position);
+                            emptyAnimation.mPositionKeys = emptyAnimation.m_ownedPositionKeys.data();
 
-                                emptyAnimation.m_ownedRotationKeys.emplace_back(0, rotation);
-                                emptyAnimation.mRotationKeys = emptyAnimation.m_ownedRotationKeys.data();
+                            emptyAnimation.m_ownedRotationKeys.emplace_back(0, rotation);
+                            emptyAnimation.mRotationKeys = emptyAnimation.m_ownedRotationKeys.data();
 
-                                emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
-                                emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
+                            emptyAnimation.m_ownedScalingKeys.emplace_back(0, scale);
+                            emptyAnimation.mScalingKeys = emptyAnimation.m_ownedScalingKeys.data();
                                 
-                                fillerAnimations.insert(
-                                    AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
-                            }
+                            fillerAnimations.insert(
+                                AZStd::make_pair(boneName, AZStd::make_pair(anim.second.first, AZStd::move(emptyAnimation))));
                         }
                     }
                 }
@@ -612,13 +635,13 @@ namespace AZ
                 ValueToKeyDataMap valueToKeyDataMap;
                 // Key time can be less than zero, normalize to have zero be the lowest time.
                 double keyOffset = 0;
-                for (int keyIdx = 0; keyIdx < meshMorphAnim->mNumKeys; keyIdx++)
+                for (unsigned int keyIdx = 0; keyIdx < meshMorphAnim->mNumKeys; keyIdx++)
                 {
                     aiMeshMorphKey& key = meshMorphAnim->mKeys[keyIdx];
-                    for (int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
+                    for (unsigned int valIdx = 0; valIdx < key.mNumValuesAndWeights; ++valIdx)
                     {
                         int currentValue = key.mValues[valIdx];
-                        KeyData thisKey(key.mWeights[valIdx], key.mTime);
+                        KeyData thisKey(static_cast<float>(key.mWeights[valIdx]), static_cast<float>(key.mTime));
                         valueToKeyDataMap[currentValue].insert(
                         AZStd::upper_bound(valueToKeyDataMap[currentValue].begin(), valueToKeyDataMap[currentValue].end(),thisKey),
                             thisKey);
@@ -631,6 +654,15 @@ namespace AZ
 
                 for (const auto& [meshIdx, keys] : valueToKeyDataMap)
                 {
+
+                    if (static_cast<AZ::u32>(meshIdx) >= mesh->mNumAnimMeshes)
+                    {
+                        AZ_Error(
+                            "AnimationImporter", false,
+                            "Mesh %s has an animation mesh index reference of %d, but only has %d animation meshes. Skipping importing this. This is an error in the source scene file that should be corrected.",
+                            mesh->mName.C_Str(), meshIdx, mesh->mNumAnimMeshes);
+                        continue;
+                    }
                     AZStd::shared_ptr<SceneData::GraphData::BlendShapeAnimationData> morphAnimNode =
                         AZStd::make_shared<SceneData::GraphData::BlendShapeAnimationData>();
 
@@ -641,7 +673,6 @@ namespace AZ
                     aiAnimMesh* aiAnimMesh = mesh->mAnimMeshes[meshIdx];
                     AZStd::string_view nodeName(aiAnimMesh->mName.C_Str());
 
-                    const AZ::u32 maxKeys = static_cast<AZ::u32>(keys.size());
                     AZ::u32 keyIdx = 0;
                     for (AZ::u32 frame = 0; frame < numKeyFrames; ++frame)
                     {
@@ -656,12 +687,29 @@ namespace AZ
                         morphAnimNode->AddKeyFrame(weight);
                     }
 
+                    // Some DCC tools, like Maya, include a full path separated by '.' in the node names.
+                    // For example, "cone_skin_blendShapeNode.cone_squash"
+                    // Downstream processing doesn't want anything but the last part of that node name,
+                    // so find the last '.' and remove anything before it.
                     const size_t dotIndex = nodeName.find_last_of('.');
                     nodeName = nodeName.substr(dotIndex + 1);
 
                     morphAnimNode->SetBlendShapeName(nodeName.data());
 
-                    AZStd::string animNodeName(AZStd::string::format("%s_%s", s_animationNodeName, nodeName.data()));
+                    // Duplicates can exist if an anim mesh had a name with a suffix like .001, in that case
+                    // AssImp will strip off that suffix. Note that this behavior is separate from the
+                    // scan for a period in the node name that came before this.
+                    AZStd::string originalNodeName(AZStd::string::format("%s_%s", s_animationNodeName, nodeName.data()));
+                    AZStd::string animNodeName(originalNodeName);
+                    if (RenamedNodesMap::SanitizeNodeName(
+                        animNodeName, context.m_scene.GetGraph(), context.m_currentGraphPosition, originalNodeName.c_str()))
+                    {
+                        AZ_Warning(
+                            "AnimationImporter", false,
+                            "Duplicate animations were found with the name %s on mesh %s. The duplicate will be named %s.",
+                            originalNodeName.c_str(), mesh->mName.C_Str(), animNodeName.c_str());
+                    }
+
                     Containers::SceneGraph::NodeIndex addNode = context.m_scene.GetGraph().AddChild(
                         context.m_currentGraphPosition, animNodeName.c_str(), AZStd::move(morphAnimNode));
                     context.m_scene.GetGraph().MakeEndPoint(addNode);

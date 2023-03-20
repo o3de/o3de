@@ -21,18 +21,33 @@ set(FILES
     Source/EngineInfo.cpp
     Source/FormLineEditWidget.h
     Source/FormLineEditWidget.cpp
+    Source/FormLineEditTagsWidget.h
+    Source/FormLineEditTagsWidget.cpp
+    Source/FormOptionsWidget.h
+    Source/FormOptionsWidget.cpp
     Source/FormBrowseEditWidget.h
     Source/FormBrowseEditWidget.cpp
+    Source/FormComboBoxWidget.h
+    Source/FormComboBoxWidget.cpp
     Source/FormFolderBrowseEditWidget.h
     Source/FormFolderBrowseEditWidget.cpp
     Source/FormImageBrowseEditWidget.h
     Source/FormImageBrowseEditWidget.cpp
+    Source/GemsGemRepoScreen.h
+    Source/GemsGemRepoScreen.cpp
+    Source/GemsSubWidget.h
+    Source/GemsSubWidget.cpp
+    Source/DownloadController.h
+    Source/DownloadController.cpp
+    Source/DownloadWorker.h
+    Source/DownloadWorker.cpp
     Source/PathValidator.h
     Source/PathValidator.cpp
     Source/ProjectManagerWindow.h
     Source/ProjectManagerWindow.cpp
     Source/ProjectTemplateInfo.h
-    Source/ProjectTemplateInfo.cpp
+    Source/ProjectGemCatalogScreen.h
+    Source/ProjectGemCatalogScreen.cpp
     Source/PythonBindings.h
     Source/PythonBindings.cpp
     Source/PythonBindingsInterface.h
@@ -56,18 +71,41 @@ set(FILES
     Source/ProjectsScreen.cpp
     Source/ProjectSettingsScreen.h
     Source/ProjectSettingsScreen.cpp
+    Source/EngineScreenCtrl.h
+    Source/EngineScreenCtrl.cpp
     Source/EngineSettingsScreen.h
     Source/EngineSettingsScreen.cpp
     Source/ProjectButtonWidget.h
     Source/ProjectButtonWidget.cpp
     Source/ScreenHeaderWidget.h
     Source/ScreenHeaderWidget.cpp
+    Source/Settings.h
+    Source/Settings.cpp
+    Source/SettingsInterface.h
     Source/LinkWidget.h
     Source/LinkWidget.cpp
     Source/TagWidget.h
     Source/TagWidget.cpp
     Source/TemplateButtonWidget.h
     Source/TemplateButtonWidget.cpp
+    Source/TemplateInfo.cpp
+    Source/TemplateInfo.h
+    Source/ExternalLinkDialog.h
+    Source/ExternalLinkDialog.cpp
+    Source/AdjustableHeaderWidget.h
+    Source/AdjustableHeaderWidget.cpp
+    Source/AddRemoteProjectDialog.h
+    Source/AddRemoteProjectDialog.cpp
+    Source/AddRemoteTemplateDialog.h
+    Source/AddRemoteTemplateDialog.cpp
+    Source/DownloadRemoteTemplateDialog.h
+    Source/DownloadRemoteTemplateDialog.cpp
+    Source/TextOverflowWidget.h
+    Source/TextOverflowWidget.cpp
+    Source/CreateAGemScreen.h
+    Source/CreateAGemScreen.cpp
+    Source/EditAGemScreen.h
+    Source/EditAGemScreen.cpp
     Source/GemCatalog/GemCatalogHeaderWidget.h
     Source/GemCatalog/GemCatalogHeaderWidget.cpp
     Source/GemCatalog/GemCatalogScreen.h
@@ -88,6 +126,12 @@ set(FILES
     Source/GemCatalog/GemListHeaderWidget.cpp
     Source/GemCatalog/GemModel.h
     Source/GemCatalog/GemModel.cpp
+    Source/GemCatalog/GemUninstallDialog.h
+    Source/GemCatalog/GemUninstallDialog.cpp
+    Source/GemCatalog/GemUpdateDialog.h
+    Source/GemCatalog/GemUpdateDialog.cpp
+    Source/GemCatalog/GemDependenciesDialog.h
+    Source/GemCatalog/GemDependenciesDialog.cpp
     Source/GemCatalog/GemRequirementDialog.h
     Source/GemCatalog/GemRequirementDialog.cpp
     Source/GemCatalog/GemRequirementDelegate.h
@@ -98,4 +142,18 @@ set(FILES
     Source/GemCatalog/GemRequirementListView.cpp
     Source/GemCatalog/GemSortFilterProxyModel.h
     Source/GemCatalog/GemSortFilterProxyModel.cpp
+    Source/GemRepo/GemRepoScreen.h
+    Source/GemRepo/GemRepoScreen.cpp
+    Source/GemRepo/GemRepoAddDialog.h
+    Source/GemRepo/GemRepoAddDialog.cpp
+    Source/GemRepo/GemRepoInfo.h
+    Source/GemRepo/GemRepoInfo.cpp
+    Source/GemRepo/GemRepoInspector.h
+    Source/GemRepo/GemRepoInspector.cpp
+    Source/GemRepo/GemRepoItemDelegate.h
+    Source/GemRepo/GemRepoItemDelegate.cpp
+    Source/GemRepo/GemRepoListView.h
+    Source/GemRepo/GemRepoListView.cpp
+    Source/GemRepo/GemRepoModel.h
+    Source/GemRepo/GemRepoModel.cpp
 )

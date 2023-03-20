@@ -8,7 +8,7 @@
 #include <RHI/Buffer.h>
 #include <RHI/BufferPool.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/CommandQueueContext.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/CommandList.h>
@@ -22,6 +22,7 @@
 #include <RHI/NullDescriptorManager.h>
 #include <RHI/Queue.h>
 #include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -52,17 +53,17 @@ namespace AZ
             const Device& device = static_cast<Device&>(GetDevice());
             for (auto& image : m_imageNullDescriptor.m_images)
             {
-                vkDestroyImage(device.GetNativeDevice(), image.m_image, nullptr);
-                vkDestroyImageView(device.GetNativeDevice(), image.m_view, nullptr);
+                device.GetContext().DestroyImage(device.GetNativeDevice(), image.m_image, VkSystemAllocator::Get());
+                device.GetContext().DestroyImageView(device.GetNativeDevice(), image.m_view, VkSystemAllocator::Get());
                 image.m_deviceMemory.reset();
             }
 
-            vkDestroyBuffer(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, nullptr);
-            vkDestroyBufferView(device.GetNativeDevice(), m_bufferNullDescriptor.m_view, nullptr);
+            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, VkSystemAllocator::Get());
+            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_bufferNullDescriptor.m_view, VkSystemAllocator::Get());
             m_bufferNullDescriptor.m_memory.reset();
 
-            vkDestroyBuffer(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, nullptr);
-            vkDestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, nullptr);
+            device.GetContext().DestroyBuffer(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, VkSystemAllocator::Get());
+            device.GetContext().DestroyBufferView(device.GetNativeDevice(), m_texelViewNullDescriptor.m_view, VkSystemAllocator::Get());
             m_texelViewNullDescriptor.m_memory.reset();
 
             RHI::DeviceObject::Shutdown();
@@ -73,7 +74,6 @@ namespace AZ
             Device& device = static_cast<Device&>(GetDevice());
 
             const uint32_t imageDimension = 8;
-            const uint32_t pixelSize = 4;
 
             // fill out the different options for the types of image null descriptors
             m_imageNullDescriptor.m_images.resize(static_cast<uint32_t>(ImageTypes::Count));
@@ -116,6 +116,35 @@ namespace AZ
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_name = "NULL_DESCRIPTOR_MULTISAMPLE_READONLY_2D";
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_4_BIT;
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::MultiSampleReadOnly2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)] = {};
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_name = "NULL_DESCRIPTOR_GENERAL_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_usageFlagBits =VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralArray2D)].m_dimension = imageDimension;
+
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::GeneralArray2D)];
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_name = "NULL_DESCRIPTOR_READONLY_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_format = VK_FORMAT_R8G8B8A8_SRGB;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_imageCreateFlagBits = VkImageCreateFlagBits(0);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::ReadOnlyArray2D)].m_dimension = imageDimension;
+
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_name = "NULL_DESCRIPTOR_STORAGE_ARRAY_2D";
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_sampleCountFlag = VK_SAMPLE_COUNT_1_BIT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_format = VK_FORMAT_R32G32B32A32_UINT;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_usageFlagBits = VkImageUsageFlagBits(VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_STORAGE_BIT);
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_arrayLayers = 1;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_layout = VK_IMAGE_LAYOUT_GENERAL;
+            m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::StorageArray2D)].m_dimension = 256;
 
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)] = m_imageNullDescriptor.m_images[static_cast<uint32_t>(NullDescriptorManager::ImageTypes::General2D)];
             m_imageNullDescriptor.m_images[static_cast<uint32_t>(ImageTypes::GeneralCube)].m_name = "NULL_DESCRIPTOR_GENERAL_CUBE";
@@ -183,15 +212,22 @@ namespace AZ
                 imageCreateInfo.arrayLayers = m_imageNullDescriptor.m_images[imageIndex].m_arrayLayers;
                 imageCreateInfo.flags = m_imageNullDescriptor.m_images[imageIndex].m_imageCreateFlagBits;
 
-                VkResult result = vkCreateImage(device.GetNativeDevice(), &imageCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_image);
+                VkResult result = device.GetContext().CreateImage(
+                    device.GetNativeDevice(),
+                    &imageCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_image);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 VkMemoryRequirements memReqs = {};
-                vkGetImageMemoryRequirements(device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image, &memReqs);
+                device.GetContext().GetImageMemoryRequirements(
+                    device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image, &memReqs);
 
                 // image device memory
                 m_imageNullDescriptor.m_images[imageIndex].m_deviceMemory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
-                result = vkBindImageMemory(device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image, m_imageNullDescriptor.m_images[imageIndex].m_deviceMemory->GetNativeDeviceMemory(), 0);
+                result = device.GetContext().BindImageMemory(
+                    device.GetNativeDevice(), m_imageNullDescriptor.m_images[imageIndex].m_image,
+                    m_imageNullDescriptor.m_images[imageIndex].m_deviceMemory->GetNativeDeviceMemory(), 0);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 // Transition to the proper layout. Images can only be created with VK_IMAGE_LAYOUT_UNDEFINED or VK_IMAGE_LAYOUT_PREINITIALIZED.
@@ -216,7 +252,11 @@ namespace AZ
                 samplerCreateInfo.maxAnisotropy = 1.0;
                 samplerCreateInfo.anisotropyEnable = VK_FALSE;
                 samplerCreateInfo.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE;
-                result = vkCreateSampler(device.GetNativeDevice(), &samplerCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_sampler);
+                result = device.GetContext().CreateSampler(
+                    device.GetNativeDevice(),
+                    &samplerCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_sampler);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 // image view
@@ -243,8 +283,16 @@ namespace AZ
                 {
                     imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_3D;
                 }
+                else if (imageIndex >= static_cast<uint32_t>(ImageTypes::GeneralArray2D) && imageIndex <= static_cast<uint32_t>(ImageTypes::StorageArray2D))
+                {
+                    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+                }
 
-                result = vkCreateImageView(device.GetNativeDevice(), &imageViewCreateInfo, nullptr, &m_imageNullDescriptor.m_images[imageIndex].m_view);
+                result = device.GetContext().CreateImageView(
+                    device.GetNativeDevice(),
+                    &imageViewCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_imageNullDescriptor.m_images[imageIndex].m_view);
                 RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
                 m_imageNullDescriptor.m_images[imageIndex].m_descriptorImageInfo.imageLayout = m_imageNullDescriptor.m_images[imageIndex].m_layout;
@@ -254,7 +302,7 @@ namespace AZ
 
             auto commandList = device.AcquireCommandList(RHI::HardwareQueueClass::Graphics);
             commandList->BeginCommandBuffer();
-            vkCmdPipelineBarrier(
+            device.GetContext().CmdPipelineBarrier(
                 commandList->GetNativeCommandBuffer(),
                 VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
                 VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT,
@@ -294,15 +342,17 @@ namespace AZ
             bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
             bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
             bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result = vkCreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_bufferNullDescriptor.m_buffer);
+            VkResult result = device.GetContext().CreateBuffer(
+                device.GetNativeDevice(), &bufferCreateInfo, VkSystemAllocator::Get(), &m_bufferNullDescriptor.m_buffer);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             VkMemoryRequirements memReqs;
-            vkGetBufferMemoryRequirements(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, &memReqs);
+            device.GetContext().GetBufferMemoryRequirements(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, &memReqs);
 
             // device memory
             m_bufferNullDescriptor.m_memory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, 0);
-            result = vkBindBufferMemory(device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, m_bufferNullDescriptor.m_memory->GetNativeDeviceMemory(), 0);
+            result = device.GetContext().BindBufferMemory(
+                device.GetNativeDevice(), m_bufferNullDescriptor.m_buffer, m_bufferNullDescriptor.m_memory->GetNativeDeviceMemory(), 0);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_bufferNullDescriptor.m_bufferSize = bufferSize;
@@ -314,7 +364,8 @@ namespace AZ
             bufferViewCreateInfo.offset = 0;
             bufferViewCreateInfo.pNext = nullptr;
             bufferViewCreateInfo.range = m_bufferNullDescriptor.m_bufferSize;
-            result = vkCreateBufferView(device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_bufferNullDescriptor.m_view);
+            result = device.GetContext().CreateBufferView(
+                device.GetNativeDevice(), &bufferViewCreateInfo, VkSystemAllocator::Get(), &m_bufferNullDescriptor.m_view);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_bufferNullDescriptor.m_bufferInfo.buffer = m_bufferNullDescriptor.m_buffer;
@@ -338,15 +389,20 @@ namespace AZ
             bufferCreateInfo.sharingMode = queueFamilies.size() > 1 ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
             bufferCreateInfo.queueFamilyIndexCount = aznumeric_caster(queueFamilies.size());
             bufferCreateInfo.pQueueFamilyIndices = queueFamilies.data();
-            VkResult result = vkCreateBuffer(device.GetNativeDevice(), &bufferCreateInfo, nullptr, &m_texelViewNullDescriptor.m_buffer);
+            VkResult result = device.GetContext().CreateBuffer(
+                device.GetNativeDevice(), &bufferCreateInfo, VkSystemAllocator::Get(), &m_texelViewNullDescriptor.m_buffer);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             // device memory
             VkMemoryRequirements memReqs;
-            vkGetBufferMemoryRequirements(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, &memReqs);
+            device.GetContext().GetBufferMemoryRequirements(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, &memReqs);
             m_texelViewNullDescriptor.m_memory = device.AllocateMemory(memReqs.size, memReqs.memoryTypeBits, 0);
 
-            result = vkBindBufferMemory(device.GetNativeDevice(), m_texelViewNullDescriptor.m_buffer, m_texelViewNullDescriptor.m_memory->GetNativeDeviceMemory(), 0);
+            result = device.GetContext().BindBufferMemory(
+                device.GetNativeDevice(),
+                m_texelViewNullDescriptor.m_buffer,
+                m_texelViewNullDescriptor.m_memory->GetNativeDeviceMemory(),
+                0);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_texelViewNullDescriptor.m_bufferSize = 64;
@@ -358,7 +414,8 @@ namespace AZ
             bufferViewCreateInfo.offset = 0;
             bufferViewCreateInfo.pNext = nullptr;
             bufferViewCreateInfo.range = m_texelViewNullDescriptor.m_bufferSize;
-            result = vkCreateBufferView(device.GetNativeDevice(), &bufferViewCreateInfo, nullptr, &m_texelViewNullDescriptor.m_view);
+            result = device.GetContext().CreateBufferView(
+                device.GetNativeDevice(), &bufferViewCreateInfo, VkSystemAllocator::Get(), &m_texelViewNullDescriptor.m_view);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             return RHI::ResultCode::Success;
@@ -366,7 +423,7 @@ namespace AZ
 
         VkDescriptorImageInfo NullDescriptorManager::GetDescriptorImageInfo(RHI::ShaderInputImageType imageType, bool storageImage)
         {
-            if (imageType == RHI::ShaderInputImageType::Image2D || imageType == RHI::ShaderInputImageType::Image2DArray)
+            if (imageType == RHI::ShaderInputImageType::Image2D)
             {
                 if (storageImage)
                 {
@@ -375,6 +432,17 @@ namespace AZ
                 else
                 {
                     return GetImage(ImageTypes::ReadOnly2D);
+                }
+            }
+            else if (imageType == RHI::ShaderInputImageType::Image2DArray)
+            {
+                if (storageImage)
+                {
+                    return GetImage(ImageTypes::StorageArray2D);
+                }
+                else
+                {
+                    return GetImage(ImageTypes::ReadOnlyArray2D);
                 }
             }
             else if (imageType == RHI::ShaderInputImageType::Image2DMultisample)

@@ -20,9 +20,11 @@ namespace Maestro
         friend class AZ::SerializeContext;
         
     protected:
+        virtual ~SequenceAgent() = default;
+
         // This pure virtual is required for the Editor and RunTime to find the componentTypeId - in the Editor
         // it accounts for the GenericComponentWrapper component
-        virtual const AZ::Uuid& GetComponentTypeUuid(const AZ::Component& component) const = 0;
+        virtual AZ::TypeId GetComponentTypeUuid(const AZ::Component& component) const = 0;
 
         // Get all of the components available on the current entity.
         virtual void GetEntityComponents(AZ::Entity::ComponentArrayType& entityComponents) const = 0;

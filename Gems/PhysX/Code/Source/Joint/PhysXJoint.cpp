@@ -126,6 +126,15 @@ namespace PhysX
         m_pxJoint = Utils::PxJointFactories::CreatePxHingeJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
     }
 
+    PhysXPrismaticJoint::PhysXPrismaticJoint(const PrismaticJointConfiguration& configuration,
+        AzPhysics::SceneHandle sceneHandle,
+        AzPhysics::SimulatedBodyHandle parentBodyHandle,
+        AzPhysics::SimulatedBodyHandle childBodyHandle)
+        : PhysXJoint(sceneHandle, parentBodyHandle, childBodyHandle)
+    {
+        m_pxJoint = Utils::PxJointFactories::CreatePxPrismaticJoint(configuration, sceneHandle, parentBodyHandle, childBodyHandle);
+    }
+
     AZ::Crc32 PhysXD6Joint::GetNativeType() const
     {
         return NativeTypeIdentifiers::D6Joint;
@@ -144,6 +153,11 @@ namespace PhysX
     AZ::Crc32 PhysXHingeJoint::GetNativeType() const
     {
         return NativeTypeIdentifiers::HingeJoint;
+    }
+
+    AZ::Crc32 PhysXPrismaticJoint::GetNativeType() const
+    {
+        return NativeTypeIdentifiers::PrismaticJoint;
     }
 
     void PhysXD6Joint::GenerateJointLimitVisualizationData(

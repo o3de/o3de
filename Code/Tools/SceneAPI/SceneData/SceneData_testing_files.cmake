@@ -11,5 +11,7 @@ set(FILES
     Tests/GraphData/MeshDataTests.cpp
     Tests/GraphData/MeshDataPrimitiveUtilsTests.cpp
     Tests/GraphData/GraphDataBehaviorTests.cpp
+    Tests/GraphData/RulesTests.cpp
     Tests/SceneManifest/SceneManifestRuleTests.cpp
+    Tests/SceneManifest/SceneScriptRuleTests.cpp
 )

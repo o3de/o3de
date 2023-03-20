@@ -11,7 +11,6 @@
 #include <Editor/EditorSmoothStepGradientComponent.h>
 #include <Editor/EditorSurfaceSlopeGradientComponent.h>
 #include <Editor/EditorMixedGradientComponent.h>
-#include <Editor/EditorImageBuilderComponent.h>
 #include <Editor/EditorImageGradientComponent.h>
 #include <Editor/EditorConstantGradientComponent.h>
 #include <Editor/EditorThresholdGradientComponent.h>
@@ -24,11 +23,14 @@
 #include <Editor/EditorPerlinGradientComponent.h>
 #include <Editor/EditorRandomGradientComponent.h>
 #include <Editor/EditorGradientTransformComponent.h>
+#include <Editor/EditorStreamingImageAssetCtrl.h>
 #include <Editor/EditorSurfaceMaskGradientComponent.h>
 #include <Editor/EditorGradientSurfaceDataComponent.h>
+#include <GradientSignal/Editor/GradientPreviewer.h>
+#include <GradientSignal/Editor/EditorGradientBakerComponent.h>
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
+#include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 #include <UI/GradientPreviewDataWidget.h>
-#include <Editor/EditorImageProcessingSystemComponent.h>
 
 namespace GradientSignal
 {
@@ -36,13 +38,12 @@ namespace GradientSignal
     {
         m_descriptors.insert(m_descriptors.end(), {
             GradientSignalEditorSystemComponent::CreateDescriptor(),
-            EditorImageProcessingSystemComponent::CreateDescriptor(),
 
+            EditorGradientBakerComponent::CreateDescriptor(),
             EditorSurfaceAltitudeGradientComponent::CreateDescriptor(),
             EditorSmoothStepGradientComponent::CreateDescriptor(),
             EditorSurfaceSlopeGradientComponent::CreateDescriptor(),
             EditorMixedGradientComponent::CreateDescriptor(),
-            EditorImageBuilderPluginComponent::CreateDescriptor(),
             EditorImageGradientComponent::CreateDescriptor(),
             EditorConstantGradientComponent::CreateDescriptor(),
             EditorThresholdGradientComponent::CreateDescriptor(),
@@ -65,13 +66,15 @@ namespace GradientSignal
         AZ::ComponentTypeList requiredComponents = GradientSignalModule::GetRequiredSystemComponents();
 
         requiredComponents.push_back(azrtti_typeid<GradientSignalEditorSystemComponent>());
-        requiredComponents.push_back(azrtti_typeid<EditorImageProcessingSystemComponent>());
 
         return requiredComponents;
     }
 
     void GradientSignalEditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        GradientPreviewer::Reflect(context);
+        ImageCreatorUtils::PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<GradientSignalEditorSystemComponent, AZ::Component>()
@@ -82,7 +85,6 @@ namespace GradientSignal
             {
                 editContext->Class<GradientSignalEditorSystemComponent>("GradientSignalEditorSystemComponent", "Handles registration of the gradient preview data widget handler")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -106,17 +108,26 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
+    }
 
+    void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        EditorImageGradientComponentMode::BindActionsToModes();
     }
 
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
+        StreamingImagePropertyHandler::Register();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GradientPreviewDataWidgetHandler::Unregister();
+        // We don't need to unregister the StreamingImagePropertyHandler
+        // because its set to auto-delete (default)
     }
 }
 

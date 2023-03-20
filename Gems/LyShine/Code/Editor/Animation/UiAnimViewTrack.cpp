@@ -16,6 +16,7 @@
 #include "UiEditorAnimationBus.h"
 
 #include <Util/EditorUtils.h>
+#include <CryCommon/StlUtils.h>
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimViewTrackBundle::AppendTrack(CUiAnimViewTrack* pTrack)
@@ -384,7 +385,7 @@ IUiAnimTrack::EUiAnimTrackFlags CUiAnimViewTrack::GetFlags() const
 CUiAnimViewTrackMemento CUiAnimViewTrack::GetMemento() const
 {
     IUiAnimationSystem* uiAnimationSystem = nullptr;
-    EBUS_EVENT_RESULT(uiAnimationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(uiAnimationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     CUiAnimViewTrackMemento memento;
     memento.m_serializedTrackState = XmlHelpers::CreateXmlNode("TrackState");
@@ -396,7 +397,7 @@ CUiAnimViewTrackMemento CUiAnimViewTrack::GetMemento() const
 void CUiAnimViewTrack::RestoreFromMemento(const CUiAnimViewTrackMemento& memento)
 {
     IUiAnimationSystem* uiAnimationSystem = nullptr;
-    EBUS_EVENT_RESULT(uiAnimationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(uiAnimationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     // We're going to de-serialize, so this is const safe
     XmlNodeRef& xmlNode = const_cast<XmlNodeRef&>(memento.m_serializedTrackState);
@@ -404,7 +405,7 @@ void CUiAnimViewTrack::RestoreFromMemento(const CUiAnimViewTrackMemento& memento
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimViewTrack::GetName() const
+AZStd::string CUiAnimViewTrack::GetName() const
 {
     CUiAnimViewNode* pParentNode = GetParentNode();
 
@@ -626,10 +627,10 @@ void CUiAnimViewTrack::CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnly
     }
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     XmlNodeRef childNode = xmlNode->newChild("Track");
-    childNode->setAttr("name", GetName());
+    childNode->setAttr("name", GetName().c_str());
     GetParameterType().Serialize(animationSystem, childNode, false);
     childNode->setAttr("valueType", GetValueType());
 

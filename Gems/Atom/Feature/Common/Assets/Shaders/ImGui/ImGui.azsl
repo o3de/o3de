@@ -14,6 +14,7 @@ struct VertexInput
     float2 Position : POSITION;
     float2 UV : UV;
     float4 Color : COLOR;
+    uint TextureIndex : INSTANCE_DATA;
 };
 
 struct VertexOutput
@@ -21,11 +22,12 @@ struct VertexOutput
     float4 Position : SV_Position;
     float4 Color : COLOR;
     float2 UV : UV;
+    uint TextureIndex : INSTANCE_DATA;
 };
 
-ShaderResourceGroup ObjectSrg : SRG_PerObject
+ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    Texture2D<float4> FontImage;
+    Texture2D<float4> m_textures[16];
     
     Sampler LinearSampler
     {
@@ -43,9 +45,10 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
 VertexOutput MainVS(in VertexInput input)
 {
     VertexOutput output;
-    output.Position = mul(float4(input.Position, 0.0f, 1.0f), ObjectSrg::m_projectionMatrix);
+    output.Position = mul(float4(input.Position, 0.0f, 1.0f), PassSrg::m_projectionMatrix);
     output.Color = float4(input.Color.rgb, input.Color.a);
     output.UV = input.UV;
+    output.TextureIndex = input.TextureIndex;
     return output;
 }
 
@@ -57,7 +60,7 @@ struct PixelOutput
 PixelOutput MainPS(in VertexOutput input)
 {
     PixelOutput output;
-    float4 color = ObjectSrg::FontImage.Sample(ObjectSrg::LinearSampler, input.UV) * input.Color;
+    float4 color = PassSrg::m_textures[input.TextureIndex].Sample(PassSrg::LinearSampler, input.UV) * input.Color;
     output.m_color = float4(color.rgb * color.a, color.a);
     return output;
 }

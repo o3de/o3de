@@ -1,0 +1,68 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include "NewDepthOfFieldCommon.azsli"
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float2> m_minMaxSource;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
+    float4 m_textureDimensions;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+struct PSOutput
+{
+    float2 m_color : SV_Target0;
+};
+
+// Expands the min and max tiles so each tile contains the min and max of it's 3x3 neighborhood
+PSOutput MainPS(VSOutput IN)
+{
+    // We want the min/max in a 3x3 region. Start sampling up left.
+    float2 startPixelPos = IN.m_position.xy - float2(1, 1);
+    
+    float2 pixelSizeInUV = PassSrg::m_textureDimensions.zw;
+    float2 startUV = startPixelPos * pixelSizeInUV;
+    
+    float cocMin = 1.0f;
+    float cocMax = -1.0f;
+    
+    // Gather min/max in 3x3 region
+    [unroll]
+    for(float Y = 0.0f; Y < 3.0f; Y += 1.0f)
+    {
+        [unroll]
+        for(float X = 0.0f; X < 3.0f; X += 1.0f)
+        {
+            float2 sampleUV = mad(float2(X, Y), pixelSizeInUV, startUV);
+            float2 minMax = PassSrg::m_minMaxSource.SampleLevel(PassSrg::PointSampler, sampleUV, 0).xy;
+            
+            cocMin = min(cocMin, minMax.x);
+            cocMax = max(cocMax, minMax.y);
+        }
+    }
+    
+    PSOutput output;
+    output.m_color.x = cocMin;
+    output.m_color.y = cocMax;
+    return output;
+}

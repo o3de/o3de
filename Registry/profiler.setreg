@@ -1,0 +1,15 @@
+{
+    "O3DE":
+    {
+        "AzCore":
+        {
+            "Debug":
+            {
+                "Profiler":
+                {
+                    "CaptureLocation" : "@user@/Profiler"
+                }
+            }
+        }
+    }
+}

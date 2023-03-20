@@ -16,18 +16,27 @@
 namespace LmbrCentral
 {
     /// Type ID for the BoxShapeComponent
-    static const AZ::Uuid BoxShapeComponentTypeId = "{5EDF4B9E-0D3D-40B8-8C91-5142BCFC30A6}";
+    inline constexpr AZ::TypeId BoxShapeComponentTypeId{ "{5EDF4B9E-0D3D-40B8-8C91-5142BCFC30A6}" };
 
     /// Type ID for the EditorBoxShapeComponent
-    static const AZ::Uuid EditorBoxShapeComponentTypeId = "{2ADD9043-48E8-4263-859A-72E0024372BF}";
+    inline constexpr AZ::TypeId EditorBoxShapeComponentTypeId{ "{2ADD9043-48E8-4263-859A-72E0024372BF}" };
+
+    /// Type ID for the BoxShapeConfig
+    inline constexpr AZ::TypeId BoxShapeConfigTypeId{ "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}" };
+
+    /// Type ID for the AxisAlignedBoxShapeComponent
+    inline constexpr AZ::TypeId AxisAlignedBoxShapeComponentTypeId{ "{641D817E-1BC6-406A-BBB2-218541808E45}" };
+
+    /// Type ID for the EditorAxisAlignedBoxShapeComponent
+    inline constexpr AZ::TypeId EditorAxisAlignedBoxShapeComponentTypeId{ "{8C027DF6-E157-4159-9BF8-F1B925466F1F}" };
 
     /// Configuration data for BoxShapeComponent
     class BoxShapeConfig
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(BoxShapeConfig, AZ::SystemAllocator, 0)
-        AZ_RTTI(BoxShapeConfig, "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}", ShapeComponentConfig)
+        AZ_CLASS_ALLOCATOR(BoxShapeConfig, AZ::SystemAllocator)
+        AZ_RTTI(BoxShapeConfig, BoxShapeConfigTypeId, ShapeComponentConfig)
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -46,7 +55,8 @@ namespace LmbrCentral
             return m_dimensions;
         }
 
-        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne(); ///< Stores the dimensions of the box along each axis.        
+        AZ::Vector3 m_dimensions = AZ::Vector3::CreateOne(); ///< Stores the dimensions of the box along each axis.
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     /// Services provided by the Box Shape Component
@@ -58,11 +68,14 @@ namespace LmbrCentral
 
         /// @brief Gets dimensions for the Box Shape
         /// @return Vector3 indicating dimensions along the x,y & z axis
-        virtual AZ::Vector3 GetBoxDimensions() = 0;
+        virtual AZ::Vector3 GetBoxDimensions() const = 0;
 
         /// @brief Sets new dimensions for the Box Shape
         /// @param newDimensions Vector3 indicating new dimensions along the x,y & z axis
         virtual void SetBoxDimensions(const AZ::Vector3& newDimensions) = 0;
+
+        /// Returns true if the object type is axis-aligned box shape, otherwise false (regardless of orientation).
+        virtual bool IsTypeAxisAligned() = 0;
     };
 
     // Bus to service the Box Shape component event group

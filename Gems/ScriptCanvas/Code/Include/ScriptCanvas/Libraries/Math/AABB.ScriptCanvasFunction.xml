@@ -1,0 +1,127 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/AABB.h"
+        Namespace="ScriptCanvas::AABBFunctions"
+        Category="Math/AABB">
+        
+        <Function Name="AddAABB">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+
+        <Function Name="AddPoint">
+            <Parameter Name="Source"/>
+            <Parameter Name="Point"/>
+        </Function>
+
+        <Function Name="ApplyTransform">
+            <Parameter Name="Source"/>
+            <Parameter Name="Transform"/>
+        </Function>
+
+        <Function Name="Center">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Clamp">
+            <Parameter Name="Source"/>
+            <Parameter Name="Clamp"/>
+        </Function>
+
+        <Function Name="ContainsAABB">
+            <Parameter Name="Source"/>
+            <Parameter Name="Candidate"/>
+        </Function>
+
+        <Function Name="ContainsVector3">
+            <Parameter Name="Source"/>
+            <Parameter Name="Candidate"/>
+        </Function>
+
+        <Function Name="Distance">
+            <Parameter Name="Source"/>
+            <Parameter Name="Point"/>
+        </Function>
+
+        <Function Name="Expand">
+            <Parameter Name="Source"/>
+            <Parameter Name="Delta"/>
+        </Function>
+
+        <Function Name="Extents">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="FromCenterHalfExtents">
+            <Parameter Name="Center"/>
+            <Parameter Name="HalfExtents"/>
+        </Function>
+
+        <Function Name="FromCenterRadius">
+            <Parameter Name="Center"/>
+            <Parameter Name="Radius"/>
+        </Function>
+
+        <Function Name="FromMinMax">
+            <Parameter Name="Min"/>
+            <Parameter Name="Max"/>
+        </Function>
+
+        <Function Name="FromOBB">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="FromPoint">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="GetMax">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="GetMin">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="IsValid">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Null"/>
+
+        <Function Name="Overlaps">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+        </Function>
+
+        <Function Name="SurfaceArea">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="ToSphere">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="Translate">
+            <Parameter Name="Source"/>
+            <Parameter Name="Translation"/>
+        </Function>
+
+        <Function Name="XExtent">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="YExtent">
+            <Parameter Name="Source"/>
+        </Function>
+
+        <Function Name="ZExtent">
+            <Parameter Name="Source"/>
+        </Function>
+    </Library>
+</ScriptCanvas>

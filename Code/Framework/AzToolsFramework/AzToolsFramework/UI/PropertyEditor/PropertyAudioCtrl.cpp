@@ -7,8 +7,8 @@
  */
 
 
-#include "PropertyAudioCtrl.h"
-#include "PropertyQTConstants.h"
+#include <UI/PropertyEditor/PropertyAudioCtrl.h>
+#include <UI/PropertyEditor/PropertyQTConstants.h>
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
@@ -26,6 +26,25 @@ AZ_POP_DISABLE_WARNING
 
 namespace AzToolsFramework
 {
+    void CReflectedVarAudioControl::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<CReflectedVarAudioControl>()
+                ->Version(1)
+                ->Field("controlName", &CReflectedVarAudioControl::m_controlName)
+                ->Field("propertyType", &CReflectedVarAudioControl::m_propertyType)
+                ;
+
+            if (auto editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<CReflectedVarAudioControl>("VarAudioControl", "AudioControl")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ;
+            }
+        }
+    }
+
     //=============================================================================
     // Audio Control SelectorWidget
     //=============================================================================
@@ -34,7 +53,7 @@ namespace AzToolsFramework
         : QWidget(parent)
         , m_browseEdit(nullptr)
         , m_mainLayout(nullptr)
-        , m_propertyType(AudioPropertyType::Invalid)
+        , m_propertyType(AudioPropertyType::NumTypes)
     {
         // create the gui
         m_mainLayout = new QHBoxLayout();
@@ -96,7 +115,7 @@ namespace AzToolsFramework
             return;
         }
 
-        if (type != AudioPropertyType::Invalid)
+        if (type != AudioPropertyType::NumTypes)
         {
             m_propertyType = type;
         }
@@ -136,10 +155,11 @@ namespace AzToolsFramework
 
     void AudioControlSelectorWidget::OnOpenAudioControlSelector()
     {
-        AZStd::string resourceResult;
-        AZStd::string resourceType(GetResourceSelectorNameFromType(m_propertyType));
         AZStd::string currentValue(m_controlName.toStdString().c_str());
-        EditorRequests::Bus::BroadcastResult(resourceResult, &EditorRequests::Bus::Events::SelectResource, resourceType, currentValue);
+        AZStd::string resourceResult;
+        AudioControlSelectorRequestBus::EventResult(
+            resourceResult, m_propertyType,
+            &AudioControlSelectorRequestBus::Events::SelectResource, currentValue);
         SetControlName(QString(resourceResult.c_str()));
     }
 
@@ -167,12 +187,12 @@ namespace AzToolsFramework
         {
         case AudioPropertyType::Trigger:
             return { "AudioTrigger" };
+        case AudioPropertyType::Rtpc:
+            return { "AudioRTPC" };
         case AudioPropertyType::Switch:
             return { "AudioSwitch" };
         case AudioPropertyType::SwitchState:
             return { "AudioSwitchState" };
-        case AudioPropertyType::Rtpc:
-            return { "AudioRTPC" };
         case AudioPropertyType::Environment:
             return { "AudioEnvironment" };
         case AudioPropertyType::Preload:
@@ -193,7 +213,8 @@ namespace AzToolsFramework
         connect(newCtrl, &AudioControlSelectorWidget::ControlNameChanged, this,
             [newCtrl] ()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
                 AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, newCtrl);
             }
         );

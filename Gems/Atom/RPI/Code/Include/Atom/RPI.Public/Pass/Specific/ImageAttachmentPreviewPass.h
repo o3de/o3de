@@ -10,6 +10,7 @@
 #include <AtomCore/Instance/Instance.h>
 
 #include <Atom/RHI/BufferPool.h>
+#include <Atom/RHI/CopyItem.h>
 #include <Atom/RHI/ScopeProducer.h>
 
 #include <Atom/RPI.Public/Buffer/Buffer.h>
@@ -31,7 +32,7 @@ namespace AZ
             friend class ImageAttachmentPreviewPass;
         public:
             AZ_RTTI(ImageAttachmentCopy, "{27E35230-48D1-4950-8489-F301A45D4A0B}", RHI::ScopeProducer);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentCopy, SystemAllocator);
 
             ImageAttachmentCopy() = default;
             ~ImageAttachmentCopy() = default;
@@ -70,7 +71,7 @@ namespace AZ
 
         public:
             AZ_RTTI(ImageAttachmentPreviewPass, "{E6076B8E-E840-4C22-89A8-32C73FEEEBF9}", Pass);
-            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAttachmentPreviewPass, SystemAllocator);
 
             //! Creates an ImageAttachmentPreviewPass
             static Ptr<ImageAttachmentPreviewPass> Create(const PassDescriptor& descriptor);
@@ -78,7 +79,7 @@ namespace AZ
             ~ImageAttachmentPreviewPass();
             
             //! Preview the PassAttachment of a pass' PassAttachmentBinding
-            void PreviewImageAttachmentForPass(RenderPass* pass, const PassAttachment* passAttachment);
+            void PreviewImageAttachmentForPass(Pass* pass, const PassAttachment* passAttachment);
 
             //! Set the output color attachment for this pass
             void SetOutputColorAttachment(RHI::Ptr<PassAttachment> outputImageAttachment);
@@ -93,6 +94,9 @@ namespace AZ
             //! Readback the output color attachment
             bool ReadbackOutput(AZStd::shared_ptr<AttachmentReadback> readback);
 
+            //! Set a min/max range for remapping the preview output, to increase contrast. The default of 0-1 is a no-op.
+            void SetColorTransformRange(float colorTransformRange[2]);
+
         private:
             explicit ImageAttachmentPreviewPass(const PassDescriptor& descriptor);
 
@@ -103,6 +107,7 @@ namespace AZ
             void LoadShader();
 
             // Pass overrides
+            void BuildInternal() override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // RHI::ScopeProducer overrides...
@@ -142,6 +147,9 @@ namespace AZ
 
             // render target for the preview
             RHI::Ptr<PassAttachment> m_outputColorAttachment;
+            
+            RHI::ShaderInputConstantIndex m_colorRangeMinMaxInput;
+            float m_attachmentColorTranformRange[2] = {0.0f, 1.0f};
 
             // shader for render images to the output
             Data::Instance<Shader> m_shader;

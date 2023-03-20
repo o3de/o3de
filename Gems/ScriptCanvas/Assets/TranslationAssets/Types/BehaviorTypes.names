@@ -1,0 +1,1428 @@
+{
+    "entries": [
+        {
+            "base": "{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Uuid"
+            }
+        },
+        {
+            "base": "{831C1F11-5898-4FBF-B4CF-92B757A907A8}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "FastNoiseGradientConfig"
+            }
+        },
+        {
+            "base": "{1D00F234-8134-4A42-A357-ADAC865CF63A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Mesh Blocker Config"
+            }
+        },
+        {
+            "base": "{40403A44-31FE-4D1D-941C-6593759CCCBD}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientConfig"
+            }
+        },
+        {
+            "base": "{0B5D866D-C7F5-5B12-81A5-74521A8230D5}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<AZ::u64, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{4AADFD75-48A7-4F31-8F30-FE4505F09E35}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SphereShapeConfig"
+            }
+        },
+        {
+            "base": "{01F6E6C5-707E-42EC-91BB-F674B9F51A40}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "BlockerConfig"
+            }
+        },
+        {
+            "base": "{5574DD27-89D8-5A40-B7C4-FA04C68B8A0D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned short, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{FE862126-C838-4999-9B7B-4AEEA5507A49}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "RaySplineQueryResult"
+            }
+        },
+        {
+            "base": "{ED57731E-2821-4AA6-9BD6-9203ED0B6AB0}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AreaBlenderConfig"
+            }
+        },
+        {
+            "base": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Vector4"
+            }
+        },
+        {
+            "base": "{A62E9C87-093C-4534-AB48-DEF8EC80C190}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DescriptorListCombinerConfig"
+            }
+        },
+        {
+            "base": "{73BA7B92-1061-4DDB-AA5B-A0D87303CBC8}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SlopeAlignmentModifierConfig"
+            }
+        },
+        {
+            "base": "{C0E1DF8C-D1BE-4AF4-8100-5D71788399BA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantInfo"
+            }
+        },
+        {
+            "base": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Matrix3x3"
+            }
+        },
+        {
+            "base": "{12A1776B-61F6-4E5F-356A-AD718A62051F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "NetworkTestPlayerComponentNetworkInput"
+            }
+        },
+        {
+            "base": "{157193C7-B673-4A2B-8B43-5681DCC3DEC3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Matrix4x4"
+            }
+        },
+        {
+            "base": "{331A3D0E-BB1D-47BF-96A2-249FAA0D720D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AzFramework::SurfaceData::SurfacePoint"
+            }
+        },
+        {
+            "base": "{6483F481-0C18-4171-8B59-A44F2F28EAE5}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AWSMetrics_MetricsAttribute"
+            }
+        },
+        {
+            "base": "{708A5B3C-E377-40CE-9572-BEB64C849D40}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "VertexHandle"
+            }
+        },
+        {
+            "base": "{C81CC1CA-6841-5F6A-B1C7-E544590B481F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<int, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{E8C6654F-0000-5496-8A61-9DAE9CA30493}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<AZ::s8, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{C16F0F38-8F8F-45A2-A33B-F2758922A7C4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MeshVertexTangentData"
+            }
+        },
+        {
+            "base": "{F56FB088-4C92-4453-AFE9-4E820F03FA90}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MeshVertexBitangentData"
+            }
+        },
+        {
+            "base": "{A7E568EC-5873-5C8A-A43E-A7228B613A21}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputBufferDescriptor>"
+            }
+        },
+        {
+            "base": "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "CapsuleShapeConfig"
+            }
+        },
+        {
+            "base": "{004ABD25-CF14-4EB3-BD41-022C247C07FA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "OBB"
+            }
+        },
+        {
+            "base": "{4AFDFD7F-384A-41DF-900C-9B25A4AA8D1E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PosterizeGradientConfig"
+            }
+        },
+        {
+            "base": "{02FB32C4-B94E-4084-9049-3DF32F87BD76}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ClientAuthAWSCredentials"
+            }
+        },
+        {
+            "base": "{F6B9150B-CC89-48A2-AB89-D18740CC6FA2}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "FaceVertHandles"
+            }
+        },
+        {
+            "base": "{4BC6D515-214A-4DCE-8FCB-A6389B66A1B9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Entity Transform"
+            }
+        },
+        {
+            "base": "{F681BA9D-245C-4630-B20E-05DD752FAD57}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "UiOffsets"
+            }
+        },
+        {
+            "base": "{EBEDA5EC-29D3-4F23-ABCC-C7C4EE48FA36}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DisplaySettingsState"
+            }
+        },
+        {
+            "base": "{344066EB-7C3D-4E92-B53D-3C9EBD546488}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "EditorMaterialComponentSlot"
+            }
+        },
+        {
+            "base": "{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Name"
+            }
+        },
+        {
+            "base": "{F965D1B2-9DE3-4900-B44B-E58D9F083ACB}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AuthenticationTokens"
+            }
+        },
+        {
+            "base": "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ImageGradientConfig"
+            }
+        },
+        {
+            "base": "{DCFE9FBF-39BF-5B3C-AD28-D61ADBAF1711}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, MaterialPropertyIndexType>"
+            }
+        },
+        {
+            "base": "{8FB7C786-D8A7-41C4-A703-020020EB4A4F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShapeAreaFalloffGradientConfig"
+            }
+        },
+        {
+            "base": "{D24130B9-89C4-4EAA-9A5D-3469B05C5065}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "GraphModelSlotId"
+            }
+        },
+        {
+            "base": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Color"
+            }
+        },
+        {
+            "base": "{F2EE1768-183B-483E-9778-CB3D3D0DA68A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MaterialData"
+            }
+        },
+        {
+            "base": "{FF8B1DED-C1A8-4322-86D2-C8432E4B0526}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "RotationModifierConfig"
+            }
+        },
+        {
+            "base": "{902F6253-A8FA-4350-B9F1-C176F3E2D305}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DescriptorListConfig"
+            }
+        },
+        {
+            "base": "{34516BA4-2B13-4A84-A46B-01E1980CA778}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "GradientSurfaceDataConfig"
+            }
+        },
+        {
+            "base": "{8AF3B382-F187-4323-9014-B380638767E3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::NetComponentId"
+            }
+        },
+        {
+            "base": "{EBB1C475-FA03-4111-8C84-985377434B9B}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::RpcIndex"
+            }
+        },
+        {
+            "base": "{E134EAE8-52A1-4E43-847B-09E546CC5B95}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "UVCoords"
+            }
+        },
+        {
+            "base": "{28529C97-543C-5690-9FA4-9781271E6661}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputBufferUnboundedArrayDescriptor>"
+            }
+        },
+        {
+            "base": "{B94085B7-C0D4-466A-A791-188A4559EC8D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "OutputDeviceTransformType"
+            }
+        },
+        {
+            "base": "{3EC1CE83-483D-41FD-9909-D22B03E56F4E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Render::ShadowmapSize"
+            }
+        },
+        {
+            "base": "{9E71534D-34B3-4723-B180-2552513DDA3D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AWSScriptBehaviorLambda"
+            }
+        },
+        {
+            "base": "{8CD110EE-95FA-4B26-B10E-95079BE4CB11}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DistanceBetweenFilterConfig"
+            }
+        },
+        {
+            "base": "{A54C2B36-D5B8-46A1-A529-4EBDBD2450E7}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AABB"
+            }
+        },
+        {
+            "base": "{C845E5EC-5580-4E12-A9B2-9AE7E5B7826F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "EntityComponentIdPair"
+            }
+        },
+        {
+            "base": "{E6DA080B-7ED1-4135-A78C-A6A5E495A43E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "CollisionGroup"
+            }
+        },
+        {
+            "base": "{F01C8BDD-6F24-4344-8945-521A8750B30B}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PolygonPrism"
+            }
+        },
+        {
+            "base": "{67C8C6ED-F32A-443E-A777-1CAE48B22CD7}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceTag"
+            }
+        },
+        {
+            "base": "{48A94382-72BE-457B-BB43-0E6C245824D2}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SearchFilter"
+            }
+        },
+        {
+            "base": "{4C0F6AD4-0D4F-4354-AD4A-0C01E948245C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ScriptTimePoint"
+            }
+        },
+        {
+            "base": "{05E4C08B-3A1B-4390-8144-3767D8E56A81}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::NetEntityId"
+            }
+        },
+        {
+            "base": "{65D4346C-FB16-4CB0-9BDC-1185B122C4A9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "UiAnchors"
+            }
+        },
+        {
+            "base": "{691E0F23-37E9-434F-A1D1-E8DE5B4A3405}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceSlopeGradientConfig"
+            }
+        },
+        {
+            "base": "{4E74B13E-6B4E-59D1-90E1-5E5C7EEE40D6}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<short, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{7602AA36-792C-4BDC-BDF8-AA16792151A3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "CollisionEvent"
+            }
+        },
+        {
+            "base": "{02644F52-9483-47A8-9028-37671695C34E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "LightConfig"
+            }
+        },
+        {
+            "base": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "EntityId"
+            }
+        },
+        {
+            "base": "{1906D8A5-7DEC-4DE3-A606-9E53BB3459E7}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Matrix3x4"
+            }
+        },
+        {
+            "base": "{17477B86-B163-4574-8FB2-4916BC218B3D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MeshVertexColorData"
+            }
+        },
+        {
+            "base": "{A504D6DA-2825-4A0E-A65E-3FC76FC8AFAC}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AreaDebugConfig"
+            }
+        },
+        {
+            "base": "{794F7DE4-188C-4031-8B00-C2BA0C351A1E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "LevelSettingsConfig"
+            }
+        },
+        {
+            "base": "{B88C9D87-8609-4EAB-82D6-92DFEF006629}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShapeIntersectionFilterConfig"
+            }
+        },
+        {
+            "base": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Vector2"
+            }
+        },
+        {
+            "base": "{5B085DA7-CDC9-47C7-B2DB-BA5DD5AA2FB5}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceMaskFilterConfig"
+            }
+        },
+        {
+            "base": "{847DD984-9DBF-4789-8E25-E0334402E8AD}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Plane"
+            }
+        },
+        {
+            "base": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "String"
+            }
+        },
+        {
+            "base": "{63984856-F883-4F8C-9049-5A8F26477B76}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "InstanceSystemConfig"
+            }
+        },
+        {
+            "base": "{3768D3A6-BF70-4ABC-B4EC-73C75A886916}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "GradientSampler"
+            }
+        },
+        {
+            "base": "{B435C091-482C-4EB9-B1F4-FA5B480796DA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MeshVertexUVData"
+            }
+        },
+        {
+            "base": "{EA14018E-E853-4BF5-8E13-D83BB99A54CC}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceTagWeight"
+            }
+        },
+        {
+            "base": "{3CB05FC9-6E0F-435E-B420-F027B6716804}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceAltitudeGradientConfig"
+            }
+        },
+        {
+            "base": "{C6FD75F7-58BA-46CE-8FBA-2D64CB4ECFF9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ExposureControlConfig"
+            }
+        },
+        {
+            "base": "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantId"
+            }
+        },
+        {
+            "base": "{41CC88A4-FE07-48E6-943D-998DE68AFF5C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Entity"
+            }
+        },
+        {
+            "base": "{6B17F9C6-DB72-52CA-80ED-EFDFDF2DF9ED}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, IndirectCommandDescriptor>"
+            }
+        },
+        {
+            "base": "{F27E64FB-A7FF-47F2-80DB-7E1371B014DD}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PythonBuilderWorker"
+            }
+        },
+        {
+            "base": "{41CA80B1-9E0D-41FB-A235-9638D2A905A5}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Render::DisplayMapperOperationType"
+            }
+        },
+        {
+            "base": "{4FA91FA7-CF3C-51BF-8159-6496DC7D526C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<AZ::s64, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{3EE8C0D4-3792-46C0-B91C-B89A81C36B91}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AcesParameterOverrides"
+            }
+        },
+        {
+            "base": "{5F0CD700-EC2B-468D-B708-F6EEA7782C46}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceMaskDepthFilterConfig"
+            }
+        },
+        {
+            "base": "{569E74F6-1268-4199-9653-A3B603FC9F4F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AWSScriptBehaviorDynamoDB"
+            }
+        },
+        {
+            "base": "{7E304208-5FDF-4384-BC28-E7CDD2A15BEC}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DistributionFilterConfig"
+            }
+        },
+        {
+            "base": "{7A0851A3-2CBD-4A03-85D5-1C40221E7F61}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "TriggerEvent"
+            }
+        },
+        {
+            "base": "{C66E5214-A24B-4722-B7F0-5991E6F8F163}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MaterialAssignment"
+            }
+        },
+        {
+            "base": "{110C4B14-11A8-4E9D-8638-5051013A56AC}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Number"
+            }
+        },
+        {
+            "base": "{E35DCF28-1AC3-49E8-A0AB-2F6115348F45}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PositionSplineQueryResult"
+            }
+        },
+        {
+            "base": "{98A6B0CE-FAD0-4108-B019-6B01931E649F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "VegetationSpawnerConfig"
+            }
+        },
+        {
+            "base": "{1811456D-0C3D-58C8-ACE8-FD47F4E80E25}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Transform"
+            }
+        },
+        {
+            "base": "{6CEBAF3A-2A5C-4508-A351-9613E32CF63F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceSlopeFilterConfig"
+            }
+        },
+        {
+            "base": "{DA5C6354-AA81-504B-88BF-8EF5811ABA61}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderVariantId>"
+            }
+        },
+        {
+            "base": "{24EC2919-F198-4871-8404-F6DE8A16275E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DiskShapeConfig"
+            }
+        },
+        {
+            "base": "{B1106C14-D22B-482F-B33E-B6E154A53798}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AWSMetrics_AttributesSubmissionList"
+            }
+        },
+        {
+            "base": "{FF875C22-2E4F-4CE3-BA49-09BF78C70A09}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "BlendShapeData"
+            }
+        },
+        {
+            "base": "{07B9E2F7-5408-49E9-904D-CC1A9C33230E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RPI::ShaderOptionDescriptor"
+            }
+        },
+        {
+            "base": "{9274AD17-3212-4651-9F3B-7DCCB080E467}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SceneManifest"
+            }
+        },
+        {
+            "base": "{F392F061-BF40-43C5-89F6-7323D6EF11F4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SmoothStep"
+            }
+        },
+        {
+            "base": "{F034FBA2-AC2F-4E66-8152-14DFB90D6283}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "BoxShapeConfig"
+            }
+        },
+        {
+            "base": "{950009BC-8991-4749-9D5C-08C62AF34E7B}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "FaceHandle"
+            }
+        },
+        {
+            "base": "{B0216514-46B5-4A57-9D9D-8D9EC94C3702}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ConstantGradientConfig"
+            }
+        },
+        {
+            "base": "{F4460210-024D-4B3B-A10A-04B669C34230}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::PropertyIndex"
+            }
+        },
+        {
+            "base": "{6EEACBC0-2D97-414C-8E87-088E7BA231A9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "LightingPreset"
+            }
+        },
+        {
+            "base": "{9E0F0801-348B-4FF9-AF9B-858D59404968}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "InputEventNotificationId"
+            }
+        },
+        {
+            "base": "{0C899DAC-6B19-4BDD-AD8C-8A11EF2A6729}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MotionEvent"
+            }
+        },
+        {
+            "base": "{73103120-3DD3-4873-BAB3-9713FA2804FB}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Quaternion"
+            }
+        },
+        {
+            "base": "{23C40FD4-A55F-4BD3-BE5B-DC5423F217C2}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "EmptyInstanceSpawner"
+            }
+        },
+        {
+            "base": "{3E49974D-2EE0-4AF9-92B9-229A22B515C3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ReferenceShapeConfig"
+            }
+        },
+        {
+            "base": "{E59D0A4C-BA3D-4288-B409-A00B7D5566AA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceMaskGradientConfig"
+            }
+        },
+        {
+            "base": "{14CCBE43-52DD-4F56-92A8-2BB011A0F7A2}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AreaSystemConfig"
+            }
+        },
+        {
+            "base": "{E6D8372B-8419-4287-B478-1353709A972F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AssetInfo"
+            }
+        },
+        {
+            "base": "{5C8C0729-5D41-5299-80F1-395F79B02D70}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputImageDescriptor>"
+            }
+        },
+        {
+            "base": "{F8679938-6D3F-47CC-A078-3D6EC0011366}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShaderVariantListSourceData"
+            }
+        },
+        {
+            "base": "{8F519317-4E83-4CF0-BEC9-C5F3F3198F20}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DitherGradientConfig"
+            }
+        },
+        {
+            "base": "{1106FD53-8B3A-4F97-8051-E34AD70199A5}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "GradientTransformConfig"
+            }
+        },
+        {
+            "base": "{A23453D5-79A8-49C8-B9F0-9CC35D711DD4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "BlastActorData"
+            }
+        },
+        {
+            "base": "{E9E2D5B3-66F1-494D-91D2-1E83D36A1AC1}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ThresholdGradientConfig"
+            }
+        },
+        {
+            "base": "{64C7F381-3313-46E8-B23B-D7AA9A915F35}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShaderCollectionItem"
+            }
+        },
+        {
+            "base": "{A746CFD0-7288-42F4-837D-1CDE2EAA6923}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PerlinGradientConfig"
+            }
+        },
+        {
+            "base": "{3F860893-1F57-5615-92CA-389B49687A9C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputConstantDescriptor>"
+            }
+        },
+        {
+            "base": "{61599E53-2B6A-40AC-B5B8-FC1C3F87275E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AreaConfig"
+            }
+        },
+        {
+            "base": "{BBA5CC1E-B4CA-4792-89F7-93711E98FBD1}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DynamicSliceInstanceSpawner"
+            }
+        },
+        {
+            "base": "{4A70FD56-10A8-460E-B822-3EF03F1EF7A0}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "String"
+            }
+        },
+        {
+            "base": "{B980EF45-C893-56C2-9B54-44B8B14F3436}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned char, DefaultNamespaceType>"
+            }
+        },
+        {
+            "base": "{BB3C3018-66B1-4BAD-AD27-F385BA015C69}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceAltitudeFilterConfig"
+            }
+        },
+        {
+            "base": "{7F4E956C-7463-4236-B320-C992D36A9C6E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AWSScriptBehaviorS3"
+            }
+        },
+        {
+            "base": "{957264F7-A169-4D47-B94C-659B078026D4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MixedGradientLayer"
+            }
+        },
+        {
+            "base": "{35BF3504-CEC9-4406-A275-C633A17FBEFB}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::ClientInputId"
+            }
+        },
+        {
+            "base": "{5B169E40-E02B-5012-A085-BE7E6CA55CEA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputStaticSamplerDescriptor>"
+            }
+        },
+        {
+            "base": "{DE5C18B0-4214-4A37-B590-8D45CC450A96}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "UiPadding"
+            }
+        },
+        {
+            "base": "{121A6DAB-26C1-46B7-83AE-BE750FDABC04}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ReferenceGradientConfig"
+            }
+        },
+        {
+            "base": "{DF17F6F3-48C6-4B4A-BBD9-37DA03162864}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer::HostFrameId"
+            }
+        },
+        {
+            "base": "{B7A0A88D-4FDF-487F-A0E6-5BE04C82862A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PositionModifierConfig"
+            }
+        },
+        {
+            "base": "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ModelPreset"
+            }
+        },
+        {
+            "base": "{3366C279-32AE-48F6-839B-7700AE117A54}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MaterialComponentConfig"
+            }
+        },
+        {
+            "base": "{C10E7B12-BCB6-5872-810D-D597F123DB61}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, RPI::ShaderOptionValueNamespace>"
+            }
+        },
+        {
+            "base": "{744CCE6C-9F69-4E2F-B950-DAB8514F870B}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Physics::MaterialId"
+            }
+        },
+        {
+            "base": "{60A9A069-9C3D-465A-B7AD-0D6CC803990A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ComponentId"
+            }
+        },
+        {
+            "base": "{02F01CCC-CA6F-462F-BDEC-9A7EAC730D33}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "LevelsGradientConfig"
+            }
+        },
+        {
+            "base": "{571E9CC8-AE35-5EBA-9A82-4012B60E7581}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, RPI::ShaderOptionIndexNamespace>"
+            }
+        },
+        {
+            "base": "{9E576D4F-A74A-4326-9135-C07284D0A3B9}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AtomToolsDocumentSystemSettings"
+            }
+        },
+        {
+            "base": "{D350732E-4727-41C8-95E0-FBAF5F2AC074}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AnimationData"
+            }
+        },
+        {
+            "base": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Boolean"
+            }
+        },
+        {
+            "base": "{A5A5E7F7-FC36-4BD1-8A93-21362574B9DA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Descriptor"
+            }
+        },
+        {
+            "base": "{742F8581-B03E-42C2-A332-2A47C588BD1F}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "TypeExposition"
+            }
+        },
+        {
+            "base": "{8F19B652-17A5-5646-9001-120CE0D5BF02}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputSamplerDescriptor>"
+            }
+        },
+        {
+            "base": "{1CD41DA9-91CA-4A57-A169-B42FC25FC4C3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ScaleModifierConfig"
+            }
+        },
+        {
+            "base": "{1DD3D37D-0855-44F9-94F8-76F0128491A1}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "InstanceData"
+            }
+        },
+        {
+            "base": "{D7439508-ED10-4395-9D48-1FC3D7815361}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Contact"
+            }
+        },
+        {
+            "base": "{382116B1-5843-42A3-915B-A3BFC3CFAB78}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "DescriptorWeightSelectorConfig"
+            }
+        },
+        {
+            "base": "{D9C0BF74-6FE8-536F-9432-C964B82700BE}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "AZ::RHI::Handle<unsigned int, ShaderInputImageUnboundedArrayDescriptor>"
+            }
+        },
+        {
+            "base": "{02766CCF-BDA7-46B6-9BB1-58A90C1AD6AA}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "BlendShapeAnimationData"
+            }
+        },
+        {
+            "base": "{2AB6096D-C7C0-4C5E-AA84-7CA804A9680C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceTagDistance"
+            }
+        },
+        {
+            "base": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MaterialAssignmentId"
+            }
+        },
+        {
+            "base": "{515CF4CF-4992-4139-BDE5-42A887432B45}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "CryRange"
+            }
+        },
+        {
+            "base": "{9F4E062E-06A0-46D4-85DF-E0DA96467D3A}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Tag"
+            }
+        },
+        {
+            "base": "{A435F06D-A148-4B5F-897D-39996495B6F4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "RandomGradientConfig"
+            }
+        },
+        {
+            "base": "{B7463F12-C981-4A0B-ACEF-4B26D431D797}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Unit Testing"
+            }
+        },
+        {
+            "base": "{53254779-82F1-441E-9116-81E1FACFECF4}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "CylinderShapeConfig"
+            }
+        },
+        {
+            "base": "{A53D2A38-FFE1-4828-B91E-4D5A8B712BB2}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SmoothStepGradientConfig"
+            }
+        },
+        {
+            "base": "{D435DDB9-C513-4A2E-B0AC-9933E9360857}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SurfaceDataColliderConfig"
+            }
+        },
+        {
+            "base": "{74BEEDB5-81CF-409F-B375-0D93D81EF2E3}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "PrefabInstanceSpawner"
+            }
+        },
+        {
+            "base": "{C6FFF25F-FE52-4D08-8D96-D04C14048816}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "ShaderSemantic"
+            }
+        },
+        {
+            "base": "{35CA7415-DB12-4630-B0D0-4A140CE1B9A7}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "LmbrCentral::QuadShapeConfig"
+            }
+        },
+        {
+            "base": "{1A4C0EF2-BF98-4EB3-B134-A6EF7B31B62E}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "InvertGradientConfig"
+            }
+        },
+        {
+            "base": "{A935EBBC-D167-4C59-927C-5D98C6337B9C}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "RuntimeData"
+            }
+        },
+        {
+            "base": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "Vector3"
+            }
+        },
+        {
+            "base": "{A2589BD4-42FB-40BA-A38D-CFCD6E9EA169}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "MeshData"
+            }
+        },
+        {
+            "base": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+            "context": "BehaviorType",
+            "variant": "",
+            "details": {
+                "name": "SliceInstantiationTicket"
+            }
+        }
+    ]
+}

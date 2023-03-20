@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 
@@ -118,7 +119,80 @@ namespace ScriptCanvasTesting
         {
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
-                behaviorContext->Class<TestTupleMethods>("TestTupleMethods")->Method("Three", &TestTupleMethods::Three);
+                behaviorContext->Class<TestTupleMethods>("TestTupleMethods")
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ->Method("Three", &TestTupleMethods::Three);
+
+                behaviorContext->Method("ScriptCanvasTesting_TestTupleMethods_GlobalThree", &TestTupleMethods::Three)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests");
+
+                auto GlobalThreeSameType = [](const ScriptCanvas::Data::StringType& s1, const ScriptCanvas::Data::StringType& s2,
+                                              const ScriptCanvas::Data::StringType& s3)
+                    -> AZStd::tuple<ScriptCanvas::Data::StringType, ScriptCanvas::Data::StringType, ScriptCanvas::Data::StringType>
+                {
+                    return AZStd::make_tuple(s1, s2, s3);
+                };
+                behaviorContext->Method("ScriptCanvasTesting_TestTupleMethods_GlobalThreeSameType", GlobalThreeSameType)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests");
+            }
+        }
+    };
+
+    class TestGlobalMethods
+    {
+    public:
+
+        static void CanNotAcceptNull(AZStd::vector<AZStd::string>& strings)
+        {
+            AZ_TracePrintf("ScriptCanvas", "Used for testing parse errors");
+            strings.push_back("Cannot accept null input");
+        }
+
+        static void Reflect(AZ::ReflectContext* context)
+        {
+            if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+            {
+                behaviorContext->Method("ScriptCanvasTesting_TestGlobalMethods_CanNotAcceptNull", &CanNotAcceptNull)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ;
+
+                auto IsPositive = [](int input) -> bool
+                {
+                    return input > 0;
+                };
+
+                behaviorContext->Method("ScriptCanvasTesting_TestGlobalMethods_IsPositive", IsPositive)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests");
+
+                auto DivideByPreCheck = [](int input) -> int
+                {
+                    return 10 / input;
+                };
+
+                AZ::CheckedOperationInfo checkedInfo{ "ScriptCanvasTesting_TestGlobalMethods_IsPositive", {}, "Out", "Invalid Input" };
+                behaviorContext->Method("ScriptCanvasTesting_TestGlobalMethods_DivideByPreCheck", DivideByPreCheck)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ->Attribute(AZ::ScriptCanvasAttributes::CheckedOperation, checkedInfo);
+
+                auto SumPostCheck = [](int input1, int input2) -> int
+                {
+                    return input1 + input2;
+                };
+
+                AZ::BranchOnResultInfo branchResult;
+                branchResult.m_trueName = "Out";
+                branchResult.m_falseName = "Not Positive";
+                branchResult.m_nonBooleanResultCheckName = "ScriptCanvasTesting_TestGlobalMethods_IsPositive";
+                branchResult.m_returnResultInBranches = true;
+                behaviorContext->Method("ScriptCanvasTesting_TestGlobalMethods_SumPostCheck", SumPostCheck)
+                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                    ->Attribute(AZ::Script::Attributes::Category, "Tests")
+                    ->Attribute(AZ::ScriptCanvasAttributes::BranchOnResult, branchResult);
             }
         }
     };

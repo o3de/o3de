@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class AltitudeFilterNode : public BaseAreaFilterNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(AltitudeFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AltitudeFilterNode, AZ::SystemAllocator);
         AZ_RTTI(AltitudeFilterNode, "{42F4CF45-597B-4FB9-A21C-2B38A1F25FEA}", BaseAreaFilterNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         AltitudeFilterNode() = default;
         explicit AltitudeFilterNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
 
     protected:

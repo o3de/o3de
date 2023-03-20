@@ -31,6 +31,8 @@ namespace AzToolsFramework
             setTabsClosable(true);
             setMovable(true);
 
+            AzQtComponents::TabWidget::applySecondaryStyle(this);
+
             QAction* pCopyAllAction = new QAction(QIcon(QStringLiteral(":/stylesheet/img/logging/copy.svg")), tr("Copy all"), this);
             addAction(pCopyAllAction);
 
@@ -322,7 +324,7 @@ namespace AzToolsFramework
                 actionList.removeAll(m_actionSelectAll);
             }
 
-            QMenu::exec(actionList, QCursor::pos(), 0, this);
+            QMenu::exec(actionList, QCursor::pos(), nullptr, this);
         }
 
         void StyledLogTab::CopySelected()

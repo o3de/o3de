@@ -7,78 +7,47 @@
  */
 #include <AzCore/PlatformIncl.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/functional.h>
+#include <AzCore/std/string/conversions.h>
 
 namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            DWORD fileAttributes = GetFileAttributesA(resolvedPath);
-            if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-            {
-                return false;
-            }
-
-            return (fileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-
         Result LocalFileIO::FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
 
-            AZ::OSString searchPattern;
-            if ((resolvedPath[0] == 0) || (resolvedPath[1] == 0))
+            if (resolvedPath.empty())
             {
                 return ResultCode::Error; // not a valid path.
             }
 
-            if ((strchr(resolvedPath, ':')) || (resolvedPath[0] == '\\') || (resolvedPath[0] == '/'))
-            {
-                // an absolute path was provided
-                searchPattern = resolvedPath;
-                AZStd::replace(searchPattern.begin(), searchPattern.end(), '/', '\\');
-                searchPattern = RemoveTrailingSlash(searchPattern);
-            }
-            else
-            {
-                searchPattern = RemoveTrailingSlash(resolvedPath);
-            }
-
-            searchPattern += "\\*.*"; // use our own filtering function!
+            // Normalize the path to normalize the path separators
+            resolvedPath = resolvedPath.LexicallyNormal();
 
             WIN32_FIND_DATA findData;
-            HANDLE hFind = FindFirstFile(searchPattern.c_str(), &findData);
+            AZStd::fixed_wstring<AZ::IO::MaxPathLength> searchPatternW;
+            // Filter all files
+            AZStd::to_wstring(searchPatternW, (resolvedPath / "*.*").Native());
 
-            if (hFind != INVALID_HANDLE_VALUE)
+            if (HANDLE hFind = FindFirstFileW(searchPatternW.c_str(), &findData); hFind != INVALID_HANDLE_VALUE)
             {
-                // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@devroot@"), we need to
-                // use a static buffer here.
-                char tempBuffer[AZ_MAX_PATH_LEN];
                 do
                 {
-                    AZStd::string_view filenameView = findData.cFileName;
+                    AZ::IO::FixedMaxPath fileName;
+                    AZStd::to_string(fileName.Native(), findData.cFileName);
                     // Skip over the current directory and parent directory paths to prevent infinite recursion
-                    if (filenameView == "." || filenameView == ".." || !NameMatchesFilter(findData.cFileName, filter))
+                    if (fileName == "." || fileName == ".." || !AZStd::wildcard_match(filter, fileName.Native()))
                     {
                         continue;
                     }
 
-                    AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
-                    foundFilePath += findData.cFileName;
-                    AZStd::replace(foundFilePath.begin(), foundFilePath.end(), '\\', '/');
-
-                    // if aliased, de-alias!
-                    azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
-                    ConvertToAlias(tempBuffer, AZ_MAX_PATH_LEN);
-
-                    if (!callback(tempBuffer))
+                    // Concatenate the fileName to the resolvedPath
+                    if (!callback((resolvedPath / fileName).c_str()))
                     {
                         //we are done
                         FindClose(hFind);
@@ -110,68 +79,30 @@ namespace AZ
 
         Result LocalFileIO::CreatePath(const char* filePath)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN];
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
+            resolvedPath = resolvedPath.LexicallyNormal();
 
             // create all paths up to that directory.
             // its not an error if the path exists.
-            if ((Exists(resolvedPath)) && (!IsDirectory(resolvedPath)))
+            if (Exists(resolvedPath.c_str()) && !IsDirectory(resolvedPath.c_str()))
             {
                 return ResultCode::Error; // that path exists, but is not a directory.
             }
 
             // make directories from bottom to top.
-            AZ::OSString buf;
-            size_t pathLength = strlen(resolvedPath);
-            buf.reserve(pathLength);
-            for (size_t pos = 0; pos < pathLength; ++pos)
+            FixedMaxPath directoryPath = resolvedPath.RootPath();
+            for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
-                if ((resolvedPath[pos] == '\\') || (resolvedPath[pos] == '/'))
+                directoryPath /= pathSegment;
+                CreateDirectoryA(directoryPath.c_str(), nullptr);
+                if (!IsDirectory(directoryPath.c_str()))
                 {
-                    if (pos > 0)
-                    {
-                        CreateDirectoryA(buf.c_str(), NULL);
-                        if (!IsDirectory(buf.c_str()))
-                        {
-                            return ResultCode::Error;
-                        }
-                    }
+                    return ResultCode::Error;
                 }
-                buf.push_back(resolvedPath[pos]);
             }
 
-            return SystemFile::CreateDir(buf.c_str()) ? ResultCode::Success : ResultCode::Error;
-        }
-
-        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
-        {
-            char* result = _fullpath(absolutePath, path, maxLength);
-            size_t len = ::strlen(absolutePath);
-            if (len > 0)
-            {
-                // strip trailing slash
-                if (absolutePath[len - 1] == '/' || absolutePath[len - 1] == '\\')
-                {
-                    absolutePath[len - 1] = 0;
-                }
-
-                // For some reason, at least on windows, _fullpath returns a lowercase drive letter even though other systems like Qt, use upper case.
-                if (len > 2)
-                {
-                    if (absolutePath[1] == ':')
-                    {
-                        absolutePath[0] = (char)toupper(absolutePath[0]);
-                    }
-                }
-            }
-            return result != nullptr;
-        }
-
-        bool LocalFileIO::IsAbsolutePath(const char* path) const
-        {
-            char drive[16];
-            _splitpath_s(path, drive, 16, nullptr, 0, nullptr, 0, nullptr, 0);
-            return strlen(drive) > 0;
+            return IsDirectory(directoryPath.c_str()) ? ResultCode::Success : ResultCode::Error;
         }
     } // namespace IO
 }//namespace AZ

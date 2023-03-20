@@ -5,11 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -35,6 +36,16 @@ namespace AZ
             return m_imageSubresourceRange;
         }
 
+        uint32_t ImageView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t ImageView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
+        }
+
         void ImageView::SetNameInternal(const AZStd::string_view& name)
         {
             if (IsInitialized() && !name.empty())
@@ -48,7 +59,7 @@ namespace AZ
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
             const auto& image = static_cast<const Image&>(resourceBase);
-            const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
@@ -56,7 +67,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::Format viewFormat = descriptor.m_overrideFormat;
+            RHI::Format viewFormat = viewDescriptor.m_overrideFormat;
             // If an image is not owner of native image, it is a swapchain image.
             // Swapchain images are not mutable, so we can not change the format for the view.
             if (viewFormat == RHI::Format::Unknown || !image.IsOwnerOfNativeImage())
@@ -65,8 +76,15 @@ namespace AZ
             }
             m_format = viewFormat;
 
-            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(descriptor.m_aspectFlags, image.GetAspectFlags()));
-            
+            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
+            VkImageViewCreateFlags createFlags = 0;
+            if (RHI::CheckBitsAll(image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) &&
+                device.GetFeatures().m_dynamicShadingRateImage)
+            {
+                createFlags = RHI::SetBits(
+                    createFlags, static_cast<VkImageViewCreateFlags>(VK_IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT));
+            }
+
             const VkImageViewType imageViewType = GetImageViewType(image);
             BuildImageSubresourceRange(imageViewType, aspectFlags);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
@@ -79,16 +97,49 @@ namespace AZ
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.pNext = nullptr;
-            createInfo.flags = 0;
+            createInfo.flags = createFlags;
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
             createInfo.components = VkComponentMapping{}; // identity mapping
             createInfo.subresourceRange = vkRange;
 
-            const VkResult result = vkCreateImageView(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImageView);
+            const VkResult result =
+                device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImageView);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
+
+            m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
+            m_hash = TypeHash64(m_format, m_hash);
+
+            // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
+            // a render target and do not need to be added to the bindless heap
+            bool isDSRendertarget = RHI::CheckBitsAny(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::DepthStencil) &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
+
+            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            {
+                if (!viewDescriptor.m_isCubemap)
+                {
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                    }
+
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    }
+                }
+                else
+                {
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadCubeMapImage(this);
+                    }
+                }
+            }
 
             SetName(GetName());
             return RHI::ResultCode::Success;
@@ -96,18 +147,56 @@ namespace AZ
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
 
-        void ImageView::ShutdownInternal()
-        {            
+        void ImageView::ReleaseView()
+        {
             if (m_vkImageView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, vkDestroyImageView));
+                device.QueueForRelease(
+                    new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, device.GetContext().DestroyImageView));
                 m_vkImageView = VK_NULL_HANDLE;
             }
+        }
+
+        void ImageView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                if (!viewDescriptor.m_isCubemap)
+                {
+                    device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
+                }
+                else
+                {
+                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
+                }
+
+                m_readIndex = InvalidBindlessIndex;
+            }
+
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
+                m_readWriteIndex = InvalidBindlessIndex;
+            }
+        }
+
+        void ImageView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         VkImageViewType ImageView::GetImageViewType(const Image& image) const
@@ -117,10 +206,10 @@ namespace AZ
             const auto& device = static_cast<const Device&>(GetDevice());
             const auto& physicalDevice = static_cast<const PhysicalDevice&>(GetDevice().GetPhysicalDevice());
 
-            const uint16_t width = imgDesc.m_size.m_width;
-            const uint16_t height = imgDesc.m_size.m_height;
+            [[maybe_unused]] const uint16_t width = static_cast<uint16_t>(imgDesc.m_size.m_width);
+            [[maybe_unused]] const uint16_t height = static_cast<uint16_t>(imgDesc.m_size.m_height);
             const uint16_t depth = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_depthSliceMax - imgViewDesc.m_depthSliceMin), static_cast<uint16_t>(imgDesc.m_size.m_depth - 1)) + 1;
-            const uint16_t samples = imgDesc.m_multisampleState.m_samples;
+            [[maybe_unused]] const uint16_t samples = imgDesc.m_multisampleState.m_samples;
             const uint16_t arrayLayers = AZStd::min(static_cast<uint16_t>(imgViewDesc.m_arraySliceMax - imgViewDesc.m_arraySliceMin), static_cast<uint16_t>(imgDesc.m_arraySize - 1)) + 1;
             // We cannot only use the number of layers of the ImageView to determinate if is a texture array. You can have a texture array with only 1 layer and the shader expects
             // an array type instead of a normal image type.
@@ -146,7 +235,7 @@ namespace AZ
                         AZ_Assert(width == height, "Image of Cube or CubeArray form a square.");
                         AZ_Assert(depth == 1, "Depth of Cube or CubeArray = 1.");
                         AZ_Assert(samples == 1, "Sample of Cube or CubeArray = 1.");
-                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers % 6 == 0 for Cube or CubeArray.");
+                        AZ_Assert(arrayLayers % 6 == 0, "ArrayLayers %% 6 == 0 for Cube or CubeArray.");
                         if (arrayLayers == 6)
                         {
                             return VK_IMAGE_VIEW_TYPE_CUBE;
@@ -233,7 +322,7 @@ namespace AZ
                     // https://www.khronos.org/registry/vulkan/specs/1.1/html/chap11.html#VkImageSubresourceRange
                 {
                     range.m_arraySliceMin = descriptor.m_depthSliceMin;
-                    range.m_arraySliceMax = AZStd::GetMin<uint32_t>(descriptor.m_depthSliceMax, imageDesc.m_size.m_depth - 1);
+                    range.m_arraySliceMax = AZStd::GetMin<uint16_t>(descriptor.m_depthSliceMax, static_cast<uint16_t>(imageDesc.m_size.m_depth - 1));
                     break;
                 }
                 case VK_IMAGE_VIEW_TYPE_3D:

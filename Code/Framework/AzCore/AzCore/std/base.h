@@ -30,4 +30,6 @@ namespace AZStd
     using std::nullptr_t;
 
     using sys_time_t = AZ::s64;
+
+    using std::byte;
 }

@@ -8,23 +8,26 @@
 
 #pragma once
 
+#include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <AzFramework/Viewport/CameraState.h>
+#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Base.h>
+#include <Atom/RPI.Public/RenderPipeline.h>
+#include <Atom/RPI.Public/ViewGroup.h>
 #include <Atom/RPI.Public/ViewportContextBus.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
-#include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
-
-#include <IViewSystem.h>
-#include <ISystem.h>
-#include <Cry_Camera.h>
+#include <Atom/RPI.Public/XR/XRRenderingInterface.h>
+#include <Atom/RPI.Reflect/Image/AttachmentImageAsset.h>
 
 namespace Camera
 {
     static constexpr float DefaultFoV = 75.0f;
     static constexpr float MinFoV = std::numeric_limits<float>::epsilon();
     static constexpr float MaxFoV = AZ::RadToDeg(AZ::Constants::Pi);
+    static constexpr float MinimumNearPlaneDistance = 0.001f;
     static constexpr float DefaultNearPlaneDistance = 0.2f;
     static constexpr float DefaultFarClipPlaneDistance = 1024.0f;
     static constexpr float DefaultFrustumDimension = 256.f;
@@ -32,6 +35,7 @@ namespace Camera
     struct CameraComponentConfig final
         : public AZ::ComponentConfig
     {
+        AZ_CLASS_ALLOCATOR(CameraComponentConfig, AZ::SystemAllocator)
         AZ_RTTI(CameraComponentConfig, "{064A5D64-8688-4188-B3DE-C80CE4BB7558}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -54,6 +58,12 @@ namespace Camera
         bool m_makeActiveViewOnActivation = true;
         bool m_orthographic = false;
         float m_orthographicHalfWidth = 5.f;
+
+        // Members for render to texture
+        // The texture assets which is used for render to texture feature. It defines the resolution, format etc.
+        AZ::Data::Asset<AZ::RPI::AttachmentImageAsset> m_renderTextureAsset;
+        // The pass template name used for render pipeline's root template
+        AZStd::string m_pipelineTemplate = "CameraPipeline";
     };
 
     class CameraComponentController
@@ -68,6 +78,13 @@ namespace Camera
 
         CameraComponentController() = default;
         explicit CameraComponentController(const CameraComponentConfig& config);
+
+        //! Defines a callback for determining whether this camera should push itself to the top of the Atom camera stack.
+        //! Used by the Editor to disable undesirable camera changes in edit mode.
+        void SetShouldActivateFunction(AZStd::function<bool()> shouldActivateFunction);
+
+        //! Defines a callback for determining whether this camera is currently locked by its transform.
+        void SetIsLockedFunction(AZStd::function<bool()> isLockedFunction);
 
         // Controller interface
         static void Reflect(AZ::ReflectContext* context);
@@ -102,9 +119,15 @@ namespace Camera
         void SetFrustumHeight(float height) override;
         void SetOrthographic(bool orthographic) override;
         void SetOrthographicHalfWidth(float halfWidth) override;
+        void SetXRViewQuaternion(const AZ::Quaternion& viewQuat, uint32_t xrViewIndex) override;
 
         void MakeActiveView() override;
         bool IsActiveView() override;
+
+        AZ::Vector3 ScreenToWorld(const AZ::Vector2& screenPosition, float depth) override;
+        AZ::Vector3 ScreenNdcToWorld(const AZ::Vector2& screenNdcPosition, float depth) override;
+        AZ::Vector2 WorldToScreen(const AZ::Vector3& worldPosition) override;
+        AZ::Vector2 WorldToScreenNdc(const AZ::Vector3& worldPosition) override;
 
         // AZ::TransformNotificationBus::Handler interface
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
@@ -115,29 +138,36 @@ namespace Camera
 
         // AZ::RPI::ViewProviderBus::Handler interface
         AZ::RPI::ViewPtr GetView() const override;
+        AZ::RPI::ViewPtr GetStereoscopicView(AZ::RPI::ViewType viewType) const override;
 
     private:
         AZ_DISABLE_COPY(CameraComponentController);
+
+        void CreateRenderPipelineForTexture();
 
         void ActivateAtomView();
         void DeactivateAtomView();
         void UpdateCamera();
         void SetupAtomAuxGeom(AZ::RPI::ViewportContextPtr viewportContext);
+        AzFramework::CameraState GetCameraState();
 
         CameraComponentConfig m_config;
         AZ::EntityId m_entityId;
 
         // Atom integration
-        AZ::RPI::ViewPtr m_atomCamera;
+        AZ::RPI::ViewGroupPtr m_atomCameraViewGroup = nullptr;
+        AZ::RPI::XRRenderingInterface* m_xrSystem = nullptr;
+        AZ::u32 m_numSterescopicViews = 0;
+
         AZ::RPI::AuxGeomDrawPtr m_atomAuxGeom;
-        AZ::Event<const AZ::Matrix4x4&>::Handler m_onViewMatrixChanged;
+       
         bool m_updatingTransformFromEntity = false;
         bool m_isActiveView = false;
 
-        // Cry view integration
-        IView* m_view = nullptr;
-        AZ::u32 m_prevViewId = 0;
-        IViewSystem* m_viewSystem = nullptr;
-        ISystem* m_system = nullptr;
+        AZStd::function<bool()> m_shouldActivateFn;
+        AZStd::function<bool()> m_isLockedFn = []{ return false; };
+
+        // for render to texture
+        AZ::RPI::RenderPipelinePtr m_renderToTexturePipeline;
     };
 } // namespace Camera

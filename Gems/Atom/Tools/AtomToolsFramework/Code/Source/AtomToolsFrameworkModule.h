@@ -9,15 +9,17 @@
 #pragma once
 
 #include <AzCore/Module/Module.h>
+#include <AzToolsFramework/API/PythonLoader.h>
 
 namespace AtomToolsFramework
 {
     class AtomToolsFrameworkModule
         : public AZ::Module
+        , public AzToolsFramework::EmbeddedPython::PythonLoader
     {
     public:
         AZ_RTTI(AtomToolsFrameworkModule, "{B58B7CA8-98C9-4DC8-8607-E094989BBBE2}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AtomToolsFrameworkModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AtomToolsFrameworkModule, AZ::SystemAllocator);
 
         AtomToolsFrameworkModule();
 

@@ -44,12 +44,12 @@ namespace AZ
             virtual ~ITestEnvironment()
             {}
 
-            void SetUp() override final
+            void SetUp() final
             {
                 SetupEnvironment();
             }
 
-            void TearDown() override final
+            void TearDown() final
             {
                 TeardownEnvironment();
             }
@@ -104,8 +104,7 @@ namespace AZ
 
         void addTestEnvironment(ITestEnvironment* env);
         void addTestEnvironments(std::vector<ITestEnvironment*> envs);
-        void excludeIntegTests();
-        
+
         //! A hook that can be used to read any other misc parameters and remove them before google sees them.
         //! Note that this modifies argc and argv to delete the parameters it consumes.
         void ApplyGlobalParameters(int* argc, char** argv);
@@ -165,6 +164,16 @@ namespace AZ
                 m_envs.push_back(std::move(env));
             }
 
+            // Remove a registered benchmark from the registry
+            void RemoveBenchmarkEnvironment(BenchmarkEnvironmentBase* env)
+            {
+                auto RemoveBenchmarkFunc = [env](const std::unique_ptr<BenchmarkEnvironmentBase>& envElement)
+                {
+                    return envElement.get() == env;
+                };
+                m_envs.erase(std::remove_if(m_envs.begin(), m_envs.end(), std::move(RemoveBenchmarkFunc)));
+            }
+
             std::vector<std::unique_ptr<BenchmarkEnvironmentBase>>& GetBenchmarkEnvironments()
             {
                 return m_envs;
@@ -195,21 +204,26 @@ namespace AZ
             return *benchmarkEnv;
         }
 
-        template<typename... Ts>
-        std::array<BenchmarkEnvironmentBase*, sizeof...(Ts)> RegisterBenchmarkEnvironments()
+        /*
+         * An RAII wrapper about registering a BenchmarkEnvironment with the BenchmarkRegistry
+         * It will unregister the BenchmarkEnvironment with the BenchmarkRegistry on destruction
+         */
+        struct ScopedRegisterBenchmarkEnvironment
         {
-            constexpr size_t EnvironmentCount{ sizeof...(Ts) };
-            if constexpr (EnvironmentCount)
+            template<typename T>
+            ScopedRegisterBenchmarkEnvironment(T& benchmarkEnv)
+                : m_benchmarkEnv(benchmarkEnv)
+            {}
+            ~ScopedRegisterBenchmarkEnvironment()
             {
-                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{ { &RegisterBenchmarkEnvironment<Ts>()... } };
-                return benchmarkEnvs;
+                if (auto benchmarkRegistry = AZ::Environment::FindVariable<BenchmarkEnvironmentRegistry>(s_benchmarkEnvironmentName);
+                    benchmarkRegistry != nullptr)
+                {
+                    benchmarkRegistry->RemoveBenchmarkEnvironment(&m_benchmarkEnv);
+                }
             }
-            else
-            {
-                std::array<BenchmarkEnvironmentBase*, EnvironmentCount> benchmarkEnvs{};
-                return benchmarkEnvs;
-            }
-        }
+            BenchmarkEnvironmentBase& m_benchmarkEnv;
+        };
 #endif
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         //! listener class to capture and print test output for embedded platforms
@@ -217,8 +231,8 @@ namespace AZ
         {
         public:
             std::list<std::string> resultList;
-            
-            void OnTestEnd(const ::testing::TestInfo& test_info)
+
+            void OnTestEnd(const ::testing::TestInfo& test_info) override
             {
                 std::string result;
                 if (test_info.result()->Failed())
@@ -233,7 +247,7 @@ namespace AZ
                 resultList.emplace_back(formattedResult);
             }
 
-            void OnTestProgramEnd(const ::testing::UnitTest& unit_test)
+            void OnTestProgramEnd(const ::testing::UnitTest& unit_test) override
             {
                 for (std::string testResults : resultList)
                 {
@@ -266,11 +280,15 @@ namespace AZ
             ::testing::TestEventListeners& listeners = testing::UnitTest::GetInstance()->listeners();   \
             listeners.Append(new AZ::Test::OutputEventListener);                                        \
         }                                                                                               \
-        AZ::Test::excludeIntegTests();                                                                  \
         AZ::Test::ApplyGlobalParameters(&argc, argv);                                                   \
         AZ::Test::printUnusedParametersWarning(argc, argv);                                             \
         AZ::Test::addTestEnvironments({TEST_ENV});                                                      \
         int result = RUN_ALL_TESTS();                                                                   \
+        if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)                               \
+        {                                                                                               \
+            std::cerr << "No tests were found for last suite ran!" << std::endl;                        \
+            result = 1;                                                                                 \
+        }                                                                                               \
         return result;                                                                                  \
     }
 
@@ -278,7 +296,7 @@ namespace AZ
 #define AZ_BENCHMARK_HOOK_ENV(TEST_ENV) \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
-    AZ::Test::RegisterBenchmarkEnvironments<TEST_ENV>(); \
+    AZ::Test::ScopedRegisterBenchmarkEnvironment scopedBenchmarkEnv(AZ::Test::RegisterBenchmarkEnvironment<TEST_ENV>()); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \
@@ -309,7 +327,6 @@ AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 #define AZ_BENCHMARK_HOOK() \
 AZTEST_EXPORT int AzRunBenchmarks(int argc, char** argv) \
 { \
-    AZ::Test::RegisterBenchmarkEnvironments<>(); \
     auto benchmarkEnvRegistry = AZ::Environment::FindVariable<AZ::Test::BenchmarkEnvironmentRegistry>(AZ::Test::s_benchmarkEnvironmentName); \
     std::vector<std::unique_ptr<AZ::Test::BenchmarkEnvironmentBase>>* benchmarkEnvs = benchmarkEnvRegistry ? &(benchmarkEnvRegistry->GetBenchmarkEnvironments()) : nullptr; \
     if (benchmarkEnvs != nullptr) \
@@ -404,7 +421,7 @@ int main(int argc, char** argv)                                                 
             static AZ::Test::TestEnvironmentRegistry* AZ_UNIT_TEST_HOOK_REGISTRY_NAME =\
                 new( AZ_OS_MALLOC(sizeof(AZ::Test::TestEnvironmentRegistry),           \
                                   alignof(AZ::Test::TestEnvironmentRegistry)))         \
-              AZ::Test::TestEnvironmentRegistry({ TEST_ENV }, AZ_MODULE_NAME, true);         
+              AZ::Test::TestEnvironmentRegistry({ TEST_ENV }, AZ_MODULE_NAME, true);
 
 #define AZ_BENCHMARK_HOOK_ENV(TEST_ENV)
 #define AZ_BENCHMARK_HOOK()
@@ -414,7 +431,7 @@ int main(int argc, char** argv)                                                 
 
 
 // These macros are needed to implement unit test hooks necessary for running AzUnitTests or AzBenchmarks.
-// 
+//
 
 /* For unit test modules that implement AzUnitTests and AzBenchmarkTests with either a custom environment for AzUnitTests or a custom environment class for AzBenchmarks
    the follow use the overloaded 'IMPLEMENT_AZ_UNIT_TEST_HOOKS' macro
@@ -423,7 +440,7 @@ int main(int argc, char** argv)                                                 
 
    // Implement unit test hooks without a custom AzUnitTest or AzBenchmark environment,
    AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
-   
+
    // Implement unit test hooks with a custom AzUnitTest environment
    AZ_UNIT_TEST_HOOK(new CustomEnvClass());
 
@@ -448,7 +465,6 @@ int main(int argc, char** argv)                                                 
 
 #define AZ_UNIT_TEST_HOOK(...)           AZ_MACRO_SPECIALIZE(AZ_UNIT_TEST_HOOK_, AZ_VA_NUM_ARGS(__VA_ARGS__), (__VA_ARGS__))
 
-
 // Declares a visible external symbol which identifies an executable as containing tests
 #define DECLARE_AZ_UNIT_TEST_MAIN() AZTEST_EXPORT int ContainsAzUnitTestMain() { return 1; }
 
@@ -472,15 +488,3 @@ int main(int argc, char** argv)                                                 
             return unitTestMain.ReturnCode();                                       \
         }                                                                           \
     } while (0); // safe multi-line macro - creates a single statement
-
-// Avoid problems with new/delete when AZ allocators are not ready or properly un/initialized.
-#define AZ_TEST_CLASS_ALLOCATOR(Class_)                                 \
-    void* operator new (size_t size)                                    \
-    {                                                                   \
-        return AZ_OS_MALLOC(size, AZStd::alignment_of<Class_>::value);  \
-    }                                                                   \
-    void operator delete(void* ptr)                                     \
-    {                                                                   \
-        AZ_OS_FREE(ptr);                                                \
-    }
-

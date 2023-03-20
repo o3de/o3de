@@ -1,0 +1,140 @@
+{
+    "entries": [
+        {
+            "base": "ProfilingCaptureRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Profiling Capture"
+            },
+            "methods": [
+                {
+                    "base": "CapturePassTimestamp",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CapturePassTimestamp"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CapturePassTimestamp is invoked"
+                    },
+                    "details": {
+                        "name": "CapturePassTimestamp"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CaptureCpuFrameTime",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CaptureCpuFrameTime"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CaptureCpuFrameTime is invoked"
+                    },
+                    "details": {
+                        "name": "CaptureCpuFrameTime"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CapturePassPipelineStatistics",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CapturePassPipelineStatistics"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CapturePassPipelineStatistics is invoked"
+                    },
+                    "details": {
+                        "name": "CapturePassPipelineStatistics"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "CaptureBenchmarkMetadata",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CaptureBenchmarkMetadata"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CaptureBenchmarkMetadata is invoked"
+                    },
+                    "details": {
+                        "name": "CaptureBenchmarkMetadata"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "AZStd::string"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

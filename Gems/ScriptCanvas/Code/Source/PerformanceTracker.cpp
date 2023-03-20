@@ -7,7 +7,7 @@
  */
 
 #include <ScriptCanvas/Execution/ExecutionPerformanceTimer.h>
-
+#include <ScriptCanvas/Execution/ExecutionState.h>
 #include <ScriptCanvas/PerformanceTracker.h>
 
 namespace ScriptCanvas
@@ -88,8 +88,9 @@ namespace ScriptCanvas
             return m_activeTimers.insert({ key, aznew PerformanceTimer() }).first->second;
         }
 
-        void PerformanceTracker::FinalizeReport(PerformanceKey key, const AZ::Data::AssetId& assetId)
+        void PerformanceTracker::FinalizeReport(PerformanceKey key)
         {
+            const AZ::Data::AssetId assetId = key->GetAssetId();
             AZStd::lock_guard lock(m_activeTimerMutex);
 
             auto iter = m_activeTimers.find(key);
@@ -188,22 +189,22 @@ namespace ScriptCanvas
             }
         }
 
-        void PerformanceTracker::ReportExecutionTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t time)
+        void PerformanceTracker::ReportExecutionTime(PerformanceKey key, AZStd::sys_time_t time)
         {
             GetOrCreateTimer(key)->AddExecutionTime(time);
-            GetOrCreateTimer(assetId)->timer.AddExecutionTime(time);
+            GetOrCreateTimer(key->GetAssetId())->timer.AddExecutionTime(time);
         }
 
-        void PerformanceTracker::ReportLatentTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t time)
+        void PerformanceTracker::ReportLatentTime(PerformanceKey key, AZStd::sys_time_t time)
         {
             GetOrCreateTimer(key)->AddLatentTime(time);
-            GetOrCreateTimer(assetId)->timer.AddLatentTime(time);
+            GetOrCreateTimer(key->GetAssetId())->timer.AddLatentTime(time);
         }
 
-        void PerformanceTracker::ReportInitializationTime(PerformanceKey key, const AZ::Data::AssetId& assetId, AZStd::sys_time_t time)
+        void PerformanceTracker::ReportInitializationTime(PerformanceKey key, AZStd::sys_time_t time)
         {
              CreateTimer(key)->AddInitializationTime(time);
-             AssetTimer* assetTimer = GetOrCreateTimer(assetId);
+             AssetTimer* assetTimer = GetOrCreateTimer(key->GetAssetId());
              assetTimer->timer.AddInitializationTime(time);
              ++(assetTimer->assetActivationCount);             
         }

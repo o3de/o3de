@@ -6,7 +6,6 @@
  *
  */
 
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/StreamingImagePool.h>
 #include <RHI/StreamingImagePoolResolver.h>
 
@@ -16,7 +15,7 @@ namespace AZ
     {
         RHI::ResultCode StreamingImagePoolResolver::UpdateImage(const RHI::StreamingImageExpandRequest& request)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             
             Image* image = static_cast<Image*>(request.m_image);
             const RHI::ImageDescriptor& imageDescriptor = image->GetDescriptor();

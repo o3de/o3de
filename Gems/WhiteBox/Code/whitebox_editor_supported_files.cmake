@@ -7,7 +7,6 @@
 #
 
 set(FILES
-    Include/WhiteBox/EditorWhiteBoxBus.h
     Include/WhiteBox/EditorWhiteBoxComponentBus.h
     Include/WhiteBox/WhiteBoxToolApi.h
     Include/WhiteBox/EditorWhiteBoxColliderBus.h
@@ -30,6 +29,8 @@ set(FILES
     Source/Util/WhiteBoxTextureUtil.h
     Source/Util/WhiteBoxEditorUtil.cpp
     Source/Util/WhiteBoxEditorUtil.h
+    Source/Util/WhiteBoxEditorDrawUtil.cpp
+    Source/Util/WhiteBoxEditorDrawUtil.h
     Source/Viewport/WhiteBoxEdgeScaleModifier.cpp
     Source/Viewport/WhiteBoxEdgeScaleModifier.h
     Source/Viewport/WhiteBoxEdgeTranslationModifier.cpp
@@ -63,6 +64,9 @@ set(FILES
     Source/SubComponentModes/EditorWhiteBoxDefaultModeBus.h
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.cpp
     Source/SubComponentModes/EditorWhiteBoxComponentModeCommon.h
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.cpp
+    Source/SubComponentModes/EditorWhiteBoxTransformMode.h
+    Source/SubComponentModes/EditorWhiteBoxTransformModeBus.h
     Source/EditorWhiteBoxSystemComponent.cpp
     Source/EditorWhiteBoxSystemComponent.h
 )

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <LyShine/Animation/IUiAnimation.h>
+#include "CryCommon/StlUtils.h"
 #include "AnimTrack.h"
 #include "AnimKey.h"
 
@@ -16,7 +17,7 @@ class CUiAnimStringTable
     : public IUiAnimStringTable
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiAnimStringTable, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CUiAnimStringTable, AZ::SystemAllocator);
     AZ_RTTI(CUiAnimStringTable, "{4640F535-0417-4BE6-A856-80A2C7D9E885}", IUiAnimStringTable);
 
     CUiAnimStringTable();
@@ -56,7 +57,7 @@ class CUiTrackEventTrack
     : public TUiAnimTrack<IEventKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CUiTrackEventTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CUiTrackEventTrack, AZ::SystemAllocator);
     AZ_RTTI(CUiTrackEventTrack, "{18AB327E-02EA-43D9-BA3B-FB93B6C15837}", IUiAnimTrack);
 
     explicit CUiTrackEventTrack(IUiAnimStringTable* pStrings);
@@ -65,9 +66,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides of IAnimTrack.
     //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void SetKey(int index, IKey* key);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+    void SetKey(int index, IKey* key) override;
     void InitPostLoad(IUiAnimSequence* sequence) override;
 
     static void Reflect(AZ::SerializeContext* serializeContext);

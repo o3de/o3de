@@ -14,7 +14,7 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/StringFunc/StringFunc.h>
-#include <AzFramework/API/ApplicationAPI.h>
+#include <AzCore/Utils/Utils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Asset/AssetUtils.h>
@@ -97,27 +97,26 @@ namespace AzToolsFramework::AssetUtils
     struct EnabledPlatformsVisitor
         : AZ::SettingsRegistryInterface::Visitor
     {
-        void Visit(AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value);
+        using AZ::SettingsRegistryInterface::Visitor::Visit;
+        void Visit(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, AZStd::string_view value) override
+        {
+            if (value == "enabled")
+            {
+                m_enabledPlatforms.emplace_back(visitArgs.m_fieldName);
+            }
+            else if (value == "disabled")
+            {
+                auto platformEntrySearch = [&visitArgs](AZStd::string_view platformEntry)
+                {
+                    return visitArgs.m_fieldName == platformEntry;
+                };
+                auto removeIt = AZStd::remove_if(m_enabledPlatforms.begin(), m_enabledPlatforms.end(), platformEntrySearch);
+                m_enabledPlatforms.erase(removeIt, m_enabledPlatforms.end());
+            }
+        }
 
         AZStd::vector<AZStd::string> m_enabledPlatforms;
     };
-
-    void EnabledPlatformsVisitor::Visit([[maybe_unused]] AZStd::string_view path, AZStd::string_view valueName, AZ::SettingsRegistryInterface::Type, AZStd::string_view value)
-    {
-        if (value == "enabled")
-        {
-            m_enabledPlatforms.emplace_back(valueName);
-        }
-        else if (value == "disabled")
-        {
-            auto platformEntrySearch = [&valueName](AZStd::string_view platformEntry)
-            {
-                return valueName == platformEntry;
-            };
-            auto removeIt = AZStd::remove_if(m_enabledPlatforms.begin(), m_enabledPlatforms.end(), platformEntrySearch);
-            m_enabledPlatforms.erase(removeIt, m_enabledPlatforms.end());
-        }
-    }
 
     void ReadEnabledPlatformsFromSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry,
         AZStd::vector<AZStd::string>& enabledPlatforms)
@@ -204,7 +203,7 @@ namespace AzToolsFramework::AssetUtils
         return platformConfigFilePathsAdded;
     }
 
-    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view assetRoot, AZStd::string_view projectPath,
+    AZStd::vector<AZ::IO::Path> GetConfigFiles(AZStd::string_view engineRoot, AZStd::string_view projectPath,
         bool addPlatformConfigs, bool addGemsConfigs, AZ::SettingsRegistryInterface* settingsRegistry)
     {
         constexpr const char* AssetProcessorGamePlatformConfigFileName = "AssetProcessorGamePlatformConfig.ini";
@@ -231,14 +230,13 @@ namespace AzToolsFramework::AssetUtils
             Internal::AddGemConfigFiles(gemInfoList, configFiles);
         }
 
-        AZ::IO::Path assetRootDir(assetRoot);
-        assetRootDir /= projectPath;
+        AZ::IO::Path projectRoot(projectPath);
 
-        AZ::IO::Path projectConfigFile = assetRootDir / AssetProcessorGamePlatformConfigFileName;
+        AZ::IO::Path projectConfigFile = projectRoot / AssetProcessorGamePlatformConfigFileName;
         configFiles.push_back(projectConfigFile);
 
         // Add a file entry for the Project AssetProcessor setreg file
-        projectConfigFile = assetRootDir / AssetProcessorGamePlatformConfigSetreg;
+        projectConfigFile = projectRoot / AssetProcessorGamePlatformConfigSetreg;
         configFiles.push_back(projectConfigFile);
 
         return configFiles;
@@ -250,10 +248,10 @@ namespace AzToolsFramework::AssetUtils
         AZStd::vector<AZStd::string> tokens;
         AZ::StringFunc::Tokenize(relPathFromRoot.c_str(), tokens, AZ_CORRECT_FILESYSTEM_SEPARATOR_STRING);
 
-        AZStd::string validatedPath;
+        AZ::IO::FixedMaxPath validatedPath;
         if (rootPath.empty())
         {
-            AzFramework::ApplicationRequests::Bus::BroadcastResult(validatedPath, &AzFramework::ApplicationRequests::GetEngineRoot);
+            validatedPath = AZ::Utils::GetEnginePath();
         }
         else
         {
@@ -298,10 +296,7 @@ namespace AzToolsFramework::AssetUtils
                 break;
             }
 
-            AZStd::string absoluteFilePath;
-            AZ::StringFunc::Path::ConstructFull(validatedPath.c_str(), element.c_str(), absoluteFilePath);
-
-            validatedPath = absoluteFilePath; // go one step deeper.
+            validatedPath /= element; // go one step deeper.
         }
 
         if (success)

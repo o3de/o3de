@@ -15,10 +15,20 @@
 
 namespace O3DE::ProjectManager
 {
-    FormFolderBrowseEditWidget::FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
-        : FormBrowseEditWidget(labelText, parent)
+    FormFolderBrowseEditWidget::FormFolderBrowseEditWidget(
+        const QString& labelText,
+        const QString& valueText,
+        const QString& placeholderText,
+        const QString& errorText,
+        QWidget* parent)
+        : FormBrowseEditWidget(labelText, valueText, placeholderText, errorText, parent)
     {
         setText(valueText);
+    }
+
+    FormFolderBrowseEditWidget::FormFolderBrowseEditWidget(const QString& labelText, const QString& valueText, QWidget* parent)
+        : FormFolderBrowseEditWidget(labelText, valueText, "", "", parent)
+    {
     }
 
     void FormFolderBrowseEditWidget::HandleBrowseButton()
@@ -34,7 +44,6 @@ namespace O3DE::ProjectManager
         {
             setText(directory);
         }
-
     }
 
     void FormFolderBrowseEditWidget::setText(const QString& text)
@@ -42,4 +51,5 @@ namespace O3DE::ProjectManager
         QString path = QDir::toNativeSeparators(text);
         FormBrowseEditWidget::setText(path);
     }
+
 } // namespace O3DE::ProjectManager

@@ -93,7 +93,8 @@ namespace EMotionFX
         MotionSet::MotionEntry* motionEntryY = aznew MotionSet::MotionEntry(ymotion->GetName(), ymotion->GetName(), ymotion);
 
         AZStd::unique_ptr<MotionSet> motionSet = AZStd::make_unique<MotionSet>();
-        motionSet->SetID(0);
+        const AZ::u32 motionSetId = 100;
+        motionSet->SetID(motionSetId);
         motionSet->AddMotionEntry(motionEntryX);
         motionSet->AddMotionEntry(motionEntryY);
 
@@ -114,7 +115,7 @@ namespace EMotionFX
         );
 
         AZStd::string result;
-        EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("MotionSetRemoveMotion -motionSetID 0 -motionIds xmotion", result)) << result.c_str();
+        EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand({"MotionSetRemoveMotion -motionSetID " + AZStd::to_string(motionSetId) + " -motionIds xmotion"}, result)) << result.c_str();
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("RemoveMotion -filename xmotion.motion", result)) << result.c_str();
 
         GetEMotionFX().Update(0.5f);

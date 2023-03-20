@@ -15,8 +15,6 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/functional.h>
 
-#include <CrySystemBus.h>
-
 /*!
  * \namespace LmbrCentral
  * LmbrCentral ties together systems from CryEngine and systems from the AZ framework.
@@ -49,7 +47,6 @@ namespace LmbrCentral
      */
     class LmbrCentralSystemComponent
         : public AZ::Component
-        , private CrySystemEventBus::Handler
         , private AZ::Data::AssetManagerNotificationBus::Handler
     {
     public:
@@ -69,13 +66,6 @@ namespace LmbrCentral
         // AZ::Component
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////////
-        // CrySystemEvents
-        void OnCrySystemPreInitialize(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemInitialized(ISystem& system, const SSystemInitParams& systemInitParams) override;
-        void OnCrySystemShutdown(ISystem& system) override;
         ////////////////////////////////////////////////////////////////////////////
 
         AZStd::vector<AZStd::unique_ptr<AZ::Data::AssetHandler> > m_assetHandlers;

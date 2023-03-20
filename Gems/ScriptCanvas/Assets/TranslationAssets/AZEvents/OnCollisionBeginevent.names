@@ -1,0 +1,69 @@
+{
+    "entries": [
+        {
+            "base": "GetOnCollisionBeginEvent",
+            "context": "AZEventHandler",
+            "details": {
+                "name": "Get On Collision Begin Event"
+            }
+        },
+        {
+            "base": "On Collision Begin event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "On Collision Begin Event"
+            },
+            "slots": [
+                {
+                    "base": "Simulated Body Handle",
+                    "details": {
+                        "name": "Simulated Body Handle"
+                    }
+                },
+                {
+                    "base": "Collision Event",
+                    "details": {
+                        "name": "Collision Event"
+                    }
+                },
+                {
+                    "base": "On Collision Begin event",
+                    "details": {
+                        "name": "On Collision Begin event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

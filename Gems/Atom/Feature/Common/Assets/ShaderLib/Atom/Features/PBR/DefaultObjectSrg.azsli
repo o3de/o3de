@@ -9,6 +9,7 @@
 #pragma once
 
 #include <scenesrg.srgi>
+#include <Atom/Features/PBR/Lights/ReflectionProbeData.azsli>
 
 ShaderResourceGroup ObjectSrg : SRG_PerObject
 {
@@ -26,29 +27,6 @@ ShaderResourceGroup ObjectSrg : SRG_PerObject
     {
         return SceneSrg::GetObjectToWorldInverseTransposeMatrix(m_objectId);
     }
-
-    //[GFX TODO][ATOM-15280] Move wrinkle mask data from the default object srg into something specific to the Skin shader
-    uint m_wrinkle_mask_count;
-    float4 m_wrinkle_mask_weights[4];
-    Texture2D m_wrinkle_masks[16];
-
-    float GetWrinkleMaskWeight(uint index)
-    {
-        return m_wrinkle_mask_weights[index / 4][index % 4];
-    }
-
-    //! Reflection Probe (smallest probe volume that overlaps the object position)
-    struct ReflectionProbeData
-    {
-        float3 m_aabbPos;
-        float3 m_outerAabbMin;
-        float3 m_outerAabbMax;
-        float3 m_innerAabbMin;
-        float3 m_innerAabbMax;
-        float m_padding;
-        bool m_useReflectionProbe;
-        bool m_useParallaxCorrection;
-    };
 
     ReflectionProbeData m_reflectionProbeData;
     TextureCube m_reflectionProbeCubeMap;

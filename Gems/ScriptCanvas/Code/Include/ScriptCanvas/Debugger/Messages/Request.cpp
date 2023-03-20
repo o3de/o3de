@@ -18,7 +18,7 @@ namespace ScriptCanvas
 
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<Request, AzFramework::TmMsg>()
+                serializeContext->Class<Request, AzFramework::RemoteToolsMessage>()
                     ;
 
                 serializeContext->Class<AddBreakpointRequest, Request>()

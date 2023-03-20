@@ -13,9 +13,11 @@
 #include <QtTest>
 
 #include <Tests/UI/UIFixture.h>
+#include <Tests/TestAssetCode/JackActor.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
+#include <EMotionFX/Source/ActorManager.h>
 
 namespace EMotionFX
 {
@@ -33,14 +35,12 @@ namespace EMotionFX
         ASSERT_EQ(GetActorManager().GetNumActors(), 0);
 
         // Load an Actor
-        const char* actorCmd{ "ImportActor -filename @devroot@/Gems/EMotionFX/Code/Tests/TestAssets/Rin/rin.actor" };
-        {
-            AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(actorCmd, result)) << result.c_str();
-        }
+        AZ::Data::AssetId actorAssetId("{5060227D-B6F4-422E-BF82-41AAC5F228A5}");
+        AZ::Data::Asset<Integration::ActorAsset> actorAsset =
+            TestActorAssets::CreateActorAssetAndRegister<JackNoMeshesActor>(actorAssetId, "Jack");
 
         // Ensure the Actor is correct
-        ASSERT_TRUE(GetActorManager().FindActorByName("rinActor"));
+        ASSERT_TRUE(GetActorManager().FindActorByName("Jack"));
         EXPECT_EQ(GetActorManager().GetNumActors(), 1);
     }
 } // namespace EMotionFX

@@ -26,6 +26,7 @@
 #include "Controls/ConsoleSCB.h"    // for CConsoleSCB
 
 
+#include <AzCore/std/ranges/ranges_algorithm.h>
 #include <stdarg.h>
 
 #if !defined(AZ_PLATFORM_WINDOWS)
@@ -39,6 +40,7 @@
 
 #include <Carbon/Carbon.h>
 #endif
+
 
 // Static member variables
 SANDBOX_API QListWidget* CLogFile::m_hWndListBox = nullptr;
@@ -67,7 +69,7 @@ SANDBOX_API void ErrorV(const char* format, va_list argList)
     str += szBuffer;
 
     //CLogFile::WriteLine( str );
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, str.toUtf8().data());
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_ERROR, "%s", str.toUtf8().data());
 
     if (!CCryEditApp::instance()->IsInTestMode() && !CCryEditApp::instance()->IsInExportMode() && !CCryEditApp::instance()->IsInLevelLoadTestMode())
     {
@@ -95,7 +97,7 @@ SANDBOX_API void WarningV(const char* format, va_list argList)
     char        szBuffer[MAX_LOGBUFFER_SIZE];
     azvsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, format, argList);
 
-    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, szBuffer);
+    CryWarning(VALIDATOR_MODULE_EDITOR, VALIDATOR_WARNING, "%s", szBuffer);
 
     bool bNoUI = false;
     ICVar* pCVar = gEnv->pConsole->GetCVar("sys_no_crash_dialog");
@@ -179,19 +181,17 @@ void CLogFile::FormatLineV(const char * format, va_list argList)
 
 void CLogFile::AboutSystem()
 {
-    char szBuffer[MAX_LOGBUFFER_SIZE];
 #if defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
     //////////////////////////////////////////////////////////////////////
     // Write the system informations to the log
     //////////////////////////////////////////////////////////////////////
-
-    char szProfileBuffer[128];
-    char szLanguageBuffer[64];
-    //char szCPUModel[64];
+    char szBuffer[MAX_LOGBUFFER_SIZE];
+    //wchar_t szCPUModel[64];
     MEMORYSTATUS MemoryStatus;
 #endif // defined(AZ_PLATFORM_WINDOWS) || defined(AZ_PLATFORM_LINUX)
 
 #if defined(AZ_PLATFORM_WINDOWS)
+    wchar_t szLanguageBufferW[64];
     DEVMODE DisplayConfig;
     OSVERSIONINFO OSVerInfo;
     OSVerInfo.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
@@ -201,11 +201,13 @@ void CLogFile::AboutSystem()
     //////////////////////////////////////////////////////////////////////
 
     // Get system language
-    GetLocaleInfo(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
-        szLanguageBuffer, sizeof(szLanguageBuffer));
+    GetLocaleInfoW(LOCALE_SYSTEM_DEFAULT, LOCALE_SENGLANGUAGE,
+        szLanguageBufferW, sizeof(szLanguageBufferW));
+    AZStd::string szLanguageBuffer;
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
 
     // Format and send OS information line
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current Language: %s ", szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     QLocale locale;
@@ -286,7 +288,7 @@ AZ_POP_DISABLE_WARNING
             str += "Version Unknown";
         }
     }
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %d.%d", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, " %ld.%ld", OSVerInfo.dwMajorVersion, OSVerInfo.dwMinorVersion);
     str += szBuffer;
 
     //////////////////////////////////////////////////////////////////////
@@ -294,7 +296,9 @@ AZ_POP_DISABLE_WARNING
     //////////////////////////////////////////////////////////////////////
 
     str += " (";
-    GetWindowsDirectory(szBuffer, sizeof(szBuffer));
+    wchar_t szBufferW[MAX_LOGBUFFER_SIZE];
+    GetWindowsDirectoryW(szBufferW, sizeof(szBufferW));
+    AZStd::to_string(szBuffer, MAX_LOGBUFFER_SIZE, szBufferW);
     str += szBuffer;
     str += ")";
     CryLog("%s", str.toUtf8().data());
@@ -335,7 +339,7 @@ AZ_POP_DISABLE_WARNING
     str += " ";
     azstrdate(szBuffer);
     str += szBuffer;
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %d minutes", GetTickCount() / 60000);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, ", system running for %ld minutes", GetTickCount() / 60000);
     str += szBuffer;
     CryLog("%s", str.toUtf8().data());
 #else
@@ -381,12 +385,13 @@ AZ_POP_DISABLE_WARNING
 
 #if defined(AZ_PLATFORM_WINDOWS)
     EnumDisplaySettings(nullptr, ENUM_CURRENT_SETTINGS, &DisplayConfig);
-    GetPrivateProfileString("boot.description", "display.drv",
-        "(Unknown graphics card)", szProfileBuffer, sizeof(szProfileBuffer),
-        "system.ini");
-    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %dx%dx%d, %s",
+    GetPrivateProfileStringW(L"boot.description", L"display.drv",
+        L"(Unknown graphics card)", szLanguageBufferW, sizeof(szLanguageBufferW),
+        L"system.ini");
+    AZStd::to_string(szLanguageBuffer, szLanguageBufferW);
+    azsnprintf(szBuffer, MAX_LOGBUFFER_SIZE, "Current display mode is %ldx%ldx%ld, %s",
         DisplayConfig.dmPelsWidth, DisplayConfig.dmPelsHeight,
-        DisplayConfig.dmBitsPerPel, szProfileBuffer);
+        DisplayConfig.dmBitsPerPel, szLanguageBuffer.c_str());
     CryLog("%s", szBuffer);
 #else
     auto screen = QGuiApplication::primaryScreen();
@@ -451,12 +456,12 @@ AZ_POP_DISABLE_WARNING
 //////////////////////////////////////////////////////////////////////////
 QString CLogFile::GetMemUsage()
 {
-    ProcessMemInfo mi;
-    CProcessInfo::QueryMemInfo(mi);
-    int MB = 1024 * 1024;
+    AZ::ProcessMemInfo mi;
+    AZ::QueryMemInfo(mi);
+    constexpr int MB = 1024 * 1024;
 
     QString str;
-    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.WorkingSet / MB).arg(mi.PagefileUsage / MB);
+    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.m_workingSet / MB).arg(mi.m_pagefileUsage / MB);
     //FormatLine( "PeakWorkingSet=%dMb, PeakPagefileUsage=%dMb",pc.PeakWorkingSetSize/MB,pc.PeakPagefileUsage/MB );
     //FormatLine( "PagedPoolUsage=%d",pc.QuotaPagedPoolUsage/MB );
     //FormatLine( "NonPagedPoolUsage=%d",pc.QuotaNonPagedPoolUsage/MB );
@@ -475,13 +480,13 @@ void CLogFile::WriteString(const char* pszString)
 {
     if (gEnv && gEnv->pLog)
     {
-        gEnv->pLog->LogPlus(pszString);
+        gEnv->pLog->LogAppendWithPrevLine("%s", pszString);
     }
 }
 
-static inline QString CopyAndRemoveColorCode(const char* sText)
+static inline QString CopyAndRemoveColorCode(AZStd::string_view sText)
 {
-    QByteArray ret = sText;      // alloc and copy
+    QByteArray ret(sText.data(), static_cast<int>(sText.size()));      // alloc and copy
 
     char* s, * d;
 
@@ -500,13 +505,13 @@ static inline QString CopyAndRemoveColorCode(const char* sText)
         *d++ = *s++;
     }
 
-    ret.resize(d - ret.data());
+    ret.resize(static_cast<int>(d - ret.data()));
 
     return QString::fromLatin1(ret);
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
+void CLogFile::OnWriteToConsole(AZStd::string_view sText, bool bNewLine)
 {
     if (!gEnv)
     {
@@ -516,10 +521,8 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
     //  return;
 
     // Skip any non character.
-    if (*sText != 0 && ((uint8) * sText) < 32)
-    {
-        sText++;
-    }
+    auto searchIt = AZStd::ranges::find_if(sText, [](char element) { return element >= 32; });
+    sText = AZStd::string_view(searchIt, sText.end());
 
     // If we have a listbox attached, also output the string to this listbox
     if (m_hWndListBox)
@@ -568,9 +571,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
             }
             if (bNewLine)
             {
-                //str = CString("\r\n") + str.TrimLeft();
-                //str = CString("\r\n") + str;
-                //str = CString("\r") + str;
                 str = QString("\r\n") + str;
                 str = str.trimmed();
             }
@@ -590,7 +590,8 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 
     if (CConsoleSCB::GetCreatedInstance())
     {
-        QString sOutLine(sText);
+        const QString qtText = QString::fromUtf8(sText.data(), static_cast<int>(sText.size()));
+        QString sOutLine(qtText);
 
         if (gSettings.bShowTimeInConsole)
         {
@@ -605,7 +606,7 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 #endif
             strftime(sTime, sizeof(sTime), "<%H:%M:%S> ", &today);
             sOutLine = sTime;
-            sOutLine += sText;
+            sOutLine += qtText;
         }
 
         CConsoleSCB::GetCreatedInstance()->AddToConsole(sOutLine, bNewLine);
@@ -613,7 +614,7 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
     else
     {
         // add to intermediate messages until an instance of CConsoleSCB exists
-        CConsoleSCB::AddToPendingLines(sText, bNewLine);
+        CConsoleSCB::AddToPendingLines(QString::fromUtf8(sText.data(), static_cast<int>(sText.size())), bNewLine);
     }
 
     //////////////////////////////////////////////////////////////////////////
@@ -631,6 +632,6 @@ void CLogFile::OnWriteToConsole(const char* sText, bool bNewLine)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CLogFile::OnWriteToFile([[maybe_unused]] const char* sText, [[maybe_unused]] bool bNewLine)
+void CLogFile::OnWriteToFile([[maybe_unused]] AZStd::string_view sText, [[maybe_unused]] bool bNewLine)
 {
 }

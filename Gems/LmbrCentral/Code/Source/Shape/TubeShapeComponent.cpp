@@ -124,8 +124,14 @@ namespace LmbrCentral
 
     void TubeShapeDebugDisplayComponent::GenerateVertices()
     {
+        if (!m_spline)
+        {
+            AZ_Error("TubeShapeComponent", false, "A TubeShape must have a Spline to work");
+            return;
+        }
+        const AZ::u32 endSegments = m_spline->IsClosed() ? 0 : m_tubeShapeMeshConfig.m_endSegments;
         GenerateTubeMesh(
-            m_spline, m_radiusAttribute, m_radius, m_tubeShapeMeshConfig.m_endSegments,
+            m_spline, m_radiusAttribute, m_radius, endSegments,
             m_tubeShapeMeshConfig.m_sides, m_tubeShapeMesh.m_vertexBuffer,
             m_tubeShapeMesh.m_indexBuffer, m_tubeShapeMesh.m_lineBuffer);
     }

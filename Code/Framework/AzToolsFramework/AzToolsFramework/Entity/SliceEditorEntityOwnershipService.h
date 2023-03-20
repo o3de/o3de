@@ -9,13 +9,13 @@
 #pragma once
 
 #include <AzFramework/Entity/SliceEntityOwnershipService.h>
+#include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
 
 #include <QString>
 
 namespace AzToolsFramework
 {
-    using EntityIdSet = AZStd::unordered_set<AZ::EntityId>;
     using EntityIdToEntityIdMap = AZStd::unordered_map<AZ::EntityId, AZ::EntityId>;
 
     class SliceEditorEntityOwnershipService
@@ -24,7 +24,7 @@ namespace AzToolsFramework
         , private AzFramework::SliceInstantiationResultBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SliceEditorEntityOwnershipService, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceEditorEntityOwnershipService, AZ::SystemAllocator);
         explicit SliceEditorEntityOwnershipService(const AzFramework::EntityContextId& entityContextId,
             AZ::SerializeContext* serializeContext);
 

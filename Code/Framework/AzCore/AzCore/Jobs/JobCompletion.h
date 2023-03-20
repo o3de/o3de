@@ -21,7 +21,7 @@ namespace AZ
         : public Job
     {
     public:
-        AZ_CLASS_ALLOCATOR(JobCompletion, ThreadPoolAllocator, 0)
+        AZ_CLASS_ALLOCATOR(JobCompletion, ThreadPoolAllocator);
 
         JobCompletion(JobContext* context = nullptr)
             : Job(false, context, true)
@@ -33,7 +33,7 @@ namespace AZ
          */
         void StartAndWaitForCompletion()
         {
-            AZ_PROFILE_FUNCTION_STALL(AZ::Debug::ProfileCategory::AzCore);
+            AZ_PROFILE_FUNCTION(AzCore);
 
             // start the job
             Start();

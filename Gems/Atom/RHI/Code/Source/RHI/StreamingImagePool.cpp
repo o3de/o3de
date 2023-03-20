@@ -7,16 +7,15 @@
  */
 #include <Atom/RHI/StreamingImagePool.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
     {
+
         StreamingImageInitRequest::StreamingImageInitRequest(
             Image& image,
             const ImageDescriptor& descriptor,
-            AZStd::array_view<StreamingImageMipSlice> tailMipSlices)
+            AZStd::span<const StreamingImageMipSlice> tailMipSlices)
             : m_image{&image}
             , m_descriptor{descriptor}
             , m_tailMipSlices{tailMipSlices}
@@ -74,8 +73,8 @@ namespace AZ
 
         ResultCode StreamingImagePool::Init(Device& device, const StreamingImagePoolDescriptor& descriptor)
         {
-            AZ_TRACE_METHOD();
-
+            AZ_PROFILE_FUNCTION(RHI);
+            SetName(AZ::Name("StreamingImagePool"));
             return ResourcePool::Init(
                 device, descriptor,
                 [this, &device, &descriptor]()
@@ -93,7 +92,7 @@ namespace AZ
 
         ResultCode StreamingImagePool::InitImage(const StreamingImageInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized())
             {
@@ -176,6 +175,26 @@ namespace AZ
             return m_descriptor;
         }
 
+        void StreamingImagePool::SetLowMemoryCallback(LowMemoryCallback callback)
+        {
+            m_memoryReleaseCallback = callback;
+        }
+        
+        bool StreamingImagePool::SetMemoryBudget(size_t newBudget)
+        {
+            if (newBudget != 0 && newBudget < ImagePoolMininumSizeInBytes)
+            {
+                return false;
+            }
+
+            return SetMemoryBudgetInternal(newBudget) == ResultCode::Success;
+        }
+
+        bool StreamingImagePool::SupportTiledImage() const
+        {
+            return SupportTiledImageInternal();
+        }
+
         ResultCode StreamingImagePool::InitInternal(Device&, const StreamingImagePoolDescriptor&)
         {
             return ResultCode::Success;
@@ -194,6 +213,16 @@ namespace AZ
         ResultCode StreamingImagePool::TrimImageInternal(Image&, uint32_t)
         {
             return ResultCode::Unimplemented;
+        }
+        
+        ResultCode StreamingImagePool::SetMemoryBudgetInternal([[maybe_unused]] size_t newBudget)
+        {
+            return ResultCode::Unimplemented;
+        }
+
+        bool StreamingImagePool::SupportTiledImageInternal() const
+        {
+            return false;
         }
     }
 }

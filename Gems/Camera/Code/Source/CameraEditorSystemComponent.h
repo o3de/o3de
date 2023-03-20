@@ -9,6 +9,7 @@
 
 #include <AzCore/Component/Component.h>
 
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -23,6 +24,7 @@ namespace Camera
         , private EditorCameraSystemRequestBus::Handler
         , private CameraViewRegistrationRequestsBus::Handler
         , private AzToolsFramework::EditorContextMenuBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(CameraEditorSystemComponent, "{769802EB-722A-4F89-A475-DA396DA1FDCC}");
@@ -40,7 +42,7 @@ namespace Camera
     private:
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorContextMenuBus
-        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZ::Vector2& point, int flags) override;
+        void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
@@ -58,6 +60,10 @@ namespace Camera
         void SetViewForEntity(const AZ::EntityId& id, AZ::RPI::ViewPtr view) override;
         AZ::RPI::ViewPtr GetViewForEntity(const AZ::EntityId& id) override;
         //////////////////////////////////////////////////////////////////////////
+
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         AZStd::map<AZ::EntityId, AZStd::weak_ptr<AZ::RPI::View>> m_entityViewMap;
     };

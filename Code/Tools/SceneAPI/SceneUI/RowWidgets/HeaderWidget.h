@@ -50,6 +50,8 @@ namespace AZ
                 void SetManifestObject(const DataTypes::IManifestObject* target);
                 const DataTypes::IManifestObject* GetManifestObject() const;
 
+                bool ModifyTooltip(QString& toolTipString);
+
             protected:
                 bool InitSceneManifest();
 
@@ -57,13 +59,12 @@ namespace AZ
                 virtual void UpdateDeletable();
                 
                 virtual const char* GetSerializedName(const DataTypes::IManifestObject* target) const;
-                virtual void SetIcon(const DataTypes::IManifestObject* target);
+                virtual void UpdateUIForManifestObject(const DataTypes::IManifestObject* target);
 
                 AZStd::string m_objectName;
                 QScopedPointer<Ui::HeaderWidget> ui;
                 Containers::SceneManifest* m_sceneManifest; // Reference only, does not point to a local instance.
                 const DataTypes::IManifestObject* m_target; // Reference only, does not point to a local instance.
-                bool m_nameIsEditable;
             };
         } // namespace UI
     } // namespace SceneAPI

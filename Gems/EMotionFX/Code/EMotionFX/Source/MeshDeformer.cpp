@@ -12,15 +12,15 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformer, DeformerAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshDeformer, DeformerAllocator)
 
 
     // constructor
     MeshDeformer::MeshDeformer(Mesh* mesh)
         : BaseObject()
     {
-        mMesh       = mesh;
-        mIsEnabled  = true;
+        m_mesh       = mesh;
+        m_isEnabled  = true;
     }
 
 
@@ -33,22 +33,23 @@ namespace EMotionFX
     // check if the deformer is enabled
     bool MeshDeformer::GetIsEnabled() const
     {
-        return mIsEnabled;
+        return m_isEnabled;
     }
 
 
     // enable or disable it
     void MeshDeformer::SetIsEnabled(bool enabled)
     {
-        mIsEnabled = enabled;
+        m_isEnabled = enabled;
     }
 
 
     // reinitialize the mesh deformer
-    void MeshDeformer::Reinitialize(Actor* actor, Node* node, uint32 lodLevel)
+    void MeshDeformer::Reinitialize(Actor* actor, Node* node, size_t lodLevel, uint16 highestJointIndex)
     {
         MCORE_UNUSED(actor);
         MCORE_UNUSED(node);
         MCORE_UNUSED(lodLevel);
+        MCORE_UNUSED(highestJointIndex);
     }
 } // namespace EMotionFX

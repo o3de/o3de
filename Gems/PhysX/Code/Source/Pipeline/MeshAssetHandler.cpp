@@ -12,6 +12,7 @@
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
 #include <PhysX/MeshAsset.h>
 #include <PhysX/SystemComponentBus.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -84,7 +85,7 @@ namespace PhysX
         AZ::Uuid MeshAssetHandler::GetComponentTypeId() const
         {
             // NOTE: This doesn't do anything when CanCreateComponent returns false
-            return AZ::Uuid("{FD429282-A075-4966-857F-D0BBF186CFE6}"); // EditorColliderComponent
+            return AZ::Uuid("{20382794-0E74-4860-9C35-A19F22DC80D4}"); // EditorMeshColliderComponent
         }
 
         bool MeshAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
@@ -102,6 +103,23 @@ namespace PhysX
 
             AZ_Error("PhysX Mesh Asset", false, "This handler deals only with PhysXMeshAsset type.");
             return nullptr;
+        }
+
+        // Fixes up an asset by querying the asset catalog for its id using its hint path.
+        // Returns true if it was able to find the asset in the catalog and set the asset id.
+        static bool FixUpAssetIdByHint(AZ::Data::Asset<AZ::Data::AssetData>& asset)
+        {
+            AZ::Data::AssetId assetId;
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, asset.GetHint().c_str(),
+                AZ::Data::s_invalidAssetType, false);
+
+            if (assetId.IsValid())
+            {
+                asset.Create(assetId, false);
+                return true;
+            }
+            return false;
         }
 
         AZ::Data::AssetHandler::LoadResult MeshAssetHandler::LoadAssetData(
@@ -124,6 +142,31 @@ namespace PhysX
                 return AZ::Data::AssetHandler::LoadResult::Error;
             }
 
+            // PhysX Mesh Asset could have been saved with material assets that only have the hint valid (asset path in the cache).
+            // This could happen for example when MeshGroup was filled procedurally and the materials were only given the path (hint).
+            // Now at runtime after the PhysX Mesh is loaded let's complete the asset by looking for it in the catalog and
+            // assigning its id. At runtime physics material will always be in the catalog because it's a critical asset.
+            for (size_t slotId = 0; slotId < meshAsset->m_assetData.m_materialSlots.GetSlotsCount(); ++slotId)
+            {
+                AZ::Data::Asset<AZ::Data::AssetData> materialAsset = meshAsset->m_assetData.m_materialSlots.GetMaterialAsset(slotId);
+                // Does it need to resolve its id from the hint path?
+                if (!materialAsset.GetId().IsValid() && !materialAsset.GetHint().empty())
+                {
+                    if (FixUpAssetIdByHint(materialAsset))
+                    {
+                        meshAsset->m_assetData.m_materialSlots.SetMaterialAsset(slotId, materialAsset);
+                    }
+                    else
+                    {
+                        AZ_Warning("PhysX Mesh Asset", false,
+                            "Loading PhysX Mesh '%s' it didn't find physics material '%s', assigned to slot '%.*s'. Default physics material will be used.",
+                            asset.GetHint().c_str(),
+                            materialAsset.GetHint().c_str(),
+                            AZ_STRING_ARG(meshAsset->m_assetData.m_materialSlots.GetSlotName(slotId)));
+                    }
+                }
+            }
+
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
 
@@ -142,15 +185,25 @@ namespace PhysX
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 AssetColliderConfiguration::Reflect(context);
-                serializeContext->ClassDeprecate("MeshAssetCookedData", "{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}");
+                serializeContext->ClassDeprecate("MeshAssetCookedData", AZ::Uuid("{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}"));
 
                 serializeContext->Class<MeshAssetData>()
+                    ->Version(2)
                     ->Field("ColliderShapes", &MeshAssetData::m_colliderShapes)
-                    ->Field("SurfaceNames", &MeshAssetData::m_materialNames)
-                    ->Field("MaterialNames", &MeshAssetData::m_physicsMaterialNames)
+                    ->Field("MaterialSlots", &MeshAssetData::m_materialSlots)
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
             }
+        }
+
+        AZ::Data::Asset<MeshAsset> MeshAssetData::CreateMeshAsset() const
+        {
+            AZ::Data::Asset<MeshAsset> meshAsset =
+                AZ::Data::AssetManager::Instance().CreateAsset<MeshAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+
+            meshAsset->SetData(*this);
+
+            return meshAsset;
         }
 
         void MeshAsset::Reflect(AZ::ReflectContext* context)
@@ -172,6 +225,12 @@ namespace PhysX
                         ;
                 }
             }
+        }
+
+        void MeshAsset::SetData(const MeshAssetData& assetData)
+        {
+            m_assetData = assetData;
+            m_status = AZ::Data::AssetData::AssetStatus::Ready;
         }
 
         void AssetColliderConfiguration::Reflect(AZ::ReflectContext* context)
@@ -226,7 +285,5 @@ namespace PhysX
                 colliderConfiguration.m_tag = *m_tag;
             }
         }
-
-
-} //namespace Pipeline
+    } //namespace Pipeline
 } // namespace PhysX

@@ -17,7 +17,6 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Module/Module.h>
 #include <AzCore/Module/ModuleManagerBus.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -26,6 +25,7 @@
 #include <AzFramework/Application/Application.h>
 #include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/IO/LocalFileIO.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 
 #include <Integration/System/SystemComponent.h>
 #include <Integration/AnimationBus.h>
@@ -41,7 +41,7 @@ namespace EMotionFX
     {
     public:
         AZ_RTTI(EMotionFXTestModule, "{32567457-5341-4D8D-91A9-E48D8395DE65}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EMotionFXTestModule, AZ::OSAllocator);
 
         EMotionFXTestModule()
         {
@@ -54,6 +54,7 @@ namespace EMotionFX
         : public AzFramework::Application
     {
     public:
+        AZ_CLASS_ALLOCATOR(ComponentFixtureApp, AZ::SystemAllocator)
 
         ComponentFixtureApp()
         {
@@ -61,7 +62,9 @@ namespace EMotionFX
             constexpr auto projectPathKey = FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
             if(auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
             {
-                settingsRegistry->Set(projectPathKey, "AutomatedTesting");
+                AZ::IO::FixedMaxPath enginePath;
+                settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+                settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
             }
         }
@@ -102,19 +105,25 @@ namespace EMotionFX
     */
     template<class... Components>
     class ComponentFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             PreStart();
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_createEditContext = true;
+            startupParameters.m_loadAssetCatalog = false;
 
+            // Add EMotionFX as an active gem within the Settings Registry for unit test
+            if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+            {
+                AZ::Test::AddActiveGem("EMotionFX", *settingsRegistry);
+            }
             m_app.Start(AZ::ComponentApplication::Descriptor{}, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -137,7 +146,7 @@ namespace EMotionFX
             // Clear the queue of messages from unit tests on our buses
             EMotionFX::Integration::ActorNotificationBus::ClearQueuedEvents();
 
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         ~ComponentFixture() override
@@ -203,21 +212,21 @@ namespace EMotionFX
     };
 
     using SystemComponentFixture = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
+        Physics::MaterialSystemComponent,
         EMotionFX::Integration::SystemComponent
     >;
 
     // Use this fixture if you want to load asset catalog. Some assets (reference anim graph for example)
     // can only be loaded when asset catalog is loaded.
     using SystemComponentFixtureWithCatalog = ComponentFixture<
-        AZ::MemoryComponent,
         AZ::AssetManagerComponent,
         AZ::JobManagerComponent,
         AZ::StreamerComponent,
         AzFramework::AssetCatalogComponent,
+        Physics::MaterialSystemComponent,
         EMotionFX::Integration::SystemComponent
     >;
 } // end namespace EMotionFX

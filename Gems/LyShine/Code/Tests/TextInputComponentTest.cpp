@@ -8,7 +8,6 @@
 
 #include "LyShineTest.h"
 
-#include <Mocks/IRendererMock.h>
 #include "UiGameEntityContext.h"
 #include "UiElementComponent.h"
 #include "UiTransform2dComponent.h"
@@ -19,7 +18,6 @@
 #include <AzFramework/Asset/AssetSystemComponent.h>
 #include <AzFramework/Input/Buses/Requests/InputTextEntryRequestBus.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
@@ -40,7 +38,6 @@ namespace UnitTest
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
             return AZ::ComponentTypeList{
-                azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
@@ -97,15 +94,13 @@ namespace UnitTest
     };
 
     class UiTextInputComponentTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
 
         void SetUp() override
         {
             // Start application
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-
             AZ::ComponentApplication::Descriptor appDescriptor;
             appDescriptor.m_useExistingAllocator = true;
 
@@ -118,20 +113,16 @@ namespace UnitTest
             m_priorEnv = gEnv;
             gEnv = &m_env->m_stubEnv;
 
-            m_data = AZStd::make_unique<DataMembers>();
-            m_env->m_stubEnv.pRenderer = &m_data->m_renderer;
         }
 
         void TearDown() override
         {
-            m_data.reset();
             m_env.reset();
             gEnv = m_priorEnv;
 
             m_applicationPtr->Stop();
             delete m_applicationPtr;
             m_applicationPtr = nullptr;
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
         }
 
     private:
@@ -140,12 +131,7 @@ namespace UnitTest
             SSystemGlobalEnvironment m_stubEnv;
         };
 
-        struct DataMembers
-        {
-            testing::NiceMock<IRendererMock> m_renderer;
-        };
 
-        AZStd::unique_ptr<DataMembers> m_data;
         AZStd::unique_ptr<StubEnv> m_env;
 
         SSystemGlobalEnvironment* m_priorEnv = nullptr;

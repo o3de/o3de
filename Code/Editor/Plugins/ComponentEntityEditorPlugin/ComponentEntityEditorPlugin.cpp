@@ -9,13 +9,11 @@
 #include "ComponentEntityEditorPlugin.h"
 
 #include <LyViewPaneNames.h>
-#include "IResourceSelectorHost.h"
 
 #include "UI/QComponentEntityEditorMainWindow.h"
 #include "UI/QComponentEntityEditorOutlinerWindow.h"
 #include "UI/QComponentLevelEntityEditorMainWindow.h"
 #include "UI/ComponentPalette/ComponentPaletteSettings.h"
-#include "UI/ComponentPalette/ComponentPaletteWindow.h"
 
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/EntityUtils.h>
@@ -31,6 +29,7 @@
 #include "SandboxIntegration.h"
 #include "Objects/ComponentEntityObject.h"
 
+
 namespace ComponentEntityEditorPluginInternal
 {
     void RegisterSandboxObjects()
@@ -38,7 +37,7 @@ namespace ComponentEntityEditorPluginInternal
         GetIEditor()->GetClassFactory()->RegisterClass(new CTemplateObjectClassDesc<CComponentEntityObject>("ComponentEntity", "", "", OBJTYPE_AZENTITY, 201, "*.entity"));
 
         AZ::SerializeContext* serializeContext = nullptr;
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Serialization context not available");
 
         if (serializeContext)
@@ -75,7 +74,7 @@ namespace ComponentEntityEditorPluginInternal
             const AZ::TypeId& componentTypeId = componentDescriptor->GetUuid();
             const AZ::TypeId& typeOfAZComponent = azrtti_typeid<AZ::Component>();
 
-            if (const AZ::SerializeContext::ClassData* serializeData = serializeContext->FindClassData(componentTypeId))
+            if (serializeContext->FindClassData(componentTypeId))
             {
                 if (!AZ::EntityUtils::CheckIfClassIsDeprecated(serializeContext, componentTypeId)
                     && !AZ::EntityUtils::CheckDeclaresSerializeBaseClass(serializeContext, typeOfAZComponent, componentTypeId))
@@ -104,12 +103,24 @@ namespace ComponentEntityEditorPluginInternal
                 "\nMake sure the Reflect function is called for all base classes as well.");
 
             // this happens during startup, and its a programmer error - so during startup, make it an error, so it shows as a pretty noisy
-            // popup box.  Its important that programmers fix this, before they submit their code, so that data corruption / data loss does 
+            // popup box.  Its important that programmers fix this, before they submit their code, so that data corruption / data loss does
             // not occur.
             AZ_Error("Serialize", false, message.c_str());
         }
     }
 } // end namespace ComponentEntityEditorPluginInternal
+
+void ComponentPaletteSettings::Reflect(AZ::ReflectContext* context)
+{
+    AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+    if (serializeContext)
+    {
+        serializeContext->Class<ComponentPaletteSettings>()
+            ->Version(1)
+            ->Field("m_favorites", &ComponentPaletteSettings::m_favorites)
+            ;
+    }
+}
 
 ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEditor* editor)
     : m_registered(false)
@@ -122,6 +133,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     ViewPaneOptions inspectorOptions;
     inspectorOptions.canHaveMultipleInstances = true;
     inspectorOptions.preferedDockingArea = Qt::RightDockWidgetArea;
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't automatically disable and enable the entire Entity Inspector. This will be handled separately per-component.
+    inspectorOptions.isDisabledInComponentMode = false;
+    inspectorOptions.isDisabledInImGuiMode = false;
+
     RegisterViewPane<QComponentEntityEditorInspectorWindow>(
         LyViewPane::EntityInspector,
         LyViewPane::CategoryTools,
@@ -132,6 +148,11 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
     pinnedInspectorOptions.preferedDockingArea = Qt::NoDockWidgetArea;
     pinnedInspectorOptions.paneRect = QRect(50, 50, 400, 700);
     pinnedInspectorOptions.showInMenu = false;
+    // Override the default behavior for component mode enter/exit and imgui enter/exit
+    // so that we don't automatically disable and enable the entire Pinned Entity Inspector. This will be handled separately per-component.
+    pinnedInspectorOptions.isDisabledInComponentMode = false;
+    pinnedInspectorOptions.isDisabledInImGuiMode = false;
+
     RegisterViewPane<QComponentEntityEditorInspectorWindow>(
         LyViewPane::EntityInspectorPinned,
         LyViewPane::CategoryTools,
@@ -147,6 +168,10 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         ViewPaneOptions outlinerOptions;
         outlinerOptions.canHaveMultipleInstances = true;
         outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+        // Override the default behavior for component mode enter/exit and imgui enter/exit
+        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
+        outlinerOptions.isDisabledInComponentMode = false;
+        outlinerOptions.isDisabledInImGuiMode = false;
 
         RegisterViewPane<QEntityOutlinerWindow>(
             LyViewPane::EntityOutliner,
@@ -166,6 +191,10 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         ViewPaneOptions outlinerOptions;
         outlinerOptions.canHaveMultipleInstances = true;
         outlinerOptions.preferedDockingArea = Qt::LeftDockWidgetArea;
+        // Override the default behavior for component mode enter/exit and imgui enter/exit
+        // so that we don't automatically disable and enable the Entity Outliner. This will be handled separately.
+        outlinerOptions.isDisabledInComponentMode = false;
+        outlinerOptions.isDisabledInImGuiMode = false;
 
         // this pane was originally introduced with this name, so layout settings are all saved with that name, despite the preview label being removed.
         outlinerOptions.saveKeyName = "Entity Outliner (PREVIEW)";
@@ -179,8 +208,6 @@ ComponentEntityEditorPlugin::ComponentEntityEditorPlugin([[maybe_unused]] IEdito
         options.preferedDockingArea = Qt::NoDockWidgetArea;
         RegisterViewPane<SliceRelationshipWidget>(LyViewPane::SliceRelationships, LyViewPane::CategoryTools, options);
     }
-
-    RegisterModuleResourceSelectors(GetIEditor()->GetResourceSelectorHost());
 
     ComponentEntityEditorPluginInternal::RegisterSandboxObjects();
 

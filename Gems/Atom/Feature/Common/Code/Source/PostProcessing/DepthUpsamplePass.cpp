@@ -44,8 +44,8 @@ namespace AZ
 
             AZ_Assert(GetInputCount() == 3, "DepthUpsamplePass requires three inputs!");
             AZ_Assert(GetOutputCount() == 1, "DepthUpsamplePass requires one output!");
-            RPI::PassAttachment* inputAttachment = GetInputBinding(2).m_attachment.get();
-            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).m_attachment.get();
+            RPI::PassAttachment* inputAttachment = GetInputBinding(2).GetAttachment().get();
+            RPI::PassAttachment* outputAttachment = GetOutputBinding(0).GetAttachment().get();
 
             AZ_Assert(inputAttachment != nullptr, "DepthUpsamplePass: Input binding has no attachment!");
             AZ_Assert(outputAttachment != nullptr, "DepthUpsamplePass: Output binding has no attachment!");

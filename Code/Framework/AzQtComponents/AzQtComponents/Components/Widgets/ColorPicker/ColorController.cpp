@@ -323,7 +323,7 @@ namespace AzQtComponents
                     saturation *= 2.0 - lightness;
                 }
                 double value = (lightness + saturation) / 2.0;
-                saturation = (2.0 * saturation) / (lightness + saturation);
+                saturation = qFuzzyIsNull(lightness + saturation) ? 0 : (2.0 * saturation) / (lightness + saturation);
 
                 m_hsv.saturation = AZ::GetClamp(saturation, 0.0, 1.0);
                 m_hsv.value = AZ::GetClamp(value, 0.0, 12.5);
@@ -341,11 +341,12 @@ namespace AzQtComponents
                 double saturation = m_hsv.saturation * m_hsv.value;
                 if (lightness <= 1.0)
                 {
-                    saturation /= lightness;
+                    saturation = (qFuzzyIsNull(lightness)) ? 0.0 : saturation / lightness;
                 }
                 else
                 {
-                    saturation /= 2.0 - lightness;
+                    double two_minus_lightness = 2.0 - lightness;
+                    saturation = (qFuzzyIsNull(two_minus_lightness)) ? 0.0 : saturation / two_minus_lightness;
                 }
                 lightness /= 2.0;
 

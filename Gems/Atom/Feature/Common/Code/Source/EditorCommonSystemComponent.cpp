@@ -8,7 +8,6 @@
 
 #include <EditorCommonSystemComponent.h>
 #include <Source/Material/UseTextureFunctorSourceData.h>
-#include <Source/Material/DrawListFunctorSourceData.h>
 #include <Source/Material/SubsurfaceTransmissionParameterFunctorSourceData.h>
 #include <Source/Material/Transform2DFunctorSourceData.h>
 #include <Source/Material/ConvertEmissiveUnitFunctorSourceData.h>
@@ -19,7 +18,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
-#include <AzCore/Script/ScriptAsset.h>
 
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -46,13 +44,11 @@ namespace AZ
                 {
                     ec->Class<EditorCommonSystemComponent>("Common", "Configures editor- and tool-specific functionality for common render features.")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                         ;
                 }
 
                 AZ::Render::UseTextureFunctorSourceData::Reflect(context);
-                AZ::Render::DrawListFunctorSourceData::Reflect(context);
                 AZ::Render::Transform2DFunctorSourceData::Reflect(context);
                 AZ::Render::ConvertEmissiveUnitFunctorSourceData::Reflect(context);
                 AZ::Render::SubsurfaceTransmissionParameterFunctorSourceData::Reflect(context);
@@ -96,18 +92,10 @@ namespace AZ
             }
 
             materialFunctorRegistration->RegisterMaterialFunctor("UseTexture", azrtti_typeid<UseTextureFunctorSourceData>());
-            materialFunctorRegistration->RegisterMaterialFunctor("OverrideDrawList",         azrtti_typeid<DrawListFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("Transform2D",              azrtti_typeid<Transform2DFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("ConvertEmissiveUnit",      azrtti_typeid<ConvertEmissiveUnitFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("HandleSubsurfaceScatteringParameters", azrtti_typeid<SubsurfaceTransmissionParameterFunctorSourceData>());
             materialFunctorRegistration->RegisterMaterialFunctor("Lua", azrtti_typeid<RPI::LuaMaterialFunctorSourceData>());
-
-            // Add asset types and extensions to AssetCatalog. Uses "AssetCatalogService".
-            auto assetCatalog = AZ::Data::AssetCatalogRequestBus::FindFirstHandler();
-            if (assetCatalog)
-            {
-                assetCatalog->EnableCatalogForAsset(AZ::AzTypeInfo<AZ::ScriptAsset>::Uuid());
-            }
         }
 
         void EditorCommonSystemComponent::Deactivate()

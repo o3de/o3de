@@ -15,6 +15,7 @@
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/string/string.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
+#include <Prefab/ScriptingPrefabLoader.h>
 
 namespace AZ
 {
@@ -36,8 +37,10 @@ namespace AzToolsFramework
             : public PrefabLoaderInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator, 0);
-            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C8}", PrefabLoaderInterface);
+            AZ_CLASS_ALLOCATOR(PrefabLoader, AZ::SystemAllocator);
+            AZ_RTTI(PrefabLoader, "{A302B072-4DC4-4B7E-9188-226F56A3429C}", PrefabLoaderInterface);
+
+            static void Reflect(AZ::ReflectContext* context);
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabLoaderInterface interface implementation
@@ -50,6 +53,13 @@ namespace AzToolsFramework
              * @return A unique id of Template on filePath loaded. Return invalid template id if loading Template on filePath failed.
              */
             TemplateId LoadTemplateFromFile(AZ::IO::PathView filePath) override;
+
+             /**
+             * Reloads Prefab Template from given file path and updates values that are changed
+             * in the source file.
+             * @param relativePath A Prefab Template relative file path.
+             */
+            void ReloadTemplateFromFile(AZ::IO::PathView relativePath);
 
             /**
              * Load Prefab Template from given content string to memory and return the id of loaded Template.
@@ -108,7 +118,11 @@ namespace AzToolsFramework
             //! Returns if the path is a valid path for a prefab
             static bool IsValidPrefabPath(AZ::IO::PathView path);
 
+            SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const override;
+            void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) override;
+
         private:
+
             /**
              * Copies the template dom provided and manipulates it into the proper format to be saved to disk.
              * @param templateRef The template whose dom we want to transform into the proper format to be saved to disk.
@@ -117,8 +131,27 @@ namespace AzToolsFramework
              */
             bool CopyTemplateIntoPrefabFileFormat(
                 TemplateReference templateRef,
-                PrefabDom& output
-            );
+                PrefabDom& output);
+
+            /**
+             * Removes links from given template instances that are not present in the dom loaded from file.
+             * @param Reference to the nested instances in the dom loaded from file.
+             * @param Reference to the nested instances in the existing template dom.
+             */
+            void RemoveStaleLinksOnReload(
+                PrefabDomValueReference instancesFileReference, PrefabDomValueReference instancesTemplateReference);
+
+            /**
+             * Reload nested instance given a nested instance value iterator and target Template with its id.
+             * @param instanceIterator A nested instance value iterator.
+             * @param targetTemplateId A unique id of target Template.
+             * @param progressedFilePathsSet An unordered_set to track if there's any cyclical dependency between Templates.
+             * @return If reloading the nested instance pointed by instanceIterator on targetTemplate succeeded or not.
+             */
+            bool ReloadNestedInstance(
+                PrefabDomValue::MemberIterator& instanceIterator,
+                TemplateId targetTemplateId,
+                AZStd::unordered_set<AZ::IO::Path>& progressedFilePathsSet);
 
             /**
              * Load Prefab Template from given file path to memory and return the id of loaded Template.
@@ -147,7 +180,7 @@ namespace AzToolsFramework
              * @param instanceIterator A nested instance value iterator.
              * @param targetTemplateId A unique id of target Template.
              * @param progressedFilePathsSet An unordered_set to track if there's any cyclical dependency between Templates.
-             * @return If loading the nested instance pointed by instanceIt on targetTemplate succeeded or not.
+             * @return If loading the nested instance pointed by instanceIterator on targetTemplate succeeded or not.
              */
             bool LoadNestedInstance(
                 PrefabDomValue::MemberIterator& instanceIterator,
@@ -172,6 +205,7 @@ namespace AzToolsFramework
             AZStd::optional<AZStd::pair<PrefabDom, AZ::IO::Path>> StoreTemplateIntoFileFormat(TemplateId templateId);
 
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            ScriptingPrefabLoader m_scriptingPrefabLoader;
             AZ::IO::Path m_projectPathWithOsSeparator;
             AZ::IO::Path m_projectPathWithSlashSeparator;
         };

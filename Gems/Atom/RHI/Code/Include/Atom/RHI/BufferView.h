@@ -25,6 +25,8 @@ namespace AZ
             AZ_RTTI(BufferView, "{3012F770-1DD7-4CEC-A5D0-E2FC807548C1}", ResourceView);
             virtual ~BufferView() = default;
 
+            static constexpr uint32_t InvalidBindlessIndex = 0xFFFFFFFF;
+
             //! Initializes the buffer view with the provided buffer and view descriptor.
             ResultCode Init(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor);
 
@@ -40,6 +42,22 @@ namespace AZ
             //! Tells the renderer to ignore any validation related to this buffer's state and scope attachments.
             //! Assumes that the programmer is manually managing the Read/Write state of the buffer correctly.
             bool IgnoreFrameAttachmentValidation() const { return m_descriptor.m_ignoreFrameAttachmentValidation; }
+
+            //! Returns the hash of the view.
+            HashValue64 GetHash() const;
+
+            virtual uint32_t GetBindlessReadIndex() const
+            {
+                return InvalidBindlessIndex;
+            }
+
+            virtual uint32_t GetBindlessReadWriteIndex() const
+            {
+                return InvalidBindlessIndex;
+            }
+
+        protected:
+            HashValue64 m_hash = HashValue64{ 0 };
 
         private:
             bool ValidateForInit(const Buffer& buffer, const BufferViewDescriptor& viewDescriptor) const;

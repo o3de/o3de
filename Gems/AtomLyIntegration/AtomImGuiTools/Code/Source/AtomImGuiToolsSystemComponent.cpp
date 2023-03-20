@@ -13,6 +13,7 @@
 #include <AzCore/Serialization/EditContextConstants.inl>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
+#include <ImGuiBus.h>
 
 namespace AtomImGuiTools
 {
@@ -28,7 +29,6 @@ namespace AtomImGuiTools
             {
                 ec->Class<AtomImGuiToolsSystemComponent>("AtomImGuiTools", "[Manager of various Atom ImGui tools.]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -59,6 +59,7 @@ namespace AtomImGuiTools
     {
 #if defined(IMGUI_ENABLED)
         ImGui::ImGuiUpdateListenerBus::Handler::BusConnect();
+        AtomImGuiToolsRequestBus::Handler::BusConnect();
 #endif
         CrySystemEventBus::Handler::BusConnect();
     }
@@ -68,6 +69,7 @@ namespace AtomImGuiTools
 #if defined(IMGUI_ENABLED)
         m_imguiPassTree.Reset();
         ImGui::ImGuiUpdateListenerBus::Handler::BusDisconnect();
+        AtomImGuiToolsRequestBus::Handler::BusDisconnect();
 #endif
 
         CrySystemEventBus::Handler::BusDisconnect();
@@ -84,14 +86,6 @@ namespace AtomImGuiTools
         {
             m_imguiGpuProfiler.Draw(m_showGpuProfiler, AZ::RPI::PassSystemInterface::Get()->GetRootPass().get());
         }
-        if (m_showCpuProfiler)
-        {
-            const AZ::RHI::CpuTimingStatistics* stats = AZ::RHI::RHISystemInterface::Get()->GetCpuTimingStatistics();
-            if (stats)
-            {
-                m_imguiCpuProfiler.Draw(m_showCpuProfiler, *stats);
-            }
-        }
         if (m_showTransientAttachmentProfiler)
         {
             auto* transientStats = AZ::RHI::RHISystemInterface::Get()->GetTransientAttachmentStatistics();
@@ -100,10 +94,8 @@ namespace AtomImGuiTools
                 m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);
             }
         }
-        if (m_showShaderMetrics)
-        {
-            m_imguiShaderMetrics.Draw(m_showShaderMetrics, AZ::RPI::ShaderMetricsSystemInterface::Get()->GetMetrics());
-        }
+
+        m_showMaterialDetails = m_imguiMaterialDetails.Tick(m_materialDetailsController.GetMeshDrawPackets(), m_materialDetailsController.GetSelectionName().c_str());
     }
 
     void AtomImGuiToolsSystemComponent::OnImGuiMainMenuUpdate()
@@ -112,21 +104,38 @@ namespace AtomImGuiTools
         {
             ImGui::MenuItem("Pass Viewer", "", &m_showPassTree);
             ImGui::MenuItem("Gpu Profiler", "", &m_showGpuProfiler);
-            if (ImGui::MenuItem("Cpu Profiler", "", &m_showCpuProfiler))
-            {
-                AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
-                    AZ::RHI::FrameSchedulerStatisticsFlags::GatherCpuTimingStatistics, m_showCpuProfiler);
-                AZ::RHI::CpuProfiler::Get()->SetProfilerEnabled(m_showCpuProfiler);
-            }
             if (ImGui::MenuItem("Transient Attachment Profiler", "", &m_showTransientAttachmentProfiler))
             {
                 AZ::RHI::RHISystemInterface::Get()->ModifyFrameSchedulerStatisticsFlags(
                     AZ::RHI::FrameSchedulerStatisticsFlags::GatherTransientAttachmentStatistics, m_showTransientAttachmentProfiler);
             }
-            ImGui::MenuItem("Shader Metrics", "", &m_showShaderMetrics);
+            if (ImGui::MenuItem("Material Shader Details", "", &m_showMaterialDetails))
+            {
+                if (m_showMaterialDetails)
+                {
+                    m_imguiMaterialDetails.OpenDialog();
+                }
+                else
+                {
+                    m_imguiMaterialDetails.CloseDialog();
+                }
+            }
             ImGui::EndMenu();
         }
     }
+    
+    void AtomImGuiToolsSystemComponent::ShowMaterialShaderDetailsForEntity(AZ::EntityId entity, bool autoOpenDialog)
+    {
+        m_materialDetailsController.SetSelectedEntityId(entity);
+
+        if (autoOpenDialog)
+        {
+            m_imguiMaterialDetails.OpenDialog();
+            m_showMaterialDetails = true;
+            ImGui::ImGuiManagerBus::Broadcast(&ImGui::IImGuiManager::ToggleToImGuiVisibleState, ImGui::DisplayState::Visible);
+        }
+    }
+
 #endif
 
     void AtomImGuiToolsSystemComponent::OnCryEditorInitialized()

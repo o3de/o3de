@@ -6,6 +6,8 @@
  *
  */
 
+#include <Multiplayer/MultiplayerMetrics.h>
+#include <Multiplayer/MultiplayerPerformanceStats.h>
 #include <Multiplayer/MultiplayerStats.h>
 
 namespace Multiplayer
@@ -29,48 +31,107 @@ namespace Multiplayer
         m_componentStats[netComponentIndex].m_rpcsRecv.resize(rpcCount);
     }
 
+    void MultiplayerStats::RecordEntitySerializeStart(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
+    {
+        m_events.m_entitySerializeStart.Signal(mode, entityId, entityName);
+    }
+
+    void MultiplayerStats::RecordComponentSerializeEnd(AzNetworking::SerializerMode mode, NetComponentId netComponentId)
+    {
+        m_events.m_componentSerializeEnd.Signal(mode, netComponentId);
+    }
+
+    void MultiplayerStats::RecordEntitySerializeStop(AzNetworking::SerializerMode mode, AZ::EntityId entityId, const char* entityName)
+    {
+        m_events.m_entitySerializeStop.Signal(mode, entityId, entityName);
+    }
+
     void MultiplayerStats::RecordPropertySent(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
-        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalCalls++;
-        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalBytes += totalBytes;
-        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        if (m_componentStats[netComponentIndex].m_propertyUpdatesSent.size() > propertyIndex)
+        {
+            m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalCalls++;
+            m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_totalBytes += totalBytes;
+            m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_callHistory[m_recordMetricIndex]++;
+            m_componentStats[netComponentIndex].m_propertyUpdatesSent[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        }
+        else
+        {
+            AZ_Warning("MultiplayerStats", false,
+                "Component ID %u has fewer than %u sent propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
+        }
+
+        m_events.m_propertySent.Signal(netComponentId, propertyId, totalBytes);
     }
 
     void MultiplayerStats::RecordPropertyReceived(NetComponentId netComponentId, PropertyIndex propertyId, uint32_t totalBytes)
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t propertyIndex = aznumeric_cast<uint16_t>(propertyId);
-        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalCalls++;
-        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalBytes += totalBytes;
-        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        if (m_componentStats[netComponentIndex].m_propertyUpdatesRecv.size() > propertyIndex)
+        {
+            m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalCalls++;
+            m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_totalBytes += totalBytes;
+            m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_callHistory[m_recordMetricIndex]++;
+            m_componentStats[netComponentIndex].m_propertyUpdatesRecv[propertyIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        }
+        else
+        {
+            AZ_Warning("MultiplayerStats", false,
+                "Component ID %u has fewer than %u receive propertyIndex. Mismatch by caller suspected.", netComponentIndex, propertyIndex);
+        }
+
+        m_events.m_propertyReceived.Signal(netComponentId, propertyId, totalBytes);
     }
 
-    void MultiplayerStats::RecordRpcSent(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
+    void MultiplayerStats::RecordRpcSent(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
-        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalCalls++;
-        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalBytes += totalBytes;
-        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+
+        if (m_componentStats[netComponentIndex].m_rpcsSent.size() > rpcIndex)
+        {
+            m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalCalls++;
+            m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_totalBytes += totalBytes;
+            m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_callHistory[m_recordMetricIndex]++;
+            m_componentStats[netComponentIndex].m_rpcsSent[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        }
+        else
+        {
+            AZ_Warning("MultiplayerStats", false,
+                "Component ID %u has fewer than %u sent rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
+        }
+
+        m_events.m_rpcSent.Signal(entityId, entityName, netComponentId, rpcId, totalBytes);
     }
 
-    void MultiplayerStats::RecordRpcReceived(NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
+    void MultiplayerStats::RecordRpcReceived(AZ::EntityId entityId, const char* entityName, NetComponentId netComponentId, RpcIndex rpcId, uint32_t totalBytes)
     {
         const uint16_t netComponentIndex = aznumeric_cast<uint16_t>(netComponentId);
         const uint16_t rpcIndex = aznumeric_cast<uint16_t>(rpcId);
-        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalCalls++;
-        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalBytes += totalBytes;
-        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_callHistory[m_recordMetricIndex]++;
-        m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        if (m_componentStats[netComponentIndex].m_rpcsRecv.size() > rpcIndex)
+        {
+            m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalCalls++;
+            m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_totalBytes += totalBytes;
+            m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_callHistory[m_recordMetricIndex]++;
+            m_componentStats[netComponentIndex].m_rpcsRecv[rpcIndex].m_byteHistory[m_recordMetricIndex] += totalBytes;
+        }
+        else
+        {
+            AZ_Warning("MultiplayerStats", false,
+                "Component ID %u has fewer than %u receive rpcIndex. Mismatch by caller suspected.", netComponentIndex, rpcIndex);
+        }
+
+        m_events.m_rpcReceived.Signal(entityId, entityName, netComponentId, rpcId, totalBytes);
     }
 
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
     {
+        SET_PERFORMANCE_STAT(MultiplayerStat_EntityCount, m_entityCount);
+        SET_PERFORMANCE_STAT(MultiplayerStat_ClientConnectionCount, m_clientConnectionCount);
+
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
         for (ComponentStats& componentStats : m_componentStats)
@@ -186,4 +247,20 @@ namespace Multiplayer
         }
         return result;
     }
-}
+
+    void MultiplayerStats::ConnectHandlers(EventHandlers& handlers)
+    {
+        handlers.m_entitySerializeStart.Connect(m_events.m_entitySerializeStart);
+        handlers.m_componentSerializeEnd.Connect(m_events.m_componentSerializeEnd);
+        handlers.m_entitySerializeStop.Connect(m_events.m_entitySerializeStop);
+        handlers.m_propertySent.Connect(m_events.m_propertySent);
+        handlers.m_propertyReceived.Connect(m_events.m_propertyReceived);
+        handlers.m_rpcSent.Connect(m_events.m_rpcSent);
+        handlers.m_rpcReceived.Connect(m_events.m_rpcReceived);
+    }
+
+    void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
+    {
+        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTimeUs, networkFrameTime);
+    }
+} // namespace Multiplayer

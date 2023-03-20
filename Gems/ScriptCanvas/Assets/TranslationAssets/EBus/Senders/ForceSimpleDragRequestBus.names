@@ -1,0 +1,71 @@
+{
+    "entries": [
+        {
+            "base": "ForceSimpleDragRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Force Region (Simple Drag Force)"
+            },
+            "methods": [
+                {
+                    "base": "SetDensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Density"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Density is invoked"
+                    },
+                    "details": {
+                        "name": "Set Density",
+                        "tooltip": "Set the fluid density used to compute the drag force"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Density",
+                                "tooltip": "Fluid density used to compute the drag force"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDensity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Density"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Density is invoked"
+                    },
+                    "details": {
+                        "name": "Get Density",
+                        "tooltip": "Get the fluid density used to compute the drag force"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Density",
+                                "tooltip": "Fluid density used to compute the drag force"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

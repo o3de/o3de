@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) #for PAL_TRAIT_NVCLOTH Traits
 
@@ -56,6 +56,7 @@ ly_add_target(
 # use the NvCloth module in clients and servers:
 ly_create_alias(NAME NvCloth.Clients NAMESPACE Gem TARGETS Gem::NvCloth)
 ly_create_alias(NAME NvCloth.Servers NAMESPACE Gem TARGETS Gem::NvCloth)
+ly_create_alias(NAME NvCloth.Unified NAMESPACE Gem TARGETS Gem::NvCloth)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -161,6 +162,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::NvCloth.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

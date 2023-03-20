@@ -11,9 +11,10 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Entity/EntityContext.h>
 #include <AzFramework/Components/TransformComponent.h>
-#include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Spawnable/SpawnableEntitiesInterface.h>
 
 #include "GameEntityContextComponent.h"
 
@@ -35,7 +36,6 @@ namespace AzFramework
                     "Game Entity Context", "Owns entities in the game runtime, as well as during play-in-editor")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -47,13 +47,21 @@ namespace AzFramework
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Event("CreateGameEntity", &GameEntityContextRequestBus::Events::CreateGameEntityForBehaviorContext)
                     ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)
-                ->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntityOnlyInSliceMode)
+                ->Event("DestroyGameEntity", &GameEntityContextRequestBus::Events::DestroyGameEntity)
                 ->Event(
-                    "DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendantsOnlyInSliceMode)
+                    "DestroyGameEntityAndDescendants", &GameEntityContextRequestBus::Events::DestroyGameEntityAndDescendants)
                 ->Event("ActivateGameEntity", &GameEntityContextRequestBus::Events::ActivateGameEntity)
                 ->Event("DeactivateGameEntity", &GameEntityContextRequestBus::Events::DeactivateGameEntity)
                     ->Attribute(AZ::ScriptCanvasAttributes::DeactivatesInputEntity, true)
                 ->Event("GetEntityName", &GameEntityContextRequestBus::Events::GetEntityName)
+                ;
+
+            behaviorContext->EBus<GameEntityContextEventBus>("GameEntityContextEventBus")
+                ->Attribute(AZ::Script::Attributes::Module, "entity")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                ->Event("OnPreGameEntitiesStarted", &GameEntityContextEventBus::Events::OnPreGameEntitiesStarted)
+                ->Event("OnGameEntitiesStarted", &GameEntityContextEventBus::Events::OnGameEntitiesStarted)
+                ->Event("OnGameEntitiesReset", &GameEntityContextEventBus::Events::OnGameEntitiesReset)
                 ;
         }
     }
@@ -174,7 +182,7 @@ namespace AzFramework
     //=========================================================================
     void GameEntityContextComponent::OnContextReset()
     {
-        EBUS_EVENT(GameEntityContextEventBus, OnGameEntitiesReset);
+        GameEntityContextEventBus::Broadcast(&GameEntityContextEventBus::Events::OnGameEntitiesReset);
     }
 
     //=========================================================================
@@ -202,11 +210,11 @@ namespace AzFramework
         EntityContext::OnContextEntitiesAdded(entities);
 
     #if (AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING)
-        auto timeOfLastEventPump = AZStd::chrono::high_resolution_clock::now();
+        auto timeOfLastEventPump = AZStd::chrono::steady_clock::now();
         auto PumpSystemEventsIfNeeded = [&timeOfLastEventPump]()
         {
             static const AZStd::chrono::milliseconds maxMillisecondsBetweenSystemEventPumps(AZ_TRAIT_PUMP_SYSTEM_EVENTS_WHILE_LOADING_INTERVAL_MS);
-            const auto now = AZStd::chrono::high_resolution_clock::now();
+            const auto now = AZStd::chrono::steady_clock::now();
             if (now - timeOfLastEventPump > maxMillisecondsBetweenSystemEventPumps)
             {
                 timeOfLastEventPump = now;
@@ -249,47 +257,12 @@ namespace AzFramework
         DestroyGameEntityInternal(id, false);
     }
 
-    void GameEntityContextComponent::DestroyGameEntityOnlyInSliceMode(const AZ::EntityId& id)
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!isPrefabSystemEnabled)
-        {
-            DestroyGameEntityInternal(id, false);
-        }
-        else
-        {
-            AZ_Error(
-                "GameEntityContextComponent", false,
-                "Destroying a game entity is temporarily disabled until the Spawnable system can support this.");
-        }
-    }
-
     //=========================================================================
     // GameEntityContextComponent::DestroyGameEntityAndDescendantsById
     //=========================================================================
     void GameEntityContextComponent::DestroyGameEntityAndDescendants(const AZ::EntityId& id)
     {
         DestroyGameEntityInternal(id, true);
-    }
-
-    
-    void GameEntityContextComponent::DestroyGameEntityAndDescendantsOnlyInSliceMode(const AZ::EntityId& id)
-    {
-        bool isPrefabSystemEnabled = false;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(
-            isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
-        if (!isPrefabSystemEnabled)
-        {
-            DestroyGameEntityInternal(id, true);
-        }
-        else
-        {
-            AZ_Error(
-                "GameEntityContextComponent", false,
-                "Destroying a game entity and its descendants is temporarily disabled until the Spawnable system can support this.");
-        }
     }
 
     //=========================================================================
@@ -300,12 +273,12 @@ namespace AzFramework
         AZStd::vector<AZ::EntityId> entityIdsToBeDeleted;
 
         AZ::Entity* entity = nullptr;
-        EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (entity)
         {
             if (destroyChildren)
             {
-                EBUS_EVENT_ID_RESULT(entityIdsToBeDeleted, entityId, AZ::TransformBus, GetAllDescendants);
+                AZ::TransformBus::EventResult(entityIdsToBeDeleted, entityId, &AZ::TransformBus::Events::GetAllDescendants);
             }
 
             // Inserting the parent to the list before its children; it will be deleted last by the reverse iterator
@@ -316,9 +289,31 @@ namespace AzFramework
             entityIdIter != entityIdsToBeDeleted.rend(); ++entityIdIter)
         {
             AZ::Entity* currentEntity = nullptr;
-            EBUS_EVENT_RESULT(currentEntity, AZ::ComponentApplicationBus, FindEntity, *entityIdIter);
+            AZ::ComponentApplicationBus::BroadcastResult(currentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, *entityIdIter);
             if (currentEntity)
             {
+                bool isPrefabSystemEnabled = false;
+                AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                    isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+                if (isPrefabSystemEnabled)
+                {
+                    if (currentEntity->GetEntitySpawnTicketId() > 0)
+                    {
+                        SpawnableEntitiesDefinition* spawnableEntitiesInterface = SpawnableEntitiesInterface::Get();
+                        AZ_Assert(spawnableEntitiesInterface != nullptr, "SpawnableEntitiesInterface is not found.");
+                        spawnableEntitiesInterface->RetrieveTicket(
+                            currentEntity->GetEntitySpawnTicketId(),
+                            [spawnableEntitiesInterface, currentEntity](EntitySpawnTicket&& entitySpawnTicket)
+                            {
+                                if (entitySpawnTicket.IsValid())
+                                {
+                                    spawnableEntitiesInterface->DespawnEntity(currentEntity->GetId(), entitySpawnTicket);
+                                }
+                            });
+                        continue;
+                    }
+                }
+
                 if (currentEntity->GetState() == AZ::Entity::State::Active)
                 {
                     // Deactivate the entity, we'll destroy it as soon as it is safe.
@@ -343,7 +338,7 @@ namespace AzFramework
             }
         };
 
-        EBUS_QUEUE_FUNCTION(AZ::TickBus, destroyEntity);
+        AZ::TickBus::QueueFunction(destroyEntity);
     }
 
     //=========================================================================
@@ -369,7 +364,7 @@ namespace AzFramework
     {
         if (m_entityOwnershipService->LoadFromStream(stream, remapIds))
         {
-            EBUS_EVENT(GameEntityContextEventBus, OnGameEntitiesStarted);
+            GameEntityContextEventBus::Broadcast(&GameEntityContextEventBus::Events::OnGameEntitiesStarted);
             return true;
         }
 

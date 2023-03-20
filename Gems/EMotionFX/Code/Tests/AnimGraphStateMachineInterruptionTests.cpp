@@ -21,34 +21,34 @@ namespace EMotionFX
     struct AnimGraphStateMachine_InterruptionTestData
     {
         // Graph construction data.
-        float transitionLeftBlendTime;
-        float transitionLeftCountDownTime;
-        float transitionMiddleBlendTime;
-        float transitionMiddleCountDownTime;
-        float transitionRightBlendTime;
-        float transitionRightCountDownTime;
+        float m_transitionLeftBlendTime;
+        float m_transitionLeftCountDownTime;
+        float m_transitionMiddleBlendTime;
+        float m_transitionMiddleCountDownTime;
+        float m_transitionRightBlendTime;
+        float m_transitionRightCountDownTime;
 
         // Per frame checks.
         struct ActiveObjectsAtFrame
         {
-            AZ::u32 frameNr;
+            AZ::u32 m_frameNr;
 
-            bool stateA;
-            bool stateB;
-            bool stateC;
-            bool transitionLeft;
-            bool transitionMiddle;
-            bool transitionRight;
+            bool m_stateA;
+            bool m_stateB;
+            bool m_stateC;
+            bool m_transitionLeft;
+            bool m_transitionMiddle;
+            bool m_transitionRight;
 
-            AZ::u32 numStatesEntering;
-            AZ::u32 numStatesEntered;
-            AZ::u32 numStatesExited;
-            AZ::u32 numStatesEnded;
-            AZ::u32 numTransitionsStarted;
-            AZ::u32 numTransitionsEnded;
+            AZ::u32 m_numStatesEntering;
+            AZ::u32 m_numStatesEntered;
+            AZ::u32 m_numStatesExited;
+            AZ::u32 m_numStatesEnded;
+            AZ::u32 m_numTransitionsStarted;
+            AZ::u32 m_numTransitionsEnded;
         };
 
-        std::vector<ActiveObjectsAtFrame> activeObjectsAtFrame;
+        AZStd::fixed_vector<ActiveObjectsAtFrame, 16> m_activeObjectsAtFrame;
     };
 
     class AnimGraphStateMachine_InterruptionFixture
@@ -86,21 +86,21 @@ namespace EMotionFX
 
             AnimGraphStateTransition* transitionLeft = AddTransitionWithTimeCondition(stateStart,
                 stateA,
-                param.transitionLeftBlendTime/*blendTime*/,
-                param.transitionLeftCountDownTime)/*countDownTime*/;
+                param.m_transitionLeftBlendTime/*blendTime*/,
+                param.m_transitionLeftCountDownTime)/*countDownTime*/;
             transitionLeft->SetCanBeInterrupted(true);
 
             AnimGraphStateTransition* transitionMiddle = AddTransitionWithTimeCondition(stateStart,
                 stateB,
-                param.transitionMiddleBlendTime,
-                param.transitionMiddleCountDownTime);
+                param.m_transitionMiddleBlendTime,
+                param.m_transitionMiddleCountDownTime);
             transitionMiddle->SetCanBeInterrupted(true);
             transitionMiddle->SetCanInterruptOtherTransitions(true);
 
             AnimGraphStateTransition* transitionRight = AddTransitionWithTimeCondition(stateStart,
                 stateC,
-                param.transitionRightBlendTime,
-                param.transitionRightCountDownTime);
+                param.m_transitionRightBlendTime,
+                param.m_transitionRightCountDownTime);
             transitionRight->SetCanInterruptOtherTransitions(true);
 
             m_motionNodeAnimGraph->InitAfterLoading();
@@ -137,74 +137,76 @@ namespace EMotionFX
         m_eventHandler->m_numStatesEnded -= 1;
 
         Simulate(20.0f/*simulationTime*/, 60.0f/*expectedFps*/, 0.0f/*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance){},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
             /*postUpdateCallback*/[this](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, int frame)
             {
-                const std::vector<AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame>& activeObjectsAtFrame = GetParam().activeObjectsAtFrame;
+                const auto& activeObjectsAtFrame = GetParam().m_activeObjectsAtFrame;
                 const AnimGraphStateMachine* stateMachine = this->m_rootStateMachine;
                 const AZStd::vector<AnimGraphNode*>& activeStates = stateMachine->GetActiveStates(animGraphInstance);
                 const AZStd::vector<AnimGraphStateTransition*>& activeTransitions = stateMachine->GetActiveTransitions(animGraphInstance);
 
                 AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame compareAgainst;
 
-                compareAgainst.stateA = AZStd::find_if(activeStates.begin(), activeStates.end(),
+                compareAgainst.m_stateA = AZStd::find_if(activeStates.begin(), activeStates.end(),
                     [](AnimGraphNode* element) -> bool { return element->GetNameString() == "A"; }) != activeStates.end();
-                compareAgainst.stateB = AZStd::find_if(activeStates.begin(), activeStates.end(),
+                compareAgainst.m_stateB = AZStd::find_if(activeStates.begin(), activeStates.end(),
                     [](AnimGraphNode* element) -> bool { return element->GetNameString() == "B"; }) != activeStates.end();
-                compareAgainst.stateC = AZStd::find_if(activeStates.begin(), activeStates.end(),
+                compareAgainst.m_stateC = AZStd::find_if(activeStates.begin(), activeStates.end(),
                     [](AnimGraphNode* element) -> bool { return element->GetNameString() == "C"; }) != activeStates.end();
 
-                compareAgainst.transitionLeft = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
+                compareAgainst.m_transitionLeft = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
                     [](AnimGraphStateTransition* element) -> bool { return element->GetTargetNode()->GetNameString() == "A"; }) != activeTransitions.end();
-                compareAgainst.transitionMiddle = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
+                compareAgainst.m_transitionMiddle = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
                     [](AnimGraphStateTransition* element) -> bool { return element->GetTargetNode()->GetNameString() == "B"; }) != activeTransitions.end();
-                compareAgainst.transitionRight = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
+                compareAgainst.m_transitionRight = AZStd::find_if(activeTransitions.begin(), activeTransitions.end(),
                     [](AnimGraphStateTransition* element) -> bool { return element->GetTargetNode()->GetNameString() == "C"; }) != activeTransitions.end();
 
-                for (const auto& activeObjects : activeObjectsAtFrame)
+                for (const AnimGraphStateMachine_InterruptionTestData::ActiveObjectsAtFrame& activeObjects : activeObjectsAtFrame)
                 {
-                    if (activeObjects.frameNr == frame)
+                    if (activeObjects.m_frameNr == static_cast<AZ::u32>(frame))
                     {
                         // Check which states and transitions are active and compare it to the expected ones.
-                        EXPECT_EQ(activeObjects.stateA, compareAgainst.stateA)
-                            << "State A expected to be " << (activeObjects.stateA ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.stateB, compareAgainst.stateB)
-                            << "State B expected to be " << (activeObjects.stateB ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.stateC, compareAgainst.stateC)
-                            << "State C expected to be " << (activeObjects.stateB ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.transitionLeft, compareAgainst.transitionLeft)
-                            << "Transition Start->A expected to be " << (activeObjects.transitionLeft ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.transitionMiddle, compareAgainst.transitionMiddle)
-                            << "Transition Start->B expected to be " << (activeObjects.transitionMiddle ? "active." : "inactive.");
-                        EXPECT_EQ(activeObjects.transitionRight, compareAgainst.transitionRight)
-                            << "Transition Start->C expected to be " << (activeObjects.transitionRight ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_stateA, ::testing::Eq(compareAgainst.m_stateA))
+                            << "State A expected to be " << (activeObjects.m_stateA ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_stateB, ::testing::Eq(compareAgainst.m_stateB))
+                            << "State B expected to be " << (activeObjects.m_stateB ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_stateC, ::testing::Eq(compareAgainst.m_stateC))
+                            << "State C expected to be " << (activeObjects.m_stateB ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_transitionLeft, ::testing::Eq(compareAgainst.m_transitionLeft))
+                            << "Transition Start->A expected to be " << (activeObjects.m_transitionLeft ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_transitionMiddle, ::testing::Eq(compareAgainst.m_transitionMiddle))
+                            << "Transition Start->B expected to be " << (activeObjects.m_transitionMiddle ? "active." : "inactive.");
+                        EXPECT_THAT(activeObjects.m_transitionRight, ::testing::Eq(compareAgainst.m_transitionRight))
+                            << "Transition Start->C expected to be " << (activeObjects.m_transitionRight ? "active." : "inactive.");
 
                         // Check anim graph events.
-                        EXPECT_EQ(this->m_eventHandler->m_numStatesEntering, activeObjects.numStatesEntering)
-                            << this->m_eventHandler->m_numStatesEntering << " states entering while " << activeObjects.numStatesEntering << " are expected.";
-                        EXPECT_EQ(this->m_eventHandler->m_numStatesEntered, activeObjects.numStatesEntered)
-                            << this->m_eventHandler->m_numStatesEntered << " states entered while " << activeObjects.numStatesEntered << " are expected.";
-                        EXPECT_EQ(this->m_eventHandler->m_numStatesExited, activeObjects.numStatesExited)
-                            << this->m_eventHandler->m_numStatesExited << " states exited while " << activeObjects.numStatesExited << " are expected.";
-                        EXPECT_EQ(this->m_eventHandler->m_numStatesEnded, activeObjects.numStatesEnded)
-                            << this->m_eventHandler->m_numStatesEnded << " states ended while " << activeObjects.numStatesEnded << " are expected.";
-                        EXPECT_EQ(this->m_eventHandler->m_numTransitionsStarted, activeObjects.numTransitionsStarted)
-                            << this->m_eventHandler->m_numTransitionsStarted << " transitions started while " << activeObjects.numTransitionsStarted << " are expected.";
-                        EXPECT_EQ(this->m_eventHandler->m_numTransitionsEnded, activeObjects.numTransitionsEnded)
-                            << this->m_eventHandler->m_numTransitionsEnded << " transitions ended while " << activeObjects.numTransitionsEnded << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numStatesEntering, activeObjects.m_numStatesEntering)
+                            << this->m_eventHandler->m_numStatesEntering << " states entering while " << activeObjects.m_numStatesEntering << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numStatesEntered, activeObjects.m_numStatesEntered)
+                            << this->m_eventHandler->m_numStatesEntered << " states entered while " << activeObjects.m_numStatesEntered << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numStatesExited, activeObjects.m_numStatesExited)
+                            << this->m_eventHandler->m_numStatesExited << " states exited while " << activeObjects.m_numStatesExited << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numStatesEnded, activeObjects.m_numStatesEnded)
+                            << this->m_eventHandler->m_numStatesEnded << " states ended while " << activeObjects.m_numStatesEnded << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numTransitionsStarted, activeObjects.m_numTransitionsStarted)
+                            << this->m_eventHandler->m_numTransitionsStarted << " transitions started while " << activeObjects.m_numTransitionsStarted << " are expected.";
+                        EXPECT_EQ(this->m_eventHandler->m_numTransitionsEnded, activeObjects.m_numTransitionsEnded)
+                            << this->m_eventHandler->m_numTransitionsEnded << " transitions ended while " << activeObjects.m_numTransitionsEnded << " are expected.";
+
+
                     }
                 }
             }
         );
     }
 
-    std::vector<AnimGraphStateMachine_InterruptionTestData> animGraphStateMachineInterruptionTestData
+    AZStd::array animGraphStateMachineInterruptionTestData
     {
         // Start transition Start->A, interrupt with Start->B while Start->A is still transitioning
         // Interrupt with Start->C while the others keep transitioning till Start->C is done
-        {
+        AnimGraphStateMachine_InterruptionTestData{
             10.0f/*transitionLeftBlendTime*/,
             1.0f/*transitionLeftCountDownTime*/,
             10.0f/*transitionMiddleBlendTime*/,
@@ -280,7 +282,7 @@ namespace EMotionFX
         },
         // Start transition Start->A and let Start->B/C interrupt it
         // Start->A/B finishes and holds the target state active while Start->C is finishing
-        {
+        AnimGraphStateMachine_InterruptionTestData{
             2.0f/*transitionLeftBlendTime*/,
             1.0f/*transitionLeftCountDownTime*/,
             3.0f/*transitionMiddleBlendTime*/,
@@ -381,13 +383,13 @@ namespace EMotionFX
 
     struct AnimGraphStateMachine_InterruptionPropertiesTestData
     {
-        float transitionLeftBlendTime;
-        float transitionLeftCountDownTime;
-        float transitionRightBlendTime;
-        float transitionRightCountDownTime;
-        AnimGraphStateTransition::EInterruptionMode interruptionMode;
-        float maxBlendWeight;
-        AnimGraphStateTransition::EInterruptionBlendBehavior interruptionBlendBehavior;
+        float m_transitionLeftBlendTime;
+        float m_transitionLeftCountDownTime;
+        float m_transitionRightBlendTime;
+        float m_transitionRightCountDownTime;
+        AnimGraphStateTransition::EInterruptionMode m_interruptionMode;
+        float m_maxBlendWeight;
+        AnimGraphStateTransition::EInterruptionBlendBehavior m_interruptionBlendBehavior;
     };
 
     class AnimGraphStateMachine_InterruptionPropertiesFixture
@@ -422,18 +424,18 @@ namespace EMotionFX
             // Start->A (can be interrupted)
             m_transitionLeft = AddTransitionWithTimeCondition(stateStart,
                     stateA,
-                    param.transitionLeftBlendTime,
-                    param.transitionLeftCountDownTime);
+                    param.m_transitionLeftBlendTime,
+                    param.m_transitionLeftCountDownTime);
             m_transitionLeft->SetCanBeInterrupted(true);
-            m_transitionLeft->SetInterruptionMode(param.interruptionMode);
-            m_transitionLeft->SetMaxInterruptionBlendWeight(param.maxBlendWeight);
-            m_transitionLeft->SetInterruptionBlendBehavior(param.interruptionBlendBehavior);
+            m_transitionLeft->SetInterruptionMode(param.m_interruptionMode);
+            m_transitionLeft->SetMaxInterruptionBlendWeight(param.m_maxBlendWeight);
+            m_transitionLeft->SetInterruptionBlendBehavior(param.m_interruptionBlendBehavior);
 
             // Start->B (interrupting transition)
             m_transitionRight = AddTransitionWithTimeCondition(stateStart,
                     stateB,
-                    param.transitionRightBlendTime,
-                    param.transitionRightCountDownTime);
+                    param.m_transitionRightBlendTime,
+                    param.m_transitionRightCountDownTime);
             m_transitionRight->SetCanInterruptOtherTransitions(true);
 
             m_motionNodeAnimGraph->InitAfterLoading();
@@ -457,14 +459,11 @@ namespace EMotionFX
         float prevBlendWeight = 0.0f;
 
         Simulate(2.0f /*simulationTime*/, 10.0f /*expectedFps*/, 0.0f /*fpsVariance*/,
-            /*preCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
-            /*postCallback*/[this]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
-            /*preUpdateCallback*/[this](AnimGraphInstance*, float, float, int) {},
+            /*preCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
+            /*postCallback*/[]([[maybe_unused]] AnimGraphInstance* animGraphInstance) {},
+            /*preUpdateCallback*/[](AnimGraphInstance*, float, float, int) {},
             /*postUpdateCallback*/[this, &prevGotInterrupted, &prevBlendWeight](AnimGraphInstance* animGraphInstance, [[maybe_unused]] float time, [[maybe_unused]] float timeDelta, [[maybe_unused]] int frame)
             {
-                const AnimGraphStateMachine_InterruptionPropertiesTestData param = GetParam();
-
-                const AnimGraphStateTransition::EInterruptionMode interruptionMode = m_transitionLeft->GetInterruptionMode();
                 const float maxInterruptionBlendWeight = m_transitionLeft->GetMaxInterruptionBlendWeight();
                 const bool gotInterrupted = m_transitionLeft->GotInterrupted(animGraphInstance);
                 const bool gotInterruptedThisFrame = gotInterrupted && !prevGotInterrupted;
@@ -497,10 +496,10 @@ namespace EMotionFX
             );
     }
 
-    std::vector<AnimGraphStateMachine_InterruptionPropertiesTestData> animGraphStateMachineInterruptionPropertiesTestData
+    AZStd::array animGraphStateMachineInterruptionPropertiesTestData
     {
         // Enable right transition at 0.5 while this is over the max blend weight already, don't allow interruption.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f /*transitionLeftBlendTime*/,
             0.0f /*transitionLeftCountDownTime*/,
             1.0f /*transitionRightBlendTime*/,
@@ -510,7 +509,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue /*interruptionBlendBehavior*/
         },
         // Right transition ready after 0.5 while still in range for the max blend weight, interruption expected.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f,
             0.0f,
             1.0f,
@@ -520,7 +519,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue
         },
         // Interruption always allowed.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             0.5f,
             0.0f,
             0.5f,
@@ -530,7 +529,7 @@ namespace EMotionFX
             AnimGraphStateTransition::EInterruptionBlendBehavior::Continue
         },
         // Test if interrupted transitions stop transitioning with blend behavior set to stop.
-        {
+        AnimGraphStateMachine_InterruptionPropertiesTestData{
             1.0f,
             0.0f,
             1.0f,

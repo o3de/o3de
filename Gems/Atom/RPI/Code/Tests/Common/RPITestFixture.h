@@ -21,7 +21,7 @@
 #include <Common/AssetManagerTestFixture.h>
 #include <Common/RHI/Stubs.h>
 #include <Common/RHI/Factory.h>
-#include <Common/AssetSystemStub.h>
+#include <Atom/Utils/TestUtils/AssetSystemStub.h>
 
 namespace UnitTest
 {
@@ -38,8 +38,6 @@ namespace UnitTest
 
         void SetUp() override;
         void TearDown() override;
-
-        AZ::RHI::Device* GetDevice();
 
         //! Performs processing that would normally be done by the frame scheduler, 
         //! which has to happen in order to recompile the same SRG instance multiple times.

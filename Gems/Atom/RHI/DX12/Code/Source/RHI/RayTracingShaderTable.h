@@ -22,7 +22,7 @@ namespace AZ
             : public RHI::RayTracingShaderTable
         {
         public:
-            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingShaderTable, AZ::SystemAllocator);
 
             static RHI::Ptr<RayTracingShaderTable> Create();
 
@@ -61,7 +61,7 @@ namespace AZ
             RHI::ResultCode BuildInternal() override;
             //////////////////////////////////////////////////////////////////////////
 
-            static const uint32_t BufferCount = 3;
+            static const uint32_t BufferCount = AZ::RHI::Limits::Device::FrameCountMax;
             ShaderTableBuffers m_buffers[BufferCount];
 
             uint32_t m_currentBufferIndex = 0;

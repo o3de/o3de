@@ -7,7 +7,6 @@
  */
 
 #include <AudioSystemImpl_wwise.h>
-#include <AudioLogger.h>
 
 #include <AK/SoundEngine/Common/AkSoundEngine.h>
 #include <AzCore/Android/AndroidEnv.h>
@@ -16,7 +15,7 @@ namespace Audio
 {
     namespace Platform
     {
-        void InitializeMemory(CAudioLogger&)
+        void InitializeMemory()
         {
         }
 

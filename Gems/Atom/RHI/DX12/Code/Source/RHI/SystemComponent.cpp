@@ -38,7 +38,6 @@
 #include <RHI/TransientAttachmentPool.h>
 #include <Atom/RHI.Reflect/DX12/Base.h>
 #include <Atom/RHI/FactoryManagerBus.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 namespace AZ

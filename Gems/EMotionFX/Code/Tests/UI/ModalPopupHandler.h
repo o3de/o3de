@@ -162,7 +162,7 @@ namespace EMotionFX
         void CheckForPopupWidget();
 
     private:
-        MenuActiveCallback m_MenuActiveCallback = nullptr;
+        MenuActiveCallback m_menuActiveCallback = nullptr;
         WidgetActiveCallback m_widgetActiveCallback = nullptr;
         ActionCompletionCallback m_actionCompletionCallback = nullptr;
 

@@ -11,6 +11,7 @@
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobCancelGroup.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 
@@ -52,7 +53,6 @@ namespace AWSCore
             {
                 ec->Class<AWSCoreSystemComponent>("AWSCore", "Adds core support for working with AWS")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -136,12 +136,21 @@ namespace AWSCore
 
     void AWSCoreSystemComponent::InitAWSApi()
     {
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        // Multiple different Gems might try to use the AWSNativeSDK, so make sure it only gets initialized / shutdown once
+        // by the first Gem to try using it.
+        m_ownsAwsNativeInitialization = !AWSNativeSDKInit::InitializationManager::IsInitialized();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        }
     }
 
     void AWSCoreSystemComponent::ShutdownAWSApi()
     {
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::Shutdown();
+        }
     }
 
     AZ::JobContext* AWSCoreSystemComponent::GetDefaultJobContext()
@@ -159,8 +168,9 @@ namespace AWSCore
                 // If m_firstThreadCPU isn't -1, then each thread will be
                 // assigned to a specific CPU starting with the specified CPU.
                 AZ::JobManagerDesc jobManagerDesc{};
+                jobManagerDesc.m_jobManagerName = "AWSCore JobManager";
                 AZ::JobManagerThreadDesc threadDesc(m_firstThreadCPU, m_threadPriority, m_threadStackSize);
-                for (unsigned int i = 0; i < m_threadCount; ++i)
+                for (int i = 0; i < m_threadCount; ++i)
                 {
                     jobManagerDesc.m_workerThreads.push_back(threadDesc);
                     if (threadDesc.m_cpuId > -1)

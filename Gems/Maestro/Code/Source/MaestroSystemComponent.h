@@ -9,7 +9,6 @@
 
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/Component/Component.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <CrySystemBus.h>
 
 #include "Cinematics/Movie.h"
@@ -17,14 +16,8 @@
 
 namespace Maestro
 {
-    // Ensure that Maestro always has the LegacyAllocator and CryStringAllocators available
-    // NOTE: This component is only activated in the AssetBuilder, as the required allocators are
-    // booted by the launcher or editor.
-    using MaestroAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
-
     class MaestroAllocatorComponent
         : public AZ::Component
-        , protected MaestroAllocatorScope
     {
     public:
         AZ_COMPONENT(MaestroAllocatorComponent, "{3636E0F4-5208-450F-83F4-BE09F6EE7FBC}", AZ::Component);
@@ -43,7 +36,6 @@ namespace Maestro
         : public AZ::Component
         , protected MaestroRequestBus::Handler
         , protected CrySystemEventBus::Handler
-        , protected MaestroAllocatorScope
     {
     public:
         AZ_COMPONENT(MaestroSystemComponent, "{47991994-4417-4CD7-AE0B-FEF1C8720766}");

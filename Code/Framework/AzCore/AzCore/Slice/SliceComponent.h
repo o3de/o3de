@@ -13,7 +13,6 @@
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Slice/SliceAsset.h>
 #include <AzCore/Serialization/DataPatch.h>
-#include <AzCore/Serialization/DynamicSerializableField.h>
 #include <AzCore/Serialization/IdUtils.h>
 
 namespace AZ
@@ -117,7 +116,7 @@ namespace AZ
         class DataFlagsPerEntity
         {
         public:
-            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DataFlagsPerEntity, AZ::SystemAllocator);
             AZ_TYPE_INFO(DataFlagsPerEntity, "{57FE7B9E-B2AF-4F6F-9F8D-87F671E91C99}");
             static void Reflect(ReflectContext* context);
 
@@ -226,7 +225,7 @@ namespace AZ
          */
         struct InstantiatedContainer
         {
-            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstantiatedContainer, SystemAllocator);
             AZ_TYPE_INFO(InstantiatedContainer, "{05038EF7-9EF7-40D8-A29B-503D85B85AF8}");
 
             InstantiatedContainer(bool deleteEntitiesOnDestruction = true);
@@ -444,7 +443,7 @@ namespace AZ
              * @return A pointer to the newly created slice instance. Returns nullptr on error or if the SliceComponent is not instantiated.
             */
             SliceInstance* CreateInstanceFromExistingEntities(AZStd::vector<AZ::Entity*>& entities,
-                const EntityIdToEntityIdMap assetToLiveIdMap,
+                const EntityIdToEntityIdMap& assetToLiveIdMap,
                 SliceInstanceId sliceInstanceId = SliceInstanceId::CreateRandom());
 
             /** 
@@ -1085,6 +1084,7 @@ namespace AZ
         class EntityIdAccessor final : public AZ::Entity
         {
         public:
+            AZ_CLASS_ALLOCATOR(EntityIdAccessor, SystemAllocator)
             void ForceSetId(AZ::EntityId id)
             {
                 m_id = id;

@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Matrix3x3Functions_ToScale",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "To Scale",
+                "category": "Math/Matrix3x3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Matrix3x3Functions_ToScale",
+                    "details": {
+                        "name": "To Scale",
+                        "tooltip": "Returns scale part of the transformation matrix"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{15A4332F-7C3F-4A58-AC35-50E1CE53FB9C}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Vector3"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

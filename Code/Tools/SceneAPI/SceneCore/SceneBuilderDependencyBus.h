@@ -24,7 +24,12 @@ namespace AZ
             : public AZ::EBusTraits
         {
         public:
-            virtual void ReportJobDependencies(JobDependencyList& jobDependencyList, const char* platformIdentifier) = 0;
+            //! Builders can implement this function to add job dependencies on other assets that may be used in the scene file conversion process.
+            virtual void ReportJobDependencies(JobDependencyList& jobDependencyList, const char* platformIdentifier) { AZ_UNUSED(jobDependencyList); AZ_UNUSED(platformIdentifier); }
+            
+            //! Builders can implement this function to append to the job analysis fingerprint. This can be used to trigger rebuilds when global configuration changes.
+            //! See also AssetBuilderDesc::m_analysisFingerprint.
+            virtual void AddFingerprintInfo(AZStd::set<AZStd::string>& fingerprintInfo) { AZ_UNUSED(fingerprintInfo); }
         };
         using SceneBuilderDependencyBus = EBus<SceneBuilderDependencyRequests>;
     } // namespace SceneAPI

@@ -10,9 +10,7 @@
 
 #include <Request/AWSGameLiftCreateSessionRequest.h>
 
-#include <aws/core/utils/Outcome.h>
 #include <aws/gamelift/GameLiftClient.h>
-#include <aws/gamelift/model/CreateGameSessionRequest.h>
 
 namespace AWSGameLift
 {
@@ -24,12 +22,10 @@ namespace AWSGameLift
         Aws::GameLift::Model::CreateGameSessionRequest BuildAWSGameLiftCreateGameSessionRequest(const AWSGameLiftCreateSessionRequest& createSessionRequest);
 
         // Create CreateGameSessionRequest and make a CreateGameSession call through GameLift client
-        AZStd::string CreateSession(
-            const Aws::GameLift::GameLiftClient& gameliftClient,
-            const AWSGameLiftCreateSessionRequest& createSessionRequest);
+        AZStd::string CreateSession(const AWSGameLiftCreateSessionRequest& createSessionRequest);
 
         // Validate CreateSessionRequest and check required request parameters
-        bool ValidateCreateSessionRequest(const AzFramework::CreateSessionRequest& createSessionRequest);
+        bool ValidateCreateSessionRequest(const Multiplayer::CreateSessionRequest& createSessionRequest);
 
     } // namespace CreateSessionActivity
 } // namespace AWSGameLift

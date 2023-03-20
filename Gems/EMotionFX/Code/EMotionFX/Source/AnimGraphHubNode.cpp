@@ -21,8 +21,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphHubNode::UniqueData, AnimGraphObjectUniqueDataAllocator);
 
     AnimGraphHubNode::AnimGraphHubNode()
         : AnimGraphNode()
@@ -119,7 +119,7 @@ namespace EMotionFX
         // Visualize the output pose.
         if (GetEMotionFX().GetIsInEditorMode() && GetCanVisualize(animGraphInstance))
         {
-            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), mVisualizeColor);
+            animGraphInstance->GetActorInstance()->DrawSkeleton(outputPose->GetPose(), m_visualizeColor);
         }
     }
 

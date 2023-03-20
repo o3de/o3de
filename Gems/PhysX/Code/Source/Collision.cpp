@@ -38,21 +38,6 @@ namespace PhysX
                 return physx::PxFilterFlag::eDEFAULT;
             }
 
-//Enable/Disable this macro in the TouchBending Gem wscript
-#ifdef TOUCHBENDING_LAYER_BIT
-            //If any of the actors is in the TouchBend layer then we are not interested
-            //in contact data, nor interested in eNOTIFY_* callbacks.
-            const AZ::u64 touchBendLayerMask = AzPhysics::CollisionLayer::TouchBend.GetMask();
-            const AZ::u64 layer0 = Combine(filterData0.word0, filterData0.word1);
-            const AZ::u64 layer1 = Combine(filterData1.word0, filterData1.word1);
-            if (layer0 == touchBendLayerMask || layer1 == touchBendLayerMask)
-            {
-                pairFlags = physx::PxPairFlag::eSOLVE_CONTACT |
-                    physx::PxPairFlag::eDETECT_DISCRETE_CONTACT;
-                return physx::PxFilterFlag::eDEFAULT;
-            }
-#endif //TOUCHBENDING_LAYER_BIT
-
             // generate contacts for all that were not filtered above
             pairFlags =
                 physx::PxPairFlag::eCONTACT_DEFAULT |
@@ -60,6 +45,12 @@ namespace PhysX
                 physx::PxPairFlag::eNOTIFY_TOUCH_PERSISTS |
                 physx::PxPairFlag::eNOTIFY_TOUCH_LOST |
                 physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
+
+            // resolving contacts between two kinematic objects is invalid
+            if (physx::PxFilterObjectIsKinematic(attributes0) && physx::PxFilterObjectIsKinematic(attributes1))
+            {
+                pairFlags.clear(physx::PxPairFlag::eSOLVE_CONTACT);
+            }
 
             // generate callbacks for collisions between kinematic and dynamic objects
             if (physx::PxFilterObjectIsKinematic(attributes0) != physx::PxFilterObjectIsKinematic(attributes1))
@@ -89,22 +80,6 @@ namespace PhysX
                 return physx::PxFilterFlag::eDEFAULT;
             }
 
-//Enable/Disable this macro in the TouchBending Gem wscript
-#ifdef TOUCHBENDING_LAYER_BIT
-            //If any of the actors is in the TouchBend layer then we are not interested
-            //in contact data, nor interested in eNOTIFY_* callbacks.
-            const AZ::u64 layer0 = Combine(filterData0.word0, filterData0.word1);
-            const AZ::u64 layer1 = Combine(filterData1.word0, filterData1.word1);
-            const AZ::u64 touchBendLayerMask = AzPhysics::CollisionLayer::TouchBend.GetMask();
-            if (layer0 == touchBendLayerMask || layer1 == touchBendLayerMask)
-            {
-                pairFlags = physx::PxPairFlag::eSOLVE_CONTACT |
-                    physx::PxPairFlag::eDETECT_DISCRETE_CONTACT |
-                    physx::PxPairFlag::eDETECT_CCD_CONTACT;
-                return physx::PxFilterFlag::eDEFAULT;
-            }
-#endif
-
             // generate contacts for all that were not filtered above
             pairFlags =
                 physx::PxPairFlag::eCONTACT_DEFAULT |
@@ -115,6 +90,12 @@ namespace PhysX
                 physx::PxPairFlag::eNOTIFY_CONTACT_POINTS |
                 physx::PxPairFlag::eDETECT_CCD_CONTACT |
                 physx::PxPairFlag::eNOTIFY_CONTACT_POINTS;
+
+            // resolving contacts between two kinematic objects is invalid
+            if (physx::PxFilterObjectIsKinematic(attributes0) && physx::PxFilterObjectIsKinematic(attributes1))
+            {
+                pairFlags.clear(physx::PxPairFlag::eSOLVE_CONTACT);
+            }
 
             // generate callbacks for collisions between kinematic and dynamic objects
             if (physx::PxFilterObjectIsKinematic(attributes0) != physx::PxFilterObjectIsKinematic(attributes1))

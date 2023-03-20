@@ -13,6 +13,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/RTTI/TypeSafeIntegral.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 namespace AZ
 {

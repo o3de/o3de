@@ -98,7 +98,7 @@ namespace EMotionFX
         void TestInput(const AZStd::string& paramName, std::vector<inputType> xInputs)
         {
             BlendTreeConnection* connection = m_floatMath1Node->AddConnection(m_paramNode,
-                m_paramNode->FindOutputPortByName(paramName)->mPortID, BlendTreeFloatMath1Node::PORTID_INPUT_X);
+                static_cast<uint16>(m_paramNode->FindOutputPortByName(paramName)->m_portId), BlendTreeFloatMath1Node::PORTID_INPUT_X);
 
             for (inputType i : xInputs)
             {
@@ -126,11 +126,11 @@ namespace EMotionFX
                         EXPECT_TRUE(RandomFloatIsInRange(actualOutput, 0, static_cast<float>(i))) << "Random float is not in range.";
                         continue;
                     }
-                    if (isnan(actualOutput) && isnan(expectedOutput))
+                    if (AZStd::isnan(actualOutput) && AZStd::isnan(expectedOutput))
                     {
                         continue;
                     }
-                    if (isinf(actualOutput) && isinf(expectedOutput))
+                    if (AZStd::isinf(actualOutput) && AZStd::isinf(expectedOutput))
                     {
                         continue;
                     }

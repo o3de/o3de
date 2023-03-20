@@ -26,12 +26,18 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UserSettings/UserSettings.h>
 #include <AzCore/std/containers/map.h>
+
+#include <AzFramework/Gem/GemInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetEditor/AssetEditorUtils.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
+
+#include <AzQtComponents/Utilities/DesktopUtilities.h>
+
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <Editor/Components/IconComponent.h>
 #include <Editor/GraphCanvas/GraphCanvasEditorNotificationBusId.h>
@@ -50,10 +56,12 @@
 #include <Editor/View/Widgets/NodePalette/VariableNodePaletteTreeItemTypes.h>
 #include <Editor/View/Widgets/ScriptCanvasNodePaletteDockWidget.h>
 #include <Editor/View/Widgets/ui_ScriptCanvasNodePaletteToolbar.h>
+
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteWidget.h>
 #include <GraphCanvas/Widgets/NodePalette/TreeItems/NodePaletteTreeItem.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/Attributes.h>
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Data/DataRegistry.h>
@@ -80,12 +88,11 @@ namespace ScriptCanvasEditor
                 GraphCanvas::NodePaletteTreeItem* variablesRoot = root->CreateChildNode<LocalVariablesListNodePaletteTreeItem>("Variables");
                 root->RegisterCategoryNode(variablesRoot, "Variables");
 
-                // We always want to keep these around as place holders
                 GraphCanvas::NodePaletteTreeItem* customEventRoot = root->GetCategoryNode("Script Events");
-                customEventRoot->SetAllowPruneOnEmpty(false);
+                customEventRoot->SetAllowPruneOnEmpty(true);
 
                 GraphCanvas::NodePaletteTreeItem* globalFunctionRoot = root->GetCategoryNode("User Functions");
-                globalFunctionRoot->SetAllowPruneOnEmpty(false);
+                globalFunctionRoot->SetAllowPruneOnEmpty(true);
 
             }
 
@@ -93,6 +100,7 @@ namespace ScriptCanvasEditor
 
             for (const auto& registryPair : nodeRegistry)
             {
+                
                 const NodePaletteModelInformation* modelInformation = registryPair.second;
 
                 GraphCanvas::GraphCanvasTreeItem* parentItem = root->GetCategoryNode(modelInformation->m_categoryPath.c_str());
@@ -100,7 +108,7 @@ namespace ScriptCanvasEditor
 
                 if (auto customModelInformation = azrtti_cast<const CustomNodeModelInformation*>(modelInformation))
                 {
-                    createdItem = parentItem->CreateChildNode<CustomNodePaletteTreeItem>(customModelInformation->m_typeId, customModelInformation->m_displayName);
+                    createdItem = parentItem->CreateChildNode<CustomNodePaletteTreeItem>(*customModelInformation);
                     createdItem->SetToolTip(QString(customModelInformation->m_toolTip.c_str()));
                 }
                 else if (auto methodNodeModelInformation = azrtti_cast<const MethodNodeModelInformation*>(modelInformation))
@@ -127,6 +135,11 @@ namespace ScriptCanvasEditor
                         createdItem = parentItem->CreateChildNode<ScriptCanvasEditor::EBusSendEventPaletteTreeItem>(ebusSenderNodeModelInformation->m_busName, ebusSenderNodeModelInformation->m_eventName, ebusSenderNodeModelInformation->m_busId, ebusSenderNodeModelInformation->m_eventId, ebusSenderNodeModelInformation->m_isOverload, ebusSenderNodeModelInformation->m_propertyStatus);
                     }
                 }
+                else if (auto dataDrivenModelInformation = azrtti_cast<const DataDrivenNodeModelInformation*>(modelInformation))
+                {
+                    createdItem = parentItem->CreateChildNode<DataDrivenNodePaletteTreeItem>(*dataDrivenModelInformation);
+                    createdItem->SetToolTip(QString(dataDrivenModelInformation->m_toolTip.c_str()));
+                }
 
                 if (createdItem)
                 {
@@ -145,11 +158,10 @@ namespace ScriptCanvasEditor
 
         ScriptCanvasRootPaletteTreeItem::ScriptCanvasRootPaletteTreeItem(const NodePaletteModel& nodePaletteModel, AzToolsFramework::AssetBrowser::AssetBrowserFilterModel* assetModel)
             : GraphCanvas::NodePaletteTreeItem("root", ScriptCanvasEditor::AssetEditorId)
-            , m_nodePaletteModel(nodePaletteModel)
             , m_assetModel(assetModel)
             , m_categorizer(nodePaletteModel)
         {
-            UpgradeNotifications::Bus::Handler::BusConnect();
+            UpgradeNotificationsBus::Handler::BusConnect();
 
             if (m_assetModel)
             {
@@ -167,7 +179,7 @@ namespace ScriptCanvasEditor
 
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             AZ::Data::AssetBus::MultiHandler::BusDisconnect();
-            UpgradeNotifications::Bus::Handler::BusDisconnect();
+            UpgradeNotificationsBus::Handler::BusDisconnect();
 
         }
 
@@ -387,15 +399,6 @@ namespace ScriptCanvasEditor
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
         }
 
-        void ScriptCanvasRootPaletteTreeItem::OnUpgradeComplete()
-        {
-            ConnectLambdas();
-
-            AzFramework::AssetCatalogEventBus::Handler::BusConnect();
-
-            TraverseTree();
-        }
-
         void ScriptCanvasRootPaletteTreeItem::OnUpgradeCancelled()
         {
             if (!AzFramework::AssetCatalogEventBus::Handler::BusIsConnected())
@@ -424,6 +427,8 @@ namespace ScriptCanvasEditor
 
         void ScriptCanvasRootPaletteTreeItem::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> asset)
         {
+            using namespace AzFramework;
+
             AZ::Data::AssetId assetId = asset.GetId();
             m_pendingAssets.erase(assetId);
 
@@ -458,37 +463,28 @@ namespace ScriptCanvasEditor
                         return;
                     }
 
-                    if (!data->m_runtimeData.m_interface.HasAnyFunctionality())
+                    if (!data->m_interfaceData.m_interface.HasAnyFunctionality())
                     {
                         // check for deleting the old entry
                         return;
                     }
 
-                    AZStd::string rootPath, absolutePath;
-                    AZ::Data::AssetInfo assetInfo = AssetHelpers::GetAssetInfo(assetId, rootPath);
-                    AzFramework::StringFunc::Path::Join(rootPath.c_str(), assetInfo.m_relativePath.c_str(), absolutePath);
+                    auto assetInfo = AssetHelpers::GetSourceInfoByProductId(assetId, asset.GetType());
 
-                    AZStd::string normPath = absolutePath;
-                    AzFramework::StringFunc::Path::Normalize(normPath);
-
-                    AZStd::string watchFolder;
-                    bool sourceInfoFound{};
-                    AzToolsFramework::AssetSystemRequestBus::BroadcastResult(sourceInfoFound, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath, normPath.c_str(), assetInfo, watchFolder);
-
-                    if (!sourceInfoFound)
+                    if (!assetInfo.m_assetId.IsValid())
                     {
                         return;
                     }
-
+ 
                     CreateFunctionPaletteItem(asset, assetInfo);
-
+ 
                     treePaletteIter = m_globalFunctionTreeItems.find(asset->GetId());
-
+ 
                     if (treePaletteIter != m_globalFunctionTreeItems.end())
                     {
                         treePaletteIter->second->ClearError();
                     }
-
+ 
                     m_monitoredAssets.emplace(asset->GetId(), asset);
                 }
                 else 
@@ -518,7 +514,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
@@ -567,7 +563,7 @@ namespace ScriptCanvasEditor
                 return;
             }
 
-            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_runtimeData.m_interface;
+            const ScriptCanvas::Grammar::SubgraphInterface& graphInterface = data->m_interfaceData.m_interface;
             if (!graphInterface.HasAnyFunctionality())
             {
                 return;
@@ -648,7 +644,7 @@ namespace ScriptCanvasEditor
             m_mimeType = NodePaletteDockWidget::GetMimeType();
             m_isInContextMenu = isInContextMenu;
             m_allowArrowKeyNavigation = isInContextMenu;
-            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCnavas_ContextMenu";
+            m_saveIdentifier = m_isInContextMenu ? "ScriptCanvas" : "ScriptCanvas_ContextMenu";
 
             m_rootTreeItem = Widget::NodePaletteWidget::ExternalCreateNodePaletteRoot(nodePaletteModel, assetModel);
         }
@@ -670,6 +666,11 @@ namespace ScriptCanvasEditor
             , m_previousCycleAction(nullptr)
             , m_ignoreSelectionChanged(false)
         {
+            
+            GraphCanvas::NodePaletteTreeView* treeView = GetTreeView();
+
+            treeView->setContextMenuPolicy(Qt::ContextMenuPolicy::ActionsContextMenu);
+
             if (!paletteConfig.m_isInContextMenu)
             {
                 QMenu* creationMenu = new QMenu();
@@ -687,10 +688,11 @@ namespace ScriptCanvasEditor
 
                 AddSearchCustomizationWidget(m_newCustomEvent);
 
-                GraphCanvas::NodePaletteTreeView* treeView = GetTreeView();
+                
 
                 {
                     m_nextCycleAction = new QAction(treeView);
+                    m_nextCycleAction->setText(tr("Next Instance in Graph"));
 
                     m_nextCycleAction->setShortcut(QKeySequence(Qt::Key_F8));
                     treeView->addAction(m_nextCycleAction);
@@ -700,6 +702,7 @@ namespace ScriptCanvasEditor
 
                 {
                     m_previousCycleAction = new QAction(treeView);
+                    m_previousCycleAction->setText(tr("Previous Instance in Graph"));
 
                     m_previousCycleAction->setShortcut(QKeySequence(Qt::Key_F7));
                     treeView->addAction(m_previousCycleAction);
@@ -709,6 +712,23 @@ namespace ScriptCanvasEditor
 
                 QObject::connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &NodePaletteDockWidget::OnTreeSelectionChanged);
                 QObject::connect(treeView, &GraphCanvas::NodePaletteTreeView::OnTreeItemDoubleClicked, this, &NodePaletteDockWidget::HandleTreeItemDoubleClicked);
+
+                {
+                    m_openTranslationData = new QAction(treeView);
+                    m_openTranslationData->setText("Explore Translation Data");
+                    treeView->addAction(m_openTranslationData);
+
+                    QObject::connect(m_openTranslationData, &QAction::triggered, this, &NodePaletteDockWidget::OpenTranslationData);
+                }
+
+                {
+                    m_generateTranslation = new QAction(treeView);
+                    m_generateTranslation->setText("Generate Translation");
+                    treeView->addAction(m_generateTranslation);
+
+                    QObject::connect(m_generateTranslation, &QAction::triggered, this, &NodePaletteDockWidget::GenerateTranslation);
+                }
+
             }
 
             ConfigureSearchCustomizationMargins(QMargins(0, 0, 0, 0), 0);
@@ -724,7 +744,7 @@ namespace ScriptCanvasEditor
 
         void NodePaletteDockWidget::OnNewCustomEvent()
         {
-            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>());
+            AzToolsFramework::AssetEditor::AssetEditorRequestsBus::Broadcast(&AzToolsFramework::AssetEditor::AssetEditorRequests::CreateNewAsset, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), AZ::Uuid::CreateNull());
         }
 
         void NodePaletteDockWidget::OnActiveGraphChanged(const GraphCanvas::GraphId& graphCanvasGraphId)
@@ -791,6 +811,7 @@ namespace ScriptCanvasEditor
             {
                 m_nextCycleAction->setEnabled(true);
                 m_previousCycleAction->setEnabled(true);
+                m_openTranslationData->setEnabled(true);
             }
         }
 
@@ -803,6 +824,7 @@ namespace ScriptCanvasEditor
             {
                 m_nextCycleAction->setEnabled(false);
                 m_previousCycleAction->setEnabled(false);
+                m_openTranslationData->setEnabled(false);
             }
         }
 
@@ -824,6 +846,62 @@ namespace ScriptCanvasEditor
         {
             ParseCycleTargets(treeItem);
             CycleToNextNode();
+        }
+
+        void NodePaletteDockWidget::NavigateToTranslationFile(GraphCanvas::NodePaletteTreeItem* nodePaletteItem)
+        {
+            if (nodePaletteItem)
+            {
+                AZ::IO::Path filePath = nodePaletteItem->GetTranslationDataPath();
+                AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
+                if (fileIO && !filePath.empty() && fileIO->Exists(filePath.c_str()))
+                {
+                    AzQtComponents::ShowFileOnDesktop(filePath.c_str());
+                }
+            }
+        }
+
+        void NodePaletteDockWidget::GenerateTranslation()
+        {
+            QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
+
+            QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+
+            for (const QModelIndex& index : indexList)
+            {
+                QModelIndex sourceIndex = filterModel->mapToSource(index);
+
+                GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                nodePaletteItem->GenerateTranslationData();
+            }
+
+            if (indexList.size() == 1)
+            {
+                QModelIndex sourceIndex = filterModel->mapToSource(indexList[0]);
+                if (sourceIndex.isValid())
+                {
+                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                    NavigateToTranslationFile(nodePaletteItem);
+                }
+            }
+        }
+
+        void NodePaletteDockWidget::OpenTranslationData()
+        {
+            QModelIndexList indexList = GetTreeView()->selectionModel()->selectedRows();
+
+            if (indexList.size() == 1)
+            {
+                QSortFilterProxyModel* filterModel = static_cast<QSortFilterProxyModel*>(GetTreeView()->model());
+
+                for (const QModelIndex& index : indexList)
+                {
+                    QModelIndex sourceIndex = filterModel->mapToSource(index);
+
+                    GraphCanvas::NodePaletteTreeItem* nodePaletteItem = static_cast<GraphCanvas::NodePaletteTreeItem*>(sourceIndex.internalPointer());
+                    NavigateToTranslationFile(nodePaletteItem);
+                }
+            }
         }
 
         void NodePaletteDockWidget::ConfigureHelper()

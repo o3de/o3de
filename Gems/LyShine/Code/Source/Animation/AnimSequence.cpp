@@ -80,10 +80,10 @@ void CUiAnimSequence::SetName(const char* name)
         return;   // should never happen, null pointer guard
     }
 
-    string originalName = GetName();
+    AZStd::string originalName = GetName();
 
     m_name = name;
-    m_pUiAnimationSystem->OnSequenceRenamed(originalName, m_name.c_str());
+    m_pUiAnimationSystem->OnSequenceRenamed(originalName.c_str(), m_name.c_str());
 
     if (GetOwner())
     {
@@ -593,6 +593,8 @@ void CUiAnimSequence::Activate()
         pAnimNode->Activate(true);
     }
 }
+
+typedef AZStd::fixed_string<512> stack_string;
 
 //////////////////////////////////////////////////////////////////////////
 void CUiAnimSequence::Deactivate()

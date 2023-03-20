@@ -72,8 +72,8 @@ namespace NvCloth
         // Maximum number of spheres and capsules is imposed by NvCloth library
         size_t sphereCount = 0;
         size_t capsuleCount = 0;
-        bool maxSphereCountReachedWarned = false;
-        bool maxCapsuleCountReachedWarned = false;
+        [[maybe_unused]] bool maxSphereCountReachedWarned = false;
+        [[maybe_unused]] bool maxCapsuleCountReachedWarned = false;
 
         AZStd::vector<SphereCollider> sphereColliders;
         AZStd::vector<CapsuleCollider> capsuleColliders;

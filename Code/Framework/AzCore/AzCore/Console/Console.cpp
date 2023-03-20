@@ -53,7 +53,7 @@ namespace AZ
         MoveFunctorsToDeferredHead(AZ::ConsoleFunctorBase::GetDeferredHead());
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const char* command,
         ConsoleSilentMode silentMode,
@@ -83,7 +83,7 @@ namespace AZ
         return PerformCommand(commandView, commandArgsView, silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         const ConsoleCommandContainer& commandAndArgs,
         ConsoleSilentMode silentMode,
@@ -94,13 +94,13 @@ namespace AZ
     {
         if (commandAndArgs.empty())
         {
-            return false;
+            return AZ::Failure("CommandAndArgs is empty.");
         }
 
         return PerformCommand(commandAndArgs.front(), ConsoleCommandContainer(commandAndArgs.begin() + 1, commandAndArgs.end()), silentMode, invokedFrom, requiredSet, requiredClear);
     }
 
-    bool Console::PerformCommand
+    PerformCommandResult Console::PerformCommand
     (
         AZStd::string_view command,
         const ConsoleCommandContainer& commandArgs,
@@ -110,7 +110,24 @@ namespace AZ
         ConsoleFunctorFlags requiredClear
     )
     {
-        return DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear);
+        if (!DispatchCommand(command, commandArgs, silentMode, invokedFrom, requiredSet, requiredClear))
+        {
+            // If the command could not be dispatched at this time add it to the deferred commands queue
+            DeferredCommand deferredCommand{ AZStd::string_view{ command },
+                                             DeferredCommand::DeferredArguments{ commandArgs.begin(), commandArgs.end() },
+                                             silentMode,
+                                             invokedFrom,
+                                             requiredSet,
+                                             requiredClear };
+
+            CVarFixedString commandLowercase(command);
+            AZStd::to_lower(commandLowercase.begin(), commandLowercase.end());
+            m_deferredCommands.emplace_back(AZStd::move(deferredCommand));
+            return AZ::Failure(AZStd::string::format(
+                "Command \"%s\" is not yet registered. Deferring to attempt execution later.", commandLowercase.c_str()));
+        }
+
+        return AZ::Success();
     }
 
     void Console::ExecuteConfigFile(AZStd::string_view configFileName)
@@ -174,22 +191,39 @@ namespace AZ
         }
     }
 
-    bool Console::HasCommand(const char* command)
+    bool Console::ExecuteDeferredConsoleCommands()
     {
-        return FindCommand(command) != nullptr;
+        auto DeferredCommandCallable = [this](const DeferredCommand& deferredCommand)
+        {
+            return this->DispatchCommand(deferredCommand.m_command,
+                ConsoleCommandContainer(AZStd::from_range, deferredCommand.m_arguments), deferredCommand.m_silentMode,
+                deferredCommand.m_invokedFrom, deferredCommand.m_requiredSet, deferredCommand.m_requiredClear);
+        };
+        // Attempt to invoke the deferred command and remove it from the queue if successful
+        return AZStd::erase_if(m_deferredCommands, DeferredCommandCallable) != 0;
     }
 
-    ConsoleFunctorBase* Console::FindCommand(const char* command)
+    void Console::ClearDeferredConsoleCommands()
+    {
+        m_deferredCommands = {};
+    }
+
+    bool Console::HasCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
+    {
+        return FindCommand(command, ignoreAnyFlags) != nullptr;
+    }
+
+    ConsoleFunctorBase* Console::FindCommand(AZStd::string_view command, ConsoleFunctorFlags ignoreAnyFlags)
     {
         CVarFixedString lowerName(command);
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
 
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
         {
             for (ConsoleFunctorBase* curr : iter->second)
             {
-                if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
+                if ((curr->GetFlags() & ignoreAnyFlags) != ConsoleFunctorFlags::Null)
                 {
                     // Filter functors marked as invisible
                     continue;
@@ -200,29 +234,40 @@ namespace AZ
         return nullptr;
     }
 
-    AZStd::string Console::AutoCompleteCommand(const char* command, AZStd::vector<AZStd::string>* matches)
+    AZStd::string Console::AutoCompleteCommand(AZStd::string_view command, AZStd::vector<AZStd::string>* matches)
     {
-        const size_t commandLength = strlen(command);
-
-        if (commandLength <= 0)
+        if (command.empty())
         {
             return command;
         }
 
         ConsoleCommandContainer commandSubset;
 
-        for (ConsoleFunctorBase* curr = m_head; curr != nullptr; curr = curr->m_next)
+        for (const auto& functor : m_commands)
         {
+            if (functor.second.empty())
+            {
+                continue;
+            }
+
+            // Filter functors registered with the same name
+            const ConsoleFunctorBase* curr = functor.second.front();
+
             if ((curr->GetFlags() & ConsoleFunctorFlags::IsInvisible) == ConsoleFunctorFlags::IsInvisible)
             {
                 // Filter functors marked as invisible
                 continue;
             }
 
-            if (StringFunc::Equal(curr->m_name, command, false, commandLength))
+            if (StringFunc::StartsWith(curr->m_name, command, false))
             {
-                AZLOG_INFO("- %s : %s\n", curr->m_name, curr->m_desc);
-                commandSubset.push_back(curr->m_name);
+                AZLOG_INFO("- %s : %s", curr->m_name, curr->m_desc);
+
+                if (commandSubset.size() < MaxConsoleCommandPlusArgsLength)
+                {
+                    commandSubset.push_back(curr->m_name);
+                }
+
                 if (matches)
                 {
                     matches->push_back(curr->m_name);
@@ -257,7 +302,10 @@ namespace AZ
     {
         for (auto& curr : m_commands)
         {
-            visitor(curr.second.front());
+            if (!curr.second.empty())
+            {
+                visitor(curr.second.front());
+            }
         }
     }
 
@@ -270,7 +318,7 @@ namespace AZ
         }
 
         CVarFixedString lowerName = functor->GetName();
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
         {
@@ -313,7 +361,7 @@ namespace AZ
         }
 
         CVarFixedString lowerName = functor->GetName();
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
         {
@@ -321,6 +369,11 @@ namespace AZ
             if (iter2 != iter->second.end())
             {
                 iter->second.erase(iter2);
+            }
+
+            if (iter->second.empty())
+            {
+                m_commands.erase(iter);
             }
         }
         functor->Unlink(m_head);
@@ -389,7 +442,7 @@ namespace AZ
         ConsoleFunctorFlags flags = ConsoleFunctorFlags::Null;
 
         CVarFixedString lowerName(command);
-        AZStd::transform(lowerName.begin(), lowerName.end(), lowerName.begin(), [](char value) { return std::tolower(value); });
+        AZStd::to_lower(lowerName.begin(), lowerName.end());
 
         CommandMap::iterator iter = m_commands.find(lowerName);
         if (iter != m_commands.end())
@@ -398,29 +451,29 @@ namespace AZ
             {
                 if ((curr->GetFlags() & requiredSet) != requiredSet)
                 {
-                    AZLOG_WARN("%s failed required set flag check\n", curr->m_name);
+                    AZLOG_WARN("%s failed required set flag check", curr->m_name);
                     continue;
                 }
 
                 if ((curr->GetFlags() & requiredClear) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s failed required clear flag check\n", curr->m_name);
+                    AZLOG_WARN("%s failed required clear flag check", curr->m_name);
                     continue;
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::IsCheat) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s is marked as a cheat\n", curr->m_name);
+                    AZLOG_WARN("%s is marked as a cheat", curr->m_name);
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::IsDeprecated) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("%s is marked as deprecated\n", curr->m_name);
+                    AZLOG_WARN("%s is marked as deprecated", curr->m_name);
                 }
 
                 if ((curr->GetFlags() & ConsoleFunctorFlags::NeedsReload) != ConsoleFunctorFlags::Null)
                 {
-                    AZLOG_WARN("Changes to %s will only take effect after level reload\n", curr->m_name);
+                    AZLOG_WARN("Changes to %s will only take effect after level reload", curr->m_name);
                 }
 
                 // Letting this intentionally fall-through, since in editor we can register common variables multiple times
@@ -433,7 +486,7 @@ namespace AZ
                     {
                         CVarFixedString value;
                         curr->GetValue(value);
-                        AZLOG_INFO("> %s : %s\n", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
+                        AZLOG_INFO("> %s : %s", curr->GetName(), value.empty() ? "<empty>" : value.c_str());
                     }
                     flags = curr->GetFlags();
                 }
@@ -460,56 +513,44 @@ namespace AZ
         {
         }
 
-        // Responsible for using the Json Serialization Issue Callback system
-        // to determine when a JSON Patch or JSON Merge Patch modifies a value
-        // at a path underneath the IConsole::ConsoleRootCommandKey JSON pointer
-        JsonSerializationResult::ResultCode operator()(AZStd::string_view message,
-            JsonSerializationResult::ResultCode result, AZStd::string_view path)
-        {
-            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
-            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            if (result.GetTask() == JsonSerializationResult::Tasks::Merge
-                && result.GetProcessing() == JsonSerializationResult::Processing::Completed
-                && inputKey.IsRelativeTo(consoleRootCommandKey))
-            {
-                if (auto type = m_settingsRegistry.GetType(path); type != SettingsRegistryInterface::Type::NoType)
-                {
-                    operator()(path, type);
-                }
-            }
-
-            // This is the default issue reporting, that logs using the warning category
-            if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
-            {
-                scratchBuffer.append(message.begin(), message.end());
-                scratchBuffer.append("\n    Reason: ");
-                result.AppendToString(scratchBuffer, path);
-                scratchBuffer.append(".");
-                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
-
-                scratchBuffer.clear();
-            }
-            return result;
-        }
-
-        void operator()(AZStd::string_view path, SettingsRegistryInterface::Type type)
+        // NotifyEventHandler function for handling when settings underneath the
+        // ConsoleAutoexecCommandKey or ConsoleRuntimeCommandKey key paths are modified
+        void operator()(const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
         {
             using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
 
-            AZ::IO::PathView consoleRootCommandKey{ IConsole::ConsoleRootCommandKey, AZ::IO::PosixPathSeparator };
-            AZ::IO::PathView inputKey{ path, AZ::IO::PosixPathSeparator };
-            if (inputKey.IsRelativeTo(consoleRootCommandKey))
+            if (notifyEventArgs.m_type == AZ::SettingsRegistryInterface::Type::NoType)
             {
-                FixedValueString command = inputKey.LexicallyRelative(consoleRootCommandKey).Native();
+                return;
+            }
+
+            constexpr AZ::IO::PathView consoleRuntimeCommandKey{ IConsole::ConsoleRuntimeCommandKey, AZ::IO::PosixPathSeparator };
+            constexpr AZ::IO::PathView consoleAutoexecCommandKey{ IConsole::ConsoleAutoexecCommandKey, AZ::IO::PosixPathSeparator };
+            AZ::IO::PathView inputKey{ notifyEventArgs.m_jsonKeyPath, AZ::IO::PosixPathSeparator };
+
+            // Abuses the IsRelativeToFuncton function of the path class to extract the console
+            // command from the settings registry objects
+            FixedValueString command;
+            if (inputKey != consoleRuntimeCommandKey && inputKey.IsRelativeTo(consoleRuntimeCommandKey))
+            {
+                command = inputKey.LexicallyRelative(consoleRuntimeCommandKey).Native();
+            }
+            else if (inputKey != consoleAutoexecCommandKey && inputKey.IsRelativeTo(consoleAutoexecCommandKey))
+            {
+                command = inputKey.LexicallyRelative(consoleAutoexecCommandKey).Native();
+            }
+
+            if (!command.empty())
+            {
                 ConsoleCommandContainer commandArgs;
                 // Argument string which stores the value from the Settings Registry long enough
                 // to pass into the PerformCommand. The ConsoleCommandContainer stores string_views
                 // and therefore doesn't own the memory.
                 FixedValueString commandArgString;
 
-                if (type == SettingsRegistryInterface::Type::String)
+                if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::String)
                 {
-                    if (m_settingsRegistry.Get(commandArgString, path))
+                    if (m_settingsRegistry.Get(commandArgString, notifyEventArgs.m_jsonKeyPath))
                     {
                         auto ConvertCommandArgumentToArray = [&commandArgs](AZStd::string_view token)
                         {
@@ -519,35 +560,35 @@ namespace AZ
                         StringFunc::TokenizeVisitor(commandArgString, ConvertCommandArgumentToArray, commandSeparators);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::Boolean)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::Boolean)
                 {
                     bool commandArgBool{};
-                    if (m_settingsRegistry.Get(commandArgBool, path))
+                    if (m_settingsRegistry.Get(commandArgBool, notifyEventArgs.m_jsonKeyPath))
                     {
                         commandArgString = commandArgBool ? "true" : "false";
                         commandArgs.emplace_back(commandArgString);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::Integer)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::Integer)
                 {
                     // Try converting to a signed 64-bit number first and then an unsigned 64-bit number
                     AZ::s64 commandArgInt{};
                     AZ::u64 commandArgUInt{};
-                    if (m_settingsRegistry.Get(commandArgInt, path))
+                    if (m_settingsRegistry.Get(commandArgInt, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgInt);
                         commandArgs.emplace_back(commandArgString);
                     }
-                    else if (m_settingsRegistry.Get(commandArgUInt, path))
+                    else if (m_settingsRegistry.Get(commandArgUInt, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgUInt);
                         commandArgs.emplace_back(commandArgString);
                     }
                 }
-                else if (type == SettingsRegistryInterface::Type::FloatingPoint)
+                else if (notifyEventArgs.m_type == SettingsRegistryInterface::Type::FloatingPoint)
                 {
                     double commandArgFloat{};
-                    if (m_settingsRegistry.Get(commandArgFloat, path))
+                    if (m_settingsRegistry.Get(commandArgFloat, notifyEventArgs.m_jsonKeyPath))
                     {
                         AZStd::to_string(commandArgString, commandArgFloat);
                         commandArgs.emplace_back(commandArgString);
@@ -560,7 +601,8 @@ namespace AZ
                     commandTrace += commandArg;
                 }
 
-                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent, ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
+                m_console.PerformCommand(command, commandArgs, ConsoleSilentMode::NotSilent,
+                    ConsoleInvokedFrom::AzConsole, ConsoleFunctorFlags::Null, ConsoleFunctorFlags::Null);
             }
         }
 
@@ -571,14 +613,14 @@ namespace AZ
 
     void Console::RegisterCommandInvokerWithSettingsRegistry(AZ::SettingsRegistryInterface& settingsRegistry)
     {
-        // Make sure the there is a JSON object at the path of AZ::IConsole::ConsoleRootCommandKey
+        // Make sure the there is a JSON object at the ConsoleRuntimeCommandKey or ConsoleAutoexecKey
         // So that JSON Patch is able to add values underneath that object (JSON Patch doesn't create intermediate objects)
-        settingsRegistry.MergeSettings(R"({ "Amazon": { "AzCore": { "Runtime": { "ConsoleCommands": {} } }}})",
-            SettingsRegistryInterface::Format::JsonMergePatch);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleRuntimeCommandKey);
+        settingsRegistry.MergeSettings(R"({})", SettingsRegistryInterface::Format::JsonMergePatch,
+            IConsole::ConsoleAutoexecCommandKey);
         m_consoleCommandKeyHandler = settingsRegistry.RegisterNotifier(ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this });
 
-        JsonApplyPatchSettings applyPatchSettings;
-        applyPatchSettings.m_reporting = ConsoleCommandKeyNotificationHandler{ settingsRegistry, *this };
-        settingsRegistry.SetApplyPatchSettings(applyPatchSettings);
+        settingsRegistry.SetNotifyForMergeOperations(true);
     }
 }

@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/EBus/EBus.h>
+#include <AzCore/Component/Component.h>
 
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Color.h>
@@ -23,7 +24,7 @@ namespace DebugDraw
     class DebugDrawLineElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawLineElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawLineElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawLineElement, "{A26E844A-36C6-4832-B779-237019324FAA}");
         static void Reflect(AZ::ReflectContext* context);
 

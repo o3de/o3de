@@ -8,16 +8,17 @@
 
 #include "ComponentModeCollection.h"
 
-#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Commands/ComponentModeCommand.h>
 
 namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ComponentModeCollection, AZ::SystemAllocator)
 
-            static const char* const s_nextActiveComponentModeTitle = "Edit Next";
+        static const char* const s_nextActiveComponentModeTitle = "Edit Next";
         static const char* const s_previousActiveComponentModeTitle = "Edit Previous";
         static const char* const s_nextActiveComponentModeDesc = "Move to the next component";
         static const char* const s_prevActiveComponentModeDesc = "Move to the previous component";
@@ -119,6 +120,11 @@ namespace AzToolsFramework
             }
         };
 
+        ComponentModeCollection::ComponentModeCollection(ViewportEditorModeTrackerInterface* viewportEditorModeTracker)
+            : m_viewportEditorModeTracker(viewportEditorModeTracker)
+        {
+        }
+
         void ComponentModeCollection::AddComponentMode(
             const AZ::EntityComponentIdPair& entityComponentIdPair, const AZ::Uuid componentType,
             const ComponentModeFactoryFunction& componentModeBuilder)
@@ -131,7 +137,10 @@ namespace AzToolsFramework
             if (componentTypeIt == m_activeComponentTypes.end())
             {
                 m_activeComponentTypes.push_back(componentType);
+                m_viewportUiHandlers.emplace_back(componentType);
             }
+
+            m_activeComponentModes.emplace_back(entityComponentIdPair, componentType);
 
             // see if we already have a ComponentModeBuilder for the specific component on this entity
             const auto builderEntityIt = AZStd::find_if(
@@ -197,17 +206,30 @@ namespace AzToolsFramework
             }
         }
 
+        AZStd::vector<AZ::Uuid> ComponentModeCollection::GetComponentTypes() const
+        {
+            // If in component mode, return the active component types, otherwise return an empty vector
+            return InComponentMode() ? m_activeComponentTypes : AZStd::vector<AZ::Uuid>{};
+        }
+        
+        void ComponentModeCollection::EnumerateActiveComponents(
+            const ComponentModeCollectionInterface::ActiveComponentModeCB& callBack) const
+        {
+            for (const auto& componentMode : m_activeComponentModes)
+            {
+                callBack(componentMode.m_entityComponentIdPair, componentMode.m_componentType);
+            }
+        }
+
         void ComponentModeCollection::BeginComponentMode()
         {
             m_selectedComponentModeIndex = 0;
-            m_componentMode = true;
+            m_componentModeState = ComponentModeState::Active;
             m_adding = false;
 
             // notify listeners the editor has entered ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(), &EditorComponentModeNotifications::EnteredComponentMode,
-                m_activeComponentTypes);
+            m_viewportEditorModeTracker->ActivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // enable actions for the first/primary ComponentMode
             // note: if multiple ComponentModes are activated at the same time, actions
@@ -215,6 +237,7 @@ namespace AzToolsFramework
             if (!m_entitiesAndComponentModes.empty())
             {
                 RefreshActions();
+                PopulateViewportUi();
             }
 
             // if entering ComponentMode not as an undo/redo step (an action was
@@ -275,13 +298,13 @@ namespace AzToolsFramework
                 componentModeCommand.release();
             }
 
+            // Change our state from "Active" to "Stopping", so that any code that executes during deactivation that checks to see
+            // if component mode is active will see that it is not.
+            m_componentModeState = ComponentModeState::Stopping;
+
             // notify listeners the editor has left ComponentMode - listeners may
             // wish to modify state to indicate this (e.g. appearance, functionality etc.)
-            EditorComponentModeNotificationBus::Event(
-                GetEntityContextId(),
-                &EditorComponentModeNotifications::LeftComponentMode,
-                m_activeComponentTypes);
-
+            m_viewportEditorModeTracker->DeactivateMode({ GetEntityContextId() }, ViewportEditorMode::Component);
 
             // clear stored modes and builders for this ComponentMode
             // TLDR: avoid 'use after free' error
@@ -295,9 +318,13 @@ namespace AzToolsFramework
             }
             m_entitiesAndComponentModeBuilders.clear();
             m_activeComponentTypes.clear();
+            m_activeComponentModes.clear();
+            m_viewportUiHandlers.clear();
 
-            m_componentMode = false;
             m_selectedComponentModeIndex = 0;
+
+            // Finished stopping component mode, so transition to a "Stopped" state.
+            m_componentModeState = ComponentModeState::Stopped;
         }
 
         void ComponentModeCollection::Refresh(const AZ::EntityComponentIdPair& entityComponentIdPair)
@@ -379,6 +406,24 @@ namespace AzToolsFramework
             return m_activeComponentTypes.size() > 1;
         }
 
+        static ComponentModeViewportUi* FindViewportUiHandlerForType(
+            AZStd::vector<ComponentModeViewportUi>& viewportUiHandlers, const AZ::Uuid& componentType)
+        {
+            auto handler = AZStd::find_if(
+                viewportUiHandlers.begin(), viewportUiHandlers.end(),
+                [componentType](const ComponentModeViewportUi& handler)
+                {
+                    return handler.GetComponentType() == componentType;
+                });
+
+            if (handler == viewportUiHandlers.end())
+            {
+                return nullptr;
+            }
+
+            return handler;
+        }
+
         bool ComponentModeCollection::ActiveComponentModeChanged(const AZ::Uuid& previousComponentType)
         {
             if (m_activeComponentTypes[m_selectedComponentModeIndex] != previousComponentType)
@@ -404,13 +449,31 @@ namespace AzToolsFramework
                     // replace the current component mode by invoking the builder
                     // for the new 'active' component mode
                     componentMode.m_componentMode = componentModeBuilder->m_componentModeBuilder();
+
+                    // populate the viewport UI with the new component mode
+                    PopulateViewportUi();
+
+                    // set the appropriate viewportUiHandler to active
+                    if (auto viewportUiHandler =
+                            FindViewportUiHandlerForType(m_viewportUiHandlers, m_activeComponentTypes[m_selectedComponentModeIndex]))
+                    {
+                        viewportUiHandler->SetComponentModeViewportUiActive(true);
+                    }
+
+                    ViewportUi::ViewportUiRequestBus::Event(
+                        ViewportUi::DefaultViewportId, &ViewportUi::ViewportUiRequestBus::Events::CreateViewportBorder,
+                        componentMode.m_componentMode->GetComponentModeName().c_str(),
+                        []
+                        {
+                            ComponentModeSystemRequestBus::Broadcast(&ComponentModeSystemRequests::EndComponentMode);
+                        });
                 }
 
                 RefreshActions();
 
                 if (m_selectedComponentModeIndex < m_activeComponentTypes.size())
                 {
-                    // notify other systems ComponentMode actions have changed
+                    // notify other systems the active ComponentMode has changed
                     EditorComponentModeNotificationBus::Event(
                         GetEntityContextId(), &EditorComponentModeNotifications::ActiveComponentModeChanged,
                         m_activeComponentTypes[m_selectedComponentModeIndex]);
@@ -513,5 +576,18 @@ namespace AzToolsFramework
             }
         }
 
+        void ComponentModeCollection::PopulateViewportUi()
+        {
+            // update viewport UI for new component type
+            if (m_selectedComponentModeIndex < m_activeComponentTypes.size())
+            {
+                // iterate over all entities and their active Component Mode, populate viewport UI for the new mode
+                for (auto& entityAndComponentMode : m_entitiesAndComponentModes)
+                {
+                    // build viewport UI based on current state
+                    entityAndComponentMode.m_componentMode->PopulateViewportUi();
+                }
+            }
+        }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework

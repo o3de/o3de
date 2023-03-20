@@ -13,9 +13,9 @@
 AZ_PUSH_DISABLE_WARNING(4127 4251 4800, "-Wunknown-warning-option") // 4127: conditional expression is constant
                                                                     // 4251: 'QLocale::d': class 'QSharedDataPointer<QLocalePrivate>' needs to have dll-interface to be used by clients of class 'QLocale'
                                                                     // 4800: 'int': forcing value to bool 'true' or 'false' (performance warning)
+#include <QFutureWatcher>
 #include <QObject>
 #include <QPixmap>
-#include <QFutureWatcher>
 AZ_POP_DISABLE_WARNING
 #endif
 
@@ -26,19 +26,19 @@ namespace AzToolsFramework
         //! ThumbnailKey is used to locate thumbnails in thumbnail cache
         /*
             ThumbnailKey contains any kind of identifiable information to retrieve thumbnails (e.g. assetId, assetType, filename, etc.)
-            To use thumbnail system, keep reference to your thumbnail key, and retrieve Thumbnail via ThumbnailerRequestsBus
+            To use thumbnail system, keep reference to your thumbnail key, and retrieve Thumbnail via ThumbnailerRequestBus
         */
         class ThumbnailKey
             : public QObject
         {
-            friend class ThumbnailContext;
-
             Q_OBJECT
         public:
             AZ_RTTI(ThumbnailKey, "{43F20F6B-333D-4226-8E4F-331A62315255}");
 
             ThumbnailKey() = default;
             virtual ~ThumbnailKey() = default;
+
+            void SetReady(bool ready);
 
             bool IsReady() const;
 
@@ -47,12 +47,12 @@ namespace AzToolsFramework
             virtual size_t GetHash() const;
 
             virtual bool Equals(const ThumbnailKey* other) const;
+
         Q_SIGNALS:
             //! Updated signal is dispatched whenever thumbnail data was changed. Anyone using this thumbnail should listen to this.
             void ThumbnailUpdatedSignal() const;
             //! Force update mapped thumbnails
             void UpdateThumbnailSignal() const;
-
 
         private:
             bool m_ready = false;
@@ -85,8 +85,8 @@ namespace AzToolsFramework
             ~Thumbnail() override;
             bool operator == (const Thumbnail& other) const;
             void Load();
+            virtual void UpdateTime(float deltaTime);
             const QPixmap& GetPixmap() const;
-            virtual void UpdateTime(float /*deltaTime*/) {}
             SharedThumbnailKey GetKey() const;
             State GetState() const;
 
@@ -114,11 +114,14 @@ namespace AzToolsFramework
             ThumbnailProvider() = default;
             virtual ~ThumbnailProvider() = default;
             virtual bool GetThumbnail(SharedThumbnailKey key, SharedThumbnail& thumbnail) = 0;
-            //! Priority identifies ThumbnailProvider order in ThumbnailContext
-            //! Higher priority means this ThumbnailProvider will take precedence in generating a thumbnail when
-            //! a supplied ThumbnailKey is supported by multiple providers.
-            virtual int GetPriority() const { return 0; }
-            //! A unique ThumbnailProvider name identifying it in a ThumbnailContext
+            //! Priority identifies ThumbnailProvider order
+            //! Higher priority means this ThumbnailProvider will take precedence in generating a thumbnail when a supplied ThumbnailKey is
+            //! supported by multiple providers.
+            virtual int GetPriority() const
+            {
+                return 0;
+            }
+            //! A unique ThumbnailProvider name identifyier
             virtual const char* GetProviderName() const = 0;
         };
 
@@ -139,7 +142,7 @@ namespace AZStd
     };
 
     template <>
-    struct AZStd::equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
+    struct equal_to<AzToolsFramework::Thumbnailer::SharedThumbnailKey>
     {
         AZ_FORCE_INLINE bool operator()(const AzToolsFramework::Thumbnailer::SharedThumbnailKey& left, const AzToolsFramework::Thumbnailer::SharedThumbnailKey& right) const
         {

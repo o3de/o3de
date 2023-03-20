@@ -11,10 +11,15 @@
 #define CRYINCLUDE_CRYCOMMON_ISPLINES_H
 #pragma once
 
-#include <CrySizer.h>
 #include <IXml.h>
+#include <AzCore/std/containers/vector.h>
 
 //////////////////////////////////////////////////////////////////////////
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 // These flags are mostly applicable for hermit based splines.
 enum ESplineKeyTangentType
@@ -347,8 +352,6 @@ namespace spline
                 m_c[3] = T((2.0f * v0 - 2.0f * v1 + s0 + s1) * idt * idt * idt);
             }
         }
-
-        void GetMemoryUsage(ICrySizer* pSizer) const {}
     };
 
     inline float fast_fmod(float x, float y)
@@ -378,7 +381,7 @@ namespace spline
 
         SplineKey& operator=(const SplineKey& src) { memcpy(this, &src, sizeof(*this)); return *this; }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
     };
 
     template    <class T>
@@ -410,7 +413,7 @@ namespace spline
 
     //! TCB spline key used in quaternion spline with angle axis as input.
     struct TCBAngAxisKey
-        :  public TCBSplineKey<CryQuat>
+        :  public TCBSplineKey<Quat>
     {
         float angle;
         Vec3 axis;
@@ -466,7 +469,7 @@ namespace spline
         ILINE void flag_clr(int flag) { m_flags &= ~flag; };
         ILINE int  flag(int flag)  { return m_flags & flag; };
 
-        ILINE void ORT(int ort) { m_ORT = ort; };
+        ILINE void ORT(int ort) { m_ORT = static_cast<uint8>(ort); };
         ILINE int  ORT() const { return m_ORT; };
         ILINE int  isORT(int o) const { return (m_ORT == o); };
 
@@ -637,8 +640,8 @@ namespace spline
         virtual void interp_keys(int key1, int key2, float u, value_type& val) = 0;
         //////////////////////////////////////////////////////////////////////////
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
-     
+        static void Reflect(AZ::ReflectContext* context) {}
+
         inline void add_ref()
         {
             ++m_refCount;
@@ -1013,7 +1016,7 @@ namespace spline
             }
         }
 
-        static void Reflect(AZ::SerializeContext* serializeContext) {}
+        static void Reflect(AZ::ReflectContext* context) {}
 
     protected:
         virtual void interp_keys(int from, int to, float u, T& val)

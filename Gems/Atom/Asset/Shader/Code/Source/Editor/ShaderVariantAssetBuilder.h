@@ -33,12 +33,12 @@ namespace AZ
         {
             RHI::ShaderPlatformInterface& m_shaderPlatformInterface;
             const AssetBuilderSDK::PlatformInfo& m_platformInfo;
-            const RHI::ShaderCompilerArguments& m_shaderCompilerArguments;
+            const RHI::ShaderBuildArguments& m_shaderBuildArguments;
             //! Used to write temporary files during shader compilation, like *.hlsl, or *.air, or *.metallib, etc.
             const AZStd::string& m_tempDirPath;
             //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset,
             //! especially during hot-reload. A (ShaderVariantAsset.timestamp) >= (ShaderAsset.timestamp).
-            const AZStd::sys_time_t m_assetBuildTimestamp; 
+            const AZ::u64 m_assetBuildTimestamp;
             const RPI::ShaderSourceData& m_shaderSourceDataDescriptor;
             const RPI::ShaderOptionGroupLayout& m_shaderOptionGroupLayout;
             const MapOfStringToStageType& m_shaderEntryPoints;
@@ -93,6 +93,9 @@ namespace AZ
             //! Called from ProcessJob when the job is supposed to create ShaderVariantAssets. One ShaderVariantAsset will be produced per RHI::APIType
             //! supported by the platform.
             void ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const;
+
+            // Launch rga.exe with ProcessLauncher
+            static bool LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage);
 
             static AZStd::string GetShaderVariantTreeAssetJobKey() { return AZStd::string::format("%s_varianttree", ShaderVariantAssetBuilderJobKey); }
             static AZStd::string GetShaderVariantAssetJobKey(RPI::ShaderVariantStableId variantStableId) { return AZStd::string::format("%s_variant_%u", ShaderVariantAssetBuilderJobKey, variantStableId.GetIndex()); }

@@ -78,6 +78,11 @@ namespace AZ
                 m_aspectFlags == other.m_aspectFlags;
         }
 
+        AZ::HashValue64 ImageSubresourceRange::GetHash(AZ::HashValue64 seed) const
+        {
+            return TypeHash64(*this, seed);
+        }
+
         void ImageSubresourceRange::Reflect(AZ::ReflectContext* context)
         {
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -98,13 +103,14 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<ImageSubresourceLayout>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_size", &ImageSubresourceLayout::m_size)
                     ->Field("m_rowCount", &ImageSubresourceLayout::m_rowCount)
                     ->Field("m_bytesPerRow", &ImageSubresourceLayout::m_bytesPerRow)
                     ->Field("m_bytesPerImage", &ImageSubresourceLayout::m_bytesPerImage)
                     ->Field("m_blockElementWidth", &ImageSubresourceLayout::m_blockElementWidth)
                     ->Field("m_blockElementHeight", &ImageSubresourceLayout::m_blockElementHeight)
+                    ->Field("m_offset", &ImageSubresourceLayout::m_offset)
                     ;
             }
         }
@@ -115,30 +121,16 @@ namespace AZ
             uint32_t bytesPerRow,
             uint32_t bytesPerImage,
             uint32_t blockElementWidth,
-            uint32_t blockElementHeight)
+            uint32_t blockElementHeight,
+            uint32_t offset)
             : m_size{size}
             , m_rowCount{rowCount}
             , m_bytesPerRow{bytesPerRow}
             , m_bytesPerImage{bytesPerImage}
             , m_blockElementWidth{blockElementWidth}
             , m_blockElementHeight{blockElementHeight}
-        {}
-
-        ImageSubresourceLayoutPlaced::ImageSubresourceLayoutPlaced(const ImageSubresourceLayout& subresourceLayout, size_t offset)
-            : ImageSubresourceLayout(subresourceLayout)
             , m_offset{offset}
         {}
-
-        void ImageSubresourceLayoutPlaced::Reflect(AZ::ReflectContext* context)
-        {
-            if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<ImageSubresourceLayoutPlaced, ImageSubresourceLayout>()
-                    ->Version(0)
-                    ->Field("m_offset", &ImageSubresourceLayoutPlaced::m_offset)
-                    ;
-            }
-        }
 
         ImageSubresourceLayout GetImageSubresourceLayout(Size imageSize, Format imageFormat)
         {
@@ -358,8 +350,7 @@ namespace AZ
             }
             else
             {
-                const uint32_t bitsPerPixel = RHI::GetFormatSize(imageFormat) * 8;
-                subresourceLayout.m_bytesPerRow = (imageSize.m_width * bitsPerPixel + 7) / 8; // round up to nearest byte
+                subresourceLayout.m_bytesPerRow = imageSize.m_width * RHI::GetFormatSize(imageFormat);
                 subresourceLayout.m_rowCount = imageSize.m_height;
                 subresourceLayout.m_size.m_width = imageSize.m_width;
                 subresourceLayout.m_size.m_height = imageSize.m_height;

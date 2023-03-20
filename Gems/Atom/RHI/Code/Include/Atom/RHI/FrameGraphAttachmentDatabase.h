@@ -40,78 +40,94 @@ namespace AZ
         public:
             FrameGraphAttachmentDatabase() = default;
 
-            /// Clears the database back to an empty state.
+            //! Clears the database back to an empty state.
             void Clear();
 
-            /// Imports an image into the database.
+            //! Imports an image into the database.
             ResultCode ImportImage(const AttachmentId& attachmentId, Ptr<Image> image);
 
-            /// Imports a swapchain into the database.
+            //! Imports a swapchain into the database.
             ResultCode ImportSwapChain(const AttachmentId& attachmentId, Ptr<SwapChain> swapChain);
 
-            /// Imports a buffer into the database.
+            //! Imports a buffer into the database.
             ResultCode ImportBuffer(const AttachmentId& attachmentId, Ptr<Buffer> buffer);
 
-            /// Creates a transient image and inserts it into the database.
+            //! Creates a transient image and inserts it into the database.
             ResultCode CreateTransientImage(const TransientImageDescriptor& descriptor);
 
-            /// Creates a transient buffer and inserts it into the database.
+            //! Creates a transient buffer and inserts it into the database.
             ResultCode CreateTransientBuffer(const TransientBufferDescriptor& descriptor);
 
-            /// Finds the attachment associated with \param attachmentId and returns its image descriptor.
+            //! Finds the attachment associated with \param attachmentId and returns its image descriptor.
             ImageDescriptor GetImageDescriptor(const AttachmentId& attachmentId) const;
 
-            /// Finds the attachment associated with \param attachmentId and returns its buffer descriptor.
+            //! Finds the attachment associated with \param attachmentId and returns its buffer descriptor.
             BufferDescriptor GetBufferDescriptor(const AttachmentId& attachmentId) const;
 
-            /// Returns whether the attachment exists in the database.
+            //! Returns whether the attachment exists in the database.
             bool IsAttachmentValid(const AttachmentId& attachmentId) const;
 
-            /// Finds an attachment associated with \param attachmentId.
+            //! Finds an attachment associated with \param attachmentId.
             const FrameAttachment* FindAttachment(const AttachmentId& attachmentId) const;
             FrameAttachment* FindAttachment(const AttachmentId& attachmentId);
 
-            /// Finds an attachment associated with \param attachmentId and attempts to cast
-            /// to the requested type. Will return null if the type is not compatible, or the
-            /// attachment was not found.
+            //! Finds an attachment associated with \param attachmentId and attempts to cast
+            //! to the requested type. Will return null if the type is not compatible, or the
+            //! attachment was not found.
             template <typename AttachmentType>
             const AttachmentType* FindAttachment(const AttachmentId& attachmentId) const;
 
             template <typename AttachmentType>
             AttachmentType* FindAttachment(const AttachmentId& attachmentId);
 
-            /// Returns the full list of attachments.
+            //! Returns the full list of attachments.
             const AZStd::vector<FrameAttachment*>& GetAttachments() const;
 
-            /// Returns the full list of image attachments.
+            //! Returns the full list of image attachments.
             const AZStd::vector<ImageFrameAttachment*>& GetImageAttachments() const;
 
-            /// Returns the full list of buffer attachments.
+            //! Returns the full list of buffer attachments.
             const AZStd::vector<BufferFrameAttachment*>& GetBufferAttachments() const;
 
-            /// Returns the transient swap chain attachments registered in the graph.
+            //! Returns the transient swap chain attachments registered in the graph.
             const AZStd::vector<SwapChainFrameAttachment*>& GetSwapChainAttachments() const;
 
-            /// Returns the imported image attachments registered in the graph.
+            //! Returns the imported image attachments registered in the graph.
             const AZStd::vector<ImageFrameAttachment*>& GetImportedImageAttachments() const;
 
-            /// Returns the imported buffer attachments registered in the graph.
+            //! Returns the imported buffer attachments registered in the graph.
             const AZStd::vector<BufferFrameAttachment*>& GetImportedBufferAttachments() const;
 
-            /// Returns the transient image attachments registered in the graph.
+            //! Returns the transient image attachments registered in the graph.
             const AZStd::vector<ImageFrameAttachment*>& GetTransientImageAttachments() const;
 
-            /// Returns the transient buffer attachments registered in the graph.
+            //! Returns the transient buffer attachments registered in the graph.
             const AZStd::vector<BufferFrameAttachment*>& GetTransientBufferAttachments() const;
 
-            /// Finds the list of scope attachments used by a scope for the given attachment.
+            //! Finds the list of scope attachments used by a scope for the given attachment.
             const ScopeAttachmentPtrList* FindScopeAttachmentList(const ScopeId& scopeId, const AttachmentId& attachmentId) const;
 
-            /// Finds the scope attachment used by a scope for the given attachment. If multiple scope attachments are used for the
-            /// same attachment (like binding multiple mips of a texture), the index parameter will specify which one to select.
-            const ScopeAttachment* FindScopeAttachment(const ScopeId& scopeId, const AttachmentId& attachmentId, size_t index = 0) const;
+            //! Finds the scope attachment used by a scope for the given attachment
+            const ScopeAttachment* FindScopeAttachment(const ScopeId& scopeId, const AttachmentId& attachmentId) const;
 
-            /// Returns the full list of scope attachments.
+            //! Finds the scope attachment used by a scope for the given attachment. If multiple scope image attachments are used for the
+            //! same attachment, provide ScopeAttachmentUsage (in case attachments are merged) and
+            //! ImageViewDescriptor (in case the attachments are different based on view, i.e different mips or aspect of a texture)  to ensure
+            //! that the correct scope attachment is returned.
+            const ScopeAttachment* FindScopeAttachment(
+                const ScopeId& scopeId,
+                const AttachmentId& attachmentId,
+                const ImageViewDescriptor& imageViewDescriptor,
+                const RHI::ScopeAttachmentUsage attachmentUsage) const;
+
+            //! Finds the scope attachment used by a scope for the given attachment. If multiple scope attachments are used for the same attachment 
+            //! provide attachmentUsage to ensure that the correct scope attachment is returned
+            const ScopeAttachment* FindScopeAttachment(
+                const ScopeId& scopeId,
+                const AttachmentId& attachmentId,
+                const RHI::ScopeAttachmentUsage attachmentUsage) const;
+
+            //! Returns the full list of scope attachments.
             const ScopeAttachmentPtrList& GetScopeAttachments() const;
 
             template <typename ScopeAttachmentType, typename... Args>
@@ -120,8 +136,8 @@ namespace AZ
                 FrameAttachment& attachment,
                 Args&&... arguments);
 
-            /// Emplaces a use of a resource pool by a specific scope. Returns the ScopeId of the most recent use of the pool or en empty
-            /// ScopeId if this is the first use.
+            //! Emplaces a use of a resource pool by a specific scope. Returns the ScopeId of the most recent use of the pool or en empty
+            //! ScopeId if this is the first use.
             ScopeId EmplaceResourcePoolUse(ResourcePool& pool, ScopeId scopeId);
 
         private:

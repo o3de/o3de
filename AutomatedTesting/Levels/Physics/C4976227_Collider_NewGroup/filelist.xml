@@ -1,6 +1,0 @@
-<download name="C4976227_PhysXCollider_GroupAddition" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39332" md5="4580e2311ac223d3aa0aa1be71c17494"/>
- </files>
-</download>

@@ -25,10 +25,9 @@
 
 namespace AzQtComponents
 {
-    namespace CardConstants
-    {
-        static const char* kPropertySelected = "selected";
-    }
+
+    static QString g_containerCardClass = QStringLiteral("ContainerCard");
+    static QString g_sectionCardClass = QStringLiteral("SectionCard");
 
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
@@ -43,6 +42,18 @@ namespace AzQtComponents
             }
         }
         return QPixmap::fromImage(image);
+    }
+
+    void Card::applyContainerStyle(Card* card)
+    {
+        Style::addClass(card, g_containerCardClass);
+        CardHeader::applyContainerStyle(card->header());
+    }
+
+    void Card::applySectionStyle(Card* card)
+    {
+        Style::addClass(card, g_sectionCardClass);
+        CardHeader::applySectionStyle(card->header());
     }
 
     Card::Card(QWidget* parent /* = nullptr */)
@@ -144,6 +155,11 @@ namespace AzQtComponents
     void Card::setTitle(const QString& title)
     {
         m_header->setTitle(title);
+    }
+    
+    void Card::setTitleToolTip(const QString& toolTip)
+    {
+        m_header->setTitleToolTip(toolTip);
     }
 
     QString Card::title() const
@@ -347,7 +363,7 @@ namespace AzQtComponents
         config.toolTipPaddingInPixels = 5;
         config.headerIconSizeInPixels = CardHeader::defaultIconSize();
         config.rootLayoutSpacing = 0;
-        config.warningIcon = QStringLiteral(":/Cards/img/UI20/Cards/warning.svg");
+        config.warningIcon = QStringLiteral(":/Notifications/warning.svg");
         config.warningIconSize = {24, 24};
         config.disabledIconAlpha = 0.25;
 

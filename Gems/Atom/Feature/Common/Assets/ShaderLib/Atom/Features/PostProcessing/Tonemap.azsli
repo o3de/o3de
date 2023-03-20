@@ -1,0 +1,22 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#pragma once
+
+
+float3 ApplyFilmicTonemap(float3 color)
+{
+    // Apply filmic curve. 
+    return (color * (6.2 * color + 0.5)) / (color * (6.2 * color + 1.7)+ 0.06);
+}
+
+float3 ApplyManualExposure(float3 color, float exposure)
+{
+    // Apply Manual exposure
+    return color * pow(2.0, exposure);
+}

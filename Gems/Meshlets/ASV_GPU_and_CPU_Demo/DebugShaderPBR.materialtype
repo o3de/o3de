@@ -1,0 +1,63 @@
+{
+    "description": "Base Material with properties used to define Standard PBR, a metallic-roughness Physically-Based Rendering (PBR) material shading model.",
+    "version": 3,
+    "propertyLayout": {
+        "groups": [
+            {
+                "name": "settings",
+                "displayName": "Settings"
+            }
+        ],
+        "properties": {
+            "settings": [
+                {
+                    "name": "color",
+                    "displayName": "Color",
+                    "type": "Color",
+                    "defaultValue": [ 1.0, 1.0, 1.0 ],
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_baseColor"
+                    }
+                },
+                {
+                    "name": "metallic",
+                    "displayName": "Metallic",
+                    "type": "Float",
+                    "defaultValue": 0.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_metallic"
+                    }
+                },
+                {
+                    "name": "roughness",
+                    "displayName": "Roughness",
+                    "type": "Float",
+                    "defaultValue": 1.0,
+                    "min": 0.0,
+                    "max": 1.0,
+                    "connection": {
+                        "type": "ShaderInput",
+                        "name": "m_roughness"
+                    }
+                }
+            ]
+        }
+    },
+    "shaders": [
+        {
+            "file": "./DebugShaderPBR_ForwardPass.shader"
+        },
+        {
+            "file": "Shaders/Shadow/Shadowmap.shader"
+        },
+        {
+            "file": "Shaders/Depth/DepthPass.shader"
+        }
+    ],
+    "functors": [
+    ]
+}

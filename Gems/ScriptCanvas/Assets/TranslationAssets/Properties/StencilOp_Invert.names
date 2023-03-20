@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "StencilOp_Invert",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Invert",
+                "category": "Constants/Stencil Op"
+            },
+            "methods": [
+                {
+                    "base": "GetStencilOp_Invert",
+                    "details": {
+                        "name": "Invert"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

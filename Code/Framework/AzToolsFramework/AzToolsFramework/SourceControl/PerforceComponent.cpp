@@ -20,6 +20,8 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzToolsFramework/SourceControl/PerforceConnection.h>
 
+#include <QProcess>
+
 namespace AzToolsFramework
 {
     namespace
@@ -75,9 +77,16 @@ namespace AzToolsFramework
         m_resolveKey = true;
         m_testTrust = false;
 
+
         // set up signals before we start thread.
         m_shutdownThreadSignal = false;
-        m_WorkerThread = AZStd::thread(AZStd::bind(&PerforceComponent::ThreadWorker, this));
+        m_WorkerThread = AZStd::thread(
+            { /*m_name =*/ "Perforce worker" },
+            [this]
+            {
+                ThreadWorker();
+            }
+        );
 
         SourceControlConnectionRequestBus::Handler::BusConnect();
         SourceControlCommandBus::Handler::BusConnect();
@@ -116,7 +125,6 @@ namespace AzToolsFramework
                     "Perforce Connectivity", "Manages Perforce connectivity and executes Perforce commands.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                 ;
             }
         }
@@ -893,7 +901,7 @@ namespace AzToolsFramework
     {
         AZStd::lock_guard<AZStd::mutex> locker(m_SettingsQueueMutex);
         m_settingsQueue.push(AZStd::move(result));
-        EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);
+        AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this);
     }
 
     bool PerforceComponent::CheckConnectivityForAction(const char* actionDesc, const char* filePath) const
@@ -1315,7 +1323,7 @@ namespace AzToolsFramework
     void PerforceComponent::ThreadWorker()
     {
         m_ProcessThreadID = AZStd::this_thread::get_id();
-        while (1)
+        while (true)
         {
             // block until signaled:
             m_WorkerSemaphore.acquire();
@@ -1449,7 +1457,7 @@ namespace AzToolsFramework
             {
                 AZStd::lock_guard<AZStd::mutex> locker(m_ResultQueueMutex);
                 m_resultQueue.push(AZStd::move(resp));
-                EBUS_QUEUE_FUNCTION(AZ::TickBus, &PerforceComponent::ProcessResultQueue, this);// narrow events to the main thread.
+                AZ::TickBus::QueueFunction(&PerforceComponent::ProcessResultQueue, this); // narrow events to the main thread.
             }
         }
     }

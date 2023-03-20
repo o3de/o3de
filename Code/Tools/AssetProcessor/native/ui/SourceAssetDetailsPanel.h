@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include "AssetDetailsPanel.h"
+#include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <QScopedPointer>
 #endif
 
@@ -33,6 +34,8 @@ namespace AssetProcessor
         explicit SourceAssetDetailsPanel(QWidget* parent = nullptr);
         ~SourceAssetDetailsPanel() override;
 
+        void SetIsIntermediateAsset() { m_isIntermediateAsset = true; }
+
     public Q_SLOTS:
         void AssetDataSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 
@@ -51,5 +54,7 @@ namespace AssetProcessor
             const AZStd::shared_ptr<const SourceAssetTreeItemData> sourceItemData);
 
         QScopedPointer<Ui::SourceAssetDetailsPanel> m_ui;
+        AZStd::optional<AZ::s64> m_intermediateAssetFolderID;
+        bool m_isIntermediateAsset = false;
     };
 } // namespace AssetProcessor

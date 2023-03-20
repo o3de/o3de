@@ -12,7 +12,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/ConnectionActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationState that will couple the two specified nodes together. The ordering of the coupling is decided by the specified connection type from the perspective of the 'nodeToPickUp'
@@ -21,6 +21,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(CoupleNodesState, AZ::SystemAllocator)
         CoupleNodesState(AutomationStateModelId firstNode, GraphCanvas::ConnectionType connectionType, AutomationStateModelId secondNode, AutomationStateModelId outputId = "");
         ~CoupleNodesState() override = default;
 
@@ -46,6 +47,7 @@ namespace ScriptCanvasDeveloper
         : public NamedAutomationState
     {
     public:
+        AZ_CLASS_ALLOCATOR(ConnectEndpointsState, AZ::SystemAllocator)
         ConnectEndpointsState(AutomationStateModelId sourceEndpoint, AutomationStateModelId targetEndpoint, AutomationStateModelId outputId = "");
         ~ConnectEndpointsState() override = default;
 

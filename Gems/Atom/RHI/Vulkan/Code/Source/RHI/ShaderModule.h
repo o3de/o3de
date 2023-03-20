@@ -9,8 +9,6 @@
 
 #include <Atom/RHI/DeviceObject.h>
 #include <AzCore/Memory/PoolAllocator.h>
-#include <Atom/RHI.Reflect/Vulkan/ShaderDescriptor.h>
-#include <Atom/RHI.Reflect/Vulkan/ShaderDescriptor.h>
 #include <Atom/RHI.Reflect/Vulkan/ShaderStageFunction.h>
 
 namespace AZ
@@ -25,7 +23,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(ShaderModule, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderModule, AZ::ThreadPoolAllocator);
             AZ_RTTI(ShaderModule, "FB682B11-D456-4151-AEE4-5D73A4C7B6F2", Base);
 
             struct Descriptor

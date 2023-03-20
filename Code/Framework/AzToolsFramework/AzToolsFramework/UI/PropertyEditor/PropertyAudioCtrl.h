@@ -30,6 +30,27 @@ class QMimeData;
 namespace AzToolsFramework
 {
     //=============================================================================
+    // Audio Control Selector Request Bus
+    // For connecting UI proper
+    //=============================================================================
+    class AudioControlSelectorRequests
+        : public AZ::EBusTraits
+    {
+    public:
+        // EBusTraits
+        static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
+        static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+        using BusIdType = AudioPropertyType;
+
+        virtual AZStd::string SelectResource(AZStd::string_view previousValue)
+        {
+            return previousValue;
+        }
+    };
+
+    using AudioControlSelectorRequestBus = AZ::EBus<AudioControlSelectorRequests>;
+
+    //=============================================================================
     // Audio Control Selector Widget
     //=============================================================================
     class AudioControlSelectorWidget
@@ -38,7 +59,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidget, AZ::SystemAllocator);
         AudioControlSelectorWidget(QWidget* parent = nullptr);
 
         void SetControlName(const QString& controlName);
@@ -88,7 +109,7 @@ namespace AzToolsFramework
         Q_OBJECT
 
     public:
-        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AudioControlSelectorWidgetHandler, AZ::SystemAllocator);
 
         AZ::u32 GetHandlerName() const override
         {

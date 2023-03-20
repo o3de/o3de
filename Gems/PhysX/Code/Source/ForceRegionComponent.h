@@ -14,6 +14,7 @@
 
 #include <AzCore/Component/Component.h>
 
+#include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBodyEvents.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
@@ -31,6 +32,7 @@ namespace PhysX
     /// A net force will be calculated per entity by summing all the attached forces on each tick.
     class ForceRegionComponent
         : public AZ::Component
+        , protected Physics::RigidBodyNotificationBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
@@ -45,13 +47,17 @@ namespace PhysX
         
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-            required.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
+            required.push_back(AZ_CRC_CE("TransformService"));
+            required.push_back(AZ_CRC_CE("PhysicsTriggerService"));
         }
 
         // Component
         void Activate() override;
         void Deactivate() override;
+
+        // Physics::RigidBodyNotifications overrides...
+        void OnPhysicsEnabled(const AZ::EntityId& entityId) override;
+        void OnPhysicsDisabled(const AZ::EntityId& entityId) override;
 
         // EntityDebugDisplayEventBus
         void DisplayEntityViewport(const AzFramework::ViewportInfo& viewportInfo

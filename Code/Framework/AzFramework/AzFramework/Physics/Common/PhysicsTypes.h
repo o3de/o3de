@@ -13,6 +13,7 @@
 #include <AzCore/std/containers/variant.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace Physics
 {
@@ -23,11 +24,12 @@ namespace Physics
 
 namespace AzPhysics
 {
-    //! Default Scene Names and Crc32
-    static constexpr const char* DefaultPhysicsSceneName = "DefaultScene";
-    static constexpr const AZ::Crc32 DefaultPhysicsSceneId = AZ_CRC_CE(DefaultPhysicsSceneName);
-    static constexpr const char* EditorPhysicsSceneName = "EditorScene";
-    static constexpr const AZ::Crc32 EditorPhysicsSceneId = AZ_CRC_CE(EditorPhysicsSceneName);
+    //! Maximum number of scenes, Default Scene Names and Crc32
+    constexpr AZ::u32 MaxNumberOfScenes = 64;
+    constexpr const char* DefaultPhysicsSceneName = "DefaultScene";
+    constexpr AZ::Crc32 DefaultPhysicsSceneId = AZ_CRC_CE(DefaultPhysicsSceneName);
+    constexpr const char* EditorPhysicsSceneName = "EditorScene";
+    constexpr AZ::Crc32 EditorPhysicsSceneId = AZ_CRC_CE(EditorPhysicsSceneName);
 
     //! Default gravity.
     static const AZ::Vector3 DefaultGravity = AZ::Vector3(0.0f, 0.0f, -9.81f);
@@ -56,7 +58,7 @@ namespace AzPhysics
     //! A handle to a Scene within the physics simulation.
     //! A SceneHandle is a tuple of a Crc of the scenes name and the index in the Scene list.
     using SceneHandle = AZStd::tuple<AZ::Crc32, SceneIndex>;
-    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), -1 };
+    static constexpr SceneHandle InvalidSceneHandle = { AZ::Crc32(), SceneIndex(-1) };
 
     //! Ease of use type for referencing a List of SceneHandle objects.
     using SceneHandleList = AZStd::vector<SceneHandle>;
@@ -103,17 +105,10 @@ namespace AzPhysics
 
         DEFAULT = COMPUTE_COM | COMPUTE_INERTIA | COMPUTE_MASS
     };
-    //! Bitwise operators for MassComputeFlags
-    inline MassComputeFlags operator|(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) | aznumeric_cast<AZ::u8>(rhs));
-    }
 
-    inline MassComputeFlags operator&(MassComputeFlags lhs, MassComputeFlags rhs)
-    {
-        return aznumeric_cast<MassComputeFlags>(aznumeric_cast<AZ::u8>(lhs) & aznumeric_cast<AZ::u8>(rhs));
-    }
-    
+    //! Bitwise operators for MassComputeFlags
+    AZ_DEFINE_ENUM_BITWISE_OPERATORS(MassComputeFlags)
+
     //! Variant to allow support for the system to either create the Shape(s) or use the provide Shape(s) that have been created externally.
     //! Can be one of the following.
     //! @code{ .cpp }

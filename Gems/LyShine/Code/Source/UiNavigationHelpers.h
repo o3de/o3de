@@ -9,7 +9,7 @@
 
 #include <LyShine/Bus/UiTransformBus.h>
 #include <AzFramework/Input/Channels/InputChannelDigitalWithSharedModifierKeyStates.h>
-#include <CryCommon/LyShine/UiBase.h>
+#include <LyShine/UiBase.h>
 
 namespace AzFramework
 {

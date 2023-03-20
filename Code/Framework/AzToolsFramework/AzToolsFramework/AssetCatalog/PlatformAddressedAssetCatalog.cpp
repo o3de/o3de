@@ -143,7 +143,7 @@ namespace AzToolsFramework
         return AssetCatalog::RemoveDeltaCatalog(deltaCatalog);
     }
 
-    bool PlatformAddressedAssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZStd::string>& levelDirs)
+    bool PlatformAddressedAssetCatalog::CreateBundleManifest(const AZStd::string& deltaCatalogPath, const AZStd::vector<AZStd::string>& dependentBundleNames, const AZStd::string& fileDirectory, int bundleVersion, const AZStd::vector<AZ::IO::Path>& levelDirs)
     {
         return AssetCatalog::CreateBundleManifest(deltaCatalogPath, dependentBundleNames, fileDirectory, bundleVersion, levelDirs);
     }

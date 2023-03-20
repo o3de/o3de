@@ -43,7 +43,7 @@ namespace AZ
             : public RPI::FeatureProcessor
         {
             public:
-            AZ_RTTI(AZ::Render::SkyBoxFeatureProcessorInterface, "{71061869-1190-4451-A337-E9CFF16441B4}"); 
+            AZ_RTTI(AZ::Render::SkyBoxFeatureProcessorInterface, "{71061869-1190-4451-A337-E9CFF16441B4}", AZ::RPI::FeatureProcessor); 
 
             virtual void Enable(bool enable) = 0;
             virtual bool IsEnabled() = 0;

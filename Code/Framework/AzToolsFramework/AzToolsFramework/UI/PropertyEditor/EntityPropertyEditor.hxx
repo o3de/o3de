@@ -19,14 +19,19 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityBus.h>
+#include <AzCore/Component/TickBus.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityBus.h>
+#include <AzToolsFramework/FocusMode/FocusModeNotificationBus.h>
 #include <AzToolsFramework/ToolsComponents/ComponentMimeData.h>
 #include <AzToolsFramework/ToolsComponents/EditorInspectorComponentBus.h>
 #include <AzQtComponents/Components/O3DEStylesheet.h>
@@ -56,10 +61,15 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
+    class ComponentModeCollectionInterface;
     struct SourceControlFileInfo;
-
+    class ReadOnlyEntityPublicInterface;
+    class FocusModeInterface;
+    class ContainerEntityInterface;
+ 
     namespace AssetBrowser
     {
         class ProductAssetBrowserEntry;
@@ -68,6 +78,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class PrefabPublicInterface;
+        class InstanceUpdateExecutorInterface;
     };
 
     namespace UndoSystem
@@ -107,21 +118,42 @@ namespace AzToolsFramework
         , public AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , public AzToolsFramework::EntityPropertyEditorRequestBus::Handler
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
+        , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
-        , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
+        , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private ReadOnlyEntityPublicNotificationBus::Handler
+        , public FocusModeNotificationBus::Handler
     {
         Q_OBJECT;
     public:
 
-        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator)
+
+        enum class ReorderState
+        {
+            Inactive, // No row widget reordering operation is in progress.
+            DraggingComponent, // User is dragging a component editor.
+            DraggingRowWidget, // User is dragging a row widget around.
+            UsingMenu, // User has the context menu open and may hover over a move up/down operation.
+            MenuOperationInProgress, // User has selected a move/up down menu item.
+            WaitForRedraw, // Wait for rebuild of RPE.
+            HighlightMovedRow // User has moved a row, highlight the new position.
+        };
+
+        enum class DropArea
+        {
+            Above,
+            Below
+        };
 
         EntityPropertyEditor(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags(), bool isLevelEntityEditor = false);
         virtual ~EntityPropertyEditor();
 
-        virtual void BeforeUndoRedo();
-        virtual void AfterUndoRedo();
+        void BeforeUndoRedo() override;
+        void AfterUndoRedo() override;
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -133,6 +165,9 @@ namespace AzToolsFramework
         void SetPropertyEditingActive(InstanceDataNode* pNode) override;
         void SetPropertyEditingComplete(InstanceDataNode* pNode) override;
         void SealUndoStack() override;
+
+        // FocusModeNotificationBus overrides ...
+        void OnEditorFocusChanged(AZ::EntityId previousFocusEntityId, AZ::EntityId newFocusEntityId) override;
 
         // Context menu population for entity component properties.
         void RequestPropertyContextMenu(InstanceDataNode* node, const QPoint& globalPos) override;
@@ -151,6 +186,16 @@ namespace AzToolsFramework
         bool IsLockedToSpecificEntities() const { return !m_overrideSelectedEntityIds.empty(); }
 
         static bool AreComponentsCopyable(const AZ::Entity::ComponentArrayType& components, const ComponentFilter& filter);
+
+        ReorderState GetReorderState() const;
+        ComponentEditor* GetEditorForCurrentReorderRowWidget() const;
+        PropertyRowWidget* GetReorderRowWidget() const;
+        PropertyRowWidget* GetReorderDropTarget() const;
+        DropArea GetReorderDropArea() const;
+        QPixmap GetReorderRowWidgetImage() const;
+        float GetMoveIndicatorAlpha() const;
+        PropertyRowWidget* GetRowToHighlight();
+
     Q_SIGNALS:
         void SelectedEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name);
 
@@ -187,8 +232,10 @@ namespace AzToolsFramework
         void OnContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
+        // PropertyEditorEntityChangeNotificationBus overrides ...
         void OnEntityComponentPropertyChanged(AZ::ComponentId /*componentId*/) override;
 
+        // EditorInspectorComponentNotificationBus overides ...
         void OnComponentOrderChanged() override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -201,24 +248,35 @@ namespace AzToolsFramework
         void OnEntityStartStatusChanged(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+
+        // EditorComponentModeNotificationBus overrides ...
         void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
 
-        // EntityPropertEditorRequestBus
+        // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
+        void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
 
-        // EditorWindowRequestBus overrides
+        // TickBus overrides ...
+        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
+
+        // EditorWindowRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
+
+        // ReadOnlyEntityPublicNotificationBus overrides ...
+        void OnReadOnlyEntityStatusChanged(const AZ::EntityId& entityId, bool readOnly) override;
 
         bool IsEntitySelected(const AZ::EntityId& id) const;
         bool IsSingleEntitySelected(const AZ::EntityId& id) const;
 
-        virtual void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo);
-        virtual void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly);
+        void GotSceneSourceControlStatus(AzToolsFramework::SourceControlFileInfo& fileInfo) override;
+        void PerformActionsBasedOnSceneStatus(bool sceneIsNew, bool readOnly) override;
 
         // enable/disable editor
         void EnableEditor(bool enabled);
@@ -252,6 +310,10 @@ namespace AzToolsFramework
 
         void ContextMenuActionPullFieldData(AZ::Component* parentComponent, InstanceDataNode* fieldNode);
         void ContextMenuActionSetDataFlag(InstanceDataNode* node, AZ::DataPatch::Flag flag, bool additive);
+
+        void GenerateRowWidgetIndexMapToChildIndex(PropertyRowWidget* parent, int destIndex);
+        void ContextMenuActionMoveItemUp(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
+        void ContextMenuActionMoveItemDown(ComponentEditor* componentEditor, PropertyRowWidget* rowWidget);
 
         /// Given an InstanceDataNode, calculate a DataPatch address relative to the entity.
         /// @return true if successful.
@@ -311,7 +373,8 @@ namespace AzToolsFramework
             OnlyLayerEntities,
             OnlyPrefabEntities,
             Mixed,
-            LevelEntity
+            LevelEntity,
+            ContainerEntityOfFocusedPrefab
         };
         /**
          * Returns what kinds of entities are in the current selection. This is used because mixed selection
@@ -321,7 +384,7 @@ namespace AzToolsFramework
         SelectionEntityTypeInfo GetSelectionEntityTypeInfo(const EntityIdList& selection) const;
 
         /**
-         * Returns true if a selection matching the passed in selection informatation allows components to be added.
+         * Returns true if a selection matching the passed in selection information allows components to be added.
          */
         bool CanAddComponentsToSelection(const SelectionEntityTypeInfo& selectionEntityTypeInfo) const;
 
@@ -339,9 +402,8 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
-        QAction* m_resetToSliceAction = nullptr;
 
-        bool m_isShowingContextMenu = false;
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
@@ -390,6 +452,10 @@ namespace AzToolsFramework
         void ResetToSlice();
 
         bool DoesOwnFocus() const;
+        AZ::u32 GetHeightOfRowAndVisibleChildren(const PropertyRowWidget* row) const;
+        QRect GetWidgetAndVisibleChildrenGlobalRect(const PropertyRowWidget* widget) const;
+        PropertyRowWidget* GetRowWidgetAtSameLevelAfter(PropertyRowWidget* widget) const;
+        PropertyRowWidget* GetRowWidgetAtSameLevelBefore(PropertyRowWidget* widget) const;
         QRect GetWidgetGlobalRect(const QWidget* widget) const;
         bool DoesIntersectWidget(const QRect& globalRect, const QWidget* widget) const;
         bool DoesIntersectSelectedComponentEditor(const QRect& globalRect) const;
@@ -426,6 +492,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;
@@ -445,6 +512,8 @@ namespace AzToolsFramework
         bool HandleSelectionEvents(QObject* object, QEvent* event);
         bool m_selectionEventAccepted;
 
+        bool HandleMenuEvent(QObject* object, QEvent* event);
+
         // drag and drop events
         QRect GetInflatedRectFromPoint(const QPoint& point, int radius) const;
         bool GetComponentsAtDropEventPosition(QDropEvent* event, AZ::Entity::ComponentArrayType& targetComponents);
@@ -458,8 +527,12 @@ namespace AzToolsFramework
 
         ComponentEditor* GetReorderDropTarget(const QRect& globalRect) const;
         bool ResetDrag(QMouseEvent* event);
+        bool FindAllowedRowWidgetReorderDropTarget(const QPoint& globalPos);
+        bool UpdateRowWidgetDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);
+        PropertyRowWidget* FindPropertyRowWidgetAt(QPoint globalPos);
         bool UpdateDrag(const QPoint& localPos, Qt::MouseButtons mouseButtons, const QMimeData* mimeData);
         bool StartDrag(QMouseEvent* event);
+        void EndRowWidgetReorder();
         bool HandleDrop(QDropEvent* event);
         bool HandleDropForComponentTypes(QDropEvent* event);
         bool HandleDropForComponentAssets(QDropEvent* event);
@@ -468,6 +541,8 @@ namespace AzToolsFramework
         bool CanDropForComponentTypes(const QMimeData* mimeData) const;
         bool CanDropForComponentAssets(const QMimeData* mimeData) const;
         bool CanDropForAssetBrowserEntries(const QMimeData* mimeData) const;
+        void SetRowWidgetHighlighted(PropertyRowWidget* rowWidget);
+
         AZStd::vector<AZ::s32> ExtractComponentEditorIndicesFromMimeData(const QMimeData* mimeData) const;
         ComponentEditorVector GetComponentEditorsFromIndices(const AZStd::vector<AZ::s32>& indices) const;
         ComponentEditor* GetComponentEditorsFromIndex(const AZ::s32 index) const;
@@ -528,9 +603,10 @@ namespace AzToolsFramework
 
         enum class InspectorLayout
         {
-            ENTITY = 0,     // All selected entities are regular entities
-            LEVEL,          // The selected entity is the level prefab container entity
-            INVALID         // Other entities are selected alongside the level prefab container entity
+            Entity = 0,                     // All selected entities are regular entities.
+            Level,                          // The selected entity is the prefab container entity for the level prefab, or the slice level entity.
+            ContainerEntityOfFocusedPrefab, // The selected entity is the prefab container entity for the focused prefab.
+            Invalid                         // Other entities are selected alongside the level prefab container entity.
         };
 
         InspectorLayout GetCurrentInspectorLayout() const;
@@ -559,12 +635,35 @@ namespace AzToolsFramework
 
         QIcon m_emptyIcon;
         QIcon m_clearIcon;
+        QIcon m_dragIcon;
+        QCursor m_dragCursor;
 
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
+        // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
+
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+        bool m_selectionContainsReadOnlyEntity = false;
+
+        // Reordering row widgets within the RPE.
+        static constexpr float MoveFadeSeconds = 0.5f;
+
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ContainerEntityInterface* m_containerEntityInterface = nullptr;
+
+        ReorderState m_currentReorderState = ReorderState::Inactive;
+        ComponentEditor* m_reorderRowWidgetEditor = nullptr;
+        InstanceDataNode* m_nodeToMove = nullptr;
+        PropertyRowWidget* m_reorderRowWidget = nullptr;
+        PropertyRowWidget* m_reorderDropTarget = nullptr;
+        DropArea m_reorderDropArea = DropArea::Above;
+        QPixmap m_reorderRowImage;
+        float m_moveFadeSecondsRemaining;
+        AZStd::vector<int> m_indexMapOfMovedRow;
 
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed
@@ -572,6 +671,9 @@ namespace AzToolsFramework
         bool m_initiatingPropertyChangeNotification = false;
         void ConnectToEntityBuses(const AZ::EntityId& entityId);
         void DisconnectFromEntityBuses(const AZ::EntityId& entityId);
+
+        void BeginMoveRowWidgetFade();
+        void HighlightMovedRowWidget();
 
         //! Stores a component id to be focused on next time the UI updates.
         AZStd::optional<AZ::ComponentId> m_newComponentId;
@@ -586,6 +688,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();
@@ -593,6 +696,8 @@ namespace AzToolsFramework
         void OpenPinnedInspector();
 
         bool SelectedEntitiesAreFromSameSourceSliceEntity() const;
+
+        void DragStopped();
 
         AZ::Entity* GetSelectedEntityById(AZ::EntityId& entityId) const;
     };

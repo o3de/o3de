@@ -1,5 +1,5 @@
 { 
-    "Source" : "OutputTransform",
+    "Source" : "OutputTransform.azsl",
 
     "DepthStencilState" : {
         "Depth" : { "Enable" : false }

@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/ShapeConfiguration.h>
+#include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/SimulatedObjectCommands.h>
@@ -19,9 +20,11 @@
 #include <EMotionFX/Source/Node.h>
 #include <EMotionFX/Source/TransformData.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/RenderPlugin/ViewportPluginBus.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <Editor/ColliderHelpers.h>
 #include <Editor/ObjectEditor.h>
+#include <Editor/Plugins/Ragdoll/PhysicsSetupManipulatorBus.h>
 #include <Editor/SkeletonModel.h>
 #include <MCore/Source/AzCoreConversions.h>
 #include <MysticQt/Source/MysticQtManager.h>
@@ -42,14 +45,14 @@ namespace EMotionFX
     {
     }
 
-    void ColliderPropertyNotify::BeforePropertyModified(AzToolsFramework::InstanceDataNode* pNode)
+    void ColliderPropertyNotify::BeforePropertyModified(AzToolsFramework::InstanceDataNode* node)
     {
         if (!m_commandGroup.IsEmpty())
         {
             return;
         }
 
-        const AzToolsFramework::InstanceDataNode* parentDataNode = pNode->GetParent();
+        const AzToolsFramework::InstanceDataNode* parentDataNode = node->GetParent();
         if (!parentDataNode)
         {
             return;
@@ -57,7 +60,7 @@ namespace EMotionFX
 
         const AZ::SerializeContext* serializeContext = parentDataNode->GetSerializeContext();
         const AZ::SerializeContext::ClassData* classData = parentDataNode->GetClassMetadata();
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
+        const AZ::SerializeContext::ClassElement* elementData = node->GetElementMetadata();
 
         const Actor* actor = m_colliderWidget->GetActor();
         const Node* joint = m_colliderWidget->GetJoint();
@@ -102,9 +105,9 @@ namespace EMotionFX
                 {
                     command->SetOldRotation(colliderConfig->m_rotation);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("MaterialSelection", 0xfebd6d15))
+                if (elementData->m_nameCrc == AZ_CRC_CE("MaterialSlots"))
                 {
-                    command->SetOldMaterial(colliderConfig->m_materialSelection);
+                    command->SetOldMaterialSlots(colliderConfig->m_materialSlots);
                 }
                 if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
                 {
@@ -145,14 +148,19 @@ namespace EMotionFX
         }
     }
 
-    void ColliderPropertyNotify::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* pNode)
+    void ColliderPropertyNotify::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
+    {
+        PhysicsSetupManipulatorRequestBus::Broadcast(&PhysicsSetupManipulatorRequests::OnUnderlyingPropertiesChanged);
+    }
+
+    void ColliderPropertyNotify::SetPropertyEditingComplete(AzToolsFramework::InstanceDataNode* node)
     {
         if (m_commandGroup.IsEmpty())
         {
             return;
         }
 
-        const AzToolsFramework::InstanceDataNode* parentDataNode = pNode->GetParent();
+        const AzToolsFramework::InstanceDataNode* parentDataNode = node->GetParent();
         if (!parentDataNode)
         {
             return;
@@ -160,7 +168,7 @@ namespace EMotionFX
 
         const AZ::SerializeContext* serializeContext = parentDataNode->GetSerializeContext();
         const AZ::SerializeContext::ClassData* classData = parentDataNode->GetClassMetadata();
-        const AZ::SerializeContext::ClassElement* elementData = pNode->GetElementMetadata();
+        const AZ::SerializeContext::ClassElement* elementData = node->GetElementMetadata();
 
         const Actor* actor = m_colliderWidget->GetActor();
         const Node* joint = m_colliderWidget->GetJoint();
@@ -200,9 +208,9 @@ namespace EMotionFX
                 {
                     command->SetRotation(colliderConfig->m_rotation);
                 }
-                if (elementData->m_nameCrc == AZ_CRC("MaterialSelection", 0xfebd6d15))
+                if (elementData->m_nameCrc == AZ_CRC_CE("MaterialSlots"))
                 {
-                    command->SetMaterial(colliderConfig->m_materialSelection);
+                    command->SetMaterialSlots(colliderConfig->m_materialSlots);
                 }
                 if (elementData->m_nameCrc == AZ_CRC("ColliderTag", 0x5e2963ad))
                 {
@@ -248,7 +256,7 @@ namespace EMotionFX
         m_commandGroup.Clear();
     }
 
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderWidget::ColliderWidget(QIcon* icon, QWidget* parent, AZ::SerializeContext* serializeContext)
         : AzQtComponents::Card(parent)
@@ -318,8 +326,19 @@ namespace EMotionFX
         {
             return;
         }
+        setVisible(HasDisplayedNodes());
+    }
 
-        m_editor->InvalidateValues();
+    void ColliderWidget::SetFilterString(QString filterString)
+    {
+        m_editor->SetFilterString(filterString);
+
+        Update();
+    }
+
+    bool ColliderWidget::HasDisplayedNodes() const
+    {
+        return m_editor->HasDisplayedNodes();
     }
 
     void ColliderWidget::OnCardContextMenu(const QPoint& position)
@@ -380,6 +399,11 @@ namespace EMotionFX
         const int colliderIndex = action->property("colliderIndex").toInt();
 
         emit RemoveCollider(colliderIndex);
+    }
+
+    void ColliderWidget::InvalidateEditorValues()
+    {
+        m_editor->InvalidateValues();
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -456,7 +480,7 @@ namespace EMotionFX
 
     void AddColliderButton::OnCopyColliderActionTriggered()
     {
-        AZ::Outcome<const QModelIndexList&> selectedRowIndicesOutcome;
+        AZ::Outcome<QModelIndexList> selectedRowIndicesOutcome;
         SkeletonOutlinerRequestBus::BroadcastResult(selectedRowIndicesOutcome, &SkeletonOutlinerRequests::GetSelectedRowIndices);
         if (!selectedRowIndicesOutcome.IsSuccess())
         {
@@ -493,7 +517,7 @@ namespace EMotionFX
         return colliderType.ToString<AZStd::string>();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // Align the layout spacing with the entity inspector.
     int ColliderContainerWidget::s_layoutSpacing = 13;
@@ -502,10 +526,10 @@ namespace EMotionFX
         : QWidget(parent)
         , m_colliderIcon(colliderIcon)
     {
-        m_layout = new QVBoxLayout(this);
-        m_layout->setAlignment(Qt::AlignTop);
+        m_layout = new QVBoxLayout();
         m_layout->setMargin(0);
         m_layout->setSpacing(s_layoutSpacing);
+        setLayout(m_layout);
 
         m_commandCallback = new ColliderEditedCallback(this, /*executePreUndo*/false);
         CommandSystem::GetCommandManager()->RegisterCommandCallback(CommandAdjustCollider::s_commandName, m_commandCallback);
@@ -525,6 +549,8 @@ namespace EMotionFX
         const size_t numColliders = colliders.size();
         size_t numAvailableColliderWidgets = m_colliderWidgets.size();
 
+        setVisible(numColliders > 0);
+
         // Create new collider widgets in case we don't have enough.
         if (numColliders > numAvailableColliderWidgets)
         {
@@ -536,11 +562,11 @@ namespace EMotionFX
                 connect(colliderWidget, &ColliderWidget::CopyCollider, this, &ColliderContainerWidget::CopyCollider);
                 connect(colliderWidget, &ColliderWidget::PasteCollider, this, [this](size_t index) { PasteCollider(index, true); } );
                 m_colliderWidgets.emplace_back(colliderWidget);
-                m_layout->addWidget(colliderWidget, 0, Qt::AlignTop);
+                m_layout->addWidget(colliderWidget, 0);
             }
             numAvailableColliderWidgets = m_colliderWidgets.size();
         }
-        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went one with creating new ones.");
+        AZ_Assert(numAvailableColliderWidgets >= numColliders, "Not enough collider widgets available. Something went wrong with creating new ones.");
 
         for (size_t i = 0; i < numColliders; ++i)
         {
@@ -553,7 +579,7 @@ namespace EMotionFX
         for (size_t i = numColliders; i < numAvailableColliderWidgets; ++i)
         {
             m_colliderWidgets[i]->hide();
-            m_colliderWidgets[i]->Update(nullptr, nullptr, MCORE_INVALIDINDEX32, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
+            m_colliderWidgets[i]->Update(nullptr, nullptr, InvalidIndex, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPair());
         }
     }
 
@@ -561,6 +587,7 @@ namespace EMotionFX
     {
         for (ColliderWidget* colliderWidget : m_colliderWidgets)
         {
+            colliderWidget->InvalidateEditorValues();
             colliderWidget->Update();
         }
     }
@@ -568,6 +595,25 @@ namespace EMotionFX
     void ColliderContainerWidget::Reset()
     {
         Update(nullptr, nullptr, PhysicsSetup::ColliderConfigType::Unknown, AzPhysics::ShapeColliderPairList(), nullptr);
+    }
+
+    void ColliderContainerWidget::SetFilterString(QString filterString)
+    {
+        for (auto* widget : m_colliderWidgets)
+        {
+            widget->SetFilterString(filterString);
+        }
+    }
+
+    bool ColliderContainerWidget::HasVisibleColliders() const
+    {
+        return AZStd::any_of(
+                   m_colliderWidgets.begin(),
+                   m_colliderWidgets.end(),
+                   [](auto w)
+                   {
+                       return !w->isHidden();
+                   });
     }
 
     void ColliderContainerWidget::contextMenuEvent(QContextMenuEvent* event)
@@ -605,113 +651,7 @@ namespace EMotionFX
         event->accept();
     }
 
-    QSize ColliderContainerWidget::sizeHint() const
-    {
-        return QWidget::sizeHint() + QSize(0, s_layoutSpacing);
-    }
-
-    void ColliderContainerWidget::RenderColliders(const AzPhysics::ShapeColliderPairList& colliders,
-        const ActorInstance* actorInstance,
-        const Node* node,
-        EMStudio::EMStudioPlugin::RenderInfo* renderInfo,
-        const MCore::RGBAColor& colliderColor)
-    {
-        const AZ::u32 nodeIndex = node->GetNodeIndex();
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
-
-        for (const auto& collider : colliders)
-        {
-            #ifndef EMFX_SCALE_DISABLED
-                const AZ::Vector3& worldScale = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex).mScale;
-            #else
-                const AZ::Vector3 worldScale = AZ::Vector3::CreateOne();
-            #endif
-
-            const Transform colliderOffsetTransform(collider.first->m_position, collider.first->m_rotation);
-            const Transform& actorInstanceGlobalTransform = actorInstance->GetWorldSpaceTransform();
-            const Transform& emfxNodeGlobalTransform = actorInstance->GetTransformData()->GetCurrentPose()->GetModelSpaceTransform(nodeIndex);
-
-            const Transform emfxColliderGlobalTransformNoScale = colliderOffsetTransform * emfxNodeGlobalTransform * actorInstanceGlobalTransform;
-
-            const AZ::TypeId colliderType = collider.second->RTTI_GetType();
-            if (colliderType == azrtti_typeid<Physics::SphereShapeConfiguration>())
-            {
-                Physics::SphereShapeConfiguration* sphere = static_cast<Physics::SphereShapeConfiguration*>(collider.second.get());
-
-                // LY Physics scaling rules: The maximum component from the node scale will be multiplied by the radius of the sphere.
-                const float radius = sphere->m_radius * MCore::Max3<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()), static_cast<float>(worldScale.GetZ()));
-
-                renderUtil->RenderWireframeSphere(radius, emfxColliderGlobalTransformNoScale.ToAZTransform(), colliderColor);
-            }
-            else if (colliderType == azrtti_typeid<Physics::CapsuleShapeConfiguration>())
-            {
-                Physics::CapsuleShapeConfiguration* capsule = static_cast<Physics::CapsuleShapeConfiguration*>(collider.second.get());
-
-                // LY Physics scaling rules: The maximum of the X/Y scale components of the node scale will be multiplied by the radius of the capsule. The Z component of the entity scale will be multiplied by the height of the capsule.
-                const float radius = capsule->m_radius * MCore::Max<float>(static_cast<float>(worldScale.GetX()), static_cast<float>(worldScale.GetY()));
-                const float height = capsule->m_height * static_cast<float>(worldScale.GetZ());
-
-                renderUtil->RenderWireframeCapsule(radius, height, emfxColliderGlobalTransformNoScale.ToAZTransform(), colliderColor);
-            }
-            else if (colliderType == azrtti_typeid<Physics::BoxShapeConfiguration>())
-            {
-                Physics::BoxShapeConfiguration* box = static_cast<Physics::BoxShapeConfiguration*>(collider.second.get());
-
-                // LY Physics scaling rules: Each component of the box dimensions will be scaled by the node's world scale.
-                AZ::Vector3 dimensions = box->m_dimensions;
-                dimensions *= worldScale;
-
-                renderUtil->RenderWireframeBox(dimensions, emfxColliderGlobalTransformNoScale.ToAZTransform(), colliderColor);
-            }
-        }
-    }
-
-    void ColliderContainerWidget::RenderColliders(PhysicsSetup::ColliderConfigType colliderConfigType,
-        const MCore::RGBAColor& defaultColor,
-        const MCore::RGBAColor& selectedColor,
-        EMStudio::RenderPlugin* renderPlugin,
-        EMStudio::EMStudioPlugin::RenderInfo* renderInfo)
-    {
-        if (colliderConfigType == PhysicsSetup::Unknown || !renderPlugin || !renderInfo)
-        {
-            return;
-        }
-
-        MCommon::RenderUtil* renderUtil = renderInfo->mRenderUtil;
-        const bool oldLightingEnabled = renderUtil->GetLightingEnabled();
-        renderUtil->EnableLighting(false);
-
-        const AZStd::unordered_set<AZ::u32>& selectedJointIndices = EMStudio::GetManager()->GetSelectedJointIndices();
-
-        const ActorManager* actorManager = GetEMotionFX().GetActorManager();
-        const AZ::u32 actorInstanceCount = actorManager->GetNumActorInstances();
-        for (AZ::u32 i = 0; i < actorInstanceCount; ++i)
-        {
-            const ActorInstance* actorInstance = actorManager->GetActorInstance(i);
-            const Actor* actor = actorInstance->GetActor();
-            const AZStd::shared_ptr<PhysicsSetup>& physicsSetup = actor->GetPhysicsSetup();
-            const Physics::CharacterColliderConfiguration* colliderConfig = physicsSetup->GetColliderConfigByType(colliderConfigType);
-
-            if (colliderConfig)
-            {
-                for (const Physics::CharacterColliderNodeConfiguration& nodeConfig : colliderConfig->m_nodes)
-                {
-                    const Node* joint = actor->GetSkeleton()->FindNodeByName(nodeConfig.m_name.c_str());
-                    if (joint)
-                    {
-                        const bool jointSelected = selectedJointIndices.empty() || selectedJointIndices.find(joint->GetNodeIndex()) != selectedJointIndices.end();
-                        const AzPhysics::ShapeColliderPairList& colliders = nodeConfig.m_shapes;
-                        RenderColliders(colliders, actorInstance, joint, renderInfo, jointSelected ? selectedColor : defaultColor);
-                    }
-                }
-            }
-        }
-
-        renderUtil->RenderLines();
-        renderUtil->EnableLighting(oldLightingEnabled);
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     ColliderContainerWidget::ColliderEditedCallback::ColliderEditedCallback(ColliderContainerWidget* parent, bool executePreUndo, bool executePreCommand)
         : MCore::Command::Callback(executePreUndo, executePreCommand)

@@ -91,7 +91,7 @@ namespace GraphCanvas
             : public QGraphicsWidget
         {
         public:
-            AZ_CLASS_ALLOCATOR(LayoutDividerWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LayoutDividerWidget, AZ::SystemAllocator);
             LayoutDividerWidget(QGraphicsItem* parent);
 
             void UpdateStyle(const Styling::StyleHelper& styleHelper);
@@ -102,11 +102,15 @@ namespace GraphCanvas
             , public SlotUINotificationBus::MultiHandler
         {
         public:
-            AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LinearSlotGroupWidget, AZ::SystemAllocator);
             LinearSlotGroupWidget(QGraphicsItem* parent);
 
             void DisplaySlot(const AZ::EntityId& slotId);
             void RemoveSlot(const AZ::EntityId& slotId);
+
+            QGraphicsLinearLayout* GetLayout();
+
+            QGraphicsWidget* GetSpacer();
 
             const AZStd::vector< SlotLayoutInfo >& GetInputSlots() const;
             const AZStd::vector< SlotLayoutInfo >& GetOutputSlots() const;
@@ -124,6 +128,8 @@ namespace GraphCanvas
 
             QGraphicsLayoutItem* GetLayoutItem(const AZ::EntityId& slotId) const;
 
+            QGraphicsLinearLayout* m_layout;
+
             QGraphicsWidget* m_horizontalSpacer;
 
             QGraphicsLinearLayout* m_inputs;
@@ -137,7 +143,7 @@ namespace GraphCanvas
 
     public:
         AZ_TYPE_INFO(GeneralSlotLayoutGraphicsWidget, "{9DE7D3C0-D88C-47D8-85D4-5E0F619E60CB}");
-        AZ_CLASS_ALLOCATOR(GeneralSlotLayoutGraphicsWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GeneralSlotLayoutGraphicsWidget, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context) = delete;
 
         GeneralSlotLayoutGraphicsWidget(GeneralSlotLayoutComponent& nodeSlots);
@@ -155,10 +161,12 @@ namespace GraphCanvas
 
         // NodeSlotsRequestBus
         QGraphicsLayoutItem* GetGraphicsLayoutItem() override;
+        QGraphicsLinearLayout* GetLinearLayout(const SlotGroup& slotGroup) override;
+        QGraphicsWidget* GetSpacer(const SlotGroup& slotGroup) override;
         ////
 
         // SceneMemberNotificationBus
-        void OnSceneSet(const AZ::EntityId& sceneId);
+        void OnSceneSet(const AZ::EntityId& sceneId) override;
         ////
 
         // SlotLayoutRequestBus
@@ -168,7 +176,7 @@ namespace GraphCanvas
 
         bool IsSlotGroupVisible(SlotGroup group) const override;
         void SetSlotGroupVisible(SlotGroup group, bool visible) override;
-        void ClearSlotGroup(SlotGroup group);
+        void ClearSlotGroup(SlotGroup group) override;
         ////
 
         // StyleNotificationBus

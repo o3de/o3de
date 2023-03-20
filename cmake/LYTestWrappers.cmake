@@ -17,8 +17,8 @@ set(LY_GOOGLETEST_EXTRA_PARAMS CACHE STRING "Allows injection of additional opti
 
 find_package(Python REQUIRED MODULE)
 
-ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=log -c ${LY_ROOT_FOLDER}/ctest_pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
-ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox")
+ly_set(LY_PYTEST_EXECUTABLE ${LY_PYTHON_CMD} -B -m pytest -v --tb=short --show-capture=stdout -c ${LY_ROOT_FOLDER}/pytest.ini --build-directory "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+ly_set(LY_TEST_GLOBAL_KNOWN_SUITE_NAMES "smoke" "main" "periodic" "benchmark" "sandbox" "awsi")
 ly_set(LY_TEST_GLOBAL_KNOWN_REQUIREMENTS "gpu")
 
 # Set default test aborts to 25 minutes, avoids hitting the CI pipeline inactivity timeout usually set to 30 minutes
@@ -32,6 +32,7 @@ endif()
 # Set and create folders for PyTest and GTest xml output
 ly_set(PYTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Pytest)
 ly_set(GTEST_XML_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/Gtest)
+ly_set(LYTESTTOOLS_OUTPUT_DIR ${CMAKE_BINARY_DIR}/Testing/LyTestTools)
 file(MAKE_DIRECTORY ${PYTEST_XML_OUTPUT_DIR})
 file(MAKE_DIRECTORY ${GTEST_XML_OUTPUT_DIR})
 
@@ -71,11 +72,14 @@ endfunction()
 # \arg:PARENT_NAME(optional) - Name of the parent test run target (if this is a subsequent call to specify a suite)
 # \arg:TEST_REQUIRES(optional) - List of system resources that are required to run this test.
 #      Only available option is "gpu"
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "benchmark" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 #      Otherwise, do not specify a TEST_SUITE value and the default ("main") will apply.
+#      "smoke" is tiny, quick tests of fundamental operation (tests with no suite marker will also execute here in CI)
+#      "periodic" is low-priority verification, which should not block code submission
 #      "benchmark" is currently reserved for Google Benchmarks
 #      "sandbox" should be only be used for the workflow of flaky tests
+#      "awsi" Time consuming AWS integration end-to-end tests
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. Defaults to LY_TEST_DEFAULT_TIMEOUT.
 # \arg:TEST_COMMAND - Command which runs the tests. It is a required argument
 # \arg:NON_IDE_PARAMS - extra params that will be run in ctest, but will not be used in the IDE.
@@ -114,7 +118,7 @@ function(ly_add_test)
     if(NOT ly_add_test_TIMEOUT)
         set(ly_add_test_TIMEOUT ${LY_TEST_DEFAULT_TIMEOUT})
     elseif(ly_add_test_TIMEOUT GREATER LY_TEST_DEFAULT_TIMEOUT)
-        message(WARNING "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
+        message(FATAL_ERROR "TIMEOUT for test ${ly_add_test_NAME} set at ${ly_add_test_TIMEOUT} seconds which is longer than the default of ${LY_TEST_DEFAULT_TIMEOUT}. Allowing a single module to run exceedingly long creates problems in a CI pipeline.")
     endif()
 
     if(NOT ly_add_test_TEST_COMMAND)
@@ -137,7 +141,7 @@ function(ly_add_test)
 
     set(wrapper_file ${CMAKE_CURRENT_FUNCTION_LIST_DIR}/Platform/${PAL_PLATFORM_NAME}/LYTestWrappers_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
     if(NOT EXISTS ${wrapper_file})
-        ly_get_absolute_pal_filename(wrapper_file ${wrapper_file})
+        o3de_pal_dir(wrapper_file ${wrapper_file} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     endif()
     include(${wrapper_file})
 
@@ -169,15 +173,18 @@ function(ly_add_test)
         list(APPEND final_labels ${ly_add_test_LABELS})
     endif()
 
+    # Allow TIAF to apply the label of supported test categories from being run by CTest 
+    o3de_test_impact_apply_test_labels(${ly_add_test_TEST_LIBRARY} final_labels)
+
     # labels expects a single param, of concatenated labels
     # this always has a value because ly_add_test_TEST_SUITE is automatically
     # filled in to be "main" if not specified.
-    set_tests_properties(${LY_ADDED_TEST_NAME} 
-        PROPERTIES 
+    set_tests_properties(${LY_ADDED_TEST_NAME}
+        PROPERTIES
             LABELS "${final_labels}"
             TIMEOUT ${ly_add_test_TIMEOUT}
     )
-    
+
     # ly_add_test_NAME could be an alias, we need the actual un-aliased target
     set(unaliased_test_name ${ly_add_test_NAME})
     if(TARGET ${ly_add_test_NAME})
@@ -194,7 +201,7 @@ function(ly_add_test)
         if(TARGET ${unaliased_test_name})
 
             # In this case we already have a target, we inject the debugging parameters for the target directly
-            set_target_properties(${unaliased_test_name} PROPERTIES 
+            set_target_properties(${unaliased_test_name} PROPERTIES
                 VS_DEBUGGER_COMMAND ${test_command}
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
             )
@@ -213,7 +220,7 @@ function(ly_add_test)
             if (${project_path} MATCHES [[^(\.\./)+(.*)]])
                 set(ide_path "${CMAKE_MATCH_2}")
             endif()
-            set_target_properties(${unaliased_test_name} PROPERTIES 
+            set_target_properties(${unaliased_test_name} PROPERTIES
                 FOLDER "${ide_path}"
                 VS_DEBUGGER_COMMAND ${test_command}
                 VS_DEBUGGER_COMMAND_ARGUMENTS "${test_arguments_line}"
@@ -228,7 +235,7 @@ function(ly_add_test)
 
         # For test projects that are custom targets, pass a props file that sets the project as "Console" so
         # it leaves the console open when it finishes
-        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/TestProject.props")
+        set_target_properties(${unaliased_test_name} PROPERTIES VS_USER_PROPS "${LY_ROOT_FOLDER}/cmake/Platform/Common/MSVC/TestProject.props")
 
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)
@@ -240,10 +247,15 @@ function(ly_add_test)
         ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${unaliased_test_name})
 
     else()
-        
+
         # Include additional dependencies
         if (ly_add_test_RUNTIME_DEPENDENCIES)
             ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${ly_add_test_RUNTIME_DEPENDENCIES})
+        endif()
+
+        # Include additional tests
+        if (TARGET ${unaliased_test_name})
+            ly_add_dependencies(TEST_SUITE_${ly_add_test_TEST_SUITE} ${unaliased_test_name})
         endif()
 
     endif()
@@ -257,14 +269,20 @@ function(ly_add_test)
     # Check to see whether or not this test target has been stored in the global list for walking by the test impact analysis framework
     get_property(all_tests GLOBAL PROPERTY LY_ALL_TESTS)
     if(NOT "${test_target}" IN_LIST all_tests)
+        # Extract the test target name from the namespace::target_name composite
+        string(REGEX REPLACE ".*::" "" test_name "${test_target}")
+        # Store the test target name sans namespace so they can be looked up without the preceeding namespace
+        set_property(GLOBAL APPEND PROPERTY O3DE_ALL_TESTS_DE_NAMESPACED ${test_name})
         # This is the first reference to this test target so add it to the global list
         set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS ${test_target})
-        set_property(GLOBAL  PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
+        set_property(GLOBAL PROPERTY LY_ALL_TESTS_${test_target}_TEST_LIBRARY ${ly_add_test_TEST_LIBRARY})
     endif()
-    # Add the test suite and timeout value to the test target params
+    # Add the test suite, timeout value and labels to the test target params
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TEST_SUITE}")
     set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${ly_add_test_TIMEOUT}")
-    # Store the params for this test target
+    string(REPLACE ";" "," flattened_labels "${final_labels}")
+    set(LY_TEST_PARAMS "${LY_TEST_PARAMS}#${flattened_labels}")
+    # Store the params and labels for this test target
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${test_target}_PARAMS ${LY_TEST_PARAMS})
 endfunction()
 
@@ -279,7 +297,7 @@ endfunction()
 # \arg:RUNTIME_DEPENDENCIES (optional) - List of additional runtime dependencies required by this test.
 # \arg:COMPONENT (optional) - Scope of the feature area that the test belongs to (eg. physics, graphics, etc.).
 # \arg:EXCLUDE_TEST_RUN_TARGET_FROM_IDE(bool) - If set the test run target will be not be shown in the IDE
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 # \arg:TIMEOUT (optional) The timeout in seconds for the module. If not set defaults to LY_TEST_DEFAULT_TIMEOUT
 #
@@ -306,22 +324,27 @@ function(ly_add_pytest)
     endif()
 
     string(REPLACE "::" "_" pytest_report_directory "${PYTEST_XML_OUTPUT_DIR}/${ly_add_pytest_NAME}.xml")
+    string(REPLACE "::" "_" pytest_output_directory "${LYTESTTOOLS_OUTPUT_DIR}/${ly_add_pytest_NAME}")
 
     # Add the script path to the test target params
     set(LY_TEST_PARAMS "${ly_add_pytest_PATH}")
+
+    # Command to run the test
+    set(test_command ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --output-path ${pytest_output_directory} --junitxml=${pytest_report_directory} ${custom_marks_args})
 
     ly_add_test(
         NAME ${ly_add_pytest_NAME}
         PARENT_NAME ${ly_add_pytest_NAME}
         TEST_SUITE ${ly_add_pytest_TEST_SUITE}
         LABELS FRAMEWORK_pytest
-        TEST_COMMAND ${LY_PYTEST_EXECUTABLE} ${ly_add_pytest_PATH} ${ly_add_pytest_EXTRA_ARGS} --junitxml=${pytest_report_directory} ${custom_marks_args}
+        TEST_COMMAND ${test_command}
         TEST_LIBRARY pytest
         COMPONENT ${ly_add_pytest_COMPONENT}
         ${ly_add_pytest_UNPARSED_ARGUMENTS}
     )
 
     set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_SCRIPT_PATH ${ly_add_pytest_PATH})
+    set_property(GLOBAL APPEND PROPERTY LY_ALL_TESTS_${ly_add_pytest_NAME}_TEST_COMMAND ${test_command})
     set_tests_properties(${LY_ADDED_TEST_NAME} PROPERTIES RUN_SERIAL "${ly_add_pytest_TEST_SERIAL}")
 endfunction()
 
@@ -331,7 +354,7 @@ endfunction()
 # \arg:TARGET Name of the target module that is being run for tests. If not provided, will default to 'NAME'
 # \arg:TEST_REQUIRES(optional) List of system resources that are required to run this test.
 #      Only available option is "gpu"
-# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" - prevents the test from running normally
+# \arg:TEST_SUITE(optional) - "smoke" or "periodic" or "sandbox" or "awsi" - prevents the test from running normally
 #      and instead places it a special suite of tests that only run when requested.
 # \arg:TEST_COMMAND(optional) - Command which runs the tests.
 #      If not supplied, a default of "AzTestRunner $<TARGET_FILE:${NAME}> AzRunUnitTests" will be used
@@ -343,7 +366,7 @@ function(ly_add_googletest)
         message(FATAL_ERROR "Platform does not support test targets")
     endif()
 
-    set(one_value_args NAME TARGET TEST_SUITE) 
+    set(one_value_args NAME TARGET TEST_SUITE)
     set(multi_value_args TEST_COMMAND COMPONENT)
     cmake_parse_arguments(ly_add_googletest "${options}" "${one_value_args}" "${multi_value_args}" ${ARGN})
 
@@ -354,7 +377,7 @@ function(ly_add_googletest)
     endif()
 
 
-    # AzTestRunner modules only supports google test libraries, regardless of whether or not 
+    # AzTestRunner modules only supports google test libraries, regardless of whether or not
     # google test suites are supported
     set_property(GLOBAL APPEND PROPERTY LY_AZTESTRUNNER_TEST_MODULES "${target_name}")
 
@@ -367,12 +390,12 @@ function(ly_add_googletest)
         # if a suite is specified, we filter to only accept things which match that suite (in c++)
         set(non_ide_params "--gtest_filter=*SUITE_${ly_add_googletest_TEST_SUITE}*")
     else()
-        # otherwise, if its the main suite we only runs things that dont have any of the other suites. 
+        # otherwise, if its the main suite we only runs things that dont have any of the other suites.
         # Note: it doesn't do AND, only 'or' - so specifying SUITE_main:REQUIRES_gpu
         # will actually run everything in main OR everything tagged as requiring a GPU
         # instead of only tests tagged with BOTH main and gpu...
         # so we have to do it this way (negating all others)
-        set(non_ide_params "--gtest_filter=-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*")
+        set(non_ide_params "--gtest_filter=-*SUITE_smoke*:*SUITE_periodic*:*SUITE_benchmark*:*SUITE_sandbox*:*SUITE_awsi*")
     endif()
 
     if(NOT ly_add_googletest_TEST_COMMAND)
@@ -503,7 +526,7 @@ function(ly_add_googlebenchmark)
         LABELS FRAMEWORK_googlebenchmark
         TEST_LIBRARY googlebenchmark
         TIMEOUT ${ly_add_googlebenchmark_TIMEOUT}
-        RUNTIME_DEPENDENCIES 
+        RUNTIME_DEPENDENCIES
             ${build_target}
             AZ::AzTestRunner
         COMPONENT ${ly_add_googlebenchmark_COMPONENT}

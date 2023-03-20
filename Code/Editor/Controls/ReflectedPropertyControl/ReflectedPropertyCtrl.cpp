@@ -26,6 +26,9 @@
 #include <AzToolsFramework/UI/SearchWidget/SearchCriteriaWidget.hxx>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
 
+//AzCore
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 // Editor
 #include "Clipboard.h"
 
@@ -49,7 +52,7 @@ ReflectedPropertyControl::ReflectedPropertyControl(QWidget *parent /*= nullptr*/
     , m_initialized(false)
     , m_isTwoColumnSection(false)
 {
-    EBUS_EVENT_RESULT(m_serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(m_serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(m_serializeContext, "Serialization context not available");
     qRegisterMetaType<IVariable*>("IVariablePtr");
 
@@ -203,7 +206,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
     outBlockPtr = new CVarBlock;
     for (size_t i = 0, iGroupCount(node->getChildCount()); i < iGroupCount; ++i)
     {
-        XmlNodeRef groupNode = node->getChild(i);
+        XmlNodeRef groupNode = node->getChild(static_cast<int>(i));
 
         if (groupNode->haveAttr("hidden"))
         {
@@ -308,7 +311,7 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                 int nMin(0), nMax(0);
                 if (child->getAttr("min", nMin) && child->getAttr("max", nMax))
                 {
-                    intVar->SetLimits(nMin, nMax);
+                    intVar->SetLimits(static_cast<float>(nMin), static_cast<float>(nMax));
                 }
             }
             else if (!azstricmp(type, "float"))
@@ -355,18 +358,6 @@ void ReflectedPropertyControl::CreateItems(XmlNodeRef node, CVarBlockPtr& outBlo
                 if (child->getAttr("value", &textureName))
                 {
                     textureVar->Set(textureName);
-                }
-            }
-            else if (!azstricmp(type, "color"))
-            {
-                CSmartVariable<Vec3> colorVar;
-                AddVariable(group, colorVar, child->getTag(), humanReadableName.toUtf8().data(), strDescription.toUtf8().data(), func, pUserData, IVariable::DT_COLOR);
-                ColorB color;
-                if (child->getAttr("value", color))
-                {
-                    ColorF colorLinear = ColorGammaToLinear(QColor(color.r, color.g, color.b));
-                    Vec3 colorVec3(colorLinear.r, colorLinear.g, colorLinear.b);
-                    colorVar->Set(colorVec3);
                 }
             }
         }
@@ -560,7 +551,7 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
 
     // Popup Menu with Event selection.
     QMenu menu;
-    UINT i = 0;
+    unsigned int i = 0;
 
     const int ePPA_CustomItemBase = 10; // reserved from 10 to 99
     const int ePPA_CustomPopupBase = 100; // reserved from 100 to x*100+100 where x is size of m_customPopupMenuPopups
@@ -595,12 +586,12 @@ void ReflectedPropertyControl::RequestPropertyContextMenu(AzToolsFramework::Inst
         action->setData(ePPA_CustomItemBase + i);
     }
 
-    for (UINT j = 0; j < m_customPopupMenuPopups.size(); ++j)
+    for (unsigned int j = 0; j < m_customPopupMenuPopups.size(); ++j)
     {
         SCustomPopupMenu* pMenuInfo = &m_customPopupMenuPopups[j];
         QMenu* pSubMenu = menu.addMenu(pMenuInfo->m_text);
 
-        for (UINT k = 0; k < pMenuInfo->m_subMenuText.size(); ++k)
+        for (UINT k = 0; k < static_cast<UINT>(pMenuInfo->m_subMenuText.size()); ++k)
         {
             const UINT uID = ePPA_CustomPopupBase + ePPA_CustomPopupBase * j + k;
             QAction *action = pSubMenu->addAction(pMenuInfo->m_subMenuText[k]);
@@ -668,7 +659,7 @@ AzToolsFramework::PropertyRowWidget* ReflectedPropertyControl::FindPropertyRowWi
         return nullptr;
     }
     const AzToolsFramework::ReflectedPropertyEditor::WidgetList& widgets = m_editor->GetWidgets();
-    for (auto instance : widgets)
+    for (const auto& instance : widgets)
     {
         if (instance.second->label() == item->GetPropertyName())
         {

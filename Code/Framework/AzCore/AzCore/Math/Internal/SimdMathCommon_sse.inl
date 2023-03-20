@@ -383,36 +383,36 @@ namespace AZ
 
             AZ_MATH_INLINE bool CmpAllEq(__m128 arg1, __m128 arg2, int32_t mask)
             {
-                const __m128i compare = CastToInt(CmpNeq(arg1, arg2));
-                return (_mm_movemask_epi8(compare) & mask) == 0;
+                const __m128 compare = CmpEq(arg1, arg2);
+                return (_mm_movemask_ps(compare) & mask) == mask;
             }
 
 
             AZ_MATH_INLINE bool CmpAllLt(__m128 arg1, __m128 arg2, int32_t mask)
             {
-                const __m128i compare = CastToInt(CmpGtEq(arg1, arg2));
-                return (_mm_movemask_epi8(compare) & mask) == 0;
+                const __m128 compare = CmpLt(arg1, arg2);
+                return (_mm_movemask_ps(compare) & mask) == mask;
             }
 
 
             AZ_MATH_INLINE bool CmpAllLtEq(__m128 arg1, __m128 arg2, int32_t mask)
             {
-                const __m128i compare = CastToInt(CmpGt(arg1, arg2));
-                return (_mm_movemask_epi8(compare) & mask) == 0;
+                const __m128 compare = CmpLtEq(arg1, arg2);
+                return (_mm_movemask_ps(compare) & mask) == mask;
             }
 
 
             AZ_MATH_INLINE bool CmpAllGt(__m128 arg1, __m128 arg2, int32_t mask)
             {
-                const __m128i compare = CastToInt(CmpLtEq(arg1, arg2));
-                return (_mm_movemask_epi8(compare) & mask) == 0;
+                const __m128 compare = CmpGt(arg1, arg2);
+                return (_mm_movemask_ps(compare) & mask) == mask;
             }
 
 
             AZ_MATH_INLINE bool CmpAllGtEq(__m128 arg1, __m128 arg2, int32_t mask)
             {
-                const __m128i compare = CastToInt(CmpLt(arg1, arg2));
-                return (_mm_movemask_epi8(compare) & mask) == 0;
+                const __m128 compare = CmpGtEq(arg1, arg2);
+                return (_mm_movemask_ps(compare) & mask) == mask;
             }
 
 

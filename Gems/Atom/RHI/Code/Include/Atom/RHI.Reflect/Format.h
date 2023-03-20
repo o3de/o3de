@@ -204,7 +204,8 @@ namespace AZ
             Sample = AZ_BIT(5),         // The format can be used to create an image that supports being sample from a shader.
             TypedLoadBuffer = AZ_BIT(6),// The format can be used to create a buffer that supports typed load operations.  
             TypedStoreBuffer = AZ_BIT(7),   // The format can be used to create a buffer that supports typed store operations.  
-            AtomicBuffer = AZ_BIT(8),   // The format can be used to create a buffer that supports atomic operations.  
+            AtomicBuffer = AZ_BIT(8),   // The format can be used to create a buffer that supports atomic operations.
+            ShadingRate = AZ_BIT(9),    // The format can be used to create a shading rate image.
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(AZ::RHI::FormatCapabilities);

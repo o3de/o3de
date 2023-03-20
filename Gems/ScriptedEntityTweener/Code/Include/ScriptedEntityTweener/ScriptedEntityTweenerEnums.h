@@ -79,7 +79,7 @@ namespace ScriptedEntityTweener
     struct AnimationProperties
     {
         static const float UninitializedParamFloat;
-        static const unsigned int InvalidCallbackId;
+        static const int InvalidCallbackId;
         static const unsigned int InvalidTimelineId;
 
         EasingMethod m_easeMethod;
@@ -139,7 +139,7 @@ namespace ScriptedEntityTweener
     struct AnimationParameters
     {
         AZ_TYPE_INFO(AnimationParameters, "{7E375768-746E-48DC-BEF4-6F40FEB534F9}");
-        AZ_CLASS_ALLOCATOR(AnimationParameters, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimationParameters, AZ::SystemAllocator);
 
         AnimationParameters()
         {

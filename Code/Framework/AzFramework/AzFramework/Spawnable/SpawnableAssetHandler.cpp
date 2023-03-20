@@ -9,8 +9,10 @@
 #include <AzCore/Casting/lossy_cast.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/sort.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
+#include <AzFramework/Spawnable/SpawnableAssetUtils.h>
 
 namespace AzFramework
 {
@@ -52,6 +54,7 @@ namespace AzFramework
         AZ::ObjectStream::FilterDescriptor filter(assetLoadFilterCB);
         if (AZ::Utils::LoadObjectFromStreamInPlace(*stream, *spawnable, nullptr /*SerializeContext*/, filter))
         {
+            SpawnableAssetUtils::ResolveEntityAliases(spawnable, asset.GetHint(), AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(stream->GetStreamingDeadline()), stream->GetStreamingPriority(), assetLoadFilterCB);
             return AZ::Data::AssetHandler::LoadResult::LoadComplete;
         }
         else
@@ -88,7 +91,7 @@ namespace AzFramework
 
     uint32_t SpawnableAssetHandler::BuildSubId(AZStd::string_view id)
     {
-        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id.data(), id.size());
+        AZ::Uuid subIdHash = AZ::Uuid::CreateData(id);
         return azlossy_caster(subIdHash.GetHash());
     }
 } // namespace AzFramework

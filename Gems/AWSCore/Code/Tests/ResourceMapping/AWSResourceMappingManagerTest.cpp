@@ -8,7 +8,6 @@
 
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-#include <AzTest/AzTest.h>
 
 #include <Configuration/AWSCoreConfiguration.h>
 #include <ResourceMapping/AWSResourceMappingConstants.h>
@@ -30,8 +29,6 @@ static constexpr const char TEST_EXPECTED_BUCKET_TYPE[] = "AWS::S3::Bucket";
 static constexpr const char TEST_EXPECTED_BUCKET_NAMEID[] = "MyTestS3Bucket";
 
 static constexpr const char TEST_EXPECTED_SERVICE_KEYNAME[] = "TestService";
-static constexpr const char TEST_EXPECTED_RESTAPI_ID_KEYNAME[] = "TestService.RESTApiId";
-static constexpr const char TEST_EXPECTED_RESTAPI_STAGE_KEYNAME[] = "TestService.RESTApiStage";
 
 static constexpr const char TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({
@@ -61,12 +58,47 @@ R"({
     "Version": "1.0.0"
 })";
 
+static constexpr const char TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {
+        "TestLambda": {
+            "Type": "AWS::Lambda::Function",
+            "Name/ID": "MyTestLambda",
+            "Region": "us-east-1",
+            "AccountId": "012345678912"
+        },
+        "TestS3Bucket": {
+            "Type": "AWS::S3::Bucket",
+            "Name/ID": "MyTestS3Bucket"
+        },
+        "TestService.RESTApiId": {
+            "Type": "AWS::ApiGateway::RestApi",
+            "Name/ID": "1234567890"
+        },
+        "TestService.RESTApiStage": {
+            "Type": "AWS::ApiGateway::Stage",
+            "Name/ID": "prod",
+            "Region": "us-east-1"
+        }
+    },
+    "AccountId": "",
+    "Region": "us-west-2",
+    "Version": "1.1.0"
+})";
+
 static constexpr const char TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE[] =
 R"({
     "AWSResourceMappings": {},
     "AccountId": "123",
     "Region": "123",
     "Version": "123"
+})";
+static constexpr const char TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE[] =
+    R"({
+    "AWSResourceMappings": {},
+    "AccountId": "EMPTY",
+    "Region": "us-west-2",
+    "Version": "1.0.0"
 })";
 
 class AWSResourceMappingManagerTest
@@ -79,92 +111,43 @@ public:
         m_resourceMappingManager = AZStd::make_unique<AWSCore::AWSResourceMappingManager>();
     }
 
-    void CreateTestConfigFile(const AZStd::string& configContent)
-    {
-        m_normalizedConfigFilePath = AZStd::string::format("%s/%s", m_normalizedConfigFolderPath.c_str(), "test_aws_resource_mappings.json");
-        AzFramework::StringFunc::Path::Normalize(m_normalizedConfigFilePath);
-        CreateTestFile(m_normalizedConfigFilePath, configContent);
-    }
-
     void SetUp() override
     {
-        AWSCoreFixture::SetUp();
+        AWSCoreFixture::SetUpFixture(false);
 
-        m_normalizedSourceProjectFolder = AZStd::string::format("%s/%s%s/", AZ::Test::GetCurrentExecutablePath().c_str(),
-            "AWSResourceMappingManager", AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
-        AzFramework::StringFunc::Path::Normalize(m_normalizedSourceProjectFolder);
-        m_normalizedConfigFolderPath = AZStd::string::format("%s/%s/",
-            m_normalizedSourceProjectFolder.c_str(), AWSCore::AWSCoreConfiguration::AWSCoreResourceMappingConfigFolderName);
-        AzFramework::StringFunc::Path::Normalize(m_normalizedConfigFolderPath);
+        m_configFilePath = (GetTestTempDirectoryPath() /
+                            AWSCore::AWSCoreConfiguration::AWSCoreResourceMappingConfigFolderName /
+                            "test_aws_resource_mappings.json").LexicallyNormal();
         AWSCoreInternalRequestBus::Handler::BusConnect();
     }
 
     void TearDown() override
     {
         AWSCoreInternalRequestBus::Handler::BusDisconnect();
-        RemoveTestFile();
-        RemoveTestDirectory();
+        RemoveFile(m_configFilePath.Native());
+        m_configFilePath.clear();
 
         m_reloadConfigurationCounter = 0;
         m_resourceMappingManager->DeactivateManager();
         m_resourceMappingManager.reset();
 
-        AWSCoreFixture::TearDown();
+        AWSCoreFixture::TearDownFixture(false);
     }
 
     // AWSCoreInternalRequestBus interface implementation
     AZStd::string GetProfileName() const override { return ""; }
-    AZStd::string GetResourceMappingConfigFilePath() const override { return m_normalizedConfigFilePath; }
+    AZStd::string GetResourceMappingConfigFilePath() const override { return m_configFilePath.Native(); }
+    bool IsAllowedAWSMetadataCredentials() const override { return false; }
     void ReloadConfiguration() override { m_reloadConfigurationCounter++; }
 
     AZStd::unique_ptr<AWSCore::AWSResourceMappingManager> m_resourceMappingManager;
     AZ::u8 m_reloadConfigurationCounter;
-
-private:
-    AZStd::string m_normalizedSourceProjectFolder;
-    AZStd::string m_normalizedConfigFolderPath;
-    AZStd::string m_normalizedConfigFilePath;
-
-    void CreateTestFile(const AZStd::string& filePath, const AZStd::string& fileContent)
-    {
-        AZ::IO::SystemFile file;
-        if (!file.Open(filePath.c_str(),
-            AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))
-        {
-            AZ_Assert(false, "Failed to open test file");
-        }
-
-        if (file.Write(fileContent.c_str(), fileContent.size()) != fileContent.size())
-        {
-            AZ_Assert(false, "Failed to write test file");
-        }
-        file.Close();
-    }
-
-    void RemoveTestFile()
-    {
-        if (!m_normalizedConfigFilePath.empty())
-        {
-            AZ_Assert(AZ::IO::SystemFile::Delete(m_normalizedConfigFilePath.c_str()),
-               "Failed to delete test config file at %s", m_normalizedConfigFilePath.c_str());
-        }
-    }
-
-    void RemoveTestDirectory()
-    {
-        if (!m_normalizedConfigFilePath.empty())
-        {
-            AZ_Assert(AZ::IO::SystemFile::DeleteDir(m_normalizedConfigFolderPath.c_str()),
-                "Failed to delete test config folder at %s", m_normalizedConfigFolderPath.c_str());
-            AZ_Assert(AZ::IO::SystemFile::DeleteDir(m_normalizedSourceProjectFolder.c_str()),
-                "Failed to delete test folder at %s", m_normalizedSourceProjectFolder.c_str());
-        }
-    }
+    AZ::IO::Path m_configFilePath;
 };
 
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseInvalidConfigFile_ConfigDataIsEmpty)
 {
-    CreateTestConfigFile(TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -179,7 +162,22 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseInvalidConfigFile_Con
 
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmpty)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_FALSE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
+}
+
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseTemplateConfigFile_ConfigDataIsNotEmpty)
+{
+    CreateFile(m_configFilePath.Native(), TEST_TEMPLATE_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -194,10 +192,10 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
 
 TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_ConfigDataIsNotEmptyWithMultithreadCalls)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
-    int testThreadNumber = 10;
+    constexpr int testThreadNumber = 10;
     AZStd::atomic<int> actualEbusCalls = 0;
     AZStd::vector<AZStd::thread> testThreadPool;
     for (int index = 0; index < testThreadNumber; index++)
@@ -206,7 +204,7 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
             AZStd::string actualAccountId;
             AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
             EXPECT_FALSE(actualAccountId.empty());
-            actualEbusCalls++;
+            ++actualEbusCalls;
         }));
     }
 
@@ -217,9 +215,24 @@ TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_Confi
     EXPECT_TRUE(actualEbusCalls == testThreadNumber);
 }
 
+TEST_F(AWSResourceMappingManagerTest, ActivateManager_ParseValidConfigFile_GlobalAccountIdEmpty)
+{
+    CreateFile(m_configFilePath.Native(), TEST_VALID_EMPTY_ACCOUNTID_RESOURCE_MAPPING_CONFIG_FILE);
+    m_resourceMappingManager->ActivateManager();
+
+    AZStd::string actualAccountId;
+    AZStd::string actualRegion;
+    AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
+    AWSResourceMappingRequestBus::BroadcastResult(actualRegion, &AWSResourceMappingRequests::GetDefaultRegion);
+    EXPECT_EQ(m_reloadConfigurationCounter, 0);
+    EXPECT_TRUE(actualAccountId.empty());
+    EXPECT_FALSE(actualRegion.empty());
+    EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Ready);
+}
+
 TEST_F(AWSResourceMappingManagerTest, DeactivateManager_AfterActivatingWithValidConfigFile_ConfigDataGetCleanedUp)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -239,7 +252,7 @@ TEST_F(AWSResourceMappingManagerTest, DeactivateManager_AfterActivatingWithValid
 
 TEST_F(AWSResourceMappingManagerTest, GetDefaultAccountId_AfterParsingValidConfigFile_GetExpectedDefaultAccountId)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -250,7 +263,7 @@ TEST_F(AWSResourceMappingManagerTest, GetDefaultAccountId_AfterParsingValidConfi
 
 TEST_F(AWSResourceMappingManagerTest, GetDefaultRegion_AfterParsingValidConfigFile_GetExpectedDefaultRegion)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualRegion;
@@ -261,7 +274,7 @@ TEST_F(AWSResourceMappingManagerTest, GetDefaultRegion_AfterParsingValidConfigFi
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceAccountId_AfterParsingValidConfigFile_GetExpectedAccountId)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -278,7 +291,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceAccountId_AfterParsingValidConf
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceAccountId_QueryNonexistResourceMappingKeyName_GetEmptyAccountId)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -289,7 +302,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceAccountId_QueryNonexistResource
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceNameId_AfterParsingValidConfigFile_GetExpectedNameId)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualNameId;
@@ -306,7 +319,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceNameId_AfterParsingValidConfigF
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceNameId_QueryNonexistResourceMappingKeyName_GetEmptyNameId)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualNameId;
@@ -317,7 +330,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceNameId_QueryNonexistResourceMap
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceRegion_AfterParsingValidConfigFile_GetExpectedRegion)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualRegion;
@@ -334,7 +347,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceRegion_AfterParsingValidConfigF
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceRegion_QueryNonexistResourceMappingKeyName_GetEmptyRegion)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualRegion;
@@ -345,7 +358,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceRegion_QueryNonexistResourceMap
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceType_AfterParsingValidConfigFile_GetExpectedType)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualType;
@@ -362,7 +375,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceType_AfterParsingValidConfigFil
 
 TEST_F(AWSResourceMappingManagerTest, GetResourceType_QueryNonexistResourceMappingKeyName_GetEmptyType)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualType;
@@ -373,7 +386,7 @@ TEST_F(AWSResourceMappingManagerTest, GetResourceType_QueryNonexistResourceMappi
 
 TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_PassingEmptyServiceName_GetEmptyUrl)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualServiceUrl;
@@ -384,7 +397,7 @@ TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_PassingEmptyServiceName_GetE
 
 TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_PassingEmptyRESTApiIdAndStage_GetEmptyUrl)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualServiceUrl;
@@ -395,7 +408,7 @@ TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_PassingEmptyRESTApiIdAndStag
 
 TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_RESTApiIdAndStageHaveInconsistentRegion_GetEmptyUrl)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualServiceUrl;
@@ -406,7 +419,7 @@ TEST_F(AWSResourceMappingManagerTest, GetServiceUrl_RESTApiIdAndStageHaveInconsi
 
 TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfterParsingInvalid_ConfigDataGetParsed)
 {
-    CreateTestConfigFile(TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_INVALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ActivateManager();
 
     AZStd::string actualAccountId;
@@ -418,7 +431,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
     EXPECT_TRUE(actualRegion.empty());
     EXPECT_TRUE(m_resourceMappingManager->GetStatus() == AWSResourceMappingManager::Status::Error);
 
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ReloadConfigFile();
 
     AWSResourceMappingRequestBus::BroadcastResult(actualAccountId, &AWSResourceMappingRequests::GetDefaultAccountId);
@@ -431,7 +444,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ParseValidConfigFileAfter
 
 TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ReloadConfigFileNameAndParseValidConfigFile_ConfigDataGetParsed)
 {
-    CreateTestConfigFile(TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
+    CreateFile(m_configFilePath.Native(), TEST_VALID_RESOURCE_MAPPING_CONFIG_FILE);
     m_resourceMappingManager->ReloadConfigFile(true);
 
     EXPECT_EQ(m_reloadConfigurationCounter, 1);
@@ -442,6 +455,7 @@ TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_ReloadConfigFileNameAndPa
 
 TEST_F(AWSResourceMappingManagerTest, ReloadConfigFile_MissingSetRegFile_ConfigDataIsNotParsed)
 {
+    m_configFilePath.clear();
     m_resourceMappingManager->ReloadConfigFile(true);
 
     EXPECT_EQ(m_reloadConfigurationCounter, 1);

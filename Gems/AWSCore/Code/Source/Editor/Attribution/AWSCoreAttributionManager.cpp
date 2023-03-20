@@ -31,7 +31,8 @@
 
 namespace AWSCore
 {
-    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat1 = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat2 = "display_version";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
@@ -68,19 +69,19 @@ namespace AWSCore
         AZ_Assert(fileIO, "File IO is not initialized.");
 
         // Resolve path to editor_aws_preferences.setreg
-        AZStd::string editorAWSPreferencesFilePath =
+        const AZStd::string editorAWSPreferencesFilePath =
             AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-        AZStd::array<char, AZ::IO::MaxPathLength> resolvedPathAWSPreference{};
-        if (!fileIO->ResolvePath(editorAWSPreferencesFilePath.c_str(), resolvedPathAWSPreference.data(), resolvedPathAWSPreference.size()))
+        AZ::IO::FixedMaxPath resolvedPathAWSPreference;
+        if (!fileIO->ResolvePath(resolvedPathAWSPreference, AZ::IO::PathView(editorAWSPreferencesFilePath)))
         {
-            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.data());
+            AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", resolvedPathAWSPreference.c_str());
             return;
         }
 
-        if (fileIO->Exists(resolvedPathAWSPreference.data()))
+        if (fileIO->Exists(resolvedPathAWSPreference.c_str()))
         {
             m_settingsRegistry->MergeSettingsFile(
-                resolvedPathAWSPreference.data(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
+                resolvedPathAWSPreference.String(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, "");
         }
     }
 
@@ -95,20 +96,20 @@ namespace AWSCore
         {
             ShowConsentDialog();
         }
-        
+
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
             AttributionMetric metric;
-            UpdateMetric(metric);            
-            
+            UpdateMetric(metric);
+
             // Post metric
             SubmitMetric(metric);
         }
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {   
+    {
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
@@ -120,12 +121,12 @@ namespace AWSCore
         {
             return false;
         }
-        
+
         // If delayInSeconds is not found, set default to a day
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
-            delayInSeconds = 86400 * AWSAttributionDefaultDelayInDays;
+            delayInSeconds = static_cast<AZ::u64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::days(AWSAttributionDefaultDelayInDays)).count());
             m_settingsRegistry->Set(AWSAttributionDelaySecondsKey, delayInSeconds);
         }
 
@@ -136,10 +137,10 @@ namespace AWSCore
             return true;
         }
 
-        AZStd::chrono::seconds lastSendTimeStamp = AZStd::chrono::seconds(lastSendTimeStampSeconds);
-        AZStd::chrono::seconds secondsSinceLastSend =
+        const AZStd::chrono::seconds lastSendTimeStamp = AZStd::chrono::seconds(lastSendTimeStampSeconds);
+        const AZStd::chrono::seconds secondsSinceLastSend =
             AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()) - lastSendTimeStamp;
-        if (secondsSinceLastSend.count() >= delayInSeconds)
+        if (static_cast<AZ::u64>(secondsSinceLastSend.count()) >= delayInSeconds)
         {
             return true;
         }
@@ -154,7 +155,7 @@ namespace AWSCore
         if (credentialResult.result)
         {
             std::shared_ptr<Aws::Auth::AWSCredentialsProvider> provider = credentialResult.result;
-            auto creds = provider->GetAWSCredentials();
+            const auto creds = provider->GetAWSCredentials();
             if (!creds.IsEmpty())
             {
                 return true;
@@ -200,9 +201,13 @@ namespace AWSCore
                 AZ_Assert(fileIO, "File IO is not initialized.");
 
                 // Resolve path to editor_aws_preferences.setreg
-                AZStd::string editorPreferencesFilePath = AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
-                AZStd::array<char, AZ::IO::MaxPathLength> resolvedPath {};
-                fileIO->ResolvePath(editorPreferencesFilePath.c_str(), resolvedPath.data(), resolvedPath.size());
+                const AZStd::string editorPreferencesFilePath = AZStd::string::format("@user@/%s/%s", AZ::SettingsRegistryInterface::RegistryFolder, EditorAWSPreferencesFileName);
+                AZ::IO::FixedMaxPath resolvedPathAWSPreference;
+                if (!fileIO->ResolvePath(resolvedPathAWSPreference, AZ::IO::PathView(editorPreferencesFilePath)))
+                {
+                    AZ_Warning("AWSAttributionManager", false, "Error resolving path %s", editorPreferencesFilePath.c_str());
+                    return;
+                }
 
                 AZ::SettingsRegistryMergeUtils::DumperSettings dumperSettings;
                 dumperSettings.m_prettifyOutput = true;
@@ -215,14 +220,14 @@ namespace AWSCore
                 {
                     AZ_Warning(
                         "AWSAttributionManager", false, R"(Unable to save changes to the Editor AWS Preferences registry file at "%s"\n)",
-                        resolvedPath.data());
+                        resolvedPathAWSPreference.c_str());
                     return;
                 }
 
-                bool saved {};
+                [[maybe_unused]] bool saved = false;
                 constexpr auto configurationMode =
                     AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_CREATE_PATH | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY;
-                if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPath.data(), configurationMode))
+                if (AZ::IO::SystemFile outputFile; outputFile.Open(resolvedPathAWSPreference.c_str(), configurationMode))
                 {
                     saved = outputFile.Write(stringBuffer.data(), stringBuffer.size()) == stringBuffer.size();
                 }
@@ -233,13 +238,13 @@ namespace AWSCore
             },
             true);
         job->Start();
-        
+
     }
 
     void AWSAttributionManager::UpdateLastSend()
-    {  
+    {
         if (!m_settingsRegistry->Set(AWSAttributionLastTimeStampKey,
-            AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count()))
+            static_cast<AZ::s64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count())))
         {
             AZ_Warning("AWSAttributionManager", true, "Failed to set AWSAttributionLastTimeStamp");
             return;
@@ -260,7 +265,7 @@ namespace AWSCore
             config->endpointOverride = AWSAttributionChinaEndpoint;
         }
         else
-        {   
+        {
             config->region = Aws::Region::US_EAST_1;
             config->endpointOverride = AWSAttributionEndpoint;
         }
@@ -283,22 +288,44 @@ namespace AWSCore
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(engineVersion, AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey);
+                constexpr auto rootKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey);
+                if(!settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat2))
+                {
+                    // fallback to using the old json key
+                    settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat1);
+                }
             }
         }
         return engineVersion;
     }
 
+    AZStd::string AWSAttributionManager::MapPlatform(AZ::PlatformID platform)
+    {
+        // Only map platforms running the editor to Attributions enums
+        // PC, Linux, Mac are supported values for now
+        switch (platform)
+        {
+        case AZ::PlatformID::PLATFORM_WINDOWS_64:
+            return "PC";
+        case AZ::PlatformID::PLATFORM_LINUX_64:
+            return "Linux";
+        case AZ::PlatformID::PLATFORM_APPLE_MAC:
+            return "Mac";
+        default:
+            return "Other";
+        }
+    }
+
     AZStd::string AWSAttributionManager::GetPlatform() const
     {
-        return AZ::GetPlatformName(AZ::g_currentPlatform);
+        return MapPlatform(AZ::g_currentPlatform);
     }
 
     void AWSAttributionManager::GetActiveAWSGems(AZStd::vector<AZStd::string>& gems)
     {
         AZ::ModuleManagerRequestBus::Broadcast(
             &AZ::ModuleManagerRequestBus::Events::EnumerateModules,
-            [this, &gems](const AZ::ModuleData& moduleData)
+            [&gems](const AZ::ModuleData& moduleData)
             {
                 AZ::Entity* moduleEntity = moduleData.GetEntity();
                 auto moduleEntityName = moduleEntity->GetName();
@@ -338,7 +365,7 @@ namespace AWSCore
                 AZ_Printf("AWSAttributionManager", "AWSAttribution metric submit success");
 
             },
-            [this]([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
+            []([[maybe_unused]] ServiceAPI::AWSAttributionRequestJob* failJob)
             {
                 AZ_Error("AWSAttributionManager", false, "Metrics send error: %s", failJob->error.message.c_str());
             },

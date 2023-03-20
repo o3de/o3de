@@ -19,12 +19,13 @@ class AWSScriptBehaviorS3NotificationBusHandlerMock
     : public AWSScriptBehaviorS3NotificationBusHandler
 {
 public:
+    AZ_CLASS_ALLOCATOR(AWSScriptBehaviorS3NotificationBusHandlerMock, AZ::SystemAllocator)
     AWSScriptBehaviorS3NotificationBusHandlerMock()
     {
         AWSScriptBehaviorS3NotificationBus::Handler::BusConnect();
     }
 
-    ~AWSScriptBehaviorS3NotificationBusHandlerMock()
+    ~AWSScriptBehaviorS3NotificationBusHandlerMock() override
     {
         AWSScriptBehaviorS3NotificationBus::Handler::BusDisconnect();
     }
@@ -145,17 +146,18 @@ TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithOutfileDirectoryNoExist_Inv
     AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", dummyDirectory);
 }
 
+#if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
+// The preparation step for this test case does not work in release mode
 TEST_F(AWSScriptBehaviorS3Test, GetObjectRaw_CallWithOutfileIsReadOnly_InvokeOnError)
 {
     AWSScriptBehaviorS3NotificationBusHandlerMock s3HandlerMock;
     EXPECT_CALL(s3HandlerMock, OnGetObjectError(::testing::_)).Times(1);
-    AZStd::string randomTestFile = AZStd::string::format("%s/test%s.txt",
-        AZ::Test::GetCurrentExecutablePath().c_str(), AZ::Uuid::CreateRandom().ToString<AZStd::string>(false, false).c_str());
-    AzFramework::StringFunc::Path::Normalize(randomTestFile);
-    CreateReadOnlyTestFile(randomTestFile);
-    AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", randomTestFile);
-    RemoveReadOnlyTestFile(randomTestFile);
+    AZ::IO::Path randomTestFilePath = (GetTestTempDirectoryPath() / "random_test.txt").LexicallyNormal();
+    CreateReadOnlyTestFile(randomTestFilePath.Native());
+    AWSScriptBehaviorS3::GetObjectRaw("dummyBucket", "dummyObject", "dummyRegion", randomTestFilePath.Native());
+    RemoveReadOnlyTestFile(randomTestFilePath.Native());
 }
+#endif
 
 TEST_F(AWSScriptBehaviorS3Test, GetObject_NoBucketNameInResourceMappingFound_InvokeOnError)
 {

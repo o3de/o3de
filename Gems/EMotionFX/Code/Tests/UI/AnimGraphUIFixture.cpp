@@ -28,7 +28,10 @@
 #include <EMotionFX/Source/AnimGraphObjectFactory.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
 
+#include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
+
 #include <QApplication>
+#include <QModelIndex>
 #include <QWidget>
 
 namespace EMotionFX
@@ -82,7 +85,7 @@ namespace EMotionFX
         const AnimGraph* targetAnimGraph = (animGraph ? animGraph : m_animGraphPlugin->GetActiveAnimGraph()); //AnimGraph to add Node to
         const AZStd::string cmd = "AnimGraphCreateNode AnimGraphID " + AZStd::to_string(targetAnimGraph->GetID()) + " -type " + type + " " + args;
         
-        AZ::u32 nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
+        size_t nodeCount = targetAnimGraph->GetNumNodes(); //node count before creating a new node
 
         AZStd::string result;
         EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(cmd, result)) << result.c_str();
@@ -102,17 +105,23 @@ namespace EMotionFX
         const AZStd::vector<EMotionFX::AnimGraphNode*>& selectedAnimGraphNodes = GetActiveNodeGraph()->GetSelectedAnimGraphNodes();
         m_blendGraphWidget->OnContextMenuEvent(m_blendGraphWidget, QPoint(0, 0), QPoint(0, 0), m_animGraphPlugin, selectedAnimGraphNodes, true, false, m_animGraphPlugin->GetActionFilter());
 
-        // Fire the Add Node action.
-        QAction* addNodeAction = GetNamedAction(m_blendGraphWidget, nodeTypeName);
-        if (!addNodeAction)
+        // Instantiate the node from the tree in context menu
+        auto* tree = UIFixture::GetFirstChildOfType<GraphCanvas::NodePaletteTreeView>(m_blendGraphWidget);
+        if (!tree)
         {
             return nullptr;
         }
-        addNodeAction->trigger();
+        const QModelIndex idx = UIFixture::GetIndexFromName(tree, nodeTypeName);
+        if (!idx.isValid())
+        {
+            return nullptr;
+        }
+        // Selection should spawn the node
+        tree->setCurrentIndex(idx);
 
         const EMotionFX::AnimGraphNode* currentNode = GetActiveNodeGraph()->GetModelIndex().data(EMStudio::AnimGraphModel::ROLE_NODE_POINTER).value<EMotionFX::AnimGraphNode*>();
 
-        const int numNodesAfter = currentNode->GetNumChildNodes();
+        const size_t numNodesAfter = currentNode->GetNumChildNodes();
         if (numNodesAfter == 0)
         {
             return nullptr;

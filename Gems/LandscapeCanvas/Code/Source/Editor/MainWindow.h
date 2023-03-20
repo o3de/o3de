@@ -20,6 +20,7 @@
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/UI/PropertyEditor/EntityPropertyEditor.hxx>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
@@ -30,6 +31,17 @@
 // LandscapeCanvas
 #include <LandscapeCanvas/LandscapeCanvasBus.h>
 #endif
+
+namespace AzToolsFramework
+{
+    class ReadOnlyEntityPublicInterface;
+
+    namespace Prefab
+    {
+        class PrefabFocusPublicInterface;
+        class PrefabPublicInterface;
+    }
+}
 
 namespace LandscapeCanvasEditor
 {
@@ -42,7 +54,7 @@ namespace LandscapeCanvasEditor
         : public AzToolsFramework::EntityPropertyEditor
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomEntityPropertyEditor, AZ::SystemAllocator);
 
         CustomEntityPropertyEditor(QWidget* parent = nullptr);
 
@@ -55,7 +67,7 @@ namespace LandscapeCanvasEditor
         : public AzQtComponents::StyledDockWidget
     {
     public:
-        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CustomNodeInspectorDockWidget, AZ::SystemAllocator);
 
         CustomNodeInspectorDockWidget(QWidget* parent = nullptr);
 
@@ -81,17 +93,19 @@ namespace LandscapeCanvasEditor
         , private AzToolsFramework::EntityCompositionNotificationBus::Handler
         , private AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ToolsApplicationNotificationBus::Handler
+        , private AzToolsFramework::Prefab::PrefabFocusNotificationBus::Handler
         , private AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler
         , private CrySystemEventBus::Handler
     {
         Q_OBJECT
 
     public:
+        AZ_CLASS_ALLOCATOR(MainWindow, AZ::SystemAllocator)
         explicit MainWindow(QWidget* parent = nullptr);
         ~MainWindow() override;
 
     private:
-        GraphModel::IGraphContextPtr GetGraphContext() const override;
+        GraphModel::GraphContextPtr GetGraphContext() const override;
 
         ////////////////////////////////////////////////////////////////////////
         // GraphModelIntegration::GraphControllerNotificationBus::Handler overrides
@@ -100,6 +114,7 @@ namespace LandscapeCanvasEditor
         void PreOnGraphModelNodeRemoved(GraphModel::NodePtr node) override;
         void OnGraphModelConnectionAdded(GraphModel::ConnectionPtr connection) override;
         void OnGraphModelConnectionRemoved(GraphModel::ConnectionPtr connection) override;
+        void PreOnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelNodeWrapped(GraphModel::NodePtr wrapperNode, GraphModel::NodePtr node) override;
         void OnGraphModelGraphModified(GraphModel::NodePtr node) override;
         ////////////////////////////////////////////////////////////////////////
@@ -113,11 +128,13 @@ namespace LandscapeCanvasEditor
         QAction* AddFileSaveAction(QMenu* menu) override;
         QAction* AddFileSaveAsAction(QMenu* menu) override;
         QMenu* AddEditMenu() override;
+        QAction* AddEditCutAction(QMenu* menu) override;
+        QAction* AddEditCopyAction(QMenu* menu) override;
+        QAction* AddEditPasteAction(QMenu* menu) override;
         void HandleWrapperNodeActionWidgetClicked(GraphModel::NodePtr wrapperNode, const QRect& actionWidgetBoundingRect, const QPointF& scenePoint, const QPoint& screenPoint) override;
         GraphCanvas::Endpoint CreateNodeForProposal(const AZ::EntityId& connectionId, const GraphCanvas::Endpoint& endpoint, const QPointF& scenePoint, const QPoint& screenPoint) override;
         void OnSelectionChanged() override;
-        void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
-        void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization&) override;
+        void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationTarget) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -141,6 +158,10 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList GetAllNodesMatchingEntity(const AZ::EntityId& entityId) override;
         GraphModel::NodePtrList GetAllNodesMatchingEntityComponent(const AZ::EntityComponentIdPair& entityComponentId) override;
         ////////////////////////////////////////////////////////////////////////
+
+        GraphModel::NodePtrList GetAllNodesMatchingEntityInGraph(const GraphCanvas::GraphId& graphId, const AZ::EntityId& entityId);
+        GraphModel::NodePtrList GetAllNodesMatchingEntityComponentInGraph(
+            const GraphCanvas::GraphId& graphId, const AZ::EntityComponentIdPair& entityComponentId);
 
         ////////////////////////////////////////////////////////////////////////
         // GraphCanvas::AssetEditorMainWindow overrides
@@ -181,6 +202,9 @@ namespace LandscapeCanvasEditor
         void EntityParentChanged(AZ::EntityId entityId, AZ::EntityId newParentId, AZ::EntityId oldParentId) override;
         ////////////////////////////////////////////////////////////////////////
 
+        //! PrefabFocusNotificationBus overrides
+        void OnPrefabFocusChanged(AZ::EntityId previousContainerEntityId, AZ::EntityId newContainerEntityId) override;
+
         //! PrefabPublicNotificationBus overrides
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
@@ -202,12 +226,16 @@ namespace LandscapeCanvasEditor
 
         QString GetPropertyPathForSlot(GraphModel::SlotPtr slot, GraphModel::DataType::Enum dataType, int elementIndex = 0);
         void UpdateConnectionData(GraphModel::ConnectionPtr connection, bool added);
+        void HandleSetImageAssetPath(const AZ::EntityId& sourceEntityId, const AZ::EntityId& targetEntityId);
 
         AZ::u32 GetWrappedNodeLayoutOrder(GraphModel::NodePtr node);
 
         AZ::EntityId GetRootEntityIdForGraphId(const GraphCanvas::GraphId& graphId);
 
-        AZ::ComponentId AddComponentTypeIdToEntity(const AZ::EntityId& entityId, AZ::TypeId componentToAddTypeId);
+        AZ::ComponentId AddComponentTypeIdToEntity(
+            const AZ::EntityId& entityId,
+            AZ::TypeId componentToAddTypeId,
+            const AZ::ComponentDescriptor::DependencyArrayType& optionalServices = {});
         void AddComponentForNode(GraphModel::NodePtr node, const AZ::EntityId& entityId);
         void HandleNodeCreated(GraphModel::NodePtr node);
         void HandleNodeAdded(GraphModel::NodePtr node);
@@ -219,7 +247,7 @@ namespace LandscapeCanvasEditor
             Invalid = -1,
             Shapes = 0,
             Gradients,
-            VegetationAreas,
+            WrapperNodes,
             Count
         };
 
@@ -236,6 +264,8 @@ namespace LandscapeCanvasEditor
         GraphModel::NodePtrList RefreshEntityComponentNodes(const AZ::EntityId& targetEntityId, GraphCanvas::GraphId graphId);
         void PlaceNewNode(GraphCanvas::GraphId graphId, LandscapeCanvas::BaseNode::BaseNodePtr node);
         int GetInboundDataSlotIndex(GraphModel::NodePtr node, GraphModel::DataTypePtr dataType, GraphModel::SlotPtr targetSlot);
+        void HandleImageAssetSlot(GraphModel::NodePtr targetNode, const EntityIdNodeMap& gradientNodeMap, ConnectionsList& connections);
+        void HandleDeserializedNodes();
 
         //! Determines whether or not we should allow the user to interact with the graph
         //! This should be disabled when there is no level currently loaded
@@ -248,15 +278,24 @@ namespace LandscapeCanvasEditor
 
         AZ::SerializeContext* m_serializeContext = nullptr;
 
+        static AzFramework::EntityContextId s_editorEntityContextId;
+        AzToolsFramework::Prefab::PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
+        AzToolsFramework::Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
+        AzToolsFramework::ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
+
         bool m_ignoreGraphUpdates = false;
         bool m_prefabPropagationInProgress = false;
         bool m_inObjectPickMode = false;
 
         using DeletedNodePositionsMap = AZStd::unordered_map<AZ::EntityComponentIdPair, AZ::Vector2>;
         AZStd::unordered_map<GraphCanvas::GraphId, DeletedNodePositionsMap> m_deletedNodePositions;
+        GraphModel::NodePtrList m_addedWrappedNodes;
+        GraphModel::NodePtrList m_deletedWrappedNodes;
+        GraphModel::NodePtrList m_deserializedNodes;
         AzToolsFramework::EntityIdList m_queuedEntityDeletes;
+        AzToolsFramework::EntityIdList m_queuedEntityRefresh;
 
-        AZStd::unordered_map<AZ::Uuid, AZ::u32> m_wrappedNodeLayoutOrderMap;
+        AzToolsFramework::EntityIdList m_ignoreEntityComponentPropertyChanges;
 
         /// Keep track of the dock widget for the graph that represents the Vegetation Entity
         AZStd::unordered_map<AZ::EntityId, GraphCanvas::DockWidgetId> m_dockWidgetsByEntity;

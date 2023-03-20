@@ -28,16 +28,16 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     // IUnkown implementation.
-    virtual HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj);
-    virtual ULONG STDMETHODCALLTYPE AddRef();
-    virtual ULONG STDMETHODCALLTYPE Release();
+    HRESULT STDMETHODCALLTYPE QueryInterface(const IID& riid, void** ppvObj) override;
+    ULONG STDMETHODCALLTYPE AddRef() override;
+    ULONG STDMETHODCALLTYPE Release() override;
     //////////////////////////////////////////////////////////////////////////
 
-    virtual REFGUID ClassID();
+    REFGUID ClassID() override;
 
     //////////////////////////////////////////////////////////////////////////
-    virtual int GetPagesCount();
-    virtual IPreferencesPage* CreateEditorPreferencesPage(int index) override;
+    int GetPagesCount() override;
+    IPreferencesPage* CreateEditorPreferencesPage(int index) override;
 };
 
 #endif // CRYINCLUDE_EDITOR_PREFERENCESSTDPAGES_H

@@ -9,24 +9,24 @@
 
 #include <GradientSignalModule.h>
 #include <GradientSignalSystemComponent.h>
-#include <Components/SmoothStepGradientComponent.h>
-#include <Components/SurfaceAltitudeGradientComponent.h>
-#include <Components/SurfaceSlopeGradientComponent.h>
-#include <Components/MixedGradientComponent.h>
-#include <Components/ImageGradientComponent.h>
-#include <Components/ConstantGradientComponent.h>
-#include <Components/ThresholdGradientComponent.h>
-#include <Components/LevelsGradientComponent.h>
-#include <Components/ReferenceGradientComponent.h>
-#include <Components/InvertGradientComponent.h>
-#include <Components/DitherGradientComponent.h>
-#include <Components/PosterizeGradientComponent.h>
-#include <Components/ShapeAreaFalloffGradientComponent.h>
-#include <Components/PerlinGradientComponent.h>
-#include <Components/RandomGradientComponent.h>
-#include <Components/GradientTransformComponent.h>
-#include <Components/SurfaceMaskGradientComponent.h>
-#include <Components/GradientSurfaceDataComponent.h>
+#include <GradientSignal/Components/SmoothStepGradientComponent.h>
+#include <GradientSignal/Components/SurfaceAltitudeGradientComponent.h>
+#include <GradientSignal/Components/SurfaceSlopeGradientComponent.h>
+#include <GradientSignal/Components/MixedGradientComponent.h>
+#include <GradientSignal/Components/ImageGradientComponent.h>
+#include <GradientSignal/Components/ConstantGradientComponent.h>
+#include <GradientSignal/Components/ThresholdGradientComponent.h>
+#include <GradientSignal/Components/LevelsGradientComponent.h>
+#include <GradientSignal/Components/ReferenceGradientComponent.h>
+#include <GradientSignal/Components/InvertGradientComponent.h>
+#include <GradientSignal/Components/DitherGradientComponent.h>
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
+#include <GradientSignal/Components/ShapeAreaFalloffGradientComponent.h>
+#include <GradientSignal/Components/PerlinGradientComponent.h>
+#include <GradientSignal/Components/RandomGradientComponent.h>
+#include <GradientSignal/Components/GradientTransformComponent.h>
+#include <GradientSignal/Components/SurfaceMaskGradientComponent.h>
+#include <GradientSignal/Components/GradientSurfaceDataComponent.h>
 
 namespace GradientSignal
 {

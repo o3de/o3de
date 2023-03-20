@@ -7,7 +7,9 @@
  */
 
 #pragma once
+
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/Viewport/ViewportMessages.h>
 
 #include "Core/EditorMetricsPlainTextNameRegistration.h"
 #include "EditorToolsApplicationAPI.h"
@@ -19,8 +21,11 @@ namespace EditorInternal
     class EditorToolsApplication
         : public AzToolsFramework::ToolsApplication
         , public EditorToolsApplicationRequests::Bus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler
+        , public AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(EditorToolsApplication, AZ::SystemAllocator)
         EditorToolsApplication(int* argc, char*** argv);
         ~EditorToolsApplication();
 
@@ -28,7 +33,7 @@ namespace EditorInternal
 
         void RegisterCoreComponents() override;
 
-        AZ::ComponentTypeList GetRequiredSystemComponents() const;
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
 
         void StartCommon(AZ::Entity* systemEntity) override;
 
@@ -43,6 +48,12 @@ namespace EditorInternal
         // From AzToolsFramework::ToolsApplication
         void CreateReflectionManager() override;
         void Reflect(AZ::ReflectContext* context) override;
+
+        // EditorModifierKeyRequestBus overrides ...
+        AzToolsFramework::ViewportInteraction::KeyboardModifiers QueryKeyboardModifiers() override;
+
+        // EditorViewportInputTimeNowRequestBus overrides ...
+        AZStd::chrono::milliseconds EditorViewportInputTimeNow() override;
 
     protected:
         // From EditorToolsApplicationRequests

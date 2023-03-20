@@ -25,7 +25,7 @@ namespace AZ
 
         void Matrix3x4SetRowGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool rowIsSet = false;
+            [[maybe_unused]] bool rowIsSet = false;
             if (dc.GetNumArguments() >= 5)
             {
                 if (dc.IsNumber(0))
@@ -88,7 +88,7 @@ namespace AZ
 
         void Matrix3x4SetColumnGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool columnIsSet = false;
+            [[maybe_unused]] bool columnIsSet = false;
             if (dc.GetNumArguments() >= 4)
             {
                 if (dc.IsNumber(0))
@@ -133,7 +133,7 @@ namespace AZ
 
         void Matrix3x4SetTranslationGeneric(Matrix3x4* thisPtr, ScriptDataContext& dc)
         {
-            bool translationIsSet = false;
+            [[maybe_unused]] bool translationIsSet = false;
 
             if (dc.GetNumArguments() == 3 &&
                 dc.IsNumber(0) &&
@@ -351,7 +351,8 @@ namespace AZ
                 ->Method("CreateFromMatrix3x3AndTranslation", &Matrix3x4::CreateFromMatrix3x3AndTranslation)
                 ->Method("CreateScale", &Matrix3x4::CreateScale)
                 ->Method("CreateDiagonal", &Matrix3x4::CreateDiagonal)
-                ->Method("CreateTranslation", &Matrix3x4::CreateTranslation);
+                ->Method("CreateTranslation", &Matrix3x4::CreateTranslation)
+                ->Method("UnsafeCreateFromMatrix4x4", &Matrix3x4::UnsafeCreateFromMatrix4x4);
         }
     }
 
@@ -432,7 +433,7 @@ namespace AZ
         // calculate the determinant
         const float determinant = result.m_rows[0].Dot3(GetColumn(0));
 
-        if (determinant != 0.0f)
+        if (!AZ::IsClose(determinant, 0.0f, Constants::FloatEpsilon))
         {
             float determinantInv = 1.0f / determinant;
             result.m_rows[0] *= determinantInv;

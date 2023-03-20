@@ -18,13 +18,13 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_SingeEntityInstances)(::benchmark::State& state)
     {
-        const unsigned int numInstances = state.range();
+        const unsigned int numInstances = static_cast<unsigned int>(state.range());
 
         CreateFakePaths(2);
         const auto& nestedTemplatePath = m_paths.front();
         const auto& enclosingTemplatePath = m_paths.back();
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -36,7 +36,7 @@ namespace Benchmark
 
             AZStd::unique_ptr<Instance> enclosingInstance = m_prefabSystemComponent->CreatePrefab(
                 {},
-                MakeInstanceList( AZStd::move(nestedInstance) ),
+                MakeInstanceList(AZStd::move(nestedInstance)),
                 enclosingTemplatePath);
 
             TemplateId templateToInstantiateId = enclosingInstance->GetTemplateId();
@@ -80,12 +80,12 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_SingleLinearNestingOfInstances)(::benchmark::State& state)
     {
-        const unsigned int maxDepth = state.range();
+        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances = maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -99,7 +99,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth - 1]);
             }
 
@@ -131,13 +131,13 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_MultipleLinearNestingOfInstances)(::benchmark::State& state)
     {
-        const unsigned int numRootInstances = state.range();
-        const unsigned int maxDepth = state.range();
+        const unsigned int numRootInstances = static_cast<unsigned int>(state.range());
+        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances = numRootInstances * maxDepth;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -151,7 +151,7 @@ namespace Benchmark
             {
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot)),
                     m_paths[currentDepth]);
             }
 
@@ -192,12 +192,12 @@ namespace Benchmark
 
     BENCHMARK_DEFINE_F(BM_PrefabUpdateInstances, UpdateInstances_BinaryTreeNestedInstanceHierarchy)(::benchmark::State& state)
     {
-        const unsigned int maxDepth = state.range();
+        const unsigned int maxDepth = static_cast<unsigned int>(state.range());
         CreateFakePaths(maxDepth);
 
         const unsigned int numInstances =  (1 << maxDepth) - 1;
 
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             state.PauseTiming();
 
@@ -214,7 +214,7 @@ namespace Benchmark
 
                 currentInstanceRoot = m_prefabSystemComponent->CreatePrefab(
                     {},
-                    MakeInstanceList( AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance) ),
+                    MakeInstanceList(AZStd::move(currentInstanceRoot), AZStd::move(extraNestedInstance)),
                     m_paths[currentDepth]);
             }
 

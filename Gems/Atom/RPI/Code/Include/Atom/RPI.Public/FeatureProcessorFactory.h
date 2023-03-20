@@ -17,14 +17,7 @@ namespace AZ
     namespace RPI
     {
         class FeatureProcessor;
-
-        class FeatureProcessorDeleter
-        {
-        public:
-            void operator()(FeatureProcessor* featureProcessor) const;
-        };
-
-        using FeatureProcessorPtr = AZStd::unique_ptr<FeatureProcessor, FeatureProcessorDeleter>;
+        using FeatureProcessorPtr = AZStd::unique_ptr<FeatureProcessor>;
 
         //! The feature processor factory is where gems should register their
         //! feature processors. Once registered, these feature processors can
@@ -37,7 +30,7 @@ namespace AZ
             friend class Scene;
 
             AZ_RTTI(FeatureProcessorFactory, "{3F16394E-D801-4FAC-B329-40B8D7724AEE}");
-            AZ_CLASS_ALLOCATOR(FeatureProcessorFactory, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FeatureProcessorFactory, AZ::SystemAllocator);
 
             static FeatureProcessorFactory* Get();
 

@@ -21,9 +21,8 @@
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
 #include <LyShine/Bus/UiIndexableImageBus.h>
-#include <CryCommon/LyShine/ILyShine.h>
+#include <LyShine/ILyShine.h>
 
-#include <IRenderer.h>
 #include "EditorPropertyTypes.h"
 #include "Sprite.h"
 
@@ -59,12 +58,17 @@ UiInteractableStateAction::EntityComboBoxVec UiInteractableStateAction::Populate
     EntityComboBoxVec result;
 
     // add a first entry for "None"
-    result.push_back(AZStd::make_pair(m_interactableEntity, "<This element>"));
+    result.emplace_back(m_interactableEntity, "<This element>");
 
     // Get a list of all child elements
     LyShine::EntityArray matchingElements;
-    EBUS_EVENT_ID(m_interactableEntity, UiElementBus, FindDescendantElements,
-        []([[maybe_unused]] const AZ::Entity* entity) { return true; },
+    UiElementBus::Event(
+        m_interactableEntity,
+        &UiElementBus::Events::FindDescendantElements,
+        []([[maybe_unused]] const AZ::Entity* entity)
+        {
+            return true;
+        },
         matchingElements);
 
     // add their names to the StringList and their IDs to the id list
@@ -107,7 +111,7 @@ void UiInteractableStateColor::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateColor::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideColor, m_color);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideColor, m_color);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +206,7 @@ void UiInteractableStateAlpha::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateAlpha::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideAlpha, m_alpha);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideAlpha, m_alpha);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -275,7 +279,7 @@ UiInteractableStateSprite::UiInteractableStateSprite(AZ::EntityId target, const 
 
     if (!m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 }
 
@@ -298,7 +302,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
     // If this is called from RC.exe for example these pointers will not be set. In that case
     // we only need to be able to load, init and save the component. It will never be
     // activated.
-    if (!(gEnv && gEnv->pLyShine))
+    if (!AZ::Interface<ILyShine>::Get())
     {
         return;
     }
@@ -307,7 +311,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
     // are not loaded then load them
     if (!m_sprite && !m_spritePathname.GetAssetPath().empty())
     {
-        m_sprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        m_sprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     if (!m_sprite)
@@ -319,7 +323,7 @@ void UiInteractableStateSprite::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateSprite::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideSprite, m_sprite, m_spriteSheetCellIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -367,7 +371,7 @@ void UiInteractableStateSprite::OnSpritePathnameChange()
     if (!m_spritePathname.GetAssetPath().empty())
     {
         // Load the new texture.
-        newSprite = gEnv->pLyShine->LoadSprite(m_spritePathname.GetAssetPath().c_str());
+        newSprite = AZ::Interface<ILyShine>::Get()->LoadSprite(m_spritePathname.GetAssetPath().c_str());
     }
 
     SAFE_RELEASE(m_sprite);
@@ -440,7 +444,7 @@ void UiInteractableStateSprite::OnTargetElementChange()
 void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 {
     AZStd::string spritePathname;
-    EBUS_EVENT_ID_RESULT(spritePathname, m_targetEntity, UiImageBus, GetSpritePathname);
+    UiImageBus::EventResult(spritePathname, m_targetEntity, &UiImageBus::Events::GetSpritePathname);
     m_spritePathname.SetAssetPath(spritePathname.c_str());
 
     OnSpritePathnameChange();
@@ -450,7 +454,7 @@ void UiInteractableStateSprite::LoadSpriteFromTargetElement()
 UiInteractableStateSprite::AZu32ComboBoxVec UiInteractableStateSprite::PopulateIndexStringList() const
 {
     int indexCount = 0;
-    EBUS_EVENT_ID_RESULT(indexCount, m_targetEntity, UiIndexableImageBus, GetImageIndexCount);
+    UiIndexableImageBus::EventResult(indexCount, m_targetEntity, &UiIndexableImageBus::Events::GetImageIndexCount);
 
     if (indexCount > 0)
     {
@@ -512,8 +516,8 @@ void UiInteractableStateFont::Init(AZ::EntityId interactableEntityId)
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 void UiInteractableStateFont::ApplyState()
 {
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFont, m_fontFamily);
-    EBUS_EVENT_ID(m_targetEntity, UiVisualBus, SetOverrideFontEffect, m_fontEffectIndex);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFont, m_fontFamily);
+    UiVisualBus::Event(m_targetEntity, &UiVisualBus::Events::SetOverrideFontEffect, m_fontEffectIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -555,7 +559,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
 {
     // Just to be safe we make sure is normalized
     AZStd::string fontPath = pathname;
-    EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePath, fontPath);
+    AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePath, fontPath);
     m_fontFilename.SetAssetPath(fontPath.c_str());
 
     // We should minimize what is done in constructors and Init since components may be constructed
@@ -575,10 +579,7 @@ void UiInteractableStateFont::SetFontPathname(const AZStd::string& pathname)
             fontFamily = gEnv->pCryFont->LoadFontFamily(fileName.c_str());
             if (!fontFamily)
             {
-                string errorMsg = "Error loading a font from ";
-                errorMsg += fileName.c_str();
-                errorMsg += ".";
-                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, errorMsg.c_str());
+                CryWarning(VALIDATOR_MODULE_SYSTEM, VALIDATOR_ERROR, "Error loading a font from %s.", fileName.c_str());
             }
         }
 
@@ -616,7 +617,7 @@ UiInteractableStateFont::FontEffectComboBoxVec UiInteractableStateFont::Populate
     // NOTE: Curently, in order for this to work, when the font is changed we need to do
     // "RefreshEntireTree" to get the combo box list refreshed.
     unsigned int numEffects = m_fontFamily ? m_fontFamily->normal->GetNumEffects() : 0;
-    for (int i = 0; i < numEffects; ++i)
+    for (unsigned int i = 0; i < numEffects; ++i)
     {
         const char* name = m_fontFamily->normal->GetEffectName(i);
         result.push_back(AZStd::make_pair(i, name));

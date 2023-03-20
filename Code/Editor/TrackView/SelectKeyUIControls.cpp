@@ -9,69 +9,12 @@
 
 #include "EditorDefs.h"
 
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"                          // for CTrackViewKeyUIControls
 
 #include <AzCore/Component/EntityBus.h>                         // for AZ::EntitySystemBus
 #include <AzFramework/Components/CameraBus.h>                   // for Camera::CameraNotificationBus
 #include <CryCommon/Maestro/Types/AnimValueType.h>              // for AnimValueType
-
-//////////////////////////////////////////////////////////////////////////
-class CSelectKeyUIControls
-    : public CTrackViewKeyUIControls
-    , protected Camera::CameraNotificationBus::Handler
-    , protected AZ::EntitySystemBus::Handler
-{
-public:
-    CSelectKeyUIControls() = default;
-
-    ~CSelectKeyUIControls() override;
-
-    CSmartVariableArray mv_table;
-    CSmartVariableEnum<QString> mv_camera;
-    CSmartVariable<float> mv_BlendTime;
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_camera, "Camera");
-        AddVariable(mv_table, mv_BlendTime, "Blend time");
-
-        Camera::CameraNotificationBus::Handler::BusConnect();
-        AZ::EntitySystemBus::Handler::BusConnect();
-    }
-    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, [[maybe_unused]] EAnimCurveType trackType, AnimValueType valueType) const override
-    {
-        return valueType == AnimValueType::Select;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 1; }
-
-    static const GUID& GetClassID()
-    {
-        // {9018D0D1-24CC-45e5-9D3D-16D3F9E591B2}
-        static const GUID guid =
-        {
-            0x9018d0d1, 0x24cc, 0x45e5, { 0x9d, 0x3d, 0x16, 0xd3, 0xf9, 0xe5, 0x91, 0xb2 }
-        };
-        return guid;
-    }
-
-protected:
-    ////////////////////////////////////////////////////////////////////////
-    // CameraNotificationBus interface implementation
-    void OnCameraAdded(const AZ::EntityId& cameraId) override;
-    void OnCameraRemoved(const AZ::EntityId& cameraId) override;
-
-    //////////////////////////////////////////////////////////////////////////
-    // AZ::EntitySystemBus::Handler
-    void OnEntityNameChanged(const AZ::EntityId& entityId, const AZStd::string& name) override;
-
-private:
-
-    void ResetCameraEntries();
-};
 
 CSelectKeyUIControls::~CSelectKeyUIControls()
 {
@@ -269,5 +212,3 @@ void CSelectKeyUIControls::ResetCameraEntries()
         OnCameraAdded(cameraComponentEntities.values[i]);
     }
 }
-
-REGISTER_QT_CLASS_DESC(CSelectKeyUIControls, "TrackView.KeyUI.Select", "TrackViewKeyUI");

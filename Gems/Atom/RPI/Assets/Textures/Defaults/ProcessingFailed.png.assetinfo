@@ -1,0 +1,148 @@
+<ObjectStream version="3">
+	<Class name="TextureSettings" version="2" type="{980132FF-C450-425D-8AE0-BD96A8486177}">
+		<Class name="AZ::Uuid" field="PresetID" value="{00000000-0000-0000-0000-000000000000}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+		<Class name="Name" field="Preset" value="ReferenceImage" type="{3D2B920C-9EFD-40D5-AAE0-DF131C3D4931}"/>
+		<Class name="unsigned int" field="SizeReduceLevel" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+		<Class name="bool" field="EngineReduce" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="bool" field="EnableMipmap" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="bool" field="MaintainAlphaCoverage" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
+		<Class name="AZStd::vector" field="MipMapAlphaAdjustments" type="{3349AACD-BE04-50BC-9478-528BF2ACFD55}">
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+			<Class name="unsigned int" field="element" value="50" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+		</Class>
+		<Class name="unsigned int" field="MipMapGenEval" value="0" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+		<Class name="ImageProcessingAtom::MipGenType" field="MipMapGenType" value="1" type="{8524F650-1417-44DA-BBB0-C707A7A1A709}"/>
+		<Class name="AZStd::map" field="PlatformSpecificOverrides" type="{74E4843B-0924-583D-8C6E-A37B09BD51FE}">
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="android" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}">
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#4·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#2·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#3·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#0·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#1·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="ios" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}">
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#4·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#2·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#0·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#3·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#1·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="linux" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}">
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#4·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#2·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#3·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#0·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#1·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="mac" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}">
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#4·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#2·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#3·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#0·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+						<Class name="AZStd::pair" field="element" type="{FED51EB4-F646-51FF-9646-9852CF90F353}">
+							<Class name="AddressType" field="value1" value="AZStd::map({74E4843B-0924-583D-8C6E-A37B09BD51FE})::PlatformSpecificOverrides·0/AZStd::pair({CAC4E67F-D626-5452-A057-ACB57D53F549})#1·0/" version="1" type="{90752F2D-CBD3-4EE9-9CDD-447E797C8408}"/>
+							<Class name="any" field="value2" type="{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}"/>
+						</Class>
+					</Class>
+				</Class>
+			</Class>
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="pc" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="2" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}"/>
+				</Class>
+			</Class>
+		</Class>
+		<Class name="AZStd::string" field="OverridingPlatform" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+	</Class>
+</ObjectStream>
+

@@ -24,7 +24,7 @@ namespace AZ
         {
             using Base = RHI::FrameGraphExecuter;
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphExecuter, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphExecuter> Create();
 
@@ -41,9 +41,6 @@ namespace AZ
             void ExecuteGroupInternal(RHI::FrameGraphExecuteGroup& group) override;
             void EndInternal() override {}
             //////////////////////////////////////////////////////////////////////////
-
-            // Forces all scopes to issue a dedicated scope group with one command list.
-            void BeginInternalDebug(const RHI::FrameGraph& frameGraph);
 
             CommandQueueContext* m_commandQueueContext = nullptr;
 

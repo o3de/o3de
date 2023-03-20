@@ -12,6 +12,7 @@
 #include <Source/BaseColliderComponent.h>
 #include <Source/MeshColliderComponent.h>
 #include <Source/BoxColliderComponent.h>
+#include <Source/HeightfieldColliderComponent.h>
 #include <Source/SphereColliderComponent.h>
 #include <Source/CapsuleColliderComponent.h>
 #include <Source/ShapeColliderComponent.h>
@@ -24,6 +25,7 @@
 #include <Source/BallJointComponent.h>
 #include <Source/FixedJointComponent.h>
 #include <Source/HingeJointComponent.h>
+#include <Source/PrismaticJointComponent.h>
 
 namespace PhysX
 {
@@ -36,6 +38,7 @@ namespace PhysX
             BaseColliderComponent::CreateDescriptor(),
             MeshColliderComponent::CreateDescriptor(),
             BoxColliderComponent::CreateDescriptor(),
+            HeightfieldColliderComponent::CreateDescriptor(),
             SphereColliderComponent::CreateDescriptor(),
             CapsuleColliderComponent::CreateDescriptor(),
             ShapeColliderComponent::CreateDescriptor(),
@@ -47,7 +50,8 @@ namespace PhysX
             JointComponent::CreateDescriptor(),
             BallJointComponent::CreateDescriptor(),
             FixedJointComponent::CreateDescriptor(),
-            HingeJointComponent::CreateDescriptor()
+            HingeJointComponent::CreateDescriptor(),
+            PrismaticJointComponent::CreateDescriptor()
         };
 
         return descriptors;

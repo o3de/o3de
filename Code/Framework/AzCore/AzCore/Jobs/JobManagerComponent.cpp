@@ -18,6 +18,14 @@
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/Math/MathUtils.h>
 
+#include <AzCore/Console/IConsole.h>
+
+#include <AzCore/Threading/ThreadUtils.h>
+
+AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, AZ_TRAIT_USE_JOB_THREADS_CONCURRENCY_RATIO, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
+AZ_CVAR(uint32_t, cl_jobThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system number of hardware threads that are reserved for O3DE system threads");
+AZ_CVAR(uint32_t, cl_jobThreadsMinNumber, 3, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system minimum number of worker threads to create after scaling the number of hw threads");
+
 namespace AZ
 {
     //=========================================================================
@@ -43,15 +51,18 @@ namespace AZ
         JobManagerBus::Handler::BusConnect();
 
         JobManagerDesc desc;
+        desc.m_jobManagerName = "Default JobManager";
         JobManagerThreadDesc threadDesc;
 
         int numberOfWorkerThreads = m_numberOfWorkerThreads;
-        if (numberOfWorkerThreads <= 0)
+        if (numberOfWorkerThreads <= 0) // spawn default number of threads
         {
-            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), AZStd::thread::hardware_concurrency());
-        #if (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
-            numberOfWorkerThreads = AZ::GetMin(numberOfWorkerThreads, AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS);
-        #endif // (AZ_TRAIT_MAX_JOB_MANAGER_WORKER_THREADS)
+        #if (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
+            numberOfWorkerThreads = AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS;
+        #else
+            uint32_t scaledHardwareThreads = Threading::CalcNumWorkerThreads(cl_jobThreadsConcurrencyRatio, cl_jobThreadsMinNumber, 0, cl_jobThreadsNumReserved);
+            numberOfWorkerThreads = AZ::GetMin(static_cast<unsigned int>(desc.m_workerThreads.capacity()), scaledHardwareThreads);
+        #endif // (AZ_TRAIT_THREAD_NUM_JOB_MANAGER_WORKER_THREADS)
         }
 
         threadDesc.m_cpuId = AFFINITY_MASK_USERTHREADS;
@@ -104,7 +115,6 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("MemoryService", 0x5c4d473c));
         dependent.push_back(AZ_CRC("ProfilerService", 0x505033c9));
     }
 
@@ -127,7 +137,6 @@ namespace AZ
                     "Job Manager", "Provides fine grained job system and worker threads")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_numberOfWorkerThreads, "Worker threads", "Number of worked threads for this job manager.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)

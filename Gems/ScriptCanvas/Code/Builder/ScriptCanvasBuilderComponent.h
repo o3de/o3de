@@ -11,6 +11,8 @@
 #include <AzCore/Component/Component.h>
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
+#include <Builder/ScriptCanvasBuilderDataSystem.h>
+
 #include "ScriptCanvasBuilderWorker.h"
 
 namespace ScriptCanvasBuilder
@@ -21,7 +23,7 @@ namespace ScriptCanvasBuilder
     {
     public:
         AZ_COMPONENT(PluginComponent, "{F8286B21-E751-4745-8BC4-512F190215FF}")
-        static void Reflect(AZ::ReflectContext* context);
+            static void Reflect(AZ::ReflectContext* context);
 
         PluginComponent() = default;
         ~PluginComponent() override = default;
@@ -40,5 +42,6 @@ namespace ScriptCanvasBuilder
         PluginComponent(const PluginComponent&) = delete;
         SharedHandlers m_sharedHandlers;
         Worker m_scriptCanvasBuilder;
+        DataSystem m_dataSystem;
     };
 }

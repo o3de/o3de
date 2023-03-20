@@ -2,14 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/SetVariable.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="SetVariableNode"
-	       QualifiedName="ScriptCanvas::Nodes::Core::SetVariableNode"
-	       PreferredClassName="Set Variable"
-           Uuid="{5EFD2942-AFF9-4137-939C-023AEAA72EB0}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Placeholder.png"
-           Version="1"
-           GeneratePropertyFriend="True"
-           Description="Node for setting a property within the graph">
+        QualifiedName="ScriptCanvas::Nodes::Core::SetVariableNode"
+        PreferredClassName="Set Variable"
+        Uuid="{5EFD2942-AFF9-4137-939C-023AEAA72EB0}"
+        Version="1"
+        Description="Node for setting a property within the graph">
         <In Name="In" Description="When signaled sends the variable referenced by this node to a Data Output slot"/>
         <Out Name="Out" Description="Signaled after the referenced variable has been pushed to the Data Output slot"/>
         <SerializedProperty Name="m_variableId" />

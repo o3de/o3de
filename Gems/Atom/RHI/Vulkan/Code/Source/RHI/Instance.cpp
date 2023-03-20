@@ -7,8 +7,13 @@
  */
 #include <RHI/Device.h>
 #include <RHI/Instance.h>
+#include <RHI/PhysicalDevice.h>
+#include <Atom/RHI.Reflect/Vulkan/XRVkDescriptors.h>
 #include <Atom/RHI.Loader/FunctionLoader.h>
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Utils/Utils.h>
+#include <Atom/RHI/RHIUtils.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -16,33 +21,69 @@ namespace AZ
     {
         static const uint32_t s_minVulkanSupportedVersion = VK_API_VERSION_1_0;
 
+        static EnvironmentVariable<Instance> s_vulkanInstance;
+        static constexpr const char* s_vulkanInstanceKey = "VulkanInstance";
+
         Instance& Instance::GetInstance()
         {
-            static Instance s_instance;
-            return s_instance;
+            if (!s_vulkanInstance)
+            {
+                s_vulkanInstance = Environment::FindVariable<Instance>(s_vulkanInstanceKey);
+                if (!s_vulkanInstance)
+                {
+                    s_vulkanInstance = Environment::CreateVariable<Instance>(s_vulkanInstanceKey);
+                }
+            }
+
+            return s_vulkanInstance.Get();
         }
 
+        void Instance::Reset()
+        {
+            s_vulkanInstance.Reset();
+        }
 
         Instance::~Instance()
         {
             Shutdown();
         }
-
+        
         bool Instance::Init(const Descriptor& descriptor)
         {
-            m_descriptor = descriptor;   
+#if defined(USE_NSIGHT_AFTERMATH)
+            m_gpuCrashHandler.EnableGPUCrashDumps();
+#endif
 
-            m_functionLoader = FunctionLoader::Create();
-            if (!m_functionLoader->Init())
+            m_descriptor = descriptor;
+            if (GetValidationMode() != RHI::ValidationMode::Disabled)
             {
-                AZ_Warning("Vulkan", false, "Could not initialized function loader.");
+                char exeDirectory[AZ_MAX_PATH_LEN];
+                AZ::Utils::GetExecutableDirectory(exeDirectory, AZ_ARRAY_SIZE(exeDirectory));
+
+                //This env var (VK_LAYER_PATH) is used by the drivers to look for VkLayer_khronos_validation.dll
+                AZ::Utils::SetEnv("VK_LAYER_PATH", exeDirectory, 1);
+
+                RawStringList validationLayers = Debug::GetValidationLayers();
+                m_descriptor.m_optionalLayers.insert(m_descriptor.m_optionalLayers.end(), validationLayers.begin(), validationLayers.end());
+                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+            }
+#if defined(AZ_VULKAN_USE_DEBUG_LABELS)
+            m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif
+            
+            m_functionLoader = FunctionLoader::Create();
+            if (!m_functionLoader->Init() ||
+                !m_functionLoader->LoadProcAddresses(&m_context, VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE))
+            {
+                AZ_Warning("Vulkan", false, "Could not initialize function loader.");
                 return false;
             }
 
             uint32_t apiVersion = VK_API_VERSION_1_0;
             // vkEnumerateInstanceVersion is a Vulkan 1.1 function 
             // so if it's not available we assume Vulkan 1.0
-            if (vkEnumerateInstanceVersion && vkEnumerateInstanceVersion(&apiVersion) != VK_SUCCESS)
+            if (m_context.EnumerateInstanceVersion && m_context.EnumerateInstanceVersion(&apiVersion) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to get instance version.");
                 return false;
@@ -64,26 +105,14 @@ namespace AZ
                 return false;
             }                
 
-            VkApplicationInfo appInfo = {};
-            appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-            appInfo.apiVersion = apiVersion;
+            
+            m_appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+            m_appInfo.apiVersion = apiVersion;
 
-            VkInstanceCreateInfo instanceCreateInfo = {};
-            instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-            instanceCreateInfo.pApplicationInfo = &appInfo;
+            m_instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+            m_instanceCreateInfo.pApplicationInfo = &m_appInfo;
 
             StringList instanceLayerNames = GetInstanceLayerNames();
-            if (GetValidationMode() != RHI::ValidationMode::Disabled)
-            {
-                RawStringList validationLayers = Debug::GetValidationLayers();
-                m_descriptor.m_optionalLayers.insert(m_descriptor.m_requiredLayers.end(), validationLayers.begin(), validationLayers.end());
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-                m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-            }
-#if defined(AZ_VULKAN_USE_DEBUG_LABELS)
-            m_descriptor.m_optionalExtensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
-
             RawStringList optionalLayers = FilterList(m_descriptor.m_optionalLayers, instanceLayerNames);
             m_descriptor.m_requiredLayers.insert(m_descriptor.m_requiredLayers.end(), optionalLayers.begin(), optionalLayers.end());
 
@@ -91,31 +120,21 @@ namespace AZ
             RawStringList optionalExtensions = FilterList(m_descriptor.m_optionalExtensions, instanceExtensions);
             m_descriptor.m_requiredExtensions.insert(m_descriptor.m_requiredExtensions.end(), optionalExtensions.begin(), optionalExtensions.end());
 
-            instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_descriptor.m_requiredLayers.size());
-            instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
-            instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
-            instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
-
-            if (vkCreateInstance(&instanceCreateInfo, nullptr, &m_instance) != VK_SUCCESS)
+            m_instanceCreateInfo.enabledLayerCount = static_cast<uint32_t>(m_descriptor.m_requiredLayers.size());
+            m_instanceCreateInfo.ppEnabledLayerNames = m_descriptor.m_requiredLayers.data();
+            m_instanceCreateInfo.enabledExtensionCount = static_cast<uint32_t>(m_descriptor.m_requiredExtensions.size());
+            m_instanceCreateInfo.ppEnabledExtensionNames = m_descriptor.m_requiredExtensions.data();
+            if (m_context.CreateInstance(&m_instanceCreateInfo, VkSystemAllocator::Get(), &m_instance) != VK_SUCCESS)
             {
                 AZ_Warning("Vulkan", false, "Failed to create Vulkan instance");
                 return false;
             }
 
             // Now that we have created the instance, load the function pointers for it.
-            m_functionLoader->LoadProcAddresses(m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
+            m_functionLoader->LoadProcAddresses(&m_context, m_instance, VK_NULL_HANDLE, VK_NULL_HANDLE);
 
-            auto validationMode = GetValidationMode();
-            if (validationMode != RHI::ValidationMode::Disabled)
-            {
-                auto messagesTypeMask = Debug::DebugMessageTypeFlag::Error | Debug::DebugMessageTypeFlag::Warning | Debug::DebugMessageTypeFlag::Performance;
-                if (validationMode == RHI::ValidationMode::Verbose)
-                {
-                    messagesTypeMask |= Debug::DebugMessageTypeFlag::Debug | Debug::DebugMessageTypeFlag::Info;
-                }
+            CreateDebugMessenger();
 
-                Debug::InitDebugMessages(m_instance, messagesTypeMask);
-            }
             // Check that we have at least one device that meets the requirements.
             m_supportedDevices = EnumerateSupportedDevices();
 
@@ -125,23 +144,32 @@ namespace AZ
 
         void Instance::Shutdown() 
         {
-            if (m_instance != VK_NULL_HANDLE)
+            //Only destroy VkInstance if created locally and not passed in by XR module
+            if (!m_isXRInstanceCreated)
             {
-                if (GetValidationMode() != RHI::ValidationMode::Disabled)
-                {
-                    Debug::ShutdownDebugMessages(m_instance);
-                }
-                m_supportedDevices.clear();
-
-                vkDestroyInstance(m_instance, nullptr);
-                m_instance = VK_NULL_HANDLE;
+                ShutdownNativeInstance();
             }
-
+            
             if (m_functionLoader)
             {
                 m_functionLoader->Shutdown();
             }
             m_functionLoader = nullptr;
+        }
+
+        void Instance::ShutdownNativeInstance()
+        {
+            if (m_instance != VK_NULL_HANDLE)
+            {
+                if (GetValidationMode() != RHI::ValidationMode::Disabled)
+                {
+                    Debug::ShutdownDebugMessages(m_context, m_instance);
+                }
+                m_supportedDevices.clear();
+
+                m_context.DestroyInstance(m_instance, VkSystemAllocator::Get());
+                m_instance = VK_NULL_HANDLE;
+            }
         }
 
         const Instance::Descriptor& Instance::GetDescriptor() const
@@ -153,14 +181,14 @@ namespace AZ
         {
             StringList layerNames;
             uint32_t layerPropertyCount = 0;
-            VkResult result = vkEnumerateInstanceLayerProperties(&layerPropertyCount, nullptr);
+            VkResult result = m_context.EnumerateInstanceLayerProperties(&layerPropertyCount, nullptr);
             if (IsError(result) || layerPropertyCount == 0)
             {
                 return layerNames;
             }
 
             AZStd::vector<VkLayerProperties> layerProperties(layerPropertyCount);
-            result = vkEnumerateInstanceLayerProperties(&layerPropertyCount, layerProperties.data());
+            result = m_context.EnumerateInstanceLayerProperties(&layerPropertyCount, layerProperties.data());
             if (IsError(result))
             {
                 return layerNames;
@@ -179,7 +207,7 @@ namespace AZ
         {
             StringList extensionNames;
             uint32_t extPropertyCount = 0;
-            VkResult result = vkEnumerateInstanceExtensionProperties(layerName, &extPropertyCount, nullptr);
+            VkResult result = m_context.EnumerateInstanceExtensionProperties(layerName, &extPropertyCount, nullptr);
             if (IsError(result) || extPropertyCount == 0)
             {
                 return extensionNames;
@@ -188,7 +216,7 @@ namespace AZ
             AZStd::vector<VkExtensionProperties> extProperties;
             extProperties.resize(extPropertyCount);
 
-            result = vkEnumerateInstanceExtensionProperties(layerName, &extPropertyCount, extProperties.data());
+            result = m_context.EnumerateInstanceExtensionProperties(layerName, &extPropertyCount, extProperties.data());
             if (IsError(result))
             {
                 return extensionNames;
@@ -264,6 +292,70 @@ namespace AZ
                 it = shouldIgnore ? supportedDevices.erase(it) : it + 1;
             }
             return supportedDevices;
+        }
+
+        void Instance::CreateDebugMessenger()
+        {
+            auto validationMode = GetValidationMode();
+            if (validationMode != RHI::ValidationMode::Disabled)
+            {
+                auto messagesTypeMask =
+                    Debug::DebugMessageTypeFlag::Error | Debug::DebugMessageTypeFlag::Warning | Debug::DebugMessageTypeFlag::Performance;
+                if (validationMode == RHI::ValidationMode::Verbose)
+                {
+                    messagesTypeMask |= Debug::DebugMessageTypeFlag::Debug | Debug::DebugMessageTypeFlag::Info;
+                }
+
+                Debug::InitDebugMessages(m_context, m_instance, messagesTypeMask);
+            }
+        }
+
+        void Instance::UpdateNativeInstance(RHI::XRRenderingInterface* xrSystem)
+        {
+            if (m_isXRInstanceCreated)
+            {
+                AZ_Warning("Vulkan", false, "XR Vulkan instance is already created");
+                return;
+            }
+
+            RHI::Ptr<XRInstanceDescriptor> xrInstanceDescriptor = aznew XRInstanceDescriptor();
+            xrInstanceDescriptor->m_inputData.m_createInfo = &m_instanceCreateInfo;
+
+            // Init the new native instance for XR
+            AZ::RHI::ResultCode result = xrSystem->InitNativeInstance(xrInstanceDescriptor.get());
+            AZ_Warning("Vulkan", result == RHI::ResultCode::Success, "Xr instance creation was not successful");
+            if (result == RHI::ResultCode::Success)
+            {
+                //Delete existing VkInstance
+                ShutdownNativeInstance();
+
+                //Update the native object from the passed by the XR module
+                m_instance = xrInstanceDescriptor->m_outputData.m_xrVkInstance;
+                //Update the context from the passed by the XR module
+                m_context = xrInstanceDescriptor->m_outputData.m_context;
+
+                //Re-add support for validation with the updated VkInstance
+                CreateDebugMessenger();
+
+                //Get number of  Physical devices
+                uint32_t numPhysicalDevices = xrSystem->GetNumPhysicalDevices();
+                    
+                //Clear any existing physical devices
+                m_supportedDevices.clear();
+                m_supportedDevices.reserve(numPhysicalDevices);
+
+                //Re-populate physical devices from XR module
+                for (uint32_t i = 0; i < numPhysicalDevices; i++)
+                {
+                    RHI::Ptr<XRPhysicalDeviceDescriptor> xrPhysicalDeviceDesc = aznew XRPhysicalDeviceDescriptor();
+                    xrSystem->GetXRPhysicalDevice(xrPhysicalDeviceDesc.get(), i);
+
+                    RHI::Ptr<PhysicalDevice> physicalDevice = aznew PhysicalDevice;
+                    physicalDevice->Init(xrPhysicalDeviceDesc->m_outputData.m_xrVkPhysicalDevice);
+                    m_supportedDevices.emplace_back(physicalDevice);
+                }
+                m_isXRInstanceCreated = true;
+            }
         }
     }
 }

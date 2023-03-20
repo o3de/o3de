@@ -19,6 +19,7 @@
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Outcome/Outcome.h>
 
 namespace AZ
 {
@@ -96,6 +97,26 @@ namespace AZ
             Object
         };
 
+        //! Type of an integer
+        enum class Signedness
+        {
+            None,
+            Signed,
+            Unsigned
+        };
+
+        //! Encapsulate stored value and its signedness
+        struct SettingsType
+        {
+            operator Type() const
+            {
+                return m_type;
+            }
+
+            Type m_type{ Type::NoType };
+            Signedness m_signedness{ Signedness::None };
+        };
+
         //! The response to let the visit call know what to do next.
         enum class VisitResponse
         {
@@ -119,12 +140,50 @@ namespace AZ
             JsonMergePatch  //!< Using the json merge patch format to merge JSON data into the Settings Registry.
         };
 
-        using NotifyCallback = AZStd::function<void(AZStd::string_view path, Type type)>;
-        using NotifyEvent = AZ::Event<AZStd::string_view, Type>;
+        struct NotifyEventArgs
+        {
+            AZStd::string_view m_jsonKeyPath;
+            SettingsType m_type;
+            AZStd::string_view m_mergeFilePath;
+        };
+        using NotifyCallback = AZStd::function<void(const NotifyEventArgs& notifierArgs)>;
+        using NotifyEvent = AZ::Event<const NotifyEventArgs&>;
         using NotifyEventHandler = typename NotifyEvent::Handler;
 
+        struct MergeEventArgs
+        {
+            AZStd::string_view m_mergeFilePath;
+            AZStd::string_view m_jsonKeyPath;
+        };
+        using PreMergeEventCallback = AZStd::function<void(const MergeEventArgs&)>;
+        using PostMergeEventCallback = AZStd::function<void(const MergeEventArgs&)>;
+        using PreMergeEvent = AZ::Event<const MergeEventArgs&>;
+        using PostMergeEvent = AZ::Event<const MergeEventArgs&>;
+        using PreMergeEventHandler = typename PreMergeEvent::Handler;
+        using PostMergeEventHandler = typename PostMergeEvent::Handler;
+
+        //! Stores the data about the settings field being visited
+        //! The full key path to the settings field is supplied, along with the settings type
+        struct VisitArgs
+        {
+            VisitArgs(const AZ::SettingsRegistryInterface& registry)
+                : m_registry(registry)
+            {}
+
+            //! Full key path to the settings field being visited. Includes field name
+            //! i.e "/O3DE/Settings/FieldName"
+            AZStd::string_view m_jsonKeyPath;
+            //! The specific field name being visited. The field name is parented to an object or array
+            //! i.e "FieldName"
+            AZStd::string_view m_fieldName;
+            //! The type of the setting stored within the registry.
+            SettingsType m_type;
+            //! Reference to the Settings Registry instance performing the visit operations
+            const AZ::SettingsRegistryInterface& m_registry;
+        };
+
         using VisitorCallback =
-            AZStd::function<VisitResponse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)>;
+            AZStd::function<VisitResponse(const VisitArgs&, VisitAction action)>;
         //! Base class for the visitor class during traversal over the Settings Registry. The type-agnostic function is always
         //! called and, if applicable, the overloaded functions with the appropriate values.
         class Visitor
@@ -132,18 +191,18 @@ namespace AZ
         public:
             virtual ~Visitor() = 0;
 
-            virtual VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(action); AZ_UNUSED(type); return VisitResponse::Continue; }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, bool value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, s64 value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, u64 value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, double value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
-            virtual void Visit(AZStd::string_view path, AZStd::string_view valueName, Type type, AZStd::string_view value)
-            { AZ_UNUSED(path); AZ_UNUSED(valueName); AZ_UNUSED(type); AZ_UNUSED(value); }
+            virtual VisitResponse Traverse([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] VisitAction action)
+            { return VisitResponse::Continue; }
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] bool value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] s64 value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] u64 value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] double value)
+            {}
+            virtual void Visit([[maybe_unused]] const VisitArgs& visitArgs, [[maybe_unused]] AZStd::string_view value)
+            {}
         };
 
         SettingsRegistryInterface() = default;
@@ -151,7 +210,7 @@ namespace AZ
         virtual ~SettingsRegistryInterface() = default;
 
         //! Returns the type of an entry in the Settings Registry or Type::None if there's no value or the path is invalid.
-        virtual Type GetType(AZStd::string_view path) const = 0;
+        [[nodiscard]] virtual SettingsType GetType(AZStd::string_view path) const = 0;
         //! Traverses over the entries in the Settings Registry. Use this version to retrieve the values of entries as well.
         //! @param visitor An instance of a class derived from Visitor that will repeatedly be called as entries are encountered.
         //! @param path An offset at which traversal should start.
@@ -162,12 +221,34 @@ namespace AZ
         //! @param path An offset at which traversal should start.
         //! @return Whether or not entries could be visited.
         virtual bool Visit(const VisitorCallback& callback, AZStd::string_view path) const = 0;
+
         //! Register a callback that will be called whenever an entry gets a new/updated value.
+        //!
         //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(const NotifyCallback& callback) = 0;
-        //! Register a callback that will be called whenever an entry gets a new/updated value.
-        //! @callback The function to call when an entry gets a new/updated value.
-        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback&& callback) = 0;
+        //! @return NotifyEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual NotifyEventHandler RegisterNotifier(NotifyCallback callback) = 0;
+        //! Register a notify event handler with the NotifyEvent.
+        //! The handler will be called whenever an entry gets a new/updated value.
+        //! @param handler The handler to register with the NotifyEvent.
+        virtual void RegisterNotifier(NotifyEventHandler& handler) = 0;
+
+        //! Register a function that will be called before a file is merged.
+        //! @param callback The function to call before a file is merged.
+        //! @return PreMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PreMergeEventHandler RegisterPreMergeEvent(PreMergeEventCallback callback) = 0;
+        //! Register a pre-merge handler with the PreMergeEvent.
+        //! The handler will be called before a file is merged.
+        //! @param handler The hanlder to register with the PreMergeEvent.
+        virtual void RegisterPreMergeEvent(PreMergeEventHandler& handler) = 0;
+
+        //! Register a function that will be called after a file is merged.
+        //! @param callback The function to call after a file is merged.
+        //! @return PostMergeEventHandler instance which must persist to receive event signal
+        [[nodiscard]] virtual PostMergeEventHandler RegisterPostMergeEvent(PostMergeEventCallback callback) = 0;
+        //! Register a post-merge hahndler with the PostMergeEvent.
+        //! The handler will be called after a file is merged.
+        //! @param handler The handler to register with the PostmergeEVent.
+        virtual void RegisterPostMergeEvent(PostMergeEventHandler& handler) = 0;
 
         //! Gets the boolean value at the provided path.
         //! @param result The target to write the result to.
@@ -198,7 +279,7 @@ namespace AZ
         //! @param resultTypeId The type id of the target that's being written to.
         //! @param path The path to the value.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool GetObject(void* result, Uuid resultTypeID, AZStd::string_view path) const = 0;
+        virtual bool GetObject(void* result, AZ::Uuid resultTypeId, AZStd::string_view path) const = 0;
         //! Gets the json object value at the provided path serialized to the target struct/class. Classes retrieved
         //! through this call needs to be registered with the Serialize Context.
         //! @param result The target to write the result to.
@@ -242,13 +323,13 @@ namespace AZ
         //! @param value The new value to store.
         //! @param valueTypeId The type id of the target that's being stored.
         //! @return Whether or not the value was stored. An invalid path will return false;
-        virtual bool SetObject(AZStd::string_view path, const void* value, Uuid valueTypeID) = 0;
-        template<typename T>
+        virtual bool SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeId) = 0;
         //! Sets the value at the provided path to the serialized version of the provided struct/class.
         //! Classes used for this call need to be registered with the Serialize Context.
         //! @param path The path to the value.
         //! @param value The new value to store.
         //! @return Whether or not the value was stored. An invalid path will return false;
+        template<typename T>
         bool SetObject(AZStd::string_view path, const T& value) { return SetObject(path, &value, azrtti_typeid(value)); }
 
         //! Remove the value at the provided path 
@@ -282,23 +363,25 @@ namespace AZ
         //! - all digits and dot -> floating point number
         //! - Everything else is considered a string.
         //! @param argument The command line argument.
-        //! @param structure which contains functors which determine what characters are delimiters
+        //! @param anchorKey The key where the merged command line argument will be anchored under
+        //! @param commandLineSettings structure which contains functors which determine what characters are delimiters
         //! @return True if the command line argument could be parsed, otherwise false.
-        virtual bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey = "",
+        virtual bool MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view anchorKey = "",
             const CommandLineArgumentSettings& commandLineSettings = {}) = 0;
         //! Merges the json data provided into the settings registry.
         //! @param data The json data stored in a string.
         //! @param format The format of the provided data.
+        //! @param anchorKey The key where the merged json content will be anchored under.
         //! @return True if the data was successfully merged, otherwise false.
-        virtual bool MergeSettings(AZStd::string_view data, Format format) = 0;
+        virtual bool MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") = 0;
         //! Loads a settings file and merges it into the registry.
         //! @param path The path to the registry file.
         //! @param format The format of the text data in the file at the provided path.
-        //! @param rootKey The key where the root of the settings file will be stored under.
+        //! @param anchorKey The key where the content of the settings file will be anchored.
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return True if the registry file was successfully merged, otherwise false.
-        virtual bool MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey = "",
+        //! @return An AZ::Success if the registry file was successfully merged, or AZ::Failure with an error message.
+        virtual AZ::Outcome<void, AZStd::string> MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) = 0;
         //! Loads all settings files in a folder and merges them into the registry.
         //!     With the specializations "a" and "b" and platform "c" the files would be loaded in the order:
@@ -313,19 +396,24 @@ namespace AZ
         //! @param platform An optional name of a platform. Platform overloads are located at <path>/Platform/<platform>/
         //!     Files in a platform are applied in the same order as for the main folder but always after the same file
         //!     in the main folder.
+        //! @param anchorKey The registry path location where the settings will be anchored
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
         //! @return True if the registry folder was successfully merged, otherwise false.
         virtual bool MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
-            AZStd::string_view platform = {}, AZStd::string_view rootKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
+            AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
-        //! Stores the settings structure which is used when merging settings to the Settings Registry
-        //! using JSON Merge Patch or JSON Merge Patch.
-        //! The settings contain an issue reporting callback which can be used to track patching process.
-        //! Potential application of the reporting callback could be to update a UI whenever a key receives an updated value
-        //! @param applyPatchSettings The ApplyPatchSettings which are using during JSON Merging
-        virtual void SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
-        virtual void GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings) = 0;
+        //! Indicates whether the Merge functions should send notification events for individual operations
+        //! using JSON Patch or JSON Merge Patch.
+        //! @param notify If true, the patching operations are forwarded through the NotifyEvent
+        virtual void SetNotifyForMergeOperations(bool notify) = 0;
+        //! @return returns true if merge operations signals the notification events
+        virtual bool GetNotifyForMergeOperations() const = 0;
+
+        //! Stores option to indicate whether the FileIOBase instance should be used for file operations
+        //! @param useFileIo If true the FileIOBase instance will attempted to be used for FileIOBase
+        //! operations before falling back to use SystemFile
+        virtual void SetUseFileIO(bool useFileIo) = 0;
     };
 
     inline SettingsRegistryInterface::Visitor::~Visitor() = default;

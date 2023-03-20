@@ -64,7 +64,7 @@ namespace AzTestRunner
     {
         static char cwd_buffer[AZ_MAX_PATH_LEN] = { '\0' };
 
-        AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
+        [[maybe_unused]] AZ::Utils::ExecutablePathResult result = AZ::Utils::GetExecutableDirectory(cwd_buffer, AZ_ARRAY_SIZE(cwd_buffer));
         AZ_Assert(result == AZ::Utils::ExecutablePathResult::Success, "Error retrieving executable path");
 
         return static_cast<const char*>(cwd_buffer);
@@ -73,12 +73,6 @@ namespace AzTestRunner
     void pause_on_completion()
     {
     }
-}
-
-static AZ::EnvironmentInstance s_envInst = nullptr;
-AZTEST_EXPORT AZ::EnvironmentInstance GetTestRunnerEnvironment()
-{
-    return s_envInst;
 }
 
 namespace
@@ -278,7 +272,7 @@ static void *thread_logger_func(void*)
                 --readSize;
             }
             logBuffer[readSize] = '\0';
-            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, logBuffer));
+            ((void) __android_log_print(ANDROID_LOG_INFO, s_logTag, "%s", logBuffer));
         }
     }
     return 0;
@@ -294,10 +288,6 @@ void android_main(android_app* appState)
     __android_log_print(ANDROID_LOG_INFO, s_logTag, "****************************************************************");
     __android_log_print(ANDROID_LOG_INFO, s_logTag, " Starting %s", s_defaultAppName);
     __android_log_print(ANDROID_LOG_INFO, s_logTag, "****************************************************************");
-
-    // setup the android environment
-    AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    s_envInst = AZ::Environment::GetInstance();
 
     // setup the system command handler which are guaranteed to be called on the same
     // thread the events are pumped
@@ -326,7 +316,6 @@ void android_main(android_app* appState)
         if (!AZ::Android::AndroidEnv::Create(descriptor))
         {
             AZ::Android::AndroidEnv::Destroy();
-            AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
             MAIN_EXIT_FAILURE(appState, "Failed to create the AndroidEnv");
         }
 
@@ -447,6 +436,4 @@ void android_main(android_app* appState)
 
 
     AZ::Android::AndroidEnv::Destroy();
-
-    AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
 }

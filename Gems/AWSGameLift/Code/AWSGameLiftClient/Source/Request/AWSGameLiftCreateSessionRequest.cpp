@@ -6,10 +6,11 @@
  *
  */
 
+#include <Request/AWSGameLiftCreateSessionRequest.h>
+
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-
-#include <Request/AWSGameLiftCreateSessionRequest.h>
 
 namespace AWSGameLift
 {
@@ -17,7 +18,7 @@ namespace AWSGameLift
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<AWSGameLiftCreateSessionRequest, AzFramework::CreateSessionRequest>()
+            serializeContext->Class<AWSGameLiftCreateSessionRequest, Multiplayer::CreateSessionRequest>()
                 ->Version(0)
                 ->Field("aliasId", &AWSGameLiftCreateSessionRequest::m_aliasId)
                 ->Field("fleetId", &AWSGameLiftCreateSessionRequest::m_fleetId)

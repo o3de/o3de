@@ -1,0 +1,88 @@
+{
+    "indications": [
+        {
+            "name": "Insufficient disk space",
+            "description": "Build node or EBS volume is out of disk space, rerun build with CLEAN_WORKSPACE parameter",
+            "comment": "Build node or EBS volume is out of disk space, clean build node or the EBS volume",
+            "single_line": true,
+            "find_all": false,
+            "log_patterns": [
+                "^.*No space left on device.*$"
+            ],
+            "log_testcases": [
+                "error: unable to open output file '...': 'No space left on device'"
+            ],
+            "owners": []
+        },
+        {
+            "name": "Build node disconnected",
+            "description": "Build node disconnected during the build",
+            "comment": "Build node disconnected during the build, rerun the job",
+            "single_line": true,
+            "find_all": false,
+            "log_patterns": [
+                "^.*Agent went offline during the build.*$"
+            ],
+            "log_testcases": [
+                "Agent went offline during the build"
+            ],
+            "owners": []
+        },
+        {
+            "name": "Incremental build script error",
+            "description": "Incremental build script error, merge latest from upstream",
+            "comment": "Incremental build script error, merge latest from upstream",
+            "single_line": true,
+            "find_all": true,
+            "log_patterns": [
+                "^.*File.*incremental_build_util\\.py\", line \\d+.*$"
+            ],
+            "log_testcases": [
+                "File \"scripts\\build\\bootstrap\\incremental_build_util.py\", line 87"
+            ],
+            "owners": []
+        },
+        {
+            "name": "Corrupt PDB file",
+            "description": "Corrupt PDB file, try build again with build parameter CLEAN_OUTPUT_DIRECTORY enabled",
+            "comment": "Corrupt PDB file, try build again with build parameter CLEAN_OUTPUT_DIRECTORY enabled",
+            "single_line": true,
+            "find_all": true,
+            "log_patterns": [
+                "^.*fatal error LNK1285: corrupt PDB file.*$"
+            ],
+            "log_testcases": [
+                "LINK : fatal error LNK1285: corrupt PDB file 'D:\\workspace\\o3de\\build\\windows_vs2019\\bin\\profile\\o3de.pdb'"
+            ],
+            "owners": []
+        },
+        {
+            "name": "Case sensitive/insensitive issue",
+            "description": "Once case changed in file name, run a clean build to fix the build failure.",
+            "comment": "Once case changed in file name, run a clean build to fix the build failure",
+            "single_line": true,
+            "find_all": true,
+            "log_patterns": [
+                "^.*ModuleNotFoundError: No module named 'Prefab.*$"
+            ],
+            "log_testcases": [
+                "ModuleNotFoundError: No module named 'Prefab"
+            ],
+            "owners": []
+        },
+        {
+            "name": "Jenkins build node connectivity issue",
+            "description": "Jenkins cannot reconnect to build nodes after Jenkins server restart.",
+            "comment": "Jenkins cannot reconnect to build nodes after Jenkins server restart.",
+            "single_line": true,
+            "find_all": false,
+            "log_patterns": [
+                "^Killed part of.*after waiting for.*because we assume unknown agent.*is never going to appear$"
+            ],
+            "log_testcases": [
+                "Killed part of O3DE » PR-9504 #2 after waiting for 5 min 0 sec because we assume unknown agent EC2 (us-west-2) - WIN2019_INC_3 (i-05a91a7e645fc20d1) is never going to appear"
+            ],
+            "owners": []
+        }
+    ]
+}

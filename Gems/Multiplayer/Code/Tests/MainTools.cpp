@@ -13,8 +13,6 @@
 #include <AzTest/GemTestEnvironment.h>
 #include <QApplication>
 #include <Multiplayer/Components/NetBindComponent.h>
-#include <Source/Pipeline/NetBindMarkerComponent.h>
-#include <Source/Pipeline/NetworkSpawnableHolderComponent.h>
 #include <UnitTest/ToolsTestApplication.h>
 
 namespace Multiplayer
@@ -29,9 +27,7 @@ namespace Multiplayer
         void AddGemsAndComponents() override
         {
             AZStd::vector<AZ::ComponentDescriptor*> descriptors({
-                NetBindComponent::CreateDescriptor(),
-                NetBindMarkerComponent::CreateDescriptor(),
-                NetworkSpawnableHolderComponent::CreateDescriptor()
+                NetBindComponent::CreateDescriptor()
             });
 
             AddComponentDescriptors(descriptors);

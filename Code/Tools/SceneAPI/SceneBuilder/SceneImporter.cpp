@@ -102,6 +102,12 @@ namespace AZ
 
                 AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> upAxisAndSign = assImpSceneWrapper->GetUpVectorAndSign();
 
+                const aiAABB& aabb = assImpSceneWrapper->GetAABB();
+                aiVector3t dimension = aabb.mMax - aabb.mMin;
+                Vector3 t{ dimension.x, dimension.y, dimension.z };
+                scene.SetSceneDimension(t);
+                scene.SetSceneVertices(assImpSceneWrapper->GetVertices());
+
                 if (upAxisAndSign.second <= 0)
                 {
                     AZ_TracePrintf(SceneAPI::Utilities::ErrorWindow, "Negative scene orientation is not a currently supported orientation.");
@@ -222,7 +228,12 @@ namespace AZ
                     int childCount = node.m_node->GetChildCount();
                     for (int i = 0; i < childCount; ++i)
                     {
-                        std::shared_ptr<AssImpSDKWrapper::AssImpNodeWrapper> child = std::make_shared<AssImpSDKWrapper::AssImpNodeWrapper>(node.m_node->GetChild(i)->GetAssImpNode());
+                        const std::shared_ptr<SDKNode::NodeWrapper> nodeWrapper = node.m_node->GetChild(i);
+                        auto assImpNodeWrapper = azrtti_cast<AssImpSDKWrapper::AssImpNodeWrapper*>(nodeWrapper.get());
+
+                        AZ_Assert(assImpNodeWrapper, "Child node is not the expected AssImpNodeWrapper type");
+
+                        std::shared_ptr<AssImpSDKWrapper::AssImpNodeWrapper> child = std::make_shared<AssImpSDKWrapper::AssImpNodeWrapper>(assImpNodeWrapper->GetAssImpNode());
                         if (child)
                         {
                             nodes.emplace(AZStd::move(child), newNode);

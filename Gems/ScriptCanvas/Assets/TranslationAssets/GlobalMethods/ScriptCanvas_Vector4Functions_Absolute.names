@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector4Functions_Absolute",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Absolute",
+                "category": "Math/Vector4"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector4Functions_Absolute",
+                    "details": {
+                        "name": "Absolute",
+                        "tooltip": "Returns a vector with the absolute values of the elements of the source."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Vector4"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

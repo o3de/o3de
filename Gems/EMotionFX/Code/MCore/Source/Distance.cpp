@@ -16,8 +16,8 @@ namespace MCore
     // convert it into another unit type
     const MCore::Distance& Distance::ConvertTo(EUnitType targetUnitType)
     {
-        mDistance = mDistanceMeters * GetConversionFactorFromMeters(targetUnitType);
-        mUnitType = targetUnitType;
+        m_distance = m_distanceMeters * GetConversionFactorFromMeters(targetUnitType);
+        m_unitType = targetUnitType;
         return *this;
     }
 
@@ -166,7 +166,7 @@ namespace MCore
     // update the distance in meters
     void Distance::UpdateDistanceMeters()
     {
-        mDistanceMeters = mDistance * GetConversionFactorToMeters(mUnitType);
+        m_distanceMeters = m_distance * GetConversionFactorToMeters(m_unitType);
     }
 
 

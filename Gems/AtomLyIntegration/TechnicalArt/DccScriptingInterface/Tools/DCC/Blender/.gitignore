@@ -1,0 +1,10 @@
+__pycache__
+__tmp__
+*.pyc
+*.pyo
+# Ignore dynaconf secret files
+.secrets.*
+settings.local.json
+.env
+settings_export.json.tmp
+Env_Dev.bat

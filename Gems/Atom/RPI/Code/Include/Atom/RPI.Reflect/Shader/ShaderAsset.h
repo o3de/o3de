@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/AssetInitBus.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
 #include <Atom/RPI.Reflect/Shader/ShaderOptionGroupLayout.h>
+#include <Atom/RPI.Reflect/Shader/ShaderOptionGroup.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderVariantTreeAsset.h>
 #include <Atom/RPI.Reflect/Shader/ShaderInputContract.h>
@@ -53,13 +54,14 @@ namespace AZ
         class ShaderAsset final
             : public Data::AssetData
             , public ShaderVariantFinderNotificationBus::Handler
-            , public Data::AssetBus::Handler
             , public AssetInitBus::Handler
         {
             friend class ShaderAssetCreator;
             friend class ShaderAssetHandler;
             friend class ShaderAssetTester;
+            friend class Shader;
         public:
+            AZ_CLASS_ALLOCATOR(ShaderAsset , SystemAllocator)
             AZ_RTTI(ShaderAsset, "{823395A3-D570-49F4-99A9-D820CD1DEF98}", Data::AssetData);
             static void Reflect(ReflectContext* context);
 
@@ -96,10 +98,13 @@ namespace AZ
 
             //! Return the timestamp when the shader asset was built.
             //! This is used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t GetShaderAssetBuildTimestamp() const;
+            AZStd::sys_time_t GetBuildTimestamp() const;
 
             //! Returns the shader option group layout.
             const ShaderOptionGroupLayout* GetShaderOptionGroupLayout() const;
+
+            //! Returns the default shader option values.
+            ShaderOptionGroup GetDefaultShaderOptions() const;
 
             //! Returns the supervariant index from the specified name.
             //! Note that this will append the system supervariant name from RPI::ShaderSystem when searching.
@@ -113,9 +118,9 @@ namespace AZ
             //! ShaderVariantAsset is loaded and ready.
             //! In the mean time, if the required variant is not available this function
             //! returns the Root Variant.
-            Data::Asset<ShaderVariantAsset> GetVariant(
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(
                 const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex);
-            Data::Asset<ShaderVariantAsset> GetVariant(const ShaderVariantId& shaderVariantId) { return GetVariant(shaderVariantId, DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(const ShaderVariantId& shaderVariantId) { return GetVariantAsset(shaderVariantId, DefaultSupervariantIndex); }
 
             //! Finds the best matching shader variant and returns its StableId.
             //! This function first loads and caches the ShaderVariantTreeAsset (if not done before).
@@ -131,12 +136,12 @@ namespace AZ
             //! Next time around if the variant has been loaded this function will return it. Alternatively
             //! the caller can register with the ShaderVariantFinderNotificationBus to get the asset as soon as is available.
             //! This function is thread safe.
-            Data::Asset<ShaderVariantAsset> GetVariant(
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(
                 ShaderVariantStableId shaderVariantStableId, SupervariantIndex supervariantIndex) const;
-            Data::Asset<ShaderVariantAsset> GetVariant(ShaderVariantStableId shaderVariantStableId) const { return GetVariant(shaderVariantStableId, DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetVariantAsset(ShaderVariantStableId shaderVariantStableId) const { return GetVariantAsset(shaderVariantStableId, DefaultSupervariantIndex); }
 
-            Data::Asset<ShaderVariantAsset> GetRootVariant(SupervariantIndex supervariantIndex) const;
-            Data::Asset<ShaderVariantAsset> GetRootVariant() const { return GetRootVariant(DefaultSupervariantIndex); }
+            Data::Asset<ShaderVariantAsset> GetRootVariantAsset(SupervariantIndex supervariantIndex) const;
+            Data::Asset<ShaderVariantAsset> GetRootVariantAsset() const { return GetRootVariantAsset(DefaultSupervariantIndex); }
 
 
             //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.
@@ -158,8 +163,8 @@ namespace AZ
 
 
             //! Returns the set of shader resource group layouts owned by a given supervariant.
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
-            AZStd::array_view<RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts( SupervariantIndex supervariantIndex) const;
+            AZStd::span<const RHI::Ptr<RHI::ShaderResourceGroupLayout>> GetShaderResourceGroupLayouts() const
             {
                 return GetShaderResourceGroupLayouts(DefaultSupervariantIndex);
             }
@@ -212,21 +217,18 @@ namespace AZ
                 return GetAttribute(shaderStage, attributeName, DefaultSupervariantIndex);
             }
 
-
         private:
-            ///////////////////////////////////////////////////////////////////
-            /// AssetBus overrides
-            void OnAssetReloaded(Data::Asset<Data::AssetData> asset) override;
-            void OnAssetReady(Data::Asset<Data::AssetData> asset) override;
-            ///////////////////////////////////////////////////////////////////
-
-            void ReinitializeRootShaderVariant(Data::Asset<Data::AssetData> asset);
-
             ///////////////////////////////////////////////////////////////////
             /// ShaderVariantFinderNotificationBus overrides
             void OnShaderVariantTreeAssetReady(Data::Asset<ShaderVariantTreeAsset> shaderVariantTreeAsset, bool isError) override;
             void OnShaderVariantAssetReady(Data::Asset<ShaderVariantAsset> /*shaderVariantAsset*/, bool /*isError*/) override {};
             ///////////////////////////////////////////////////////////////////
+
+            // Only Shader::OnAssetReloaded() should call this function, because it is pointless for an Asset to
+            // to refresh its own "serialized references" to other assets during  OnAssetReloaded().
+            // The problem is that OnAssetReloaded() doesn't do a good job at updating "serialized references" to other assets,
+            // So some other class must update the reference and that's why Shader() is the best class to do it.
+            void UpdateRootShaderVariantAsset(SupervariantIndex SupervariantIndex, Data::Asset<ShaderVariantAsset> newRootVariant);
 
             //! A Supervariant represents a set of static shader compilation parameters.
             //! Those parameters can be predefined c-preprocessor macros or specific arguments
@@ -291,13 +293,16 @@ namespace AZ
             //! Defines the layout of the shader options in the asset.
             Ptr<ShaderOptionGroupLayout> m_shaderOptionGroupLayout;
 
+            //! Any values set here will override the default values that come from the m_shaderOptionGroupLayout.
+            ShaderVariantId m_defaultShaderOptionValueOverrides;
+
             //! List with shader data per RHI backend.
             AZStd::vector<ShaderApiDataContainer> m_perAPIShaderData;
 
             Name m_drawListName;
 
             //! Use to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            AZStd::sys_time_t m_shaderAssetBuildTimestamp = 0; 
+            AZ::u64 m_buildTimestamp = 0; 
 
 
             ///////////////////////////////////////////////////////////////////

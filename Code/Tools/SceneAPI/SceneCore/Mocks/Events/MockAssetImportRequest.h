@@ -50,6 +50,8 @@ namespace AZ
                 MOCK_METHOD3(UpdateManifest,
                     ProcessingResult(Containers::Scene& scene, ManifestAction action, RequestingApplication requester));
 
+                MOCK_CONST_METHOD1(GetPolicyName, void(AZStd::string& result));
+
                 void DefaultGetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& extensions)
                 {
                     extensions.insert(".asset");

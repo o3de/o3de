@@ -8,6 +8,8 @@
 
 #include <AzCore/PlatformIncl.h>
 
+#include <AzCore/Component/ComponentApplicationBus.h>
+
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
 
@@ -193,7 +195,7 @@ namespace GraphCanvas
                     }
                     else
                     {
-                        AZ_Error("TranslationAsset", false, "Serialization of the TranslationFormat failed for: %s", asset.GetHint().c_str());
+                        AZ_Warning("TranslationAsset", false, "Serialization of the TranslationFormat failed for: %s", asset.GetHint().c_str());
                     }
                 }
             }

@@ -17,7 +17,7 @@ namespace PhysX
 {
     namespace Editor
     {
-        static const AZ::Crc32 InertiaHandler = AZ_CRC("RigidBodyInertia", 0x3091b106);
+        static const AZ::Crc32 InertiaHandler = AZ_CRC_CE("RigidBodyInertia");
 
         class InertiaPropertyHandler
             : public QObject
@@ -25,7 +25,7 @@ namespace PhysX
         {
             Q_OBJECT //AUTOMOC
         public:
-            AZ_CLASS_ALLOCATOR(InertiaPropertyHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InertiaPropertyHandler, AZ::SystemAllocator);
 
             AZ::u32 GetHandlerName(void) const override;
             QWidget* CreateGUI(QWidget* parent) override;

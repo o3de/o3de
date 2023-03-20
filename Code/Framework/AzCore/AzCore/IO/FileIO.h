@@ -31,7 +31,7 @@ namespace AZ
         /// return true if name of file matches glob filter.
         /// glob filters are MS-DOS (or windows) findNextFile style filters
         /// like "*.bat" or "blah??.pak" or "test*.exe" and such.
-        bool NameMatchesFilter(const char* name, const char* filter);
+        bool NameMatchesFilter(AZStd::string_view name, AZStd::string_view filter);
 
         using HandleType = AZ::u32;
         static const HandleType InvalidHandle = 0;
@@ -45,36 +45,6 @@ namespace AZ
 
         SeekType GetSeekTypeFromFSeekMode(int mode);
         int GetFSeekModeFromSeekType(SeekType type);
-
-        enum class OpenMode : AZ::u32
-        {
-            Invalid = 0,
-            ModeRead = (1 << 0),
-            ModeWrite = (1 << 1),
-            ModeAppend = (1 << 2),
-            ModeBinary = (1 << 3),
-            ModeText = (1 << 4),
-            ModeUpdate = (1 << 5),
-            ModeCreatePath = (1 << 6),
-        };
-
-        inline bool AnyFlag(OpenMode a)
-        {
-            return a != OpenMode::Invalid;
-        }
-
-        AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenMode)
-
-        OpenMode GetOpenModeFromStringMode(const char* mode);
-
-        const char* GetStringModeFromOpenMode(OpenMode mode);
-
-        // when reading, we ignore text mode requests, becuase text mode will not be supported from reading from
-        // odd devices such as pack files, remote reads, and within compressed volumes anyway.  This makes it behave the same as
-        // pak mode as it behaves loose.  In practice, developers should avoid depending on text mode for reading, specifically depending
-        // on the platform-specific concept of removing '\r' characters from a text stream.
-        // having the OS swallow characters without letting us know also messes up things like lookahead cache, optizing functions like FGetS and so on.
-        void UpdateOpenModeForReading(OpenMode& mode);
 
         enum class ResultCode : AZ::u32
         {
@@ -148,7 +118,7 @@ namespace AZ
             virtual AZ::u64 ModificationTime(HandleType fileHandle) = 0;
             virtual AZ::u64 ModificationTime(const char* filePath) = 0;
 
-            /// Get the size of the file.  Returns Success if we report size. 
+            /// Get the size of the file.  Returns Success if we report size.
             virtual Result Size(const char* filePath, AZ::u64& size) = 0;
             virtual Result Size(HandleType fileHandle, AZ::u64& size) = 0;
 
@@ -198,7 +168,7 @@ namespace AZ
             /// note: the callback will contain the full concatenated path (filePath + slash + fileName)
             ///       not just the individual file name found.
             /// note: if the file path of the found file corresponds to a registered ALIAS, the longest matching alias will be returned
-            ///       so expect return values like @assets@/textures/mytexture.dds instead of a full path.  This is so that fileIO works over remote connections.
+            ///       so expect return values like @products@/textures/mytexture.dds instead of a full path.  This is so that fileIO works over remote connections.
             /// note: if rootPath is specified the implementation has the option of substituting it for the current directory
             ///      as would be the case on a file server.
             typedef AZStd::function<bool(const char*)> FindFilesCallbackType;
@@ -206,12 +176,17 @@ namespace AZ
 
             // Alias system
 
-            /// SetAlias - Adds an alias to the path resolution system, e.g. @user@, @root@, etc.
+            /// SetAlias - Adds an alias to the path resolution system, e.g. @user@, @products@, etc.
             virtual void SetAlias(const char* alias, const char* path) = 0;
             /// ClearAlias - Removes an alias from the path resolution system
             virtual void ClearAlias(const char* alias) = 0;
             /// GetAlias - Returns the destination path for a given alias, or nullptr if the alias does not exist
             virtual const char* GetAlias(const char* alias) const = 0;
+
+            /// SetDeprecateAlias - Adds a deprecated alias with path resolution which points to a new alias
+            /// When the DeprecatedAlias is used an Error is logged and the alias is resolved to the path
+            /// specified by the new alais
+            virtual void SetDeprecatedAlias(AZStd::string_view oldAlias, AZStd::string_view newAlias) = 0;
 
             /// Shorten the given path if it contains an alias.  it will always pick the longest alias match.
             /// note that it re-uses the buffer, since the data can only get smaller and we don't want to internally allocate memory if we
@@ -230,8 +205,8 @@ namespace AZ
 
             //! ResolvePath - Replaces any aliases in path with their values and stores the result in resolvedPath,
             //! also ensures that the path is absolute
-            //! NOTE: If the path does not start with an alias then the resolved value of the @assets@ is used
-            //!       which has the effect of making the path relative to the @assets@/ folder
+            //! NOTE: If the path does not start with an alias then the resolved value of the @products@ is used
+            //!       which has the effect of making the path relative to the @products@/ folder
             //! returns true if path was resolved, false otherwise
             //! note that all of the above file-finding and opening functions automatically resolve the path before operating
             //! so you should not need to call this except in very exceptional circumstances where you absolutely need to
@@ -267,7 +242,7 @@ namespace AZ
             : public GenericStream
         {
         public:
-            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FileIOStream, SystemAllocator);
             FileIOStream();
             FileIOStream(HandleType fileHandle, AZ::IO::OpenMode mode, bool ownsHandle);
             FileIOStream(const char* path, AZ::IO::OpenMode mode, bool errorOnFailure = false);
@@ -289,6 +264,8 @@ namespace AZ
             SizeType    Write(SizeType bytes, const void* iBuffer) override;
             SizeType    GetCurPos() const override;
             SizeType    GetLength() const override;
+
+            virtual void Flush();
 
         private:
             HandleType m_handle;    ///< Open file handle.

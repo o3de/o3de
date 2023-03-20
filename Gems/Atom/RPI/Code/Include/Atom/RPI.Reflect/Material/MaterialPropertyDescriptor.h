@@ -12,21 +12,28 @@
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Limits.h>
 
 namespace AZ
 {
     namespace RPI
     {
+        class MaterialPropertyDescriptor;
+
         struct MaterialPropertyIndexType {
             AZ_TYPE_INFO(MaterialPropertyIndexType, "{cfc09268-f3f1-4474-bd8f-f2c8de27c5f1}");
         };
 
         using MaterialPropertyIndex = RHI::Handle<uint32_t, MaterialPropertyIndexType>;
 
+        using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
+
         enum class MaterialPropertyOutputType
         {
-            ShaderInput,  //!< Maps to a ShaderResourceGroup input
-            ShaderOption, //!< Maps to a shader variant option
+            ShaderInput,   //!< Maps to a ShaderResourceGroup input
+            ShaderOption,  //!< Maps to a shader variant option
+            ShaderEnabled, //!< Maps to the enabled flag for a shader
+            InternalProperty, //!< Maps to the internal properties of a MaterialPipelinePayload
             Invalid,
             Count = Invalid
         };
@@ -44,8 +51,11 @@ namespace AZ
 
             MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-            //! For m_type==ShaderOption, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
-            //! For m_type==ShaderInput, this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
+            Name m_materialPipelineName;
+
+            //! For m_type==ShaderOption,  this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderEnabled, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderInput,   this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
             RHI::Handle<uint32_t> m_containerIndex;
 
             //! Index to the specific setting that the material property maps to. 
@@ -76,6 +86,9 @@ namespace AZ
         const char* ToString(MaterialPropertyDataType materialPropertyDataType);
 
         AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
+        
+        //! Checks that the TypeId matches the type expected by materialPropertyDescriptor
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError);
 
         //! A material property is any data input to a material, like a bool, float, Vector, Image, Buffer, etc.
         //! This descriptor defines a single input property, including it's name ID, and how it maps
@@ -99,12 +112,17 @@ namespace AZ
             MaterialPropertyDescriptor() = default;
 
             MaterialPropertyDataType GetDataType() const;
+            //! Returns the TypeId that is used within assets for this material property.
+            AZ::TypeId GetAssetDataTypeId() const;
             //! Returns the TypeId that is used to store values for this material property.
             AZ::TypeId GetStorageDataTypeId() const;
 
             //! Returns the value of the enum from its name. If this property is not an enum or the name is undefined, InvalidEnumValue is returned.
-            static constexpr uint32_t InvalidEnumValue = -1;
+            static constexpr uint32_t InvalidEnumValue = std::numeric_limits<uint32_t>::max();
             uint32_t GetEnumValue(const AZ::Name& enumName) const;
+
+            //! Returns the name of the enum from its index. An empty name is returned for an invalid id.
+            const AZ::Name& GetEnumName(uint32_t enumValue) const;
 
             //! Returns the unique name ID of this property
             const Name& GetName() const;

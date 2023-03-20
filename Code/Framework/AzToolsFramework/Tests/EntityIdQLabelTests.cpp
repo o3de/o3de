@@ -55,14 +55,13 @@ namespace UnitTest
             AzToolsFramework::EditorRequests::Bus::Handler::BusConnect();
         }
 
-        ~EditorRequestHandlerTest()
+        ~EditorRequestHandlerTest() override
         {
             AzToolsFramework::EditorRequests::Bus::Handler::BusDisconnect();
         }
 
         void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) override {}
         int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override { AZ_UNUSED(entityIconPath);  return 0; }
-        bool DisplayHelpersVisible() override { return false; }
 
         void GoToSelectedEntitiesInViewports() override 
         {
@@ -75,7 +74,7 @@ namespace UnitTest
 
     // Fixture to support testing EntityIdQLabel functionality
     class EntityIdQLabelTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

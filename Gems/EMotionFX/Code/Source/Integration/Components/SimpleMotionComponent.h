@@ -54,8 +54,12 @@ namespace EMotionFX
                 float                                m_blendOutTime;            ///< Determines the blend out time in seconds.
                 bool                                 m_playOnActivation;        ///< Determines if the motion should be played immediately
                 bool                                 m_inPlace;                 ///< Determines if the motion should be played in-place.
+                bool                                 m_freezeAtLastFrame = true;///< Determines if the motion will go to bind pose after finishing or freeze at the last frame.
 
                 static void Reflect(AZ::ReflectContext* context);
+
+                AZ::Crc32 GetBlendOutTimeVisibility() const;
+                AZ::Crc32 GetFreezeAtLastFrameVisibility() const;
             };
 
             SimpleMotionComponent(const Configuration* config = nullptr);
@@ -72,7 +76,6 @@ namespace EMotionFX
             }
             static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
             {
-                dependent.push_back(AZ_CRC("PhysicsService", 0xa7350d22));
                 dependent.push_back(AZ_CRC("MeshService", 0x71d8a455));
             }
             static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
@@ -97,6 +100,7 @@ namespace EMotionFX
             float GetPlaySpeed() const override;
             void PlayTime(float time) override;
             float GetPlayTime() const override;
+            float GetDuration() const override;
             void Motion(AZ::Data::AssetId assetId) override;
             AZ::Data::AssetId  GetMotion() const override;
             void BlendInTime(float time) override;

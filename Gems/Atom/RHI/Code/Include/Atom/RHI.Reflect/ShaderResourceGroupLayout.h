@@ -10,11 +10,21 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/ShaderResourceGroupLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/NameIdReflectionMap.h>
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Utils/TypeHash.h>
+
+namespace AZ::Serialize
+{
+    template<class T, bool U, bool A>
+    struct InstanceFactory;
+}
+namespace AZ
+{
+    template<typename ValueType, typename>
+    struct AnyTypeInfoConcept;
+}
 
 namespace AZ
 {
@@ -52,7 +62,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(ShaderResourceGroupLayout, "{1F92C651-9B83-4379-AB5C-5201F1B2C278}");
-            AZ_CLASS_ALLOCATOR(ShaderResourceGroupLayout, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderResourceGroupLayout, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             static Ptr<ShaderResourceGroupLayout> Create();
@@ -116,7 +126,7 @@ namespace AZ
             // The following methods are only permitted on a finalized layout.
 
             /// Returns the full list of static samplers descriptors declared on the layout.
-            AZStd::array_view<ShaderInputStaticSamplerDescriptor> GetStaticSamplers() const;
+            AZStd::span<const ShaderInputStaticSamplerDescriptor> GetStaticSamplers() const;
 
             /**
              * Resolves an shader input name to an index for each type of shader input. To maximize performance,
@@ -148,13 +158,13 @@ namespace AZ
              * maintain their original order with respect to AddShaderInput. Each type
              * of shader input has its own separate list.
              */
-            AZStd::array_view<ShaderInputBufferDescriptor>   GetShaderInputListForBuffers() const;
-            AZStd::array_view<ShaderInputImageDescriptor>    GetShaderInputListForImages() const;
-            AZStd::array_view<ShaderInputSamplerDescriptor>  GetShaderInputListForSamplers() const;
-            AZStd::array_view<ShaderInputConstantDescriptor> GetShaderInputListForConstants() const;
+            AZStd::span<const ShaderInputBufferDescriptor>   GetShaderInputListForBuffers() const;
+            AZStd::span<const ShaderInputImageDescriptor>    GetShaderInputListForImages() const;
+            AZStd::span<const ShaderInputSamplerDescriptor>  GetShaderInputListForSamplers() const;
+            AZStd::span<const ShaderInputConstantDescriptor> GetShaderInputListForConstants() const;
 
-            AZStd::array_view<ShaderInputBufferUnboundedArrayDescriptor> GetShaderInputListForBufferUnboundedArrays() const;
-            AZStd::array_view<ShaderInputImageUnboundedArrayDescriptor>  GetShaderInputListForImageUnboundedArrays() const;
+            AZStd::span<const ShaderInputBufferUnboundedArrayDescriptor> GetShaderInputListForBufferUnboundedArrays() const;
+            AZStd::span<const ShaderInputImageUnboundedArrayDescriptor>  GetShaderInputListForImageUnboundedArrays() const;
 
             /**
              * Each shader input may contain multiple shader resources. The layout computes
@@ -219,7 +229,7 @@ namespace AZ
             const ConstantsLayout* GetConstantsLayout() const;
 
             /**
-             * Validates that the inputIndex is valid. 
+             * Validates that the inputIndex is valid.
              * Emits an assert and returns false on failure; returns true on success. If validation is disabled true is always returned.
              */
             bool ValidateAccess(RHI::ShaderInputConstantIndex inputIndex) const;
@@ -276,7 +286,10 @@ namespace AZ
                 NameIdReflectionMapT& nameIdReflectionMap,
                 uint32_t& groupSize);
 
-            AZ_SERIALIZE_FRIEND();
+            template <typename, typename>
+            friend struct AnyTypeInfoConcept;
+            template <typename, bool, bool>
+            friend struct Serialize::InstanceFactory;
 
             //! Name of the ShaderResourceGroup as specified in the original *.azsl/*.azsli file.
             Name m_name;

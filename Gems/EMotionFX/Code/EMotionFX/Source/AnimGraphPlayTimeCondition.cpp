@@ -25,7 +25,7 @@ namespace EMotionFX
     const char* AnimGraphPlayTimeCondition::s_modeReachedEnd = "Reached End";
     const char* AnimGraphPlayTimeCondition::s_modeHasLessThanXSecondsLeft = "Less Than X Seconds Left";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphPlayTimeCondition, AnimGraphAllocator)
 
     AnimGraphPlayTimeCondition::AnimGraphPlayTimeCondition()
         : AnimGraphTransitionCondition()
@@ -56,7 +56,7 @@ namespace EMotionFX
             return;
         }
 
-        m_node = mAnimGraph->RecursiveFindNodeById(m_nodeId);
+        m_node = m_animGraph->RecursiveFindNodeById(m_nodeId);
     }
 
 
@@ -181,7 +181,7 @@ namespace EMotionFX
     void AnimGraphPlayTimeCondition::SetNodeId(AnimGraphNodeId nodeId)
     {
         m_nodeId = nodeId;
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }

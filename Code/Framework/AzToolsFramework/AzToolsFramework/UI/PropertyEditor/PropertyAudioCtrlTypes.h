@@ -12,21 +12,25 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/std/string/string.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {
     //=========================================================================
-    enum class AudioPropertyType
+    enum class AudioPropertyType : AZ::u32
     {
-        Invalid = 0,
-        Trigger,
+        Trigger = 0,
+        Rtpc,
         Switch,
         SwitchState,
-        Rtpc,
         Environment,
         Preload,
+        NumTypes,
     };
 
     //=========================================================================
@@ -34,32 +38,15 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(CReflectedVarAudioControl, "{00016E8C-06FB-48D2-B482-1848343094D3}");
-        AZ_CLASS_ALLOCATOR(CReflectedVarAudioControl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CReflectedVarAudioControl, AZ::SystemAllocator);
 
         CReflectedVarAudioControl() = default;
         virtual ~CReflectedVarAudioControl() = default;
 
         AZStd::string m_controlName;
-        AudioPropertyType m_propertyType = AudioPropertyType::Invalid;
+        AudioPropertyType m_propertyType = AudioPropertyType::NumTypes;
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-            {
-                serializeContext->Class<CReflectedVarAudioControl>()
-                    ->Version(1)
-                    ->Field("controlName", &CReflectedVarAudioControl::m_controlName)
-                    ->Field("propertyType", &CReflectedVarAudioControl::m_propertyType)
-                    ;
-
-                if (auto editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<CReflectedVarAudioControl>("VarAudioControl", "AudioControl")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ;
-                }
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
     };
 
 } // namespace AzToolsFramework

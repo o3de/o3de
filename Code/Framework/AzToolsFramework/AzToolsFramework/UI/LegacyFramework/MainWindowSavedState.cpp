@@ -23,15 +23,12 @@ namespace AzToolsFramework
         // save 2k at a time :( need a better way to do this.
         AZStd::size_t pos = 0;
         AZStd::size_t remaining = m_windowState.size();
-        AZ::u8* charData = (AZ::u8*)windowState.begin();
 
         while (remaining > 0)
         {
             AZStd::size_t bytes_this_gulp = AZStd::min((AZStd::size_t)2000, remaining);
-            m_serializableWindowState.push_back();
-            m_serializableWindowState.back().assign((AZ::u8*)windowState.begin() + pos, (AZ::u8*)windowState.begin() + pos + bytes_this_gulp);
+            m_serializableWindowState.emplace_back((AZ::u8*)windowState.begin() + pos, (AZ::u8*)windowState.begin() + pos + bytes_this_gulp);
             pos += bytes_this_gulp;
-            charData += bytes_this_gulp;
             remaining -= bytes_this_gulp;
         }
     }

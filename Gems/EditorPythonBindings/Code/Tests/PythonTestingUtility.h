@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Memory/AllocationRecords.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Application/Application.h>
@@ -81,11 +82,10 @@ namespace UnitTest
             }
 
             m_fileIOHelper = AZStd::make_unique<FileIOHelper>();
-            m_fileIOHelper->m_fileIO.SetAlias("@devroot@", m_engineRoot.c_str());
             m_fileIOHelper->m_fileIO.SetAlias("@engroot@", m_engineRoot.c_str());
 
             AzFramework::Application::Descriptor appDesc;
-            appDesc.m_enableDrilling = false;
+            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
             m_app.Create(appDesc);
 
             AzFramework::ApplicationRequests::Bus::Handler::BusConnect();
@@ -136,10 +136,6 @@ namespace UnitTest
         void NormalizePath(AZStd::string& ) override {}
         void NormalizePathKeepCase(AZStd::string& ) override {}
         void CalculateBranchTokenForEngineRoot(AZStd::string& ) const override {}
-        // Gets the engine root path for testing
-        const char* GetEngineRoot() const override { return m_engineRoot.c_str(); }
-        // Retrieves the app root path for testing
-        const char* GetAppRoot() const override { return m_engineRoot.c_str(); }
 
         AZ::ComponentApplication m_app;
         AZStd::unique_ptr<FileIOHelper> m_fileIOHelper;

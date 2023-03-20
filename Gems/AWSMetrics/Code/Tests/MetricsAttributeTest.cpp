@@ -7,6 +7,7 @@
  */
 
 #include <AWSMetricsConstant.h>
+#include <Framework/JsonWriter.h>
 #include <MetricsAttribute.h>
 
 #include <AzCore/UnitTest/TestTypes.h>
@@ -14,7 +15,7 @@
 namespace AWSMetrics
 {
     class MetricsAttributeTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         const AZStd::string AttrName = "name";

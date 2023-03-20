@@ -22,7 +22,7 @@ namespace EditorPythonBindings
     {
     public:
         AZ_TYPE_INFO(PythonProxyObject, "{448A4480-CCA8-4F14-9F17-41B0491F9FD1}");
-        AZ_CLASS_ALLOCATOR(PythonProxyObject, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonProxyObject, AZ::SystemAllocator);
 
         PythonProxyObject() = default;
         explicit PythonProxyObject(const AZ::TypeId& typeId);
@@ -58,6 +58,8 @@ namespace EditorPythonBindings
         //! Performs an equality operation to compare this object with another object
         bool DoEqualityEvaluation(pybind11::object pythonOther);
 
+        pybind11::object ToJson();
+
         //! Perform a comparison of a Python operator
         enum class Comparison
         {
@@ -73,6 +75,10 @@ namespace EditorPythonBindings
 
         //! Gets the wrapped object's __str__
         pybind11::object GetWrappedObjectStr();
+
+        //! Gets the wrapped object's __hash__
+        pybind11::ssize_t GetWrappedObjectHash();
+
 
     protected:
         void PrepareWrappedObject(const AZ::BehaviorClass& behaviorClass);

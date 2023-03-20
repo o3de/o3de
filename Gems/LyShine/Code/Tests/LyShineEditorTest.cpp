@@ -15,6 +15,7 @@
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
+#include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 #include <LyShineSystemComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <World/UiCanvasAssetRefComponent.h>
@@ -54,14 +55,13 @@
 #include <UiRadioButtonGroupComponent.h>
 #include <UiParticleEmitterComponent.h>
 #include <UiCanvasManager.h>
-#include <Mocks/IRendererMock.h>
 
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
+AZ_TOOLS_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 using namespace AZ;
 using ::testing::NiceMock;
 
-class LyShineSystemTestComponent 
+class LyShineSystemTestComponent
     : public LyShine::LyShineSystemComponent
 {
     friend class LyShineEditorTest;
@@ -80,30 +80,35 @@ protected:
 
         m_data = AZStd::make_unique<DataMembers>();
         memset(&m_data->m_stubEnv, 0, sizeof(SSystemGlobalEnvironment));
-        m_data->m_stubEnv.pRenderer = &m_data->m_renderer;
         m_data->m_stubEnv.pSystem = &m_data->m_mockSystem;
         gEnv = &m_data->m_stubEnv;
 
         AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
         auto projectPathKey =
             AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-        registry->Set(projectPathKey, "AutomatedTesting");
+        AZ::IO::FixedMaxPath enginePath;
+        registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+        registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
         m_app.Start(m_descriptor);
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+        // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
         // in the unit tests.
         AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
 
         const AZStd::string engineRoot = AZ::Test::GetEngineRootPath();
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@engroot@", engineRoot.c_str());   
+        auto fileIo = AZ::IO::FileIOBase::GetInstance();
+        fileIo->SetAlias("@engroot@", engineRoot.c_str());
 
         AZ::IO::Path assetRoot(AZ::Utils::GetProjectPath());
         assetRoot /= "Cache";
 
-        AZ::IO::FileIOBase::GetInstance()->SetAlias("@root@", assetRoot.c_str());   
+        AZ::IO::FileIOBase::GetInstance()->SetAlias("@products@", assetRoot.c_str());
+
+        // Set the @gemroot:<gem-name> alias for active gems
+        AZ::Test::AddActiveGem("LyShine", *registry, fileIo);
 
         AZ::SerializeContext* context = nullptr;
         ComponentApplicationBus::BroadcastResult(context, &ComponentApplicationBus::Events::GetSerializeContext);
@@ -148,23 +153,7 @@ protected:
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiRadioButtonGroupComponent::CreateDescriptor()));
         m_componentDescriptors.push_back(AZStd::unique_ptr<AZ::ComponentDescriptor>(UiParticleEmitterComponent::CreateDescriptor()));
 
-        context->ClassDeprecate("SimpleAssetReference_MaterialAsset", "{B7B8ECC7-FF89-4A76-A50E-4C6CA2B6E6B4}",
-            [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
-        {
-            AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
-            for (int index = 0; index < rootElement.GetNumSubElements(); ++index)
-            {
-                childNodeElements.push_back(rootElement.GetSubElement(index));
-            }
-            // Convert the rootElement now, the existing child DataElmentNodes are now removed
-            rootElement.Convert<AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>>(context);
-            for (AZ::SerializeContext::DataElementNode& childNodeElement : childNodeElements)
-            {
-                rootElement.AddElement(AZStd::move(childNodeElement));
-            }
-            return true;
-        });
-        context->ClassDeprecate("SimpleAssetReference_TextureAsset", "{68E92460-5C0C-4031-9620-6F1A08763243}",
+        context->ClassDeprecate("SimpleAssetReference_TextureAsset", AZ::Uuid("{68E92460-5C0C-4031-9620-6F1A08763243}"),
             [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
         {
             AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;
@@ -180,7 +169,6 @@ protected:
             }
             return true;
         });
-        AzFramework::SimpleAssetReference<LmbrCentral::MaterialAsset>::Register(*context);
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>::Register(*context);
 
         for(const auto& descriptor : m_componentDescriptors)
@@ -212,7 +200,6 @@ protected:
     struct DataMembers
     {
         SSystemGlobalEnvironment m_stubEnv;
-        NiceMock<IRendererMock> m_renderer;
         NiceMock<SystemMock> m_mockSystem;
     };
 
@@ -222,7 +209,7 @@ protected:
 
 AZStd::string GetTestFileAliasedPath(AZStd::string_view fileName)
 {
-    constexpr char testFileFolder[] = "@engroot@/Gems/LyShine/Code/Tests/";
+    constexpr char testFileFolder[] = "@gemroot:LyShine@/Code/Tests/";
     return AZStd::string::format("%s%.*s", testFileFolder, aznumeric_cast<int>(fileName.size()), fileName.data());
 }
 
@@ -269,10 +256,10 @@ TEST_F(LyShineEditorTest, FindLoadedCanvasByPathName_FT)
     UiCanvasManager canvasManager;
 
     //find loaded canvas, should return invalid id
-    AZ::EntityId entityId = canvasManager.FindLoadedCanvasByPathName("@engroot@/Gems/LyShine/Code/Tests/TestAssets/Canvases/empty.uicanvas", false);
+    AZ::EntityId entityId = canvasManager.FindLoadedCanvasByPathName("@gemroot:LyShine@/Code/Tests/TestAssets/Canvases/empty.uicanvas", false);
     EXPECT_FALSE(entityId.IsValid());
 
     //load a new canvas
-    entityId = canvasManager.FindLoadedCanvasByPathName("@engroot@/Gems/LyShine/Code/Tests/TestAssets/Canvases/empty.uicanvas", true);
+    entityId = canvasManager.FindLoadedCanvasByPathName("@gemroot:LyShine@/Code/Tests/TestAssets/Canvases/empty.uicanvas", true);
     EXPECT_TRUE(entityId.IsValid());
 }

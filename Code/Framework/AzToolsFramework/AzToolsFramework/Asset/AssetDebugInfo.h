@@ -11,7 +11,7 @@
 #include <AzCore/Asset/AssetManagerBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/containers/vector.h>
@@ -31,7 +31,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(AssetFileDebugInfo, "{1F7C8B0E-4403-49CA-A11F-ACBA05BEBF6A}");
-        AZ_CLASS_ALLOCATOR(AssetFileDebugInfo, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetFileDebugInfo, AZ::SystemAllocator);
 
         AssetFileDebugInfo() = default;
         static void Reflect(AZ::ReflectContext* context);
@@ -49,7 +49,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_TYPE_INFO(AssetFileDebugInfoList, "{FD66D05D-B4F4-4F48-A4E8-FFE231BCC128}");
-        AZ_CLASS_ALLOCATOR(AssetFileDebugInfoList, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetFileDebugInfoList, AZ::SystemAllocator);
 
         AssetFileDebugInfoList() = default;
         static void Reflect(AZ::ReflectContext* context);

@@ -30,12 +30,13 @@ public:
     const ECmdLineArgType GetType() const;
     const float GetFValue() const;
     const int GetIValue() const;
+    const bool GetBoolValue(bool& cmdLineValue) const;
 
 private:
 
     ECmdLineArgType m_type;
-    string          m_name;
-    string          m_value;
+    AZStd::string   m_name;
+    AZStd::string   m_value;
 };
 
 #endif // CRYINCLUDE_CRYSYSTEM_CMDLINEARG_H

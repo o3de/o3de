@@ -16,11 +16,11 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightContainerWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightsHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementHandler, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightGuiEntry, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightContainerWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightsHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightElementHandler, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendNParamWeightGuiEntry, EditorAllocator)
 
 
     const int BlendNParamWeightElementWidget::s_decimalPlaces = 2;
@@ -238,11 +238,11 @@ namespace EMotionFX
             const char* sourceNodeName = "";
             for (const AnimGraphNode::Port& port : inputPorts)
             {
-                if (port.mConnection)
+                if (port.m_connection)
                 {
-                    if (port.mPortID == paramWeights[i].GetPortId())
+                    if (port.m_portId == paramWeights[i].GetPortId())
                     {
-                        sourceNodeName = port.mConnection->GetSourceNode()->GetName();
+                        sourceNodeName = port.m_connection->GetSourceNode()->GetName();
                     }
                 }
             }
@@ -451,7 +451,7 @@ namespace EMotionFX
     {
         if (attrib == AZ_CRC("BlendTreeBlendNNodeParamWeightsElement", 0x7eae1990) && attrValue)
         {
-            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstancePointer());
+            m_node = static_cast<AnimGraphNode*>(attrValue->GetInstance());
         }
     }
 

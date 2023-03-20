@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <Atom/RPI.Reflect/Model/MorphTargetMetaAsset.h>
@@ -25,7 +26,7 @@ namespace AZ::RPI
                 ->Field("minPositionDelta", &MorphTargetMetaAsset::MorphTarget::m_minPositionDelta)
                 ->Field("maxPositionDelta", &MorphTargetMetaAsset::MorphTarget::m_maxPositionDelta)
                 ->Field("wrinkleMask", &MorphTargetMetaAsset::MorphTarget::m_wrinkleMask)
-                ->Field("hasColorDeltas", &MorphTargetMetaAsset::MorphTarget::m_hasColorDeltas)
+                ->Field("meshIndex", &MorphTargetMetaAsset::MorphTarget::m_meshIndex)
                 ;
         }
     }

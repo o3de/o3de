@@ -26,8 +26,6 @@ class MetastreamTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(MetastreamTestEnvironment);
-
     virtual ~MetastreamTestEnvironment()
     {}
 
@@ -35,18 +33,10 @@ protected:
 
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-        AZ::AllocatorInstance<CryStringAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<CryStringAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
     }
 };
 
@@ -62,7 +52,7 @@ public:
 
     }
 
-    const string m_serverOptionsString = "document_root=Gems/Metastream/Files;listening_ports=8082";
+    const char* m_serverOptionsString = "document_root=Gems/Metastream/Files;listening_ports=8082";
 
 protected:
     void SetUp() override

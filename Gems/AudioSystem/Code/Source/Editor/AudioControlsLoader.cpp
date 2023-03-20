@@ -31,7 +31,6 @@ namespace AudioControls
     namespace LoaderStrings
     {
         static constexpr const char* LevelsSubFolder = "levels";
-        static constexpr const char* PathAttribute = "path";
 
     } // namespace LoaderStrings
 
@@ -86,8 +85,7 @@ namespace AudioControls
         const CUndoSuspend suspendUndo;
 
         // Get the relative path (under asset root) where the controls live.
-        const char* controlsPath = nullptr;
-        Audio::AudioSystemRequestBus::BroadcastResult(controlsPath, &Audio::AudioSystemRequestBus::Events::GetControlsPath);
+        const char* controlsPath = AZ::Interface<Audio::IAudioSystem>::Get()->GetControlsPath();
 
         // Get the full path up to asset root.
         AZ::IO::FixedMaxPath controlsFullPath = AZ::Utils::GetProjectPath();

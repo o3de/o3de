@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 
-#include <IRenderer.h>
 #include <LyShine/Bus/UiElementBus.h>
 #include <LyShine/Bus/UiTransformBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
@@ -61,7 +60,7 @@ UiButtonComponent::~UiButtonComponent()
 bool UiButtonComponent::HandleReleased(AZ::Vector2 point)
 {
     bool isInRect = false;
-    EBUS_EVENT_ID_RESULT(isInRect, GetEntityId(), UiTransformBus, IsPointInRect, point);
+    UiTransformBus::EventResult(isInRect, GetEntityId(), &UiTransformBus::Events::IsPointInRect, point);
     if (isInRect)
     {
         return HandleReleasedCommon(point);
@@ -195,13 +194,13 @@ bool UiButtonComponent::HandleReleasedCommon(const AZ::Vector2& point)
         if (!m_actionName.empty())
         {
             AZ::EntityId canvasEntityId;
-            EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+            UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
             // Queue the event to prevent deletions during the input event
-            EBUS_QUEUE_EVENT_ID(canvasEntityId, UiCanvasNotificationBus, OnAction, GetEntityId(), m_actionName);
+            UiCanvasNotificationBus::QueueEvent(canvasEntityId, &UiCanvasNotificationBus::Events::OnAction, GetEntityId(), m_actionName);
         }
 
         // Queue the event to prevent deletions during the input event
-        EBUS_QUEUE_EVENT_ID(GetEntityId(), UiButtonNotificationBus, OnButtonClick);
+        UiButtonNotificationBus::QueueEvent(GetEntityId(), &UiButtonNotificationBus::Events::OnButtonClick);
     }
 
     m_isPressed = false;
@@ -220,48 +219,9 @@ bool UiButtonComponent::VersionConverter(AZ::SerializeContext& context,
     // conversion from version 1 to 2:
     // - Need to convert CryString elements to AZStd::string
     // - Need to convert Color to Color and Alpha
-    if (classElement.GetVersion() < 2)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "SelectedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "PressedSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "DisabledSprite"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "SelectedColor", "SelectedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "PressedColor", "PressedAlpha"))
-        {
-            return false;
-        }
-
-        if (!LyShine::ConvertSubElementFromColorToColorPlusAlpha(context, classElement, "DisabledColor", "DisabledAlpha"))
-        {
-            return false;
-        }
-    }
-
     // conversion from version 2 to 3:
     // - Need to convert CryString ActionName elements to AZStd::string
-    if (classElement.GetVersion() < 3)
-    {
-        if (!LyShine::ConvertSubElementFromCryStringToAzString(context, classElement, "ActionName"))
-        {
-            return false;
-        }
-    }
+    AZ_Assert(classElement.GetVersion() >= 3, "Unsupported UiButtonComponent version: %d", classElement.GetVersion());
 
     // conversion from version 3 to 4:
     // - Need to convert AZStd::string sprites to AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset>

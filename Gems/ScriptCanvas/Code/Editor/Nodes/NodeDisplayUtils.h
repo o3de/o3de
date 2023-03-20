@@ -45,7 +45,7 @@ namespace ScriptCanvasEditor::Nodes
     AZ::EntityId DisplayEbusEventNode(AZ::EntityId graphCanvasGraphId, const AZStd::string& busName, const AZStd::string& eventName, const ScriptCanvas::EBusEventId& eventId);
     AZ::EntityId DisplayEbusWrapperNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::EBusEventHandler* busNode);
     AZ::EntityId DisplayGetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::GetVariableNode* variableNode);
-    AZ::EntityId DisplayMethodNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Method* methodNode);
+    AZ::EntityId DisplayMethodNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::Method* methodNode, bool isAccessor = false);
     AZ::EntityId DisplaySetVariableNode(AZ::EntityId graphCanvasGraphId, const ScriptCanvas::Nodes::Core::SetVariableNode* variableNode);
 
     // AZ Event
@@ -63,5 +63,5 @@ namespace ScriptCanvasEditor::Nodes
 
     // SlotGroup will control how elements are grouped.
     // Invalid will cause the slots to put themselves into whatever category they belong to by default.
-    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
+    AZ::EntityId DisplayScriptCanvasSlot(AZ::EntityId graphCanvasNodeId, const ScriptCanvas::Slot& slot, int slotIndex, GraphCanvas::SlotGroup group = GraphCanvas::SlotGroups::Invalid);
 }

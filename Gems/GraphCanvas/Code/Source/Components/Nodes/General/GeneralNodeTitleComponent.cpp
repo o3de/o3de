@@ -26,6 +26,9 @@
 
 namespace GraphCanvas
 {
+    // Implementation of RTTI functions for the GeneralNodeTitleComponent SaveData class in a cpp file
+    AZ_RTTI_NO_TYPE_INFO_IMPL(GeneralNodeTitleComponentSaveData, SceneMemberComponentSaveData<GeneralNodeTitleComponentSaveData>);
+
     //////////////////////////////
     // GeneralNodeTitleComponent
     //////////////////////////////
@@ -91,17 +94,19 @@ namespace GraphCanvas
 
     }
 
-    void GeneralNodeTitleComponent::SetTitle(const AZStd::string& title)
+    void GeneralNodeTitleComponent::SetDetails(const AZStd::string& title, const AZStd::string& subtitle)
     {
-        m_title.SetFallback(title);
+        m_title = title;
+        m_subTitle = subtitle;
 
         if (m_generalNodeTitleWidget)
         {
-            m_generalNodeTitleWidget->SetTitle(title);
+            m_generalNodeTitleWidget->SetDetails(title, subtitle);
         }
+
     }
 
-    void GeneralNodeTitleComponent::SetTranslationKeyedTitle(const TranslationKeyedString& title)
+    void GeneralNodeTitleComponent::SetTitle(const AZStd::string& title)
     {
         m_title = title;
 
@@ -113,20 +118,10 @@ namespace GraphCanvas
 
     AZStd::string GeneralNodeTitleComponent::GetTitle() const
     {
-        return m_title.GetDisplayString();
+        return m_title;
     }
 
     void GeneralNodeTitleComponent::SetSubTitle(const AZStd::string& subtitle)
-    {
-        m_subTitle.SetFallback(subtitle);
-
-        if (m_generalNodeTitleWidget)
-        {
-            m_generalNodeTitleWidget->SetSubTitle(subtitle);
-        }
-    }
-
-    void GeneralNodeTitleComponent::SetTranslationKeyedSubTitle(const TranslationKeyedString& subtitle)
     {
         m_subTitle = subtitle;
 
@@ -138,7 +133,7 @@ namespace GraphCanvas
 
     AZStd::string GeneralNodeTitleComponent::GetSubTitle() const
     {
-        return m_subTitle.GetDisplayString();
+        return m_subTitle;
     }
 
     QGraphicsWidget* GeneralNodeTitleComponent::GetGraphicsWidget()
@@ -227,6 +222,16 @@ namespace GraphCanvas
         , m_paletteOverride(nullptr)
         , m_colorOverride(nullptr)
     {
+        Initialize();
+    }
+
+    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
+    {
+        delete m_colorOverride;
+    }
+
+    void GeneralNodeTitleGraphicsWidget::Initialize()
+    {
         setCacheMode(QGraphicsItem::CacheMode::DeviceCoordinateCache);
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         setGraphicsItem(this);
@@ -236,14 +241,9 @@ namespace GraphCanvas
         m_titleWidget = aznew GraphCanvasLabel(this);
         m_subTitleWidget = aznew GraphCanvasLabel(this);
         m_linearLayout = new QGraphicsLinearLayout(Qt::Vertical);
-        m_linearLayout->setSpacing(0);
-        setLayout(m_linearLayout);
-        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(entityId), 16, 16, QChar('0')));
-    }
 
-    GeneralNodeTitleGraphicsWidget::~GeneralNodeTitleGraphicsWidget()
-    {
-        delete m_colorOverride;
+        setLayout(m_linearLayout);
+        setData(GraphicsItemName, QStringLiteral("Title/%1").arg(static_cast<AZ::u64>(m_entityId), 16, 16, QChar('0')));
     }
 
     void GeneralNodeTitleGraphicsWidget::Activate()
@@ -270,7 +270,28 @@ namespace GraphCanvas
         SceneNotificationBus::Handler::BusDisconnect();
     }
 
-    void GeneralNodeTitleGraphicsWidget::SetTitle(const TranslationKeyedString& title)
+    void GeneralNodeTitleGraphicsWidget::SetDetails(const AZStd::string& title, const AZStd::string& subtitle)
+    {
+        bool updateLayout = false;
+        if (m_titleWidget)
+        {
+            m_titleWidget->SetLabel(title);
+            updateLayout = true;
+        }
+
+        if (m_subTitleWidget)
+        {
+            m_subTitleWidget->SetLabel(subtitle);
+            updateLayout = true;
+        }
+
+        if (updateLayout)
+        {
+            UpdateLayout();
+        }
+    }
+
+    void GeneralNodeTitleGraphicsWidget::SetTitle(const AZStd::string& title)
     {
         if (m_titleWidget)
         {
@@ -279,7 +300,7 @@ namespace GraphCanvas
         }
     }
 
-    void GeneralNodeTitleGraphicsWidget::SetSubTitle(const TranslationKeyedString& subtitle)
+    void GeneralNodeTitleGraphicsWidget::SetSubTitle(const AZStd::string& subtitle)
     {
         if (m_subTitleWidget)
         {
@@ -409,11 +430,19 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::UpdateStyles()
     {
         m_styleHelper.SetStyle(GetEntityId(), Styling::Elements::Title);
+
+        qreal spacing = m_styleHelper.GetAttribute(Styling::Attribute::Spacing, 0);
+        qreal margin = m_styleHelper.GetAttribute(Styling::Attribute::Margin, 0);
+
+        m_linearLayout->setSpacing(spacing);
+        m_linearLayout->setContentsMargins(margin, margin, margin, margin);
+        
         m_titleWidget->SetStyle(GetEntityId(), Styling::Elements::MainTitle);
         m_subTitleWidget->SetStyle(GetEntityId(), Styling::Elements::SubTitle);
 
         // Just clear our the disabled palette and we'll get it when we need it.
         m_disabledPalette = nullptr;
+
     }
 
     void GeneralNodeTitleGraphicsWidget::RefreshDisplay()
@@ -431,6 +460,7 @@ namespace GraphCanvas
     void GeneralNodeTitleGraphicsWidget::OnAddedToScene(const AZ::EntityId& scene)
     {
         SceneNotificationBus::Handler::BusConnect(scene);
+
         UpdateStyles();
         RefreshDisplay();
     }
@@ -455,13 +485,11 @@ namespace GraphCanvas
     {
         GRAPH_CANVAS_DETAILED_PROFILE_FUNCTION();
 
-        Styling::PaletteStyle style = m_styleHelper.GetAttribute(Styling::Attribute::PaletteStyle, Styling::PaletteStyle::Solid);
-
-        if (m_paletteOverride)
+        if (m_styleHelper.GetColor(Styling::Attribute::BackgroundColor) == Qt::transparent)    // If the background color is set to transparent, we dont need to worry about any of this
         {
-            style = m_paletteOverride->GetAttribute(Styling::Attribute::PaletteStyle, Styling::PaletteStyle::Solid);
+            return;
         }
-        
+
         // Background
         QRectF bounds = boundingRect();
 

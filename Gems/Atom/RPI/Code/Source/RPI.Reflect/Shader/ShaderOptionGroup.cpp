@@ -68,7 +68,7 @@ namespace AZ
 
             if (!optionIndex.IsValid())
             {
-                AZ_Error(DebugCategory, false, "Shader Option '%s' does not exist", optionName.GetCStr());
+                AZ_Error(DebugCategory, false, "ShaderOption '%s' does not exist", optionName.GetCStr());
                 return false;
             }
 
@@ -233,6 +233,11 @@ namespace AZ
             }
 
             return true;
+        }
+        
+        bool ShaderOptionGroup::IsEmpty() const
+        {
+            return m_id.IsEmpty();
         }
 
         ShaderVariantKey ShaderOptionGroup::GetShaderVariantKeyFallbackValue() const

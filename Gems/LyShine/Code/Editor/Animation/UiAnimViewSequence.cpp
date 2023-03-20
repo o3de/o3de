@@ -95,7 +95,7 @@ bool CUiAnimViewSequence::IsBoundToEditorObjects() const
 CUiAnimViewKeyHandle CUiAnimViewSequence::FindSingleSelectedKey()
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
     if (!pSequence)
     {
         return CUiAnimViewKeyHandle();
@@ -218,7 +218,7 @@ void CUiAnimViewSequence::ForceAnimation()
         if (IsActive())
         {
             CUiAnimationContext* pAnimationContext = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
             pAnimationContext->ForceAnimation();
         }
     }
@@ -269,7 +269,7 @@ void CUiAnimViewSequence::OnKeysChanged()
         if (IsActive())
         {
             CUiAnimationContext* pAnimationContext = nullptr;
-            EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+            UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
             pAnimationContext->ForceAnimation();
         }
     }
@@ -334,7 +334,7 @@ void CUiAnimViewSequence::OnNodeRenamed(CUiAnimViewNode* pNode, const char* pOld
     bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive)
     {
-        UpdateLightAnimationRefs(pOldName, pNode->GetName());
+        UpdateLightAnimationRefs(pOldName, pNode->GetName().c_str());
     }
 
     if (m_bNoNotifications)
@@ -488,11 +488,12 @@ void CUiAnimViewSequence::SelectSelectedNodesInViewport()
     assert(UiAnimUndo::IsRecording());
 
     CUiAnimViewAnimNodeBundle selectedNodes = GetSelectedAnimNodes();
-    const unsigned int numSelectedNodes = selectedNodes.GetCount();
 
     std::vector<CBaseObject*> entitiesToBeSelected;
 
 #if UI_ANIMATION_REMOVED // lights
+    const unsigned int numSelectedNodes = selectedNodes.GetCount();
+
     // Also select objects that refer to light animation
     const bool bLightAnimationSetActive = GetFlags() & IUiAnimSequence::eSeqFlags_LightAnimationSet;
     if (bLightAnimationSetActive)
@@ -645,7 +646,7 @@ void CUiAnimViewSequence::SyncSelectedTracksFromBase()
     if (IsActive())
     {
         CUiAnimationContext* pAnimationContext = nullptr;
-        EBUS_EVENT_RESULT(pAnimationContext, UiEditorAnimationBus, GetAnimationContext);
+        UiEditorAnimationBus::BroadcastResult(pAnimationContext, &UiEditorAnimationBus::Events::GetAnimationContext);
         pAnimationContext->ForceAnimation();
     }
 }
@@ -683,7 +684,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         return false;
     }
 
-    string oldName = GetName();
+    AZStd::string oldName = GetName();
     m_pAnimSequence->SetName(pName);
 
     if (UiAnimUndo::IsRecording())
@@ -691,7 +692,7 @@ bool CUiAnimViewSequence::SetName(const char* pName)
         UiAnimUndo::Record(new CUndoAnimNodeRename(this, oldName));
     }
 
-    GetSequence()->OnNodeRenamed(this, oldName);
+    GetSequence()->OnNodeRenamed(this, oldName.c_str());
 
     return true;
 }
@@ -832,7 +833,7 @@ CUiAnimViewSequence::GetMatchedPasteLocations(XmlNodeRef clipboardContent, CUiAn
     if (bPastingSingleTrack && pTargetNode && pTargetTrack)
     {
         // We have a target node & track, so try to match the value type
-        int valueType = 0;
+        unsigned int valueType = 0;
         if (singleTrack->getAttr("valueType", valueType))
         {
             if (pTargetTrack->GetValueType() == valueType)
@@ -893,15 +894,15 @@ std::deque<CUiAnimViewTrack*> CUiAnimViewSequence::GetMatchingTracks(CUiAnimView
 {
     std::deque<CUiAnimViewTrack*> matchingTracks;
 
-    const string trackName = trackNode->getAttr("name");
+    const AZStd::string trackName = trackNode->getAttr("name");
 
     IUiAnimationSystem* animationSystem = nullptr;
-    EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+    UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
     CUiAnimParamType animParamType;
     animParamType.Serialize(animationSystem, trackNode, true);
 
-    int valueType;
+    unsigned int valueType;
     if (!trackNode->getAttr("valueType", valueType))
     {
         return matchingTracks;
@@ -956,11 +957,11 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
     for (unsigned int nodeIndex = 0; nodeIndex < numChildNodes; ++nodeIndex)
     {
         XmlNodeRef xmlChildNode = clipboardNode->getChild(nodeIndex);
-        const string tagName = xmlChildNode->getTag();
+        const AZStd::string tagName = xmlChildNode->getTag();
 
         if (tagName == "Node")
         {
-            const string nodeName = xmlChildNode->getAttr("name");
+            const AZStd::string nodeName = xmlChildNode->getAttr("name");
 
             int nodeType = eUiAnimNodeType_Invalid;
             xmlChildNode->getAttr("type", nodeType);
@@ -982,10 +983,10 @@ void CUiAnimViewSequence::GetMatchedPasteLocationsRec(std::vector<TMatchedTrackL
         }
         else if (tagName == "Track")
         {
-            const string trackName = xmlChildNode->getAttr("name");
+            const AZStd::string trackName = xmlChildNode->getAttr("name");
 
             IUiAnimationSystem* animationSystem = nullptr;
-            EBUS_EVENT_RESULT(animationSystem, UiEditorAnimationBus, GetAnimationSystem);
+            UiEditorAnimationBus::BroadcastResult(animationSystem, &UiEditorAnimationBus::Events::GetAnimationSystem);
 
             CUiAnimParamType trackParamType;
             trackParamType.Serialize(animationSystem, xmlChildNode, true);
@@ -1093,7 +1094,7 @@ void CUiAnimViewSequence::DeselectAllKeys()
     CUiAnimViewSequenceNotificationContext context(this);
 
     CUiAnimViewKeyBundle selectedKeys = GetSelectedKeys();
-    for (int i = 0; i < selectedKeys.GetKeyCount(); ++i)
+    for (unsigned int i = 0; i < selectedKeys.GetKeyCount(); ++i)
     {
         CUiAnimViewKeyHandle keyHandle = selectedKeys.GetKey(i);
         keyHandle.Select(false);
@@ -1237,7 +1238,7 @@ float CUiAnimViewSequence::ClipTimeOffsetForSliding(const float timeOffset)
     for (pTrackIter = tracks.begin(); pTrackIter != tracks.end(); ++pTrackIter)
     {
         CUiAnimViewTrack* pTrack = *pTrackIter;
-        for (int i = 0; i < pTrack->GetKeyCount(); ++i)
+        for (unsigned int i = 0; i < pTrack->GetKeyCount(); ++i)
         {
             CUiAnimViewKeyHandle keyHandle = pTrack->GetKey(i);
 
@@ -1379,7 +1380,7 @@ void CUiAnimViewSequence::EndRestoreTransaction()
 bool CUiAnimViewSequence::IsActiveSequence() const
 {
     CUiAnimViewSequence* pSequence = nullptr;
-    EBUS_EVENT_RESULT(pSequence, UiEditorAnimationBus, GetCurrentSequence);
+    UiEditorAnimationBus::BroadcastResult(pSequence, &UiEditorAnimationBus::Events::GetCurrentSequence);
 
     return pSequence == this;
 }

@@ -4,9 +4,6 @@
         QualifiedName="ScriptCanvas::Nodes::Core::AzEventHandler"
         PreferredClassName="AZ Event Handler"
         Uuid="{38B808C5-152C-4643-A08C-463EBED55E19}"
-        Base="ScriptCanvas::Node"
-        Icon="Icons/ScriptCanvas/AzEvent.png"
-        Version="0"
         EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
         GraphEntryPoint="True"
         Description="Handler for an AZ::Event returned from a BehaviorContent method.">

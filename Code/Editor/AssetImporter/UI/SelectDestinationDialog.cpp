@@ -14,13 +14,14 @@
 #include <QValidator>
 #include <QSettings>
 #include <QStyle>
+#include <QPushButton>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include <AssetImporter/UI/ui_SelectDestinationDialog.h>
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 
-static const char* g_assetProcessorLink = "<a href=\"https://o3de.org/docs/user-guide/assets/pipeline/processor-ui/\">Asset Processor</a>";
+static const char* g_assetProcessorLink = "<a href=\"https://www.o3de.org/docs/user-guide/assets/asset-processor/\">Asset Processor</a>";
 static const char* g_copyFilesMessage = "The original file will remain outside of the project and the %1 will not monitor the file.";
 static const char* g_moveFilesMessage = "The original file will be moved inside of the project and the %1 will monitor the file for changes.";
 static const char* g_selectDestinationFilesPath = "AssetImporter/SelectDestinationFilesPath";
@@ -116,16 +117,11 @@ SelectDestinationDialog::SelectDestinationDialog(QString message, QWidget* paren
 
     SetPreviousDestinationDirectory();
 
-    m_ui->DestinationLineEdit->setValidator(m_validator);
-    m_ui->DestinationLineEdit->setAlignment(Qt::AlignVCenter);
+    m_ui->DestinationLineEdit->lineEdit()->setValidator(m_validator);
+    m_ui->DestinationLineEdit->setClearButtonEnabled(true);
 
-    // Based on the current code structure, in order to prevent texts from overlapping the 
-    // invalid icon, intentionally insert an empty icon at the end of the line edit field can do the trick.
-    m_ui->DestinationLineEdit->addAction(QIcon(""), QLineEdit::TrailingPosition);
-
-    connect(m_ui->DestinationLineEdit, &QLineEdit::textChanged, this, &SelectDestinationDialog::ValidatePath);
-    connect(m_ui->BrowseButton, &QPushButton::clicked, this, &SelectDestinationDialog::OnBrowseDestinationFilePath, Qt::UniqueConnection);
-    connect(m_ui->CopyFileRadioButton, &QRadioButton::toggled, this, &SelectDestinationDialog::ShowMessage);
+    connect(m_ui->DestinationLineEdit->lineEdit(), &QLineEdit::textChanged, this, &SelectDestinationDialog::ValidatePath);
+    connect(m_ui->DestinationLineEdit, &AzQtComponents::BrowseEdit::attachedButtonTriggered, this, &SelectDestinationDialog::OnBrowseDestinationFilePath);
 
     UpdateMessage(message);
     InitializeButtons();
@@ -213,12 +209,12 @@ void SelectDestinationDialog::ShowMessage()
 
 void SelectDestinationDialog::OnBrowseDestinationFilePath()
 {
-    Q_EMIT BrowseDestinationPath(m_ui->DestinationLineEdit);
+    Q_EMIT BrowseDestinationPath(m_ui->DestinationLineEdit->lineEdit());
 }
 
 void SelectDestinationDialog::UpdateMessage(QString message)
 {
-    m_ui->NumberOfFilesMessage->setText(message);
+    setWindowTitle(message);
 }
 
 void SelectDestinationDialog::ValidatePath()

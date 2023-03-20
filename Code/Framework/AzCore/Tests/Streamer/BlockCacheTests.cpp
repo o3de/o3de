@@ -35,20 +35,15 @@ namespace AZ::IO
     INSTANTIATE_TYPED_TEST_CASE_P(Streamer_BlockCacheConformityTests, StreamStackEntryConformityTests, BlockCacheTestDescription);
 
     class BlockCacheTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            SetupAllocator();
-
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
-            m_path.InitFromAbsolutePath("Test");
+            m_path = "Test";
             m_context = new StreamerContext();
         }
 
@@ -64,11 +59,6 @@ namespace AZ::IO
             m_context = nullptr;
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-
-            TeardownAllocator();
         }
 
         void CreateTestEnvironmentImplementation(bool onlyEpilogWrites)
@@ -100,7 +90,7 @@ namespace AZ::IO
 
         void QueueReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             if (data)
             {
                 if (m_fakeFileFound)
@@ -122,15 +112,15 @@ namespace AZ::IO
                 m_context->MarkRequestAsCompleted(request);
             }
             else if (
-                AZStd::holds_alternative<FileRequest::FlushData>(request->GetCommand()) ||
-                AZStd::holds_alternative<FileRequest::FlushAllData>(request->GetCommand()))
+                AZStd::holds_alternative<Requests::FlushData>(request->GetCommand()) ||
+                AZStd::holds_alternative<Requests::FlushAllData>(request->GetCommand()))
             {
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);
                 m_context->MarkRequestAsCompleted(request);
             }
-            else if (AZStd::holds_alternative<FileRequest::FileMetaDataRetrievalData>(request->GetCommand()))
+            else if (AZStd::holds_alternative<Requests::FileMetaDataRetrievalData>(request->GetCommand()))
             {
-                auto& data2 = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+                auto& data2 = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
                 data2.m_found = m_fakeFileFound;
                 data2.m_fileSize = m_fakeFileLength;
                 request->SetStatus(m_fakeFileFound ? IStreamerTypes::RequestStatus::Completed : IStreamerTypes::RequestStatus::Failed);
@@ -158,16 +148,16 @@ namespace AZ::IO
 
         void QueueCanceledReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             if (data)
             {
                 ReadFile(data->m_output, data->m_path, data->m_offset, data->m_size);
                 request->SetStatus(IStreamerTypes::RequestStatus::Canceled);
                 m_context->MarkRequestAsCompleted(request);
             }
-            else if (AZStd::holds_alternative<FileRequest::FileMetaDataRetrievalData>(request->GetCommand()))
+            else if (AZStd::holds_alternative<Requests::FileMetaDataRetrievalData>(request->GetCommand()))
             {
-                auto& data2 = AZStd::get<FileRequest::FileMetaDataRetrievalData>(request->GetCommand());
+                auto& data2 = AZStd::get<Requests::FileMetaDataRetrievalData>(request->GetCommand());
                 data2.m_found = true;
                 data2.m_fileSize = m_fakeFileLength;
                 request->SetStatus(IStreamerTypes::RequestStatus::Completed);
@@ -184,7 +174,7 @@ namespace AZ::IO
             size = size >> 2;
             for (u64 i = 0; i < size; ++i)
             {
-                // Using assert here because in case of a problem EXPECT would 
+                // Using assert here because in case of a problem EXPECT would
                 // cause a large amount of log noise.
                 ASSERT_EQ(buffer[i], offset + (i << 2));
             }
@@ -203,7 +193,9 @@ namespace AZ::IO
         {
             do
             {
-                while (m_context->FinalizeCompletedRequests());
+                while (m_context->FinalizeCompletedRequests())
+                {
+                }
             } while (m_cache->ExecuteRequests());
         }
 
@@ -269,7 +261,7 @@ namespace AZ::IO
         RedirectReadCalls();
 
         EXPECT_CALL(*this, ReadFile(_, _, 0, m_fakeFileLength));
-            
+
         ProcessRead(m_buffer, m_path, 0, m_fakeFileLength, IStreamerTypes::RequestStatus::Completed);
         VerifyReadBuffer(0, m_fakeFileLength);
     }
@@ -519,8 +511,8 @@ namespace AZ::IO
         using ::testing::_;
         using ::testing::Return;
 
-        CreateTestEnvironment();            
-            
+        CreateTestEnvironment();
+
         EXPECT_CALL(*m_mock, ExecuteRequests())
             .WillOnce(Return(true))
             .WillRepeatedly(Return(false));
@@ -553,7 +545,7 @@ namespace AZ::IO
         RunProcessLoop();
 
         EXPECT_TRUE(allRequestsCompleted);
-            
+
         VerifyReadBuffer(256, m_fakeFileLength - 512);
         VerifyReadBuffer(buffer1, m_fakeFileLength - 768, secondReadSize);
     }
@@ -622,7 +614,7 @@ namespace AZ::IO
 
         m_fakeFileFound = false;
         m_fakeFileLength = 0;
-        
+
         ProcessRead(m_buffer, m_path, 0, m_blockSize, IStreamerTypes::RequestStatus::Failed);
     }
 
@@ -650,18 +642,18 @@ namespace AZ::IO
                 status.m_isIdle = false;
             }));
         EXPECT_CALL(*this, ReadFile(_, _, _, _)).Times(count);
-       
+
         constexpr size_t scratchBufferSize = 128_kib;
         using ScratchBuffer = char[scratchBufferSize];
         ScratchBuffer buffers[count];
-        
+
         bool allRequestsCompleted = true;
         auto completed = [&allRequestsCompleted](const FileRequest& request)
         {
             // Capture result before request is recycled.
             allRequestsCompleted = allRequestsCompleted && request.GetStatus() == IStreamerTypes::RequestStatus::Completed;
         };
-            
+
         for (size_t i = 0; i < count; ++i)
         {
             StreamStackEntry::Status status;
@@ -738,7 +730,7 @@ namespace AZ::IO
         RedirectReadCalls();
 
         EXPECT_CALL(*this, ReadFile(_, _, 256, m_fakeFileLength - 256));
-            
+
         ProcessRead(m_buffer, m_path, 256, m_fakeFileLength - 256, IStreamerTypes::RequestStatus::Completed);
         VerifyReadBuffer(256, m_fakeFileLength - 256);
     }
@@ -1062,7 +1054,7 @@ namespace AZ::IO
             .WillRepeatedly(Return(false));
         EXPECT_CALL(*m_mock, QueueRequest(_))
             .WillRepeatedly(Invoke(this, &BlockCacheTest::QueueReadRequest));
-        
+
         size_t firstReadSize = m_fakeFileLength - (2 * m_blockSize) - 512;
         FileRequest* request0 = m_context->GetNewInternalRequest();
         request0->CreateRead(nullptr, m_buffer, m_bufferSize, m_path, 256, firstReadSize);
@@ -1097,7 +1089,7 @@ namespace AZ::IO
         VerifyReadBuffer(buffer1.get(), secondReadOffset, secondReadSize);
     }
 
-        
+
 
 
 
@@ -1146,7 +1138,7 @@ namespace AZ::IO
         FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFlush(m_path);
         RunAndCompleteRequest(request, IStreamerTypes::RequestStatus::Completed);
-        
+
         // The partial read would normally be serviced from the cache, but now triggers another read.
         EXPECT_CALL(*this, ReadFile(_, _, _, _)).Times(1);
         ProcessRead(m_buffer, m_path, 512, m_blockSize - 1024, IStreamerTypes::RequestStatus::Completed);
@@ -1170,7 +1162,7 @@ namespace AZ::IO
         FileRequest* request = m_context->GetNewInternalRequest();
         request->CreateFlushAll();
         RunAndCompleteRequest(request, IStreamerTypes::RequestStatus::Completed);
-        
+
         // The partial read would normally be serviced from the cache, but now triggers another read.
         EXPECT_CALL(*this, ReadFile(_, _, _, _)).Times(1);
         ProcessRead(m_buffer, m_path, 512, m_blockSize - 1024, IStreamerTypes::RequestStatus::Completed);

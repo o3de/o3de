@@ -208,7 +208,7 @@ namespace AzQtComponents
 
     QString PaletteCardCollection::uniquePaletteName(QSharedPointer<PaletteCard> card, const QString& name) const
     {
-        const auto paletteNameExists = [this, card](const QString& name)
+        const auto paletteNameExists = [this](const QString& name)
         {
             auto it = std::find_if(m_paletteCards.begin(), m_paletteCards.end(),
                 [&name](QSharedPointer<const PaletteCard> card)

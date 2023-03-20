@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 60 (88103) - https://sketch.com -->
+    <title>Icons / System / Rotate</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-System-/-Rotate" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <rect id="Icon-Background" x="0" y="0" width="24" height="24"></rect>
+        <path d="M12,5 C17.5228475,5 22,7.3608081 22,12 C22,15.4442471 19.5322235,17.6326643 16.0008886,18.5315221 L16,21.2426407 L11.7573593,17 L16,12.7573593 L16.0016674,15.9550948 C18.184759,15.2133604 19.5351812,13.8176329 19.5351812,12 C19.5351812,9.23857625 16.418278,7.49466813 12,7.49466813 C7.581722,7.49466813 4.51608017,9.23857625 4.51608017,12 C4.51608017,13.8140495 5.83906099,15.2078553 7.99939095,15.9507002 L8.00012145,18.5317791 C4.46824702,17.6330816 2,15.4445755 2,12 C2,7.3608081 6.4771525,5 12,5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+    </g>
+</svg>

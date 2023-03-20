@@ -353,7 +353,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    renderTargetView.Texture3D.WSize = -1;
+                    renderTargetView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {
@@ -578,7 +578,7 @@ namespace AZ
 
                 if (imageViewDescriptor.m_depthSliceMax == RHI::ImageViewDescriptor::HighestSliceIndex)
                 {
-                    unorderedAccessView.Texture3D.WSize = -1;
+                    unorderedAccessView.Texture3D.WSize = std::numeric_limits<UINT>::max();
                 }
                 else
                 {
@@ -1264,7 +1264,7 @@ namespace AZ
                 dst.BlendOpAlpha = ConvertBlendOp(src.m_blendAlphaOp);
                 dst.DestBlend = ConvertBlendFactor(src.m_blendDest);
                 dst.DestBlendAlpha = ConvertBlendFactor(src.m_blendAlphaDest);
-                dst.RenderTargetWriteMask = ConvertColorWriteMask(src.m_writeMask);
+                dst.RenderTargetWriteMask = ConvertColorWriteMask(static_cast<uint8_t>(src.m_writeMask));
                 dst.SrcBlend = ConvertBlendFactor(src.m_blendSource);
                 dst.SrcBlendAlpha = ConvertBlendFactor(src.m_blendAlphaSource);
                 dst.LogicOp = D3D12_LOGIC_OP_CLEAR;
@@ -1384,6 +1384,39 @@ namespace AZ
             return dflags;
         }
 
+        D3D12_SHADING_RATE ConvertShadingRateEnum(RHI::ShadingRate rate)
+        {
+            static const D3D12_SHADING_RATE table[] =
+            {
+                D3D12_SHADING_RATE_1X1,
+                D3D12_SHADING_RATE_1X2,
+                D3D12_SHADING_RATE_2X1,
+                D3D12_SHADING_RATE_2X2,
+                D3D12_SHADING_RATE_2X4,
+                D3D12_SHADING_RATE_4X2,
+                D3D12_SHADING_RATE_4X4
+            };
+            return table[(uint32_t)rate];
+        }
+
+        D3D12_SHADING_RATE_COMBINER ConvertShadingRateCombiner(RHI::ShadingRateCombinerOp op)
+        {
+            switch (op)
+            {
+            case RHI::ShadingRateCombinerOp::Passthrough:
+                return D3D12_SHADING_RATE_COMBINER_PASSTHROUGH;
+            case RHI::ShadingRateCombinerOp::Override:
+                return D3D12_SHADING_RATE_COMBINER_OVERRIDE;
+            case RHI::ShadingRateCombinerOp::Min:
+                return D3D12_SHADING_RATE_COMBINER_MIN;
+            case RHI::ShadingRateCombinerOp::Max:
+                return D3D12_SHADING_RATE_COMBINER_MAX;
+            default:
+                AZ_Assert(false, "Invalid shading rate combiner operation %d", op);
+                return D3D12_SHADING_RATE_COMBINER_PASSTHROUGH;
+            }
+        }
+
         D3D12_DEPTH_STENCIL_DESC ConvertDepthStencilState(const RHI::DepthStencilState& depthStencil)
         {
             D3D12_DEPTH_STENCIL_DESC desc;
@@ -1399,8 +1432,8 @@ namespace AZ
             desc.DepthFunc = ConvertComparisonFunc(depthStencil.m_depth.m_func);
             desc.DepthWriteMask = ConvertDepthWriteMask(depthStencil.m_depth.m_writeMask);
             desc.StencilEnable = depthStencil.m_stencil.m_enable;
-            desc.StencilReadMask = depthStencil.m_stencil.m_readMask;
-            desc.StencilWriteMask = depthStencil.m_stencil.m_writeMask;
+            desc.StencilReadMask = static_cast<UINT8>(depthStencil.m_stencil.m_readMask);
+            desc.StencilWriteMask = static_cast<UINT8>(depthStencil.m_stencil.m_writeMask);
             return desc;
         }
    }

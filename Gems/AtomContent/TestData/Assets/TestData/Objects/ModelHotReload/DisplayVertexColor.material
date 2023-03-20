@@ -1,0 +1,12 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardMultilayerPBR.materialtype",
+    "materialTypeVersion": 3,
+    "propertyValues": {
+        "blend.blendSource": "BlendMaskVertexColors",
+        "blend.debugDrawMode": "FinalBlendWeights",
+        "blend.enableLayer2": true,
+        "blend.enableLayer3": true,
+        "blend.textureMap": "",
+        "parallax.enable": false
+    }
+}

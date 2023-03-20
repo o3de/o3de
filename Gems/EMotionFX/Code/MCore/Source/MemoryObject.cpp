@@ -25,37 +25,37 @@ namespace MCore
     // constructor
     MemoryObject::MemoryObject()
     {
-        mReferenceCount.SetValue(1);
+        m_referenceCount.SetValue(1);
     }
 
 
     // destructor
     MemoryObject::~MemoryObject()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() == 0);
+        MCORE_ASSERT(m_referenceCount.GetValue() == 0);
     }
 
 
     // increase the reference count
     void MemoryObject::IncreaseReferenceCount()
     {
-        mReferenceCount.Increment();
+        m_referenceCount.Increment();
     }
 
 
     // decrease the reference count
     void MemoryObject::DecreaseReferenceCount()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() > 0);
-        mReferenceCount.Decrement();
+        MCORE_ASSERT(m_referenceCount.GetValue() > 0);
+        m_referenceCount.Decrement();
     }
 
 
     // destroy the object
     void MemoryObject::Destroy()
     {
-        MCORE_ASSERT(mReferenceCount.GetValue() > 0);
-        if (mReferenceCount.Decrement() == 1) 
+        MCORE_ASSERT(m_referenceCount.GetValue() > 0);
+        if (m_referenceCount.Decrement() == 1) 
         {
             Delete();
         }
@@ -65,7 +65,7 @@ namespace MCore
     // get the reference count
     uint32 MemoryObject::GetReferenceCount() const
     {
-        return mReferenceCount.GetValue();
+        return m_referenceCount.GetValue();
     }
 
 

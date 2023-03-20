@@ -22,15 +22,15 @@ namespace ScriptEvents
         friend struct AZStd::IntrusivePtrCountPolicy;
 
         AZ_RTTI(ScriptEventsHandler, "{4272AECB-F1A7-4B22-8537-2EE6492EC132}", AZ::BehaviorEBusHandler);
-        AZ_CLASS_ALLOCATOR(ScriptEventsHandler, AZ::SystemAllocator, 0);
-        virtual AZ::BehaviorValueParameter* GetBusId() = 0;
+        AZ_CLASS_ALLOCATOR(ScriptEventsHandler, AZ::SystemAllocator);
+        virtual AZ::BehaviorArgument* GetBusId() = 0;
 
         bool IsConnected() override
         {
             return false;
         }
 
-        bool IsConnectedId(AZ::BehaviorValueParameter*) override
+        bool IsConnectedId(AZ::BehaviorArgument*) override
         {
             return false;
         }
@@ -42,23 +42,23 @@ namespace ScriptEvents
     public:
 
         AZ_RTTI(DefaultBehaviorHandler, "{0AB58075-EE4F-49D7-83D4-E1250CC4471E}", ScriptEventsHandler);
-        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DefaultBehaviorHandler, AZ::SystemAllocator);
 
         DefaultBehaviorHandler(AZ::BehaviorEBus* ebus, const ScriptEvents::ScriptEvent*);
         ~DefaultBehaviorHandler() override;
 
         //////////////////////////////////////////////////////////////////////////
         // EventsHandler
-        AZ::BehaviorValueParameter* GetBusId() override { return &m_address; }
+        AZ::BehaviorArgument* GetBusId() override { return &m_address; }
 
         //////////////////////////////////////////////////////////////////////////
         /// AZ::BehaviorEBusHandler
         int GetFunctionIndex(const char* name) const override;
-        bool Connect(AZ::BehaviorValueParameter* address = nullptr) override;
-        void Disconnect() override;
+        bool Connect(AZ::BehaviorArgument* address = nullptr) override;
+        void Disconnect(AZ::BehaviorArgument* address = nullptr) override;
 
     private:
-        AZ::BehaviorValueParameter m_address;
+        AZ::BehaviorArgument m_address;
 
         AZ::Uuid m_busNameId;
         AZ::BehaviorEBus* m_ebus;

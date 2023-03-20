@@ -1,0 +1,11 @@
+{
+    "O3DE": {
+        "AtomToolsFramework": {
+            "AssetBrowser": {
+                "ContextMenuScripts": {
+                    "": [ "@gemroot:ShaderManagementConsole@/Scripts/GenerateShaderVariantListForMaterials.py" ]
+                }
+            }
+        }
+    }
+}

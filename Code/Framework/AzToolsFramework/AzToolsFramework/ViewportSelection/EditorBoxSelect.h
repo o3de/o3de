@@ -29,14 +29,15 @@ namespace AzToolsFramework
     class EditorBoxSelect
     {
     public:
-        EditorBoxSelect() = default;
+        EditorBoxSelect();
 
         //! Return if a box select action is currently taking place.
         bool Active() const { return m_boxSelectRegion.has_value(); }
 
         //! Update the box select for various mouse events.
         //! Call HandleMouseInteraction from type/system implementing MouseViewportRequests interface.
-        void HandleMouseInteraction(
+        //! @return Returns true if box select is active.
+        bool HandleMouseInteraction(
             const ViewportInteraction::MouseInteractionEvent& mouseInteraction);
 
         //! Responsible for drawing the 2d box representing the selection in screen space.
@@ -81,5 +82,6 @@ namespace AzToolsFramework
         ViewportInteraction::KeyboardModifiers m_previousModifiers; //!< Modifier keys active on the previous frame.
         AzFramework::ClickDetector m_clickDetector; //!< Utility type to detect if a mouse click or move has occurred.
         AzFramework::CursorState m_cursorState; //!< Utility type to track the current cursor position (and movement/delta).
+        AzFramework::ScreenPoint m_cursorPositionAtDownEvent; //!< The position of the cursor when first potentially starting a box select.
     };
 } // namespace AzToolsFramework

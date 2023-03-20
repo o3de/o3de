@@ -17,7 +17,7 @@ AZ_POP_DISABLE_WARNING
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <GraphCanvas/Components/Connections/ConnectionBus.h>
 #include <GraphCanvas/Components/GeometryBus.h>
@@ -54,7 +54,7 @@ namespace GraphCanvas
     public:
         AZ::EntityId m_sceneMember;
     };
-    
+
     class GlowOutlineGraphicsItem
         : public GraphicsEffect<QGraphicsPathItem>
         , public ConnectionVisualNotificationBus::Handler
@@ -65,7 +65,7 @@ namespace GraphCanvas
         , public AssetEditorSettingsNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GlowOutlineGraphicsItem, AZ::SystemAllocator);
 
         GlowOutlineGraphicsItem(const FixedGlowOutlineConfiguration& configuration);
         GlowOutlineGraphicsItem(const SceneMemberGlowOutlineConfiguration& configuration);
@@ -77,7 +77,7 @@ namespace GraphCanvas
         ////
 
         // SystemTick
-        void OnSystemTick();
+        void OnSystemTick() override;
         ////
 
         // TickBus
@@ -86,7 +86,7 @@ namespace GraphCanvas
 
         // GeometryNotificationBus::Handler
         void OnPositionChanged(const AZ::EntityId& /*targetEntity*/, const AZ::Vector2& /*position*/) override;
-        void OnBoundsChanged();
+        void OnBoundsChanged() override;
         ////
 
         // ViewNotificationBus
@@ -117,7 +117,7 @@ namespace GraphCanvas
         qreal m_opacityStart;
         qreal m_opacityEnd;
 
-        QPainterPath m_painterPath;        
+        QPainterPath m_painterPath;
         AZ::EntityId m_trackingSceneMember;
     };
 }

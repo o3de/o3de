@@ -82,7 +82,7 @@ namespace GraphCanvas
         ////
 
         // NodeNotification
-        void OnAddedToScene(const AZ::EntityId&);
+        void OnAddedToScene(const AZ::EntityId&) override;
         ////
 
         // CommentRequestBus

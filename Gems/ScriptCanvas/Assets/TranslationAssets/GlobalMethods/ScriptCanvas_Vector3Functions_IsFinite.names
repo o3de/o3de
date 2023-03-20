@@ -1,0 +1,38 @@
+{
+    "entries": [
+        {
+            "base": "ScriptCanvas_Vector3Functions_IsFinite",
+            "context": "BehaviorMethod",
+            "variant": "",
+            "details": {
+                "name": "Is Finite",
+                "category": "Math/Vector3"
+            },
+            "methods": [
+                {
+                    "base": "ScriptCanvas_Vector3Functions_IsFinite",
+                    "details": {
+                        "name": "Is Finite",
+                        "tooltip": "Returns true if every element in the source is finite, else false."
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Source"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Result"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

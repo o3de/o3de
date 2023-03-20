@@ -1,0 +1,151 @@
+{
+    "entries": [
+        {
+            "base": "AWSCognitoUserManagementNotificationBus",
+            "context": "EBusHandler",
+            "variant": "",
+            "details": {
+                "name": "AWS Cognito User Management",
+                "category": "AWS Client Auth"
+            },
+            "methods": [
+                {
+                    "base": "OnEmailSignUpSuccess",
+                    "details": {
+                        "name": "On Email Sign Up Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEmailSignUpFail",
+                    "details": {
+                        "name": "On Email Sign Up Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPhoneSignUpSuccess",
+                    "details": {
+                        "name": "On Phone Sign Up Success"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Unique Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnPhoneSignUpFail",
+                    "details": {
+                        "name": "On Phone Sign Up Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnConfirmSignUpSuccess",
+                    "details": {
+                        "name": "On Confirm Sign Up Success"
+                    }
+                },
+                {
+                    "base": "OnConfirmSignUpFail",
+                    "details": {
+                        "name": "On Confirm Sign Up Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnForgotPasswordSuccess",
+                    "details": {
+                        "name": "On Forgot Password Success"
+                    }
+                },
+                {
+                    "base": "OnForgotPasswordFail",
+                    "details": {
+                        "name": "On Forgot Password Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnConfirmForgotPasswordSuccess",
+                    "details": {
+                        "name": "On Confirm Forgot Password Success"
+                    }
+                },
+                {
+                    "base": "OnConfirmForgotPasswordFail",
+                    "details": {
+                        "name": "On Confirm Forgot Password Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "OnEnableMFASuccess",
+                    "details": {
+                        "name": "On Enable MFA Success"
+                    }
+                },
+                {
+                    "base": "OnEnableMFAFail",
+                    "details": {
+                        "name": "On Enable MFA Fail"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Error"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -82,7 +82,7 @@ namespace MCore
         MCORE_INLINE float ToFloat(float minValue, float maxValue) const;
 
     public:
-        StorageType mValue; /**< The compressed/packed value. */
+        StorageType m_value; /**< The compressed/packed value. */
 
         // the number of steps within the specified range
         enum

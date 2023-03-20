@@ -7,9 +7,10 @@
  */
 #include <RHI/Buffer.h>
 #include <RHI/BufferView.h>
-#include <RHI/Conversion.h>
+#include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/Device.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -52,11 +53,30 @@ namespace AZ
 #endif
 
             // Vulkan BufferViews are used to enable shaders to access buffer contents interpreted as formatted data.
-            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown &&
-                (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead) ||
-                 RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite)))
+            bool shaderRead = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderRead);
+            bool shaderReadWrite = RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::ShaderWrite);
+            if (viewDescriptor.m_elementFormat != RHI::Format::Unknown && (shaderRead || shaderReadWrite))
             {
+#if defined(AZ_RHI_ENABLE_VALIDATION)
+                AZ_Assert(
+                    RHI::IsAligned(
+                        viewDescriptor.m_elementOffset * viewDescriptor.m_elementSize,
+                        device.GetLimits().m_minTexelBufferOffsetAlignment),
+                    "Typed Buffer View has to be aligned to a multiple of %d bytes.",
+                    device.GetLimits().m_minTexelBufferOffsetAlignment);
+#endif
                 auto result = BuildNativeBufferView(device, buffer, viewDescriptor);
+
+                if (shaderRead)
+                {
+                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadBuffer(this);
+                }
+
+                if (shaderReadWrite)
+                {
+                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteBuffer(this);
+                }
+
                 RETURN_RESULT_IF_UNSUCCESSFUL(result);
             }
             else if (RHI::CheckBitsAny(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
@@ -70,18 +90,46 @@ namespace AZ
 
         RHI::ResultCode BufferView::InvalidateInternal()
         {
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
+        }
+
+        void BufferView::ReleaseView()
+        {
             if (m_nativeBufferView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
-                device.QueueForRelease(new ReleaseContainer<VkBufferView>(device.GetNativeDevice(), m_nativeBufferView, vkDestroyBufferView));
+                device.QueueForRelease(new ReleaseContainer<VkBufferView>(
+                    device.GetNativeDevice(), m_nativeBufferView, device.GetContext().DestroyBufferView));
                 m_nativeBufferView = VK_NULL_HANDLE;
             }
-            return RHI::ResultCode::Success;
+        }
+
+        void BufferView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadBuffer(m_readIndex);
+                m_readIndex = InvalidBindlessIndex;
+            }
+
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadWriteBuffer(m_readWriteIndex);
+                m_readWriteIndex = InvalidBindlessIndex;
+            }
         }
 
         void BufferView::ShutdownInternal()
         {
-            InvalidateInternal();
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         RHI::ResultCode BufferView::BuildNativeBufferView(Device& device, const Buffer& buffer, const RHI::BufferViewDescriptor& descriptor)
@@ -97,7 +145,8 @@ namespace AZ
             createInfo.offset = bufferMemoryView->GetOffset() + descriptor.m_elementOffset * descriptor.m_elementSize;
             createInfo.range = descriptor.m_elementCount * descriptor.m_elementSize;
 
-            const VkResult result = vkCreateBufferView(device.GetNativeDevice(), &createInfo, nullptr, &m_nativeBufferView);
+            const VkResult result =
+                device.GetContext().CreateBufferView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_nativeBufferView);
             AssertSuccess(result);
 
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
@@ -108,7 +157,7 @@ namespace AZ
         VkAccelerationStructureKHR BufferView::GetNativeAccelerationStructure() const
         {
             bool hasOverrideFlags = GetDescriptor().m_overrideBindFlags != RHI::BufferBindFlags::None;
-            const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
+            [[maybe_unused]] const RHI::BufferBindFlags bindFlags = hasOverrideFlags ? GetDescriptor().m_overrideBindFlags : GetBuffer().GetDescriptor().m_bindFlags;
 
             AZ_Assert(RHI::CheckBitsAll(bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure),
                 "GetNativeAccelerationStructure() is only valid for buffers with the RayTracingAccelerationStructure bind flag");
@@ -116,5 +165,15 @@ namespace AZ
             return m_nativeAccelerationStructure;
         }
 
-    }
-}
+        uint32_t BufferView::GetBindlessReadIndex() const
+        {
+            return m_readIndex;
+        }
+
+        uint32_t BufferView::GetBindlessReadWriteIndex() const
+        {
+            return m_readWriteIndex;
+        }
+
+    } // namespace Vulkan
+} // namespace AZ

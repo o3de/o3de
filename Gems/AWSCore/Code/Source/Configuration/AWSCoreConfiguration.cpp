@@ -20,6 +20,7 @@ namespace AWSCore
         : m_sourceProjectFolder("")
         , m_profileName(AWSCoreDefaultProfileName)
         , m_resourceMappingConfigFileName("")
+        , m_allowAWSMetadataCredentials(false)
     {
     }
 
@@ -56,6 +57,11 @@ namespace AWSCore
         return configFilePath;
     }
 
+    bool AWSCoreConfiguration::IsAllowedAWSMetadataCredentials() const
+    {
+        return m_allowAWSMetadataCredentials;
+    }
+
     void AWSCoreConfiguration::InitConfig()
     {
         InitSourceProjectFolderPath();
@@ -64,7 +70,7 @@ namespace AWSCore
 
     void AWSCoreConfiguration::InitSourceProjectFolderPath()
     {
-        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@devassets@");
+        auto sourceProjectFolder = AZ::IO::FileIOBase::GetInstance()->GetAlias("@projectroot@");
         if (!sourceProjectFolder)
         {
             AZ_Error(AWSCoreConfigurationName, false, ProjectSourceFolderNotFoundErrorMessage);
@@ -100,6 +106,14 @@ namespace AWSCore
             AZ_Warning(AWSCoreConfigurationName, false, ProfileNameNotFoundErrorMessage);
             m_profileName = AWSCoreDefaultProfileName;
         }
+
+        auto allowAWSMetadataPath = AZStd::string::format("%s%s",
+            AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataCredentialsKey);
+        if (!settingsRegistry->Get(m_allowAWSMetadataCredentials, allowAWSMetadataPath))
+        {
+            AZ_Warning(AWSCoreConfigurationName, false, AllowAWSMetadataCredentialsNotFoundMessage);
+            m_allowAWSMetadataCredentials = false;
+        }
     }
 
     void AWSCoreConfiguration::ResetSettingsRegistryData()
@@ -120,6 +134,11 @@ namespace AWSCore
             AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreResourceMappingConfigFileNameKey);
         settingsRegistry->Remove(resourceMappingConfigFileNamePath);
         m_resourceMappingConfigFileName.clear();
+
+        auto allowAWSMetadataPath =
+            AZStd::string::format("%s%s", AZ::SettingsRegistryMergeUtils::OrganizationRootKey, AWSCoreAllowAWSMetadataCredentialsKey);
+        settingsRegistry->Remove(allowAWSMetadataPath);
+        m_allowAWSMetadataCredentials = false;
 
         // Reload the AWSCore setting registry file from disk.
         if (m_sourceProjectFolder.empty())

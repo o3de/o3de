@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/ByteContainerStream.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
@@ -14,29 +15,34 @@
 
 namespace AZ::SettingsRegistryScriptUtils::Internal
 {
-    static void RegisterScriptProxyForNotify(SettingsRegistryScriptProxy& settingsRegistryProxy)
+    static void RegisterScriptProxyForNotify(SettingsRegistryInterface* settingsRegistry,
+        SettingsRegistryScriptProxy::NotifyEventProxy* notifyEventProxy)
     {
-        if (settingsRegistryProxy.IsValid())
+        if (settingsRegistry != nullptr)
         {
-            auto ForwardSettingsUpdateToProxyEvent = [&settingsRegistryProxy](AZStd::string_view path, AZ::SettingsRegistryInterface::Type)
+            auto ForwardSettingsUpdateToProxyEvent = [notifyEventProxy](
+                const AZ::SettingsRegistryInterface::NotifyEventArgs& notifyEventArgs)
             {
-                if (settingsRegistryProxy.m_notifyEventProxy)
+                if (notifyEventProxy)
                 {
-                    settingsRegistryProxy.m_notifyEventProxy->m_scriptNotifyEvent.Signal(path);
+                    notifyEventProxy->m_scriptNotifyEvent.Signal(notifyEventArgs.m_jsonKeyPath);
                 }
             };
             // Register the forwarding function with the BehaviorContext
-            settingsRegistryProxy.m_notifyEventProxy->m_settingsUpdatedHandler =
-                settingsRegistryProxy.m_settingsRegistry->RegisterNotifier(ForwardSettingsUpdateToProxyEvent);
+            notifyEventProxy->m_settingsUpdatedHandler = settingsRegistry->RegisterNotifier(ForwardSettingsUpdateToProxyEvent);
         }
     }
 
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy() = default;
+    SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::nullptr_t)
+        : SettingsRegistryScriptProxy()
+    {}
+
     SettingsRegistryScriptProxy::SettingsRegistryScriptProxy(AZStd::shared_ptr<AZ::SettingsRegistryInterface> settingsRegistry)
         : m_settingsRegistry(AZStd::move(settingsRegistry))
         , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())
     {
-        RegisterScriptProxyForNotify(*this);
+        RegisterScriptProxyForNotify(m_settingsRegistry.get(), m_notifyEventProxy.get());
     }
 
     // Raw AZ::SettingsRegistryInterface pointer is not owned by the proxy, so it's deleter is a no-op
@@ -44,7 +50,7 @@ namespace AZ::SettingsRegistryScriptUtils::Internal
         : m_settingsRegistry(settingsRegistry, [](AZ::SettingsRegistryInterface*) {})
         , m_notifyEventProxy(AZStd::make_shared<NotifyEventProxy>())
     {
-        RegisterScriptProxyForNotify(*this);
+        RegisterScriptProxyForNotify(m_settingsRegistry.get(), m_notifyEventProxy.get());
     }
 
     // SettingsRegistryScriptProxy function that determines if the SettingsRegistry object is valid

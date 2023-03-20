@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME Twitch.Static STATIC
@@ -50,5 +50,6 @@ ly_add_target(
 # the above module is for use in all application types except builders
 ly_create_alias(NAME Twitch.Servers  NAMESPACE Gem TARGETS Gem::Twitch)
 ly_create_alias(NAME Twitch.Clients  NAMESPACE Gem TARGETS Gem::Twitch)
+ly_create_alias(NAME Twitch.Unified  NAMESPACE Gem TARGETS Gem::Twitch)
 ly_create_alias(NAME Twitch.Tools    NAMESPACE Gem TARGETS Gem::Twitch)
 

@@ -274,7 +274,7 @@ Matrix34 CAxisGizmo::GetTransformation(RefCoordSys coordSys, IDisplayViewport* v
 //////////////////////////////////////////////////////////////////////////
 bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point, [[maybe_unused]] int nFlags)
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     if (event == eMouseLDown)
     {
@@ -329,7 +329,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
             hc.b2DViewport = view->GetType() != ET_ViewportCamera;
             hc.point2d = point;
             view->ViewToWorldRay(point, hc.raySrc, hc.rayDir);
-            bool bHit = false;
             if (HitTest(hc))
             {
                 switch (hc.manipulatorMode)
@@ -344,7 +343,6 @@ bool CAxisGizmo::MouseCallback(CViewport* view, EMouseEvent event, QPoint& point
                     view->SetCurrentCursor(STD_CURSOR_SCALE);
                     break;
                 }
-                bHit = true;
             }
         }
     }

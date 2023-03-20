@@ -8,7 +8,9 @@
 
 set(FILES
     Include/LYImGuiUtils/HistogramContainer.h
+    Include/LYImGuiUtils/HistogramGroup.h
     Include/LYImGuiUtils/ImGuiDrawHelpers.h
     Source/LYImGuiUtils/HistogramContainer.cpp
+    Source/LYImGuiUtils/HistogramGroup.cpp
     Source/LYImGuiUtils/ImGuiDrawHelpers.cpp
 )

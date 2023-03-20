@@ -85,9 +85,9 @@ namespace AZ
         {
             // Update resolution size
             const RPI::PassAttachmentBinding& attachmentBinding = GetAttachmentBindings()[0];
-            if (attachmentBinding.m_attachment)
+            if (attachmentBinding.GetAttachment())
             {
-                RHI::Size size = attachmentBinding.m_attachment->m_descriptor.m_image.m_size;
+                RHI::Size size = attachmentBinding.GetAttachment()->m_descriptor.m_image.m_size;
                 m_inputResolutionInverse[0] = 1.0f / size.m_width;
                 m_inputResolutionInverse[1] = 1.0f / size.m_height;
             }

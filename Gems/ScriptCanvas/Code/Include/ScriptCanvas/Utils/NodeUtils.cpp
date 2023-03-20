@@ -77,8 +77,6 @@ namespace ScriptCanvas
         {
             return ConstructCustomNodeIdentifier(scriptCanvasNode->RTTI_GetType());
         }
-
-        return NodeTypeIdentifier(0);
     }
 
     NodeTypeIdentifier NodeUtils::ConstructEBusIdentifier(ScriptCanvas::EBusBusId ebusIdentifier)
@@ -245,7 +243,7 @@ namespace ScriptCanvas
         return resultHash;
     }
 
-    void NodeUtils::InitializeNode(Node* node, const NodeConfiguration& config)
+    void NodeUtils::InitializeNode(Node* node, const NodeReplacementConfiguration& config)
     {
         if (auto* method = azrtti_cast<ScriptCanvas::Nodes::Core::Method*>(node))
         {

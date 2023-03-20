@@ -25,7 +25,7 @@ namespace AZ
             friend class MaterialTypeAssetCreator;
         public:
             AZ_TYPE_INFO(MaterialPropertiesLayout, "{0CBBC21F-700A-45AD-84FF-67B0210E79CA}");
-            AZ_CLASS_ALLOCATOR(MaterialPropertiesLayout, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialPropertiesLayout, SystemAllocator);
 
             using PropertyList = AZStd::vector<MaterialPropertyDescriptor>;
 
@@ -35,7 +35,7 @@ namespace AZ
             AZ_DISABLE_COPY_MOVE(MaterialPropertiesLayout);
 
             size_t GetPropertyCount() const;
-            MaterialPropertyIndex FindPropertyIndex(const Name& propertyName) const;
+            MaterialPropertyIndex FindPropertyIndex(const Name& propertyId) const;
             const MaterialPropertyDescriptor* GetPropertyDescriptor(MaterialPropertyIndex index) const;
 
         private:

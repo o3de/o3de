@@ -24,11 +24,10 @@
 #include <QMessageBox>
 #include <QMouseEvent>
 
-
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionIdPicker, AZ::SystemAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMultiTransitionIdHandler, AZ::SystemAllocator)
 
     const QColor AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteColor = QColor(255, 133, 0);
     const float AnimGraphTransitionIdSelector::s_graphWindowBorderOverwriteWidth = 5.0f;
@@ -126,8 +125,13 @@ namespace EMotionFX
         }
     }
 
-    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex &parent, int first, int last)
+    void AnimGraphTransitionIdPicker::OnAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
+        if (!parent.isValid())
+        {
+            return;
+        }
+
         EMStudio::EMStudioPlugin* plugin = EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID);
         EMStudio::AnimGraphPlugin* animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(plugin);
         if (animGraphPlugin)
@@ -139,7 +143,7 @@ namespace EMotionFX
                 if (modelIndex == attributesWindow->GetModelIndex())
                 {
                     m_transitionSelector.ResetUI();
-                    attributesWindow->Init();
+                    attributesWindow->UpdateAndShowInInspector();
                 }
             }
         }
@@ -206,7 +210,7 @@ namespace EMotionFX
 
                 QPushButton* removeTransitionButton = new QPushButton();
                 EMStudio::EMStudioManager::MakeTransparentButton(removeTransitionButton, "Images/Icons/Trash.svg", "Remove transition from list");
-                connect(removeTransitionButton, &QPushButton::clicked, this, [this, removeTransitionButton, id]()
+                connect(removeTransitionButton, &QPushButton::clicked, this, [this, id]()
                     {
                         m_transitionIds.erase(AZStd::remove(m_transitionIds.begin(), m_transitionIds.end(), id), m_transitionIds.end());
                         Reinit();
@@ -358,7 +362,8 @@ namespace EMotionFX
 
         connect(picker, &AnimGraphTransitionIdPicker::SelectionChanged, this, [picker]()
             {
-                EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, picker);
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, picker);
             });
 
         return picker;
@@ -368,7 +373,7 @@ namespace EMotionFX
     {
         if (attrValue)
         {
-            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstancePointer());
+            AnimGraphStateTransition* transition = static_cast<AnimGraphStateTransition*>(attrValue->GetInstance());
             m_transition = transition;
             GUI->SetTransition(m_transition);
         }

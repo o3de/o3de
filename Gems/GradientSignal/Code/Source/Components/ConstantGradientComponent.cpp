@@ -6,7 +6,7 @@
  *
  */
 
-#include "ConstantGradientComponent.h"
+#include <GradientSignal/Components/ConstantGradientComponent.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -99,13 +99,17 @@ namespace GradientSignal
 
     void ConstantGradientComponent::Activate()
     {
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         ConstantGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void ConstantGradientComponent::Deactivate()
     {
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
         ConstantGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -131,7 +135,23 @@ namespace GradientSignal
 
     float ConstantGradientComponent::GetValue([[maybe_unused]] const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         return m_configuration.m_value;
+    }
+
+    void ConstantGradientComponent::GetValues(
+        [[maybe_unused]] AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
+        {
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
+        }
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        AZStd::fill(outValues.begin(), outValues.end(), m_configuration.m_value);
     }
 
     float ConstantGradientComponent::GetConstantValue() const
@@ -141,7 +161,13 @@ namespace GradientSignal
 
     void ConstantGradientComponent::SetConstantValue(float constant)
     {
-        m_configuration.m_value = constant;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_value = constant;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 }

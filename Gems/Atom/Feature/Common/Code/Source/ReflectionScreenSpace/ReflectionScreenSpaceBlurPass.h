@@ -24,17 +24,10 @@ namespace AZ
 
         public:
             AZ_RTTI(Render::ReflectionScreenSpaceBlurPass, "{BC3D92C5-E38A-46FE-8EBD-CAD14E505946}", ParentPass);
-            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Render::ReflectionScreenSpaceBlurPass, SystemAllocator);
           
             //! Creates a new pass without a PassTemplate
             static RPI::Ptr<ReflectionScreenSpaceBlurPass> Create(const RPI::PassDescriptor& descriptor);
-
-            //! Returns the frame buffer image attachment used by the ReflectionFrameBufferCopy pass
-            //! to store the previous frame image
-            Data::Instance<RPI::AttachmentImage>& GetFrameBufferImageAttachment() { return m_frameBufferImageAttachment; }
-
-            //! Returns the number of mip levels in the blur
-            uint32_t GetNumBlurMips() const { return m_numBlurMips; }
 
         private:
             explicit ReflectionScreenSpaceBlurPass(const RPI::PassDescriptor& descriptor);
@@ -44,12 +37,13 @@ namespace AZ
             // Pass Overrides...
             void ResetInternal() override;
             void BuildInternal() override;
+            void FrameBeginInternal(FramePrepareParams params) override;
+
+            RHI::Size m_imageSize;
+            uint32_t m_mipLevels = 0;
 
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_verticalBlurChildPasses;
             AZStd::vector<RPI::Ptr<RPI::FullscreenTrianglePass>> m_horizontalBlurChildPasses;
-
-            Data::Instance<RPI::AttachmentImage> m_frameBufferImageAttachment;
-            uint32_t m_numBlurMips = 0;
         };
     }   // namespace RPI
 }   // namespace AZ

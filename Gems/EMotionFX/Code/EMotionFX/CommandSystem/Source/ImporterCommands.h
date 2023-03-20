@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMFX_IMPORTERCOMMANDS_H
-#define __EMFX_IMPORTERCOMMANDS_H
+#pragma once
 
 // include the required headers
 #include "CommandSystemConfig.h"
@@ -21,20 +20,17 @@ namespace CommandSystem
     // add actor
     MCORE_DEFINECOMMAND_START(CommandImportActor, "Import actor", true)
 public:
-    uint32  mPreviouslyUsedID;
-    uint32  mOldIndex;
-    bool    mOldWorkspaceDirtyFlag;
+    uint32  m_previouslyUsedId;
+    uint32  m_oldIndex;
+    bool    m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
     // add motion
         MCORE_DEFINECOMMAND_START(CommandImportMotion, "Import motion", true)
 public:
-    uint32          mOldMotionID;
-    AZStd::string   mOldFileName;
-    bool            mOldWorkspaceDirtyFlag;
+    uint32          m_oldMotionId;
+    AZStd::string   m_oldFileName;
+    bool            m_oldWorkspaceDirtyFlag;
     MCORE_DEFINECOMMAND_END
 
 } // namespace CommandSystem
-
-
-#endif

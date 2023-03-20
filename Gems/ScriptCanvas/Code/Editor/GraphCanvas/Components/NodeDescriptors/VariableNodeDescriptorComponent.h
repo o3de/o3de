@@ -52,7 +52,7 @@ namespace ScriptCanvasEditor
         ////
 
         // VariableNodeDescriptorBus
-        ScriptCanvas::VariableId GetVariableId() const;
+        ScriptCanvas::VariableId GetVariableId() const override;
         ////
         
     protected:

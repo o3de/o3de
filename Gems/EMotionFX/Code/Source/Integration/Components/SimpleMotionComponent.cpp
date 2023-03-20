@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -29,7 +30,7 @@ namespace EMotionFX
             if (serializeContext)
             {
                 serializeContext->Class<Configuration>()
-                    ->Version(2)
+                    ->Version(3)
                     ->Field("MotionAsset", &Configuration::m_motionAsset)
                     ->Field("Loop", &Configuration::m_loop)
                     ->Field("Retarget", &Configuration::m_retarget)
@@ -40,6 +41,7 @@ namespace EMotionFX
                     ->Field("BlendOut", &Configuration::m_blendOutTime)
                     ->Field("PlayOnActivation", &Configuration::m_playOnActivation)
                     ->Field("InPlace", &Configuration::m_inPlace)
+                    ->Field("FreezeAtLastFrame", &Configuration::m_freezeAtLastFrame)
                     ;
 
                 AZ::EditContext* editContext = serializeContext->GetEditContext();
@@ -49,21 +51,45 @@ namespace EMotionFX
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_motionAsset, "Motion", "EMotion FX motion to be loaded for this actor")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_loop, "Loop motion", "Toggles looping of the animation")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_retarget, "Retarget motion", "Toggles retargeting of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_reverse, "Reverse motion", "Toggles reversing of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_mirror, "Mirror motion", "Toggles mirroring of the animation")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playspeed, "Play speed", "Determines the rate at which the motion is played")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendInTime, "Blend In Time", "Determines the blend in time in seconds")
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_blendOutTime, "Blend Out Time", "Determines the blend out time in seconds")
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &Configuration::GetBlendOutTimeVisibility)
                             ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
+                            ->Attribute(AZ::Edit::Attributes::Max, 100.0f)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_playOnActivation, "Play on active", "Playing animation immediately after activation.")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_inPlace, "In-place",
                             "Plays the animation in-place and removes any positional and rotational changes from root joints.")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &Configuration::m_freezeAtLastFrame, "Freeze At Last Frame",
+                            "Go back to bind pose after finishing the motion or freeze at the last frame. This only applies for non-looping motions.")
+                            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
+                            ->Attribute(AZ::Edit::Attributes::Visibility, &Configuration::GetFreezeAtLastFrameVisibility)
                         ;
                 }
             }
+        }
+
+        AZ::Crc32 SimpleMotionComponent::Configuration::GetBlendOutTimeVisibility() const
+        {
+            if (!m_loop && !m_freezeAtLastFrame)
+            {
+                return AZ::Edit::PropertyVisibility::Show;
+            }
+
+            return AZ::Edit::PropertyVisibility::Hide;
+        }
+
+        AZ::Crc32 SimpleMotionComponent::Configuration::GetFreezeAtLastFrameVisibility() const
+        {
+            return m_loop ? AZ::Edit::PropertyVisibility::Hide : AZ::Edit::PropertyVisibility::Show;
         }
 
         void SimpleMotionComponent::Reflect(AZ::ReflectContext* context)
@@ -110,6 +136,7 @@ namespace EMotionFX
                         ->Attribute("Hidden", AZ::Edit::Attributes::PropertyHidden)
                     ->VirtualProperty("BlendOutTime", "GetBlendOutTime", "BlendOutTime")
                     ->Event("PlayMotion", &SimpleMotionComponentRequestBus::Events::PlayMotion)
+                    ->Event("GetDuration", &SimpleMotionComponentRequestBus::Events::GetDuration)
                     ;
 
                 behaviorContext->Class<SimpleMotionComponent>()->RequestBus("SimpleMotionComponentRequestBus");
@@ -329,6 +356,11 @@ namespace EMotionFX
             return result;
         }
 
+        float SimpleMotionComponent::GetDuration() const
+        {
+            return m_motionInstance ? m_motionInstance->GetDuration() : 0.0f;
+        }
+
         void SimpleMotionComponent::Motion(AZ::Data::AssetId assetId)
         {
             if (m_configuration.m_motionAsset.GetId() != assetId)
@@ -444,18 +476,19 @@ namespace EMotionFX
             }
             //init the PlaybackInfo based on our config
             EMotionFX::PlayBackInfo info;
-            info.mNumLoops = cfg.m_loop ? EMFX_LOOPFOREVER : 1;
-            info.mRetarget = cfg.m_retarget;
-            info.mPlayMode = cfg.m_reverse ? EMotionFX::EPlayMode::PLAYMODE_BACKWARD : EMotionFX::EPlayMode::PLAYMODE_FORWARD;
-            info.mFreezeAtLastFrame = info.mNumLoops == 1;
-            info.mMirrorMotion = cfg.m_mirror;
-            info.mPlaySpeed = cfg.m_playspeed;
-            info.mPlayNow = true;
-            info.mDeleteOnZeroWeight = deleteOnZeroWeight;
-            info.mCanOverwrite = false;
-            info.mBlendInTime = cfg.m_blendInTime;
-            info.mBlendOutTime = cfg.m_blendOutTime;
-            info.mInPlace = cfg.m_inPlace;
+            info.m_numLoops = cfg.m_loop ? EMFX_LOOPFOREVER : 1;
+            info.m_retarget = cfg.m_retarget;
+            info.m_playMode = cfg.m_reverse ? EMotionFX::EPlayMode::PLAYMODE_BACKWARD : EMotionFX::EPlayMode::PLAYMODE_FORWARD;
+            info.m_freezeAtLastFrame = info.m_numLoops == 1;
+            info.m_mirrorMotion = cfg.m_mirror;
+            info.m_playSpeed = cfg.m_playspeed;
+            info.m_playNow = true;
+            info.m_deleteOnZeroWeight = deleteOnZeroWeight;
+            info.m_canOverwrite = false;
+            info.m_blendInTime = cfg.m_blendInTime;
+            info.m_blendOutTime = cfg.m_blendOutTime;
+            info.m_inPlace = cfg.m_inPlace;
+            info.m_freezeAtLastFrame = cfg.m_freezeAtLastFrame;
             return actorInstance->GetMotionSystem()->PlayMotion(motionAsset->m_emfxMotion.get(), &info);
         }
 

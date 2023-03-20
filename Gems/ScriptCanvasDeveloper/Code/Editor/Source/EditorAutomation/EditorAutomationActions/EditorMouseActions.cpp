@@ -12,14 +12,19 @@
 #include <QCursor>
 #include <QMainWindow>
 #include <QMouseEvent>
-#include <QtTest/qtest.h>
 #include <QWidget>
+
+// MSVC: warning suppressed: constant used in conditional expression
+// CLANG: warning suppressed: implicit conversion loses integer precision
+AZ_PUSH_DISABLE_WARNING(4127, "-Wshorten-64-to-32")
+#include <QtTest/qtest.h>
+AZ_POP_DISABLE_WARNING
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/EditorMouseActions.h>
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     //////////////////////////////
     // SimulateMouseButtonAction
@@ -155,7 +160,6 @@ namespace ScriptCanvasDeveloper
             m_startPosition = QCursor::pos();
         }
 
-        QPointF currentPosition = QCursor::pos();
         QPointF targetPoint = m_targetPosition;
         
         float percentage = aznumeric_cast<float>(m_tickCount)/aznumeric_cast<float>(m_tickDuration);
@@ -170,12 +174,13 @@ namespace ScriptCanvasDeveloper
 
 #if defined(AZ_COMPILER_MSVC)
         INPUT osInput = { 0 };
+        QPointF currentPosition = QCursor::pos();
 
         osInput.type = INPUT_MOUSE;
         osInput.mi.mouseData = 0;
         osInput.mi.time = 0;
-        osInput.mi.dx = targetPoint.x() - currentPosition.x();
-        osInput.mi.dy = targetPoint.y() - currentPosition.y();
+        osInput.mi.dx = static_cast<LONG>(targetPoint.x() - currentPosition.x());
+        osInput.mi.dy = static_cast<LONG>(targetPoint.y() - currentPosition.y());
         osInput.mi.dwFlags = MOUSEEVENTF_MOVE;
 
         ::SendInput(1, &osInput, sizeof(osInput));

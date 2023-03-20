@@ -15,8 +15,6 @@
 
 namespace AssetBuilder
 {
-    constexpr int MaxMessageLength = 4096;
-
     TraceMessageHook::TraceMessageHook()
         : m_stacks(nullptr)
         , m_inDebugMode(false)
@@ -63,8 +61,9 @@ namespace AssetBuilder
     {
         if (m_skipErrorsCount == 0)
         {
-            CleanMessage(stderr, "E", message, true);
-            std::fflush(stderr);
+            CleanMessage(stdout, "E", message, true);
+            AZ::Debug::Trace::Instance().PrintCallstack("", 3); // Skip all the Trace.cpp function calls
+            std::fflush(stdout);
             ++m_totalErrorCount;
         }
         else
@@ -79,12 +78,11 @@ namespace AssetBuilder
     {
         if(m_skipErrorsCount == 0)
         {
-            char header[MaxMessageLength];
+            // Add the trace information and message type to context details to simplify the event log
+            AZ_TraceContext("Trace", AZStd::string::format("%s(%d): '%s'", fileName, line, func));
+            AZ_TraceContext("Type", "Trace::Error");
 
-            azsnprintf(header, MaxMessageLength, "%s: Trace::Error\n>\t%s(%d): '%s'\n", window, fileName, line, func);
-            CleanMessage(stderr, "E", header, false);
-
-            CleanMessage(stderr, "E", message, true, ">\t");
+            CleanMessage(stdout, "E", AZStd::string::format("%s: %s", window, message).c_str(), true);
 
             ++m_totalErrorCount;
         }
@@ -100,12 +98,11 @@ namespace AssetBuilder
     {
         if (m_skipWarningsCount == 0)
         {
-            char header[MaxMessageLength];
+            // Add the trace information and message type to context details to simplify the event log
+            AZ_TraceContext("Trace", AZStd::string::format("%s(%d): '%s'", fileName, line, func));
+            AZ_TraceContext("Type", "Trace::Warning");
 
-            azsnprintf(header, MaxMessageLength, "%s: Trace::Warning\n>\t%s(%d): '%s'\n", window, fileName, line, func);
-            CleanMessage(stdout, "W", header, false);
-
-            CleanMessage(stdout, "W", message, true, ">\t");
+            CleanMessage(stdout, "W", AZStd::string::format("%s: %s", window, message).c_str(), true);
 
             ++m_totalWarningCount;
         }
@@ -120,13 +117,12 @@ namespace AssetBuilder
     bool TraceMessageHook::OnException(const char* message)
     {
         m_isInException = true;
-        CleanMessage(stderr, "E", message, true);
+        CleanMessage(stdout, "E", message, true);
         ++m_totalErrorCount;
         AZ::Debug::Trace::HandleExceptions(false);
-        AZ::Debug::Trace::PrintCallstack("", 3); // Skip all the Trace.cpp function calls
+        AZ::Debug::Trace::Instance().PrintCallstack("", 3); // Skip all the Trace.cpp function calls
         // note that the above call ultimately results in a whole bunch of TracePrint/Outputs, which will end up in OnOutput below.
 
-        std::fflush(stderr);
         std::fflush(stdout);
 
         // if we don't terminate here, the user may get a dialog box from the OS saying that the program crashed.
@@ -137,16 +133,16 @@ namespace AssetBuilder
         return false;
     }
 
-bool TraceMessageHook::OnOutput(const char* /*window*/, const char* message)
-{
-    if (m_isInException) // all messages that occur during an exception should be considered an error.
+    bool TraceMessageHook::OnOutput(const char* /*window*/, const char* message)
     {
-        CleanMessage(stderr, "E", message, true);
-        return true;
+        if (m_isInException) // all messages that occur during an exception should be considered an error.
+        {
+            CleanMessage(stdout, "E", message, true);
+            return true;
+        }
+
+        return false;
     }
-    
-    return false;
-}
 
     bool TraceMessageHook::OnPrintf(const char* window, const char* message)
     {
@@ -158,7 +154,7 @@ bool TraceMessageHook::OnOutput(const char* /*window*/, const char* message)
         {
             --m_skipPrintfsCount;
         }
-        
+
         return true;
     }
 

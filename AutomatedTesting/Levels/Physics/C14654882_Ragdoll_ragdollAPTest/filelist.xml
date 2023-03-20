@@ -1,6 +1,0 @@
-<download name="ragdollAPTest" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39353" md5="2a01751dd3df6c70227ae39cc4324905"/>
- </files>
-</download>

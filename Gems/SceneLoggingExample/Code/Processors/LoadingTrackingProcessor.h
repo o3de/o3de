@@ -34,9 +34,13 @@ namespace SceneLoggingExample
             RequestingApplication requester) override;
         AZ::SceneAPI::Events::LoadingResult LoadAsset(AZ::SceneAPI::Containers::Scene& scene, 
             const AZStd::string& path, const AZ::Uuid& guid, RequestingApplication requester) override;
-        void FinalizeAssetLoading(AZ::SceneAPI::Containers::Scene& scene, RequestingApplication requester);
+        void FinalizeAssetLoading(AZ::SceneAPI::Containers::Scene& scene, RequestingApplication requester) override;
         AZ::SceneAPI::Events::ProcessingResult UpdateManifest(AZ::SceneAPI::Containers::Scene& scene, ManifestAction action,
             RequestingApplication requester) override;
+        void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "LoadingTrackingProcessor";
+        }
 
         uint8_t GetPriority() const override;
 

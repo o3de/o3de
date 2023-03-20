@@ -10,6 +10,7 @@
 #include "IGestureRecognizer.h"
 
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -25,7 +26,7 @@ namespace Gestures
 
         struct Config
         {
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
             AZ_RTTI(Config, "{F28051E1-8B39-40BC-B80E-0CBAF1EF288A}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -44,7 +45,7 @@ namespace Gestures
         };
         static const Config& GetDefaultConfig() { static Config s_cfg; return s_cfg; }
 
-        AZ_CLASS_ALLOCATOR(RecognizerDrag, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecognizerDrag, AZ::SystemAllocator);
         AZ_RTTI(RecognizerDrag, "{B244C54C-1F5C-420E-8F47-025AFEB7A499}", RecognizerContinuous);
 
         explicit RecognizerDrag(const Config& config = GetDefaultConfig());
@@ -75,7 +76,7 @@ namespace Gestures
 
         Config m_config;
 
-        int64 m_startTime;
+        AZ::TimeMs m_startTime;
         ScreenPosition m_startPosition;
         ScreenPosition m_currentPosition;
 

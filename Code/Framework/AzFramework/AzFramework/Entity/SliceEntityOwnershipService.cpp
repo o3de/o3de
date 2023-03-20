@@ -148,6 +148,10 @@ namespace AzFramework
         AZ_Assert(m_entitiesRemovedCallback, "Callback function for DestroyEntityById has not been set.");
         m_entitiesRemovedCallback({ entityId });
 
+        // Note: This function should actually be destroying the entity, but some legacy slice code already
+        // expects it to just detach the entity (such as RestoreSliceEntity_SliceEntityDeleted_SliceEntityRestored),
+        // so the behavior is left unchanged.
+
         // Entities removed through the application (as in via manual 'delete'),
         // should be removed from the root slice, but not again deleted.
         return m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
@@ -155,7 +159,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::CreateRootSlice()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
 
@@ -164,7 +168,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::CreateRootSlice(AZ::SliceAsset* rootSliceAsset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
         AZ_Assert(m_rootAsset && m_rootAsset.Get(), "Root slice asset has not been created yet.");
 
         AZ::Entity* rootEntity = new AZ::Entity();
@@ -240,7 +244,7 @@ namespace AzFramework
 
     bool SliceEntityOwnershipService::LoadFromStream(AZ::IO::GenericStream& stream, bool remapIds, EntityIdToEntityIdMap* idRemapTable, const AZ::ObjectStream::FilterDescriptor& filterDesc)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(m_rootAsset, "The entity ownership service has not been initialized.");
 
@@ -259,7 +263,7 @@ namespace AzFramework
     bool SliceEntityOwnershipService::HandleRootEntityReloadedFromStream(AZ::Entity* rootEntity, bool remapIds,
         AZ::SliceComponent::EntityIdToEntityIdMap* idRemapTable)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         if (!rootEntity)
         {
@@ -385,8 +389,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::OnAssetReady(AZ::Data::Asset<AZ::Data::AssetData> readyAsset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
-        AZ_ASSET_ATTACH_TO_SCOPE(readyAsset.Get());
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(readyAsset.GetAs<AZ::SliceAsset>(), "Asset is not a slice!");
 
@@ -400,7 +403,6 @@ namespace AzFramework
         // we intentionally capture readyAsset by value here, so that its refcount doesn't hit 0 by the time this call happens.
         AZStd::function<void()> instantiateCallback = [this, readyAsset]()
         {
-            AZ_ASSET_ATTACH_TO_SCOPE(readyAsset.Get());
             const AZ::Data::AssetId readyAssetId = readyAsset.GetId();
             for (auto iter = m_queuedSliceInstantiations.begin(); iter != m_queuedSliceInstantiations.end(); )
             {
@@ -472,7 +474,7 @@ namespace AzFramework
 
     void SliceEntityOwnershipService::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
         if (asset == m_rootAsset && asset.Get() != m_rootAsset.Get())
         {
             Reset();
@@ -548,7 +550,7 @@ namespace AzFramework
     AZ::SliceComponent::SliceInstanceAddress SliceEntityOwnershipService::CloneSliceInstance(
         AZ::SliceComponent::SliceInstanceAddress sourceInstance, AZ::SliceComponent::EntityIdToEntityIdMap& sourceToCloneEntityIdMap)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzFramework);
+        AZ_PROFILE_FUNCTION(AzFramework);
 
         AZ_Assert(sourceInstance.IsValid(), "Source slice instance is invalid.");
 
@@ -661,6 +663,17 @@ namespace AzFramework
     void SliceEntityOwnershipService::SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback)
     {
         m_validateEntitiesCallback = AZStd::move(validateEntitiesCallback);
+    }
+
+    void SliceEntityOwnershipService::HandleEntityBeingDestroyed(const AZ::EntityId& entityId)
+    {
+        AZ_Assert(m_rootAsset && m_rootAsset->GetComponent(), "Root slice has not been created.");
+        AZ_Assert(m_entitiesRemovedCallback, "Callback function for entity removal has not been set.");
+        m_entitiesRemovedCallback({ entityId });
+
+        // Entities removed through the application (as in via manual 'delete'),
+        // should be removed from the root slice, but not again deleted.
+        m_rootAsset->GetComponent()->RemoveEntity(entityId, false);
     }
 
     AZ::Data::AssetId SliceEntityOwnershipService::CurrentlyInstantiatingSlice()

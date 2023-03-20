@@ -33,6 +33,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IMeshData>()
+                        ->Attribute(Script::Attributes::ExcludeFrom, Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("GetUnitSizeInMeters", &MeshData::GetUnitSizeInMeters)

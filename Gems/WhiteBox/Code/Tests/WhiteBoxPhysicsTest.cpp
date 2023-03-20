@@ -26,8 +26,9 @@ namespace UnitTest
 {
     class EditorWhiteBoxPhysicsTestEnvironment : public AZ::Test::GemTestEnvironment
     {
-        // AZ::Test::GemTestEnvironment ...
+        // AZ::Test::GemTestEnvironment overrides ...
         void AddGemsAndComponents() override;
+        AZ::ComponentApplication* CreateApplicationInstance() override;
         void PostSystemEntityActivate() override;
 
     public:
@@ -35,26 +36,25 @@ namespace UnitTest
         ~EditorWhiteBoxPhysicsTestEnvironment() override = default;
     };
 
-    void EditorWhiteBoxPhysicsTestEnvironment::PostSystemEntityActivate()
-    {
-        AZ::SerializeContext* serializeContext = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(
-            serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        AZ::Data::AssetManager::Instance().RegisterHandler(
-            aznew AZ::SliceAssetHandler(serializeContext), AZ::AzTypeInfo<AZ::SliceAsset>::Uuid());
-    }
-
     void EditorWhiteBoxPhysicsTestEnvironment::AddGemsAndComponents()
     {
         AddDynamicModulePaths({"PhysX.Editor.Gem"});
         AddComponentDescriptors(
-            {AzToolsFramework::EditorEntityContextComponent::CreateDescriptor(),
-             WhiteBox::EditorWhiteBoxComponent::CreateDescriptor(), WhiteBox::WhiteBoxComponent::CreateDescriptor(),
+            {WhiteBox::EditorWhiteBoxComponent::CreateDescriptor(),
+             WhiteBox::WhiteBoxComponent::CreateDescriptor(),
              WhiteBox::WhiteBoxColliderComponent::CreateDescriptor(),
-             WhiteBox::EditorWhiteBoxColliderComponent::CreateDescriptor(),
-             AzToolsFramework::Components::TransformComponent::CreateDescriptor()});
-        AddRequiredComponents({AzToolsFramework::EditorEntityContextComponent::TYPEINFO_Uuid()});
+             WhiteBox::EditorWhiteBoxColliderComponent::CreateDescriptor()});
+    }
+
+    AZ::ComponentApplication* EditorWhiteBoxPhysicsTestEnvironment::CreateApplicationInstance()
+    {
+        // Using ToolsTestApplication to have AzFramework and AzToolsFramework components.
+        return aznew UnitTest::ToolsTestApplication("EditorWhiteBoxPhysics");
+    }
+
+    void EditorWhiteBoxPhysicsTestEnvironment::PostSystemEntityActivate()
+    {
+        AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
     }
 
     class WhiteBoxPhysicsFixture : public ::testing::Test

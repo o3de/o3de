@@ -11,10 +11,10 @@
 #define CRYINCLUDE_CRYSYSTEM_REMOTECONSOLE_REMOTECONSOLE_H
 #pragma once
 
-#include <IConsole.h>
-#include <CryListenerSet.h>
+#include <CryCommon/IConsole.h>
+#include <CryCommon/CryListenerSet.h>
 
-#if !defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)
+#if (!defined(RELEASE) || defined(RELEASE_LOGGING) || defined(ENABLE_PROFILING_CODE)) && !defined(AZ_LEGACY_CRYSYSTEM_TRAIT_REMOTE_CONSOLE_UNSUPPORTED)
     #define USE_REMOTE_CONSOLE
 
     struct SRemoteServer;
@@ -33,7 +33,7 @@ class CRemoteConsole
 public:
     static CRemoteConsole* GetInst() 
     { 
-        static StaticInstance<CRemoteConsole, AZStd::no_destruct<CRemoteConsole>> inst;
+        static CRemoteConsole inst;
         return &inst; 
     }
 
@@ -44,9 +44,9 @@ public:
     virtual void Stop();
     virtual bool IsStarted() const { return m_running; }
 
-    virtual void AddLogMessage(const char* log);
-    virtual void AddLogWarning(const char* log);
-    virtual void AddLogError(const char* log);
+    virtual void AddLogMessage(AZStd::string_view log);
+    virtual void AddLogWarning(AZStd::string_view log);
+    virtual void AddLogError(AZStd::string_view log);
 
     virtual void Update();
 
@@ -65,9 +65,6 @@ public:
 
 #if defined(USE_REMOTE_CONSOLE)
     SRemoteServer* m_pServer;
-    ICVar* m_pLogEnableRemoteConsole = nullptr;
-    ICVar* m_remoteConsoleAllowedHostList = nullptr;
-    ICVar* m_remoteConsolePort = nullptr;
 #endif
 };
 

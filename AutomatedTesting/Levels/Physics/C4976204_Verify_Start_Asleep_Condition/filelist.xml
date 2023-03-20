@@ -1,6 +1,0 @@
-<download name="C4976204_Verify_Start_Asleep_Condition" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39208" md5="2deb41c8804e51a8a41eb07a3a2068dd"/>
- </files>
-</download>

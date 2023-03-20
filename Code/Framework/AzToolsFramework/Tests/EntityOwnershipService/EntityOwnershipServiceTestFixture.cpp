@@ -16,10 +16,9 @@ namespace UnitTest
 {
     void EntityOwnershipServiceTestFixture::SetUpEntityOwnershipServiceTest()
     {
-        AllocatorsTestFixture::SetUp();
+        LeakDetectionFixture::SetUp();
         AZ::ComponentApplication::Descriptor componentApplicationDescriptor;
         componentApplicationDescriptor.m_useExistingAllocator = true;
-        componentApplicationDescriptor.m_enableDrilling = false; // we already created a memory driller for the test(AllocatorsTestFixture)
         m_app = AZStd::make_unique<EntityOwnershipServiceApplication>();
         m_app->Start(componentApplicationDescriptor);
 
@@ -32,7 +31,7 @@ namespace UnitTest
     void EntityOwnershipServiceTestFixture::TearDownEntityOwnershipServiceTest()
     {
         m_app.reset();
-        AllocatorsTestFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
     AZ::ComponentTypeList EntityOwnershipServiceTestFixture::EntityOwnershipServiceApplication::GetRequiredSystemComponents() const

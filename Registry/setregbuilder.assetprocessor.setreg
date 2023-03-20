@@ -20,7 +20,13 @@
                 "Excludes":
                 [
                     "/Amazon/AzCore/Runtime",
-                    "/Amazon/AzCore/Bootstrap/project_path"
+                    "/Amazon/AzCore/Bootstrap/engine_path",
+                    "/Amazon/AzCore/Bootstrap/project_path",
+                    "/Amazon/AzCore/Bootstrap/project_cache_path",
+                    "/Amazon/AzCore/Bootstrap/project_user_path",
+                    "/Amazon/AzCore/Bootstrap/project_log_path",
+                    "/Amazon/Project/Settings/Build/project_build_path",
+                    "/O3DE/Runtime"
                 ]
             }
         }

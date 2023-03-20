@@ -10,6 +10,7 @@
 #include <AzCore/Asset/AssetJsonSerializer.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Jobs/JobManager.h>
@@ -24,7 +25,7 @@ namespace JsonSerializationTests
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator);
         AZ_RTTI(TestAssetData, "{90BCCF83-D453-4A70-973D-57C2ACD04661}", AZ::Data::AssetData);
 
         TestAssetData() = default;
@@ -63,6 +64,85 @@ namespace JsonSerializationTests
 
     };
 
+    class TestSerializedAssetTracker
+        : public BaseJsonSerializerFixture
+    {
+    public:
+        void SetUp() override
+        {
+            BaseJsonSerializerFixture::SetUp();
+
+            // Set up the Job Manager with 1 thread so that the Asset Manager is able to load assets.
+            AZ::JobManagerDesc jobDesc;
+            AZ::JobManagerThreadDesc threadDesc;
+            jobDesc.m_workerThreads.push_back(threadDesc);
+            m_jobManager = aznew AZ::JobManager(jobDesc);
+            m_jobContext = aznew AZ::JobContext(*m_jobManager);
+            AZ::JobContext::SetGlobalContext(m_jobContext);
+
+            AZ::Data::AssetManager::Descriptor descriptor;
+            AZ::Data::AssetManager::Create(descriptor);
+            AZ::Data::AssetManager::Instance().RegisterHandler(&m_assetHandler, azrtti_typeid<TestAssetData>());
+
+            m_serializeContext->RegisterGenericType<AZ::Data::Asset<TestAssetData>>();
+            m_jsonRegistrationContext->Serializer<AZ::Data::AssetJsonSerializer>()->HandlesType<AZ::Data::Asset>();
+        }
+
+        void TearDown() override
+        {
+            m_jsonRegistrationContext->EnableRemoveReflection();
+            m_jsonRegistrationContext->Serializer<AZ::Data::AssetJsonSerializer>()->HandlesType<AZ::Data::Asset>();
+            m_jsonRegistrationContext->DisableRemoveReflection();
+
+            AZ::Data::AssetManager::Instance().UnregisterHandler(&m_assetHandler);
+            AZ::Data::AssetManager::Destroy();
+
+            AZ::JobContext::SetGlobalContext(nullptr);
+            delete m_jobContext;
+            delete m_jobManager;
+
+            BaseJsonSerializerFixture::TearDown();
+        }
+
+    private:
+        TestAssetHandler m_assetHandler;
+        AZ::JobManager* m_jobManager{ nullptr };
+        AZ::JobContext* m_jobContext{ nullptr };
+    };
+
+    TEST_F(TestSerializedAssetTracker, AssetTracker_Callback_Works)
+    {
+        auto assetCallback = [](AZ::Data::Asset<AZ::Data::AssetData>& asset)
+        {
+            if (!asset.GetId().IsValid() && !asset.GetHint().empty())
+            {
+                if (asset.GetHint() == "test/path/foo.asset")
+                {
+                    asset.SetHint("passed");
+                }
+            }
+        };
+        auto tracker = AZ::Data::SerializedAssetTracker{};
+        tracker.SetAssetFixUp(assetCallback);
+
+        AZ::JsonDeserializerSettings settings;
+        settings.m_metadata.Add(tracker);
+        settings.m_registrationContext = this->m_jsonRegistrationContext.get();
+        settings.m_serializeContext = this->m_serializeContext.get();
+
+        AZStd::string_view assetHintOnlyTestAsset = R"(
+                {
+                    "assetHint" : "test/path/foo.asset"
+                })";
+        rapidjson::Document jsonDom;
+        jsonDom.Parse(assetHintOnlyTestAsset.data());
+
+        AZ::Data::Asset<TestAssetData> instance;
+        auto result = AZ::JsonSerialization::Load(instance, jsonDom, settings);
+        EXPECT_NE(result.GetProcessing(), AZ::JsonSerializationResult::Processing::Halted);
+        EXPECT_STREQ(instance.GetHint().c_str(), "passed");
+    }
+
     class AssetSerializerTestDescription final
         : public JsonSerializerConformityTestDescriptor<AZ::Data::Asset<TestAssetData>>
     {
@@ -71,9 +151,6 @@ namespace JsonSerializationTests
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Set up the Job Manager with 1 thread so that the Asset Manager is able to load assets.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -95,11 +172,9 @@ namespace JsonSerializationTests
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
+        using JsonSerializerConformityTestDescriptor<AZ::Data::Asset<TestAssetData>>::Reflect;
         void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             context->RegisterGenericType<Asset>();
@@ -189,5 +264,5 @@ namespace JsonSerializationTests
     };
 
     using AssetConformityTestTypes = ::testing::Types<AssetSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(Asset, JsonSerializerConformityTests, AssetConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(Asset, JsonSerializerConformityTests, AssetConformityTestTypes));
 } // namespace JsonSerializationTests

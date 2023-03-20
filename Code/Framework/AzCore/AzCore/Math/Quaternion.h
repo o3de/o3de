@@ -54,12 +54,20 @@ namespace AZ
         //! Sets components using a Vector3 for the imaginary part and a float for the real part.
         static Quaternion CreateFromVector3AndValue(const Vector3& v, float w);
 
-        //! Sets the quaternion to be a rotation around a specified axis.
+        //! Sets the quaternion to be a rotation around a specified axis in radians.
         //! @{
-        static Quaternion CreateRotationX(float angle);
-        static Quaternion CreateRotationY(float angle);
-        static Quaternion CreateRotationZ(float angle);
+        static Quaternion CreateRotationX(float angleInRadians);
+        static Quaternion CreateRotationY(float angleInRadians);
+        static Quaternion CreateRotationZ(float angleInRadians);
         //! @}
+
+        static Quaternion CreateFromEulerRadiansXYZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansYXZ(const Vector3& eulerRadians);
+        static Quaternion CreateFromEulerRadiansZYX(const Vector3& eulerRadians);
+
+        static Quaternion CreateFromEulerDegreesXYZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesYXZ(const Vector3& eulerDegrees);
+        static Quaternion CreateFromEulerDegreesZYX(const Vector3& eulerDegrees);
 
         //! Creates a quaternion from a Matrix3x3
         static Quaternion CreateFromMatrix3x3(const class Matrix3x3& m);
@@ -76,6 +84,9 @@ namespace AZ
         static Quaternion CreateFromBasis(const Vector3& basisX, const Vector3& basisY, const Vector3& basisZ);
 
         static Quaternion CreateFromAxisAngle(const Vector3& axis, float angle);
+
+        //! Create a quaternion from a scaled axis-angle representation.
+        static Quaternion CreateFromScaledAxisAngle(const Vector3& scaledAxisAngle);
 
         static Quaternion CreateShortestArc(const Vector3& v1, const Vector3& v2);
 
@@ -165,6 +176,14 @@ namespace AZ
         float NormalizeWithLengthEstimate();
         //! @}
 
+        //! Get the shortest equivalent of the rotation.
+        //! In case the w component of the quaternion is negative the rotation is > 180° and taking the longer path.
+        //! The quaternion will be inverted in that case to take the shortest path of rotation.
+        //! @{
+        Quaternion GetShortestEquivalent() const;
+        void ShortestEquivalent();
+        //! @}
+
         //! Linearly interpolate towards a destination quaternion.
         //! @param[in] dest The quaternion to interpolate towards.
         //! @param[in] t Normalized interpolation value where 0.0 represents the current and 1.0 the destination value.
@@ -221,15 +240,22 @@ namespace AZ
         Vector3 GetEulerRadians() const;
 
         //! @param eulerRadians A vector containing component-wise rotation angles in radians.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerRadiansXYZ
         void SetFromEulerRadians(const Vector3& eulerRadians);
 
         //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
+        //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+        //! @deprecated use CreateFromEulerDegreesXYZ
         void SetFromEulerDegrees(const Vector3& eulerDegrees);
 
         //! Populate axis and angle of rotation from Quaternion
         //! @param[out] outAxis A Vector3 defining the rotation axis.
         //! @param[out] outAngle A float rotation angle around the axis in radians.
         void ConvertToAxisAngle(Vector3& outAxis, float& outAngle) const;
+
+        //! Convert the quaternion into scaled axis-angle representation.
+        Vector3 ConvertToScaledAxisAngle() const;
 
         //! Returns the imaginary (X/Y/Z) portion of the quaternion.
         Vector3 GetImaginary() const;
@@ -246,10 +272,6 @@ namespace AZ
         //! Takes the absolute value of each component of the quaternion.
         Quaternion GetAbs() const;
 
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(push)
-#   pragma warning(disable:4201) // anonymous union
-#endif
         union
         {
             Simd::Vec4::FloatType m_value;
@@ -263,9 +285,6 @@ namespace AZ
                 float m_w;
             };
         };
-#ifdef AZ_COMPILER_MSVC
-#   pragma warning(pop)
-#endif
     };
 
     //! Non-member functionality belonging to the AZ namespace
@@ -280,10 +299,14 @@ namespace AZ
     //! @return A vector containing component-wise rotation angles in radians.
     Vector3 ConvertQuaternionToEulerRadians(const Quaternion& q);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerRadiansXYZ
     //! @param eulerRadians A vector containing component-wise rotation angles in radians.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerRadiansToQuaternion(const Vector3& eulerRadians);
 
+    //! O3DE_DEPRECATION_NOTICE(GHI-10929)
+    //! @deprecated use Quaternion::CreateFromEulerDegreesXYZ
     //! @param eulerDegrees A vector containing component-wise rotation angles in degrees.
     //! @return a quaternion made from composition of rotations around principle axes.
     Quaternion ConvertEulerDegreesToQuaternion(const Vector3& eulerDegrees);

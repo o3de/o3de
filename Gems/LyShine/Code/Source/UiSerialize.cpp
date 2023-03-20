@@ -31,67 +31,6 @@
 
 namespace UiSerialize
 {
-    ////////////////////////////////////////////////////////////////////////////////////////////////////
-    class CryStringTCharSerializer
-        : public AZ::SerializeContext::IDataSerializer
-    {
-        /// Return the size of binary buffer necessary to store the value in binary format
-        size_t  GetRequiredBinaryBufferSize(const void* classPtr) const
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            return string->length() + 1;
-        }
-
-        /// Store the class data into a stream.
-        size_t Save(const void* classPtr, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            const CryStringT<char>* string = reinterpret_cast<const CryStringT<char>*>(classPtr);
-            const char* data = string->c_str();
-
-            return static_cast<size_t>(stream.Write(string->length() + 1, reinterpret_cast<const void*>(data)));
-        }
-
-        size_t DataToText(AZ::IO::GenericStream& in, AZ::IO::GenericStream& out, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            size_t len = in.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-            in.Read(in.GetLength(), reinterpret_cast<void*>(buffer));
-
-            AZStd::string outText = buffer;
-            azfree(buffer);
-
-            return static_cast<size_t>(out.Write(outText.size(), outText.data()));
-        }
-
-        size_t TextToData(const char* text, unsigned int textVersion, AZ::IO::GenericStream& stream, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            (void)textVersion;
-
-            size_t len = strlen(text) + 1;
-            stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-            return static_cast<size_t>(stream.Write(len, reinterpret_cast<const void*>(text)));
-        }
-
-        bool Load(void* classPtr, AZ::IO::GenericStream& stream, unsigned int /*version*/, [[maybe_unused]] bool isDataBigEndian /*= false*/) override
-        {
-            CryStringT<char>* string = reinterpret_cast<CryStringT<char>*>(classPtr);
-
-            size_t len = stream.GetLength();
-            char* buffer = static_cast<char*>(azmalloc(len));
-
-            stream.Read(len, reinterpret_cast<void*>(buffer));
-
-            *string = buffer;
-            azfree(buffer);
-            return true;
-        }
-
-        bool CompareValueData(const void* lhs, const void* rhs) override
-        {
-            return AZ::SerializeContext::EqualityCompareHelper<CryStringT<char> >::CompareValues(lhs, rhs);
-        }
-    };
-
     //////////////////////////////////////////////////////////////////////////
     void UiOffsetsScriptConstructor(UiTransform2dInterface::Offsets* thisPtr, AZ::ScriptDataContext& dc)
     {
@@ -553,19 +492,16 @@ namespace UiSerialize
 
         if (serializeContext)
         {
-            serializeContext->Class<CryStringT<char> >()->
-                Serializer(&AZ::Serialize::StaticInstance<CryStringTCharSerializer>::s_instance);
-
             serializeContext->Class<AnimationData>()
                 ->Version(1)
                 ->Field("SerializeString", &AnimationData::m_serializeData);
 
             // deprecate old classes that no longer exist
-            serializeContext->ClassDeprecate("UiCanvasEditor", "{65682E87-B573-435B-88CB-B4C12B71EEEE}");
-            serializeContext->ClassDeprecate("ImageAsset", "{138E471A-F3AE-404A-9075-EDC7488C97FC}");
+            serializeContext->ClassDeprecate("UiCanvasEditor", AZ::Uuid("{65682E87-B573-435B-88CB-B4C12B71EEEE}"));
+            serializeContext->ClassDeprecate("ImageAsset", AZ::Uuid("{138E471A-F3AE-404A-9075-EDC7488C97FC}"));
 
             // Allow loading FontAssets and CanvasAssets with previous Uuid specializations of AZ_TYPE_INFO_SPECIALIZE
-            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", "{D6342379-A5FA-4B18-B890-702C2FE99A5A}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", AZ::Uuid("{D6342379-A5FA-4B18-B890-702C2FE99A5A}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

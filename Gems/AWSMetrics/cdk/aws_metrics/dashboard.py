@@ -5,8 +5,10 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
+from constructs import Construct
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Duration,
     aws_cloudwatch as cloudwatch
 )
 
@@ -21,7 +23,7 @@ class Dashboard:
     """
     def __init__(
             self,
-            stack: core.Construct,
+            stack: Construct,
             input_stream_name: str,
             analytics_processing_lambda_name: str,
             application_name: str,
@@ -52,7 +54,7 @@ class Dashboard:
                 max_width=aws_metrics_constants.DASHBOARD_MAX_WIDGET_WIDTH)
         )
 
-        dashboard_output = core.CfnOutput(
+        CfnOutput(
             stack,
             id='DashboardName',
             description='CloudWatch dashboard to monitor the operational health and real-time metrics',
@@ -81,9 +83,9 @@ class Dashboard:
                 metric_name="IncomingRecords",
                 label="Kinesis Incoming Records",
                 namespace="AWS/Kinesis",
-                period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+                period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
                 statistic="Sum",
-                dimensions={
+                dimensions_map={
                     "StreamName": input_stream_name
                 }
             )
@@ -94,9 +96,9 @@ class Dashboard:
                     metric_name="DeliveryToS3.Records",
                     label="Firehose Delivery To S3 Records",
                     namespace="AWS/Firehose",
-                    period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+                    period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
                     statistic="Sum",
-                    dimensions={
+                    dimensions_map={
                         "DeliveryStreamName": delivery_stream_name
                     }
                 )
@@ -163,9 +165,9 @@ class Dashboard:
             metric_name='Errors',
             label=f'{metrics_label_prefix} Errors',
             namespace='AWS/Lambda',
-            period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+            period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
             statistic='Sum',
-            dimensions={
+            dimensions_map={
                 'FunctionName': function_name
             }
         )
@@ -175,16 +177,16 @@ class Dashboard:
         # Divide the Errors metric by the Invocations metric to get an error rate.
         lambda_error_rate_metrics = cloudwatch.MathExpression(
             expression=f'100 - 100 * {error_metrics_id} / MAX([{error_metrics_id}, {invocations_metrics_id}])',
-            period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+            period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
             label=f'{metrics_label_prefix} Success Rate (%)',
             using_metrics={
                 error_metrics_id: lambda_errors_metrics,
                 invocations_metrics_id: cloudwatch.Metric(
                     metric_name='Invocations',
                     namespace='AWS/Lambda',
-                    period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+                    period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
                     statistic='Sum',
-                    dimensions={
+                    dimensions_map={
                         'FunctionName': function_name
                     }
                 ),
@@ -207,7 +209,7 @@ class Dashboard:
                             metric_name="TotalLogins",
                             label="Logins",
                             namespace="AWSMetrics",
-                            period=core.Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
+                            period=Duration.minutes(aws_metrics_constants.DASHBOARD_METRICS_TIME_PERIOD),
                             statistic="Sum"
                         )
                     ],
@@ -221,4 +223,3 @@ class Dashboard:
     @property
     def dashboard_name(self) -> str:
         return self._dashboard_name
-

@@ -9,31 +9,21 @@
 #include <AzFramework/Physics/Collision/CollisionGroups.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/Physics/CollisionBus.h>
 
-//This bit is defined in the TouchBending Gem wscript.
-//Make sure the bit has a valid value.
-#ifdef TOUCHBENDING_LAYER_BIT
-#if (TOUCHBENDING_LAYER_BIT < 1) || (TOUCHBENDING_LAYER_BIT > 63)
-#error Invalid Bit Definition For the TouchBending Layer Bit
-#endif
-#endif //#ifdef TOUCHBENDING_LAYER_BIT
-
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroup, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Id, AZ::SystemAllocator, 0);
-    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Preset, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroup, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Id, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(CollisionGroups::Preset, AZ::SystemAllocator);
 
     const CollisionGroup CollisionGroup::None = 0x0000000000000000ULL;
     const CollisionGroup CollisionGroup::All = 0xFFFFFFFFFFFFFFFFULL;
-
-#ifdef TOUCHBENDING_LAYER_BIT
-    const CollisionGroup CollisionGroup::All_NoTouchBend = CollisionGroup::All.GetMask() & ~CollisionLayer::TouchBend.GetMask();
-#endif
 
     void CollisionGroupScriptConstructor(CollisionGroup* thisPtr, AZ::ScriptDataContext& scriptDataContext)
     {
@@ -319,6 +309,13 @@ namespace AzPhysics
     {
         CollisionGroup group = otherGroup;
         group.SetLayer(layer, true);
+        return group;
+    }
+
+    CollisionGroup GetCollisionGroupById(const CollisionGroups::Id& id)
+    {
+        CollisionGroup group;
+        Physics::CollisionRequestBus::BroadcastResult(group, &Physics::CollisionRequests::GetCollisionGroupById, id);
         return group;
     }
 }

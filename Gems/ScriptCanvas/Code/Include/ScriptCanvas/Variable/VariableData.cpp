@@ -144,7 +144,6 @@ namespace ScriptCanvas
 
     GraphVariable* VariableData::FindVariable(VariableId variableId)
     {
-        AZStd::pair<AZStd::string_view, GraphVariable*> resultPair;
         auto foundIt = m_variableMap.find(variableId);
         return foundIt != m_variableMap.end() ? &foundIt->second : nullptr;
     }

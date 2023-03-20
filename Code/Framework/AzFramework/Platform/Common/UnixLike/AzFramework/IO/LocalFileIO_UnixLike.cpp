@@ -10,42 +10,29 @@
 #include <dirent.h>
 #include <unistd.h>
 #include <AzFramework/IO/LocalFileIO.h>
-#include <AzCore/IO/SystemFile.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/std/functional.h>
 
 namespace AZ
 {
     namespace IO
     {
-        bool LocalFileIO::IsDirectory(const char* filePath)
-        {
-            char resolvedPath[AZ_MAX_PATH_LEN] = {0};
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
-
-            struct stat result;
-            if (stat(resolvedPath, &result) == 0)
-            {
-                return S_ISDIR(result.st_mode);
-            }
-            return false;
-        }
-
         Result LocalFileIO::Copy(const char* sourceFilePath, const char* destinationFilePath)
         {
-            char resolvedSourceFilePath[AZ_MAX_PATH_LEN] = {0};
-            ResolvePath(sourceFilePath, resolvedSourceFilePath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedSourcePath;
+            ResolvePath(resolvedSourcePath, sourceFilePath);
 
-            char resolvedDestinationFilePath[AZ_MAX_PATH_LEN] = {0};
-            ResolvePath(destinationFilePath, resolvedDestinationFilePath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedDestPath;
+            ResolvePath(resolvedDestPath, destinationFilePath);
 
             // Use standard C++ method of file copy.
             {
-                std::ifstream  src(resolvedSourceFilePath, std::ios::binary);
+                std::ifstream src(resolvedSourcePath.c_str(), std::ios::binary);
                 if (src.fail())
                 {
                     return ResultCode::Error;
                 }
-                std::ofstream  dst(resolvedDestinationFilePath, std::ios::binary);
+                std::ofstream dst(resolvedDestPath.c_str(), std::ios::binary);
 
                 if (dst.fail())
                 {
@@ -58,18 +45,14 @@ namespace AZ
 
         Result LocalFileIO::FindFiles(const char* filePath, const char* filter, FindFilesCallbackType callback)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN] = {0};
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
+            resolvedPath = resolvedPath.LexicallyNormal();
 
-            AZ::OSString withoutSlash = RemoveTrailingSlash(resolvedPath);
-            DIR* dir = opendir(withoutSlash.c_str());
+            DIR* dir = opendir(resolvedPath.c_str());
 
             if (dir != nullptr)
             {
-                // because the absolute path might actually be SHORTER than the alias ("c:/r/dev" -> "@devroot@"), we need to
-                // use a static buffer here.
-                char tempBuffer[AZ_MAX_PATH_LEN];
-
                 errno = 0;
                 struct dirent* entry = readdir(dir);
 
@@ -78,15 +61,9 @@ namespace AZ
                 {
                     AZStd::string_view filenameView = entry->d_name;
                     // Skip over the current and parent directory paths
-                    if (filenameView != "." && filenameView != ".." && NameMatchesFilter(entry->d_name, filter))
+                    if (filenameView != "." && filenameView != ".." && AZStd::wildcard_match(filter, entry->d_name))
                     {
-                        AZ::OSString foundFilePath = CheckForTrailingSlash(resolvedPath);
-                        foundFilePath += entry->d_name;
-                        // if aliased, dealias!
-                        azstrcpy(tempBuffer, AZ_MAX_PATH_LEN, foundFilePath.c_str());
-                        ConvertToAlias(tempBuffer, AZ_MAX_PATH_LEN);
-
-                        if (!callback(tempBuffer))
+                        if (!callback((resolvedPath / filenameView).c_str()))
                         {
                             break;
                         }
@@ -105,61 +82,29 @@ namespace AZ
 
         Result LocalFileIO::CreatePath(const char* filePath)
         {
-            char resolvedPath[AZ_MAX_PATH_LEN] = {0};
-            ResolvePath(filePath, resolvedPath, AZ_MAX_PATH_LEN);
+            FixedMaxPath resolvedPath;
+            ResolvePath(resolvedPath, filePath);
 
             // create all paths up to that directory.
             // its not an error if the path exists.
-            if ((Exists(resolvedPath)) && (!IsDirectory(resolvedPath)))
+            if (Exists(resolvedPath.c_str()) && !IsDirectory(resolvedPath.c_str()))
             {
                 return ResultCode::Error; // that path exists, but is not a directory.
             }
 
             // make directories from bottom to top.
-            AZ::OSString buf;
-            size_t pathLength = strlen(resolvedPath);
-            buf.reserve(pathLength);
-            for (size_t pos = 0; pos < pathLength; ++pos)
+            FixedMaxPath directoryPath = resolvedPath.RootPath();
+            for (AZ::IO::PathView pathSegment : resolvedPath.RelativePath())
             {
-                if ((resolvedPath[pos] == '\\') || (resolvedPath[pos] == '/'))
+                directoryPath /= pathSegment;
+                mkdir(directoryPath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+                if (!IsDirectory(directoryPath.c_str()))
                 {
-                    if (pos > 0)
-                    {
-                        mkdir(buf.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-                        if (!IsDirectory(buf.c_str()))
-                        {
-                            return ResultCode::Error;
-                        }
-                    }
-                }
-                buf.push_back(resolvedPath[pos]);
-            }
-
-            mkdir(buf.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-            return IsDirectory(resolvedPath) ? ResultCode::Success : ResultCode::Error;
-        }
-
-        bool LocalFileIO::IsAbsolutePath(const char* path) const
-        {
-            return path && path[0] == '/';
-        }
-
-        bool LocalFileIO::ConvertToAbsolutePath(const char* path, char* absolutePath, AZ::u64 maxLength) const
-        {
-            AZ_Assert(maxLength >= AZ_MAX_PATH_LEN, "Path length is larger than AZ_MAX_PATH_LEN");
-            if (!IsAbsolutePath(path))
-            {
-                // note that realpath fails if the path does not exist and actually changes the return value
-                // to be the actual place that FAILED, which we don't want.
-                // if we fail, we'd prefer to fall through and at least use the original path.
-                const char* result = realpath(path, absolutePath);
-                if (result)
-                {
-                    return true;
+                    return ResultCode::Error;
                 }
             }
-            azstrcpy(absolutePath, maxLength, path);
-            return IsAbsolutePath(absolutePath);
+
+            return IsDirectory(resolvedPath.c_str()) ? ResultCode::Success : ResultCode::Error;
         }
     } // namespace IO
 } // namespace AZ

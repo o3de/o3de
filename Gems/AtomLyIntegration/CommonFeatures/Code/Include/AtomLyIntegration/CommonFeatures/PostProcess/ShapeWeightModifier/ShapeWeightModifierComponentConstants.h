@@ -8,12 +8,14 @@
 
 #pragma once
 
+#include <AzCore/RTTI/TypeInfo.h>
+
 namespace AZ
 {
     namespace Render
     {
-        static constexpr const char* const ShapeWeightModifierComponentTypeId = "{F5B04B16-9C1E-493F-AB5A-BC6E56D4952A}";
-        static constexpr const char* const EditorShapeWeightModifierComponentTypeId = "{7C528F7A-5EE7-4540-BA52-0507C17CE67D}";
+        inline constexpr AZ::TypeId ShapeWeightModifierComponentTypeId{ "{F5B04B16-9C1E-493F-AB5A-BC6E56D4952A}" };
+        inline constexpr AZ::TypeId EditorShapeWeightModifierComponentTypeId{ "{7C528F7A-5EE7-4540-BA52-0507C17CE67D}" };
 
     } // namespace Render
 } // namespace AZ

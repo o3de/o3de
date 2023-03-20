@@ -47,7 +47,7 @@ import pysbs.context as pysbs_context
 
 # -------------------------------------------------------------------------
 # set up global space, logging etc.
-_G_DEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
 _DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
 
 _PACKAGENAME = __name__
@@ -62,7 +62,7 @@ _LOGGER.debug('Starting up:  {0}.'.format({_PACKAGENAME}))
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = os.getenv(ENVAR_DCCSI_GDEBUG, False)
+_DCCSI_GDEBUG = os.getenv(ENVAR_DCCSI_GDEBUG, False)
 
 #  global space debug flag
 _DCCSI_DEV_MODE = os.getenv(ENVAR_DCCSI_DEV_MODE, False)
@@ -87,11 +87,11 @@ from collections import OrderedDict
 _SYNTH_ENV_DICT = OrderedDict()
 _SYNTH_ENV_DICT = azpy.synthetic_env.stash_env(_SYNTH_ENV_DICT)
 # grab a specific path from the base_env
-_PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_DCCSIG_PATH]
-_LY_PROJECT_PATH = _SYNTH_ENV_DICT[ENVAR_LY_PROJECT_PATH]
+_PATH_DCCSI = _SYNTH_ENV_DICT[ENVAR_PATH_DCCSIG]
+_PATH_O3DE_PROJECT = _SYNTH_ENV_DICT[ENVAR_PATH_O3DE_PROJECT]
 
 # build some reuseable path parts
-_PATH_MOCK_ASSETS = Path(_LY_PROJECT_PATH, 'Assets').norm()
+_PATH_MOCK_ASSETS = Path(_PATH_O3DE_PROJECT, 'Assets').norm()
 _PATH_MOCK_SUBLIB = Path(_PATH_MOCK_ASSETS, 'SubstanceSource').norm()
 
 _PATH_MOCK_SBS = Path(_PATH_MOCK_SUBLIB, 'sbs').norm()

@@ -26,7 +26,7 @@ namespace AZ
             friend class JsonMaterialPropertyValueSourceDataSerializer;
         public:
             AZ_RTTI(AZ::RPI::MaterialPropertyValueSourceData, "{BC6D3B5A-F562-42F2-B806-A356C4FE4BDB}");
-            AZ_CLASS_ALLOCATOR(MaterialPropertyValueSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialPropertyValueSourceData, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -54,7 +54,7 @@ namespace AZ
             //! The resolved value with a valid type of a property. It needs to be mutable to allow post-resolving when parent objects are declared as const.
             mutable MaterialPropertyValue m_resolvedValue;
             //! Candidate values from serialization.
-            AZStd::map<AZ::TypeId, MaterialPropertyValue> m_possibleValues;
+            AZStd::map<AZ::TypeId, MaterialPropertyValue> m_possibleValues; 
         };
     } // namespace RPI
 } // namespace AZ

@@ -6,7 +6,7 @@
  *
  */
 
-#include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzCore/PlatformDef.h>
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // 4251: 'QRawFont::d': class 'QExplicitlySharedDataPointer<QRawFontPrivate>' needs to have dll-interface to be used by clients of class 'QRawFont'
                                                                // 4800: 'QTextEngine *const ': forcing value to bool 'true' or 'false' (performance warning)
 #include <QTextBlock>
@@ -18,7 +18,7 @@ namespace AzToolsFramework
 {
     const int GrowTextEdit::s_padding = 10;
 
-    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(GrowTextEdit, AZ::SystemAllocator)
 
     GrowTextEdit::GrowTextEdit(QWidget* parent)
         : QTextEdit(parent)

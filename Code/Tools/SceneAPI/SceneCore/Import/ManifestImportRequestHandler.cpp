@@ -56,8 +56,14 @@ namespace AZ
                 result = s_extension;
             }
 
+            void ManifestImportRequestHandler::GetGeneratedManifestExtension(AZStd::string& result)
+            {
+                result = s_extension;
+                result.append(s_generated);
+            }
+
             Events::LoadingResult ManifestImportRequestHandler::LoadAsset(Containers::Scene& scene, const AZStd::string& path, 
-                const Uuid& /*guid*/, RequestingApplication /*requester*/)
+                                                                          const Uuid& /*guid*/, RequestingApplication /*requester*/)
             {
                 AZStd::string manifestPath = path + s_extension;
 

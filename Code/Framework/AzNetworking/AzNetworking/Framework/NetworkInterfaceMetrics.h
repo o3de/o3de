@@ -15,11 +15,11 @@ namespace AzNetworking
     struct NetworkInterfaceMetrics
     {
         //! Returns the total number of milliseconds spent updating this network interface.
-        AZ::TimeMs m_updateTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_updateTimeMs = AZ::Time::ZeroTimeMs;
         //! Returns the total number of connections bound to this network interface.
         uint64_t m_connectionCount = 0;
         //! Returns the total number of milliseconds spent sending data on this network interface.
-        AZ::TimeMs m_sendTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_sendTimeMs = AZ::Time::ZeroTimeMs;
         //! Returns the total number of packets sent on this socket.
         uint64_t m_sendPackets = 0;
         //! Returns the total number of encrypted packets sent on this socket.
@@ -37,7 +37,7 @@ namespace AzNetworking
         //! Returns the total number of packets that had to be resent on this network interface due to packet loss.
         uint64_t m_resentPackets = 0;
         //! Returns the total number of milliseconds spent processing received data on this network interface.
-        AZ::TimeMs m_recvTimeMs = AZ::TimeMs{ 0 };
+        AZ::TimeMs m_recvTimeMs = AZ::Time::ZeroTimeMs;
         //! Returns the total number of packets received on this socket.
         uint64_t m_recvPackets = 0;
         //! Returns the total number of bytes received on this socket after compression.

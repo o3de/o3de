@@ -55,7 +55,6 @@ namespace ScriptCanvas
             AZStd::vector<AZStd::string> tokens;
             AzFramework::StringFunc::Tokenize(name, tokens, Grammar::k_luaSpecialCharacters);
             AZStd::string joinResult;
-            const size_t length = tokens.size();
             for (auto& token : tokens)
             {
                 joinResult.append(token);

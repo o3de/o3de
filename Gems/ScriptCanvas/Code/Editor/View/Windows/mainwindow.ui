@@ -126,19 +126,15 @@
     <addaction name="action_ViewMiniMap"/>
     <addaction name="action_ViewVariableManager"/>
     <addaction name="action_GraphValidation"/>
+    <addaction name="action_Interpreter"/>
     <addaction name="action_Debugging"/>
     <addaction name="separator"/>
+    <addaction name="action_UpgradeTool"/>
     <addaction name="action_ViewUnitTestManager"/>
     <addaction name="action_NodeStatistics"/>
     <addaction name="action_PresetsEditor"/>
     <addaction name="separator"/>
    </widget>
-   <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-    <property name="title">
-     <string>&amp;Utilities</string>
-    </property>
-    <addaction name="action_UpgradeTool"/>
-   </widget> -->
    <widget class="QMenu" name="menuSettings_2">
     <property name="title">
      <string>&amp;Preferences</string>
@@ -170,8 +166,6 @@
    <addaction name="menuEdit"/>
    <addaction name="menuView_2"/>
    <addaction name="menuTools_2"/>
-    <!-- Disabled until tool is stabilized <widget class="QMenu" name="menuUtilities">
-   <addaction name="menuUtilities"/> -->
    <addaction name="menuSettings_2"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -420,6 +414,9 @@
    <property name="shortcut">
     <string>Ctrl+D</string>
    </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
+   </property>
    <property name="autoRepeat">
     <bool>false</bool>
    </property>
@@ -430,6 +427,9 @@
    </property>
    <property name="text">
     <string>Delete</string>
+   </property>
+   <property name="shortcutContext">
+    <enum>Qt::WidgetWithChildrenShortcut</enum>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
@@ -523,6 +523,9 @@
     <bool>false</bool>
    </property>
    <property name="checked">
+    <bool>false</bool>
+   </property>
+   <property name="enabled">
     <bool>false</bool>
    </property>
    <property name="text">
@@ -774,6 +777,16 @@
   <action name="actionEditor_Graph">
    <property name="text">
     <string>Editor Graph</string>
+   </property>
+  </action>
+  <action name="action_Interpreter">
+   <property name="text">
+    <string>Interpreter</string>
+   </property>
+  </action>
+  <action name="actionOpen_Script_Event">
+   <property name="text">
+    <string>&amp;Open ...</string>
    </property>
   </action>
   <addaction name="action_ViewNodePalette"/>

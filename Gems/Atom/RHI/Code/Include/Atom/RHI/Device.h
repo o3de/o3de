@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/RHI/ObjectCollector.h>
 #include <Atom/RHI.Reflect/DeviceDescriptor.h>
 #include <Atom/RHI.Reflect/DeviceFeatures.h>
 #include <Atom/RHI.Reflect/DeviceLimits.h>
@@ -18,7 +19,7 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <Atom/RHI/ResourcePoolDatabase.h>
 
-#include <AzCore/std/chrono/types.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/fixed_vector.h>
 #include <AzCore/std/containers/unordered_map.h>
 
@@ -26,9 +27,6 @@ namespace AZ
 {
     namespace RHI
     {
-        struct CpuTimingStatistics;
-
-        
         //! The Device is a context for managing GPU state and memory on a physical device. The user creates
         //! a device instance from a PhysicalDevice. Each device has its own capabilities and limits, and can
         //! be configured to buffer a specific number of frames.
@@ -46,10 +44,10 @@ namespace AZ
         public:
             AZ_RTTI(Device, "{C7E70BE4-3AA5-4214-91E6-52A8ECC31A34}", Object);
             virtual ~Device() = default;
-            
+
             //! Returns whether the device is initialized.
             bool IsInitialized() const;
-            
+
             //! Initializes just the native device using the provided physical device. The
             //! device must be initialized before it can be used. Explicit shutdown is not exposed
             //! due to the number of dependencies. Instead, the device is reference counted by child
@@ -57,11 +55,7 @@ namespace AZ
             //!
             //! If initialization fails. The device is left in an uninitialized state (as if Init had never
             //! been called), and an error code is returned.
-            ResultCode Init(PhysicalDevice& physicalDevice);
-            
-            //! Called to initialize anything that wasn't done as part of Init. DeviceDescriptor is passed down
-            //! as part of this API. This is called after AssetCatalog is loaded and hence any file can be loaded at this point
-            ResultCode PostInit(const DeviceDescriptor& descriptor);
+            ResultCode Init(int deviceIndex, PhysicalDevice& physicalDevice);
 
             //! Begins execution of a frame. The device internally manages a set of command queues. This
             //! method will synchronize the CPU with the GPU according to the number of in-light frames
@@ -94,13 +88,16 @@ namespace AZ
             //! scope. Otherwise, an error code is returned.
             ResultCode CompileMemoryStatistics(MemoryStatistics& memoryStatistics, MemoryStatisticsReportFlags reportFlags);
 
-            //! Fills the provided data structure with cpu timing statistics specific to this device. This
-            //! method can only be called on an initialized device, and outside of the BeginFrame / EndFrame
-            //! scope. Otherwise, an error code is returned.
-            ResultCode UpdateCpuTimingStatistics(CpuTimingStatistics& cpuTimingStatistics) const;
+            //! Pushes internally recorded timing statistics upwards into the global stats profiler, under the RHI section.
+            //! This method can only be called on an initialized device, and outside of the BeginFrame / EndFrame scope.
+            //! Otherwise, an error code is returned.
+            ResultCode UpdateCpuTimingStatistics() const;
 
             //! Returns the physical device associated with this device.
             const PhysicalDevice& GetPhysicalDevice() const;
+
+            //! Returns the device index.
+            int GetDeviceIndex() const;
 
             //! Returns the descriptor associated with the device.
             const DeviceDescriptor& GetDescriptor() const;
@@ -124,7 +121,6 @@ namespace AZ
             Format GetNearestSupportedFormat(Format requestedFormat, FormatCapabilities requestedCapabilities) const;
 
             //! Small API to support getting supported/working swapchain formats for a window.
-            //! [GFX TODO]ATOM-1125] [RHI] Device::GetValidSwapChainImageFormats()
             //! Returns the set of supported formats for swapchain images.
             virtual AZStd::vector<Format> GetValidSwapChainImageFormats(const WindowHandle& windowHandle) const;
 
@@ -140,11 +136,33 @@ namespace AZ
             //! Get the memory requirements for allocating a buffer resource.
             virtual ResourceMemoryRequirements GetResourceMemoryRequirements(const BufferDescriptor& descriptor) = 0;
 
+            //! Notifies after all objects currently in the platform release queue are released
+            virtual void ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction) = 0;
+
+            //! Allows the back-ends to compact SRG related memory if applicable
+            virtual RHI::ResultCode CompactSRGMemory()
+            {
+                return RHI::ResultCode::Success;
+            };
+
+            //! Converts a shading rate enum to the proper texel value to be used in a shading rate image.
+            virtual ShadingRateImageValue ConvertShadingRate(ShadingRate rate) const = 0;
+
+            bool WasDeviceRemoved();
+            void SetDeviceRemoved();
+
+            // Accessors
+            void SetLastExecutingScope(const AZStd::string_view scopeName);
+            AZStd::string_view GetLastExecutingScope() const;
+
         protected:
+
             DeviceFeatures m_features;
             DeviceLimits m_limits;
             ResourcePoolDatabase m_resourcePoolDatabase;
-            
+
+            DeviceDescriptor m_descriptor;
+
             using FormatCapabilitiesList = AZStd::array<FormatCapabilities, static_cast<uint32_t>(Format::Count)>;
 
         private:
@@ -162,16 +180,12 @@ namespace AZ
 
             //! Called when just the device is being initialized.
             virtual ResultCode InitInternal(PhysicalDevice& physicalDevice) = 0;
-             
-            //! Called to initialize anything that wasnt done as part of InitInternal.
-            //! This is called after AssetCatalog is loaded and hence any file can be loaded at this point
-            virtual ResultCode PostInitInternal(const DeviceDescriptor& descriptor) = 0;
 
             //! Called when the device is being shutdown.
             virtual void ShutdownInternal() = 0;
 
             //! Called when the device is beginning a frame for processing.
-            virtual void BeginFrameInternal() = 0;
+            virtual AZ::RHI::ResultCode BeginFrameInternal() = 0;
 
             //! Called when the device is ending a frame for processing.
             virtual void EndFrameInternal() = 0;
@@ -183,10 +197,13 @@ namespace AZ
             virtual void CompileMemoryStatisticsInternal(MemoryStatisticsBuilder& builder) = 0;
 
             //! Called when the device is reporting cpu timing statistics.
-            virtual void UpdateCpuTimingStatisticsInternal(CpuTimingStatistics& cpuTimingStatistics) const = 0;
+            virtual void UpdateCpuTimingStatisticsInternal() const = 0;
 
             //! Fills the capabilities for each format.
             virtual void FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities) = 0;
+
+            //! Initialize limits and resources associated with them.
+            virtual ResultCode InitializeLimits() = 0;
             ///////////////////////////////////////////////////////////////////
 
             void CalculateDepthStencilNearestSupportedFormats();
@@ -195,10 +212,11 @@ namespace AZ
             //! All platform specific format mappings should be executed before this function is called
             void FillRemainingSupportedFormats();
 
-            DeviceDescriptor m_descriptor;
-
             // The physical device backing this logical device instance.
             Ptr<PhysicalDevice> m_physicalDevice;
+
+            // The device's index for when there are multiple devices.
+            int m_deviceIndex = MultiDevice::DefaultDeviceIndex;
 
             // Tracks whether the device is in the BeginFrame / EndFrame scope.
             bool m_isInFrame = false;
@@ -206,6 +224,12 @@ namespace AZ
             AZStd::array<Format, static_cast<uint32_t>(Format::Count)> m_nearestSupportedFormats;
 
             FormatCapabilitiesList m_formatsCapabilities;
+
+            bool m_wasDeviceRemoved = false;
+
+            // Cache the name of the last executing scope name. Used within AZ_FORCE_CPU_GPU_INSYNC
+            AZStd::string m_lastExecutingScope;
+
         };
     }
 }

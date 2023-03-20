@@ -22,22 +22,15 @@
 #include <AzCore/std/typetraits/is_convertible.h>
 #include <AzCore/std/typetraits/is_lvalue_reference.h>
 #include <AzCore/std/typetraits/void_t.h>
+#include <AzCore/std/utility/declval.h>
+#include <AzCore/std/utility/move.h>
 
-#include <memory>
+#include <utility>
 
 namespace AZStd
 {
     //////////////////////////////////////////////////////////////////////////
-    // rvalue
-    // rvalue move
-    template<class T>
-    constexpr AZStd::remove_reference_t<T>&& move(T && t)
-    {
-        return static_cast<AZStd::remove_reference_t<T>&&>(t);
-    }
-
     using std::forward;
-    using std::declval;
     using std::exchange;
 
     template <class T>
@@ -99,36 +92,13 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
 
     // The structure that encapsulates index lists
-    template <size_t... Is>
-    struct index_sequence
-    {
-        static constexpr size_t size = sizeof...(Is);
-    };
-
-    // Collects internal details for generating index ranges [MIN, MAX)
-    namespace Internal
-    {
-        // Declare primary template for index range builder
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder;
-
-        // Base step
-        template <size_t MIN, size_t... Is>
-        struct range_builder<MIN, MIN, Is...>
-        {
-            typedef index_sequence<Is...> type;
-        };
-
-        // Induction step
-        template <size_t MIN, size_t N, size_t... Is>
-        struct range_builder : public range_builder<MIN, N - 1, N - 1, Is...>
-        {
-        };
-    }
+    using std::integer_sequence;
+    using std::index_sequence;
+    using std::index_sequence_for;
 
     // Create index range [0,N]
-    template<size_t N>
-    using make_index_sequence = typename Internal::range_builder<0, N>::type;
+    using std::make_index_sequence;
+    using std::make_integer_sequence;
 
     struct piecewise_construct_t {};
     static constexpr piecewise_construct_t piecewise_construct{};
@@ -240,6 +210,10 @@ namespace AZStd
         T2 second;  // the second stored value
     };
 
+    // AZStd::pair deduction guides
+    template <class T1, class T2>
+    pair(T1, T2) -> pair<T1, T2>;
+
     // pair
     template<class T1, class T2>
     constexpr void swap(AZStd::pair<T1, T2>& left, AZStd::pair<T1, T2>& _Right)
@@ -286,31 +260,7 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
     // Address of
     //////////////////////////////////////////////////////////////////////////
-    namespace Internal
-    {
-        template<class T>
-        struct addr_impl_ref
-        {
-            T& m_v;
-            constexpr addr_impl_ref(T& v)
-                : m_v(v) {}
-            constexpr addr_impl_ref& operator=(const addr_impl_ref& v) { m_v = v; return *this; }
-            constexpr operator T& () const { return m_v; }
-        };
-
-        template<class T>
-        struct addressof_impl
-        {
-            static AZ_FORCE_INLINE T* f(T& v, long) { return reinterpret_cast<T*>(&const_cast<char&>(reinterpret_cast<const volatile char&>(v))); }
-            static constexpr T* f(T* v, int)  { return v; }
-        };
-    }
-
-    template<class T>
-    T* addressof(T& v)
-    {
-        return Internal::addressof_impl<T>::f(Internal::addr_impl_ref<T>(v), 0);
-    }
+    using std::addressof;
     // End addressof
     //////////////////////////////////////////////////////////////////////////
 
@@ -338,34 +288,10 @@ namespace AZStd
     //////////////////////////////////////////////////////////////////////////
     // make_pair
     template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, T2&& value2)
+    constexpr auto make_pair(T1&& value1, T2&& value2)
     {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
+        using pair_type = pair<AZStd::unwrap_ref_decay_t<T1>, AZStd::unwrap_ref_decay_t<T2>>;
         return pair_type(AZStd::forward<T1>(value1), AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, T2&& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, AZStd::forward<T2>(value2));
-    }
-
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(T1&& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type(AZStd::forward<T1>(value1), (typename AZStd::unwrap_reference<T2>::type)value2);
-    }
-    template<class T1, class T2>
-    constexpr pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type>
-    make_pair(const T1& value1, const T2& value2)
-    {
-        typedef pair<typename AZStd::unwrap_reference<T1>::type, typename AZStd::unwrap_reference<T2>::type> pair_type;
-        return pair_type((typename AZStd::unwrap_reference<T1>::type)value1, (typename AZStd::unwrap_reference<T2>::type)value2);
     }
     //////////////////////////////////////////////////////////////////////////
 
@@ -453,57 +379,14 @@ namespace AZStd
     };
 #endif
 
-    template <template <class> class, typename...>
-    struct sequence_and;
+    using std::in_place_t;
+    using std::in_place;
 
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_and<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value && sequence_and<trait, Ts...>::value;
-    };
+    using std::in_place_type_t;
+    using std::in_place_type;
 
-    template <template <class> class trait>
-    struct sequence_and<trait>
-    {
-        static const bool value = true;
-    };
-
-    template <template <class> class, typename...>
-    struct sequence_or;
-
-    template <template <class> class trait, typename T1, typename... Ts>
-    struct sequence_or<trait, T1, Ts...>
-    {
-        static const bool value = trait<T1>::value || sequence_or<trait, Ts...>::value;
-    };
-
-    template <template <class> class trait>
-    struct sequence_or<trait>
-    {
-        static const bool value = false;
-    };
-
-    struct in_place_t
-    {
-        explicit constexpr in_place_t() = default;
-    };
-    constexpr in_place_t in_place{};
-
-    template<typename T>
-    struct in_place_type_t
-    {
-        explicit constexpr in_place_type_t() = default;
-    };
-    template <typename T>
-    constexpr in_place_type_t<T> in_place_type{};
-
-    template<size_t I>
-    struct in_place_index_t
-    {
-        explicit constexpr in_place_index_t() = default;
-    };
-    template<size_t I>
-    constexpr in_place_index_t<I> in_place_index{}; 
+    using std::in_place_index_t;
+    using std::in_place_index;
 
     namespace Internal
     {

@@ -10,10 +10,12 @@
 
 #include <AzCore/RTTI/RTTI.h>
 #include <Atom/Feature/PostProcess/Bloom/BloomSettingsInterface.h>
+#include <Atom/Feature/PostProcess/ChromaticAberration/ChromaticAberrationSettingsInterface.h>
 #include <Atom/Feature/PostProcess/DepthOfField/DepthOfFieldSettingsInterface.h>
 #include <Atom/Feature/PostProcess/ExposureControl/ExposureControlSettingsInterface.h>
 #include <Atom/Feature/PostProcess/Ssao/SsaoSettingsInterface.h>
 #include <Atom/Feature/PostProcess/LookModification/LookModificationSettingsInterface.h>
+#include <Atom/Feature/PostProcess/ColorGrading/HDRColorGradingSettingsInterface.h>
 #include <Atom/Feature/ScreenSpace/DeferredFogSettingsInterface.h>
 #include <Atom/RPI.Public/View.h>
 

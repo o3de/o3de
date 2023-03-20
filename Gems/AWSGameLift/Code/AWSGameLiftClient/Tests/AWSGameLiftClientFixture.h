@@ -8,15 +8,16 @@
 
 #pragma once
 
-#include <AWSNativeSDKInit/AWSNativeSDKInit.h>
+#include <AWSNativeSDKTestManager.h>
 #include <AzCore/Jobs/JobManager.h>
 #include <AzCore/Jobs/JobManagerBus.h>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzTest/Utils.h>
 
 class AWSGameLiftClientFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     AWSGameLiftClientFixture() {}
@@ -24,9 +25,6 @@ public:
 
     void SetUp() override
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-
         AZ::JobManagerDesc jobManagerDesc;
         AZ::JobManagerThreadDesc threadDesc;
 
@@ -38,19 +36,17 @@ public:
         m_jobContext.reset(aznew AZ::JobContext(*m_jobManager, *m_jobCancelGroup));
         AZ::JobContext::SetGlobalContext(m_jobContext.get());
 
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
     }
 
     void TearDown() override
     {
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
 
         AZ::JobContext::SetGlobalContext(nullptr);
         m_jobContext.reset();
         m_jobCancelGroup.reset();
         m_jobManager.reset();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
     AZStd::unique_ptr<AZ::JobContext> m_jobContext;

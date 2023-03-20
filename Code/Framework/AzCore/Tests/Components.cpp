@@ -18,13 +18,11 @@
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Serialization/ObjectStream.h>
 
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/IO/SystemFile.h>
 
-#include <AzCore/Debug/FrameProfilerBus.h>
-#include <AzCore/Debug/FrameProfilerComponent.h>
 #include <AzCore/Memory/AllocationRecords.h>
+#include <AzCore/Memory/IAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzCore/std/parallel/containers/concurrent_unordered_set.h>
@@ -38,50 +36,48 @@
 using namespace AZ;
 using namespace AZ::Debug;
 
-// This test needs to be outside of a fixture, as it needs to bring up its own allocators
-TEST(ComponentApplication, Test)
-{
-    ComponentApplication app;
-
-    //////////////////////////////////////////////////////////////////////////
-    // Create application environment code driven
-    ComponentApplication::Descriptor appDesc;
-    appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-    appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
-    appDesc.m_stackRecordLevels = 20;
-    Entity* systemEntity = app.Create(appDesc);
-
-    systemEntity->CreateComponent<MemoryComponent>();
-    systemEntity->CreateComponent<StreamerComponent>();
-    systemEntity->CreateComponent("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}"); // JobManager component
-    systemEntity->CreateComponent("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}"); // AssetDatabase component
-
-    systemEntity->Init();
-    systemEntity->Activate();
-
-    app.Destroy();
-    //////////////////////////////////////////////////////////////////////////
-
-    //////////////////////////////////////////////////////////////////////////
-    // Create application environment data driven
-    systemEntity = app.Create(appDesc);
-    systemEntity->Init();
-    systemEntity->Activate();
-    app.Destroy();
-    //////////////////////////////////////////////////////////////////////////
-}
-
 namespace UnitTest
 {
     class Components
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         Components()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
     };
+
+    TEST_F(Components, Test)
+    {
+        ComponentApplication app;
+
+        //////////////////////////////////////////////////////////////////////////
+        // Create application environment code driven
+        ComponentApplication::Descriptor appDesc;
+        appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
+        appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
+        Entity* systemEntity = app.Create(appDesc);
+
+        systemEntity->CreateComponent<StreamerComponent>();
+        systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
+        systemEntity->CreateComponent(AZ::Uuid("{D5A73BCC-0098-4d1e-8FE4-C86101E374AC}")); // AssetDatabase component
+
+        systemEntity->Init();
+        systemEntity->Activate();
+
+        app.Destroy();
+        //////////////////////////////////////////////////////////////////////////
+
+        //////////////////////////////////////////////////////////////////////////
+        // Create application environment data driven
+        systemEntity = app.Create(appDesc);
+        systemEntity->Init();
+        systemEntity->Activate();
+        app.Destroy();
+
+        //////////////////////////////////////////////////////////////////////////
+    }
 
     //////////////////////////////////////////////////////////////////////////
     // Some component message bus, this is not really part of the component framework
@@ -104,7 +100,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(SimpleComponent, "{6DFA17AF-014C-4624-B453-96E1F9807491}", Component)
-        AZ_CLASS_ALLOCATOR(SimpleComponent, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SimpleComponent, SystemAllocator);
 
         SimpleComponent()
             : m_a(0)
@@ -127,7 +123,7 @@ namespace UnitTest
             // This requires advanced knowledge of the EBus and it's NOT recommended as a schema for
             // generic functionality. You should just call TickBus::Handler::BusConnect(GetEntityId()); in place
             // make sure you are doing this from the main thread.
-            EBUS_QUEUE_FUNCTION(TickBus, &TickBus::Handler::BusConnect, this);
+            TickBus::QueueFunction(&TickBus::Handler::BusConnect, this);
             m_isActivated = true;
         }
         void Deactivate() override
@@ -177,10 +173,7 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture)
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         AZ_TEST_ASSERT(systemEntity);
         systemEntity->Init();
 
@@ -226,7 +219,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(entity->GetId() == oldID); // id should be unaffected.
 
                                                   // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 0); // it should still be 0
 
                                          // activate
@@ -235,7 +228,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated);
 
         // now the component should be active responsive to message
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 1);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 1);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // Make sure its NOT possible to set the id of the entity after Activate
@@ -276,7 +269,7 @@ namespace UnitTest
         AZ_TEST_ASSERT(comp1->m_isActivated == false);
 
         // try to send a component message, since it's not active nobody should listen to it
-        EBUS_EVENT(SimpleComponentMessagesBus, DoA, 2);
+        SimpleComponentMessagesBus::Broadcast(&SimpleComponentMessagesBus::Events::DoA, 2);
         AZ_TEST_ASSERT(comp1->m_a == 1);
 
         // make sure we can remove components
@@ -295,7 +288,7 @@ namespace UnitTest
         : public Component
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentA, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ComponentA, SystemAllocator);
         AZ_RTTI(ComponentA, "{4E93E03A-0B71-4630-ACCA-C6BB78E6DEB9}", Component)
 
         void Activate() override {}
@@ -307,7 +300,7 @@ namespace UnitTest
         : public ComponentDescriptorHelper<ComponentA>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ComponentADescriptor, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentADescriptor, SystemAllocator);
 
         ComponentADescriptor()
             : m_isDependent(false)
@@ -608,7 +601,7 @@ namespace UnitTest
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             // component descriptors are cleaned up when application shuts down
             m_descriptorComponentA = aznew ComponentADescriptor;
@@ -633,12 +626,8 @@ namespace UnitTest
 
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false; // we already created a memory driller for the test (AllocatorsFixture in Components)
 
-            ComponentApplication::StartupParameters startupParams;
-            startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-            Entity* systemEntity = m_componentApp->Create(desc, startupParams);
+            Entity* systemEntity = m_componentApp->Create(desc, {});
             systemEntity->Init();
 
             m_entity = aznew Entity();
@@ -649,7 +638,7 @@ namespace UnitTest
             delete m_entity;
             delete m_componentApp;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void CreateComponents_ABCDE()
@@ -796,7 +785,7 @@ namespace UnitTest
 
         m_entity->RemoveComponent(componentC);
         delete componentC;
-        
+
         EXPECT_TRUE(m_entity->IsComponentReadyToRemove(componentB)); // we should be ready for remove
     }
 
@@ -1062,28 +1051,25 @@ namespace UnitTest
     /**
      * UserSettingsComponent test
      */
-     class UserSettingsTestApp
-         : public ComponentApplication
-         , public UserSettingsFileLocatorBus::Handler
-     {
-     public:
-         void SetExecutableFolder(const char* path)
-         {
-             m_exeDirectory = path;
-         }
-
+    class UserSettingsTestApp
+        : public ComponentApplication
+        , public UserSettingsFileLocatorBus::Handler
+    {
+        AZ::Test::ScopedAutoTempDirectory m_tempDir;
+    public:
+        AZ_CLASS_ALLOCATOR(UserSettingsTestApp, SystemAllocator)
         AZStd::string ResolveFilePath(u32 providerId) override
         {
-            AZStd::string filePath;
+            auto filePath = AZ::IO::Path(m_tempDir.GetDirectory());
             if (providerId == UserSettings::CT_GLOBAL)
             {
-                filePath = (m_exeDirectory / "GlobalUserSettings.xml").String();
+                filePath /= "GlobalUserSettings.xml";
             }
             else if (providerId == UserSettings::CT_LOCAL)
             {
-                filePath = (m_exeDirectory / "LocalUserSettings.xml").String();
+                filePath /= "LocalUserSettings.xml";
             }
-            return filePath;
+            return filePath.Native();
         }
 
         void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
@@ -1098,7 +1084,7 @@ namespace UnitTest
         : public UserSettings
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyUserSettings, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyUserSettings, SystemAllocator);
         AZ_RTTI(MyUserSettings, "{ACC60C7B-60D8-4491-AD5D-42BA6656CC1F}", UserSettings);
 
         static void Reflect(AZ::SerializeContext* sc)
@@ -1110,7 +1096,8 @@ namespace UnitTest
         int m_intOption1;
     };
 
-    TEST(UserSettings, Test)
+    using UserSettingsTestFixture = UnitTest::LeakDetectionFixture;
+    TEST_F(UserSettingsTestFixture, Test)
     {
         UserSettingsTestApp app;
 
@@ -1119,17 +1106,9 @@ namespace UnitTest
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         Entity* systemEntity = app.Create(appDesc);
-        app.SetExecutableFolder(GetTestFolderPath().c_str());
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
-        // Make sure user settings file does not exist at this point
-        {
-            IO::SystemFile::Delete(app.ResolveFilePath(UserSettings::CT_GLOBAL).c_str());
-            IO::SystemFile::Delete(app.ResolveFilePath(UserSettings::CT_LOCAL).c_str());
-        }
-
         MyUserSettings::Reflect(app.GetSerializeContext());
-        systemEntity->CreateComponent<MemoryComponent>();
 
         UserSettingsComponent* globalUserSettingsComponent = systemEntity->CreateComponent<UserSettingsComponent>();
         AZ_TEST_ASSERT(globalUserSettingsComponent);
@@ -1189,154 +1168,6 @@ namespace UnitTest
 
         app.Destroy();
         //////////////////////////////////////////////////////////////////////////
-    }
-
-    class FrameProfilerComponentTest
-        : public AllocatorsFixture
-        , public FrameProfilerBus::Handler
-    {
-    public:
-        FrameProfilerComponentTest()
-            : AllocatorsFixture()
-        {
-        }
-
-        //////////////////////////////////////////////////////////////////////////
-        // FrameProfilerDrillerBus
-        void OnFrameProfilerData(const FrameProfiler::ThreadDataArray& data) override
-        {
-            for (size_t iThread = 0; iThread < data.size(); ++iThread)
-            {
-                const FrameProfiler::ThreadData& td = data[iThread];
-                FrameProfiler::ThreadData::RegistersMap::const_iterator regIt = td.m_registers.begin();
-                size_t numRegisters = m_numRegistersReceived;
-                for (; regIt != td.m_registers.end(); ++regIt)
-                {
-                    const FrameProfiler::RegisterData& rd = regIt->second;
-
-                    AZ_TEST_ASSERT(rd.m_function != NULL);
-                    if (strstr(rd.m_function, "ChildFunction") || strstr(rd.m_function, "Profile1")) // filter only the test registers
-                    {
-                        ++m_numRegistersReceived;
-
-                        EXPECT_GT(rd.m_line, 0);
-                        EXPECT_TRUE(rd.m_name == nullptr || strstr(rd.m_name, "Child1") || strstr(rd.m_name, "Custom name"));
-                        AZ::u32 unitTestCrc = AZ_CRC("UnitTest", 0x8089cea8);
-                        EXPECT_EQ(unitTestCrc, rd.m_systemId);
-                        EXPECT_EQ(ProfilerRegister::PRT_TIME, rd.m_type);
-
-                        EXPECT_FALSE(rd.m_frames.empty());
-                        const FrameProfiler::FrameData& fd = rd.m_frames.back();
-                        EXPECT_GT(fd.m_frameId, 0u);
-                        EXPECT_GT(fd.m_timeData.m_time, 0);
-                        EXPECT_GT(fd.m_timeData.m_calls, 0);
-                    }
-                }
-
-                if (numRegisters < m_numRegistersReceived)
-                {
-                    // we have received valid test registers for this thread, add it to the list
-                    ++m_numThreads;
-                }
-            }
-        }
-        //////////////////////////////////////////////////////////////////////////
-
-        int ChildFunction(int input)
-        {
-            AZ_PROFILE_TIMER("UnitTest", nullptr, NamedRegister);
-            int result = 5;
-            for (int i = 0; i < 10000; ++i)
-            {
-                result += i % (input + 3);
-            }
-            AZ_PROFILE_TIMER_END(NamedRegister);
-            return result;
-        }
-
-        int ChildFunction1(int input)
-        {
-            AZ_PROFILE_TIMER("UnitTest", "Child1");
-            int result = 5;
-            for (int i = 0; i < 10000; ++i)
-            {
-                result += i % (input + 1);
-            }
-            return result;
-        }
-
-        int Profile1(int numIterations)
-        {
-            AZ_PROFILE_TIMER("UnitTest", "Custom name");
-            int result = 0;
-            for (int i = 0; i < numIterations; ++i)
-            {
-                result += ChildFunction(i);
-            }
-
-            result += ChildFunction1(numIterations / 3);
-            return result;
-        }
-
-        void run()
-        {
-            FrameProfilerBus::Handler::BusConnect();
-
-            ComponentApplication app;
-            ComponentApplication::Descriptor desc;
-            desc.m_useExistingAllocator = true;
-            desc.m_enableDrilling = false;  // we already created a memory driller for the test (AllocatorsFixture)
-            ComponentApplication::StartupParameters startupParams;
-            startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-            Entity* systemEntity = app.Create(desc, startupParams);
-            systemEntity->CreateComponent<FrameProfilerComponent>();
-
-            systemEntity->Init();
-            systemEntity->Activate(); // start frame component
-
-            m_numThreads = 0;
-            m_numRegistersReceived = 0;
-
-            // tick to frame 1 and collect all the samples
-            app.Tick();
-            EXPECT_EQ(0, m_numThreads);
-            EXPECT_EQ(0, m_numRegistersReceived);
-
-            int numIterations = 10000;
-            {
-                AZStd::thread t1(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t2(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t3(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-                AZStd::thread t4(AZStd::bind(&FrameProfilerComponentTest::Profile1, this, numIterations));
-
-                t1.join();
-                t2.join();
-                t3.join();
-                t4.join();
-            }
-
-            // tick to frame 2 and collect all the samples
-            app.Tick();
-
-            EXPECT_EQ(4, m_numThreads);
-            EXPECT_EQ(m_numThreads * 3, m_numRegistersReceived);
-
-            FrameProfilerBus::Handler::BusDisconnect();
-
-            app.Destroy();
-        }
-
-        size_t m_numRegistersReceived;
-        size_t m_numThreads;
-    };
-
-#if AZ_TRAIT_DISABLE_FAILED_FRAMEPROFILER_TEST
-    TEST_F(FrameProfilerComponentTest, DISABLED_Test)
-#else
-    TEST_F(FrameProfilerComponentTest, Test)
-#endif
-    {
-        run();
     }
 
     class SimpleEntityRefTestComponent
@@ -1401,7 +1232,7 @@ namespace UnitTest
     struct EntityIdRemapContainer
     {
         AZ_TYPE_INFO(EntityIdRemapContainer, "{63854212-37E9-480B-8E46-529682AB9EF7}");
-        AZ_CLASS_ALLOCATOR(EntityIdRemapContainer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityIdRemapContainer, AZ::SystemAllocator);
 
         static void Reflect(SerializeContext& serializeContext)
         {
@@ -1499,7 +1330,7 @@ namespace UnitTest
             testComponent1.m_entityIdHashSet.insert(EntityId(32));
             testComponent1.m_entityIdHashSet.insert(EntityId(5));
             testComponent1.m_entityIdHashSet.insert(EntityId(16));
-            // map 
+            // map
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(id2, 1));
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(id3, 2));
             testComponent1.m_entityIdIntMap.insert(AZStd::make_pair(EntityId(32), 3));
@@ -1586,6 +1417,7 @@ namespace UnitTest
     class ConfigurableComponentConfig : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(ConfigurableComponentConfig , SystemAllocator)
         AZ_RTTI(ConfigurableComponentConfig, "{109C5A93-5571-4D45-BD2F-3938BF63AD83}", ComponentConfig);
 
         int m_intVal = 0;
@@ -1740,18 +1572,18 @@ namespace UnitTest
 
         EntityIdRemapContainer clonedContainer;
         context.CloneObjectInplace(clonedContainer, &testContainer1);
-        
+
         // Check cloned entity has same ids
         EXPECT_NE(nullptr, clonedContainer.m_entity);
         EXPECT_EQ(testContainer1.m_entity->GetId(), clonedContainer.m_entity->GetId());
         EXPECT_EQ(testContainer1.m_id, clonedContainer.m_id);
         EXPECT_EQ(testContainer1.m_otherId, clonedContainer.m_otherId);
-        
+
         // Generated new Ids in the testContainer store the results in the newIdMap
         // The m_entity Entity id values should be remapped to a new value
         AZStd::unordered_map<AZ::EntityId, AZ::EntityId> newIdMap;
         EntityUtils::GenerateNewIdsAndFixRefs(&testContainer1, newIdMap, &context);
-        
+
         EXPECT_EQ(testContainer1.m_entity->GetId(), testContainer1.m_id);
         EXPECT_NE(clonedContainer.m_entity->GetId(), testContainer1.m_entity->GetId());
         EXPECT_NE(clonedContainer.m_id, testContainer1.m_id);
@@ -1787,6 +1619,7 @@ namespace UnitTest
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV1, SystemAllocator)
         AZ_RTTI(HydraConfigV1, "{02198FDB-5CDB-4983-BC0B-CF1AA20FF2AF}", ComponentConfig);
 
         int m_numHeads = 1;
@@ -1797,6 +1630,7 @@ namespace UnitTest
         : public HydraConfigV1
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV2, SystemAllocator)
         AZ_RTTI(HydraConfigV2, "{BC68C167-6B01-489C-8415-626455670C34}", HydraConfigV1);
 
         int m_numArms = 2; // now the hydra has multiple arms, as well as multiple heads
@@ -1807,6 +1641,7 @@ namespace UnitTest
         : public ComponentConfig
     {
     public:
+        AZ_CLASS_ALLOCATOR(HydraConfigV3, SystemAllocator)
         AZ_RTTI(HydraConfigV3, "{71C41829-AA51-4179-B8B4-3C278CBB26AA}", ComponentConfig);
 
         int m_numHeads = 1;
@@ -1819,7 +1654,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(HydraComponent, "", Component);
-        AZ_CLASS_ALLOCATOR(HydraComponent, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HydraComponent, AZ::SystemAllocator);
 
         // serialized data
         HydraConfigV3 m_config;
@@ -1887,7 +1722,7 @@ namespace UnitTest
 
                 return true;
             }
-            
+
             if (auto v3 = azrtti_cast<HydraConfigV3*>(outBaseConfig))
             {
                 *v3 = m_config;
@@ -2135,10 +1970,7 @@ namespace Benchmark
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        ComponentApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
-
-        Entity* systemEntity = componentApp.Create(desc, startupParams);
+        Entity* systemEntity = componentApp.Create(desc, {});
         systemEntity->Init();
 
         while(state.KeepRunning())

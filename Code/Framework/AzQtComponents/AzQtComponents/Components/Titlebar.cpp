@@ -760,11 +760,9 @@ namespace AzQtComponents
         else if (canDragWindow())
         {
             QWidget *topLevel = window();
-            auto topLevelWidth = topLevel->width();
             m_dragPos = topLevel->mapFromGlobal(globalPos);
             m_relativeDragPos = (double)m_dragPos.x() / ((double)topLevel->width());
 
-            topLevelWidth++;
         }
         else
         {

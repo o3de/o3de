@@ -91,5 +91,11 @@ namespace AZ
         {
             return m_descriptor;
         }
+
+        void ImagePool::ComputeFragmentation() const
+        {
+            // Currently, images are not suballocated within a heap and are instead created as committed resources. This method should be
+            // implemented when a suballocation strategy for image pools is implemented.
+        }
     }
 }

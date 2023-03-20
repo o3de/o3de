@@ -8,15 +8,15 @@
 
 #include <CoreLights/CapsuleLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
 #include <Atom/Feature/CoreLights/CoreLightsConstants.h>
+#include <Atom/Feature/CoreLights/LightCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -52,19 +52,25 @@ namespace AZ
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
+
+            MeshFeatureProcessor* meshFeatureProcessor = GetParentScene()->GetFeatureProcessor<MeshFeatureProcessor>();
+            if (meshFeatureProcessor)
+            {
+                m_lightMeshFlag = meshFeatureProcessor->GetShaderOptionFlagRegistry()->AcquireTag(AZ::Name("o_enableCapsuleLights"));
+            }
         }
 
         void CapsuleLightFeatureProcessor::Deactivate()
         {
-            m_capsuleLightData.Clear();
+            m_lightData.Clear();
             m_lightBufferHandler.Release();
         }
 
         CapsuleLightFeatureProcessor::LightHandle CapsuleLightFeatureProcessor::AcquireLight()
         {
-            uint16_t id = m_capsuleLightData.GetFreeSlotIndex();
+            uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == IndexedDataVector<CapsuleLightData>::NoFreeSlot)
+            if (id == MultiIndexedDataVector<CapsuleLightData>::NoFreeSlot)
             {
                 return LightHandle(LightHandle::NullIndex);
             }
@@ -79,7 +85,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_capsuleLightData.RemoveIndex(handle.GetIndex());
+                m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
                 return true;
@@ -94,7 +100,8 @@ namespace AZ
             LightHandle handle = AcquireLight();
             if (handle.IsValid())
             {
-                m_capsuleLightData.GetData(handle.GetIndex()) = m_capsuleLightData.GetData(sourceLightHandle.GetIndex());
+                m_lightData.GetData<0>(handle.GetIndex()) = m_lightData.GetData<0>(sourceLightHandle.GetIndex());
+                m_lightData.GetData<1>(handle.GetIndex()) = m_lightData.GetData<1>(sourceLightHandle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -102,20 +109,24 @@ namespace AZ
 
         void CapsuleLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                [[maybe_unused]] bool success = m_lightBufferHandler.UpdateBuffer(m_capsuleLightData.GetDataVector());
-                AZ_Error(FeatureProcessorName, success, "Unable to update buffer during Simulate().");
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector<0>());
                 m_deviceBufferNeedsUpdate = false;
+            }
+
+            if (r_enablePerMeshShaderOptionFlags)
+            {
+                MeshCommon::MarkMeshesWithFlag(GetParentScene(), AZStd::span(m_lightData.GetDataVector<1>()), m_lightMeshFlag.GetIndex());
             }
         }
 
         void CapsuleLightFeatureProcessor::Render(const CapsuleLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "CapsuleLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "CapsuleLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -129,7 +140,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            auto& rgbIntensity = m_capsuleLightData.GetData(handle.GetIndex()).m_rgbIntensity;
+            auto& rgbIntensity = m_lightData.GetData<0>(handle.GetIndex()).m_rgbIntensity;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -141,7 +152,7 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetCapsuleLineSegment().");
 
-            CapsuleLightData& capsuleData = m_capsuleLightData.GetData(handle.GetIndex());
+            CapsuleLightData& capsuleData = m_lightData.GetData<0>(handle.GetIndex());
             startPoint.StoreToFloat3(capsuleData.m_startPoint.data());
 
             if (startPoint.IsClose(endPoint))
@@ -157,6 +168,8 @@ namespace AZ
                 direction.StoreToFloat3(capsuleData.m_direction.data());
             }
 
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -164,8 +177,13 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAttenuationRadius().");
 
+            CapsuleLightData& capsuleData = m_lightData.GetData<0>(handle.GetIndex());
+
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            m_capsuleLightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            capsuleData.m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+
+            UpdateBounds(handle);
+
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -173,7 +191,25 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetCapsuleRadius().");
 
-            m_capsuleLightData.GetData(handle.GetIndex()).m_radius = radius;
+            m_lightData.GetData<0>(handle.GetIndex()).m_radius = radius;
+            UpdateBounds(handle);
+
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void CapsuleLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAffectsGI().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void CapsuleLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_lightData.GetData<0>(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -181,7 +217,8 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to CapsuleLightFeatureProcessor::SetCapsuleData().");
 
-            m_capsuleLightData.GetData(handle.GetIndex()) = data;
+            m_lightData.GetData<0>(handle.GetIndex()) = data;
+            UpdateBounds(handle);
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -193,6 +230,21 @@ namespace AZ
         uint32_t CapsuleLightFeatureProcessor::GetLightCount() const
         {
             return m_lightBufferHandler.GetElementCount();
+        }
+
+        void CapsuleLightFeatureProcessor::UpdateBounds(LightHandle handle)
+        {
+            CapsuleLightData& capsuleData = m_lightData.GetData<0>(handle.GetIndex());
+
+            AZ::Vector3 startPoint = AZ::Vector3::CreateFromFloat3(capsuleData.m_startPoint.data());
+            AZ::Vector3 direction = AZ::Vector3::CreateFromFloat3(capsuleData.m_direction.data());
+            AZ::Vector3 endPoint = startPoint + direction * capsuleData.m_length;
+            float attenuationRadius = LightCommon::GetRadiusFromInvRadiusSquared(capsuleData.m_invAttenuationRadiusSquared);
+
+            AZ::Capsule& bounds = m_lightData.GetData<1>(handle.GetIndex());
+            bounds.SetFirstHemisphereCenter(startPoint);
+            bounds.SetSecondHemisphereCenter(endPoint);
+            bounds.SetRadius(attenuationRadius);
         }
 
     } // namespace Render

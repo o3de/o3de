@@ -6,7 +6,6 @@
  *
  */
 
-
 // Description : CViewportTitleDlg implementation file
 
 #if !defined(Q_MOC_RUN)
@@ -15,62 +14,51 @@
 #include "ViewportTitleDlg.h"
 
 // Qt
+#include <QCheckBox>
+#include <QLabel>
 #include <QInputDialog>
 
 #include <AtomLyIntegration/AtomViewportDisplayInfo/AtomViewportInfoDisplayBus.h>
 
-// CryCommon
-#include <CryCommon/SFunctor.h>
-
 // Editor
-#include "Settings.h"
-#include "ViewPane.h"
-#include "DisplaySettings.h"
-#include "CustomResolutionDlg.h"
-#include "CustomAspectRatioDlg.h"
-#include "Include/IObjectManager.h"
-#include "UsedResources.h"
-#include "Objects/SelectionGroup.h"
-#include "UsedResources.h"
-#include "Include/IObjectManager.h"
 #include "ActionManager.h"
-#include "MainWindow.h"
-#include "GameEngine.h"
-#include "MathConversion.h"
+#include "CustomAspectRatioDlg.h"
+#include "CustomResolutionDlg.h"
+#include "DisplaySettings.h"
 #include "EditorViewportSettings.h"
+#include "GameEngine.h"
+#include "Include/IObjectManager.h"
+#include "MainWindow.h"
+#include "MathConversion.h"
+#include "Objects/SelectionGroup.h"
+#include "Settings.h"
+#include "UsedResources.h"
+#include "ViewPane.h"
 
-#include <AzCore/std/algorithm.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/std/algorithm.h>
+#include <AzFramework/API/ApplicationAPI.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInternalInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Viewport/ViewportMessages.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
+#include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <Editor/EditorSettingsAPIBus.h>
+#include <EditorModeFeedback/EditorStateRequestsBus.h>
+
+#include <LmbrCentral/Audio/AudioSystemComponentBus.h>
 
 AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #include "ui_ViewportTitleDlg.h"
 AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
-#endif //!defined(Q_MOC_RUN)
+#endif //! defined(Q_MOC_RUN)
+
+static constexpr int MiniumOverflowMenuWidth = 200;
 
 // CViewportTitleDlg dialog
-
-inline namespace Helpers
-{
-    void ToggleHelpers()
-    {
-        const bool newValue = !GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(newValue);
-        GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
-
-        if (newValue == false)
-        {
-            GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
-        }
-        AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-            &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged, newValue);
-    }
-
-    bool IsHelpersShown()
-    {
-        return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
-    }
-}
 
 namespace
 {
@@ -93,10 +81,31 @@ namespace
     private:
         void OnViewportInfoDisplayStateChanged(AZ::AtomBridge::ViewportInfoDisplayState state) override
         {
-            emit ViewportInfoStatusUpdated(static_cast<int>(state));
+            emit ViewportInfoStatusUpdated(aznumeric_cast<int>(state));
         }
     };
-} //end anonymous namespace
+
+    // simple override of QMenu that does not respond to keyboard events
+    // note: this prevents the menu from being prematurely closed
+    class IgnoreKeyboardMenu : public QMenu
+    {
+    public:
+        IgnoreKeyboardMenu(QWidget* parent = nullptr)
+            : QMenu(parent)
+        {
+        }
+
+    private:
+        void keyPressEvent(QKeyEvent* event) override
+        {
+            // regular escape key handling
+            if (event->key() == Qt::Key_Escape)
+            {
+                QMenu::keyPressEvent(event);
+            }
+        }
+    };
+} // end anonymous namespace
 
 CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     : QWidget(pParent)
@@ -109,7 +118,7 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     layout->addWidget(container);
     container->setObjectName("ViewportTitleDlgContainer");
 
-    m_prevMoveSpeed = 0;
+    m_prevMoveSpeedScale = 0;
 
     m_pViewPane = nullptr;
     GetIEditor()->RegisterNotifyListener(this);
@@ -119,74 +128,85 @@ CViewportTitleDlg::CViewportTitleDlg(QWidget* pParent)
     LoadCustomPresets("AspectRatioPresets", "AspectRatioPreset", m_customAspectRatioPresets);
     LoadCustomPresets("ResPresets", "ResPreset", m_customResPresets);
 
-    // audio request setup
-    m_oMuteAudioRequest.pData = &m_oMuteAudioRequestData;
-    m_oUnmuteAudioRequest.pData = &m_oUnmuteAudioRequestData;
-
+    SetupPrefabEditModeMenu();
     SetupCameraDropdownMenu();
     SetupResolutionDropdownMenu();
     SetupViewportInformationMenu();
-    SetupHelpersButton();
+
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        SetupHelpersButton();
+    }
+
     SetupOverflowMenu();
 
-    Audio::AudioSystemRequestBus::Broadcast(&Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     connect(this, &CViewportTitleDlg::ActionTriggered, MainWindow::instance()->GetActionManager(), &ActionManager::ActionTriggered);
-
-    AZ::VR::VREventBus::Handler::BusConnect();
 
     OnInitDialog();
 }
 
 CViewportTitleDlg::~CViewportTitleDlg()
 {
-    AZ::VR::VREventBus::Handler::BusDisconnect();
     GetISystem()->GetISystemEventDispatcher()->RemoveListener(this);
     GetIEditor()->UnregisterNotifyListener(this);
+
+    if (m_prefabViewportFocusPathHandler)
+    {
+        delete m_prefabViewportFocusPathHandler;
+    }
 }
 
 void CViewportTitleDlg::SetupCameraDropdownMenu()
 {
     // Setup the camera dropdown menu
-    QMenu* cameraMenu = new QMenu(this);
+    auto cameraMenu = new IgnoreKeyboardMenu(this);
     cameraMenu->addMenu(GetFovMenu());
     m_ui->m_cameraMenu->setMenu(cameraMenu);
     m_ui->m_cameraMenu->setPopupMode(QToolButton::InstantPopup);
+    QObject::connect(cameraMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::CheckForCameraSpeedUpdate);
+    QObject::connect(cameraMenu, &QMenu::aboutToHide, &QWidget::clearFocus);
+
     QAction* gotoPositionAction = new QAction("Go to position", cameraMenu);
     connect(gotoPositionAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedGotoPosition);
     cameraMenu->addAction(gotoPositionAction);
+
     cameraMenu->addSeparator();
 
     auto cameraSpeedActionWidget = new QWidgetAction(cameraMenu);
     auto cameraSpeedContainer = new QWidget(cameraMenu);
-    auto cameraSpeedLabel = new QLabel(tr("Camera Speed"), cameraMenu);
-    m_cameraSpeed = new QComboBox(cameraMenu);
-    m_cameraSpeed->setEditable(true);
-    m_cameraSpeed->setValidator(new QDoubleValidator(m_minSpeed, m_maxSpeed, m_numDecimals, m_cameraSpeed));
-    m_cameraSpeed->installEventFilter(this);
+    auto cameraSpeedLabel = new QLabel(tr("Camera Speed Scale"), cameraMenu);
+    m_cameraSpinBox = new AzQtComponents::DoubleSpinBox();
+    m_cameraSpinBox->setRange(m_speedScaleMin, m_speedScaleMax);
+    m_cameraSpinBox->SetDisplayDecimals(m_speedScaleDecimalCount);
+    m_cameraSpinBox->setSingleStep(m_speedScaleStep);
+    m_cameraSpinBox->setValue(SandboxEditor::CameraSpeedScale());
 
+    QObject::connect(m_cameraSpinBox, &AzQtComponents::DoubleSpinBox::editingFinished, &QWidget::clearFocus);
+    QObject::connect(
+        m_cameraSpinBox,
+        QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged),
+        [](const double value)
+        {
+            SandboxEditor::SetCameraSpeedScale(aznumeric_cast<float>(value));
+        });
+
+    // the padding to give to the layout to align with the QAction entries in the list
+    const int CameraSpeedLayoutPadding = 16;
     QHBoxLayout* cameraSpeedLayout = new QHBoxLayout;
+    cameraSpeedLayout->setContentsMargins(QMargins(CameraSpeedLayoutPadding, 0, CameraSpeedLayoutPadding, 0));
     cameraSpeedLayout->addWidget(cameraSpeedLabel);
-    cameraSpeedLayout->addWidget(m_cameraSpeed);
+    cameraSpeedLayout->addWidget(m_cameraSpinBox);
     cameraSpeedContainer->setLayout(cameraSpeedLayout);
     cameraSpeedActionWidget->setDefaultWidget(cameraSpeedContainer);
-
-    // Save off the move speed here since setting up the combo box can cause it to update values in the background.
-    const float cameraMoveSpeed = SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
-
-    // Populate the presets in the ComboBox
-    for (float presetValue : m_speedPresetValues)
-    {
-        m_cameraSpeed->addItem(QString().setNum(presetValue, 'f', m_numDecimals), presetValue);
-    }
-
-    auto comboBoxTextChanged = static_cast<void (QComboBox::*)(const QString&)>(&QComboBox::currentTextChanged);
-
-    SetSpeedComboBox(cameraMoveSpeed);
-    m_cameraSpeed->setInsertPolicy(QComboBox::InsertAtBottom);
-    m_cameraSpeed->setDuplicatesEnabled(false);
-    connect(m_cameraSpeed, comboBoxTextChanged, this, &CViewportTitleDlg::OnUpdateMoveSpeedText);
-    connect(m_cameraSpeed->lineEdit(), &QLineEdit::returnPressed, this, &CViewportTitleDlg::OnSpeedComboBoxEnter);
 
     cameraMenu->addAction(cameraSpeedActionWidget);
 }
@@ -201,42 +221,169 @@ void CViewportTitleDlg::SetupResolutionDropdownMenu()
     m_ui->m_resolutionMenu->setPopupMode(QToolButton::InstantPopup);
 }
 
+void CViewportTitleDlg::SetupPrefabEditModeMenu()
+{
+    m_prefabEditMode = AzToolsFramework::PrefabEditModeEffectEnabled() ? PrefabEditModeUXSetting::Monochromatic : PrefabEditModeUXSetting::Normal;
+    m_ui->m_prefabEditModeMenu->setMenu(GetPrefabEditModeMenu());
+    m_ui->m_prefabEditModeMenu->setAutoRaise(true);
+    m_ui->m_prefabEditModeMenu->setPopupMode(QToolButton::InstantPopup);
+    UpdatePrefabEditMode();
+}
+
 void CViewportTitleDlg::SetupViewportInformationMenu()
 {
     // Setup the debug information button
     m_ui->m_debugInformationMenu->setMenu(GetViewportInformationMenu());
     connect(m_ui->m_debugInformationMenu, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleDisplayInfo);
     m_ui->m_debugInformationMenu->setPopupMode(QToolButton::MenuButtonPopup);
+}
 
+static bool ShouldHelpersBeChecked()
+{
+    return AzToolsFramework::HelpersVisible() || AzToolsFramework::IconsVisible() || AzToolsFramework::OnlyShowHelpersForSelectedEntities();
 }
 
 void CViewportTitleDlg::SetupHelpersButton()
 {
-    connect(m_ui->m_helpers, &QToolButton::clicked, this, &CViewportTitleDlg::OnToggleHelpers);
-    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+    if (m_helpersMenu == nullptr)
+    {
+        m_helpersMenu = new QMenu("Helpers State", this);
+
+        auto iconAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Icons);
+        connect(
+            iconAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto helperAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::Helpers);
+        connect(
+            helperAction, &QAction::triggered, this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto onlySelectedAction = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
+        connect(
+            onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        auto hideHelpersAction =
+            MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::HideHelpers);
+        connect(
+            hideHelpersAction,
+            &QAction::triggered,
+            this,
+            [this]
+            {
+                m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
+            });
+
+        m_helpersAction = new QAction(tr("Helpers for all entities"), m_helpersMenu);
+        m_helpersAction->setCheckable(true);
+        connect(
+            m_helpersAction, &QAction::triggered, this,
+            [helperAction]
+            {
+                helperAction->trigger();
+            });
+
+        m_iconsAction = new QAction(tr("Icons"), m_helpersMenu);
+        m_iconsAction->setCheckable(true);
+        connect(
+            m_iconsAction, &QAction::triggered, this,
+            [iconAction]
+            {
+                iconAction->trigger();
+            });
+
+        m_onlySelectedAction = new QAction(tr("Helpers for selected entities"), m_helpersMenu);
+        m_onlySelectedAction->setCheckable(true);
+        connect(
+             m_onlySelectedAction,
+            &QAction::triggered,
+            this,
+            [onlySelectedAction]
+            {
+                onlySelectedAction->trigger();
+            });
+
+        m_hideHelpersAction = new QAction(tr("Hide Helpers"), m_helpersMenu);
+        m_hideHelpersAction->setCheckable(true);
+        connect(
+            m_hideHelpersAction,
+            &QAction::triggered,
+            this,
+            [hideHelpersAction]
+            {
+                hideHelpersAction->trigger();
+            });
+
+        m_helpersMenu->addAction(m_iconsAction);
+        m_helpersMenu->addSeparator();
+        m_helpersMenu->addAction(m_helpersAction);
+        m_helpersMenu->addAction(m_onlySelectedAction);
+        m_helpersMenu->addAction(m_hideHelpersAction);
+
+        connect(
+            m_helpersMenu, &QMenu::aboutToShow, this,
+            [this]
+            {
+                m_helpersAction->setChecked(AzToolsFramework::HelpersVisible());
+                m_iconsAction->setChecked(AzToolsFramework::IconsVisible());
+                m_onlySelectedAction->setChecked(AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                m_hideHelpersAction->setChecked(!AzToolsFramework::HelpersVisible() && !AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+            });
+
+        m_ui->m_helpers->setCheckable(true);
+        m_ui->m_helpers->setMenu(m_helpersMenu);
+        m_ui->m_helpers->setPopupMode(QToolButton::InstantPopup);
+    }
+
+    m_ui->m_helpers->setChecked(ShouldHelpersBeChecked());
 }
 
 void CViewportTitleDlg::SetupOverflowMenu()
 {
-    // Setup the overflow menu
-    QMenu* overFlowMenu = new QMenu(this);
+    // setup the overflow menu
+    auto* overflowMenu = new IgnoreKeyboardMenu(this);
+    overflowMenu->setMinimumWidth(MiniumOverflowMenuWidth);
 
-    m_audioMuteAction = new QAction("Mute Audio", overFlowMenu);
+    m_audioMuteAction = new QAction("Mute Audio", overflowMenu);
     connect(m_audioMuteAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedMuteAudio);
-    overFlowMenu->addAction(m_audioMuteAction);
+    overflowMenu->addAction(m_audioMuteAction);
 
-    m_enableVRAction = new QAction("Enable VR Preview", overFlowMenu);
-    connect(m_enableVRAction, &QAction::triggered, this, &CViewportTitleDlg::OnBnClickedEnableVR);
-    overFlowMenu->addAction(m_enableVRAction);
+    overflowMenu->addSeparator();
 
-    overFlowMenu->addSeparator();
+    m_enableGridSnappingCheckBox = new QCheckBox("Enable Grid Snapping", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableGridSnappingCheckBox);
+    auto gridSnappingWidgetAction = new QWidgetAction(overflowMenu);
+    gridSnappingWidgetAction->setDefaultWidget(m_enableGridSnappingCheckBox);
+    connect(m_enableGridSnappingCheckBox, &QCheckBox::stateChanged, this, &CViewportTitleDlg::OnGridSnappingToggled);
+    overflowMenu->addAction(gridSnappingWidgetAction);
 
-    m_enableGridSnappingAction = new QAction("Enable Grid Snapping", overFlowMenu);
-    connect(m_enableGridSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnGridSnappingToggled);
-    m_enableGridSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableGridSnappingAction);
+    m_enableGridVisualizationCheckBox = new QCheckBox("Show Grid", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableGridVisualizationCheckBox);
+    auto gridVisualizationWidgetAction = new QWidgetAction(overflowMenu);
+    gridVisualizationWidgetAction->setDefaultWidget(m_enableGridVisualizationCheckBox);
+    connect(
+        m_enableGridVisualizationCheckBox, &QCheckBox::stateChanged,
+        [](const int state)
+        {
+            SandboxEditor::SetShowingGrid(state == Qt::Checked);
+        });
+    overflowMenu->addAction(gridVisualizationWidgetAction);
 
-    m_gridSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_gridSizeActionWidget = new QWidgetAction(overflowMenu);
     m_gridSpinBox = new AzQtComponents::DoubleSpinBox();
     m_gridSpinBox->setValue(SandboxEditor::GridSnappingSize());
     m_gridSpinBox->setMinimum(1e-2f);
@@ -246,78 +393,94 @@ void CViewportTitleDlg::SetupOverflowMenu()
         m_gridSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this, &CViewportTitleDlg::OnGridSpinBoxChanged);
 
     m_gridSizeActionWidget->setDefaultWidget(m_gridSpinBox);
-    overFlowMenu->addAction(m_gridSizeActionWidget);
+    overflowMenu->addAction(m_gridSizeActionWidget);
 
-    overFlowMenu->addSeparator();
+    overflowMenu->addSeparator();
 
-    m_enableAngleSnappingAction = new QAction("Enable Angle Snapping", overFlowMenu);
-    connect(m_enableAngleSnappingAction, &QAction::triggered, this, &CViewportTitleDlg::OnAngleSnappingToggled);
-    m_enableAngleSnappingAction->setCheckable(true);
-    overFlowMenu->addAction(m_enableAngleSnappingAction);
+    m_enableAngleSnappingCheckBox = new QCheckBox("Enable Angle Snapping", overflowMenu);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(m_enableAngleSnappingCheckBox);
+    auto angleSnappingWidgetAction = new QWidgetAction(overflowMenu);
+    angleSnappingWidgetAction->setDefaultWidget(m_enableAngleSnappingCheckBox);
+    connect(m_enableAngleSnappingCheckBox, &QCheckBox::stateChanged, this, &CViewportTitleDlg::OnAngleSnappingToggled);
+    overflowMenu->addAction(angleSnappingWidgetAction);
 
-    m_angleSizeActionWidget = new QWidgetAction(overFlowMenu);
+    m_angleSizeActionWidget = new QWidgetAction(overflowMenu);
     m_angleSpinBox = new AzQtComponents::DoubleSpinBox();
     m_angleSpinBox->setValue(SandboxEditor::AngleSnappingSize());
     m_angleSpinBox->setMinimum(1e-2f);
-    m_angleSpinBox->setToolTip(tr("Angle Snapping"));
+    m_angleSpinBox->setToolTip(tr("Angle size"));
 
     QObject::connect(
         m_angleSpinBox, QOverload<double>::of(&AzQtComponents::DoubleSpinBox::valueChanged), this,
         &CViewportTitleDlg::OnAngleSpinBoxChanged);
 
     m_angleSizeActionWidget->setDefaultWidget(m_angleSpinBox);
-    overFlowMenu->addAction(m_angleSizeActionWidget);
+    overflowMenu->addAction(m_angleSizeActionWidget);
 
-    m_ui->m_overflowBtn->setMenu(overFlowMenu);
+    m_ui->m_overflowBtn->setMenu(overflowMenu);
     m_ui->m_overflowBtn->setPopupMode(QToolButton::InstantPopup);
-    connect(overFlowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
+    connect(overflowMenu, &QMenu::aboutToShow, this, &CViewportTitleDlg::UpdateOverFlowMenuState);
 
     UpdateMuteActionText();
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetViewPane(CLayoutViewPane* pViewPane)
 {
     if (m_pViewPane)
+    {
         m_pViewPane->disconnect(this);
+    }
+
     m_pViewPane = pViewPane;
+
     if (m_pViewPane)
+    {
         connect(this, &QWidget::customContextMenuRequested, m_pViewPane, &CLayoutViewPane::ShowTitleMenu);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::OnInitDialog()
 {
-    m_ui->m_titleBtn->setText(m_title);
-
     // Add a child parented to us that listens for r_displayInfo changes.
     auto displayInfoHelper = new CViewportTitleDlgDisplayInfoHelper(this);
     connect(displayInfoHelper, &CViewportTitleDlgDisplayInfoHelper::ViewportInfoStatusUpdated, this, &CViewportTitleDlg::UpdateDisplayInfo);
     UpdateDisplayInfo();
 
-    // This is here just in case this class hasn't been created before
-    // a VR headset was initialized
-    m_enableVRAction->setEnabled(false);
-    if (AZ::VR::HMDDeviceRequestBus::GetTotalNumOfEventHandlers() != 0)
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+    if (!isPrefabSystemEnabled)
     {
-        m_enableVRAction->setEnabled(true);
+        m_ui->m_prefabFocusPath->setEnabled(false);
+        m_ui->m_prefabFocusBackButton->setEnabled(false);
+        m_ui->m_prefabFocusPath->hide();
+        m_ui->m_prefabFocusBackButton->hide();
+    }
+}
+
+void CViewportTitleDlg::InitializePrefabViewportFocusPathHandler(AzQtComponents::BreadCrumbs* breadcrumbsWidget, QToolButton* backButton)
+{
+    if (m_prefabViewportFocusPathHandler != nullptr)
+    {
+        return;
     }
 
-    AZ::VR::VREventBus::Handler::BusConnect();
+    bool isPrefabSystemEnabled = false;
+    AzFramework::ApplicationRequests::Bus::BroadcastResult(isPrefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
 
-    QFontMetrics metrics({});
-    int width = metrics.boundingRect("-9999.99").width() * m_fieldWidthMultiplier;
-
-    m_cameraSpeed->setFixedWidth(width);
-
+    if (isPrefabSystemEnabled)
+    {
+        m_prefabViewportFocusPathHandler = new AzToolsFramework::Prefab::PrefabViewportFocusPathHandler();
+        m_prefabViewportFocusPathHandler->Initialize(breadcrumbsWidget, backButton);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
 void CViewportTitleDlg::SetTitle(const QString& title)
 {
     m_title = title;
-    m_ui->m_titleBtn->setText(m_title);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -329,11 +492,16 @@ void CViewportTitleDlg::OnMaximize()
     }
 }
 
-//////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnToggleHelpers()
+void CViewportTitleDlg::SetNormalPrefabEditMode()
 {
-    Helpers::ToggleHelpers();
-    m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
+    m_prefabEditMode = PrefabEditModeUXSetting::Normal;
+    UpdatePrefabEditMode();
+}
+
+void CViewportTitleDlg::SetMonochromaticPrefabEditMode()
+{
+    m_prefabEditMode = PrefabEditModeUXSetting::Monochromatic;
+    UpdatePrefabEditMode();
 }
 
 void CViewportTitleDlg::SetNoViewportInfo()
@@ -360,8 +528,43 @@ void CViewportTitleDlg::SetCompactViewportInfo()
         &AZ::AtomBridge::AtomViewportInfoDisplayRequestBus::Events::SetDisplayState, AZ::AtomBridge::ViewportInfoDisplayState::CompactInfo);
 }
 
-
 //////////////////////////////////////////////////////////////////////////
+void CViewportTitleDlg::UpdatePrefabEditMode()
+{
+    if (m_prefabEditModeMenu == nullptr)
+    {
+        // Nothing to update, just return;
+        return;
+    }
+
+    m_normalPrefabEditModeAction->setChecked(false);
+    m_monochromaticPrefabEditModeAction->setChecked(false);
+
+    switch (m_prefabEditMode)
+    {
+    case PrefabEditModeUXSetting::Normal:
+        {
+            m_normalPrefabEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, false);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(false);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            break;
+        }
+    case PrefabEditModeUXSetting::Monochromatic:
+        {
+            m_monochromaticPrefabEditModeAction->setChecked(true);
+            AZ::Render::EditorStateRequestsBus::Event(
+                AZ::Render::EditorState::FocusMode, &AZ::Render::EditorStateRequestsBus::Events::SetEnabled, true);
+            AzToolsFramework::SetPrefabEditModeEffectEnabled(true);
+            AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            break;
+        }
+    default:
+        AZ_Error("PrefabEditMode", false, AZStd::string::format("Unexpected edit mode: %zu", static_cast<size_t>(m_prefabEditMode)).c_str());
+    }
+}
+
 void CViewportTitleDlg::UpdateDisplayInfo()
 {
     if (m_viewportInformationMenu == nullptr)
@@ -449,21 +652,21 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 
     if (!customPresets.empty())
     {
-        for (size_t i = 0; i < customPresets.size(); ++i)
+        for (const QString& customPreset : customPresets)
         {
-            if (customPresets[i].isEmpty())
+            if (customPreset.isEmpty())
             {
                 break;
             }
 
-            float fov = gSettings.viewports.fDefaultFov;
+            float fov = SandboxEditor::CameraDefaultFovRadians();
             bool ok;
-            float f = customPresets[i].toDouble(&ok);
+            float f = customPreset.toFloat(&ok);
             if (ok)
             {
                 fov = std::max(1.0f, f);
                 fov = std::min(120.0f, f);
-                QAction* action = menu->addAction(customPresets[i]);
+                QAction* action = menu->addAction(customPreset);
                 connect(action, &QAction::triggered, action, [fov, callback](){ callback(fov); });
             }
         }
@@ -474,14 +677,13 @@ void CViewportTitleDlg::AddFOVMenus(QMenu* menu, std::function<void(float)> call
 void CViewportTitleDlg::OnMenuFOVCustom()
 {
     bool ok;
-    int fov = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
+    int fovDegrees = QInputDialog::getInt(this, tr("Custom FOV"), QString(), 60, 1, 120, 1, &ok);
 
     if (ok)
     {
-        m_pViewPane->SetViewportFOV(fov);
-
+        m_pViewPane->SetViewportFOV(aznumeric_cast<float>(fovDegrees));
         // Update the custom presets.
-        const QString text = QString::number(fov);
+        const QString text = QString::number(fovDegrees);
         UpdateCustomPresets(text, m_customFOVPresets);
         SaveCustomPresets("FOVPresets", "FOVPreset", m_customFOVPresets);
     }
@@ -497,7 +699,14 @@ void CViewportTitleDlg::CreateFOVMenu()
 
     m_fovMenu->clear();
 
-    AddFOVMenus(m_fovMenu, [this](float f) { m_pViewPane->SetViewportFOV(f); }, m_customFOVPresets);
+    AddFOVMenus(
+        m_fovMenu,
+        [this](const float fovDegrees)
+        {
+            m_pViewPane->SetViewportFOV(fovDegrees);
+        },
+        m_customFOVPresets);
+
     if (!m_fovMenu->isEmpty())
     {
         m_fovMenu->addSeparator();
@@ -535,15 +744,15 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+):(\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -551,7 +760,7 @@ void CViewportTitleDlg::AddAspectRatioMenus(QMenu* menu, std::function<void(int,
             Q_ASSERT(ok);
             unsigned int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback]() {callback(width, height); });
         }
     }
@@ -604,6 +813,32 @@ QMenu* const CViewportTitleDlg::GetAspectMenu()
 {
     CreateAspectMenu();
     return m_aspectMenu;
+}
+
+QMenu* const CViewportTitleDlg::GetPrefabEditModeMenu()
+{
+    CreatePrefabEditModeMenu();
+    return m_prefabEditModeMenu;
+}
+
+void CViewportTitleDlg::CreatePrefabEditModeMenu()
+{
+    if (m_prefabEditModeMenu == nullptr)
+    {
+        m_prefabEditModeMenu = new QMenu("Edit Mode");
+
+        m_normalPrefabEditModeAction = new QAction(tr("Normal"), m_prefabEditModeMenu);
+        m_normalPrefabEditModeAction->setCheckable(true);
+        connect(m_normalPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetNormalPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_normalPrefabEditModeAction);
+
+        m_monochromaticPrefabEditModeAction = new QAction(tr("Monochromatic"), m_prefabEditModeMenu);
+        m_monochromaticPrefabEditModeAction->setCheckable(true);
+        connect(m_monochromaticPrefabEditModeAction, &QAction::triggered, this, &CViewportTitleDlg::SetMonochromaticPrefabEditMode);
+        m_prefabEditModeMenu->addAction(m_monochromaticPrefabEditModeAction);
+
+        UpdatePrefabEditMode();
+    }
 }
 
 QMenu* const CViewportTitleDlg::GetViewportInformationMenu()
@@ -684,15 +919,15 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
 
     menu->addSeparator();
 
-    for (size_t i = 0; i < customPresets.size(); ++i)
+    for (const QString& customPreset : customPresets)
     {
-        if (customPresets[i].isEmpty())
+        if (customPreset.isEmpty())
         {
             break;
         }
 
         static QRegularExpression regex(QStringLiteral("^(\\d+) x (\\d+)$"));
-        QRegularExpressionMatch matches = regex.match(customPresets[i]);
+        QRegularExpressionMatch matches = regex.match(customPreset);
         if (matches.hasMatch())
         {
             bool ok;
@@ -700,7 +935,7 @@ void CViewportTitleDlg::AddResolutionMenus(QMenu* menu, std::function<void(int, 
             Q_ASSERT(ok);
             int height = matches.captured(2).toInt(&ok);
             Q_ASSERT(ok);
-            QAction* action = menu->addAction(customPresets[i]);
+            QAction* action = menu->addAction(customPreset);
             connect(action, &QAction::triggered, action, [width, height, callback](){ callback(width, height); });
         }
     }
@@ -762,12 +997,13 @@ void CViewportTitleDlg::OnViewportSizeChanged(int width, int height)
 }
 
 //////////////////////////////////////////////////////////////////////////
-void CViewportTitleDlg::OnViewportFOVChanged(float fov)
+void CViewportTitleDlg::OnViewportFOVChanged(const float fovRadians)
 {
-    const float degFOV = RAD2DEG(fov);
     if (m_fovMenu)
     {
-        m_fovMenu->setTitle(QString::fromLatin1("FOV:  %1%2").arg(qRound(degFOV)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
+        const float fovDegrees = AZ::RadToDeg(fovRadians);
+        m_fovMenu->setTitle(
+            QString::fromLatin1("FOV:  %1%2").arg(qRound(fovDegrees)).arg(QString(QByteArray::fromPercentEncoding("%C2%B0"))));
     }
 }
 
@@ -776,9 +1012,6 @@ void CViewportTitleDlg::OnEditorNotifyEvent(EEditorNotifyEvent event)
 {
     switch (event)
     {
-    case eNotify_OnDisplayRenderUpdate:
-        m_ui->m_helpers->setChecked(Helpers::IsHelpersShown());
-        break;
     case eNotify_OnBeginGameMode:
     case eNotify_OnEndGameMode:
         UpdateMuteActionText();
@@ -792,12 +1025,12 @@ void CViewportTitleDlg::OnSystemEvent(ESystemEvent event, UINT_PTR wparam, UINT_
     {
         if (m_pViewPane)
         {
-            const int eventWidth = static_cast<int>(wparam);
-            const int eventHeight = static_cast<int>(lparam);
+            const int eventWidth = aznumeric_cast<int>(wparam);
+            const int eventHeight = aznumeric_cast<int>(lparam);
             const QWidget* viewport = m_pViewPane->GetViewport();
 
-            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport 
-            // sending the event.  But for now, just detect that we've gotten width/height values that match our 
+            // This should eventually be converted to an EBus to make it easy to connect to the correct viewport
+            // sending the event.  But for now, just detect that we've gotten width/height values that match our
             // associated viewport
             if (viewport && (eventWidth == viewport->width()) && (eventHeight == viewport->height()))
             {
@@ -835,21 +1068,6 @@ void CViewportTitleDlg::UpdateCustomPresets(const QString& text, QStringList& cu
 
 bool CViewportTitleDlg::eventFilter(QObject* object, QEvent* event)
 {
-    if (object == m_cameraSpeed)
-    {
-        if (event->type() == QEvent::FocusIn)
-        {
-            QTimer::singleShot(
-                0, this,
-                [this]
-                {
-                    m_cameraSpeed->lineEdit()->selectAll();
-                });
-        }
-
-        return m_cameraSpeed->eventFilter(object, event);
-    }
-
     bool consumeEvent = false;
 
     // These events are forwarded from the toolbar that took ownership of our widgets
@@ -878,42 +1096,33 @@ void CViewportTitleDlg::OnBnClickedGotoPosition()
 void CViewportTitleDlg::OnBnClickedMuteAudio()
 {
     gSettings.bMuteAudio = !gSettings.bMuteAudio;
-
-    Audio::AudioSystemRequestBus::Broadcast(
-        &Audio::AudioSystemRequestBus::Events::PushRequest, gSettings.bMuteAudio ? m_oMuteAudioRequest : m_oUnmuteAudioRequest);
+    if (gSettings.bMuteAudio)
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalMuteAudio);
+    }
+    else
+    {
+        LmbrCentral::AudioSystemComponentRequestBus::Broadcast(&LmbrCentral::AudioSystemComponentRequestBus::Events::GlobalUnmuteAudio);
+    }
 
     UpdateMuteActionText();
 }
 
 void CViewportTitleDlg::UpdateMuteActionText()
 {
-    if (!Audio::AudioSystemRequestBus::HasHandlers())
-    {
-        m_audioMuteAction->setEnabled(false);
-        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
-    }
-    else
+    bool audioSystemConnected = false;
+    LmbrCentral::AudioSystemComponentRequestBus::BroadcastResult(
+        audioSystemConnected, &LmbrCentral::AudioSystemComponentRequestBus::Events::IsAudioSystemInitialized);
+    if (audioSystemConnected)
     {
         m_audioMuteAction->setEnabled(true);
         m_audioMuteAction->setText(gSettings.bMuteAudio ? tr("Un-mute Audio") : tr("Mute Audio"));
     }
-}
-
-void CViewportTitleDlg::OnHMDInitialized()
-{
-    m_enableVRAction->setEnabled(true);
-}
-
-void CViewportTitleDlg::OnHMDShutdown()
-{
-    m_enableVRAction->setEnabled(false);
-}
-
-void CViewportTitleDlg::OnBnClickedEnableVR()
-{
-    gSettings.bEnableGameModeVR = !gSettings.bEnableGameModeVR;
-
-    m_enableVRAction->setText(gSettings.bEnableGameModeVR ? tr("Disable VR Preview") : tr("Enable VR Preview"));
+    else
+    {
+        m_audioMuteAction->setEnabled(false);
+        m_audioMuteAction->setText(tr("Mute Audio: Enable Audio Gem"));
+    }
 }
 
 inline double Round(double fVal, double fStep)
@@ -925,106 +1134,74 @@ inline double Round(double fVal, double fStep)
     return fVal;
 }
 
-void CViewportTitleDlg::SetSpeedComboBox(double value)
-{
-    value = AZStd::clamp(Round(value, m_speedStep), m_minSpeed, m_maxSpeed);
-
-    int index = m_cameraSpeed->findData(value);
-    if (index != -1)
-    {
-        m_cameraSpeed->setCurrentIndex(index);
-    }
-    else
-    {
-        m_cameraSpeed->lineEdit()->setText(QString().setNum(value, 'f', m_numDecimals));
-    }
-}
-
-void CViewportTitleDlg::OnSpeedComboBoxEnter()
-{
-    m_cameraSpeed->clearFocus();
-}
-
-void CViewportTitleDlg::OnUpdateMoveSpeedText(const QString& text)
-{
-    if (SandboxEditor::UsingNewCameraSystem())
-    {
-        SandboxEditor::SetCameraTranslateSpeed(aznumeric_cast<float>(Round(text.toDouble(), m_speedStep)));
-    }
-    else
-    {
-        gSettings.cameraMoveSpeed = aznumeric_cast<float>(Round(text.toDouble(), m_speedStep));
-    }
-}
-
 void CViewportTitleDlg::CheckForCameraSpeedUpdate()
 {
-    if (const float currentCameraMoveSpeed =
-            SandboxEditor::UsingNewCameraSystem() ? SandboxEditor::CameraTranslateSpeed() : gSettings.cameraMoveSpeed;
-        currentCameraMoveSpeed != m_prevMoveSpeed && !m_cameraSpeed->lineEdit()->hasFocus())
+    const float currentCameraSpeedScale = SandboxEditor::CameraSpeedScale();
+    if (currentCameraSpeedScale != m_prevMoveSpeedScale && !m_cameraSpinBox->hasFocus())
     {
-        m_prevMoveSpeed = currentCameraMoveSpeed;
-        SetSpeedComboBox(currentCameraMoveSpeed);
+        m_prevMoveSpeedScale = currentCameraSpeedScale;
+        m_cameraSpinBox->setValue(currentCameraSpeedScale);
     }
 }
 
-void CViewportTitleDlg::OnGridSnappingToggled()
+void CViewportTitleDlg::OnGridSnappingToggled(const int state)
 {
-    m_gridSizeActionWidget->setEnabled(m_enableGridSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->trigger();
+    m_gridSizeActionWidget->setEnabled(state == Qt::Checked);
+    m_enableGridVisualizationCheckBox->setEnabled(state == Qt::Checked);
+    SandboxEditor::SetGridSnapping(!SandboxEditor::GridSnappingEnabled());
 }
 
-void CViewportTitleDlg::OnAngleSnappingToggled()
+void CViewportTitleDlg::OnAngleSnappingToggled(const int state)
 {
-    m_angleSizeActionWidget->setEnabled(m_enableAngleSnappingAction->isChecked());
-    MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->trigger();
+    m_angleSizeActionWidget->setEnabled(state == Qt::Checked);
+    SandboxEditor::SetAngleSnapping(!SandboxEditor::AngleSnappingEnabled());
 }
 
-void CViewportTitleDlg::OnGridSpinBoxChanged(double value)
+void CViewportTitleDlg::OnGridSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetGridSnappingSize(value);
+    SandboxEditor::SetGridSnappingSize(aznumeric_cast<float>(value));
 }
 
-void CViewportTitleDlg::OnAngleSpinBoxChanged(double value)
+void CViewportTitleDlg::OnAngleSpinBoxChanged(const double value)
 {
-    SandboxEditor::SetAngleSnappingSize(value);
+    SandboxEditor::SetAngleSnappingSize(aznumeric_cast<float>(value));
 }
 
 void CViewportTitleDlg::UpdateOverFlowMenuState()
 {
-    bool gridSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapToGrid)->isChecked();
+    const bool gridSnappingActive = SandboxEditor::GridSnappingEnabled();
     {
-        QSignalBlocker signalBlocker(m_enableGridSnappingAction);
-        m_enableGridSnappingAction->setChecked(gridSnappingActive);
+        QSignalBlocker signalBlocker(m_enableGridSnappingCheckBox);
+        m_enableGridSnappingCheckBox->setChecked(gridSnappingActive);
     }
     m_gridSizeActionWidget->setEnabled(gridSnappingActive);
 
-    bool angleSnappingActive = MainWindow::instance()->GetActionManager()->GetAction(AzToolsFramework::SnapAngle)->isChecked();
+    const bool angleSnappingActive = SandboxEditor::AngleSnappingEnabled();
     {
-        QSignalBlocker signalBlocker(m_enableAngleSnappingAction);
-        m_enableAngleSnappingAction->setChecked(angleSnappingActive);
+        QSignalBlocker signalBlocker(m_enableAngleSnappingCheckBox);
+        m_enableAngleSnappingCheckBox->setChecked(angleSnappingActive);
     }
     m_angleSizeActionWidget->setEnabled(angleSnappingActive);
+
+    {
+        QSignalBlocker signalBlocker(m_enableGridVisualizationCheckBox);
+        m_enableGridVisualizationCheckBox->setChecked(SandboxEditor::ShowingGrid());
+    }
 }
 
-namespace
+ namespace
 {
     void PyToggleHelpers()
     {
-        GetIEditor()->GetDisplaySettings()->DisplayHelpers(!GetIEditor()->GetDisplaySettings()->IsDisplayHelpers());
-        GetIEditor()->Notify(eNotify_OnDisplayRenderUpdate);
-
-        if (GetIEditor()->GetDisplaySettings()->IsDisplayHelpers() == false)
-        {
-            GetIEditor()->GetObjectManager()->SendEvent(EVENT_HIDE_HELPER);
-        }
+        AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+        AzToolsFramework::EditorSettingsAPIBus::Broadcast(&AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
     }
 
     bool PyIsHelpersShown()
     {
-        return GetIEditor()->GetDisplaySettings()->IsDisplayHelpers();
+        return AzToolsFramework::HelpersVisible();
     }
-}
+} // namespace
 
 namespace AzToolsFramework
 {
@@ -1039,11 +1216,12 @@ namespace AzToolsFramework
                     ->Attribute(AZ::Script::Attributes::Category, "Legacy/Editor")
                     ->Attribute(AZ::Script::Attributes::Module, "legacy.general");
             };
+
             addLegacyGeneral(behaviorContext->Method("toggle_helpers", PyToggleHelpers, nullptr, "Toggles the display of helpers."));
             addLegacyGeneral(behaviorContext->Method("is_helpers_shown", PyIsHelpersShown, nullptr, "Gets the display state of helpers."));
         }
     }
-}
+} // namespace AzToolsFramework
 
 #include "ViewportTitleDlg.moc"
 #include <moc_ViewportTitleDlg.cpp>

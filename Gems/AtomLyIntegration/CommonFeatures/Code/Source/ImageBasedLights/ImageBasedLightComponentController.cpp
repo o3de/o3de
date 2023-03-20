@@ -163,8 +163,6 @@ namespace AZ
                     return true;
                 }
             }
-            // If this asset didn't load or isn't a cubemap, release it.
-            configAsset.Release();
             return false;
         }
 

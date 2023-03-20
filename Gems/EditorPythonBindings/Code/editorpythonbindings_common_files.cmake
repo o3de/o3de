@@ -10,11 +10,20 @@ set(FILES
     Include/EditorPythonBindings/CustomTypeBindingBus.h
     Include/EditorPythonBindings/EditorPythonBindingsBus.h
     Include/EditorPythonBindings/EditorPythonBindingsSymbols.h
+    Source/ActionManager/ActionManagerBus.h
+    Source/ActionManager/MenuManagerBus.h
+    Source/ActionManager/PythonActionManagerHandler.cpp
+    Source/ActionManager/PythonActionManagerHandler.h
+    Source/ActionManager/PythonEditorAction.cpp
+    Source/ActionManager/PythonEditorAction.h
+    Source/ActionManager/ToolBarManagerBus.h
     Source/PythonCommon.h
     Source/PythonLogSymbolsComponent.cpp
     Source/PythonLogSymbolsComponent.h
     Source/PythonMarshalComponent.cpp
     Source/PythonMarshalComponent.h
+    Source/PythonMarshalTuple.cpp
+    Source/PythonMarshalTuple.h
     Source/PythonProxyBus.cpp
     Source/PythonProxyBus.h
     Source/PythonProxyObject.cpp

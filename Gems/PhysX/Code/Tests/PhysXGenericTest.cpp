@@ -13,6 +13,8 @@
 #include <AzFramework/Physics/Collision/CollisionLayers.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 #include <PhysX/ColliderComponentBus.h>
+#include <PhysX/Material/PhysXMaterial.h>
+#include <PhysX/Material/PhysXMaterialConfiguration.h>
 
 #include <Tests/PhysXGenericTestFixture.h>
 #include <Tests/PhysXTestCommon.h>
@@ -442,7 +444,8 @@ namespace PhysX
         AzPhysics::RigidBody* boxB = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(1.0f, 0.0f, 10.0f));
         AzPhysics::RigidBody* boxC = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(-1.0f, 0.0f, 10.0f));
 
-        auto material = boxC->GetShape(0)->GetMaterial();
+        auto material = AZStd::rtti_pointer_cast<PhysX::Material>(boxC->GetShape(0)->GetMaterial());
+        const float prevRestitution = material->GetRestitution();
         material->SetRestitution(1.0f);
 
         TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 150);
@@ -450,7 +453,64 @@ namespace PhysX
         // boxB and boxC should have the same material (default)
         // so they should both bounce high
         EXPECT_NEAR(boxB->GetPosition().GetZ(), boxC->GetPosition().GetZ(), 0.5f);
+
+        // Restore restitution value
+        material->SetRestitution(prevRestitution);
     }
+
+#if (PX_PHYSICS_VERSION_MAJOR >= 5)
+    TEST_F(GenericPhysicsInterfaceTest, Materials_BoxWithCompliantContactModeDisabled_DoesNotPenetrateFloor)
+    {
+        AzPhysics::SceneHandle sceneHandle = CreateTestScene();
+
+        TestUtils::AddStaticFloorToScene(sceneHandle, AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, -0.5f)));
+        AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
+
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_compliantContactMode.m_enabled = false;
+        box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
+
+        for (AZ::u32 step = 0; step < 300; ++step)
+        {
+            TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 1);
+
+            // At every moment the box should not penetrate the floor.
+            EXPECT_GE(box->GetPosition().GetZ(), 0.5f);
+        }
+
+        // The box should settle on the floor
+        EXPECT_THAT(box->GetPosition().GetZ(), ::testing::FloatNear(0.5f, 0.0001f));
+    }
+
+    TEST_F(GenericPhysicsInterfaceTest, Materials_BoxWithCompliantContactModeEnabled_PenetratesFloor)
+    {
+        AzPhysics::SceneHandle sceneHandle = CreateTestScene();
+
+        TestUtils::AddStaticFloorToScene(sceneHandle, AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, -0.5f)));
+        AzPhysics::RigidBody* box = TestUtils::AddUnitBoxToScene(sceneHandle, AZ::Vector3(0.0f, 0.0f, 2.0f));
+
+        PhysX::MaterialConfiguration materialConfiguration;
+        materialConfiguration.m_compliantContactMode.m_enabled = true;
+        box->GetShape(0)->SetMaterial(PhysX::Material::CreateMaterialWithRandomId(materialConfiguration.CreateMaterialAsset()));
+
+        bool penetratedFloor = false;
+        for (AZ::u32 step = 0; step < 300; ++step)
+        {
+            TestUtils::UpdateScene(sceneHandle, 1.0f / 60.0f, 1);
+            if (box->GetPosition().GetZ() < 0.5f)
+            {
+                penetratedFloor = true;
+            }
+        }
+
+        // With compliant contacts enabled the box should have penetrated the floor and bounce
+        // back up like a spring.
+        EXPECT_TRUE(penetratedFloor);
+
+        // The box should settle near to the floor
+        EXPECT_THAT(box->GetPosition().GetZ(), ::testing::FloatNear(0.5f, 0.0001f));
+    }
+#endif // (PX_PHYSICS_VERSION_MAJOR >= 5)
 
     TEST_F(GenericPhysicsInterfaceTest, Collider_ColliderTag_IsSetFromConfiguration)
     {

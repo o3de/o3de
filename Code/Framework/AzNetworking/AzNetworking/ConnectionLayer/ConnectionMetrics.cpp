@@ -42,7 +42,7 @@ namespace AzNetworking
     {
         const uint32_t sampleAtom = 1 - m_activeAtom;
 
-        if (m_atoms[sampleAtom].m_timeAccumulatorMs == AZ::TimeMs{0})
+        if (m_atoms[sampleAtom].m_timeAccumulatorMs == AZ::Time::ZeroTimeMs)
         {
             return 0.0f;
         }

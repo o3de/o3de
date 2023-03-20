@@ -170,7 +170,7 @@ namespace AZ
             behaviorContext->Class<Quaternion>()->
                 Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)->
                 Attribute(AZ::Script::Attributes::Module, "math")->
-                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::All)->
+                Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)->
                 Constructor<float>()->
                 Constructor<float, float, float, float>()->
                 Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::Value)->
@@ -254,12 +254,12 @@ namespace AZ
                 Method("CreateFromMatrix3x3", &Quaternion::CreateFromMatrix3x3)->
                 Method("CreateFromMatrix4x4", &Quaternion::CreateFromMatrix4x4)->
                 Method("CreateFromAxisAngle", &Quaternion::CreateFromAxisAngle)->
+                Method("CreateFromScaledAxisAngle", &Quaternion::CreateFromScaledAxisAngle)->
                 Method("CreateShortestArc", &Quaternion::CreateShortestArc)->
                 Method("CreateFromEulerAnglesDegrees", &Quaternion::CreateFromEulerAnglesDegrees)
                 ;
         }
     }
-
 
     Quaternion Quaternion::CreateFromMatrix3x3(const Matrix3x3& m)
     {
@@ -414,6 +414,73 @@ namespace AZ
         Set(x, y, z, w);
     }
 
+    Quaternion Quaternion::CreateFromEulerRadiansXYZ(const Vector3& eulerRadians)
+    {
+        const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
+        const Simd::Vec3::FloatType angles = Simd::Vec3::Mul(half, eulerRadians.GetSimdValue());
+        Simd::Vec3::FloatType sin, cos;
+        Simd::Vec3::SinCos(angles, sin, cos);
+
+        const float sx = Simd::Vec3::SelectFirst(sin);
+        const float cx = Simd::Vec3::SelectFirst(cos);
+        const float sy = Simd::Vec3::SelectSecond(sin);
+        const float cy = Simd::Vec3::SelectSecond(cos);    
+        const float sz = Simd::Vec3::SelectThird(sin);
+        const float cz = Simd::Vec3::SelectThird(cos);
+
+        // rot = rotx * roty * rotz
+        return AZ::Quaternion(
+            cx * sy * sz + sx * cy * cz,
+            cx * sy * cz - sx * cy * sz,
+            cx * cy * sz + sx * sy * cz,
+            cx * cy * cz - sx * sy * sz
+        );
+    }
+
+    Quaternion Quaternion::CreateFromEulerRadiansYXZ(const Vector3& eulerRadians)
+    {
+        const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
+        const Simd::Vec3::FloatType angles = Simd::Vec3::Mul(half, eulerRadians.GetSimdValue());
+        Simd::Vec3::FloatType sin, cos;
+        Simd::Vec3::SinCos(angles, sin, cos);
+
+        const float sx = Simd::Vec3::SelectFirst(sin);
+        const float cx = Simd::Vec3::SelectFirst(cos);
+        const float sy = Simd::Vec3::SelectSecond(sin);
+        const float cy = Simd::Vec3::SelectSecond(cos);
+        const float sz = Simd::Vec3::SelectThird(sin);
+        const float cz = Simd::Vec3::SelectThird(cos);
+
+        // rot = roty * rotx * rotz
+        return AZ::Quaternion(
+            cy * sx * cz + sy * cx * sz,
+            sy * cx * cz - cy * sx * sz,
+            cy * cx * sz - sy * sx * cz,
+            cy * cx * cz + sy * sx * sz
+        );
+    }
+    Quaternion Quaternion::CreateFromEulerRadiansZYX(const Vector3& eulerRadians)
+    {
+        const Simd::Vec3::FloatType half = Simd::Vec3::Splat(0.5f);
+        const Simd::Vec3::FloatType angles = Simd::Vec3::Mul(half, eulerRadians.GetSimdValue());
+        Simd::Vec3::FloatType sin, cos;
+        Simd::Vec3::SinCos(angles, sin, cos);
+
+        const float sx = Simd::Vec3::SelectFirst(sin);
+        const float cx = Simd::Vec3::SelectFirst(cos);
+        const float sy = Simd::Vec3::SelectSecond(sin);
+        const float cy = Simd::Vec3::SelectSecond(cos);
+        const float sz = Simd::Vec3::SelectThird(sin);
+        const float cz = Simd::Vec3::SelectThird(cos);
+        
+        // rot = rotz * roty * rotx
+        return AZ::Quaternion(
+            sx * cy * cz - cx * sy * sz,
+            cx * sy * cz + sx * cy * sz,
+            cx * cy * sz - sx * sy * cz,
+            cx * cy * cz + sx * sy * sz
+        );
+    }
 
     void Quaternion::ConvertToAxisAngle(Vector3& outAxis, float& outAngle) const
     {
@@ -428,6 +495,26 @@ namespace AZ
         {
             outAxis.Set(0.0f, 1.0f, 0.0f);
             outAngle = 0.0f;
+        }
+    }
+
+
+    Vector3 Quaternion::ConvertToScaledAxisAngle() const
+    {
+        // Take the log of the quaternion to convert it to the exponential map
+        // and multiply it by 2.0 to bring it into the scaled axis-angle representation.
+        const AZ::Vector3 imaginary = GetImaginary();
+        const float length = imaginary.GetLength();
+        if (length < AZ::Constants::FloatEpsilon)
+        {
+            return imaginary * 2.0f;
+        }
+        else
+        {
+            const float halfAngle = acosf(AZ::GetClamp(GetW(), -1.0f, 1.0f));
+
+            // Multiply by 2.0 to convert the half angle into the full one.
+            return halfAngle * 2.0f * (imaginary / length);
         }
     }
 }

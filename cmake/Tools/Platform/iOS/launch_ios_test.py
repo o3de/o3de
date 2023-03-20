@@ -75,7 +75,7 @@ def launch_ios_test(build_dir, target_dev_name, test_target, timeout_secs, test_
         
         command_line_arguments = [target, 'AzRunUnitTests']
         if test_filter:
-            command_line_arguments.extend(['gtest_filter', test_filter])
+            command_line_arguments.extend([f'--gtest_filter={test_filter}'])
         test_run_contents[TEST_TARGET_NAME]['CommandLineArguments'] = command_line_arguments
         
         with open(test_run_file, 'wb') as fp:

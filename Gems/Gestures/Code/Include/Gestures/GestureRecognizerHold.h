@@ -9,7 +9,9 @@
 
 #include "IGestureRecognizer.h"
 
+#include <CryCommon/ISystem.h>
 #include <AzCore/RTTI/ReflectContext.h>
+#include <AzCore/Time/ITime.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 namespace Gestures
@@ -25,7 +27,7 @@ namespace Gestures
 
         struct Config
         {
-            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Config, AZ::SystemAllocator);
             AZ_RTTI(Config, "{3D854AD1-73C0-4E26-A609-F20FC04F78F3}");
             static void Reflect(AZ::ReflectContext* context);
 
@@ -44,7 +46,7 @@ namespace Gestures
         };
         static const Config& GetDefaultConfig() { static Config s_cfg; return s_cfg; }
 
-        AZ_CLASS_ALLOCATOR(RecognizerHold, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RecognizerHold, AZ::SystemAllocator);
         AZ_RTTI(RecognizerHold, "{7FC9AB8D-0A94-40A6-8FE0-84C752D786DC}", RecognizerContinuous);
 
         explicit RecognizerHold(const Config& config = GetDefaultConfig());
@@ -62,7 +64,7 @@ namespace Gestures
         AZ::Vector2 GetStartPosition() const { return m_startPosition; }
         AZ::Vector2 GetCurrentPosition() const { return m_currentPosition; }
 
-        float GetDuration() const { return gEnv->pTimer->GetFrameStartTime().GetDifferenceInSeconds(m_startTime); }
+        float GetDuration() const { return AZ::TimeUsToSeconds(AZ::GetLastSimulationTickTime() - m_startTime); }
 
     private:
         enum class State
@@ -74,7 +76,7 @@ namespace Gestures
 
         Config m_config;
 
-        int64 m_startTime;
+        AZ::TimeUs m_startTime;
         ScreenPosition m_startPosition;
         ScreenPosition m_currentPosition;
 

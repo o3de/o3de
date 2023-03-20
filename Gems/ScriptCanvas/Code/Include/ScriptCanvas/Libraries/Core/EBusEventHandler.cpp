@@ -78,6 +78,8 @@ namespace ScriptCanvas
                         variableIds.insert(scopedVariableId->m_identifier);
                     }
                 }
+                
+                Node::CollectVariableReferences(variableIds);
             }
 
             bool EBusEventHandler::ContainsReferencesToVariables(const AZStd::unordered_set< ScriptCanvas::VariableId >& variableIds) const
@@ -90,11 +92,14 @@ namespace ScriptCanvas
 
                     if (scopedVariableId)
                     {
-                        return variableIds.find(scopedVariableId->m_identifier) != variableIds.end();
+                        if(variableIds.find(scopedVariableId->m_identifier) != variableIds.end())
+                        {
+                            return true;
+                        }
                     }
                 }
 
-                return false;
+                return Node::ContainsReferencesToVariables(variableIds);
             }
 
             size_t EBusEventHandler::GenerateFingerprint() const
@@ -513,7 +518,7 @@ namespace ScriptCanvas
                 {
                     const AZ::BehaviorParameter& argument(event.m_parameters[AZ::eBehaviorBusForwarderEventIndices::Result]);
                     Data::Type inputType(AZ::BehaviorContextHelper::IsStringParameter(argument) ? Data::Type::String() : Data::FromAZType(argument.m_typeId));
-                    const AZStd::string argName(AZStd::string::format("Result: %s", Data::GetName(inputType).data()).data());
+                    const AZStd::string argName(Data::GetName(inputType));
 
                     DataSlotConfiguration resultConfiguration;
 
@@ -602,14 +607,23 @@ namespace ScriptCanvas
                 }
             }
 
-            void EBusEventHandler::OnWriteEnd()
+            void EBusEventHandler::OnDeserialize()
             {
                 AZStd::lock_guard<AZStd::recursive_mutex> lock(m_mutex);
-                if (!m_ebus)
+                if (!m_ebus && !m_ebusName.empty())
                 {
                     CreateHandler(m_ebusName);
                 }
+
+                Node::OnDeserialize();
             }
+
+#if defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)////
+            void EBusEventHandler::OnWriteEnd()
+            {
+                OnDeserialize();
+            }
+#endif//defined(OBJECT_STREAM_EDITOR_ASSET_LOADING_SUPPORT_ENABLED)
 
             NodeTypeIdentifier EBusEventHandler::GetOutputNodeType(const SlotId& slotId) const
             {

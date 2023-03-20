@@ -21,7 +21,16 @@ namespace GraphCanvas
 
 namespace ScriptCanvasEditor
 {
-    class Graph;
+    // If only the Path or the Id is valid, attempts to fill in the missing piece.
+    // If both Path and Id is valid, including after correction, returns the handle including source Data,
+    // otherwise, returns null
+    AZStd::optional<SourceHandle> CompleteDescription(const SourceHandle& source);
+    // if CompleteDescription() succeeds, sets the handle to the result, else does nothing
+    bool CompleteDescriptionInPlace(SourceHandle& source);
+    // accepts any sort of path and returns one with a relative path if possible
+    AZStd::optional<SourceHandle> CreateFromAnyPath(const SourceHandle& source, const AZ::IO::Path& path);
+
+    class EditorGraph;
     class NodePaletteModel;
 
     class NodeIdentifierFactory
@@ -36,12 +45,12 @@ namespace ScriptCanvasEditor
     public:
         static void Reflect(AZ::ReflectContext* reflectContext);     
 
-        AZ_CLASS_ALLOCATOR(GraphStatisticsHelper, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphStatisticsHelper, AZ::SystemAllocator);
         AZ_RTTI(GraphStatisticsHelper, "{7D5B7A65-F749-493E-BA5C-6B8724791F03}");
 
         virtual ~GraphStatisticsHelper() = default;
 
-        void PopulateStatisticData(const Graph* editorGraph);
+        void PopulateStatisticData(const EditorGraph* editorGraph);
         
         AZStd::unordered_map< ScriptCanvas::NodeTypeIdentifier, int > m_nodeIdentifierCount;
 

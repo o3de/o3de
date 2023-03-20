@@ -45,11 +45,17 @@ namespace EMotionFX
         }
 
         const Actor* actor = modelIndices[0].data(SkeletonModel::ROLE_ACTOR_POINTER).value<Actor*>();
-        AZStd::vector<AZ::u32> jointIndices;
+        AZStd::vector<size_t> jointIndices;
 
         for (const QModelIndex& selectedIndex : modelIndices)
         {
+            if (SkeletonModel::IndexIsRootNode(selectedIndex))
+            {
+                continue;
+            }
+
             const Node* joint = selectedIndex.data(SkeletonModel::ROLE_POINTER).value<Node*>();
+
             jointIndices.emplace_back(joint->GetNodeIndex());
         }
 
@@ -68,7 +74,7 @@ namespace EMotionFX
 
     void SimulatedObjectHelpers::RemoveSimulatedJoints(const QModelIndexList& modelIndices, bool removeChildren)
     {        
-        AZStd::unordered_map<size_t, AZStd::pair<const Actor*, AZStd::vector<AZ::u32>>> objectToSkeletonJointIndices;
+        AZStd::unordered_map<size_t, AZStd::pair<const Actor*, AZStd::vector<size_t>>> objectToSkeletonJointIndices;
 
         for (const QModelIndex& index : modelIndices)
         {
@@ -80,7 +86,7 @@ namespace EMotionFX
             }
             const Actor* actor = index.data(SimulatedObjectModel::ROLE_ACTOR_PTR).value<Actor*>();
             const size_t objectIndex = static_cast<size_t>(index.data(SimulatedObjectModel::ROLE_OBJECT_INDEX).toInt());
-            const AZ::u32 jointIndex = index.data(SimulatedObjectModel::ROLE_JOINT_PTR).value<SimulatedJoint*>()->GetSkeletonJointIndex();
+            const size_t jointIndex = index.data(SimulatedObjectModel::ROLE_JOINT_PTR).value<SimulatedJoint*>()->GetSkeletonJointIndex();
             objectToSkeletonJointIndices[objectIndex].first = actor;
             objectToSkeletonJointIndices[objectIndex].second.emplace_back(jointIndex);
         }
@@ -92,7 +98,7 @@ namespace EMotionFX
         {
             const size_t objectIndex = objectIndexAndJointIndices.first;
             const Actor* actor = objectIndexAndJointIndices.second.first;
-            const AZStd::vector<AZ::u32> jointIndices = objectIndexAndJointIndices.second.second;
+            const AZStd::vector<size_t> jointIndices = objectIndexAndJointIndices.second.second;
 
             CommandSimulatedObjectHelpers::RemoveSimulatedJoints(actor->GetID(), jointIndices, objectIndex, removeChildren, &commandGroup);
         }

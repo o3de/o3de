@@ -9,8 +9,6 @@
 
 #include <ImplementationManager.h>
 
-#include <AzFramework/Application/Application.h>
-
 #include <ATLControlsModel.h>
 #include <AudioControlsEditorPlugin.h>
 #include <IAudioSystemEditor.h>
@@ -31,10 +29,6 @@ bool CImplementationManager::LoadImplementation()
 
         // release the loaded implementation (if any)
         Release();
-
-        const char* engineRoot = nullptr;
-        AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-        AZ_Assert(engineRoot != nullptr, "Unable to communicate with AzFramework::ApplicationRequests::Bus");
 
         AudioControlsEditor::EditorImplPluginEventBus::Broadcast(&AudioControlsEditor::EditorImplPluginEventBus::Events::InitializeEditorImplPlugin);
     }

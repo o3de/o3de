@@ -10,7 +10,6 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/smart_ptr/shared_ptr.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -35,6 +34,21 @@ namespace AZ::SceneAPI::DataTypes
     }
 }
 
+MATCHER(VectorOfLinksEq, "")
+{
+    return testing::ExplainMatchResult(
+        testing::AllOf(
+            testing::Field(&AZ::SceneData::GraphData::SkinWeightData::Link::boneId, testing::Eq(testing::get<0>(arg).boneId)),
+            testing::Field(&AZ::SceneData::GraphData::SkinWeightData::Link::weight, testing::FloatEq(testing::get<0>(arg).weight))),
+        testing::get<1>(arg), result_listener);
+}
+
+MATCHER(VectorOfVectorOfLinksEq, "")
+{
+    return testing::ExplainMatchResult(
+        testing::UnorderedPointwise(VectorOfLinksEq(), testing::get<0>(arg)), testing::get<1>(arg), result_listener);
+}
+
 namespace SceneProcessing
 {
     class VertexDeduplicationFixture
@@ -46,7 +60,6 @@ namespace SceneProcessing
             SceneProcessing::InitSceneAPIFixture::SetUp();
 
             m_systemEntity = m_app.Create({}, {});
-            m_systemEntity->AddComponent(aznew AZ::MemoryComponent());
             m_systemEntity->AddComponent(aznew AZ::JobManagerComponent());
             m_systemEntity->Init();
             m_systemEntity->Activate();
@@ -60,11 +73,12 @@ namespace SceneProcessing
         static AZStd::unique_ptr<AZ::SceneAPI::DataTypes::IMeshData> MakePlaneMesh()
         {
             // Create a simple plane with 2 triangles, 6 total vertices, 2 shared vertices
-            // 0 --- 1
-            // |   / |
-            // |  /  |
-            // | /   |
-            // 2 --- 3
+            // 0,5 --- 1
+            // | \     |
+            // |  \    |
+            // |   \   |
+            // |    \  |
+            // 4 --- 2,3
             const AZStd::array planeVertexPositions = {
                 AZ::Vector3{0.0f, 0.0f, 0.0f},
                 AZ::Vector3{0.0f, 0.0f, 1.0f},
@@ -94,7 +108,28 @@ namespace SceneProcessing
             return mesh;
         }
 
-        static AZStd::unique_ptr<AZ::SceneData::GraphData::SkinWeightData> MakeSkinData()
+        static AZStd::unique_ptr<AZ::SceneData::GraphData::SkinWeightData> MakeSkinData(
+            const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>>& sourceLinks)
+        {
+            auto skinWeights = AZStd::make_unique<AZ::SceneData::GraphData::SkinWeightData>();
+
+            skinWeights->ResizeContainerSpace(sourceLinks.size());
+
+            for (size_t vertexIndex = 0; vertexIndex < sourceLinks.size(); ++vertexIndex)
+            {
+                for (const auto& link : sourceLinks[vertexIndex])
+                {
+                    // Make sure the bone is added to the skin weights
+                    skinWeights->GetBoneId(AZStd::to_string(link.boneId));
+
+                    skinWeights->AppendLink(vertexIndex, link);
+                }
+            }
+
+            return skinWeights;
+        }
+
+        static AZStd::unique_ptr<AZ::SceneData::GraphData::SkinWeightData> MakeDuplicateSkinData()
         {
             auto skinWeights = AZStd::make_unique<AZ::SceneData::GraphData::SkinWeightData>();
 
@@ -104,14 +139,67 @@ namespace SceneProcessing
             skinWeights->GetBoneId("0");
             skinWeights->GetBoneId("1");
 
-            skinWeights->AppendLink(0, {/*.boneId=*/0, /*.weight=*/1});
-            skinWeights->AppendLink(1, {/*.boneId=*/0, /*.weight=*/1});
-            skinWeights->AppendLink(2, {/*.boneId=*/0, /*.weight=*/1});
-            skinWeights->AppendLink(3, {/*.boneId=*/1, /*.weight=*/1});
-            skinWeights->AppendLink(4, {/*.boneId=*/1, /*.weight=*/1});
-            skinWeights->AppendLink(5, {/*.boneId=*/1, /*.weight=*/1});
+            // Vertices 0,5 and 2,3 have duplicate skin data, in addition to duplicate positions
+            skinWeights->AppendLink(0, { /*.boneId=*/0, /*.weight=*/1 });
+            skinWeights->AppendLink(1, { /*.boneId=*/1, /*.weight=*/1 });
+            skinWeights->AppendLink(2, { /*.boneId=*/0, /*.weight=*/1 });
+            skinWeights->AppendLink(3, { /*.boneId=*/0, /*.weight=*/1 });
+            skinWeights->AppendLink(4, { /*.boneId=*/2, /*.weight=*/1 });
+            skinWeights->AppendLink(5, { /*.boneId=*/0, /*.weight=*/1 });
 
             return skinWeights;
+        }
+
+        static void TestSkinDuplication(
+            const AZStd::shared_ptr<AZ::SceneData::GraphData::SkinWeightData> skinData,
+            const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>>& expectedLinks)
+        {
+            AZ::SceneAPI::Containers::Scene scene("testScene");
+            AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
+
+            const auto meshNodeIndex = graph.AddChild(graph.GetRoot(), "testMesh", MakePlaneMesh());
+            const auto skinDataNodeIndex = graph.AddChild(meshNodeIndex, "skinData", skinData);
+            graph.MakeEndPoint(skinDataNodeIndex);
+
+            // The original source mesh should have 6 vertices
+            EXPECT_EQ(
+                AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(meshNodeIndex))->GetVertexCount(), 6);
+
+            auto meshGroup = AZStd::make_unique<AZ::SceneAPI::SceneData::MeshGroup>();
+            meshGroup->GetSceneNodeSelectionList().AddSelectedNode("testMesh");
+            scene.GetManifest().AddEntry(AZStd::move(meshGroup));
+
+            AZ::SceneGenerationComponents::MeshOptimizerComponent component;
+            AZ::SceneAPI::Events::GenerateSimplificationEventContext context(scene, "pc");
+            component.OptimizeMeshes(context);
+
+            AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex =
+                graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
+            ASSERT_TRUE(optimizedNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the mesh";
+
+            const auto& optimizedMesh =
+                AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(optimizedNodeIndex));
+            ASSERT_TRUE(optimizedMesh);
+
+            AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedSkinDataNodeIndex =
+                graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix).append(".skinWeights"));
+            ASSERT_TRUE(optimizedSkinDataNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the skin data";
+
+            const auto& optimizedSkinWeights =
+                AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::ISkinWeightData>(graph.GetNodeContent(optimizedSkinDataNodeIndex));
+            ASSERT_TRUE(optimizedSkinWeights);
+
+            AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> gotLinks(optimizedMesh->GetVertexCount());
+            for (unsigned int vertexIndex = 0; vertexIndex < optimizedMesh->GetVertexCount(); ++vertexIndex)
+            {
+                for (size_t linkIndex = 0; linkIndex < optimizedSkinWeights->GetLinkCount(vertexIndex); ++linkIndex)
+                {
+                    gotLinks[vertexIndex].emplace_back(optimizedSkinWeights->GetLink(vertexIndex, linkIndex));
+                }
+            }
+            EXPECT_THAT(gotLinks, testing::Pointwise(VectorOfVectorOfLinksEq(), expectedLinks));
+
+            EXPECT_EQ(optimizedMesh->GetVertexCount(), expectedLinks.size());
         }
 
     private:
@@ -137,7 +225,7 @@ namespace SceneProcessing
         AZ::SceneAPI::Events::GenerateSimplificationEventContext context(scene, "pc");
         component.OptimizeMeshes(context);
 
-        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex = graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
+        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex = graph.Find(AZStd::string("testMesh_").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
         ASSERT_TRUE(optimizedNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the mesh";
 
         const auto& optimizedMesh = AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(optimizedNodeIndex));
@@ -147,75 +235,43 @@ namespace SceneProcessing
         EXPECT_EQ(optimizedMesh->GetVertexCount(), 4);
     }
 
-    MATCHER(VectorOfLinksEq, "")
+    TEST_F(VertexDeduplicationFixture, DeduplicatedVerticesKeepUniqueSkinInfluences)
     {
-        return testing::ExplainMatchResult(
-            testing::AllOf(
-                testing::Field(&AZ::SceneData::GraphData::SkinWeightData::Link::boneId, testing::Eq(testing::get<0>(arg).boneId)),
-                testing::Field(&AZ::SceneData::GraphData::SkinWeightData::Link::weight, testing::FloatEq(testing::get<0>(arg).weight))
-            ),
-            testing::get<1>(arg),
-            result_listener
-        );
-    }
-
-    MATCHER(VectorOfVectorOfLinksEq, "")
-    {
-        return testing::ExplainMatchResult(
-            testing::UnorderedPointwise(VectorOfLinksEq(), testing::get<0>(arg)),
-            testing::get<1>(arg),
-            result_listener
-        );
-    }
-
-    TEST_F(VertexDeduplicationFixture, DeduplicatedVerticesRemapSkinning)
-    {
-        AZ::SceneAPI::Containers::Scene scene("testScene");
-        AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
-
-        const auto meshNodeIndex = graph.AddChild(graph.GetRoot(), "testMesh", MakePlaneMesh());
-        const auto skinDataNodeIndex = graph.AddChild(meshNodeIndex, "skinData", MakeSkinData());
-        graph.MakeEndPoint(skinDataNodeIndex);
-
-        // The original source mesh should have 6 vertices
-        EXPECT_EQ(AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(meshNodeIndex))->GetVertexCount(), 6);
-
-        auto meshGroup = AZStd::make_unique<AZ::SceneAPI::SceneData::MeshGroup>();
-        meshGroup->GetSceneNodeSelectionList().AddSelectedNode("testMesh");
-        scene.GetManifest().AddEntry(AZStd::move(meshGroup));
-
-        AZ::SceneGenerationComponents::MeshOptimizerComponent component;
-        AZ::SceneAPI::Events::GenerateSimplificationEventContext context(scene, "pc");
-        component.OptimizeMeshes(context);
-
-        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedNodeIndex = graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix));
-        ASSERT_TRUE(optimizedNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the mesh";
-
-        const auto& optimizedMesh = AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::IMeshData>(graph.GetNodeContent(optimizedNodeIndex));
-        ASSERT_TRUE(optimizedMesh);
-
-        AZ::SceneAPI::Containers::SceneGraph::NodeIndex optimizedSkinDataNodeIndex = graph.Find(AZStd::string("testMesh").append(AZ::SceneAPI::Utilities::OptimizedMeshSuffix).append(".skinWeights"));
-        ASSERT_TRUE(optimizedSkinDataNodeIndex.IsValid()) << "Mesh optimizer did not add an optimized version of the skin data";
-
-        const auto& optimizedSkinWeights = AZStd::rtti_pointer_cast<AZ::SceneAPI::DataTypes::ISkinWeightData>(graph.GetNodeContent(optimizedSkinDataNodeIndex));
-        ASSERT_TRUE(optimizedSkinWeights);
-
-        const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> expectedLinks
-        {
-            /*0*/ { {0, 0.5f}, {1, 0.5f} },
-            /*1*/ { {0, 1.0f} },
-            /*2*/ { {0, 0.5f}, {1, 0.5f} },
-            /*3*/ { {1, 1.0f} },
+        // Vertices 0,5 and 2,3 have duplicate positions, but unique links,
+        // so none of the vertices should be de-duplicated
+        // and the sourceLinks should be the same as the expected links
+        const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> sourceLinks{
+            /*0*/ { { 0, 1.0f } },
+            /*1*/ { { 0, 1.0f } },
+            /*2*/ { { 0, 1.0f } },
+            /*3*/ { { 1, 1.0f } },
+            /*4*/ { { 1, 1.0f } },
+            /*5*/ { { 1, 1.0f } },
         };
 
-        AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> gotLinks(optimizedMesh->GetVertexCount());
-        for (unsigned int vertexIndex = 0; vertexIndex < optimizedMesh->GetVertexCount(); ++vertexIndex)
-        {
-            for (size_t linkIndex = 0; linkIndex < optimizedSkinWeights->GetLinkCount(vertexIndex); ++linkIndex)
-            {
-                gotLinks[vertexIndex].emplace_back(optimizedSkinWeights->GetLink(vertexIndex, linkIndex));
-            }
-        }
-        EXPECT_THAT(gotLinks, testing::Pointwise(VectorOfVectorOfLinksEq(), expectedLinks));
+        TestSkinDuplication(MakeSkinData(sourceLinks), sourceLinks);
+    }
+
+    TEST_F(VertexDeduplicationFixture, DeduplicatedVerticesDeduplicateSkinInfluences)
+    {
+        // Vertices 0,5 and 2,3 have duplicate positions, and also duplicate links,
+        // so they should be de-duplicated and the expected links
+        // should have two fewer links
+        const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> sourceLinks{
+            /*0*/ { { 0, 1.0f } },
+            /*1*/ { { 1, 1.0f } },
+            /*2*/ { { 0, 1.0f } },
+            /*3*/ { { 0, 1.0f } },
+            /*4*/ { { 2, 1.0f } },
+            /*5*/ { { 0, 1.0f } },
+        };
+        const AZStd::vector<AZStd::vector<AZ::SceneData::GraphData::SkinWeightData::Link>> expectedLinks{
+            /*0*/ { { 0, 1.0f } },
+            /*1*/ { { 1, 1.0f } },
+            /*2*/ { { 0, 1.0f } },
+            /*3*/ { { 2, 1.0f } },
+        };
+
+        TestSkinDuplication(MakeSkinData(sourceLinks), expectedLinks);
     }
 } // namespace SceneProcessing

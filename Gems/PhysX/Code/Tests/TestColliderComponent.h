@@ -16,20 +16,21 @@
 namespace UnitTest
 {
     /// Mock EditorColliderComponent for testing component mode.
-    class TestColliderComponentMode
+    class TestColliderComponent
         : public AzToolsFramework::Components::EditorComponentBase
         , public PhysX::EditorColliderComponentRequestBus::Handler
+        , public PhysX::EditorPrimitiveColliderComponentRequestBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(TestColliderComponentMode, "{D4EEA05C-4620-4A63-8816-2D0380158DF9}");
+        AZ_EDITOR_COMPONENT(TestColliderComponent, "{D4EEA05C-4620-4A63-8816-2D0380158DF9}");
 
         static void Reflect(AZ::ReflectContext* context)
         {
             if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
-                serializeContext->Class<TestColliderComponentMode>()
+                serializeContext->Class<TestColliderComponent>()
                     ->Version(0)
-                    ->Field("ComponentMode", &TestColliderComponentMode::m_componentModeDelegate);
+                    ->Field("ComponentMode", &TestColliderComponent::m_componentModeDelegate);
             }
         }
 
@@ -37,43 +38,57 @@ namespace UnitTest
         {
             EditorComponentBase::Activate();
             PhysX::EditorColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+            PhysX::EditorPrimitiveColliderComponentRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
             m_componentModeDelegate.ConnectWithSingleComponentMode<
-                TestColliderComponentMode, PhysX::ColliderComponentMode>(
+                TestColliderComponent, PhysX::ColliderComponentMode>(
                     AZ::EntityComponentIdPair(GetEntityId(), GetId()), nullptr);
         }
 
         void Deactivate() override
         {
+            PhysX::EditorPrimitiveColliderComponentRequestBus::Handler::BusDisconnect();
             PhysX::EditorColliderComponentRequestBus::Handler::BusDisconnect();
             EditorComponentBase::Deactivate();
             m_componentModeDelegate.Disconnect();
         }
 
-        void SetColliderOffset(const AZ::Vector3& offset) { m_offset = offset; }
-        AZ::Vector3 GetColliderOffset() override { return m_offset; }
+        // EditorColliderComponentRequests overrides ...
+        void SetColliderOffset(const AZ::Vector3& offset) override { m_offset = offset; }
+        AZ::Vector3 GetColliderOffset() const override { return m_offset; }
         void SetColliderRotation(const AZ::Quaternion& rotation) override { m_rotation = rotation; }
-        AZ::Quaternion GetColliderRotation() override { return m_rotation; }
-        AZ::Transform GetColliderWorldTransform() override { return m_transform; }
+        AZ::Quaternion GetColliderRotation() const override { return m_rotation; }
+        AZ::Transform GetColliderWorldTransform() const override { return m_transform; }
+        Physics::ShapeType GetShapeType() const override { return m_shapeType; }
+        
+        // EditorPrimitiveColliderComponentRequests overrides ...
         void SetShapeType(Physics::ShapeType shapeType) override { m_shapeType = shapeType; }
-        Physics::ShapeType GetShapeType() override { return m_shapeType; }
+        void SetBoxDimensions(const AZ::Vector3& dimensions) override { m_boxDimensions = dimensions; }
+        AZ::Vector3 GetBoxDimensions() const override { return m_boxDimensions; }
         void SetSphereRadius(float radius) override { m_sphereRadius = radius; }
-        float GetSphereRadius() override { return m_sphereRadius; }
+        float GetSphereRadius() const override { return m_sphereRadius; }
         void SetCapsuleRadius(float radius) override { m_capsuleRadius = radius; }
-        float GetCapsuleRadius() override { return m_capsuleRadius; }
+        float GetCapsuleRadius() const override { return m_capsuleRadius; }
         void SetCapsuleHeight(float height) override { m_capsuleHeight = height; }
-        float GetCapsuleHeight() override { return m_capsuleHeight; }
-        void SetAssetScale(const AZ::Vector3& scale) override { m_assetScale = scale; }
-        AZ::Vector3 GetAssetScale() override { return m_assetScale; }
+        float GetCapsuleHeight() const override { return m_capsuleHeight; }
+        void SetCylinderRadius(float radius) override { m_cylinderRadius = radius; }
+        float GetCylinderRadius() const override { return m_cylinderRadius; }
+        void SetCylinderHeight(float height) override { m_cylinderHeight = height; }
+        float GetCylinderHeight() const override { return m_cylinderHeight; }
+        void SetCylinderSubdivisionCount(AZ::u8 subdivisionCount) override { m_subdivisionCount = subdivisionCount; }
+        AZ::u8 GetCylinderSubdivisionCount() const override { return m_subdivisionCount; }
 
     private:
         AzToolsFramework::ComponentModeFramework::ComponentModeDelegate m_componentModeDelegate;
-        AZ::Vector3 m_offset;
-        AZ::Quaternion m_rotation;
-        AZ::Transform m_transform;
-        Physics::ShapeType m_shapeType;
-        float m_sphereRadius;
-        float m_capsuleHeight;
-        float m_capsuleRadius;
-        AZ::Vector3 m_assetScale;
+        AZ::Vector3 m_offset = AZ::Vector3::CreateZero();
+        AZ::Quaternion m_rotation = AZ::Quaternion::CreateIdentity();
+        AZ::Transform m_transform = AZ::Transform::CreateIdentity();
+        Physics::ShapeType m_shapeType = Physics::ShapeType::Box;
+        AZ::Vector3 m_boxDimensions = Physics::ShapeConstants::DefaultBoxDimensions;
+        float m_sphereRadius = Physics::ShapeConstants::DefaultSphereRadius;
+        float m_capsuleHeight = Physics::ShapeConstants::DefaultCapsuleHeight;
+        float m_capsuleRadius = Physics::ShapeConstants::DefaultCapsuleRadius;
+        float m_cylinderHeight = Physics::ShapeConstants::DefaultCylinderHeight;
+        float m_cylinderRadius = Physics::ShapeConstants::DefaultCylinderRadius;
+        AZ::u8 m_subdivisionCount = Physics::ShapeConstants::DefaultCylinderSubdivisionCount;
     };
 } // namespace UnitTest

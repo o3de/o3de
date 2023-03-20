@@ -64,12 +64,13 @@ namespace AzNetworking
     {
         --m_listenPortCount;
 
-        auto visitor = [this, &tcpNetworkInterface](ListenPort& listenPort)
+        auto visitor = [&tcpNetworkInterface](ListenPort& listenPort)
         {
             if (listenPort.m_tcpNetworkInterface == &tcpNetworkInterface)
             {
                 // This kills any ability to route new incoming connections to the network interface
                 listenPort.m_tcpNetworkInterface = nullptr;
+                listenPort.m_listenSocket.Close();
             }
         };
         m_listenPorts.Visit(visitor);
@@ -118,9 +119,9 @@ namespace AzNetworking
         const int32_t connectionLength = aznumeric_cast<int32_t>(sizeof(newConnection));
         memset(&newConnection, 0, connectionLength);
 
-        auto readCallback = [this, newConnection, connectionLength](SocketFd socketFd)
+        auto readCallback = [this, newConnection](SocketFd socketFd)
         {
-            auto visitor = [this, newConnection, connectionLength, socketFd](ListenPort& listenPort)
+            auto visitor = [this, newConnection, socketFd](ListenPort& listenPort)
             {
                 if (listenPort.m_listenSocket.GetSocketFd() == socketFd)
                 {
@@ -132,7 +133,7 @@ namespace AzNetworking
         auto writeCallback = [](SocketFd) {};
         m_tcpSocketManager.ProcessEvents(updateRateMs, readCallback, writeCallback);
 
-        auto cleanupUnused = [this](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
+        auto cleanupUnused = [](AZ::ThreadSafeDeque<ListenPort>::DequeType& deque)
         {
             AZStd::remove_if(deque.begin(), deque.end(), [](ListenPort& listenPort) { return listenPort.m_tcpNetworkInterface == nullptr; });
         };

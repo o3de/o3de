@@ -8,20 +8,17 @@
 
 #include <AzCore/Module/Internal/ModuleManagerSearchPathTool.h>
 
-namespace AZ
+namespace AZ::Internal
 {
-    namespace Internal
+    ModuleManagerSearchPathTool::ModuleManagerSearchPathTool()
     {
-        ModuleManagerSearchPathTool::ModuleManagerSearchPathTool()
-        {
-        }
+    }
 
-        ModuleManagerSearchPathTool::~ModuleManagerSearchPathTool()
-        {
-        }
+    ModuleManagerSearchPathTool::~ModuleManagerSearchPathTool()
+    {
+    }
 
-        void ModuleManagerSearchPathTool::SetModuleSearchPath(const AZ::DynamicModuleDescriptor&)
-        {
-        }
-    } // namespace Internal
-} // namespace AZ
+    void ModuleManagerSearchPathTool::SetModuleSearchPath(const AZ::DynamicModuleDescriptor&)
+    {
+    }
+} // namespace AZ::Internal

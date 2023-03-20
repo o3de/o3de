@@ -9,6 +9,7 @@
 #include "PropertyQTConstants.h"
 #include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Utilities/Conversions.h>
+#include <AzQtComponents/Utilities/ColorUtilities.h>
 #include <QtWidgets/QSlider>
 #include <QtWidgets/QLineEdit>
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -18,8 +19,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 #include <QPainter> 
 AZ_POP_DISABLE_WARNING
 #include <QtWidgets/QToolButton>
-
-#include "../UICore/ColorPickerDelegate.hxx"
+#include <QtGui/QRegExpValidator>
 
 namespace AzToolsFramework
 {
@@ -129,13 +129,7 @@ namespace AzToolsFramework
                 m_pColorDialog->setCurrentColor(azColor);
             }
 
-            int R, G, B, A;
-            m_color.getRgb(&R, &G, &B, &A);
-            auto colorStr =
-                m_alphaChannelEnabled
-                ? QStringLiteral("%1,%2,%3,%4").arg(R).arg(G).arg(B).arg(A)
-                : QStringLiteral("%1,%2,%3").arg(R).arg(G).arg(B)
-                ;
+            auto colorStr = AzQtComponents::MakePropertyDisplayStringInts(m_color, m_alphaChannelEnabled);
             m_colorEdit->setText(colorStr);
         }
     }
@@ -162,7 +156,7 @@ namespace AzToolsFramework
         }
     }
 
-    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator() const
+    QRegExpValidator* PropertyColorCtrl::CreateTextEditValidator()
     {
         /*Use regex to validate the input
         *\d\d?    Match 0-99
@@ -175,11 +169,11 @@ namespace AzToolsFramework
 
         int numInitialChannelComponents = m_alphaChannelEnabled ? 3 : 2;
 
-        AZStd::string regex = AZStd::string::format(
-            "^\\s*((25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*,\\s*){%d}(25[0-5]|2[0-4]\\d|1\\d\\d|\\d\\d?)\\s*$",
-            numInitialChannelComponents);
+        const QString regex = QString(
+            R"(^\s*((25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*,\s*){%1}(25[0-5]|2[0-4]\d|1\d\d|\d\d?)\s*$)"
+        ).arg(numInitialChannelComponents);
 
-        return new QRegExpValidator(QRegExp(regex.c_str()));
+        return new QRegExpValidator(QRegExp(regex), this);
     }
 
     void PropertyColorCtrl::CreateColorDialog()
@@ -197,6 +191,8 @@ namespace AzToolsFramework
 
         if (m_config.m_propertyColorSpaceId != m_config.m_colorPickerDialogColorSpaceId)
         {
+            m_pColorDialog->setAlternateColorspaceEnabled(true);
+
             AZStd::string propertyColorSpaceName = m_config.m_colorSpaceNames[m_config.m_propertyColorSpaceId];
             AZStd::string dialogColorSpaceName = m_config.m_colorSpaceNames[m_config.m_colorPickerDialogColorSpaceId];
             if (!propertyColorSpaceName.empty() && !dialogColorSpaceName.empty())
@@ -204,12 +200,22 @@ namespace AzToolsFramework
                 QString comment = AZStd::string::format("Mixing space: %s | Final space: %s", dialogColorSpaceName.c_str(), propertyColorSpaceName.c_str()).c_str();
                 m_pColorDialog->setComment(comment);
             }
+
+            if (!propertyColorSpaceName.empty())
+            {
+                m_pColorDialog->setAlternateColorspaceName(propertyColorSpaceName.c_str());
+            }
+            else
+            {
+                m_pColorDialog->setAlternateColorspaceName("Output");
+            }
         }
 
         connect(m_pColorDialog, &AzQtComponents::ColorPicker::currentColorChanged, this, 
             [=](AZ::Color color)
         {
             color = TransformColor(color, m_config.m_colorPickerDialogColorSpaceId, m_config.m_propertyColorSpaceId);
+            m_pColorDialog->setAlternateColorspaceValue(color);
             onSelected(AzQtComponents::toQColor(color));
         });
 
@@ -240,9 +246,11 @@ namespace AzToolsFramework
     {
         // Update the color but don't need to update the dialog color since
         // this signal came from the dialog
-        SetColor(color, false);
-
-        emit valueChanged(m_color);
+        if (m_color != color)
+        {
+            SetColor(color, false);
+            emit valueChanged(m_color);
+        }
     }
 
     QColor PropertyColorCtrl::convertFromString(const QString& string)
@@ -352,6 +360,7 @@ namespace AzToolsFramework
     void PropertyColorCtrl::SetColorEditorConfiguration(const ColorEditorConfiguration& configuration)
     {
         m_config = configuration;
+        setAlphaChannelEnabled(m_config.m_colorPickerDialogConfiguration == AzQtComponents::ColorPicker::Configuration::RGBA);
     }
 
     QColor PropertyColorCtrl::TransformColor(const QColor& color, uint32_t fromColorSpaceId, uint32_t toColorSpaceId) const
@@ -373,8 +382,8 @@ namespace AzToolsFramework
 
     void AZColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Color asAZColor((float)val.redF(), (float)val.greenF(), (float)val.blueF(), (float)val.alphaF());
         instance = static_cast<property_t>(asAZColor);
@@ -382,8 +391,8 @@ namespace AzToolsFramework
 
     bool AZColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector4 asVector4 = static_cast<AZ::Vector4>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector4.GetX());
@@ -399,9 +408,14 @@ namespace AzToolsFramework
         PropertyColorCtrl* newCtrl = aznew PropertyColorCtrl(pParent);
         connect(newCtrl, &PropertyColorCtrl::valueChanged, this, [newCtrl]()
             {
-                EBUS_EVENT(PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
             });
-        // note:  Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
+        connect(newCtrl, &PropertyColorCtrl::editingFinished, this, [newCtrl]()
+            {
+                AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                    &PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
+            });
+        // note: Qt automatically disconnects objects from each other when either end is destroyed, no need to worry about delete.
 
         return newCtrl;
     }
@@ -410,8 +424,8 @@ namespace AzToolsFramework
     }
     void Vector3ColorPropertyHandler::WriteGUIValuesIntoProperty(size_t index, PropertyColorCtrl* GUI, property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         QColor val = GUI->value();
         AZ::Vector3 asVector3((float)val.redF(), (float)val.greenF(), (float)val.blueF());
         instance = static_cast<property_t>(asVector3);
@@ -419,8 +433,8 @@ namespace AzToolsFramework
 
     bool Vector3ColorPropertyHandler::ReadValuesIntoGUI(size_t index, PropertyColorCtrl* GUI, const property_t& instance, InstanceDataNode* node)
     {
-        (int)index;
-        (void)node;
+        AZ_UNUSED(index);
+        AZ_UNUSED(node);
         AZ::Vector3 asVector3 = static_cast<AZ::Vector3>(instance);
         QColor asQColor;
         asQColor.setRedF((qreal)asVector3.GetX());
@@ -433,8 +447,10 @@ namespace AzToolsFramework
     ////////////////////////////////////////////////////////////////
     void RegisterColorPropertyHandlers()
     {
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew Vector3ColorPropertyHandler());
-        EBUS_EVENT(PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew AZColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew Vector3ColorPropertyHandler());
+        PropertyTypeRegistrationMessages::Bus::Broadcast(
+            &PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew AZColorPropertyHandler());
     }
 
 }

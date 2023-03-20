@@ -11,9 +11,7 @@
 #include <AzCore/Component/Component.h>
 
 #include <LmbrCentral/Audio/AudioSystemComponentBus.h>
-
-#include <CrySystemBus.h>
-#include <IAudioInterfacesCommonData.h>
+#include <AzFramework/API/ApplicationAPI.h>
 
 namespace LmbrCentral
 {
@@ -25,7 +23,7 @@ namespace LmbrCentral
     class AudioSystemComponent
         : public AZ::Component
         , protected AudioSystemComponentRequestBus::Handler
-        , public CrySystemEventBus::Handler
+        , protected AzFramework::LevelSystemLifecycleNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(AudioSystemComponent, "{666E28D2-FC99-4D41-861D-3758C5070653}");
@@ -49,20 +47,23 @@ namespace LmbrCentral
 
         ////////////////////////////////////////////////////////////////////////
         // AudioSystemComponentRequestBus::Handler interface implementation
+        bool IsAudioSystemInitialized() override;
         void GlobalStopAllSounds() override;
+        void GlobalMuteAudio() override;
+        void GlobalUnmuteAudio() override;
+        void GlobalRefreshAudio(AZStd::string_view levelName) override;
         void GlobalExecuteAudioTrigger(const char* triggerName, AZ::EntityId callbackOwnerEntityId) override;
         void GlobalKillAudioTrigger(const char* triggerName, AZ::EntityId callbackOwnerEntityId) override;
         void GlobalSetAudioRtpc(const char* rtpcName, float value) override;
         void GlobalResetAudioRtpcs() override;
         void GlobalSetAudioSwitchState(const char* switchName, const char* stateName) override;
+        void LevelLoadAudio(AZStd::string_view levelName) override;
+        void LevelUnloadAudio() override;
 
         ////////////////////////////////////////////////////////////////////////
-        // CrySystemEventBus::Handler interface implementation
-        void OnCrySystemInitialized(ISystem&, const SSystemInitParams&) override;
-        void OnCrySystemShutdown(ISystem&) override;
-
-    private:
-        static void OnAudioEvent(const Audio::SAudioRequestInfo* const);
+        // AzFramework::LevelSystemLifecycleNotificationBus::Handler implementation
+        void OnLoadingStart(const char* levelName) override;
+        void OnUnloadComplete(const char* levelName) override;
     };
 
 } // namespace LmbrCentral

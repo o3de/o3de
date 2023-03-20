@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 
@@ -35,7 +36,7 @@ namespace AzToolsFramework
         */
         class EntryCache
         {
-            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EntryCache, AZ::SystemAllocator);
         public:
             static EntryCache* GetInstance();
 
@@ -47,6 +48,7 @@ namespace AzToolsFramework
             AZStd::unordered_map<AZ::s64, AssetBrowserEntry*> m_fileIdMap;
             AZStd::unordered_map<AZ::Uuid, SourceAssetBrowserEntry*> m_sourceUuidMap;
             AZStd::unordered_map<AZ::s64, SourceAssetBrowserEntry*> m_sourceIdMap;
+            AZStd::unordered_map<AZ::Uuid, FolderAssetBrowserEntry*> m_folderUuidMap;
             AZStd::unordered_map<AZ::Data::AssetId, ProductAssetBrowserEntry*> m_productAssetIdMap;
             AZStd::unordered_map<AZ::s64, AZStd::string> m_knownScanFolders;
             AZStd::unordered_map<AZStd::string, AZ::s64> m_absolutePathToFileId;

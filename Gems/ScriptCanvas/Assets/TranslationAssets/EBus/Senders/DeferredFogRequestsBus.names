@@ -1,0 +1,499 @@
+{
+    "entries": [
+        {
+            "base": "DeferredFogRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Deferred Fog",
+                "category": "Rendering"
+            },
+            "methods": [
+                {
+                    "base": "SetNoiseTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Noise Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Noise Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Set Noise Texture"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Path"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNoiseTexCoordScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Noise Tex Coord Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Noise Tex Coord Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Set Noise Tex Coord Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNoiseTexCoord2Scale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Noise Tex Coord 2 Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Noise Tex Coord 2 Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Set Noise Tex Coord 2 Scale"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord 2 Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFogMaxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fog Max Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fog Max Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fog Max Height"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Max Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNoiseTexCoordScale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Noise Tex Coord Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Noise Tex Coord Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Noise Tex Coord Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNoiseTexCoordVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Noise Tex Coord Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Noise Tex Coord Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Noise Tex Coord Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFogEndDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fog End Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fog End Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fog End Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fod End Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFogEndDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fog End Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fog End Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fog End Distance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog End Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNoiseTexCoord2Scale",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Noise Tex Coord 2 Scale"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Noise Tex Coord 2 Scale is invoked"
+                    },
+                    "details": {
+                        "name": "Get Noise Tex Coord 2 Scale"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord 2 Scale"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNoiseTexCoord2Velocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Noise Tex Coord 2 Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Noise Tex Coord 2 Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Noise Tex Coord 2 Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord 2 Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFogStartDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fog Start Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fog Start Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fog Start Distance"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog Start Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFogMaxHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fog Max Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fog Max Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fog Max Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog Max Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetNoiseTexCoordVelocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Noise Tex Coord Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Noise Tex Coord Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Set Noise Tex Coord Velocity"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNoiseTexCoord2Velocity",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Noise Tex Coord 2 Velocity"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Noise Tex Coord 2 Velocity is invoked"
+                    },
+                    "details": {
+                        "name": "Get Noise Tex Coord 2 Velocity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Tex Coord 2 Velocity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFogStartDistance",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fog Start Distance"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fog Start Distance is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fog Start Distance"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog Start Distance"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFogMinHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fog Min Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fog Min Height is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fog Min Height"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog Min Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetFogColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Fog Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Fog Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Fog Color"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Fog Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetOctavesBlendFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Octaves Blend Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Octaves Blend Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Set Octaves Blend Factor"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Octaves Blend Factor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetOctavesBlendFactor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Octaves Blend Factor"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Octaves Blend Factor is invoked"
+                    },
+                    "details": {
+                        "name": "Get Octaves Blend Factor"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Octaves Blend Factor"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFogColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fog Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fog Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fog Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Fog Color"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetFogMinHeight",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Fog Min Height"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Fog Min Height is invoked"
+                    },
+                    "details": {
+                        "name": "Set Fog Min Height"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Fog Min Height"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetNoiseTexture",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Noise Texture"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Noise Texture is invoked"
+                    },
+                    "details": {
+                        "name": "Get Noise Texture"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Path"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

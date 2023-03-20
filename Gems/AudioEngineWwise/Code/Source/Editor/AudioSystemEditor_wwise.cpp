@@ -322,6 +322,10 @@ namespace AudioControls
                                 connection->m_value = value;
                                 return connection;
                             }
+                            case EACEControlType::eACET_ENVIRONMENT:
+                            {
+                                return AZStd::make_shared<IAudioConnection>(control->GetId());
+                            }
                         }
                     }
                     else
@@ -571,11 +575,11 @@ namespace AudioControls
         case eACET_RTPC:
             return eWCT_WWISE_RTPC;
         case eACET_SWITCH:
-            return AUDIO_IMPL_INVALID_TYPE;
+            return (eWCT_WWISE_SWITCH | eWCT_WWISE_GAME_STATE);
         case eACET_SWITCH_STATE:
             return (eWCT_WWISE_SWITCH | eWCT_WWISE_GAME_STATE | eWCT_WWISE_RTPC);
         case eACET_ENVIRONMENT:
-            return (eWCT_WWISE_AUX_BUS | eWCT_WWISE_SWITCH | eWCT_WWISE_GAME_STATE | eWCT_WWISE_RTPC);
+            return (eWCT_WWISE_AUX_BUS | eWCT_WWISE_RTPC);
         case eACET_PRELOAD:
             return eWCT_WWISE_SOUND_BANK;
         }

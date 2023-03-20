@@ -97,7 +97,7 @@ namespace AZ
             // create TLAS Instances buffer pool
             {
                 RHI::BufferPoolDescriptor bufferPoolDesc;
-                bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Host;
+                bufferPoolDesc.m_heapMemoryLevel = RHI::HeapMemoryLevel::Device;
                 bufferPoolDesc.m_bindFlags = GetTlasInstancesBufferBindFlags();
 
                 m_tlasInstancesBufferPool = RHI::Factory::Get().CreateBufferPool();

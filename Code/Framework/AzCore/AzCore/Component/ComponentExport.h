@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/Math/Crc.h>
-#include <AzCore/RTTI/TypeInfo.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/function/function_fwd.h>
 
 namespace AZ
 {

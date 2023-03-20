@@ -6,13 +6,14 @@
 #
 #
 
-ly_get_list_relative_pal_filename(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
 ly_add_target(
     NAME LmbrCentral.Static STATIC
     NAMESPACE Gem
     FILES_CMAKE
+        lmbrcentral_headers_files.cmake
         lmbrcentral_files.cmake
         ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
@@ -25,6 +26,18 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
+)
+
+ly_add_target(
+    NAME LmbrCentral.API HEADERONLY
+    NAMESPACE Gem
+    FILES_CMAKE
+        lmbrcentral_headers_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            include
 )
 
 ly_add_target(
@@ -48,6 +61,7 @@ ly_add_target(
 # by default, load the above "Gem::LmbrCentral" module in Client and Server
 ly_create_alias(NAME LmbrCentral.Clients NAMESPACE Gem TARGETS Gem::LmbrCentral)
 ly_create_alias(NAME LmbrCentral.Servers NAMESPACE Gem TARGETS Gem::LmbrCentral)
+ly_create_alias(NAME LmbrCentral.Unified NAMESPACE Gem TARGETS Gem::LmbrCentral)
 
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -74,6 +88,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
     )
 
     ly_add_target(
@@ -110,64 +125,4 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
 
 endif()
 
-################################################################################
-# Tests
-################################################################################
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    ly_add_target(
-        NAME LmbrCentral.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-        NAMESPACE Gem
-        FILES_CMAKE
-            lmbrcentral_tests_files.cmake
-            lmbrcentral_shared_files.cmake
-        INCLUDE_DIRECTORIES
-            PRIVATE
-                Source
-                Tests
-        BUILD_DEPENDENCIES
-            PRIVATE
-                AZ::AzTest
-                AZ::AzTestShared
-                Legacy::CryCommon
-                AZ::AzFramework
-                Gem::LmbrCentral.Static
-    )
-    ly_add_googletest(
-        NAME Gem::LmbrCentral.Tests
-    )
-
-    if (PAL_TRAIT_BUILD_HOST_TOOLS)
-        ly_add_target(
-            NAME LmbrCentral.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-            NAMESPACE Gem
-            FILES_CMAKE
-                lmbrcentral_editor_tests_files.cmake
-            INCLUDE_DIRECTORIES
-                PRIVATE
-                    .
-                    Source
-                    Tests
-            COMPILE_DEFINITIONS
-                PRIVATE
-                    LMBR_CENTRAL_EDITOR
-            BUILD_DEPENDENCIES
-                PRIVATE
-                    3rdParty::Qt::Gui
-                    3rdParty::Qt::Widgets
-                    Legacy::CryCommon
-                    Legacy::Editor.Headers
-                    AZ::AzTest
-                    AZ::AzCore
-                    AZ::AzTestShared
-                    AZ::AzToolsFramework
-                    AZ::AzToolsFrameworkTestCommon
-                    AZ::AssetBuilderSDK
-                    AZ::AzManipulatorTestFramework.Static
-                    Gem::LmbrCentral.Static
-                    Gem::LmbrCentral.Editor.Static
-        )
-        ly_add_googletest(
-            NAME Gem::LmbrCentral.Editor.Tests
-        )
-    endif()
-endif()
+add_subdirectory(Tests)

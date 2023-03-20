@@ -14,8 +14,6 @@ ly_add_target(
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
-        PUBLIC
-            Include
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
@@ -25,5 +23,6 @@ ly_add_target(
 # the above module is for use in all application types (there is no tool specialization)
 ly_create_alias(NAME StartingPointMovement.Servers  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
 ly_create_alias(NAME StartingPointMovement.Clients  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
+ly_create_alias(NAME StartingPointMovement.Unified  NAMESPACE Gem TARGETS Gem::StartingPointMovement)
 ly_create_alias(NAME StartingPointMovement.Builders NAMESPACE Gem TARGETS Gem::StartingPointMovement)
 ly_create_alias(NAME StartingPointMovement.Tools    NAMESPACE Gem TARGETS Gem::StartingPointMovement)

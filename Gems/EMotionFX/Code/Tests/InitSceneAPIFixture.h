@@ -39,7 +39,7 @@ namespace EMotionFX
                 ASSERT_TRUE(loaded) << "EMotionFX Editor unit tests failed to load " << moduleName.c_str() << " module.";
                 auto init = module->GetFunction<AZ::InitializeDynamicModuleFunction>(AZ::InitializeDynamicModuleFunctionName);
                 ASSERT_TRUE(init) << "EMotionFX Editor unit tests failed to find the initialization function the " << moduleName.c_str() << " module.";
-                (*init)(AZ::Environment::GetInstance());
+                (*init)();
 
                 m_modules.emplace_back(AZStd::move(module));
             }

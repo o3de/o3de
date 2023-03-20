@@ -109,15 +109,15 @@ namespace AZ
         void ImGuiSystemComponent::ForAllImGuiPasses(PassFunction func)
         {
             ImGuiContext* contextToRestore = ImGui::GetCurrentContext();
-            RPI::PassClassFilter<ImGuiPass> filter;
-            auto imguiPasses = RPI::PassSystemInterface::Get()->FindPasses(filter);
-
-            for (RPI::Pass* pass : imguiPasses)
-            {
-                ImGuiPass* imguiPass = azrtti_cast<ImGuiPass*>(pass);
-                ImGui::SetCurrentContext(imguiPass->GetContext());
-                func(imguiPass);
-            }
+            
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassClass<ImGuiPass>();
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [func](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    ImGuiPass* imguiPass = azrtti_cast<ImGuiPass*>(pass);
+                    ImGui::SetCurrentContext(imguiPass->GetContext());
+                    func(imguiPass);
+                    return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
 
             ImGui::SetCurrentContext(contextToRestore);
         }
@@ -141,12 +141,22 @@ namespace AZ
                 {
                     m_defaultImguiPassStack.erase(m_defaultImguiPassStack.begin() + i);
 
-                    // If the pass being removed as default is active, assume the current active should be changed
-                    // to whatever's on the top of the default stack as long as it has at least one entry.
+                    // If the pass being removed as default is at the top of the active stack, replace it
+                    // with whatever's now on the top of the default pass stack.
                     if (GetActiveContext() == imguiPass->GetContext())
                     {
                         PushActiveContextFromDefaultPass();
                     }
+                    break;
+                }
+            }
+
+            // The ImGuiPass will delete its context so we need to remove it from the active list
+            for (size_t i = 0; i < m_activeContextStack.size(); ++i)
+            {
+                if (imguiPass->GetContext() == m_activeContextStack.at(i))
+                {
+                    m_activeContextStack.erase(m_activeContextStack.begin() + i);
                     break;
                 }
             }
@@ -169,29 +179,37 @@ namespace AZ
             return false;
         }
 
-        bool ImGuiSystemComponent::PushActiveContextFromPass(const RPI::PassHierarchyFilter& passHierarchyFilter)
+        bool ImGuiSystemComponent::PushActiveContextFromPass(const AZStd::vector<AZStd::string>& passHierarchyFilter)
         {
-            AZStd::vector<AZ::RPI::Pass*> foundPasses = AZ::RPI::PassSystemInterface::Get()->FindPasses(passHierarchyFilter);
+            if (passHierarchyFilter.size() == 0)
+            {
+                AZ_Warning("ImGuiSystemComponent", false, "passHierarchyFilter is empty");
+                return false;
+            }
+
             AZStd::vector<ImGuiPass*> foundImGuiPasses;
 
-            for (RPI::Pass* pass : foundPasses)
-            {
-                ImGuiPass* imGuiPass = azrtti_cast<ImGuiPass*>(pass);
-                if (imGuiPass)
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithPassHierarchy(passHierarchyFilter);
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [&foundImGuiPasses](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
-                    foundImGuiPasses.push_back(imGuiPass);
-                }
-            }
+                    ImGuiPass* imGuiPass = azrtti_cast<ImGuiPass*>(pass);
+                    if (imGuiPass)
+                    {
+                        foundImGuiPasses.push_back(imGuiPass);
+                    }
+
+                     return RPI::PassFilterExecutionFlow::ContinueVisitingPasses;
+                });
 
             if (foundImGuiPasses.size() == 0)
             {
-                AZ_Warning("ImGuiSystemComponent", false, "Failed to find ImGui pass to activate from %s", passHierarchyFilter.ToString().c_str());
+                AZ_Warning("ImGuiSystemComponent", false, "Failed to find ImGui pass to activate from %s", passHierarchyFilter[0].c_str());
                 return false;
             }
 
             if (foundImGuiPasses.size() > 1)
             {
-                AZ_Warning("ImGuiSystemComponent", false, "Found more than one ImGui pass to activate from %s, only activating first one.", passHierarchyFilter.ToString().c_str());
+                AZ_Warning("ImGuiSystemComponent", false, "Found more than one ImGui pass to activate from %s, only activating first one.", passHierarchyFilter[0].c_str());
             }
 
             ImGuiContext* context = foundImGuiPasses.at(0)->GetContext();

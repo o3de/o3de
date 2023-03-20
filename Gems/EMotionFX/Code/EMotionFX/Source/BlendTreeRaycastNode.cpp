@@ -14,7 +14,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRaycastNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeRaycastNode, AnimGraphAllocator)
 
     BlendTreeRaycastNode::BlendTreeRaycastNode()
         : AnimGraphNode()
@@ -30,7 +30,7 @@ namespace EMotionFX
         SetupOutputPort("Normal", OUTPUTPORT_NORMAL, MCore::AttributeVector3::TYPE_ID, PORTID_OUTPUT_NORMAL);
         SetupOutputPort("Intersected", OUTPUTPORT_INTERSECTED, MCore::AttributeFloat::TYPE_ID, PORTID_OUTPUT_INTERSECTED);
 
-        if (mAnimGraph)
+        if (m_animGraph)
         {
             Reinit();
         }
@@ -88,18 +88,20 @@ namespace EMotionFX
             rayDirection /= maxDistance;
         }
 
-        Integration::RaycastRequests::RaycastRequest rayRequest;
+        Integration::IRaycastRequests::RaycastRequest rayRequest;
         rayRequest.m_start      = rayStart;
         rayRequest.m_direction  = rayDirection;
         rayRequest.m_distance   = maxDistance;
         rayRequest.m_queryType  = AzPhysics::SceneQuery::QueryType::Static;
-        rayRequest.m_hint       = Integration::RaycastRequests::UsecaseHint::Generic;
+        rayRequest.m_hint       = Integration::IRaycastRequests::UsecaseHint::Generic;
+
 
         // Cast a ray, check for intersections.
-        Integration::RaycastRequests::RaycastResult rayResult;
+        Integration::IRaycastRequests::RaycastResult rayResult;
         if (animGraphInstance->GetActorInstance()->GetIsOwnedByRuntime())
         {
-            Integration::RaycastRequestBus::BroadcastResult(rayResult, &Integration::RaycastRequestBus::Events::Raycast, animGraphInstance->GetActorInstance()->GetEntityId(), rayRequest);
+            rayResult = AZ::Interface<Integration::IRaycastRequests>::Get()->Raycast(
+                animGraphInstance->GetActorInstance()->GetEntityId(), rayRequest);
         }
 
         // Set the output values.

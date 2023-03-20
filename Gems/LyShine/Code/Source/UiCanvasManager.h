@@ -69,7 +69,7 @@ public: // member functions
     // ~AssetCatalogEventBus::Handler
 
     AZ::EntityId CreateCanvasInEditor(UiEntityContext* entityContext);
-    AZ::EntityId LoadCanvasInEditor(const string& assetIdPathname, const string& sourceAssetPathname, UiEntityContext* entityContext);
+    AZ::EntityId LoadCanvasInEditor(const AZStd::string& assetIdPathname, const AZStd::string& sourceAssetPathname, UiEntityContext* entityContext);
     AZ::EntityId ReloadCanvasFromXml(const AZStd::string& xmlString, UiEntityContext* entityContext);
 
     void ReleaseCanvas(AZ::EntityId canvas, bool forEditor);

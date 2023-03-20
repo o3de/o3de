@@ -56,7 +56,7 @@ namespace AZ
             using AuxGeomNormal = AuxGeomPosition;
 
             AZ_TYPE_INFO(FixedShapeProcessor, "{20A11645-F8B1-4BAC-847D-F8F49FD2E339}");
-            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FixedShapeProcessor, AZ::SystemAllocator);
 
             FixedShapeProcessor() = default;
             ~FixedShapeProcessor() = default;
@@ -138,8 +138,8 @@ namespace AZ
                 Both,
             };
 
-            bool CreateSphereBuffersAndViews();
-            void CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections);
+            bool CreateSphereBuffersAndViews(AuxGeomShapeType sphereShapeType);
+            void CreateSphereMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections, AuxGeomShapeType sphereShapeType);
 
             bool CreateQuadBuffersAndViews();
             void CreateQuadMeshDataSide(MeshData& meshData, bool isUp, bool drawLines);
@@ -152,8 +152,8 @@ namespace AZ
             bool CreateConeBuffersAndViews();
             void CreateConeMeshData(MeshData& meshData, uint32_t numRings, uint32_t numSections);
 
-            bool CreateCylinderBuffersAndViews();
-            void CreateCylinderMeshData(MeshData& meshData, uint32_t numSections);
+            bool CreateCylinderBuffersAndViews(AuxGeomShapeType cylinderShapeType);
+            void CreateCylinderMeshData(MeshData& meshData, uint32_t numSections, AuxGeomShapeType cylinderShapeType);
 
             bool CreateBoxBuffersAndViews();
             void CreateBoxMeshData(MeshData& meshData);

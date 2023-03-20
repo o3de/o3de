@@ -13,7 +13,7 @@
 #include <Atom/RPI.Reflect/Pass/PassAttachmentReflect.h>
 #include <Atom/RPI.Reflect/Pass/PassData.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,7 +30,7 @@ namespace AZ
         struct PassRequest final
         {
             AZ_TYPE_INFO(PassRequest, "{C43802D1-8501-4D7A-B642-85F8646DF46D}");
-            AZ_CLASS_ALLOCATOR(PassRequest, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassRequest, SystemAllocator);
             static void Reflect(ReflectContext* context);
 
             PassRequest() = default;
@@ -75,7 +75,7 @@ namespace AZ
         };
 
         using PassRequestList = AZStd::vector<PassRequest>;
-        using PassRequestListView = AZStd::array_view<PassRequest>;
+        using PassRequestListView = AZStd::span<const PassRequest>;
 
     }   // namespace RPI
 }   // namespace AZ

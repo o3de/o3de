@@ -11,11 +11,13 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/UnitTest.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Components/TransformComponent.h>
+#include <AzFramework/Asset/AssetCatalogComponent.h>
 #include <AzFramework/Physics/Utils.h>
+#include <AzFramework/Physics/Material/PhysicsMaterialSystemComponent.h>
 #include <ComponentDescriptors.h>
 
 #include <SystemComponent.h>
@@ -35,7 +37,7 @@ namespace PhysX
     /*static*/ bool Environment::s_enablePvd = false;
 
     PhysXApplication::PhysXApplication()
-        : m_physXSystem(new TestUtils::Test_PhysXSettingsRegistryManager(), PxCooking::GetRealTimeCookingParams())
+        : m_physXSystem(AZStd::make_unique<TestUtils::Test_PhysXSettingsRegistryManager>(), PxCooking::GetRealTimeCookingParams())
     {
 
     }
@@ -45,10 +47,13 @@ namespace PhysX
         AZ::ComponentTypeList components = AZ::ComponentApplication::GetRequiredSystemComponents();
         components.insert(components.end(),
             {
-                azrtti_typeid<AZ::MemoryComponent>(),
                 azrtti_typeid<AZ::AssetManagerComponent>(),
                 azrtti_typeid<AZ::JobManagerComponent>(),
                 azrtti_typeid<AZ::StreamerComponent>(),
+
+                azrtti_typeid<AzFramework::AssetCatalogComponent>(),
+                azrtti_typeid<Physics::MaterialSystemComponent>(),
+
                 azrtti_typeid<PhysX::SystemComponent>()
             });
 
@@ -58,6 +63,17 @@ namespace PhysX
     void PhysXApplication::CreateReflectionManager()
     {
         AZ::ComponentApplication::CreateReflectionManager();
+
+        const AZStd::list<AZ::ComponentDescriptor*> azFrameworkSystemDescriptors =
+        {
+            AzFramework::AssetCatalogComponent::CreateDescriptor(),
+            Physics::MaterialSystemComponent::CreateDescriptor()
+        };
+
+        for (AZ::ComponentDescriptor* descriptor : azFrameworkSystemDescriptors)
+        {
+            RegisterComponentDescriptor(descriptor);
+        }
 
         for (AZ::ComponentDescriptor* descriptor : GetDescriptors())
         {
@@ -73,19 +89,13 @@ namespace PhysX
 
     void Environment::SetupInternal()
     {
-#if AZ_TRAIT_UNITTEST_USE_TEST_RUNNER_ENVIRONMENT
-        AZ::EnvironmentInstance inst = AZ::Test::GetPlatform().GetTestRunnerEnvironment();
-        AZ::Environment::Attach(inst);
-#endif
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-
         m_fileIo = AZStd::make_unique<AZ::IO::LocalFileIO>();
 
         AZ::IO::FileIOBase::SetInstance(m_fileIo.get());
 
-        char testDir[AZ_MAX_PATH_LEN];
-        m_fileIo->ConvertToAbsolutePath("Test.Assets/Gems/PhysX/Code/Tests", testDir, AZ_MAX_PATH_LEN);
-        m_fileIo->SetAlias("@test@", testDir);
+        AZ::IO::FixedMaxPath testDir = AZ::Utils::GetExecutableDirectory();
+        testDir /= "Test.Assets/Gems/PhysX/Code/Tests";
+        m_fileIo->SetAlias("@test@", testDir.c_str());
 
         LoadPhysXLibraryModules();
 

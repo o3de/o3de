@@ -1,3 +1,0 @@
-[General]
-version=1
-startScript="ImportActor -filename \"@assets@/levels/physics/c15096734_physxmaterials_defaultmateriallibrary/rin_skeleton_newgeo.actor\"\nCreateActorInstance -actorID %LASTRESULT% -xPos 0.000000 -yPos 0.000000 -zPos 0.000000 -xScale 1.000000 -yScale 1.000000 -zScale 1.000000 -rot 0.00000000,0.00000000,0.00000000,1.00000000\nLoadMotionSet -filename \"@assets@/Levels/Physics/C15096734_PhysxMaterials_DefaultMaterialLibrary/custom_motionset.motionset\"\nLoadAnimGraph -filename \"@assets@/Levels/Physics/C15096734_PhysxMaterials_DefaultMaterialLibrary/rin_physics.animgraph\"\n"

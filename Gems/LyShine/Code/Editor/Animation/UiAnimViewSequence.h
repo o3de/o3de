@@ -86,7 +86,7 @@ public:
     // IUiAnimViewNode
     virtual EUiAnimViewNodeType GetNodeType() const override { return eUiAVNT_Sequence; }
 
-    virtual const char* GetName() const override { return m_pAnimSequence->GetName(); }
+    AZStd::string GetName() const override { return m_pAnimSequence->GetName(); }
     virtual bool SetName(const char* pName) override;
     virtual bool CanBeRenamed() const override { return true; }
 
@@ -234,17 +234,17 @@ private:
     // Called when an animation updates needs to be schedules
     void ForceAnimation();
 
-    virtual void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
+    void CopyKeysToClipboard(XmlNodeRef& xmlNode, const bool bOnlySelectedKeys, const bool bOnlyFromSelectedTracks) override;
 
     void UpdateLightAnimationRefs(const char* pOldName, const char* pNewName);
 
     std::deque<CUiAnimViewTrack*> GetMatchingTracks(CUiAnimViewAnimNode* pAnimNode, XmlNodeRef trackNode);
     void GetMatchedPasteLocationsRec(std::vector<TMatchedTrackLocation>& locations, CUiAnimViewNode* pCurrentNode, XmlNodeRef clipboardNode);
 
-    virtual void BeginUndoTransaction();
-    virtual void EndUndoTransaction();
-    virtual void BeginRestoreTransaction();
-    virtual void EndRestoreTransaction();
+    void BeginUndoTransaction() override;
+    void EndUndoTransaction() override;
+    void BeginRestoreTransaction() override;
+    void EndRestoreTransaction() override;
 
     // Current time when animated
     float m_time;

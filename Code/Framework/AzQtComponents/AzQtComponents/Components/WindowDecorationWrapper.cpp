@@ -65,7 +65,6 @@ namespace AzQtComponents
                 return false;
             }
 
-            const quint16 currentMajorVersion = 2;
             quint16 majorVersion = 0;
             quint16 minorVersion = 0;
 
@@ -126,7 +125,11 @@ namespace AzQtComponents
 
         // Create a QWindow -- windowHandle()
         setAttribute(Qt::WA_NativeWindow, true);
-        TitleBarOverdrawHandler::getInstance()->addTitleBarOverdrawWidget(this);
+
+        if (auto handler = TitleBarOverdrawHandler::getInstance())
+        {
+            handler->addTitleBarOverdrawWidget(this);
+        }
     }
 
     WindowDecorationWrapper::~WindowDecorationWrapper()
@@ -423,6 +426,9 @@ namespace AzQtComponents
 
         if (m_guestWidget && !m_guestWidget->testAttribute(Qt::WA_PendingResizeEvent))
         {
+            // When using X11 Window System (Unix) the resize event can only be sent to the wrapper instead of the guest widget
+            // Update constraints to ensure the guest widget stays above its minimum size
+            updateConstraints();
             adjustWidgetGeometry();
         }
     }

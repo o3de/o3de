@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 ly_add_target(
     NAME AtomFont ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
@@ -20,7 +20,7 @@ ly_add_target(
             Source
     BUILD_DEPENDENCIES
         PRIVATE
-            3rdParty::freetype
+            3rdParty::Freetype
             AZ::AzCore
             AZ::AtomCore
             Legacy::CryCommon

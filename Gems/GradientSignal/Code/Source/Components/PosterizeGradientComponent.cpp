@@ -6,7 +6,7 @@
  *
  */
 
-#include "PosterizeGradientComponent.h"
+#include <GradientSignal/Components/PosterizeGradientComponent.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -117,14 +117,18 @@ namespace GradientSignal
         m_dependencyMonitor.Reset();
         m_dependencyMonitor.ConnectOwner(GetEntityId());
         m_dependencyMonitor.ConnectDependency(m_configuration.m_gradientSampler.m_gradientId);
-        GradientRequestBus::Handler::BusConnect(GetEntityId());
         PosterizeGradientRequestBus::Handler::BusConnect(GetEntityId());
+
+        // Connect to GradientRequestBus last so that everything is initialized before listening for gradient queries.
+        GradientRequestBus::Handler::BusConnect(GetEntityId());
     }
 
     void PosterizeGradientComponent::Deactivate()
     {
-        m_dependencyMonitor.Reset();
+        // Disconnect from GradientRequestBus first to ensure no queries are in process when deactivating.
         GradientRequestBus::Handler::BusDisconnect();
+
+        m_dependencyMonitor.Reset();
         PosterizeGradientRequestBus::Handler::BusDisconnect();
     }
 
@@ -150,35 +154,33 @@ namespace GradientSignal
 
     float PosterizeGradientComponent::GetValue(const GradientSampleParams& sampleParams) const
     {
+        AZStd::shared_lock lock(m_queryMutex);
+
         const float bands = AZ::GetMax(static_cast<float>(m_configuration.m_bands), 2.0f);
-        const float input = AZ::GetClamp(m_configuration.m_gradientSampler.GetValue(sampleParams), 0.0f, 1.0f);
-        float output = 0.0f;
+        const float input = m_configuration.m_gradientSampler.GetValue(sampleParams);
+        return PosterizeValue(input, bands, m_configuration.m_mode);
+    }
 
-        // "quantize" the input down to a number that goes from 0 to (bands-1)
-        const float band = AZ::GetClamp(floorf(input * bands), 0.0f, bands - 1.0f);
-
-        // Given our quantized band, produce the right output for that band range.
-        switch (m_configuration.m_mode)
+    void PosterizeGradientComponent::GetValues(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const
+    {
+        if (positions.size() != outValues.size())
         {
-            default:
-            case PosterizeGradientConfig::ModeType::Floor:
-                // Floor:  the output range should be the lowest value of each band, or (0 to bands-1) / bands
-                output = (band + 0.0f) / bands;
-                break;
-            case PosterizeGradientConfig::ModeType::Round:
-                // Round:  the output range should be the midpoint of each band, or (0.5 to bands-0.5) / bands
-                output = (band + 0.5f) / bands;
-                break;
-            case PosterizeGradientConfig::ModeType::Ceiling:
-                // Ceiling:  the output range should be the highest value of each band, or (1 to bands) / bands
-                output = (band + 1.0f) / bands;
-                break;
-            case PosterizeGradientConfig::ModeType::Ps:
-                // Ps:  the output range should be equally distributed from 0-1, or (0 to bands-1) / (bands-1)
-                output = band / (bands - 1.0f);
-                break;
+            AZ_Assert(false, "input and output lists are different sizes (%zu vs %zu).", positions.size(), outValues.size());
+            return;
         }
-        return AZ::GetClamp(output, 0.0f, 1.0f);
+
+        AZStd::shared_lock lock(m_queryMutex);
+
+        const float bands = AZ::GetMax(static_cast<float>(m_configuration.m_bands), 2.0f);
+
+        // Fill in the outValues with all of the generated inupt gradient values.
+        m_configuration.m_gradientSampler.GetValues(positions, outValues);
+
+        // Run through all the input values and posterize them.
+        for (auto& outValue : outValues)
+        {
+            outValue = PosterizeValue(outValue, bands, m_configuration.m_mode);
+        }
     }
 
     bool PosterizeGradientComponent::IsEntityInHierarchy(const AZ::EntityId& entityId) const
@@ -193,7 +195,13 @@ namespace GradientSignal
 
     void PosterizeGradientComponent::SetBands(AZ::s32 bands)
     {
-        m_configuration.m_bands = bands;
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_bands = bands;
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 
@@ -204,7 +212,13 @@ namespace GradientSignal
 
     void PosterizeGradientComponent::SetModeType(AZ::u8 modeType)
     {
-        m_configuration.m_mode = static_cast<PosterizeGradientConfig::ModeType>(modeType);
+        // Only hold the lock while we're changing the data. Don't hold onto it during the OnCompositionChanged call, because that can
+        // execute an arbitrary amount of logic, including calls back to this component.
+        {
+            AZStd::unique_lock lock(m_queryMutex);
+            m_configuration.m_mode = static_cast<PosterizeGradientConfig::ModeType>(modeType);
+        }
+
         LmbrCentral::DependencyNotificationBus::Event(GetEntityId(), &LmbrCentral::DependencyNotificationBus::Events::OnCompositionChanged);
     }
 

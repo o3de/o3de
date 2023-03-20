@@ -4,18 +4,25 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
+
+import json
+import math
 import os
 import time
-import math
+import traceback
+from typing import Callable, Tuple
+from enum import Enum
 
 import azlmbr
-import azlmbr.legacy.general as general
+try:
+    import azlmbr.atomtools.general as general  # Standard MaterialEditor or similar executable test.
+except ModuleNotFoundError:  # azlmbr.atomtools is not yet available in the Editor
+    import azlmbr.legacy.general as general  # Will be updated in https://github.com/o3de/o3de/issues/11056
+import azlmbr.multiplayer as multiplayer
 import azlmbr.debug
-import json
+import ly_test_tools.environment.waiter as waiter
+import ly_test_tools.environment.process_utils as process_utils
 
-import traceback
-
-from typing import Callable, Tuple
 
 class FailFast(Exception):
     """
@@ -28,19 +35,59 @@ class TestHelper:
     @staticmethod
     def init_idle():
         general.idle_enable(True)
-        # JIRA: SPEC-2880
-        # general.idle_wait_frames(1)
 
     @staticmethod
-    def open_level(directory : str, level : str):
+    def create_level(level_name: str) -> bool:
+        """
+        :param level_name: The name of the level to be created
+        :return: True if ECreateLevelResult returns 0, False otherwise with logging to report reason
+        """
+        Report.info(f"Creating level {level_name}")
+
+        # Use these hardcoded values to pass expected values for old terrain system until new create_level API is
+        # available
+        heightmap_resolution = 1024
+        heightmap_meters_per_pixel = 1
+        terrain_texture_resolution = 4096
+        use_terrain = False
+
+        result = general.create_level_no_prompt(level_name, heightmap_resolution, heightmap_meters_per_pixel,
+                                                terrain_texture_resolution, use_terrain)
+
+        # Result codes are ECreateLevelResult defined in CryEdit.h
+        if result == 1:
+            Report.info(f"{level_name} level already exists")
+        elif result == 2:
+            Report.info("Failed to create directory")
+        elif result == 3:
+            Report.info("Directory length is too long")
+        elif result != 0:
+            Report.info("Unknown error, failed to create level")
+        else:
+            Report.info(f"{level_name} level created successfully")
+
+        return result == 0
+
+    @staticmethod
+    def open_level(directory : str, level : str, no_prompt: bool = True):
         # type: (str, str) -> None
         """
         :param level: the name of the level folder in AutomatedTesting\\Physics\\
 
         :return: None
         """
+        # Make sure we are not in game mode
+        if general.is_in_game_mode():
+            general.exit_game_mode()
+            TestHelper.wait_for_condition(lambda : not general.is_in_game_mode(), 1.0)
+            assert not general.is_in_game_mode(), "Editor was in gamemode when opening the level and was unable to exit from it"
+
         Report.info("Open level {}/{}".format(directory, level))
-        success = general.open_level_no_prompt(os.path.join(directory, level))
+        if no_prompt:
+            success = general.open_level_no_prompt(os.path.join(directory, level))
+        else:
+            success = general.open_level(os.path.join(directory, level))
+
         if not success:
             open_level_name = general.get_current_level_name()
             if open_level_name == level:
@@ -53,8 +100,7 @@ class TestHelper:
         general.idle_wait_frames(200)
 
     @staticmethod
-    def enter_game_mode(msgtuple_success_fail : Tuple[str, str]):
-        # type: (tuple) -> None
+    def enter_game_mode(msgtuple_success_fail: Tuple[str, str]) -> None:
         """
         :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
 
@@ -65,6 +111,112 @@ class TestHelper:
         
         TestHelper.wait_for_condition(lambda : general.is_in_game_mode(), 1.0)
         Report.critical_result(msgtuple_success_fail, general.is_in_game_mode())
+
+    @staticmethod
+    def find_line(window, line, print_infos):
+        """
+        Looks for an expected line in a list of tracer log lines
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message to search for. 
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+
+        :return: True if the line is found, otherwise false.
+        """
+        for printInfo in print_infos:
+            if printInfo.window == window.strip() and printInfo.message.strip() == line:
+                return True
+        return False
+
+    @staticmethod
+    def succeed_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Looks for a line in a list of tracer log lines and reports success if found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the expected line.
+
+        :return: No return value, but if the message is found, a successful critical result is reported; otherwise failure.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Found expected line: " + line, "Failed to find expected line: " + line), TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def fail_if_log_line_found(window, line, print_infos, time_out):
+        """
+        Reports a failure if a log line in a list of tracer log lines is found.
+        :param window: The log's window name. For example, logs printed via script-canvas use the "Script" window. 
+        :param line: The log message we're hoping to not find.
+        :param print_infos: A list of PrintInfos collected by Tracer to search. Example options: your_tracer.warnings, your_tracer.errors, your_tracer.asserts, or your_tracer.prints 
+        :param time_out: The total amount of time to wait before giving up looking for the unexpected line. If time runs out and we don't see the unexpected line then report a success.
+
+        :return: No return value, but if the line is found, a failed critical result is reported; otherwise success.
+        """
+        TestHelper.wait_for_condition(lambda : TestHelper.find_line(window, line, print_infos), time_out)
+        Report.critical_result(("Unexpected line not found: " + line, "Unexpected line found: " + line), not TestHelper.find_line(window, line, print_infos))
+
+    @staticmethod
+    def all_expected_log_lines_found(section_tracer, lines):
+        """
+        function for parsing game mode's console output for expected test lines. duplicate lines and error lines are not
+        handled by this function.
+
+        param section_tracer: python editor tracer object
+        param lines: list of expected lines
+
+
+        returns true if all the expected lines were detected in the parsed output
+        """
+        found_lines = [printInfo.message.strip() for printInfo in section_tracer.prints]
+
+        expected_lines = len(lines)
+        matching_lines = 0
+
+        for line in lines:
+            for found_line in found_lines:
+                if line == found_line:
+                    matching_lines += 1
+
+        return matching_lines >= expected_lines
+
+    
+    EditorServerMode = Enum('EditorServerMode', ['DEDICATED_SERVER', 'CLIENT_SERVER'])
+
+    @staticmethod
+    def multiplayer_enter_game_mode(msgtuple_success_fail: Tuple[str, str], editor_server_mode: EditorServerMode) -> None:
+        """
+        :param msgtuple_success_fail: The tuple with the expected/unexpected messages for entering game mode.
+
+        :return: None
+        """
+        Report.info("Entering game mode")
+
+        with MultiplayerHelper() as multiplayer_helper:
+            # enter game-mode. 
+            # game-mode in multiplayer will also launch ServerLauncher.exe and connect to the editor
+            general.set_cvar_integer('editorsv_max_connection_attempts', 15)
+
+            general.set_cvar_string('editorsv_clientserver', 'true' if editor_server_mode == TestHelper.EditorServerMode.CLIENT_SERVER else 'false')
+
+            multiplayer.PythonEditorFuncs_enter_game_mode()
+
+            if editor_server_mode == TestHelper.EditorServerMode.DEDICATED_SERVER:
+                # make sure the server launcher is running
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 20.0)
+                waiter.wait_for(lambda: process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True), timeout=5.0, exc=AssertionError("AutomatedTesting.ServerLauncher process is not running!"), interval=1.0)
+                Report.critical_result(("AutomatedTesting.ServerLauncher process successfully launched", "AutomatedTesting.ServerLauncher process failed to launch"), process_utils.process_exists("AutomatedTesting.ServerLauncher", ignore_extensions=True))
+
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorConnectionAttemptCount > 0, 10.0)
+                Report.critical_result(("Multiplayer Editor attempting server connection.", "Multiplayer Editor never tried connecting to the server."), multiplayer_helper.editorConnectionAttemptCount > 0)
+
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.editorSendingLevelData, 106.0)
+                Report.critical_result(("Multiplayer Editor sent level data to the server.", "Multiplayer Editor never sent the level to the server."), multiplayer_helper.editorSendingLevelData)
+
+                TestHelper.wait_for_condition(lambda : multiplayer_helper.connectToSimulationSuccess, 20.0)
+                Report.critical_result(("Multiplayer Editor successfully connected to server network simuluation.", "Multiplayer Editor failed to connected to server network simuluation."), multiplayer_helper.connectToSimulationSuccess)
+
+        TestHelper.wait_for_condition(lambda : multiplayer.PythonEditorFuncs_is_in_game_mode(), 10.0)
+        Report.critical_result(msgtuple_success_fail, multiplayer.PythonEditorFuncs_is_in_game_mode())
 
     @staticmethod
     def exit_game_mode(msgtuple_success_fail : Tuple[str, str]):
@@ -92,10 +244,8 @@ class TestHelper:
         raises FailFast
         :return: None
         """
-        Report.info("Failing fast. Raising an exception and shutting down the editor.")
         if message:
             Report.info("Fail fast message: {}".format(message))
-        TestHelper.close_editor()
         raise FailFast()
 
     @staticmethod
@@ -127,6 +277,30 @@ class TestHelper:
                 if ret:
                     return True
 
+    @staticmethod
+    def close_error_windows():
+        """
+        Closes Error Report and Error Log windows that block focus if they are visible.
+        :return: None
+        """
+        if general.is_pane_visible("Error Report"):
+            general.close_pane("Error Report")
+        if general.is_pane_visible("Error Log"):
+            general.close_pane("Error Log")
+
+    @staticmethod
+    def close_display_helpers():
+        """
+        Closes helper gizmos, anti-aliasing, and FPS meters.
+        :return: None
+        """
+        if general.is_helpers_shown():
+            general.toggle_helpers()
+            general.idle_wait(1.0)
+        general.idle_wait(1.0)
+        general.run_console("r_displayInfo=0")
+        general.idle_wait(1.0)
+
 
 class Timeout:
     # type: (float) -> None
@@ -149,6 +323,7 @@ class Timeout:
     def timed_out(self):
         return time.time() > self.die_after
 
+
 class Report:
     _results = []
     _exception = None
@@ -168,7 +343,7 @@ class Report:
             Report._exception = traceback.format_exc()
 
         success, report_str = Report.get_report(test_function)
-        # Print on the o3de console, for debugging purpuses
+        # Print on the o3de console, for debugging purposes
         print(report_str)
         # Print the report on the piped stdout of the application
         general.test_output(report_str)
@@ -290,8 +465,8 @@ class Report:
         Report.info("   x: {:.2f}, y: {:.2f}, z: {:.2f}".format(vector3.x, vector3.y, vector3.z))
         if magnitude is not None:
             Report.info("   magnitude: {:.2f}".format(magnitude))
-            
-    
+
+
 '''
 Utility for scope tracing errors and warnings.
 Usage:
@@ -303,7 +478,7 @@ Usage:
 
     Report.result(Tests.warnings_not_found_in_section, not section_tracer.has_warnings)
 
-'''    
+'''
 class Tracer:
     def __init__(self):
         self.warnings = []
@@ -349,10 +524,10 @@ class Tracer:
             self.line = args[1]
             self.function = args[2]
             self.message = args[3]
-        
+
         def __str__(self):
             return f"Assert: [{self.filename}:{self.function}:{self.line}]: {self.message}"
-            
+
         def __repr__(self):
             return f"[Assert: {self.message}]"
 
@@ -360,21 +535,21 @@ class Tracer:
         def __init__(self, args):
             self.window = args[0]
             self.message = args[1]
-    
+
     def _on_warning(self, args):
         warningInfo = Tracer.WarningInfo(args)
         self.warnings.append(warningInfo)
         Report.info("Tracer caught Warning: %s" % warningInfo.message)
         self.has_warnings = True
         return False
-        
+
     def _on_error(self, args):
         errorInfo = Tracer.ErrorInfo(args)
         self.errors.append(errorInfo)
         Report.info("Tracer caught Error: %s" % errorInfo.message)
         self.has_errors = True
         return False
-        
+
     def _on_assert(self, args):
         assertInfo = Tracer.AssertInfo(args)
         self.asserts.append(assertInfo)
@@ -433,9 +608,57 @@ class AngleHelper:
         """
         return AngleHelper.is_angle_close(math.radians(x_deg), math.radians(y_deg), tolerance)
 
+'''
+Utility for receiving Multiplayer Editor notifications.
+Usage:
+
+    ...
+    with MultiplayerHelper() as multiplayer_helper:
+        # section were we are interested in capturing multiplayer editor notifications
+        TestHelper.wait_for_condition(lambda : multiplayer_helper.serverLaunched, 10.0)
+        ...
+'''
+class MultiplayerHelper:
+    def __init__(self):
+        self.handler = None
+        self.serverLaunched = False
+        self.editorConnectionAttemptCount = 0
+        self.editorSendingLevelData = False
+        self.connectToSimulationSuccess = False
+
+    def __enter__(self):
+        self.handler = azlmbr.multiplayer.MultiplayerEditorServerNotificationBusHandler()
+        self.handler.connect()
+        self.handler.add_callback("OnServerLaunched", self._on_server_launched)
+        self.handler.add_callback("OnEditorConnectionAttempt", self._on_editor_connection_attempt)
+        self.handler.add_callback("OnEditorSendingLevelData", self._on_editor_sending_level_data)
+        self.handler.add_callback("OnConnectToSimulationSuccess", self._on_connect_to_simulation_success)
+        return self
+        
+    def __exit__(self, type, value, traceback):
+        self.handler.disconnect()
+        self.handler = None
+        return False
+
+    def _on_server_launched(self, args):
+        self.serverLaunched = True
+        return False
+    
+    def _on_editor_connection_attempt(self, args):
+        self.editorConnectionAttemptCount = args[0]
+        return False
+    
+    def _on_editor_sending_level_data(self, args):
+        self.editorSendingLevelData = True
+        return False
+
+    def _on_connect_to_simulation_success(self, args):
+        self.connectToSimulationSuccess = True
+        return False
 
 def vector3_str(vector3):
     return "(x: {:.2f}, y: {:.2f}, z: {:.2f})".format(vector3.x, vector3.y, vector3.z)
-    
+
+
 def aabb_str(aabb):
     return "[Min: %s, Max: %s]" % (vector3_str(aabb.min), vector3_str(aabb.max))

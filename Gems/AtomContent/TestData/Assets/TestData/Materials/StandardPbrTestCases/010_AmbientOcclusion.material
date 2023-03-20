@@ -1,0 +1,9 @@
+{
+    "materialType": "@gemroot:Atom_Feature_Common@/Assets/Materials/Types/StandardPBR.materialtype",
+    "materialTypeVersion": 5,
+    "parentMaterial": "010_OcclusionBase.material",
+    "propertyValues": {
+        "occlusion.diffuseFactor": 2.0,
+        "occlusion.diffuseTextureMap": "../../Textures/cc0/Tiles009_1K_AmbientOcclusion.jpg"
+    }
+}

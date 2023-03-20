@@ -1,7 +1,15 @@
 {
     "Amazon": {
         "Preferences": {
-            "EnablePrefabSystem": false
+            "EnablePrefabSystem": true
+        }
+    },
+    "O3DE": {
+        "Preferences": {
+            "Prefabs": {
+                "EnableOutlinerOverrideManagement": true,
+                "EnableInspectorOverrideManagement": false
+            }
         }
     }
 }

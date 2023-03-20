@@ -163,14 +163,14 @@ namespace GraphCanvas
         }
 
         // StateController<RootGraphicsItemDisplayState>
-        void OnStateChanged([[maybe_unused]] const RootGraphicsItemDisplayState& displayState)
+        void OnStateChanged([[maybe_unused]] const RootGraphicsItemDisplayState& displayState) override
         {
             UpdateActualDisplayState();
         }
         ////
 
         // TickBus
-        void OnTick(float delta, AZ::ScriptTimePoint)
+        void OnTick(float delta, AZ::ScriptTimePoint) override
         {
             m_currentAnimationTime += delta;
 
@@ -191,7 +191,7 @@ namespace GraphCanvas
         ////
 
         // RootGraphicsItemRequestBus
-        void AnimatePositionTo(const QPointF& scenePoint, const AZStd::chrono::milliseconds& duration)
+        void AnimatePositionTo(const QPointF& scenePoint, const AZStd::chrono::milliseconds& duration) override
         {
             if (!IsAnimating())
             {
@@ -231,7 +231,7 @@ namespace GraphCanvas
             GeometryRequestBus::Event(GetEntityId(), &GeometryRequests::SetAnimationTarget, m_targetPoint);
         }
 
-        void CancelAnimation()
+        void CancelAnimation() override
         {
             m_currentAnimationTime = m_animationDuration;
             CleanUpAnimation();
@@ -315,7 +315,7 @@ namespace GraphCanvas
             }
         }
 
-        RootGraphicsItemEnabledState GetEnabledState() const
+        RootGraphicsItemEnabledState GetEnabledState() const override
         {
             return m_enabledState;
         }

@@ -10,12 +10,14 @@
                     "Generic":
                     {
                         "Stack":
-                        [
+                        {
+                            "Drive":
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
                                 // The maximum number of file handles that the drive will cache.
                                 "MaxFileHandles": 32 
                             },
+                            "Splitter":
                             {
                                 "$type": "AZ::IO::ReadSplitterConfig",
                                 // The size of the internal buffer that's used if reads need to be aligned.
@@ -31,6 +33,7 @@
                                 // devices that can't cancel their requests.
                                 "SplitAlignedRequests": false
                             },
+                            "Cache":
                             {
                                 "$type": "AZ::IO::BlockCacheConfig",
                                 // The overall size of the cache in megabytes.
@@ -38,6 +41,7 @@
                                 // The size of the individual blocks inside the cache.
                                 "BlockSize": "MaxTransfer"
                             },
+                            "Dedicated cache":
                             {
                                 "$type": "AZ::IO::DedicatedCacheConfig",
                                 // The overall size of the cache in megabytes.
@@ -49,6 +53,7 @@
                                 // to true. If reads are more random than it's better to set this flag to false.
                                 "WriteOnlyEpilog": true
                             },
+                            "Decompressor":
                             {
                                 "$type": "AZ::IO::FullFileDecompressorConfig",
                                 // Maximum number of reads that are kept in flight.
@@ -56,7 +61,7 @@
                                 // Maximum number of decompression jobs that can run simultaneously.
                                 "MaxNumJobs": 2
                             }
-                        ]
+                        }
                     }
                 }
             }

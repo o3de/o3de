@@ -11,11 +11,16 @@
 #include <aws/gamelift/server/GameLiftServerAPI.h>
 #include <aws/gamelift/server/model/GameSession.h>
 
+#include <AzCore/JSON/rapidjson.h>
+#include <AzCore/JSON/document.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
-#include <AzFramework/Session/ISessionHandlingRequests.h>
-#include <AzFramework/Session/SessionConfig.h>
+#include <Multiplayer/Session/ISessionHandlingRequests.h>
+#include <Multiplayer/Session/SessionConfig.h>
+
+#include <AWSGameLiftPlayer.h>
+#include <Request/AWSGameLiftServerRequestBus.h>
 
 namespace AWSGameLift
 {
@@ -31,7 +36,8 @@ namespace AWSGameLift
 
     //! Manage the server process for hosting game sessions via GameLiftServerSDK.
     class AWSGameLiftServerManager
-        : public AzFramework::ISessionHandlingProviderRequests
+        : public AWSGameLiftServerRequestBus::Handler
+        , public Multiplayer::ISessionHandlingProviderRequests
     {
     public:
         static constexpr const char AWSGameLiftServerManagerName[] = "AWSGameLiftServerManager";
@@ -50,6 +56,10 @@ namespace AWSGameLift
         static constexpr const char AWSGameLiftServerPlayerConnectionMissingErrorMessage[] =
             "Player connection id %d does not exist.";
 
+        static constexpr const char AWSGameLiftServerInstanceCertificateErrorMessage[] =
+            "Failed to locate Amazon GameLift TLS certificate file.";
+        static constexpr const char AWSGameLiftServerInstancePrivateKeyErrorMessage[] =
+            "Failed to locate Amazon GameLift TLS private key file.";
         static constexpr const char AWSGameLiftServerInitSDKErrorMessage[] =
             "Failed to initialize Amazon GameLift Server SDK. ErrorMessage: %s";
         static constexpr const char AWSGameLiftServerProcessReadyErrorMessage[] =
@@ -64,41 +74,108 @@ namespace AWSGameLift
             "Invalid player connection config, player connection id: %d, player session id: %s";
         static constexpr const char AWSGameLiftServerRemovePlayerSessionErrorMessage[] =
             "Failed to notify GameLift that the player with the player session id %s has disconnected from the server process. ErrorMessage: %s";
+        static constexpr const char AWSGameLiftMatchmakingDataInvalidErrorMessage[] =
+            "Failed to parse GameLift matchmaking data. ErrorMessage: %s";
+        static constexpr const char AWSGameLiftMatchmakingDataMissingErrorMessage[] =
+            "GameLift matchmaking data is missing or invalid to parse.";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeInvalidErrorMessage[] =
+            "Failed to build player %s attributes. ErrorMessage: %s";
+        static constexpr const char AWSGameLiftDescribePlayerSessionsErrorMessage[] =
+            "Failed to describe player sessions. ErrorMessage: %s";
+        static constexpr const char AWSGameLiftStartMatchBackfillErrorMessage[] =
+            "Failed to start match backfill. ErrorMessage: %s";
+        static constexpr const char AWSGameLiftStopMatchBackfillErrorMessage[] =
+            "Failed to stop match backfill. ErrorMessage: %s";
+
+        static constexpr const char AWSGameLiftMatchmakingConfigurationKeyName[] = "matchmakingConfigurationArn";
+        static constexpr const char AWSGameLiftMatchmakingTeamsKeyName[] = "teams";
+        static constexpr const char AWSGameLiftMatchmakingTeamNameKeyName[] = "name";
+        static constexpr const char AWSGameLiftMatchmakingPlayersKeyName[] = "players";
+        static constexpr const char AWSGameLiftMatchmakingPlayerIdKeyName[] = "playerId";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributesKeyName[] = "attributes";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeTypeKeyName[] = "attributeType";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeValueKeyName[] = "valueAttribute";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSTypeName[] = "S";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSServerTypeName[] = "STRING";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeNTypeName[] = "N";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeNServerTypeName[] = "DOUBLE";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSLTypeName[] = "SL";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSLServerTypeName[] = "STRING_LIST";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSDMTypeName[] = "SDM";
+        static constexpr const char AWSGameLiftMatchmakingPlayerAttributeSDMServerTypeName[] = "STRING_DOUBLE_MAP";
+        static constexpr const uint16_t AWSGameLiftDescribePlayerSessionsPageSize = 30;
 
         AWSGameLiftServerManager();
         virtual ~AWSGameLiftServerManager();
 
-        //! Initialize GameLift API client by calling InitSDK().
-        //! @return Whether the initialization is successful.
-        bool InitializeGameLiftServerSDK();
+        void ActivateManager();
+        void DeactivateManager();
 
-        //! Notify GameLift that the server process is ready to host a game session.
-        //! @param desc GameLift server process settings.
-        //! @return Whether the ProcessReady notification is sent to GameLift.
-        bool NotifyGameLiftProcessReady(const GameLiftServerProcessDesc& desc);
+        //! Initialize GameLift API client by calling InitSDK().
+        void InitializeGameLiftServerSDK();
+
+        // AWSGameLiftServerRequestBus interface implementation
+        bool NotifyGameLiftProcessReady() override;
+        bool StartMatchBackfill(const AZStd::string& ticketId, const AZStd::vector<AWSGameLiftPlayer>& players) override;
+        bool StopMatchBackfill(const AZStd::string& ticketId) override;
 
         // ISessionHandlingProviderRequests interface implementation
         void HandleDestroySession() override;
-        bool ValidatePlayerJoinSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig) override;
-        void HandlePlayerLeaveSession(const AzFramework::PlayerConnectionConfig& playerConnectionConfig) override;
+        bool ValidatePlayerJoinSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
+        void HandlePlayerLeaveSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
         AZ::IO::Path GetExternalSessionCertificate() override;
+        AZ::IO::Path GetExternalSessionPrivateKey() override;
         AZ::IO::Path GetInternalSessionCertificate() override;
+        AZ::IO::Path GetInternalSessionPrivateKey() override;
 
     protected:
         void SetGameLiftServerSDKWrapper(AZStd::unique_ptr<GameLiftServerSDKWrapper> gameLiftServerSDKWrapper);
 
         //! Add connected player session id.
-        bool AddConnectedPlayer(const AzFramework::PlayerConnectionConfig& playerConnectionConfig);
+        bool AddConnectedPlayer(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig);
+
+        //! Get active server player data from lazy loaded game session for server match backfill
+        AZStd::vector<AWSGameLiftPlayer> GetActiveServerMatchBackfillPlayers();
+
+        //! Update local game session data to latest one
+        void UpdateGameSessionData(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
     private:
+        //! Build the serverProcessDesc with appropriate server port number and log paths.
+        GameLiftServerProcessDesc BuildGameLiftServerProcessDesc();
+
+        //! Build active server player data from lazy loaded game session based on player id
+        bool BuildActiveServerMatchBackfillPlayer(const AZStd::string& playerId, AWSGameLiftPlayer& outPlayer);
+
+        //! Build server player attribute data from lazy load matchmaking data
+        void BuildServerMatchBackfillPlayerAttributes(const rapidjson::Value& playerAttributes, AWSGameLiftPlayer& outPlayer);
+
+        //! Build server player data for server match backfill
+        bool BuildServerMatchBackfillPlayer(const AWSGameLiftPlayer& player, Aws::GameLift::Server::Model::Player& outBackfillPlayer);
+
+        //! Build start match backfill request for StartMatchBackfill operation
+        bool BuildStartMatchBackfillRequest(
+            const AZStd::string& ticketId,
+            const AZStd::vector<AWSGameLiftPlayer>& players,
+            Aws::GameLift::Server::Model::StartMatchBackfillRequest& outRequest);
+
+        //! Build stop match backfill request for StopMatchBackfill operation
+        void BuildStopMatchBackfillRequest(const AZStd::string& ticketId, Aws::GameLift::Server::Model::StopMatchBackfillRequest& outRequest);
+
         //! Build session config by using AWS GameLift Server GameSession Model.
-        AzFramework::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
+        Multiplayer::SessionConfig BuildSessionConfig(const Aws::GameLift::Server::Model::GameSession& gameSession);
+
+        //! Check whether matchmaking data is in proper format
+        bool IsMatchmakingDataValid();
+
+        //! Fetch active player sessions in game session.
+        AZStd::vector<Aws::GameLift::Server::Model::PlayerSession> GetActivePlayerSessions();
 
         //! Callback function that the GameLift service invokes to activate a new game session.
         void OnStartGameSession(const Aws::GameLift::Server::Model::GameSession& gameSession);
 
         //! Callback function that the GameLift service invokes to pass an updated game session object to the server process.
-        void OnUpdateGameSession();
+        void OnUpdateGameSession(const Aws::GameLift::Server::Model::UpdateGameSession& updateGameSession);
 
         //! Callback function that the server process or GameLift service invokes to force the server process to shut down.
         void OnProcessTerminate();
@@ -120,5 +197,12 @@ namespace AWSGameLift
         using PlayerConnectionId = uint32_t;
         using PlayerSessionId = AZStd::string;
         AZStd::unordered_map<PlayerConnectionId, PlayerSessionId> m_connectedPlayers;
+
+        // Lazy loaded game session and matchmaking data
+        Aws::GameLift::Server::Model::GameSession m_gameSession;
+        // Matchmaking data contains a unique match ID, it identifies the matchmaker that created the match
+        // and describes the teams, team assignments, and players.
+        // Reference https://docs.aws.amazon.com/gamelift/latest/flexmatchguide/match-server.html#match-server-data
+        rapidjson::Document m_matchmakingData;
     };
 } // namespace AWSGameLift

@@ -17,7 +17,8 @@
 #include <Atom/RPI.Public/Buffer/BufferSystemInterface.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Debug/EventTrace.h>
+
+AZ_DECLARE_BUDGET(RPI);
 
 namespace AZ
 {
@@ -90,7 +91,7 @@ namespace AZ
 
         RHI::ResultCode Buffer::Init(BufferAsset& bufferAsset)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RPI);
 
             RHI::ResultCode resultCode = RHI::ResultCode::Fail;
 
@@ -140,7 +141,7 @@ namespace AZ
                 
                 if (bufferAsset.GetBuffer().size() > 0 && !initWithData)
                 {
-                    AZ_TRACE_METHOD_NAME("Stream Upload");
+                    AZ_PROFILE_SCOPE(RPI, "Stream Upload");
                     m_streamFence = RHI::Factory::Get().CreateFence();
                     if (m_streamFence)
                     {
@@ -176,8 +177,7 @@ namespace AZ
                 return RHI::ResultCode::Success;
             }
 
-            // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
-            AZ_Error("Buffer", resultCode == AZ::RHI::ResultCode::Unimplemented, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
+            AZ_Error("Buffer", false, "Buffer::Init() failed to initialize RHI buffer. Error code: %d", static_cast<uint32_t>(resultCode));
             return resultCode;
         }
         
@@ -240,11 +240,6 @@ namespace AZ
             if (result == RHI::ResultCode::Success)
             {
                 return response.m_data;
-            }
-            else if (result == RHI::ResultCode::Unimplemented)
-            {
-                // ResultCode::Unimplemented is used by Null Renderer and hence is a valid use case
-                return nullptr;
             }
             else
             {

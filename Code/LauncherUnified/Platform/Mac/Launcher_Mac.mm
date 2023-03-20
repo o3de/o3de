@@ -10,6 +10,7 @@
 #include <O3DEApplication_Mac.h>
 #include <../Common/Apple/Launcher_Apple.h>
 #include <../Common/UnixLike/Launcher_UnixLike.h>
+#include <AzCore/Math/Vector2.h>
 
 #if AZ_TESTS_ENABLED
 
@@ -22,6 +23,7 @@ int main(int argc, char* argv[])
 
 int main(int argc, char* argv[])
 {
+    const AZ::Debug::Trace tracer;
     // Ensure the process is a foreground application. Must be done before creating the application.
     ProcessSerialNumber processSerialNumber = { 0, kCurrentProcess };
     TransformProcessType(&processSerialNumber, kProcessTransformToForegroundApplication);

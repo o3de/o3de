@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Module/Module.h>
-#include <IGem.h>
 
 #include "CameraComponent.h"
 #include "CameraSystemComponent.h"
@@ -22,13 +21,13 @@
 namespace Camera
 {
     class CameraModule
-        : public CryHooksModule
+        : public AZ::Module
     {
     public:
         AZ_RTTI(CameraModule, "{C2E72B0D-BCEF-452A-9BFA-03833015258C}", AZ::Module);
 
         CameraModule()
-            : CryHooksModule()
+            : AZ::Module()
         {
             m_descriptors.insert(m_descriptors.end(), {
                 Camera::CameraComponent::CreateDescriptor(),
@@ -51,7 +50,8 @@ namespace Camera
             {
                 typeIds.emplace_back(descriptor->GetUuid());
             }
-            EBUS_EVENT(AzFramework::MetricsPlainTextNameRegistrationBus, RegisterForNameSending, typeIds);
+            AzFramework::MetricsPlainTextNameRegistrationBus::Broadcast(
+                &AzFramework::MetricsPlainTextNameRegistrationBus::Events::RegisterForNameSending, typeIds);
         }
 
         AZ::ComponentTypeList GetRequiredSystemComponents() const override

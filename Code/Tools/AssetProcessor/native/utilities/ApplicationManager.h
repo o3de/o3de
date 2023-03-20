@@ -21,7 +21,6 @@
 #include "native/assetprocessor.h"
 #endif
 
-class FolderWatchCallbackEx;
 class QCoreApplication;
 
 namespace AZ
@@ -40,6 +39,7 @@ class AssetProcessorAZApplication
 {
     Q_OBJECT
 public:
+    AZ_CLASS_ALLOCATOR(AssetProcessorAZApplication, AZ::SystemAllocator)
     explicit AssetProcessorAZApplication(int* argc, char*** argv, QObject* parent = nullptr);
 
     ~AssetProcessorAZApplication() override = default;
@@ -115,7 +115,7 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void ReadyToQuit(QObject* source);
-    void QuitRequested();
+    virtual void QuitRequested();
     void ObjectDestroyed(QObject* source);
     void Restart();
 
@@ -139,7 +139,7 @@ protected:
     void RegisterObjectForQuit(QObject* source, bool insertInFront = false);
     bool NeedRestart() const;
     void addRunningThread(AssetProcessor::ThreadWorker* thread);
-    
+
     template<class BuilderClass>
     void RegisterInternalBuilder(const QString& builderName);
 
@@ -151,11 +151,8 @@ protected:
     bool m_duringStartup = true;
     AssetProcessorAZApplication m_frameworkApp;
     QCoreApplication* m_qApp = nullptr;
-    
-    //! Get the list of external builder files for this asset processor
-    void GetExternalBuilderFileList(QStringList& externalBuilderModules);
 
-    virtual void Reflect() = 0;
+    virtual void Reflect() {}
     virtual const char* GetLogBaseName() = 0;
     virtual RegistryCheckInstructions PopupRegistryProblemsMessage(QString warningText) = 0;
 private:

@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/hash.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/std/typetraits/void_t.h>
@@ -19,29 +19,20 @@
 
 namespace AZStd
 {
-    template<class... Types>
-    using tuple = std::tuple<Types...>;
-
-    template<class T>
-    using tuple_size = std::tuple_size<T>;
-
-    template<size_t I, class T>
-    using tuple_element = std::tuple_element<I, T>;
-
-    template<size_t I, class T>
-    using tuple_element_t = typename std::tuple_element<I, T>::type;
+    using std::tuple;
+    using std::tuple_size;
+    using std::tuple_size_v;
+    using std::tuple_element;
+    using std::tuple_element_t;
 
     // Placeholder structure that can be assigned any value with no effect.
-    // This is used by AZStd::tie as placeholder for unused arugments
-    using ignore_t = AZStd::decay_t<decltype(std::ignore)>;
-    decltype(std::ignore) ignore = std::ignore;
+    using std::ignore;
 
     using std::make_tuple;
     using std::tie;
     using std::forward_as_tuple;
     using std::tuple_cat;
     using std::get;
-
     //! Creates an hash specialization for tuple types using the hash_combine function
     //! The std::tuple implementation does not have this support. This is an extension
     template <typename... Types>
@@ -278,7 +269,7 @@ namespace AZStd
     };
 }
 
-// AZStd::apply implemenation helper block 
+// AZStd::apply implemenation helper block
 namespace AZStd
 {
     namespace Internal
@@ -347,11 +338,4 @@ namespace std
         using type = T;
     };
     AZ_POP_DISABLE_WARNING
-}
-
-
-// Adds typeinfo specialization for tuple type
-namespace AZ
-{
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 }

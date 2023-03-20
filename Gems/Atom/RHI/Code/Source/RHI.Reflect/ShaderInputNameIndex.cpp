@@ -227,5 +227,11 @@ namespace AZ
 
         }
 
+        const Name& ShaderInputNameIndex::GetNameForDebug() const
+        {
+            AZ_Assert(HasName(), "GetNameForDebug() called on ShaderInputNameIndex that doesn't have a name set. Please initialize it with a name.", m_name.GetCStr());
+            return m_name;
+        }
+
     }
 }

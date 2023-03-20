@@ -37,7 +37,7 @@ namespace AZ
 {
     namespace RPI
     {
-        static const char* s_exporterName = "Atom Model Builder";
+        [[maybe_unused]] static const char* s_exporterName = "Atom Model Builder";
 
         ModelExporterComponent::ModelExporterComponent()
         {
@@ -78,9 +78,17 @@ namespace AZ
             //Export MaterialAssets
             for (auto& materialPair : materialsByUid)
             {
+                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
+                
+                // MaterialAssetBuilderContext could attach an independent material asset rather than
+                // generate one using the scene data, so we must skip the export step in that case.
+                if (asset.GetId().m_guid != exportEventContext.GetScene().GetSourceGuid())
+                {
+                    continue;
+                }
+
                 uint64_t materialUid = materialPair.first;
                 const AZStd::string& sceneName = exportEventContext.GetScene().GetName();
-                const Data::Asset<MaterialAsset>& asset = materialPair.second.m_asset;
 
                 // escape the material name acceptable for a filename
                 AZStd::string materialName = materialPair.second.m_name;
@@ -152,12 +160,10 @@ namespace AZ
 
                 AZ_Assert(assetInfoResult, "Failed to retrieve source asset info. Can't reason about product asset paths");
 
-                uint32_t lodIndex = 0;
                 for (const Data::Asset<ModelLodAsset>& lodAsset : modelAsset->GetLodAssets())
                 {
                     AZStd::set<uint32_t> exportedSubAssets;
 
-                    uint32_t bufferIndex = 0;
                     for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
                     {
                         //Export all BufferAssets for this Lod
@@ -181,7 +187,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(indexBufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
 
@@ -205,7 +210,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(bufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
                     }
@@ -224,7 +228,6 @@ namespace AZ
                         return SceneAPI::Events::ProcessingResult::Failure;
                     }
 
-                    lodIndex++;
                 } //foreach lodAsset                
 
                 //Export ModelAsset

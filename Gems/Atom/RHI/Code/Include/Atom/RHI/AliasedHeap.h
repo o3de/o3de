@@ -32,6 +32,7 @@ namespace AZ
         struct AliasedHeapDescriptor
             : public ResourcePoolDescriptor
         {
+            AZ_CLASS_ALLOCATOR(AliasedHeapDescriptor, SystemAllocator)
             static const uint32_t DefaultCacheSize = 256;
             static const size_t DefaultAlignment = 256;
 
@@ -50,7 +51,7 @@ namespace AZ
         {
             using Base = ResourcePool;
         public:
-            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasedHeap, AZ::SystemAllocator);
             AZ_RTTI(AliasedHeap, "{9C4BB24D-3B76-4584-BA68-600BC7E2A2AA}");
 
             ~AliasedHeap() override = default;
@@ -93,6 +94,9 @@ namespace AZ
             //! Returns the heap statistics of the frame when the Aliased Heap was began with the GatherStatistics flag.
             const TransientAttachmentStatistics::Heap& GetStatistics() const;
 
+            //! Remove the entry related to the provided attachmentId from the cache as it is probably stale now
+            void RemoveFromCache(RHI::AttachmentId attachmentId);
+
         protected:
             AliasedHeap() = default;
 
@@ -114,6 +118,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // ResourcePool
             void ShutdownInternal() override;
+            void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:
@@ -151,6 +156,10 @@ namespace AZ
             };
 
             AZStd::unordered_map<AttachmentId, AttachmentData> m_activeAttachmentLookup;
+
+            // This map is used to reverse look up resource hash so we can clear them out of m_cache
+            // once they have been replaced with a new resource at a different place in the heap. 
+            AZStd::unordered_map<AttachmentId, HashValue64> m_reverseLookupHash;
         };
     }
 }

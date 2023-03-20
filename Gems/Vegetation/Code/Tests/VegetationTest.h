@@ -11,7 +11,6 @@
 #include <AzCore/Math/Random.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/std/functional.h>
 
@@ -21,21 +20,23 @@
 namespace UnitTest
 {
     class VegetationComponentTests
-        : public ::testing::Test
+        : public LeakDetectionFixture
     {
     protected:
+
         AZ::ComponentApplication m_app;
 
         virtual void RegisterComponentDescriptors() {}
 
         void SetUp() override
         {
-            AZ::ComponentApplication::Descriptor appDesc;
-            appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
-            appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
-            appDesc.m_stackRecordLevels = 20;
+            if (AZ::Debug::AllocationRecords* records = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords();
+                records != nullptr)
+            {
+                records->SetMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            }
 
-            m_app.Create(appDesc);
+            m_app.Create({});
             RegisterComponentDescriptors();
         }
 
@@ -77,7 +78,6 @@ namespace UnitTest
 
             claimContext.m_existedCallback = [this](const Vegetation::ClaimPoint&, const Vegetation::InstanceData&) 
             { 
-                m_existedCallbackCount;
                 return m_existedCallbackOutput;
             };
 

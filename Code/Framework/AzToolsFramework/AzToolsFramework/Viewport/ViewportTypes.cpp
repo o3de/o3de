@@ -49,5 +49,22 @@ namespace AzToolsFramework
                 ->Field("MouseEvent", &MouseInteractionEvent::m_mouseEvent)
                 ->Field("WheelDelta", &MouseInteractionEvent::m_wheelDelta);
         }
+
+        MouseInteraction BuildMouseInteraction(
+            const MousePick& mousePick, const MouseButtons buttons, const InteractionId interactionId, const KeyboardModifiers modifiers)
+        {
+            MouseInteraction interaction;
+            interaction.m_mousePick = mousePick;
+            interaction.m_mouseButtons = buttons;
+            interaction.m_interactionId = interactionId;
+            interaction.m_keyboardModifiers = modifiers;
+            return interaction;
+        }
+
+        MouseInteractionEvent BuildMouseInteractionEvent(
+            const MouseInteraction& mouseInteraction, const MouseEvent event, const bool cursorCaptured /*= false*/)
+        {
+            return MouseInteractionEvent(mouseInteraction, event, cursorCaptured);
+        }
     } // namespace ViewportInteraction
 } // namespace AzToolsFramework

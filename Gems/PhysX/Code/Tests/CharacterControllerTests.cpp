@@ -11,7 +11,6 @@
 #include <PhysXCharacters/API/CharacterController.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
 #include <PhysXCharacters/Components/CharacterControllerComponent.h>
-#include <PhysXCharacters/Components/CharacterGameplayComponent.h>
 
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
@@ -71,9 +70,6 @@ namespace PhysX
             }
         }
     }
-
-    // transform for a floor centred at x = 0, y = 0, with top at level z = 0
-    static const AZ::Transform DefaultFloorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
 
     class ControllerTestBasis
     {
@@ -247,7 +243,6 @@ namespace PhysX
         for (int i = 0; i < 50; i++)
         {
             basis.Update(desiredVelocity);
-            AZ::Vector3 velocity = basis.m_controller->GetVelocity();
             EXPECT_TRUE(basis.m_controller->GetVelocity().IsClose(AZ::Vector3::CreateZero()));
         }
 
@@ -260,7 +255,6 @@ namespace PhysX
         for (int i = 0; i < 50; i++)
         {
             basis.Update(desiredVelocity);
-            AZ::Vector3 velocity = basis.m_controller->GetVelocity();
             EXPECT_TRUE(basis.m_controller->GetVelocity().IsClose(desiredVelocity));
         }
     }

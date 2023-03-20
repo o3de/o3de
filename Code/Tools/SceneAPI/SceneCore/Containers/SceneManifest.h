@@ -41,6 +41,8 @@ namespace AZ
 
                 AZ_RTTI(SceneManifest, "{9274AD17-3212-4651-9F3B-7DCCB080E467}");
                 
+                static constexpr size_t MaxSceneManifestFileSizeInBytes = AZStd::numeric_limits<size_t>::max();
+
                 virtual ~SceneManifest();
                 
                 static AZStd::shared_ptr<const DataTypes::IManifestObject> SceneManifestConstDataConverter(
@@ -85,7 +87,7 @@ namespace AZ
                  * Save manifest to file. Overwrites the file in case it already exists and creates a new file if not.
                  * @param absoluteFilePath the absolute path of the file you want to save to.
                  * @param context If no serialize context was specified, it will get the serialize context from the application component bus.
-                 * @result True in case saving went all fine, false if an error occured.
+                 * @result True in case saving went all fine, false if an error occurred.
                  */
                 bool SaveToFile(const AZStd::string& absoluteFilePath, SerializeContext* context = nullptr);
 
@@ -96,7 +98,10 @@ namespace AZ
                 static void Reflect(ReflectContext* context);
                 static bool VersionConverter(SerializeContext& context, SerializeContext::DataElementNode& node);
 
-            protected:
+                //! Save manifest to string buffer.
+                //! @param context If no serialize context was specified, it will get the context from the application component bus.
+                //! @param registrationContext If no Json registration context was specified, it will get the context from the application component bus.
+                //! @result True in case saving went all fine, false if an error occurred.
                 AZ::Outcome<rapidjson::Document, AZStd::string> SaveToJsonDocument(SerializeContext* context = nullptr, JsonRegistrationContext* registrationContext = nullptr);
 
             private:
@@ -106,7 +111,7 @@ namespace AZ
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
                 StorageLookup m_storageLookup;
                 ValueStorage m_values;
-            AZ_POP_DISABLE_OVERRIDE_WARNING
+            AZ_POP_DISABLE_WARNING
             };
         } // Containers
     } // SceneAPI

@@ -7,10 +7,7 @@
  */
 
 #include <Atom/RHI/BufferPool.h>
-#include <Atom/RHI/CpuProfiler.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace RHI
@@ -87,9 +84,23 @@ namespace AZ
         {
             if (Validation::IsEnabled())
             {
+                if (!request.m_buffer)
+                {
+                    AZ_Error("BufferPool", false, "Trying to map a null buffer.");
+                    return false;
+                }
+
                 if (request.m_byteCount == 0)
                 {
-                    AZ_Warning("BufferPool", false, "Trying to map zero bytes from buffer.");
+                    AZ_Warning("BufferPool", false, "Trying to map zero bytes from buffer '%s'.", request.m_buffer->GetName().GetCStr());
+                    return false;
+                }
+
+                if (request.m_byteOffset + request.m_byteCount > request.m_buffer->GetDescriptor().m_byteCount)
+                {
+                    AZ_Error(
+                        "BufferPool", false, "Unable to map buffer '%s', overrunning the size of the buffer.",
+                        request.m_buffer->GetName().GetCStr());
                     return false;
                 }
             }
@@ -120,7 +131,7 @@ namespace AZ
 
         ResultCode BufferPool::InitBuffer(const BufferInitRequest& initRequest)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateInitRequest(initRequest))
             {
@@ -143,7 +154,7 @@ namespace AZ
                 resultCode = MapBufferInternal(mapRequest, mapResponse);
                 if (resultCode == ResultCode::Success)
                 {
-                    memcpy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
+                    BufferCopy(mapResponse.m_data, initRequest.m_initialData, initRequest.m_descriptor.m_byteCount);
                     UnmapBufferInternal(*initRequest.m_buffer);
                 }
             }
@@ -163,13 +174,13 @@ namespace AZ
                 return ResultCode::InvalidArgument;
             }
             
-            AZ_ATOM_PROFILE_FUNCTION("RHI", "BufferPool::OrphanBuffer");
+            AZ_PROFILE_SCOPE(RHI, "BufferPool::OrphanBuffer");
             return OrphanBufferInternal(buffer);
         }
 
         ResultCode BufferPool::MapBuffer(const BufferMapRequest& request, BufferMapResponse& response)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             if (!ValidateIsInitialized() || !ValidateNotProcessingFrame())
             {
@@ -217,6 +228,11 @@ namespace AZ
         const BufferPoolDescriptor& BufferPool::GetDescriptor() const
         {
             return m_descriptor;
+        }
+
+        void BufferPool::BufferCopy(void* destination, const void* source, size_t num)
+        {
+            memcpy(destination, source, num);
         }
 
         ResultCode BufferPool::StreamBufferInternal([[maybe_unused]] const BufferStreamRequest& request)

@@ -71,6 +71,14 @@ namespace EMStudio
             VISUALIZATION_GLOBALWEIGHTS,
             VISUALIZATION_SYNCSTATUS,
             VISUALIZATION_PLAYPOSITIONS,
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+            VISUALIZATION_PROFILING_NONE,
+            VISUALIZATION_PROFILING_UPDATE,
+            VISUALIZATION_PROFILING_TOPDOWN,
+            VISUALIZATION_PROFILING_POSTUPDATE,
+            VISUALIZATION_PROFILING_OUTPUT,
+            VISUALIZATION_PROFILING_ALL,
+#endif
             EDIT_CUT,
             EDIT_COPY,
             EDIT_PASTE,
@@ -123,6 +131,12 @@ namespace EMStudio
 
         void showEvent(QShowEvent* showEvent);
 
+#if defined(EMFX_ANIMGRAPH_PROFILER_ENABLED)
+        void AddProfilingAction(const char* actionName, EOptionFlag optionFlag);
+        void OnDisplayProfiling(EOptionFlag profileOption);
+        void OnDisplayAllProfiling(bool enableAll); // enabledAll = false -> disableAllProfiling
+#endif
+
     private:
         void CreateActions();
         QToolBar* CreateTopToolBar();
@@ -133,7 +147,7 @@ namespace EMStudio
         QHBoxLayout* m_toolbarLayout = nullptr;
         AZStd::array<QAction*, NUM_OPTIONS> m_actions{};
         AnimGraphPlugin* m_parentPlugin = nullptr;
-        NavigationLinkWidget* mNavigationLink = nullptr;
+        NavigationLinkWidget* m_navigationLink = nullptr;
         QStackedWidget m_viewportStack;
         QSplitter* m_viewportSplitter = nullptr;
 

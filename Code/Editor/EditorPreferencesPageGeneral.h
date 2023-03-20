@@ -8,15 +8,20 @@
 #pragma once
 
 #include "Include/IPreferencesPage.h"
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/Math/Vector3.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzToolsFramework/Editor/EditorSettingsAPIBus.h>
+#include <AzToolsFramework/Prefab/PrefabLoaderInterface.h>
 #include <QIcon>
 
 #include "Settings.h"
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 class CEditorPreferencesPage_General
     : public IPreferencesPage
@@ -44,8 +49,7 @@ private:
         AZ_TYPE_INFO(GeneralSettings, "{C2AE8F6D-7AA6-499E-A3E8-ECCD0AC6F3D2}")
 
         bool m_previewPanel;
-        bool m_applyConfigSpec;
-        bool m_enableSourceControl;
+        bool m_enableSourceControl = false;
         bool m_clearConsoleOnGameModeStart;
         AzToolsFramework::ConsoleColorTheme m_consoleBackgroundColorTheme;
         bool m_autoLoadLastLevel;
@@ -55,6 +59,12 @@ private:
         bool m_restoreViewportCamera;
         bool m_bShowNews;
         bool m_enableSceneInspector;
+    };
+
+    struct LevelSaveSettings
+    {
+        AZ_TYPE_INFO(LevelSaveSettings, "{E297DAE3-3985-4BC2-8B43-45F3B1522F6B}");
+        AzToolsFramework::Prefab::SaveAllPrefabsPreference m_saveAllPrefabsPreference;
     };
 
     struct Messaging
@@ -89,6 +99,7 @@ private:
     };
 
     GeneralSettings m_generalSettings;
+    LevelSaveSettings m_levelSaveSettings;
     Messaging m_messaging;
     Undo m_undo;
     DeepSelection m_deepSelection;
@@ -96,5 +107,4 @@ private:
     QIcon m_icon;
 };
 
-static const char* EditorPreferencesGeneralRestoreViewportCameraSettingName = "Restore Viewport Camera on Game Mode Exit";
-
+static constexpr const char* EditorPreferencesGeneralRestoreViewportCameraSettingName = "Restore Viewport Camera on Game Mode Exit";

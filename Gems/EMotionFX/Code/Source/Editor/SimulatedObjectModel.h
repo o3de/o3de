@@ -75,7 +75,7 @@ namespace EMotionFX
 
         QModelIndex GetModelIndexByObjectIndex(size_t objectIndex);
         QModelIndex FindModelIndex(SimulatedObject* object);
-        void AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<AZ::u32>& jointIndices);
+        void AddJointsToSelection(QItemSelection& selection, size_t objectIndex, const AZStd::vector<size_t>& jointIndices);
 
     private:
         // Command callbacks.

@@ -1,0 +1,32 @@
+{
+    "Type": "JsonSerialization",
+    "Description": "This is the pass template that renders the sky view LUT",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "SkyViewLUTTemplate",
+            "PassClass": "FullScreenTriangle",
+            "Slots": [
+                {
+                    "Name": "SkyTransmittanceLUTInput",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_transmittanceLUT"
+                },
+                {
+                    "Name": "SkyViewLUTOutput",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "RenderTarget"
+                }
+            ],
+            "PassData": {
+                "$type": "FullscreenTrianglePassData",
+                "ShaderAsset": {
+                    "FilePath": "Shaders/SkyAtmosphere/SkyViewLUT.shader"
+                },
+                "PipelineViewTag": "MainCamera"
+            }
+        }
+    }
+}

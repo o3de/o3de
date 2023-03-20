@@ -1,0 +1,30 @@
+{
+    "entries": [
+        {
+            "base": "ShapeType_Heightfield",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Get Shape Type: Heightfield",
+                "category": "Constants/Physics"
+            },
+            "methods": [
+                {
+                    "base": "GetShapeType_Heightfield",
+                    "details": {
+                        "name": "Get Shape Type: Heightfield",
+                        "subtitle": "Shape Type"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Shape Type"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -18,6 +18,7 @@ set(FILES
     Tests/PhysXTestEnvironment.h
     Tests/PhysXTestEnvironment.cpp
     Tests/PhysXGenericTest.cpp
+    Tests/PhysXMaterialTest.cpp
     Tests/PhysXSpecificTest.cpp
     Tests/PhysXForceRegionTest.cpp
     Tests/PhysXCollisionFilteringTest.cpp
@@ -32,7 +33,8 @@ set(FILES
     Tests/PhysXMultithreadingTest.cpp
     Tests/PhysXScriptTest.cpp
     Tests/CharacterControllerTests.cpp
-    Tests/RagdollConfiguration.xml
+    Tests/CharacterGameplayControllerTests.cpp
+    Tests/RagdollConfiguration.h
     Tests/RagdollTestData.h
     Tests/RagdollTests.cpp
     Tests/Benchmarks/PhysXBenchmarksUtilities.cpp

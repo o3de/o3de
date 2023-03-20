@@ -16,10 +16,13 @@
 #include <AzQtComponents/Utilities/HandleDpiAwareness.h>
 #include <AzQtComponents/Components/StyleManager.h>
 #include <AzQtComponents/Components/WindowDecorationWrapper.h>
+#include <ProjectManager_Traits_Platform.h>
 
 #include <QApplication>
 #include <QDir>
 #include <QMessageBox>
+#include <QInputDialog>
+#include <QIcon>
 
 namespace O3DE::ProjectManager
 {
@@ -28,7 +31,7 @@ namespace O3DE::ProjectManager
         TearDown();
     }
 
-    bool Application::Init(bool interactive)
+    bool Application::Init(bool interactive, AZStd::unique_ptr<PythonBindings> pythonBindings)
     {
         constexpr const char* applicationName { "O3DE" };
 
@@ -56,8 +59,6 @@ namespace O3DE::ProjectManager
         QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
         QCoreApplication::setAttribute(Qt::AA_DontCreateNativeWidgetSiblings);
 
-        QLocale::setDefault(QLocale(QLocale::English, QLocale::UnitedStates));
-
         QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
         AzQtComponents::Utilities::HandleDpiAwareness(AzQtComponents::Utilities::SystemDpiAware);
 
@@ -69,18 +70,58 @@ namespace O3DE::ProjectManager
             AZ_Warning("ProjectManager", false, "Failed to init logging");
         }
 
-        m_pythonBindings = AZStd::make_unique<PythonBindings>(GetEngineRoot());
-        if (!m_pythonBindings || !m_pythonBindings->PythonStarted())
+        // Set window icon after QGuiApplication is created otherwise QPixmap for the icon fails to intialize
+        QApplication::setWindowIcon(QIcon(":/ProjectManager-Icon.ico"));
+
+        // unit tests may provide custom python bindings 
+        m_pythonBindings = pythonBindings ? AZStd::move(pythonBindings) : AZStd::make_unique<PythonBindings>(GetEngineRoot());
+
+        if (!m_pythonBindings->PythonStarted())
         {
-            if (interactive)
+            if (!interactive)
             {
-                QMessageBox::critical(nullptr, QObject::tr("Failed to start Python"),
-                    QObject::tr("This tool requires an O3DE engine with a Python runtime, "
-                        "but either Python is missing or mis-configured. Please rename "
-                        "your python/runtime folder to python/runtime_bak, then run "
-                        "python/get_python.bat to restore the Python runtime folder."));
+                return false;
             }
-            return false;
+
+            int result = QMessageBox::warning(nullptr, QObject::tr("Failed to start Python"),
+                QObject::tr("This tool requires an O3DE engine with a Python runtime, "
+                            "but either Python is missing or mis-configured.<br><br>Press 'OK' to "
+                            "run the %1 script automatically, or 'Cancel' "
+                            " if you want to manually resolve the issue by renaming your "
+                            " python/runtime folder and running %1 yourself.")
+                            .arg(GetPythonScriptPath),
+                QMessageBox::Cancel, QMessageBox::Ok);
+            if (result == QMessageBox::Ok)
+            {
+                auto getPythonResult = ProjectUtils::RunGetPythonScript(GetEngineRoot());
+                if (!getPythonResult.IsSuccess())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to run %1 script").arg(GetPythonScriptPath),
+                        QObject::tr("The %1 script failed, was canceled, or could not be run.  "
+                                    "Please rename your python/runtime folder and then run "
+                                    "<pre>%1</pre>").arg(GetPythonScriptPath));
+                }
+                else if (!m_pythonBindings->StartPython())
+                {
+                    QMessageBox::critical(
+                        nullptr, QObject::tr("Failed to start Python"),
+                        QObject::tr("Failed to start Python after running %1")
+                                    .arg(GetPythonScriptPath));
+                }
+            }
+
+            if (!m_pythonBindings->PythonStarted())
+            {
+                return false;
+            }
+        }
+
+        m_settings = AZStd::make_unique<Settings>();
+
+        if (!RegisterEngine(interactive))
+        {
+           return false;
         }
 
         const AZ::CommandLine* commandLine = GetCommandLine();
@@ -137,6 +178,50 @@ namespace O3DE::ProjectManager
         return m_entity != nullptr;
     }
 
+    bool Application::RegisterEngine(bool interactive)
+    {
+        auto engineInfoOutcome = m_pythonBindings->GetEngineInfo();
+        if (!engineInfoOutcome)
+        {
+            if (interactive)
+            {
+                QMessageBox::critical(nullptr,
+                    QObject::tr("Failed to get engine info"),
+                    QObject::tr("A valid engine.json could not be found or loaded. "
+                                "Please verify a valid engine.json file exists in %1")
+                    .arg(GetEngineRoot()));
+            }
+
+            AZ_Error("Project Manager", false, "Failed to get engine info");
+            return false;
+        }
+
+        EngineInfo engineInfo = engineInfoOutcome.GetValue();
+        if (engineInfo.m_registered)
+        {
+            return true;
+        }
+
+        // We no longer force registration because we no longer require that only one engine can
+        // be registered with each engine name
+        constexpr bool forceRegistration = false;
+        auto registerOutcome = m_pythonBindings->SetEngineInfo(engineInfo, forceRegistration);
+        if (!registerOutcome)
+        {
+            if (interactive)
+            {
+                ProjectUtils::DisplayDetailedError(QObject::tr("Failed to register engine"), registerOutcome);
+            }
+            
+            AZ_Error("Project Manager", false, "Failed to register engine %s : %s",
+                engineInfo.m_path.toUtf8().constData(), registerOutcome.GetError().first.c_str());
+
+            return false;
+        }
+
+        return true;
+    }
+
     void Application::TearDown()
     {
         if (m_entity)
@@ -167,12 +252,20 @@ namespace O3DE::ProjectManager
         // set stylesheet after creating the main window or their styles won't get updated
         AzQtComponents::StyleManager::setStyleSheet(m_mainWindow.data(), QStringLiteral("style:ProjectManager.qss"));
 
-        // the decoration wrapper is intended to remember window positioning and sizing 
+        // the decoration wrapper is intended to remember window positioning and sizing
+#if AZ_TRAIT_PROJECT_MANAGER_CUSTOM_TITLEBAR
         auto wrapper = new AzQtComponents::WindowDecorationWrapper();
+#else
+        auto wrapper = new AzQtComponents::WindowDecorationWrapper(AzQtComponents::WindowDecorationWrapper::OptionDisabled);
+#endif
         wrapper->setGuest(m_mainWindow.data());
+
+        // show the main window here to apply the stylesheet before restoring geometry or we
+        // can end up with empty white space at the bottom of the window until the frame is resized again
+        m_mainWindow->show();
+
         wrapper->enableSaveRestoreGeometry("O3DE", "ProjectManager", "mainWindowGeometry");
         wrapper->showFromSettings();
-        m_mainWindow->show();
 
         qApp->setQuitOnLastWindowClosed(true);
 

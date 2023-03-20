@@ -25,7 +25,7 @@ namespace LandscapeCanvas
     class RotationModifierNode : public BaseAreaModifierNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(RotationModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RotationModifierNode, AZ::SystemAllocator);
         AZ_RTTI(RotationModifierNode, "{14B577ED-4135-4711-B9F3-016E106EA66B}", BaseAreaModifierNode);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -33,10 +33,10 @@ namespace LandscapeCanvas
         RotationModifierNode() = default;
         explicit RotationModifierNode(GraphModel::GraphPtr graph);
 
-        static const QString TITLE;
+        static const char* TITLE;
         const char* GetTitle() const override
         {
-            return TITLE.toUtf8().constData();
+            return TITLE;
         }
 
     protected:

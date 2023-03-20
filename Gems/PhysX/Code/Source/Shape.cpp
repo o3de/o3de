@@ -9,12 +9,12 @@
 #include <Source/Shape.h>
 
 #include <AzFramework/Physics/Common/PhysicsSceneQueries.h>
-#include <AzFramework/Physics/Material.h>
+#include <AzFramework/Physics/Material/PhysicsMaterial.h>
 #include <Common/PhysXSceneQueryHelpers.h>
 #include <PhysX/PhysXLocks.h>
 #include <PhysX/Utils.h>
+#include <PhysX/Material/PhysXMaterial.h>
 #include <Source/Collision.h>
-#include <Source/Material.h>
 #include <Source/Utils.h>
 #include <PhysX/MathConversion.h>
 
@@ -129,19 +129,33 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::SetMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
+    Physics::MaterialId Shape::GetMaterialId() const
+    {
+        if (!m_materials.empty())
+        {
+            return m_materials[0]->GetId();
+        }
+
+        return {};
+    }
+
+    void Shape::SetPhysXMaterials(const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& materials)
     {
         m_materials = materials;
 
         BindMaterialsWithPxShape();
     }
 
+    const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& Shape::GetPhysXMaterials()
+    {
+        return m_materials;
+    }
 
     void Shape::BindMaterialsWithPxShape()
     {
         if (m_pxShape)
         {
-            AZStd::vector<physx::PxMaterial*> pxMaterials;
+            AZStd::vector<const physx::PxMaterial*> pxMaterials;
             pxMaterials.reserve(m_materials.size());
 
             for (const auto& material : m_materials)
@@ -151,7 +165,11 @@ namespace PhysX
 
             AZ_Warning("PhysX Shape", m_materials.size() < std::numeric_limits<AZ::u16>::max(), "Trying to assign too many materials, cutting down");
             size_t materialsCount = AZStd::GetMin(m_materials.size(), static_cast<size_t>(std::numeric_limits<AZ::u16>::max()));
-            m_pxShape->setMaterials(&pxMaterials[0], static_cast<physx::PxU16>(materialsCount));
+
+            {
+                PHYSX_SCENE_WRITE_LOCK(GetScene());
+                m_pxShape->setMaterials(const_cast<physx::PxMaterial**>(pxMaterials.data()), static_cast<physx::PxU16>(materialsCount));
+            }
         }
     }
 
@@ -175,17 +193,19 @@ namespace PhysX
         {
             if (assignedMaterials[i]->userData == nullptr)
             {
-                AZ_Warning("PhysX Shape", false, "Trying to assign material with no user data. Make sure you are creating materials using MaterialManager");
+                AZ_Error("PhysX Shape", false, "Trying to assign material with no user data. Make sure you are creating materials using MaterialManager");
                 continue;
             }
 
-            m_materials.push_back(static_cast<PhysX::Material*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this());
-        }
-    }
+            AZStd::shared_ptr<PhysX::Material> physxMaterial = static_cast<PhysX::Material*>(PhysX::Utils::GetUserData(assignedMaterials[i]))->shared_from_this();
+            if (!physxMaterial)
+            {
+                AZ_Error("PhysX Shape", false, "Invalid user data of a physx material. Make sure you are creating materials using MaterialManager");
+                continue;
+            }
 
-    const AZStd::vector<AZStd::shared_ptr<PhysX::Material>>& Shape::GetMaterials()
-    {
-        return m_materials;
+            m_materials.push_back(physxMaterial);
+        }
     }
 
     void Shape::SetCollisionLayer(const AzPhysics::CollisionLayer& layer)
@@ -297,6 +317,11 @@ namespace PhysX
         return m_pxShape.get();
     }
 
+    const void* Shape::GetNativePointer() const
+    {
+        return m_pxShape.get();
+    }
+
     AZ::Crc32 Shape::GetTag() const
     {
         return m_tag;
@@ -339,15 +364,24 @@ namespace PhysX
         const physx::PxHitFlags hitFlags = SceneQueryHelpers::GetPxHitFlags(worldSpaceRequest.m_hitFlags);
 
         physx::PxRaycastHit hitInfo;
-        const bool hit = physx::PxGeometryQuery::raycast(start, unitDir, m_pxShape->getGeometry().any(), pose,
-                                                         worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+        bool hit;
+        {
+            PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+            hit = physx::PxGeometryQuery::raycast(
+                start, unitDir, m_pxShape->getGeometry(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#else
+            hit = physx::PxGeometryQuery::raycast(
+                start, unitDir, m_pxShape->getGeometry().any(), pose, worldSpaceRequest.m_distance, hitFlags, maxHits, &hitInfo);
+#endif
+        }
 
         if (hit)
         {
             // Fill actor and shape, as they won't be filled from PxGeometryQuery
             hitInfo.actor = static_cast<physx::PxRigidActor*>(m_attachedActor); // This cast is safe since GetHitFromPxHit() only uses PxActor:: functions
             hitInfo.shape = GetPxShape();
-            return SceneQueryHelpers::GetHitFromPxHit(hitInfo);
+            return SceneQueryHelpers::GetHitFromPxHit(hitInfo, hitInfo);
         }
         return AzPhysics::SceneQueryHit();
     }
@@ -374,22 +408,22 @@ namespace PhysX
 
     AZ::Aabb Shape::GetAabb(const AZ::Transform& worldTransform) const
     {
-        physx::PxTransform localPose;
-        {
-            PHYSX_SCENE_READ_LOCK(GetScene());
-            localPose = m_pxShape->getLocalPose();
-        }
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * localPose, 1.0f));
+        PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+#else
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), PxMathConvert(worldTransform) * m_pxShape->getLocalPose(), 1.0f));
+#endif
     }
 
     AZ::Aabb Shape::GetAabbLocal() const
     {
-        physx::PxTransform localPose;
-        {
-            PHYSX_SCENE_READ_LOCK(GetScene());
-            localPose = m_pxShape->getLocalPose();
-        }
-        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), localPose, 1.0f));
+        PHYSX_SCENE_READ_LOCK(GetScene());
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry(), m_pxShape->getLocalPose(), 1.0f));
+#else
+        return PxMathConvert(physx::PxGeometryQuery::getWorldBounds(m_pxShape->getGeometry().any(), m_pxShape->getLocalPose(), 1.0f));
+#endif
     }
 
     physx::PxScene* Shape::GetScene() const
@@ -401,7 +435,8 @@ namespace PhysX
         return nullptr;
     }
 
-    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices, AZ::Aabb* optionalBounds)
+    void Shape::GetGeometry(AZStd::vector<AZ::Vector3>& vertices, AZStd::vector<AZ::u32>& indices,
+        const AZ::Aabb* optionalBounds) const
     {
         if (!m_pxShape)
         {

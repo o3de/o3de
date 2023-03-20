@@ -490,11 +490,11 @@ QRect Slider::sliderGrooveRect(const Style* style, const QStyleOptionSlider* opt
     return {};
 }
 
-bool Slider::polish(Style* style, QWidget* widget, const Slider::Config& config)
+bool Slider::polish([[maybe_unused]] Style* style, QWidget* widget, const Slider::Config& config)
 {
     Q_UNUSED(config);
 
-    auto polishSlider = [style](auto slider)
+    auto polishSlider = [](auto slider)
     {
         // Qt's stylesheet parsing doesn't set custom properties on things specified via
         // pseudo-states, such as horizontal/vertical, so we implement our own
@@ -870,8 +870,7 @@ void SliderDouble::setCurveMidpoint(double midpoint)
 
 QString SliderDouble::hoverValueText(int sliderValue) const
 {
-    // maybe format this, max number of digits?
-    QString valueText = locale().toString(calculateRealSliderValue(sliderValue), 'f', m_decimals);
+    QString valueText = toString(calculateRealSliderValue(sliderValue), m_decimals, locale(), false, true);
     return QStringLiteral("%1").arg(valueText);
 }
 

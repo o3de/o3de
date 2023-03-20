@@ -20,11 +20,16 @@ namespace AZ
 {
     namespace IO
     {
+        namespace Requests
+        {
+            struct ReportData;
+        } // namespace Requests
+
         struct ReadSplitterConfig final :
             public IStreamerStackConfig
         {
             AZ_RTTI(AZ::IO::ReadSplitterConfig, "{EDDD6CE5-D7BC-4FAB-8EBA-68F5C0390B05}", IStreamerStackConfig);
-            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ReadSplitterConfig, AZ::SystemAllocator);
 
             ~ReadSplitterConfig() override = default;
             AZStd::shared_ptr<StreamStackEntry> AddStreamStackEntry(
@@ -96,6 +101,8 @@ namespace AZ
             
             void InitializeBuffer();
             u8* GetBufferSlot(size_t index);
+
+            void Report(const Requests::ReportData& data) const;
 
             AZ::Statistics::RunningStatistic m_averageNumSubReadsStat;
             AZ::Statistics::RunningStatistic m_alignedReadsStat;

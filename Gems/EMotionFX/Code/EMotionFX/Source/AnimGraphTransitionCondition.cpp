@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTransitionCondition, AnimGraphAllocator)
 
     AnimGraphTransitionCondition::AnimGraphTransitionCondition()
         : AnimGraphObject()
@@ -24,9 +24,9 @@ namespace EMotionFX
 
     AnimGraphTransitionCondition::~AnimGraphTransitionCondition()
     {
-        if (mAnimGraph)
+        if (m_animGraph)
         {
-            mAnimGraph->RemoveObject(this);
+            m_animGraph->RemoveObject(this);
         }
     }
 

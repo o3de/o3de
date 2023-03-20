@@ -40,6 +40,7 @@ namespace AZ
             
             InitRequest request;
             request.m_scopeId = scope.GetId();
+            request.m_submitCount = scope.GetEstimatedItemCount();
             request.m_commandLists = reinterpret_cast<RHI::CommandList*const*>(m_secondaryCommands.data());
             request.m_commandListCount = commandListCount;
             request.m_jobPolicy = globalJobPolicy;
@@ -81,12 +82,12 @@ namespace AZ
         {
         }
 
-        AZStd::array_view<const Scope*> FrameGraphExecuteGroup::GetScopes() const
+        AZStd::span<const Scope* const> FrameGraphExecuteGroup::GetScopes() const
         {
-            return AZStd::array_view<const Scope*>(&m_scope, 1);
+            return AZStd::span<const Scope* const>(&m_scope, 1);
         }
 
-        AZStd::array_view<RHI::Ptr<CommandList>> FrameGraphExecuteGroup::GetCommandLists() const
+        AZStd::span<const RHI::Ptr<CommandList>> FrameGraphExecuteGroup::GetCommandLists() const
         {
             return m_secondaryCommands;
         }

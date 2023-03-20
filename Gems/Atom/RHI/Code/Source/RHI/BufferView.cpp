@@ -30,6 +30,8 @@ namespace AZ
             }
 
             m_descriptor = viewDescriptor;
+            m_hash = buffer.GetHash();
+            m_hash = TypeHash64(m_descriptor.GetHash(), m_hash);
             return ResourceView::Init(buffer);
         }
 
@@ -75,6 +77,11 @@ namespace AZ
             const BufferDescriptor& bufferDescriptor = GetBuffer().GetDescriptor();
             const uint32_t bufferViewSize = m_descriptor.m_elementCount * m_descriptor.m_elementSize;
             return m_descriptor.m_elementOffset == 0 && bufferViewSize >= bufferDescriptor.m_byteCount;
+        }
+
+        HashValue64 BufferView::GetHash() const
+        {
+            return m_hash;
         }
     }
 }

@@ -8,193 +8,279 @@
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MemoryDrillerBus.h>
 
-using namespace AZ;
+// Only used to create recordings of memory operations to use for memory benchmarks
+#define O3DE_RECORDING_ENABLED 0
 
-AllocatorBase::AllocatorBase(IAllocatorAllocate* allocationSource, const char* name, const char* desc) :
-    IAllocator(allocationSource),
-    m_name(name),
-    m_desc(desc)
+#if O3DE_RECORDING_ENABLED
+
+#include <AzCore/std/containers/map.h>
+#include <AzCore/IO/SystemFile.h>
+#include <AzCore/std/parallel/mutex.h>
+#include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/allocator_stateless.h>
+
+namespace
 {
-}
-
-AllocatorBase::~AllocatorBase()
-{
-    AZ_Assert(!m_isReady, "Allocator %s (%s) is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.", m_name, m_desc);
-}
-
-const char* AllocatorBase::GetName() const
-{
-    return m_name;
-}
-
-const char* AllocatorBase::GetDescription() const
-{
-    return m_desc;
-}
-
-IAllocatorAllocate* AllocatorBase::GetSchema()
-{
-    return nullptr;
-}
-
-Debug::AllocationRecords* AllocatorBase::GetRecords()
-{
-    return m_records;
-}
-
-void AllocatorBase::SetRecords(Debug::AllocationRecords* records)
-{
-    m_records = records;
-    m_memoryGuardSize = records ? records->MemoryGuardSize() : 0;
-}
-
-bool AllocatorBase::IsReady() const
-{
-    return m_isReady;
-}
-
-bool AllocatorBase::CanBeOverridden() const
-{
-    return m_canBeOverridden;
-}
-
-void AllocatorBase::PostCreate()
-{
-    if (m_registrationEnabled)
+    #pragma pack(push, 1)
+    struct alignas(1) AllocatorOperation
     {
-        if (AZ::Environment::IsReady())
+        enum OperationType : size_t
         {
-            AllocatorManager::Instance().RegisterAllocator(this);
+            ALLOCATE,
+            DEALLOCATE
+        };
+        OperationType m_type: 1;
+        size_t m_size : 28; // Can represent up to 256Mb requests
+        size_t m_alignment : 7; // Can represent up to 128 alignment
+        size_t m_recordId : 28; // Can represent up to 256M simultaneous requests, we reuse ids
+    };
+    #pragma pack(pop)
+    static_assert(sizeof(AllocatorOperation) == 8);
+
+    static AZStd::mutex s_operationsMutex = {};
+
+    static constexpr size_t s_maxNumberOfAllocationsToRecord = 16384;
+    static size_t s_numberOfAllocationsRecorded = 0;
+    static constexpr size_t s_allocationOperationCount = 8 * 1024;
+    static AZStd::array<AllocatorOperation, s_allocationOperationCount> s_operations = {};
+    static uint64_t s_operationCounter = 0;
+
+    static unsigned int s_nextRecordId = 1;
+    using AllocatorOperationByAddress = AZStd::map<void*, AllocatorOperation, AZStd::less<void*>, AZStd::stateless_allocator>;
+    static AllocatorOperationByAddress s_allocatorOperationByAddress;
+    using AvailableRecordIds = AZStd::vector<unsigned int, AZStd::stateless_allocator>;
+    AvailableRecordIds s_availableRecordIds;
+
+    void RecordAllocatorOperation(AllocatorOperation::OperationType type, void* ptr, size_t size = 0, size_t alignment = 0)
+    {
+        AZStd::scoped_lock lock(s_operationsMutex);
+        if (s_operationCounter == s_allocationOperationCount)
+        {
+            AZ::IO::SystemFile file;
+            int mode = AZ::IO::SystemFile::OpenMode::SF_OPEN_APPEND | AZ::IO::SystemFile::OpenMode::SF_OPEN_WRITE_ONLY;
+            // memoryrecordings.bin is being output to the current working directory
+            if (!file.Exists("memoryrecordings.bin"))
+            {
+                mode |= AZ::IO::SystemFile::OpenMode::SF_OPEN_CREATE;
+            }
+            file.Open("memoryrecordings.bin", mode);
+            if (file.IsOpen())
+            {
+                file.Write(&s_operations, sizeof(AllocatorOperation) * s_allocationOperationCount);
+                file.Close();
+            }
+            s_operationCounter = 0;
+        }
+        AllocatorOperation& operation = s_operations[s_operationCounter++];
+        operation.m_type = type;
+        if (type == AllocatorOperation::OperationType::ALLOCATE)
+        {
+            if (s_numberOfAllocationsRecorded > s_maxNumberOfAllocationsToRecord)
+            {
+                // reached limit of allocations, dont record anymore
+                --s_operationCounter;
+                return;
+            }
+            ++s_numberOfAllocationsRecorded;
+            operation.m_size = size;
+            operation.m_alignment = alignment;
+            unsigned int recordId = 0;
+            if (!s_availableRecordIds.empty())
+            {
+                recordId = s_availableRecordIds.back();
+                s_availableRecordIds.pop_back();
+            }
+            else
+            {
+                recordId = s_nextRecordId;
+                ++s_nextRecordId;
+            }
+            operation.m_recordId = recordId;
+            auto it = s_allocatorOperationByAddress.emplace(ptr, operation);
+            if (!it.second)
+            {
+                // double alloc or resize, leave the current record and return the id
+                operation = it.first->second;
+                s_availableRecordIds.emplace_back(recordId);
+            }                
         }
         else
         {
-            AllocatorManager::PreRegisterAllocator(this);
+            if (ptr == nullptr)
+            {
+                // common scenario, just record the operation
+                operation.m_size = 0;
+                operation.m_alignment = 0;
+                operation.m_recordId = 0; // recordId = 0 will flag this case
+            }
+            else
+            {
+                auto it = s_allocatorOperationByAddress.find(ptr);
+                if (it != s_allocatorOperationByAddress.end())
+                {
+                    operation.m_size = it->second.m_size;
+                    operation.m_alignment = it->second.m_alignment;
+                    operation.m_recordId = it->second.m_recordId;
+                    s_availableRecordIds.push_back(it->second.m_recordId);
+                    s_allocatorOperationByAddress.erase(it);
+                }
+                else
+                {
+                    // just dont record this operation
+                    --s_operationCounter;
+                }
+            }
         }
+    
     }
-
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-    m_platformMemoryInstrumentationGroupId = AZ::PlatformMemoryInstrumentation::GetNextGroupId();
-    AZ::PlatformMemoryInstrumentation::RegisterGroup(m_platformMemoryInstrumentationGroupId, GetDescription(), AZ::PlatformMemoryInstrumentation::m_groupRoot);
+}
 #endif
 
-    m_isReady = true;
-}
-
-void AllocatorBase::PreDestroy()
+namespace AZ
 {
-    if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
+    AllocatorBase::~AllocatorBase()
     {
-        AllocatorManager::Instance().UnRegisterAllocator(this);
+        PreDestroy();
+        AZ_Assert(
+            !m_isReady,
+            "Allocator %s is being destructed without first having gone through proper calls to PreDestroy() and Destroy(). Use "
+            "AllocatorInstance<> for global allocators or AllocatorWrapper<> for local allocators.",
+            GetName());
     }
 
-    m_isReady = false;
-}
-
-void AllocatorBase::SetLazilyCreated(bool lazy)
-{
-    m_isLazilyCreated = lazy;
-}
-
-bool AllocatorBase::IsLazilyCreated() const
-{
-    return m_isLazilyCreated;
-}
-
-void AllocatorBase::SetProfilingActive(bool active)
-{
-    m_isProfilingActive = active;
-}
-
-bool AllocatorBase::IsProfilingActive() const
-{
-    return m_isProfilingActive;
-}
-
-void AllocatorBase::DisableOverriding()
-{
-    m_canBeOverridden = false;
-}
-
-void AllocatorBase::DisableRegistration()
-{
-    m_registrationEnabled = false;
-}
-
-void AllocatorBase::ProfileAllocation(void* ptr, size_t byteSize, size_t alignment, const char* name, const char* fileName, int lineNum, int suppressStackRecord)
-{
-#if defined(AZ_HAS_VARIADIC_TEMPLATES) && defined(AZ_DEBUG_BUILD)
-    ++suppressStackRecord; // one more for the fact the ebus is a function
-#endif // AZ_HAS_VARIADIC_TEMPLATES
-
-    if (m_isProfilingActive)
+    const Debug::AllocationRecords* AllocatorBase::GetRecords() const
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::Alloc(ptr, byteSize, 0, m_platformMemoryInstrumentationGroupId);
-#else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, RegisterAllocation, this, ptr, byteSize, alignment, name, fileName, lineNum, suppressStackRecord);
+        return m_records;
+    }
+
+    void AllocatorBase::SetRecords(Debug::AllocationRecords* records)
+    {
+        m_records = records;
+        m_memoryGuardSize = records ? records->MemoryGuardSize() : 0;
+    }
+
+    bool AllocatorBase::IsReady() const
+    {
+        return m_isReady;
+    }
+
+    void AllocatorBase::PostCreate()
+    {
+        if (m_registrationEnabled)
+        {
+            AllocatorManager::Instance().RegisterAllocator(this);
+        }
+
+        const auto debugConfig = GetDebugConfig();
+        if (!debugConfig.m_excludeFromDebugging)
+        {
+            SetRecords(aznew Debug::AllocationRecords(
+                (unsigned char)debugConfig.m_stackRecordLevels, debugConfig.m_usesMemoryGuards, debugConfig.m_marksUnallocatedMemory,
+                GetName()));
+        }
+
+        m_isReady = true;
+    }
+
+    void AllocatorBase::PreDestroy()
+    {
+        if (m_records)
+        {
+            delete m_records;
+            SetRecords(nullptr);
+        }
+
+        if (m_registrationEnabled && AZ::AllocatorManager::IsReady())
+        {
+            AllocatorManager::Instance().UnRegisterAllocator(this);
+        }
+
+        m_isReady = false;
+    }
+
+    void AllocatorBase::SetProfilingActive(bool active)
+    {
+        m_isProfilingActive = active;
+    }
+
+    bool AllocatorBase::IsProfilingActive() const
+    {
+        return m_isProfilingActive;
+    }
+
+    void AllocatorBase::DisableRegistration()
+    {
+        m_registrationEnabled = false;
+    }
+
+    void AllocatorBase::ProfileAllocation(
+        void* ptr, size_t byteSize, size_t alignment, int suppressStackRecord)
+    {
+        if (m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->RegisterAllocation(ptr, byteSize, alignment, suppressStackRecord + 1);
+            }
+        }
+
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, byteSize, alignment);
 #endif
     }
-}
 
-void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info)
-{
-    if (m_isProfilingActive)
+    void AllocatorBase::ProfileDeallocation(void* ptr, size_t byteSize, size_t alignment, Debug::AllocationInfo* info)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::Free(ptr);
-#else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, UnregisterAllocation, this, ptr, byteSize, alignment, info);
+        if (m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->UnregisterAllocation(ptr, byteSize, alignment, info);
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr, byteSize, alignment);
 #endif
     }
-}
 
-void AllocatorBase::ProfileReallocationBegin(void* ptr, size_t newSize)
-{
-    if (m_isProfilingActive)
+    void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::ReallocBegin(ptr, newSize, m_platformMemoryInstrumentationGroupId);
-#else
-        // Driller API intensionally not called, only End is required.
-        AZ_UNUSED(ptr);
-        AZ_UNUSED(newSize);
+        if (newSize && m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->RegisterReallocation(ptr, newPtr, newSize, newAlignment, 1);
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::DEALLOCATE, ptr);
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, newPtr, newSize, newAlignment);
 #endif
     }
-}
 
-void AllocatorBase::ProfileReallocationEnd(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-{
-    if (m_isProfilingActive)
+    void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
     {
-#if PLATFORM_MEMORY_INSTRUMENTATION_ENABLED
-        AZ::PlatformMemoryInstrumentation::ReallocEnd(newPtr, newSize, 0);
-#else
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, ReallocateAllocation, this, ptr, newPtr, newSize, newAlignment);
+        if (newSize && m_isProfilingActive)
+        {
+            if (m_records)
+            {
+                m_records->ResizeAllocation(ptr, newSize);
+            }
+        }
+#if O3DE_RECORDING_ENABLED
+        RecordAllocatorOperation(AllocatorOperation::ALLOCATE, ptr, newSize);
 #endif
     }
-}
 
-void AllocatorBase::ProfileReallocation(void* ptr, void* newPtr, size_t newSize, size_t newAlignment)
-{
-    ProfileReallocationEnd(ptr, newPtr, newSize, newAlignment);
-}
-
-void AllocatorBase::ProfileResize(void* ptr, size_t newSize)
-{
-    if (newSize && m_isProfilingActive)
+    bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment)
     {
-        EBUS_EVENT(AZ::Debug::MemoryDrillerBus, ResizeAllocation, this, ptr, newSize);
+        if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
+        {
+            AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment);
+            return true;
+        }
+        return false;
     }
-}
 
-bool AllocatorBase::OnOutOfMemory(size_t byteSize, size_t alignment, int flags, const char* name, const char* fileName, int lineNum)
-{
-    if (AllocatorManager::IsReady() && AllocatorManager::Instance().m_outOfMemoryListener)
-    {
-        AllocatorManager::Instance().m_outOfMemoryListener(this, byteSize, alignment, flags, name, fileName, lineNum);
-        return true;
-    }
-    return false;
-}
+} // namespace AZ

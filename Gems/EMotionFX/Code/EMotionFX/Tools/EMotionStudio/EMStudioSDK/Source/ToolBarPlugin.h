@@ -6,8 +6,7 @@
  *
  */
 
-#ifndef __EMSTUDIO_TOOLBARPLUGIN_H
-#define __EMSTUDIO_TOOLBARPLUGIN_H
+#pragma once
 
 // include MCore
 #if !defined(Q_MOC_RUN)
@@ -46,7 +45,7 @@ namespace EMStudio
         virtual void SetInterfaceTitle(const char* name);
         void CreateBaseInterface(const char* objectName) override;
 
-        QString GetObjectName() const override                      { AZ_Assert(!mBar.isNull(), "Unexpected null bar"); return mBar->objectName(); }
+        QString GetObjectName() const override                      { AZ_Assert(!m_bar.isNull(), "Unexpected null bar"); return m_bar->objectName(); }
         void SetObjectName(const QString& name) override            { GetToolBar()->setObjectName(name); }
 
         bool GetHasWindowWithObjectName(const AZStd::string& objectName) override;
@@ -56,8 +55,6 @@ namespace EMStudio
         QToolBar* GetToolBar();
 
     protected:
-        QPointer<QToolBar>   mBar;
+        QPointer<QToolBar>   m_bar;
     };
 }   // namespace EMStudio
-
-#endif

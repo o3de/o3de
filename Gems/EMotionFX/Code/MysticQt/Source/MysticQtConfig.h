@@ -35,14 +35,14 @@ enum
 // convert from a QString into an AZStd::string
 MCORE_INLINE AZStd::string FromQtString(const QString& s)
 {
-    return {s.toUtf8().data(), static_cast<size_t>(s.size())};
+    return { s.toUtf8().data(), static_cast<size_t>(s.toUtf8().length()) };
 }
 
 
 // convert from a QString into an AZStd::string
 MCORE_INLINE void FromQtString(const QString& s, AZStd::string* result)
 {
-    *result = AZStd::string{s.toUtf8().data(), static_cast<size_t>(s.size())};
+    *result = AZStd::string{ s.toUtf8().data(), static_cast<size_t>(s.toUtf8().length()) };
 }
 
 inline QString FromStdString(AZStd::string_view s)

@@ -101,7 +101,7 @@ namespace AZ
             creator.SetName(sourceAsset->GetName().GetStringView());
 
             AZ::Data::AssetId lastUsedId = cloneAssetId;
-            const AZStd::array_view<Data::Asset<ModelLodAsset>> sourceLodAssets = sourceAsset->GetLodAssets();
+            const AZStd::span<const Data::Asset<ModelLodAsset>> sourceLodAssets = sourceAsset->GetLodAssets();
             for (const Data::Asset<ModelLodAsset>& sourceLodAsset : sourceLodAssets)
             {
                 Data::Asset<ModelLodAsset> lodAsset;
@@ -116,6 +116,12 @@ namespace AZ
                 {
                     creator.AddLodAsset(AZStd::move(lodAsset));
                 }
+            }
+
+            const ModelMaterialSlotMap &sourceMaterialSlotMap = sourceAsset->GetMaterialSlots();
+            for (const auto& sourceMaterialSlot : sourceMaterialSlotMap)
+            {
+                creator.AddMaterialSlot(sourceMaterialSlot.second);
             }
 
             return creator.End(clonedResult);

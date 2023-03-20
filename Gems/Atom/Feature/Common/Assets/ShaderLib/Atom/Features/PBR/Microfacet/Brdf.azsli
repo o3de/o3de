@@ -22,7 +22,7 @@
 // ------- Diffuse Lighting -------
 
 //! Simple Lambertian BRDF. 
-float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight, float diffuseResponse)
+float3 DiffuseLambertian(float3 albedo, float3 normal, float3 dirToLight, float3 diffuseResponse)
 {
     float NdotL = saturate(dot(normal, dirToLight));
     return albedo * NdotL * INV_PI * diffuseResponse;
@@ -144,4 +144,19 @@ float3 ClearCoatGGX(float NdotH, float HdotL, float NdotL, float3 normal, float 
 
     // the common denominator 4 * NdotL * NdotV is included in the simplified G term
     return D * G * F * NdotL;
+}
+
+float3 ClearCoatSpecular(const float3 dirToLight, const float3 dirToCamera, const float3 surfaceClearCoatNormal, float surfaceClearCoatFactor, float surfaceClearCoatRoughness, const float3 specular)
+{
+    float3 halfVector = normalize(dirToLight + dirToCamera);
+    float NdotH = saturate(dot(surfaceClearCoatNormal, halfVector));
+    float NdotL = saturate(dot(surfaceClearCoatNormal, dirToLight));
+    float HdotL = saturate(dot(halfVector, dirToLight));
+
+    // HdotV = HdotL due to the definition of half vector
+    float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surfaceClearCoatFactor;
+    float clearCoatRoughness = max(surfaceClearCoatRoughness * surfaceClearCoatRoughness, 0.0005f);
+    float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surfaceClearCoatNormal, clearCoatRoughness, clearCoatF);
+
+    return specular * (1.0 - clearCoatF) + clearCoatSpecular;
 }

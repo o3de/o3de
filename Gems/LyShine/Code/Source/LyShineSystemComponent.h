@@ -9,10 +9,10 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Memory/AllocatorScope.h>
 #include <AzFramework/InGameUI/UiFrameworkBus.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
+#include <ILevelSystem.h>
 
 #include <LyShine/Bus/UiSystemBus.h>
 #include <LyShine/Bus/UiCanvasManagerBus.h>
@@ -26,17 +26,13 @@
 
 namespace LyShine
 {
-    // LyShine depends on the LegacyAllocator and CryStringAllocator. This will be managed
-    // by the LyShineSystemComponent
-    using LyShineAllocatorScope = AZ::AllocatorScope<AZ::LegacyAllocator, CryStringAllocator>;
-
     class LyShineSystemComponent
         : public AZ::Component
         , protected UiSystemBus::Handler
         , protected UiSystemToolsBus::Handler
-        , protected LyShineAllocatorScope
         , protected UiFrameworkBus::Handler
         , protected CrySystemEventBus::Handler
+        , public ILevelSystemListener
     {
     public:
         AZ_COMPONENT(LyShineSystemComponent, lyShineSystemComponentUuid);
@@ -65,7 +61,7 @@ namespace LyShine
         // UiSystemBus interface implementation
         void RegisterComponentTypeForMenuOrdering(const AZ::Uuid& typeUuid) override;
         const AZStd::vector<AZ::Uuid>* GetComponentTypesForMenuOrdering() override;
-        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors();
+        const AZStd::list<AZ::ComponentDescriptor*>* GetLyShineComponentDescriptors() override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -89,8 +85,12 @@ namespace LyShine
 
         // CrySystemEventBus ///////////////////////////////////////////////////////
         void OnCrySystemInitialized(ISystem& system, const SSystemInitParams&) override;
-        virtual void OnCrySystemShutdown(ISystem&) override;
+        void OnCrySystemShutdown(ISystem&) override;
         ////////////////////////////////////////////////////////////////////////////
+
+        ////////////////////////////////////////////////////////////////////////
+        // ILevelSystemListener interface implementation
+        void OnUnloadComplete(const char* levelName) override;
 
         void BroadcastCursorImagePathname();
 
@@ -101,7 +101,7 @@ namespace LyShine
 
     protected:  // data
 
-        CLyShine* m_pLyShine = nullptr;
+        AZStd::unique_ptr<ILyShine> m_lyShine;
 
         AzFramework::SimpleAssetReference<LmbrCentral::TextureAsset> m_cursorImagePathname;
 

@@ -1,6 +1,0 @@
-<download name="C6032082_MultipleTerrainResolutions_4096x4096_16m" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="500589" md5="d04c8c0142fefd269826ab404c5d329c"/>
- </files>
-</download>

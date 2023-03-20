@@ -42,7 +42,6 @@
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorPendingCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
-#include <AzToolsFramework/ToolsComponents/SelectionComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorOnlyEntityComponent.h>
@@ -52,6 +51,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityContextRequests);
 
 namespace AzToolsFramework
 {
@@ -92,7 +92,6 @@ namespace AzToolsFramework
                     "Editor Entity Context", "System component responsible for owning the edit-time entity context")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -134,7 +133,6 @@ namespace AzToolsFramework
             azrtti_typeid<AzToolsFramework::Components::EditorLockComponent>(),
             azrtti_typeid<AzToolsFramework::Components::EditorPendingCompositionComponent>(),
             azrtti_typeid<AzToolsFramework::Components::EditorVisibilityComponent>(),
-            azrtti_typeid<AzToolsFramework::Components::SelectionComponent>(),
             azrtti_typeid<AzToolsFramework::Components::TransformComponent>()
     })
     {
@@ -226,7 +224,9 @@ namespace AzToolsFramework
     AZ::EntityId EditorEntityContextComponent::CreateNewEditorEntity(const char* name)
     {
         AZ::Entity* entity = CreateEntity(name);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
         FinalizeEditorEntity(entity);
+
         return entity->GetId();
     }
 
@@ -253,6 +253,7 @@ namespace AzToolsFramework
             return AZ::EntityId();
         }
         entity = aznew AZ::Entity(entityId, name);
+        AZ_Assert(entity != nullptr, "Entity with name %s couldn't be created.", name);
         AddEntity(entity);
         FinalizeEditorEntity(entity);
 
@@ -268,10 +269,12 @@ namespace AzToolsFramework
         {
             return;
         }
-        SetupEditorEntity(entity);
 
         // Store creation undo command.
+        if (m_isLegacySliceService)
         {
+            SetupEditorEntity(entity);
+
             ScopedUndoBatch undoBatch("Create Entity");
 
             EntityCreateCommand* command = aznew EntityCreateCommand(static_cast<AZ::u64>(entity->GetId()));
@@ -312,7 +315,7 @@ namespace AzToolsFramework
                                                            EntityList& resultEntities,
                                                            EntityIdToEntityIdMap& sourceToCloneEntityIdMap)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         resultEntities.clear();
 
@@ -365,7 +368,7 @@ namespace AzToolsFramework
         const EntityList& entitiesInLayers,
         AZ::SliceComponent::SliceReferenceToInstancePtrs& instancesInLayers)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         if (m_isLegacySliceService)
         {
@@ -390,7 +393,7 @@ namespace AzToolsFramework
     //=========================================================================
     bool EditorEntityContextComponent::SaveToStreamForGame(AZ::IO::GenericStream& stream, AZ::DataStream::StreamType streamType)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
         if (m_isLegacySliceService)
         {
             SliceEditorEntityOwnershipService* editorEntityOwnershipService =
@@ -409,7 +412,7 @@ namespace AzToolsFramework
     //=========================================================================
     bool EditorEntityContextComponent::LoadFromStream(AZ::IO::GenericStream& stream)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(stream.IsOpen(), "Invalid source stream.");
         AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
@@ -427,7 +430,7 @@ namespace AzToolsFramework
 
     bool EditorEntityContextComponent::LoadFromStreamWithLayers(AZ::IO::GenericStream& stream, QString levelPakFile)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ_Assert(stream.IsOpen(), "Invalid source stream.");
         AZ_Assert(m_entityOwnershipService->IsInitialized(), "The context has not been initialized.");
@@ -442,7 +445,7 @@ namespace AzToolsFramework
         else
         {
             loadedSuccessfully = static_cast<PrefabEditorEntityOwnershipService*>(m_entityOwnershipService.get())->LoadFromStream(
-                stream, AZStd::string_view(levelPakFile.toUtf8(), levelPakFile.size()) );
+                stream, AZStd::string_view(levelPakFile.toUtf8().constData(), levelPakFile.size()) );
 
         }
         
@@ -477,7 +480,7 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::StartPlayInEditor()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStartPlayInEditorBegin);
 
@@ -513,7 +516,8 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::StopPlayInEditor()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnStopPlayInEditorBegin);
 
         m_isRunningGame = false;
 
@@ -696,13 +700,13 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::SetupEditorEntities(const EntityList& entities)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         AZ::Data::AssetManager::Instance().SuspendAssetRelease();
 
         // All editor entities are automatically activated.
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:ScrubEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:ScrubEntities");
 
             // Scrub entities before initialization.
             // Anything could go wrong with entities loaded from disk.
@@ -712,7 +716,7 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:InitEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:InitEntities");
             for (AZ::Entity* entity : entities)
             {
                 if (entity->GetState() == AZ::Entity::State::Constructed)
@@ -723,7 +727,7 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:CreateEditorRepresentations");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:CreateEditorRepresentations");
             for (AZ::Entity* entity : entities)
             {
                 EditorRequests::Bus::Broadcast(&EditorRequests::CreateEditorRepresentation, entity);
@@ -731,7 +735,7 @@ namespace AzToolsFramework
         }
 
         {
-            AZ_PROFILE_SCOPE(AZ::Debug::ProfileCategory::AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:ActivateEntities");
+            AZ_PROFILE_SCOPE(AzToolsFramework, "EditorEntityContextComponent::SetupEditorEntities:ActivateEntities");
             for (AZ::Entity* entity : entities)
             {
                 if (entity->GetState() == AZ::Entity::State::Init)

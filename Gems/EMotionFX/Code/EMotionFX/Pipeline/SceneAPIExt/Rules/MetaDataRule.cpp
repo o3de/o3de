@@ -163,10 +163,10 @@ namespace EMotionFX
                         createMotionEventCommand->SetStartTime(commandLine.GetValueAsFloat("startTime", 0.0f));
                         createMotionEventCommand->SetEndTime(commandLine.GetValueAsFloat("endTime", 0.0f));
 
-                        const AZ::u32 eventTypeIndex = commandLine.FindParameterIndex("eventType");
-                        const AZ::u32 parametersIndex = commandLine.FindParameterIndex("parameters");
-                        const AZ::u32 mirrorTypeIndex = commandLine.FindParameterIndex("mirrorType");
-                        if (eventTypeIndex == MCORE_INVALIDINDEX32 || parametersIndex == MCORE_INVALIDINDEX32 || mirrorTypeIndex == MCORE_INVALIDINDEX32)
+                        const size_t eventTypeIndex = commandLine.FindParameterIndex("eventType");
+                        const size_t parametersIndex = commandLine.FindParameterIndex("parameters");
+                        const size_t mirrorTypeIndex = commandLine.FindParameterIndex("mirrorType");
+                        if (eventTypeIndex == InvalidIndex || parametersIndex == InvalidIndex || mirrorTypeIndex == InvalidIndex)
                         {
                             // Note: We have noticed some bad data issue in internal assets. The parameters could contain \r\n inside of the parameter string, which would result in the mirror type missing.
                             // Those are already been fixed in the command line object code, but we don't want to support the bad data in here by creating another loophole. Instead, we want the user to fix

@@ -1,0 +1,20 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData":
+    {
+        "PassTemplate":
+        {
+            "Name": "DiffuseProbeGridQueryPassTemplate",
+            "PassClass": "DiffuseProbeGridQueryPass",
+            "Slots": [
+                {
+                    "Name": "Output",
+                    "SlotType": "Output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ]
+        }
+    }
+}

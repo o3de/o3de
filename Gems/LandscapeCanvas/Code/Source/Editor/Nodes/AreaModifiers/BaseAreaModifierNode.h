@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class BaseAreaModifierNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseAreaModifierNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseAreaModifierNode, AZ::SystemAllocator);
         AZ_RTTI(BaseAreaModifierNode, "{9FCA4158-1974-4CE3-93B9-10F1D6A25D9F}", BaseNode);
 
         // Connection slot IDs (not translated, only used internally)
@@ -48,13 +48,6 @@ namespace LandscapeCanvas
         const BaseNodeType GetBaseNodeType() const override
         {
             return BaseNode::VegetationAreaModifier;
-        }
-
-        const bool ShouldShowEntityName() const override
-        {
-            // Don't show the entity name for Area Modifiers since they will
-            // be wrapped on a Vegetation Area it would be redundant
-            return false;
         }
     };
 }

@@ -4,7 +4,7 @@ For complete copyright and license terms please see the LICENSE at the root of t
 
 SPDX-License-Identifier: Apache-2.0 OR MIT
 
-A fixture for using the Asset Processor in lmbr_test, this will stop the asset processor after every test via
+A fixture for using the Asset Processor, this will stop the asset processor after every test via
 the teardown. Using the fixture at class level will stop the asset processor after the suite completes.
 Using the fixture at test level will stop asset processor after the test completes. Calling this fixture as a test argument will still run the teardown to stop the Asset Processor.
 """
@@ -15,6 +15,7 @@ import logging
 
 # Import LyTestTools
 import ly_test_tools.o3de.asset_processor as asset_processor_commands
+import ly_test_tools.o3de.asset_processor_utils
 
 logger = logging.getLogger(__name__)
 
@@ -36,5 +37,8 @@ def asset_processor(request: pytest.fixture, workspace: pytest.fixture) -> asset
         ap.stop()
 
     request.addfinalizer(teardown)
+    for n in ly_test_tools.o3de.asset_processor_utils.processList:
+        assert not ly_test_tools.o3de.asset_processor_utils.check_ap_running(n), f"{n} process did not shutdown correctly."
+
 
     return ap

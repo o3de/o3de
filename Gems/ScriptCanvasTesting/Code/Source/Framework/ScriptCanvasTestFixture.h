@@ -10,21 +10,17 @@
 
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
-#include <AzCore/Driller/Driller.h>
 #include <AzCore/IO/FileIO.h>
-#include <AzCore/Memory/MemoryComponent.h>
-#include <AzCore/Memory/MemoryDriller.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzTest/AzTest.h>
 
+#include <TestAutoGenFunctionRegistry.generated.h>
+#include <TestAutoGenNodeableRegistry.generated.h>
 #include <Nodes/BehaviorContextObjectTestNode.h>
-#include <Nodes/Nodeables/SharedDataSlotExample.h>
-#include <Nodes/Nodeables/ValuePointerReferenceExample.h>
+#include <Nodes/TestAutoGenFunctions.h>
 #include <ScriptCanvas/Core/Graph.h>
 #include <ScriptCanvas/Core/SlotConfigurationDefaults.h>
 #include <ScriptCanvas/ScriptCanvasGem.h>
@@ -38,6 +34,9 @@
 
 #define SC_EXPECT_DOUBLE_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001)
 #define SC_EXPECT_FLOAT_EQ(candidate, reference) EXPECT_NEAR(candidate, reference, 0.001f)
+
+REGISTER_SCRIPTCANVAS_AUTOGEN_FUNCTION(ScriptCanvasTestingEditorStatic);
+REGISTER_SCRIPTCANVAS_AUTOGEN_NODEABLE(ScriptCanvasTestingEditorStatic);
 
 namespace ScriptCanvasTests
 {
@@ -55,8 +54,6 @@ namespace ScriptCanvasTests
 
         static void SetUpTestCase()
         {
-            s_allocatorSetup.SetupAllocator();
-
             s_asyncOperationActive = false;
 
             if (s_application == nullptr)
@@ -67,7 +64,6 @@ namespace ScriptCanvasTests
                 {
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, true);
                     AZ::ComponentApplication::Descriptor descriptor;
-                    descriptor.m_enableDrilling = false;
                     descriptor.m_useExistingAllocator = true;
 
                     AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
@@ -81,7 +77,7 @@ namespace ScriptCanvasTests
                     descriptor.m_modules.push_back(dynamicModuleDescriptor);
                     s_application->Start(descriptor, appStartup);
                     // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
-                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
+                    // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
                     // in the unit tests.
                     AZ::UserSettingsComponentRequestBus::Broadcast(&AZ::UserSettingsComponentRequests::DisableSaveOnFinalize);
                     ScriptCanvasEditor::TraceSuppressionBus::Broadcast(&ScriptCanvasEditor::TraceSuppressionRequests::SuppressPrintf, false);
@@ -91,16 +87,18 @@ namespace ScriptCanvasTests
             AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
             AZ_Assert(fileIO, "SC unit tests require filehandling");
 
-            if (!fileIO->GetAlias("@engroot@"))
+            s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
+            // Set the @gemroot:<gem-name> alias for active gems
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
             {
-                const char* engineRoot = nullptr;
-                AzFramework::ApplicationRequests::Bus::BroadcastResult(engineRoot, &AzFramework::ApplicationRequests::GetEngineRoot);
-                AZ_Assert(engineRoot, "null engine root");
-                fileIO->SetAlias("@engroot@", engineRoot);
+                AZ::Test::AddActiveGem("ScriptCanvasTesting", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("GraphCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptCanvas", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ScriptEvents", *settingsRegistry, fileIO);
+                AZ::Test::AddActiveGem("ExpressionEvaluation", *settingsRegistry, fileIO);
             }
 
-            s_setupSucceeded = fileIO->GetAlias("@engroot@") != nullptr;
-            
             AZ::TickBus::AllowFunctionQueuing(true);
 
             auto m_serializeContext = s_application->GetSerializeContext();
@@ -112,19 +110,6 @@ namespace ScriptCanvasTests
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_serializeContext);
             ScriptCanvasTestingNodes::BehaviorContextObjectTest::Reflect(m_behaviorContext);
 
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchMethodSharedDataSlotExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::ReturnTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::InputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_serializeContext);
-            ::Nodes::BranchInputTypeExampleNode::Reflect(m_behaviorContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_serializeContext);
-            ::Nodes::PropertyExampleNode::Reflect(m_behaviorContext);
-
             TestNodeableObject::Reflect(m_serializeContext);
             TestNodeableObject::Reflect(m_behaviorContext);
             ScriptUnitTestEventHandler::Reflect(m_serializeContext);
@@ -133,6 +118,9 @@ namespace ScriptCanvasTests
 
         static void TearDownTestCase()
         {
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticFunctionRegistry");
+            ScriptCanvas::AutoGenRegistryManager::GetInstance()->UnregisterRegistry("ScriptCanvasTestingEditorStaticNodeableRegistry");
+
             // don't hang on to dangling assets
             AZ::Data::AssetManager::Instance().DispatchEvents();
 
@@ -142,8 +130,8 @@ namespace ScriptCanvasTests
                 delete s_application;
                 s_application = nullptr;
             }
-            
-            s_allocatorSetup.TeardownAllocator();
+
+            s_leakDetection.CheckAllocatorsForLeaks();
         }
 
         template<class T>
@@ -187,7 +175,7 @@ namespace ScriptCanvasTests
                 GetApplication()->UnregisterComponentDescriptor(componentDescriptor);
             }
 
-            m_descriptors.clear();            
+            m_descriptors.clear();
         }
 
         ScriptCanvas::Graph* CreateGraph()
@@ -203,7 +191,7 @@ namespace ScriptCanvasTests
 
         TestNodes::ConfigurableUnitTestNode* CreateConfigurableNode(AZStd::string entityName = "ConfigurableNodeEntity")
         {
-            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());         
+            AZ::Entity* configurableNodeEntity = new AZ::Entity(entityName.c_str());
             auto configurableNode = configurableNodeEntity->CreateComponent<TestNodes::ConfigurableUnitTestNode>();
 
             if (m_graph == nullptr)
@@ -413,13 +401,13 @@ namespace ScriptCanvasTests
 
     protected:
         static ScriptCanvasTests::Application* GetApplication() { return s_application; }
-        
+
     private:
 
-        static UnitTest::AllocatorsBase s_allocatorSetup;
         static bool s_setupSucceeded;
+        static inline UnitTest::LeakDetectionBase s_leakDetection{};
 
         AZStd::unordered_set< AZ::ComponentDescriptor* > m_descriptors;
-        
+
     };
 }

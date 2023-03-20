@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
 
-            using TriangleIndices = AZStd::tuple<uint32_t, uint32_t, uint32_t>;
+            struct TriangleIndices { uint32_t index1, index2, index3; };
             using ObjectIdTriangleIndices = AZStd::tuple<AZ::u8, TriangleIndices>;
 
             ModelKdTree() = default;
@@ -50,9 +50,9 @@ namespace AZ
                 eSA_Invalid
             };
 
-            static AZStd::array_view<float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
+            static AZStd::span<const float> GetPositionsBuffer(const ModelLodAsset::Mesh& mesh);
 
-            static AZStd::array_view<TriangleIndices> GetIndexBuffer(const ModelLodAsset::Mesh& mesh);
+            static AZStd::span<const TriangleIndices> GetIndexBuffer(const ModelLodAsset::Mesh& mesh);
 
         private:
 
@@ -75,7 +75,7 @@ namespace AZ
             struct MeshData
             {
                 const ModelLodAsset::Mesh* m_mesh = nullptr;
-                AZStd::array_view<float> m_vertexData;
+                AZStd::span<const float> m_vertexData;
             };
 
             AZStd::vector<MeshData> m_meshes;

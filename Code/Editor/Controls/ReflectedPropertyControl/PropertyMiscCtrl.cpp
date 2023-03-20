@@ -99,9 +99,10 @@ QWidget* UserPopupWidgetHandler::CreateGUI(QWidget *pParent)
 {
     UserPropertyEditor* newCtrl = aznew UserPropertyEditor(pParent);
     connect(newCtrl, &UserPropertyEditor::ValueChanged, newCtrl, [newCtrl]()
-    {
-        EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
-    });
+        {
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+        });
 
     return newCtrl;
 }
@@ -145,7 +146,7 @@ bool UserPopupWidgetHandler::ReadValuesIntoGUI(size_t index, UserPropertyEditor*
 QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 {
     CSplineCtrl *cSpline = new CSplineCtrl(pParent);
-    cSpline->SetUpdateCallback(AZStd::bind(&FloatCurveHandler::OnSplineChange, this, AZStd::placeholders::_1));
+    cSpline->SetUpdateCallback([this](CSplineCtrl* spl) { OnSplineChange(spl); });
     cSpline->SetTimeRange(0, 1);
     cSpline->SetValueRange(0, 1);
     cSpline->SetGrid(12, 12);
@@ -154,7 +155,8 @@ QWidget* FloatCurveHandler::CreateGUI(QWidget *pParent)
 }
 void FloatCurveHandler::OnSplineChange(CSplineCtrl*)
 {
-//    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, splineWidget);
+    //AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+    //    &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, splineWidget);
 }
 
 void FloatCurveHandler::ConsumeAttribute(CSplineCtrl *, AZ::u32, AzToolsFramework::PropertyAttributeReader*, const char*)
@@ -170,30 +172,3 @@ bool FloatCurveHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, CSpline
     GUI->SetSpline(reinterpret_cast<ISplineInterpolator*>(instance.m_spline));
     return false;
 }
-
-
-QWidget* ColorCurveHandler::CreateGUI(QWidget *pParent)
-{
-    CColorGradientCtrl* gradientCtrl = new CColorGradientCtrl(pParent);
-    //connect(gradientCtrl, &CColorGradientCtrl::change, [gradientCtrl]()
-    //{
-    //    EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, gradientCtrl);
-    //});
-    gradientCtrl->SetTimeRange(0, 1);
-    gradientCtrl->setFixedHeight(36);
-    return gradientCtrl;
-
-}
-
-void ColorCurveHandler::ConsumeAttribute(CColorGradientCtrl*, AZ::u32, AzToolsFramework::PropertyAttributeReader*, const char*)
-{}
-
-void ColorCurveHandler::WriteGUIValuesIntoProperty([[maybe_unused]] size_t index, [[maybe_unused]] CColorGradientCtrl* GUI, [[maybe_unused]] property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
-{}
-
-bool ColorCurveHandler::ReadValuesIntoGUI([[maybe_unused]] size_t index, CColorGradientCtrl* GUI, const property_t& instance, [[maybe_unused]] AzToolsFramework::InstanceDataNode* node)
-{
-    GUI->SetSpline(reinterpret_cast<ISplineInterpolator*>(instance.m_spline));
-    return false;
-}
-

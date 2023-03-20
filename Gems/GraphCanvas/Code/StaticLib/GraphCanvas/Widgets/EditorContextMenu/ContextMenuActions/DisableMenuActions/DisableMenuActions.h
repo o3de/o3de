@@ -15,13 +15,14 @@ namespace GraphCanvas
         : public DisableContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SetEnabledStateMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SetEnabledStateMenuAction, AZ::SystemAllocator);
 
         SetEnabledStateMenuAction(QObject* parent);
         virtual ~SetEnabledStateMenuAction() = default;
 
         void SetEnableState(bool enableState);
 
+        using DisableContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
         
     private:

@@ -20,7 +20,7 @@
         <!-- special variable name that auto maps to a WixStandardBootstrapperApplication attribute of the same name -->
         <Variable Name="LaunchTarget"
             Type="string"
-            Value="[InstallFolder]\bin\Windows\profile\o3de.exe"/>
+            Value="[InstallFolder]\bin\Windows\profile\Default\o3de.exe"/>
 
         <PayloadGroup Id="Images">
             <Payload Id="warning.png" SourceFile="$(var.CPACK_RESOURCE_PATH)/warning.png" Compressed="yes"/>

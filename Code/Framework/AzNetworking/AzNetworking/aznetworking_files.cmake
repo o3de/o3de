@@ -58,7 +58,6 @@ set(FILES
     Serialization/ISerializer.inl
     Serialization/NetworkInputSerializer.cpp
     Serialization/NetworkInputSerializer.h
-    Serialization/NetworkInputSerializer.inl
     Serialization/NetworkOutputSerializer.cpp
     Serialization/NetworkOutputSerializer.h
     Serialization/NetworkOutputSerializer.inl
@@ -66,6 +65,8 @@ set(FILES
     Serialization/StringifySerializer.h
     Serialization/TrackChangedSerializer.h
     Serialization/TrackChangedSerializer.inl
+    Serialization/TypeValidatingSerializer.h
+    Serialization/TypeValidatingSerializer.inl
     TcpTransport/TcpConnection.cpp
     TcpTransport/TcpConnection.h
     TcpTransport/TcpConnection.inl

@@ -20,7 +20,8 @@ namespace AZ
             : public OcclusionCullingPlaneFeatureProcessorInterface
         {
         public:
-            AZ_RTTI(AZ::Render::OcclusionCullingPlaneFeatureProcessor, "{C3DE91D7-EF7A-4A82-A55F-E22BC52074EA}", OcclusionCullingPlaneFeatureProcessorInterface);
+            AZ_CLASS_ALLOCATOR(OcclusionCullingPlaneFeatureProcessor, AZ::SystemAllocator)
+            AZ_RTTI(AZ::Render::OcclusionCullingPlaneFeatureProcessor, "{C3DE91D7-EF7A-4A82-A55F-E22BC52074EA}", AZ::Render::OcclusionCullingPlaneFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
 

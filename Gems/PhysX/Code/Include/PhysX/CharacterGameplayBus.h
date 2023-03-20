@@ -28,8 +28,15 @@ namespace PhysX
         //! Sets the gravity multipier.
         //! The gravity multiplier is combined with the gravity value for the physics world to which the character
         //! belongs when applying gravity to the character.
-        //! @param gravityMultiplier The new 
+        //! @param gravityMultiplier The new gravity multiplier value.
         virtual void SetGravityMultiplier(float gravityMultiplier) = 0;
+
+        //! Gets the vertical size of the box used when checking for ground contact.
+        virtual float GetGroundDetectionBoxHeight() const = 0;
+
+        //! Sets the vertical size of the box used when checking for ground contact.
+        //! @param groundDetectionBoxHeight The new ground detection box height value.
+        virtual void SetGroundDetectionBoxHeight(float groundDetectionBoxHeight) = 0;
 
         //! Gets the falling velocity.
         virtual AZ::Vector3 GetFallingVelocity() const = 0;

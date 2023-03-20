@@ -16,7 +16,9 @@
 #pragma once
 
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Memory/PoolAllocator.h>
+#include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/smart_ptr/intrusive_base.h>
 #include <AzFramework/Archive/Codec.h>
 #include <AzFramework/Archive/ZipDirStructures.h>
@@ -30,7 +32,7 @@ namespace AZ::IO::ZipDir
         : public AZStd::intrusive_base
     {
     public:
-        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Cache, AZ::SystemAllocator);
         // the size of the buffer that's using during re-linking the zip file
         inline static constexpr size_t g_nSizeRelinkBuffer = 1024 * 1024;
         inline static constexpr size_t g_nMaxItemsRelinkBuffer = 128; // max number of files to read before (without) writing
@@ -38,7 +40,6 @@ namespace AZ::IO::ZipDir
         inline static constexpr int compressedBlockHeaderSizeInBytes = 4; //number of bytes we need in front of the compressed block to indicate which compressor was used
 
         Cache();
-        explicit Cache(AZ::IAllocatorAllocate* allocator);
 
         ~Cache()
         {
@@ -83,14 +84,11 @@ namespace AZ::IO::ZipDir
 
         void Free(void* ptr)
         {
-            m_allocator->DeAllocate(ptr);
+            azfree(ptr);
         }
 
         // refreshes information about the given file entry into this file entry
         ErrorEnum Refresh(FileEntryBase* pFileEntry);
-
-        // returns the size of memory occupied by the instance of this cache
-        size_t GetSize() const;
 
         // QUICK check to determine whether the file entry belongs to this object
         bool IsOwnerOf(const FileEntry* pFileEntry) const
@@ -100,9 +98,9 @@ namespace AZ::IO::ZipDir
 
         // returns the string - path to the zip file from which this object was constructed.
         // this will be "" if the object was constructed with a factory that wasn't created with FLAGS_MEMORIZE_ZIP_PATH
-        const char* GetFilePath() const
+        AZ::IO::PathView GetFilePath() const
         {
-            return m_strFilePath.c_str();
+            return m_strFilePath;
         }
 
         FileEntryTree* GetRoot()
@@ -133,16 +131,15 @@ namespace AZ::IO::ZipDir
         friend class CacheFactory;
         friend class FileEntryTransactionAdd;
         FileEntryTree m_treeDir;
-        AZ::IO::HandleType m_fileHandle;
-        AZ::IAllocatorAllocate* m_allocator;
-        AZStd::string m_strFilePath;
+        AZ::IO::HandleType m_fileHandle = AZ::IO::InvalidHandle;
+        AZ::IO::Path m_strFilePath;
 
         // String Pool for persistently storing paths as long as they reside in the cache
-        AZStd::unordered_set<AZStd::string> m_relativePathPool;
+        AZStd::unordered_set<AZ::IO::Path> m_relativePathPool;
 
         // offset to the start of CDR in the file,even if there's no CDR there currently
         // when a new file is added, it can start from here, but this value will need to be updated then
-        uint32_t m_lCDROffset;
+        uint32_t m_lCDROffset = 0;
 
         enum
         {
@@ -156,12 +153,12 @@ namespace AZ::IO::ZipDir
             // when this is set, compact operation is not performed
             FLAGS_DONT_COMPACT = 1 << 3
         };
-        uint32_t m_nFlags;
+        uint32_t m_nFlags = 0;
 
         // CDR buffer.
         AZStd::vector<uint8_t> m_CDR_buffer;
 
-        ZipFile::EHeaderEncryptionType m_encryptedHeaders;
+        ZipFile::EHeaderEncryptionType m_encryptedHeaders = ZipFile::HEADERS_NOT_ENCRYPTED;
         ZipFile::EHeaderSignatureType m_signedHeaders;
 
         // Zip Headers

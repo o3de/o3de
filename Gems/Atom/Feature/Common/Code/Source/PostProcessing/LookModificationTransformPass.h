@@ -36,7 +36,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(LookModificationPass, "{68C3A664-FB97-40ED-9638-21938D6692B3}", RPI::ParentPass);
-            AZ_CLASS_ALLOCATOR(LookModificationPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LookModificationPass, SystemAllocator);
             virtual ~LookModificationPass() = default;
 
             //! Creates a LookModificationPass
@@ -51,7 +51,7 @@ namespace AZ
             void BuildInternal() override;
 
         private:
-            const RPI::PassAttachmentBinding* m_swapChainAttachmentBinding = nullptr;
+            const RPI::PassAttachmentBinding* m_pipelineOutput = nullptr;
             RHI::Format m_displayBufferFormat = RHI::Format::Unknown;
             OutputDeviceTransformType m_outputDeviceTransformType = OutputDeviceTransformType_48Nits;
             ShaperParams m_shaperParams;

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <RHI/Device.h>
 #include <RHI/PhysicalDevice.h>
@@ -13,7 +14,6 @@
 #include <RHI/Fence.h>
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/DX12/PlatformLimitsDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -25,8 +25,14 @@ namespace AZ
     {
         namespace Platform
         {
-            void DeviceShutdownInternal(ID3D12DeviceX* device);
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
+        }
+
+        Device::Device()
+        {
+            RHI::Ptr<PlatformLimitsDescriptor> platformLimitsDescriptor = aznew PlatformLimitsDescriptor();
+            platformLimitsDescriptor->LoadPlatformLimitsDescriptor(RHI::Factory::Get().GetName().GetCStr());
+            m_descriptor.m_platformLimitsDescriptor = RHI::Ptr<RHI::PlatformLimitsDescriptor>(platformLimitsDescriptor);
         }
 
         RHI::Ptr<Device> Device::Create()
@@ -43,35 +49,31 @@ namespace AZ
             }
 
             InitFeatures();
+
             return RHI::ResultCode::Success;
         }
 
-        RHI::ResultCode Device::PostInitInternal(const RHI::DeviceDescriptor& descriptor)
+        RHI::ResultCode Device::InitializeLimits()
         {
             m_allocationInfoCache.SetInitFunction([](auto& cache) { cache.set_capacity(64); });
 
             {
                 ReleaseQueue::Descriptor releaseQueueDescriptor;
-                releaseQueueDescriptor.m_collectLatency = descriptor.m_frameCountMax - 1;
+                releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax - 1;
                 m_releaseQueue.Init(releaseQueueDescriptor);
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
 
-            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = descriptor.m_platformLimitsDescriptor;
-            if (RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor))
-            {
-                m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
-            }
-            else
-            {
-                AZ_Assert(false, "Missing PlatformLimits config file for DX12 backend");
-            }
+            RHI::ConstPtr<RHI::PlatformLimitsDescriptor> rhiDescriptor = m_descriptor.m_platformLimitsDescriptor;
+            RHI::ConstPtr<PlatformLimitsDescriptor> platLimitsDesc = azrtti_cast<const PlatformLimitsDescriptor*>(rhiDescriptor);
+            AZ_Assert(platLimitsDesc != nullptr, "Missing PlatformLimits config file for DX12 backend");
+            m_descriptorContext->Init(m_dx12Device.get(), platLimitsDesc);
 
             {
                 CommandListAllocator::Descriptor commandListAllocatorDescriptor;
                 commandListAllocatorDescriptor.m_device = this;
-                commandListAllocatorDescriptor.m_frameCountMax = descriptor.m_frameCountMax;
+                commandListAllocatorDescriptor.m_frameCountMax = m_descriptor.m_frameCountMax;
                 commandListAllocatorDescriptor.m_descriptorContext = m_descriptorContext;
                 m_commandListAllocator.Init(commandListAllocatorDescriptor);
             }
@@ -80,9 +82,9 @@ namespace AZ
                 StagingMemoryAllocator::Descriptor allocatorDesc;
                 allocatorDesc.m_device = this;
 
-                allocatorDesc.m_mediumPageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes;
-                allocatorDesc.m_largePageSizeInBytes = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes;
-                allocatorDesc.m_collectLatency = descriptor.m_frameCountMax;
+                allocatorDesc.m_mediumPageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_mediumStagingBufferPageSizeInBytes);
+                allocatorDesc.m_largePageSizeInBytes = static_cast<uint32_t>(platLimitsDesc->m_platformDefaultValues.m_largestStagingBufferPageSizeInBytes);
+                allocatorDesc.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_stagingMemoryAllocator.Init(allocatorDesc);
             }
 
@@ -90,7 +92,7 @@ namespace AZ
 
             m_commandQueueContext.Init(*this);
 
-            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
+            m_asyncUploadQueue.Init(*this, AsyncUploadQueue::Descriptor(platLimitsDesc->m_platformDefaultValues.m_asyncQueueStagingBufferSizeInBytes));
 
             m_samplerCache.SetCapacity(SamplerCacheCapacity);
 
@@ -101,7 +103,6 @@ namespace AZ
         {
             // Any containers that maintain references to DeviceObjects need to be cleared here to ensure the device
             // refcount reaches 0 before shutdown.
-
             m_samplerCache.Clear();
             m_commandListAllocator.Shutdown();
             m_asyncUploadQueue.Shutdown();
@@ -110,8 +111,6 @@ namespace AZ
 
         void Device::ShutdownInternal()
         {
-            
-
             m_allocationInfoCache.Clear();
 
             m_stagingMemoryAllocator.Shutdown();
@@ -125,7 +124,7 @@ namespace AZ
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
 
-            Platform::DeviceShutdownInternal(m_dx12Device.get());
+            ShutdownSubPlatform();
 
             m_dx12Device = nullptr;
         }
@@ -137,7 +136,10 @@ namespace AZ
             m_features.m_computeShader = true;
             m_features.m_independentBlend = true;
             m_features.m_dualSourceBlending = true;
-            m_features.m_customResolvePositions = true;
+            D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options2, sizeof(options2));
+            m_features.m_customSamplePositions =
+                options2.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::All;
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Compute)] = RHI::QueryTypeFlags::PipelineStatistics | RHI::QueryTypeFlags::Timestamp;
             D3D12_FEATURE_DATA_D3D12_OPTIONS3 options3;
@@ -145,13 +147,23 @@ namespace AZ
             if (options3.CopyQueueTimestampQueriesSupported)
             {
                 m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Copy)] = RHI::QueryTypeFlags::Timestamp;
-            }            
+            }
             m_features.m_predication = true;
             m_features.m_occlusionQueryPrecise = true;
             m_features.m_indirectCommandTier = RHI::IndirectCommandTiers::Tier2;
             m_features.m_indirectDrawCountBufferSupported = true;
             m_features.m_indirectDispatchCountBufferSupported = true;
             m_features.m_indirectDrawStartInstanceLocationSupported = true;
+                        
+            D3D12_FEATURE_DATA_D3D12_OPTIONS options;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS, &options, sizeof(options));
+            // DX12's tile resource implementation uses undefined swizzle tile layout which only requires tier 1
+            m_features.m_tiledResource = options.TiledResourcesTier >= D3D12_TILED_RESOURCES_TIER_1;
+
+            // Check support of wive operation
+            D3D12_FEATURE_DATA_SHADER_MODEL shaderModel;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_SHADER_MODEL, &shaderModel, sizeof(shaderModel));
+            m_features.m_waveOperation = shaderModel.HighestShaderModel >= D3D_SHADER_MODEL_6_0;
 
 #ifdef AZ_DX12_DXR_SUPPORT
             D3D12_FEATURE_DATA_D3D12_OPTIONS5 options5;
@@ -163,6 +175,50 @@ namespace AZ
 
             m_features.m_unboundedArrays = true;
 
+#ifdef O3DE_DX12_VRS_SUPPORT
+            D3D12_FEATURE_DATA_D3D12_OPTIONS6 options6;
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS6, &options6, sizeof(options6));
+            switch (options6.VariableShadingRateTier)
+            {
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_1:
+                {
+                    m_features.m_shadingRateTypeMask = RHI::ShadingRateTypeFlags::PerDraw;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;                   
+                }
+                break;
+            case D3D12_VARIABLE_SHADING_RATE_TIER::D3D12_VARIABLE_SHADING_RATE_TIER_2:
+                {
+                    m_features.m_shadingRateTypeMask =
+                        RHI::ShadingRateTypeFlags::PerDraw |
+                        RHI::ShadingRateTypeFlags::PerRegion |
+                        RHI::ShadingRateTypeFlags::PerPrimitive;
+                    m_features.m_shadingRateMask =
+                        RHI::ShadingRateFlags::Rate1x1 |
+                        RHI::ShadingRateFlags::Rate1x2 |
+                        RHI::ShadingRateFlags::Rate2x1 |
+                        RHI::ShadingRateFlags::Rate2x2;
+                    m_features.m_dynamicShadingRateImage = true;
+                }
+                break;
+            default:
+                break;
+            }
+
+            if (options6.AdditionalShadingRatesSupported)
+            {
+                m_features.m_shadingRateMask |=
+                    RHI::ShadingRateFlags::Rate2x4 |
+                    RHI::ShadingRateFlags::Rate4x2 |
+                    RHI::ShadingRateFlags::Rate4x4;
+            }
+
+            m_limits.m_shadingRateTileSize = RHI::Size(options6.ShadingRateImageTileSize, options6.ShadingRateImageTileSize, 1);
+#endif
+
             m_limits.m_maxImageDimension1D = D3D12_REQ_TEXTURE1D_U_DIMENSION;
             m_limits.m_maxImageDimension2D = D3D12_REQ_TEXTURE2D_U_OR_V_DIMENSION;
             m_limits.m_maxImageDimension3D = D3D12_REQ_TEXTURE3D_U_V_OR_W_DIMENSION;
@@ -171,6 +227,8 @@ namespace AZ
             m_limits.m_minConstantBufferViewOffset = D3D12_CONSTANT_BUFFER_DATA_PLACEMENT_ALIGNMENT;
             m_limits.m_maxIndirectDrawCount = static_cast<uint32_t>(-1);
             m_limits.m_maxIndirectDispatchCount = static_cast<uint32_t>(-1);
+            m_limits.m_maxConstantBufferSize = D3D12_REQ_CONSTANT_BUFFER_ELEMENT_COUNT * 4u * 4u; // 4096 vectors * 4 values per vector * 4 bytes per value
+            m_limits.m_maxBufferSize = D3D12_REQ_RESOURCE_SIZE_IN_MEGABYTES_EXPRESSION_C_TERM * (1024u * 1024u); // 2048 MB
         }
 
         void Device::CompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder)
@@ -180,19 +238,14 @@ namespace AZ
             m_stagingMemoryAllocator.ReportMemoryUsage(builder);
         }
 
-        void Device::UpdateCpuTimingStatisticsInternal(RHI::CpuTimingStatistics& cpuTimingStatistics) const
+        void Device::UpdateCpuTimingStatisticsInternal() const
         {
-            m_commandQueueContext.UpdateCpuTimingStatistics(cpuTimingStatistics);
-        }
-
-        void Device::BeginFrameInternal()
-        {
-            m_commandQueueContext.Begin();
+            m_commandQueueContext.UpdateCpuTimingStatistics();
         }
 
         void Device::EndFrameInternal()
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             m_commandQueueContext.End();
 
             m_commandListAllocator.Collect();
@@ -213,7 +266,7 @@ namespace AZ
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
         {
             auto durationInSeconds = AZStd::chrono::duration<double>(double(gpuTimestamp) / m_commandQueueContext.GetCommandQueue(queueClass).GetGpuTimestampFrequency());
-            return AZStd::chrono::microseconds(durationInSeconds);
+            return AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(durationInSeconds);
         }
 
         void Device::FillFormatsCapabilitiesInternal(FormatCapabilitiesList& formatsCapabilities)
@@ -271,6 +324,8 @@ namespace AZ
                     flags |= RHI::FormatCapabilities::AtomicBuffer;
                 }
             }
+
+            formatsCapabilities[static_cast<uint32_t>(RHI::Format::R8_UINT)] |= RHI::FormatCapabilities::ShadingRate;
         }
 
         RHI::ResourceMemoryRequirements Device::GetResourceMemoryRequirements(const RHI::ImageDescriptor& descriptor)
@@ -290,6 +345,11 @@ namespace AZ
             memoryRequirements.m_alignmentInBytes = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
             memoryRequirements.m_sizeInBytes = RHI::AlignUp<size_t>(descriptor.m_byteCount, memoryRequirements.m_alignmentInBytes);
             return memoryRequirements;
+        }
+
+        void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
+        {
+            m_releaseQueue.Notify(notifyFunction);
         }
 
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -355,7 +415,7 @@ namespace AZ
             D3D12_RESOURCE_STATES initialState,
             D3D12_HEAP_TYPE heapType)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
 
             D3D12_RESOURCE_DESC resourceDesc;
             ConvertImageDescriptor(imageDescriptor, resourceDesc);
@@ -620,6 +680,26 @@ namespace AZ
         bool Device::IsAftermathInitialized() const
         {
             return m_isAftermathInitialized;
+        }
+
+        RHI::ResultCode Device::CompactSRGMemory()
+        {
+            if (m_isDescriptorHeapCompactionNeeded)
+            {
+                m_isDescriptorHeapCompactionNeeded = false;
+                return m_descriptorContext->CompactDescriptorHeap();
+            }
+            return RHI::ResultCode::Success;
+        }
+
+        RHI::ShadingRateImageValue Device::ConvertShadingRate(RHI::ShadingRate rate) const
+        {            
+            return RHI::ShadingRateImageValue{ static_cast<uint8_t>(ConvertShadingRateEnum(rate)), 0 };
+        }
+
+        void Device::DescriptorHeapCompactionNeeded()
+        {
+            m_isDescriptorHeapCompactionNeeded = true;
         }
     }
 }

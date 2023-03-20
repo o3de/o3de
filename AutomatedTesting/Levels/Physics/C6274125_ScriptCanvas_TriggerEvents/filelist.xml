@@ -1,6 +1,0 @@
-<download name="C6274125_Verify_ScriptCanvas_TriggerEvents" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39339" md5="754cc816c64824eec2795103fcf0ab52"/>
- </files>
-</download>

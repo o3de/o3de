@@ -29,7 +29,7 @@ namespace LandscapeCanvas
         }
     }
 
-    const QString SlopeFilterNode::TITLE = QObject::tr("Slope Filter");
+    const char* SlopeFilterNode::TITLE = "Slope Filter";
 
     SlopeFilterNode::SlopeFilterNode(GraphModel::GraphPtr graph)
         : BaseAreaFilterNode(graph)

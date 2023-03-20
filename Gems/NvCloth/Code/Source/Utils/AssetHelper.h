@@ -10,6 +10,7 @@
 
 #include <AzCore/Component/EntityId.h>
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <NvCloth/Types.h>
 

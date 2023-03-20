@@ -21,6 +21,7 @@
 #include <AzFramework/Physics/SystemBus.h>
 
 #include <RagdollTestData.h>
+#include <RagdollConfiguration.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
@@ -70,8 +71,7 @@ namespace PhysX::Benchmarks
     class PhysXCharactersRagdollBenchmarkFixture
         : public PhysX::Benchmarks::PhysXBaseBenchmarkFixture
     {
-    public:
-        virtual void SetUp([[maybe_unused]] const ::benchmark::State& state) override
+        void internalSetUp()
         {
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::SetUpInternal();
             //need to get the Physics::System to be able to spawn the rigid bodies
@@ -80,10 +80,29 @@ namespace PhysX::Benchmarks
             m_terrainEntity = PhysX::TestUtils::CreateFlatTestTerrain(m_testSceneHandle, RagdollConstants::TerrainSize, RagdollConstants::TerrainSize);
         }
 
-        virtual void TearDown([[maybe_unused]] const ::benchmark::State& state) override
+        void internalTearDown()
         {
             m_terrainEntity = nullptr;
             PhysX::Benchmarks::PhysXBaseBenchmarkFixture::TearDownInternal();
+        }
+
+    public:
+        void SetUp(const benchmark::State&) override
+        {
+            internalSetUp();
+        }
+        void SetUp(benchmark::State&) override
+        {
+            internalSetUp();
+        }
+
+        void TearDown(const benchmark::State&) override
+        {
+            internalTearDown();
+        }
+        void TearDown(benchmark::State&) override
+        {
+            internalTearDown();
         }
 
     protected:
@@ -99,7 +118,7 @@ namespace PhysX::Benchmarks
         PhysX::EntityPtr m_terrainEntity;
     };
 
-    Physics::RagdollState GetTPose(const AZ::Vector3& position, Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(const AZ::Vector3& position, Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         Physics::RagdollState ragdollState;
         for (int nodeIndex = 0; nodeIndex < RagdollTestData::NumNodes; nodeIndex++)
@@ -114,15 +133,19 @@ namespace PhysX::Benchmarks
         return ragdollState;
     }
 
-    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         return GetTPose(AZ::Vector3::CreateZero(), simulationType);
     }
 
     PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
-        Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetEngineRootPath() + "/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
+        Physics::RagdollConfiguration* configuration = AZ::Utils::LoadObjectFromBuffer<Physics::RagdollConfiguration>(
+            RagdollTestData::RagdollConfiguration.data(), RagdollTestData::RagdollConfiguration.size());
+        if (!configuration)
+        {
+            return nullptr;
+        }
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -180,15 +203,15 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -225,7 +248,6 @@ namespace PhysX::Benchmarks
         }
 
         //enable and position the ragdolls
-        const int ragdollsPerCol = static_cast<const int>(RagdollConstants::TerrainSize / 10.0f) - 1;
         int idx = 0;
         for (auto& ragdoll : ragdolls)
         {
@@ -234,7 +256,7 @@ namespace PhysX::Benchmarks
             const float x = washingMachineCentre.GetX() + RagdollConstants::WashingMachine::CylinderRadius * u * std::sin(theta);
             const float y = washingMachineCentre.GetY() + RagdollConstants::WashingMachine::CylinderRadius * u * std::cos(theta);
             const float z = washingMachineCentre.GetZ() + 1.0f + (0.3f * idx);
-            auto kinematicTPose = GetTPose(AZ::Vector3(x, y, z), Physics::SimulationType::Dynamic);
+            auto kinematicTPose = GetTPose(AZ::Vector3(x, y, z), Physics::SimulationType::Simulated);
             ragdoll->EnableSimulation(kinematicTPose);
             ragdoll->SetState(kinematicTPose);
             idx++;
@@ -247,15 +269,15 @@ namespace PhysX::Benchmarks
         //setup the frame timer tracker
         AZStd::vector<double> tickTimes;
         tickTimes.reserve(RagdollConstants::GameFramesToSimulate);
-        for (auto _ : state)
+        for ([[maybe_unused]] auto _ : state)
         {
             for (AZ::u32 i = 0; i < RagdollConstants::GameFramesToSimulate; i++)
             {
-                auto start = AZStd::chrono::system_clock::now();
+                auto start = AZStd::chrono::steady_clock::now();
                 StepScene1Tick(DefaultTimeStep);
 
                 //time each physics tick and store it to analyze
-                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::system_clock::now() - start);
+                auto tickElapsedMilliseconds = PhysX::Benchmarks::Types::double_milliseconds(AZStd::chrono::steady_clock::now() - start);
                 tickTimes.emplace_back(tickElapsedMilliseconds.count());
             }
         }
@@ -270,7 +292,7 @@ namespace PhysX::Benchmarks
         ->RangeMultiplier(RagdollConstants::BenchmarkSettings::RangeMultipler)
         ->Ranges({
             {RagdollConstants::BenchmarkSettings::StartRange, RagdollConstants::BenchmarkSettings::EndRange},
-            {static_cast<int>(Physics::SimulationType::Kinematic), static_cast<int>(Physics::SimulationType::Dynamic)}
+            {static_cast<int>(Physics::SimulationType::Kinematic), static_cast<int>(Physics::SimulationType::Simulated)}
             })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RagdollConstants::BenchmarkSettings::NumIterations)

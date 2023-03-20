@@ -8,21 +8,21 @@
 
 #pragma once
 
-#include "ColliderSubComponentMode.h"
-#include <AzToolsFramework/ComponentModes/BoxViewportEdit.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
+#include <AzToolsFramework/ComponentModes/SphereViewportEdit.h>
+#include <Editor/Source/ComponentModes/PhysXSubComponentModeBase.h>
 
 namespace PhysX
 {
     /// Sub component mode for modifying the box dimensions on a collider.
     class ColliderSphereMode
-        : public PhysX::ColliderSubComponentMode
+        : public PhysXSubComponentModeBase
         , private AzFramework::EntityDebugDisplayEventBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
 
-        // ColliderSubComponentMode ...
+        // PhysXSubComponentModeBase ...
         void Setup(const AZ::EntityComponentIdPair& idPair) override;
         void Refresh(const AZ::EntityComponentIdPair& idPair) override;
         void Teardown(const AZ::EntityComponentIdPair& idPair) override;
@@ -36,7 +36,7 @@ namespace PhysX
 
         void OnManipulatorMoved(const AzToolsFramework::LinearManipulator::Action& action, const AZ::EntityComponentIdPair& idPair);
 
-        AZ::Vector3 m_colliderOffset;
-        AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_radiusManipulator;
+        AZ::EntityComponentIdPair m_entityComponentIdPair;
+        AZStd::unique_ptr<AzToolsFramework::SphereViewportEdit> m_sphereViewportEdit;
     };
 } //namespace PhysX

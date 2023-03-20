@@ -90,19 +90,16 @@ namespace AZ
             }
         }
 
-        //! Filter out integration tests from the test run
-        void excludeIntegTests()
-        {
-            AddExcludeFilter("INTEG_*");
-            AddExcludeFilter("Integ_*");
-        }
-
         void ApplyGlobalParameters(int* argc, char** argv)
         {
-            // this is a hook that can be used to apply any other global non-google parameters
-            // that we use.
+            // this is a hook that can be used to apply any other global parameters that we use.
             AZ_UNUSED(argc);
             AZ_UNUSED(argv);
+
+            // Disable gtest catching unhandled exceptions, instead, AzTestRunner will do it through:
+            // AZ::Debug::Trace::HandleExceptions(true). This gives us a stack trace when the exception
+            // is thrown (googletest does not).
+            testing::FLAGS_gtest_catch_exceptions = false;
         }
 
         //! Print out parameters that are not used by the framework
@@ -128,7 +125,7 @@ namespace AZ
             {
                 // the --unittest parameter makes us run tests built inside this executable
 
-                // first, remove the unit test parameter so that it doesn't get passed into google 
+                // first, remove the unit test parameter so that it doesn't get passed into google
                 // test, which would potentially generate warnings since its a non standard param:
                 int unitTestIndex = GetParameterIndex(argc, argv, "--unittest");
                 if (unitTestIndex != -1)
@@ -160,11 +157,15 @@ namespace AZ
                 }
 
                 ::testing::InitGoogleMock(&argc, argv);
-                AZ::Test::excludeIntegTests();
                 AZ::Test::ApplyGlobalParameters(&argc, argv);
                 AZ::Test::printUnusedParametersWarning(argc, argv);
                 AZ::Test::addTestEnvironments(m_envs);
                 m_returnCode = RUN_ALL_TESTS();
+                if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)
+                {
+                    std::cerr << "No tests were found for last suite ran!" << std::endl;
+                    m_returnCode = 1;
+                }
                 return true;
             }
             else if (ContainsParameter(argc, argv, "--loadunittests"))
@@ -281,10 +282,17 @@ namespace AZ
                 }
             }
 
-            AZ::Test::excludeIntegTests();
             AZ::Test::printUnusedParametersWarning(argc, argv);
 
-            return RUN_ALL_TESTS();
+            int returnCode = RUN_ALL_TESTS()
+            if (::testing::UnitTest::GetInstance()->test_to_run_count() == 0)
+            {
+                std::cerr << "No tests were found for last suite ran!" << std::endl;
+                m_returnCode = 1;
+            }
+            return returnCode;
+
+
 #else // AZ_MONOLITHIC_BUILD
             int result = 0;
             std::shared_ptr<AZ::Test::IModuleHandle> module = platform.GetModule(lib);

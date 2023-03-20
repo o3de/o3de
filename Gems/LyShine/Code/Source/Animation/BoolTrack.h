@@ -20,7 +20,7 @@ class UiBoolTrack
     : public TUiAnimTrack<IBoolKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(UiBoolTrack, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR(UiBoolTrack, AZ::SystemAllocator)
     AZ_RTTI(UiBoolTrack, "{F0EDB82F-B3D7-47FC-AA97-91358A7F1168}", IUiAnimTrack);
 
     UiBoolTrack();

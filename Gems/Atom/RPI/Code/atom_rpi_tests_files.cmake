@@ -10,8 +10,6 @@ set(FILES
     Tests/Buffer/BufferTests.cpp
     Tests/Common/AssetManagerTestFixture.cpp
     Tests/Common/AssetManagerTestFixture.h
-    Tests/Common/AssetSystemStub.cpp
-    Tests/Common/AssetSystemStub.h
     Tests/Common/ErrorMessageFinder.cpp
     Tests/Common/ErrorMessageFinder.h
     Tests/Common/ErrorMessageFinderTests.cpp
@@ -20,16 +18,13 @@ set(FILES
     Tests/Common/RPITestFixture.cpp
     Tests/Common/RPITestFixture.h
     Tests/Common/SerializeTester.h
-    Tests/Common/TestUtils.h
-    Tests/Common/TestFeatureProcessors.h
-    Tests/Common/RHI/Factory.cpp
-    Tests/Common/RHI/Factory.h
-    Tests/Common/RHI/Stubs.cpp
-    Tests/Common/RHI/Stubs.h
     Tests/Common/ShaderAssetTestUtils.cpp
     Tests/Common/ShaderAssetTestUtils.h
+    Tests/Common/TestUtils.h
+    Tests/Common/TestFeatureProcessors.h
     Tests/Image/StreamingImageTests.cpp
     Tests/Material/LuaMaterialFunctorTests.cpp
+    Tests/Material/MaterialVersionUpdateTests.cpp
     Tests/Material/MaterialTypeAssetTests.cpp
     Tests/Material/MaterialTypeSourceDataTests.cpp
     Tests/Material/MaterialAssetTestUtils.cpp
@@ -39,9 +34,11 @@ set(FILES
     Tests/Material/MaterialSourceDataTests.cpp
     Tests/Material/MaterialFunctorTests.cpp
     Tests/Material/MaterialFunctorSourceDataSerializerTests.cpp
+    Tests/Material/MaterialPropertyIdTests.cpp
     Tests/Material/MaterialPropertyValueSourceDataTests.cpp
     Tests/Material/MaterialTests.cpp
     Tests/Model/ModelTests.cpp
+    Tests/Model/SkinJointIdPaddingTests.cpp
     Tests/Pass/PassTests.cpp
     Tests/Shader/ShaderTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupBufferTests.cpp
@@ -53,4 +50,5 @@ set(FILES
     Tests/System/RenderPipelineTests.cpp
     Tests/System/SceneTests.cpp
     Tests/System/ViewTests.cpp
+    Tests/Utils/AssetUtilsTests.cpp
 )

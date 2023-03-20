@@ -11,9 +11,12 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/std/containers/unordered_set.h>
+#include <AzCore/std/parallel/semaphore.h>
 #include <AzToolsFramework/API/EditorPythonConsoleBus.h>
 #include <AzToolsFramework/API/EditorPythonRunnerRequestsBus.h>
-#include <AzCore/std/parallel/semaphore.h>
+#include <AzToolsFramework/API/PythonLoader.h>
+
+#include <Source/ActionManager/PythonActionManagerHandler.h>
 
 namespace EditorPythonBindings
 {
@@ -48,6 +51,7 @@ namespace EditorPythonBindings
         bool IsPythonActive() override;
         void WaitForInitialization() override;
         void ExecuteWithLock(AZStd::function<void()> executionCallback) override;
+        bool TryExecuteWithLock(AZStd::function<void()> executionCallback) override;
         ////////////////////////////////////////////////////////////////////////
 
         ////////////////////////////////////////////////////////////////////////
@@ -59,10 +63,17 @@ namespace EditorPythonBindings
         ////////////////////////////////////////////////////////////////////////
         
     private:
+        class SymbolLogHelper;
+        class PythonGILScopedLock;
+
         // handle multiple Python initializers and threads
         AZStd::atomic_int m_initalizeWaiterCount {0};
         AZStd::semaphore m_initalizeWaiter;
         AZStd::recursive_mutex m_lock;
+        int m_lockRecursiveCounter = 0;
+        AZStd::shared_ptr<SymbolLogHelper> m_symbolLogHelper;
+        PythonActionManagerHandler m_pythonActionManagerHandler;
+        AzToolsFramework::EmbeddedPython::PythonLoader m_pythonLoader;
     
         enum class Result
         {

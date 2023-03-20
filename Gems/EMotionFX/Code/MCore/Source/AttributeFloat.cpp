@@ -14,20 +14,20 @@
 
 namespace MCore
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AttributeFloat, AttributeAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AttributeFloat, AttributeAllocator)
 
     bool AttributeFloat::InitFrom(const Attribute* other)
     {
         switch (other->GetType())
         {
         case TYPE_ID:
-            mValue = static_cast<const AttributeFloat*>(other)->GetValue();
+            m_value = static_cast<const AttributeFloat*>(other)->GetValue();
             return true;
         case MCore::AttributeBool::TYPE_ID:
-            mValue = static_cast<const AttributeBool*>(other)->GetValue();
+            m_value = static_cast<const AttributeBool*>(other)->GetValue();
             return true;
         case MCore::AttributeInt32::TYPE_ID:
-            mValue = static_cast<float>(static_cast<const AttributeInt32*>(other)->GetValue());
+            m_value = static_cast<float>(static_cast<const AttributeInt32*>(other)->GetValue());
             return true;
         default:
             return false;

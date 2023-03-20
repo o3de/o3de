@@ -8,66 +8,172 @@
 #pragma once
 
 #include <AzCore/PlatformDef.h>
-#define AZ_VA_HAS_ARGS(...) ""#__VA_ARGS__[0] != 0
+#include <AzCore/base.h>
+#include <AzCore/O3DEKernelConfiguration.h>
+#include <cstdarg>
 
+namespace AZStd
+{
+    template <class Element>
+    struct char_traits;
+
+    template <class Element, class Traits>
+    class basic_string_view;
+}
 
 namespace AZ
 {
     namespace Debug
     {
-        /// Global instance to the tracer.
-        extern class Trace      g_tracer;
-
-        enum LogLevel : int
+        namespace Platform
         {
-            Disabled = 0,
-            Errors = 1,
-            Warnings = 2,
-            Info = 3
+            void OutputToDebugger(AZStd::basic_string_view<char, AZStd::char_traits<char>> window, AZStd::basic_string_view<char, AZStd::char_traits<char>> message);
+        }
+
+        enum class LogLevel { Disabled = 0, Errors = 1, Warnings = 2, Info = 3, Debug = 4, Trace = 5 };
+
+        // Represents the options to select C language FILE* stream to write raw output
+        enum class RedirectCStream
+        {
+            Stdout,
+            Stderr,
+            None
+        };
+
+        class O3DEKERNEL_API ITrace
+        {
+        public:
+            ITrace();
+            virtual ~ITrace();
+            ITrace(const ITrace&) = delete;
+            ITrace(ITrace&&) = default;
+            ITrace& operator=(const ITrace&) = delete;
+            ITrace& operator=(ITrace&&) = default;
+
+            static ITrace& Instance();
+
+            virtual void Init() {}
+            virtual void Destroy() {}
+            virtual bool IsDebuggerPresent() { return false; }
+            virtual void Break() {}
+            virtual void Crash() {}
+
+            /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
+            bool IsTraceLoggingEnabledForLevel(LogLevel level)
+            {
+                return m_logLevel >= level;
+            }
+            void SetLogLevel(LogLevel newLevel)
+            {
+                m_logLevel = newLevel;
+            }
+
+            bool GetAlwaysPrintCallstack() const
+            {
+                return m_printCallstack;
+            }
+            void SetAlwaysPrintCallstack(bool enable)
+            {
+                m_printCallstack = enable;
+            }
+
+            virtual void Assert(const char* fileName, int line, const char* funcName, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Assert: %s:%d (%s): %s\n", fileName, line, funcName, message);
+            }
+            virtual void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Error: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
+            }
+            virtual void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stderr, "Warning: %s:%d (%s): %s: %s\n", fileName, line, funcName, window, message);
+            }
+            virtual void Printf(const char* window, const char* format, ...)
+            {
+                char message[s_maxMessageLength];
+                va_list mark;
+                va_start(mark, format);
+                azvsnprintf(message, s_maxMessageLength, format, mark);
+                va_end(mark);
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void Output(const char* window, const char* message)
+            {
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void RawOutput(const char* window, const char* message)
+            {
+                fprintf(stdout, "%s: %s\n", window, message);
+            }
+            virtual void PrintCallstack(const char* /*window*/, unsigned int /*suppressCount*/ = 0, void* /*nativeContext*/ = nullptr) {}
+
+        private:
+            inline static constexpr size_t s_maxMessageLength = 4096;
+            inline static ITrace* s_tracer{};
+
+            LogLevel m_logLevel = LogLevel::Info;
+            bool m_printCallstack = false;
         };
 
         class Trace
+            : public ITrace
         {
         public:
-            static Trace& Instance()    { return g_tracer; }
-
             // Declare Trace init for assert tracking initializations, and get/setters for verbosity level
-            static void Init();
-            static void Destroy();
+            void Init() override;
+            void Destroy() override;
             static int GetAssertVerbosityLevel();
             static void SetAssertVerbosityLevel(int level);
-            
+
             /**
             * Returns the default string used for a system window.
             * It can be useful for Trace message handlers to easily validate if the window they received is the fallback window used by this class,
             * or to force a Trace message bus handler to do special processing by using a known, consistent char*
             */
             static const char* GetDefaultSystemWindow();
-            static bool IsDebuggerPresent();
+            bool IsDebuggerPresent() override;
+            static bool AttachDebugger();
+            static bool WaitForDebugger(float timeoutSeconds = -1.f);
 
             /// True or false if we want to handle system exceptions.
             static void HandleExceptions(bool isEnabled);
 
             /// Breaks program execution immediately.
-            static void Break();
+            void Break() override;
 
             /// Crash the application
-            static void Crash();
+            void Crash() override;
 
             /// Terminates the process with the specified exit code
             static void Terminate(int exitCode);
 
-            /// Indicates if trace logging functions are enabled based on compile mode and cvar logging level
-            static bool IsTraceLoggingEnabledForLevel(LogLevel level);
+            void Assert(const char* fileName, int line, const char* funcName, const char* format, ...) override;
+            void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...) override;
+            void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...) override;
+            void Printf(const char* window, const char* format, ...) override;
 
-            static void Assert(const char* fileName, int line, const char* funcName, const char* format, ...);
-            static void Error(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...);
-            static void Warning(const char* fileName, int line, const char* funcName, const char* window, const char* format, ...);
-            static void Printf(const char* window, const char* format, ...);
+            void Output(const char* window, const char* message) override;
 
-            static void Output(const char* window, const char* message);
+            /// Called by output to handle the actual output, does not interact with ebus or allow interception
+            void RawOutput(const char* window, const char* message) override;
 
-            static void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = 0);
+            void PrintCallstack(const char* window, unsigned int suppressCount = 0, void* nativeContext = nullptr) override;
 
             /// PEXCEPTION_POINTERS on Windows, always NULL on other platforms
             static void* GetNativeExceptionInfo();
@@ -75,7 +181,7 @@ namespace AZ
     }
 }
 
-#ifdef AZ_ENABLE_TRACING
+#if defined(AZ_ENABLE_TRACING)
 
 /**
 * AZ tracing macros provide debug information reporting for assert, errors, warnings, and informational messages.
@@ -102,7 +208,7 @@ namespace AZ
  * Correct usage:
  *     AZ_Assert(false, "Fail always");
  */
-    
+
     namespace AZ
     {
         namespace TraceInternal
@@ -114,7 +220,7 @@ namespace AZ
                 static constexpr ExpressionValidResult value = ExpressionValidResult::Valid;
             };
             template<>
-            struct ExpressionIsValid<const char*&> 
+            struct ExpressionIsValid<const char*&>
             {
                 static constexpr ExpressionValidResult value = ExpressionValidResult::Valid;
             };
@@ -129,7 +235,7 @@ namespace AZ
     {                                                                                                                                                                                 \
         using namespace AZ::TraceInternal;                                                                                                                                            \
         [[maybe_unused]] const auto& rTraceFmtCompileTimeCheckExpressionHelper = (expression); /* This is needed for edge cases for expressions containing lambdas, that were unsupported before C++20 */   \
-        constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
+        [[maybe_unused]] constexpr ExpressionValidResult isValidTraceFmtResult = ExpressionIsValid<decltype(rTraceFmtCompileTimeCheckExpressionHelper)>::value;                                        \
         /* Assert different message depending whether it's const char array or if we have extra arguments */                                                                          \
         static_assert(!(isVaArgs) ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msg);                                                    \
         static_assert(isVaArgs  ? isValidTraceFmtResult != ExpressionValidResult::Invalid_ConstCharArray : true, baseMsg " " msgVargs);                                               \
@@ -174,10 +280,10 @@ namespace AZ
             "String used in place of boolean expression for AZ_ErrorOnce.",                                                 \
             "Did you mean AZ_ErrorOnce("#window", false, \"%s\", "#expression"); ?",                                        \
             "Did you mean AZ_ErrorOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                               \
-        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                                    \
-        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                                  \
+        static bool AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = false;                                                 \
+        if (!AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__))                                                                \
         {                                                                                                                   \
-            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                                            \
+            AZ_CONCAT_VAR_NAME(azErrorDisplayed, __LINE__) = true;                                                          \
             AZ::Debug::Trace::Instance().Error(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);             \
         }                                                                                                                   \
     }                                                                                                                       \
@@ -207,22 +313,50 @@ namespace AZ
             "String used in place of boolean expression for AZ_WarningOnce.",                                                   \
             "Did you mean AZ_WarningOnce("#window", false, \"%s\", "#expression"); ?",                                          \
             "Did you mean AZ_WarningOnce("#window", false, "#expression", "#__VA_ARGS__"); ?");                                 \
-        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                                     \
-        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                                    \
+        static bool AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = false;                                                   \
+        if (!AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__))                                                                  \
         {                                                                                                                       \
             AZ::Debug::Trace::Instance().Warning(__FILE__, __LINE__, AZ_FUNCTION_SIGNATURE, window, __VA_ARGS__);               \
-            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                                              \
+            AZ_CONCAT_VAR_NAME(azWarningDisplayed, __LINE__) = true;                                                            \
         }                                                                                                                       \
     }                                                                                                                           \
     AZ_POP_DISABLE_WARNING
 
-    #define AZ_TracePrintf(window, ...)                                                                            \
-    if(AZ::Debug::Trace::IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                                 \
+    #define AZ_Info(window, ...)                                                                                   \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
     {                                                                                                              \
         AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
     }
-    
 
+    #define AZ_Trace(window, ...)                                                                                  \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Trace))                     \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
+
+    //! The AZ_TraceOnce macro output the result of the format string only once for each use of the macro
+    //! It does not take into account the result of the format string to determine whether to output the string or not
+    //! What this means is that if the formatting results in different output string result only the first result
+    //! will ever be output
+    #define AZ_TraceOnce(window, ...) \
+    { \
+        static bool AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = false; \
+        if (!AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__)) \
+        { \
+            AZ_Trace(window, __VA_ARGS__); \
+            AZ_CONCAT_VAR_NAME(azTracePrintfDisplayed, __LINE__) = true; \
+        } \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_Trace
+    // Use of AZ_TracePrintf and AZ_TracePrintfOnce are deprecated
+    #define AZ_TracePrintf(window, ...)                                                                            \
+    if(AZ::Debug::Trace::Instance().IsTraceLoggingEnabledForLevel(AZ::Debug::LogLevel::Info))                      \
+    {                                                                                                              \
+        AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);                                                  \
+    }
+
+    // O3DE_DEPRECATION_NOTICE(GHI-xxxx) - Use AZ_TraceOnce
     //! The AZ_TrancePrintfOnce macro output the result of the format string only once for each use of the macro
     //! It does not take into account the result of the format string to determine whether to output the string or not
     //! What this means is that if the formatting results in different output string result only the first result
@@ -255,23 +389,27 @@ namespace AZ
     #define AZ_VerifyWarning(window, expression, ...) AZ_Warning(window, 0 != (expression), __VA_ARGS__)
 
 #else // !AZ_ENABLE_TRACING
-    #define AZ_Assert(expression, ...)
-    #define AZ_Error(window, expression, ...)
-    #define AZ_ErrorOnce(window, expression, ...)
-    #define AZ_Warning(window, expression, ...)
-    #define AZ_WarningOnce(window, expression, ...)
-    #define AZ_TracePrintf(window, ...)
-    #define AZ_TracePrintfOnce(window, ...)
 
-    #define AZ_Verify(expression, ...) (void)(expression)
-    #define AZ_VerifyError(window, expression, ...) (void)(expression)
-    #define AZ_VerifyWarning(window, expression, ...) (void)(expression)
+    #define AZ_Assert(...)
+    #define AZ_Error(...)
+    #define AZ_ErrorOnce(...)
+    #define AZ_Warning(...)
+    #define AZ_WarningOnce(...)
+    #define AZ_Info(...)
+    #define AZ_Trace(...)
+    #define AZ_TraceOnce(...)
+    #define AZ_TracePrintf(...)
+    #define AZ_TracePrintfOnce(...)
+
+    #define AZ_Verify(expression, ...)                  AZ_UNUSED(expression)
+    #define AZ_VerifyError(window, expression, ...)     AZ_UNUSED(expression)
+    #define AZ_VerifyWarning(window, expression, ...)   AZ_UNUSED(expression)
 
 #endif  // AZ_ENABLE_TRACING
 
 #define AZ_Printf(window, ...)       AZ::Debug::Trace::Instance().Printf(window, __VA_ARGS__);
 
-#if !defined(RELEASE) || defined(PERFORMANCE_BUILD)
+#if !defined(RELEASE)
 // Unconditional critical error log, enabled up to Performance config
 #define AZ_Fatal(window, format, ...)       AZ::Debug::Trace::Instance().Printf(window, "[FATAL] " format "\n", ##__VA_ARGS__);
 #define AZ_Crash()                          AZ::Debug::Trace::Instance().Crash();

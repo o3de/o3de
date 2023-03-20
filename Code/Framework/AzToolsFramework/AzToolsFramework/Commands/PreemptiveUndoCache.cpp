@@ -86,12 +86,12 @@ namespace AzToolsFramework
 
     void PreemptiveUndoCache::UpdateCache(const AZ::EntityId& entityId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+        AZ_PROFILE_FUNCTION(AzToolsFramework);
 
         // capture it
 
         AZ::Entity* pEnt = nullptr;
-        EBUS_EVENT_RESULT(pEnt, AZ::ComponentApplicationBus, FindEntity, entityId);
+        AZ::ComponentApplicationBus::BroadcastResult(pEnt, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
         if (!pEnt)
         {
             AZ_Warning("Undo", false, "Preemptive Undo Cache was told to update the cache for a particular entity, but that entity is not available in FindEntity");
@@ -103,8 +103,8 @@ namespace AzToolsFramework
         newData.clear();
         AZ::IO::ByteContainerStream<CacheLineType> ms(&newData);
 
-        AZ::SerializeContext* sc = NULL;
-        EBUS_EVENT_RESULT(sc, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::SerializeContext* sc = nullptr;
+        AZ::ComponentApplicationBus::BroadcastResult(sc, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(sc, "Serialization context not found!");
 
         // capture state.
@@ -147,7 +147,7 @@ namespace AzToolsFramework
         {
             // display a useful message
             AZ::Entity* pEnt = nullptr;
-            EBUS_EVENT_RESULT(pEnt, AZ::ComponentApplicationBus, FindEntity, entityId);
+            AZ::ComponentApplicationBus::BroadcastResult(pEnt, &AZ::ComponentApplicationBus::Events::FindEntity, entityId);
             if (!pEnt)
             {
                 AZ_Warning("Undo", false, "Undo system wasn't informed about the deletion of entity %p - make sure you call DeleteEntity, instead of directly deleting it.\n", entityId);

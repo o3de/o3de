@@ -16,11 +16,11 @@ namespace UnitTest
 
     //! Unit Test for IdUtils GenerateNewIdsAndFixRefs functions for generating new unique ids
     class RemappableIdTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         RemappableIdTest()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
@@ -30,7 +30,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             m_serializeContext.reset(aznew AZ::SerializeContext());
 
             Entity::Reflect(m_serializeContext.get());
@@ -44,7 +44,7 @@ namespace UnitTest
         {
             m_serializeContext.reset();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<SerializeContext> m_serializeContext;
@@ -52,7 +52,7 @@ namespace UnitTest
         struct RemapIdData
         {
             AZ_TYPE_INFO(RemapIdData, "{0431A85A-C2CC-453A-92A7-807BCEAB46D7}");
-            AZ_CLASS_ALLOCATOR(RemapIdData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemapIdData, AZ::SystemAllocator);
 
             static void Reflect(AZ::SerializeContext& serializeContext)
             {
@@ -72,7 +72,7 @@ namespace UnitTest
         struct RemapUuidAndEntityIdData
         {
             AZ_TYPE_INFO(RemapUuidAndEntityIdData, "{6951A116-505C-47E0-9310-2E60D040F390}");
-            AZ_CLASS_ALLOCATOR(RemapUuidAndEntityIdData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RemapUuidAndEntityIdData, AZ::SystemAllocator);
 
             // copying entities is forbidden.
             RemapUuidAndEntityIdData()
@@ -120,7 +120,7 @@ namespace UnitTest
         struct ParentEntityContainer
         {
             AZ_TYPE_INFO(ParentEntityContainer, "{60EFD610-4B9A-444C-9004-A651B772927F}");
-            AZ_CLASS_ALLOCATOR(ParentEntityContainer, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ParentEntityContainer, AZ::SystemAllocator);
 
             static void Reflect(AZ::SerializeContext& serializeContext);
 
@@ -134,7 +134,7 @@ namespace UnitTest
         struct RootParentElementWrapper
         {
             AZ_TYPE_INFO(RootParentElementWrapper, "{BFC46F3C-D696-4A34-B824-F18428CAA910}");
-            AZ_CLASS_ALLOCATOR(RootParentElementWrapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RootParentElementWrapper, AZ::SystemAllocator);
 
             static void Reflect(AZ::SerializeContext& serializeContext)
             {

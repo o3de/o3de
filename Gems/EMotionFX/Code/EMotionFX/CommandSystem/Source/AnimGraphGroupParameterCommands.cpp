@@ -54,7 +54,7 @@ namespace CommandSystem
     {
         // Get the parameter name.
         const AZStd::string& name = parameters.GetValue("name", this);
-        mOldName = name;
+        m_oldName = name;
 
         // Find the anim graph by using the id from command parameter.
         const uint32 animGraphID = parameters.GetValueAsInt("animGraphID", this);
@@ -108,7 +108,7 @@ namespace CommandSystem
             }
 
             const size_t numParameters = parameterNames.size();
-            mOldGroupParameterNames.resize(numParameters);
+            m_oldGroupParameterNames.resize(numParameters);
 
             EMotionFX::ValueParameterVector valueParametersBeforeChange = animGraph->RecursivelyGetValueParameters();
 
@@ -118,13 +118,13 @@ namespace CommandSystem
                 const EMotionFX::Parameter* parameter = animGraph->FindParameterByName(parameterNames[i]);
                 if (!parameter)
                 {
-                    mOldGroupParameterNames[i].clear();
+                    m_oldGroupParameterNames[i].clear();
                     continue;
                 }
 
                 // Save the group parameter (for undo) to which the parameter belonged before command execution.
                 const EMotionFX::GroupParameter* parentParameter = animGraph->FindParentGroupParameter(parameter);
-                mOldGroupParameterNames[i] = parentParameter ? parentParameter->GetName() : "";
+                m_oldGroupParameterNames[i] = parentParameter ? parentParameter->GetName() : "";
 
                 // Make sure the parameter is not in any other group.
                 animGraph->TakeParameterFromParent(parameter);
@@ -175,7 +175,7 @@ namespace CommandSystem
         }
 
         // save the current dirty flag and tell the anim graph that something got changed
-        mOldDirtyFlag = animGraph->GetDirtyFlag();
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
         animGraph->SetDirtyFlag(true);
 
         animGraph->RecursiveInvalidateUniqueDatas();
@@ -196,13 +196,13 @@ namespace CommandSystem
 
         MCore::CommandGroup commandGroup;
 
-        // Undo the group name as first step. All commands afterwards have to use mOldName as group name.
+        // Undo the group name as first step. All commands afterwards have to use m_oldName as group name.
         if (parameters.CheckIfHasParameter("newName"))
         {
             const AZStd::string& newName = parameters.GetValue("newName", this);
 
             const AZStd::string command = AZStd::string::format("AnimGraphAdjustGroupParameter -animGraphID %i -name \"%s\" -newName \"%s\"",
-                    animGraph->GetID(), newName.c_str(), mOldName.c_str());
+                    animGraph->GetID(), newName.c_str(), m_oldName.c_str());
 
             commandGroup.AddCommandString(command);
         }
@@ -210,7 +210,7 @@ namespace CommandSystem
         if (parameters.CheckIfHasParameter("description"))
         {
             const AZStd::string command = AZStd::string::format("AnimGraphAdjustGroupParameter -animGraphID %i -name \"%s\" -description \"%s\"",
-                animGraph->GetID(), mOldName.c_str(), m_oldDescription.c_str());
+                animGraph->GetID(), m_oldName.c_str(), m_oldDescription.c_str());
             commandGroup.AddCommandString(command);
         }
 
@@ -225,12 +225,12 @@ namespace CommandSystem
             AzFramework::StringFunc::Tokenize(parametersString.c_str(), parameterNames, ";", false, true);
 
             const size_t parameterCount = parameterNames.size();
-            AZ_Assert(parameterCount == mOldGroupParameterNames.size(), "The number of parameter names has to match the saved group parameter info for undo.");
+            AZ_Assert(parameterCount == m_oldGroupParameterNames.size(), "The number of parameter names has to match the saved group parameter info for undo.");
 
             for (size_t i = 0; i < parameterCount; ++i)
             {
                 const AZStd::string& parameterName = parameterNames[i];
-                const AZStd::string& oldGroupName = mOldGroupParameterNames[i];
+                const AZStd::string& oldGroupName = m_oldGroupParameterNames[i];
 
                 switch (action)
                 {
@@ -240,7 +240,7 @@ namespace CommandSystem
                     {
                         // An empty old group name means that the parameter was in the Default group before, so in this case just remove the parameter from the group.
                         const AZStd::string command = AZStd::string::format("AnimGraphAdjustGroupParameter -animGraphID %i -name \"%s\" -action \"remove\" -parameterNames \"%s\"",
-                                animGraph->GetID(), mOldName.c_str(), parameterName.c_str());
+                                animGraph->GetID(), m_oldName.c_str(), parameterName.c_str());
 
                         commandGroup.AddCommandString(command);
                     }
@@ -277,7 +277,7 @@ namespace CommandSystem
         }
 
         // Set the dirty flag back to the old value.
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -364,8 +364,8 @@ namespace CommandSystem
         }
 
         // save the current dirty flag and tell the anim graph that something got changed
-        mOldDirtyFlag   = animGraph->GetDirtyFlag();
-        mOldName        = groupParameter->GetName();
+        m_oldDirtyFlag   = animGraph->GetDirtyFlag();
+        m_oldName        = groupParameter->GetName();
         animGraph->SetDirtyFlag(true);
 
         animGraph->RecursiveInvalidateUniqueDatas();
@@ -385,7 +385,7 @@ namespace CommandSystem
         }
 
         // Construct and execute the command.
-        const AZStd::string command = AZStd::string::format("AnimGraphRemoveGroupParameter -animGraphID %i -name \"%s\"", animGraphID, mOldName.c_str());
+        const AZStd::string command = AZStd::string::format("AnimGraphRemoveGroupParameter -animGraphID %i -name \"%s\"", animGraphID, m_oldName.c_str());
 
         AZStd::string result;
         if (!GetCommandManager()->ExecuteCommandInsideCommand(command, result))
@@ -394,7 +394,7 @@ namespace CommandSystem
         }
 
         // Set the dirty flag back to the old value.
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 
@@ -457,23 +457,23 @@ namespace CommandSystem
         }
 
         // read out information for the command undo
-        mOldName = parameter->GetName();
+        m_oldName = parameter->GetName();
         const EMotionFX::GroupParameter* parentGroup = animGraph->FindParentGroupParameter(parameter);
         if (parentGroup)
         {
-            mOldParent = parentGroup->GetName();
-            mOldIndex = parentGroup->FindParameterIndex(parameter).GetValue();
+            m_oldParent = parentGroup->GetName();
+            m_oldIndex = parentGroup->FindParameterIndex(parameter).GetValue();
         }
         else
         {
-            mOldParent = "";
-            mOldIndex = animGraph->FindParameterIndex(parameter).GetValue();
+            m_oldParent = "";
+            m_oldIndex = animGraph->FindParameterIndex(parameter).GetValue();
         }
 
-        mOldParameterNames.clear();
+        m_oldParameterNames.clear();
 
         // Collect all child parameters and move them to the default group. Keep the child hierarchy as it is.
-        // Add the immediate child ones to mOldParameterNames so they get moved back on undo
+        // Add the immediate child ones to m_oldParameterNames so they get moved back on undo
         const EMotionFX::GroupParameter* groupParameter = static_cast<const EMotionFX::GroupParameter*>(parameter);
         const EMotionFX::ParameterVector childParameters = groupParameter->RecursivelyGetChildParameters();
         AZStd::vector<const EMotionFX::GroupParameter*> childParents;
@@ -497,7 +497,7 @@ namespace CommandSystem
             const EMotionFX::GroupParameter* parent = childParents[i];
             if (parent == groupParameter)
             {
-                mOldParameterNames += childParameters[i]->GetName() + ";";
+                m_oldParameterNames += childParameters[i]->GetName() + ";";
                 animGraph->AddParameter(childParameters[i]); // add to default group
             }
             else
@@ -505,9 +505,9 @@ namespace CommandSystem
                 animGraph->AddParameter(childParameters[i], parent); // add to default group
             }
         }
-        if (!mOldParameterNames.empty())
+        if (!m_oldParameterNames.empty())
         {
-            mOldParameterNames.pop_back(); // remove trailing ";"
+            m_oldParameterNames.pop_back(); // remove trailing ";"
         }
 
         // remove the group parameter
@@ -529,7 +529,7 @@ namespace CommandSystem
         }
 
         // save the current dirty flag and tell the anim graph that something got changed
-        mOldDirtyFlag = animGraph->GetDirtyFlag();
+        m_oldDirtyFlag = animGraph->GetDirtyFlag();
         animGraph->SetDirtyFlag(true);
 
         animGraph->RecursiveInvalidateUniqueDatas();
@@ -555,18 +555,18 @@ namespace CommandSystem
 
         command = AZStd::string::format("AnimGraphAddGroupParameter -animGraphID %i -name \"%s\" -index %zu -parent \"%s\" -updateUI %s",
                 animGraph->GetID(),
-                mOldName.c_str(),
-                mOldIndex,
-                mOldParent.c_str(),
+                m_oldName.c_str(),
+                m_oldIndex,
+                m_oldParent.c_str(),
                 updateWindow.c_str());
         commandGroup.AddCommandString(command);
 
-        if (!mOldParameterNames.empty())
+        if (!m_oldParameterNames.empty())
         {
             command = AZStd::string::format("AnimGraphAdjustGroupParameter -animGraphID %i -name \"%s\" -parameterNames \"%s\" -action \"add\" -updateUI %s",
                 animGraph->GetID(),
-                mOldName.c_str(),
-                mOldParameterNames.c_str(),
+                m_oldName.c_str(),
+                m_oldParameterNames.c_str(),
                 updateWindow.c_str());
             commandGroup.AddCommandString(command);
         }
@@ -579,7 +579,7 @@ namespace CommandSystem
         }
 
         // Set the dirty flag back to the old value.
-        animGraph->SetDirtyFlag(mOldDirtyFlag);
+        animGraph->SetDirtyFlag(m_oldDirtyFlag);
         return true;
     }
 

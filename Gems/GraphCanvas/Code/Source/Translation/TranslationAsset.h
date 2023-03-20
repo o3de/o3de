@@ -38,7 +38,7 @@ namespace GraphCanvas
     public:
 
         AZ_RTTI(TranslationAsset, "{6A1A3B00-3DF2-4297-96BB-3BA067A978E6}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(TranslationAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TranslationAsset, AZ::SystemAllocator);
 
         TranslationAsset(const AZ::Data::AssetId& assetId = AZ::Data::AssetId(), AZ::Data::AssetData::AssetStatus status = AZ::Data::AssetData::AssetStatus::NotLoaded);
 
@@ -59,14 +59,14 @@ namespace GraphCanvas
     //!
     //! Requirements:
     //!     - Must have a top level array called "entries"
-    //!     - Must provide a "key" element for any entry added
+    //!     - Must provide a "base" element for any entry added
     //!
     //! Example:
     //! 
     //! {
     //! "entries": [
     //!     {
-    //!         "key": "Globals",
+    //!         "base": "Globals",
     //!         "details": {
     //!             "name": "My Name",
     //!             "tooltip": "My Tooltip"
@@ -90,21 +90,21 @@ namespace GraphCanvas
     //! Globals.details.somearray.0.name
     //! Globals.details.somearray.1.name
     //!
-    //! There is one important aspect however, if an element in an array has a "key" value, the value of this key
+    //! There is one important aspect however, if an element in an array has a "base" value, the value of this key
     //! will replace the index. This is useful when the index and/or ordering of an entry is not relevant or may
     //! change.
     //!
     //! "somearray": [ {
     //!         "name": "First one"
-    //!         "key": "a_key"
+    //!         "base": "a_key"
     //!      }, {
     //!         "name": "Second one",
-    //!          "key": "b_key"
+    //!          "base": "b_key"
     //!      } ]
     //!
-    //! Globals.details.somearray.0.key    == "a_key"
+    //! Globals.details.somearray.0.base   == "a_key"
     //! Globals.details.somearray.0.name   == "First one"
-    //! Globals.details.somearray.1.key    == "b_key"
+    //! Globals.details.somearray.1.base   == "b_key"
     //! Globals.details.somearray.1.name   == "Second one"
     //!
     class TranslationAssetHandler
@@ -112,7 +112,7 @@ namespace GraphCanvas
         , protected AZ::AssetTypeInfoBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(TranslationAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TranslationAssetHandler, AZ::SystemAllocator);
         AZ_RTTI(TranslationAssetHandler, "{C161AB3B-86F6-4CB1-9DAE-83F2DE084CF4}", AZ::Data::AssetHandler);
 
         TranslationAssetHandler();

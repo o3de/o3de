@@ -15,7 +15,7 @@
 
 namespace Multiplayer
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MultiplayerEditorModule, AZ::SystemAllocator)
 
     MultiplayerEditorModule::MultiplayerEditorModule()
         : MultiplayerModule()
@@ -25,6 +25,7 @@ namespace Multiplayer
             m_descriptors.end(),
             {
                 MultiplayerEditorSystemComponent::CreateDescriptor(),
+                PythonEditorFuncs::CreateDescriptor(),
             });
     }
 

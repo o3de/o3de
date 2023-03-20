@@ -66,7 +66,7 @@ namespace AZ
 
         public:
             AZ_TYPE_INFO(Query, "{DC956F7F-5C9C-40FC-9200-D8C75E238135}");
-            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Query, AZ::SystemAllocator);
 
             Query(RPI::QueryPool* queryPool, RHI::Interval rhiQueryIndices, RHI::QueryType queryType, RHI::QueryPoolScopeAttachmentType attachmentType, RHI::ScopeAttachmentAccess attachmentAccess);
             ~Query();
@@ -101,7 +101,7 @@ namespace AZ
             QueryResultCode GetLatestResult(T& queryResult)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                GetLatestResult(resultData, sizeof(T));
+                return GetLatestResult(resultData, sizeof(T));
             }
 
             //! Returns the result of the earliest possible query. It might stall the calling thread, depending if the query result is available for polling
@@ -123,7 +123,7 @@ namespace AZ
             QueryResultCode GetLatestResultAndWait(T& queryResult)
             {
                 void* resultData = static_cast<void*>(&queryResult);
-                GetLatestResultAndWait(resultData, sizeof(T));
+                return GetLatestResultAndWait(resultData, sizeof(T));
             }
 
             //! Removes the reference of this instance in the RPI QueryPool where it was created.

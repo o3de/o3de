@@ -34,6 +34,7 @@
 
 // AzQtComponents
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzQtComponents/Components/Widgets/FileDialog.h>
 
 // CryCommon
 #include <CryCommon/Maestro/Bus/EditorSequenceComponentBus.h>
@@ -77,9 +78,6 @@ inline namespace TrackViewInternal
     const int s_kMinimumFrameSnappingFPS = 1;
     const int s_kMaximumFrameSnappingFPS = 120;
 
-    const int TRACKVIEW_LAYOUT_VERSION = 0x0001; // Bump this up on every substantial pane layout change
-    const int TRACKVIEW_REBAR_VERSION = 0x0002; // Bump this up on every substantial rebar change
-
     CTrackViewSequence* GetSequenceByEntityIdOrName(const CTrackViewSequenceManager* pSequenceManager, const char* entityIdOrName)
     {
         // the "name" string will be an AZ::EntityId in string form if this was called from
@@ -115,8 +113,11 @@ void CTrackViewDialog::RegisterViewClass()
     opts.showOnToolsToolbar = true;
     opts.toolbarIcon = ":/Menu/trackview_editor.svg";
 
-    AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
-    GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
+    if (GetIEditor()->GetMovieSystem())
+    {
+        AzToolsFramework::RegisterViewPane<CTrackViewDialog>(LyViewPane::TrackView, LyViewPane::CategoryTools, opts);
+        GetIEditor()->GetSettingsManager()->AddToolName(s_kTrackViewLayoutSection, LyViewPane::TrackView);
+    }
 }
 
 const GUID& CTrackViewDialog::GetClassID()
@@ -504,6 +505,7 @@ void CTrackViewDialog::InitToolbar()
             connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnAutoRecordStep);
             qaction->setCheckable(true);
             qaction->setChecked(i == 1);
+            m_fAutoRecordStep = 1;
             ag->addAction(qaction);
         }
     }
@@ -782,7 +784,7 @@ void CTrackViewDialog::UpdateActions()
         }
 
         bool allSelectedTracksUseMute = true;
-        for (int i = 0; i < selectedTrackCount; i++)
+        for (unsigned int i = 0; i < selectedTrackCount; i++)
         {
             CTrackViewTrack* pTrack = selectedTracks.GetTrack(i);
             if (pTrack && !pTrack->UsesMute())
@@ -822,8 +824,15 @@ void CTrackViewDialog::UpdateActions()
         m_actions[ID_ADDNODE]->setEnabled(false);
     }
 
+    if (GetIEditor()->GetMovieSystem())
+    {
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
+    }
+    else
+    {
+        m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(false);
+    }
 
-    m_actions[ID_TOOLS_BATCH_RENDER]->setEnabled(GetIEditor()->GetMovieSystem()->GetNumSequences() > 0 && !m_enteringGameOrSimModeLock);
     m_actions[ID_TV_ADD_SEQUENCE]->setEnabled(GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady() && !m_enteringGameOrSimModeLock);
     m_actions[ID_TV_SEQUENCE_NEW]->setEnabled(GetIEditor()->GetDocument() && GetIEditor()->GetDocument()->IsDocumentReady() && !m_enteringGameOrSimModeLock);
 }
@@ -883,25 +892,26 @@ void CTrackViewDialog::Update()
     // The active camera node means two conditions:
     // 1. Sequence camera is currently active.
     // 2. The camera which owns this node has been set as the current camera by the director node.
-    bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == nullptr ||
-        gEnv->pMovieSystem->GetCallback()->IsSequenceCamUsed();
-    AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
-    if (camId.IsValid() && bSequenceCamInUse)
+    if (gEnv->pMovieSystem)
     {
-        AZ::Entity* entity = nullptr;
-        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
-        if (entity)
+        AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
+        if (camId.IsValid())
         {
-            m_activeCamStatic->setText(entity->GetName().c_str());
+            AZ::Entity* entity = nullptr;
+            AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
+            if (entity)
+            {
+                m_activeCamStatic->setText(entity->GetName().c_str());
+            }
+            else
+            {
+                m_activeCamStatic->setText("Active Camera");
+            }
         }
         else
         {
             m_activeCamStatic->setText("Active Camera");
         }
-    }
-    else
-    {
-        m_activeCamStatic->setText("Active Camera");
     }
 
     if (m_wndNodesCtrl)
@@ -1048,7 +1058,12 @@ void CTrackViewDialog::OnAddSequence()
             AzToolsFramework::ScopedUndoBatch undoBatch("Create TrackView Director Node");
             sequenceManager->CreateSequence(sequenceName, sequenceType);
             CTrackViewSequence* newSequence = sequenceManager->GetSequenceByName(sequenceName);
-            AZ_Assert(newSequence, "Creating new sequence failed.");
+
+            if (!newSequence)
+            {
+                return;
+            }
+            
             undoBatch.MarkEntityDirty(newSequence->GetSequenceComponentEntityId());
 
             // make it the currently selected sequence
@@ -1121,11 +1136,11 @@ void CTrackViewDialog::ReloadSequencesComboBox()
         CTrackViewSequenceManager* pSequenceManager = GetIEditor()->GetSequenceManager();
         const unsigned int numSequences = pSequenceManager->GetCount();
 
-        for (int k = 0; k < numSequences; ++k)
+        for (unsigned int k = 0; k < numSequences; ++k)
         {
             CTrackViewSequence* sequence = pSequenceManager->GetSequenceByIndex(k);
             QString entityIdString = GetEntityIdAsString(sequence->GetSequenceComponentEntityId());
-            m_sequencesComboBox->addItem(sequence->GetName(), entityIdString);
+            m_sequencesComboBox->addItem(QString::fromUtf8(sequence->GetName().c_str()), entityIdString);
         }
     }
 
@@ -1261,6 +1276,11 @@ void CTrackViewDialog::OnSequenceComboBox()
     if (sel == -1)
     {
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        return;
+    }
+    if (sel == 0)
+    {
+        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false, true);
         return;
     }
 
@@ -1559,7 +1579,7 @@ void CTrackViewDialog::OnAddSelectedNode()
             selectedEntitiesCount, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntitiesCount);
 
         // check to make sure all nodes were added and notify user if they weren't
-        if (addedNodes.GetCount() != selectedEntitiesCount)
+        if (addedNodes.GetCount() != static_cast<unsigned int>(selectedEntitiesCount))
         {
             IMovieSystem* movieSystem = GetIEditor()->GetMovieSystem();
 
@@ -1765,7 +1785,7 @@ void CTrackViewDialog::OnSnapFPS()
     if (ok)
     {
         m_wndDopeSheet->SetSnapFPS(fps);
-        m_wndCurveEditor->SetFPS(fps);
+        m_wndCurveEditor->SetFPS(static_cast<float>(fps));
 
         SetCursorPosText(GetIEditor()->GetAnimation()->GetTime());
     }
@@ -1799,7 +1819,7 @@ void CTrackViewDialog::SaveMiscSettings() const
     settings.setValue(s_kFrameSnappingFPSEntry, fps);
     settings.setValue(s_kTickDisplayModeEntry, static_cast<int>(m_wndDopeSheet->GetTickDisplayMode()));
     settings.setValue(s_kDefaultTracksEntry, QByteArray(reinterpret_cast<const char*>(m_defaultTracksForEntityNode.data()),
-        m_defaultTracksForEntityNode.size() * sizeof(AnimParamType)));
+        static_cast<int>(m_defaultTracksForEntityNode.size() * sizeof(AnimParamType))));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1828,7 +1848,7 @@ void CTrackViewDialog::ReadMiscSettings()
 
     if (settings.contains(s_kFrameSnappingFPSEntry))
     {
-        float fps = settings.value(s_kFrameSnappingFPSEntry).toDouble();
+        float fps = settings.value(s_kFrameSnappingFPSEntry).toFloat();
         if (fps >= s_kMinimumFrameSnappingFPS && fps <= s_kMaximumFrameSnappingFPS)
         {
             m_wndDopeSheet->SetSnapFPS(FloatToIntRet(fps));
@@ -1991,7 +2011,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                         &Maestro::EditorSequenceComponentRequestBus::Events::GetAllAnimatablePropertiesForComponent,
                         animatableProperties, azEntityId, pAnimNode->GetComponentId());
 
-                    paramCount = animatableProperties.size();
+                    paramCount = static_cast<int>(animatableProperties.size());
                 }
             }
             else
@@ -2033,7 +2053,7 @@ void CTrackViewDialog::UpdateTracksToolBar()
                     continue;
                 }
 
-                name = pAnimNode->GetParamName(paramType);
+                name = QString::fromUtf8(pAnimNode->GetParamName(paramType).c_str());
 
                 QString sToolTipText("Add " + name + " Track");
                 QIcon hIcon = m_wndNodesCtrl->GetIconForTrack(pTrack);
@@ -2309,7 +2329,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         return;
     }
 
-    QString selectedSequenceFBXStr = QString(sequence->GetName()) + ".fbx";
+    QString selectedSequenceFBXStr = QString::fromUtf8(sequence->GetName().c_str()) + ".fbx";
     CExportManager* pExportManager = static_cast<CExportManager*>(GetIEditor()->GetExportManager());
     const char szFilters[] = "FBX Files (*.fbx)";
 
@@ -2317,7 +2337,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
 
     CTrackViewTrackBundle allTracks = sequence->GetAllTracks();
 
-    for (int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
+    for (unsigned int trackID = 0; trackID < allTracks.GetCount(); ++trackID)
     {
         CTrackViewTrack* pCurrentTrack = allTracks.GetTrack(trackID);
 
@@ -2327,7 +2347,7 @@ void CTrackViewDialog::SaveCurrentSequenceToFBX()
         }
     }
 
-    QString filename = QFileDialog::getSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
+    QString filename = AzQtComponents::FileDialog::GetSaveFileName(this, tr("Export Selected Nodes To FBX File"), selectedSequenceFBXStr, szFilters);
     if (!filename.isEmpty())
     {
         pExportManager->SetBakedKeysSequenceExport(true);

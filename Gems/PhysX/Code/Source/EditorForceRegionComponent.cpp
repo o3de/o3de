@@ -6,6 +6,7 @@
  *
  */
 #include <Source/EditorColliderComponent.h>
+#include <Source/EditorMeshColliderComponent.h>
 #include <Source/EditorShapeColliderComponent.h>
 #include <Source/EditorForceRegionComponent.h>
 #include <Source/ForceRegionComponent.h>
@@ -164,18 +165,19 @@ namespace PhysX
             {
                 // EditorForceRegionComponent
                 editContext->Class<EditorForceRegionComponent>(
-                    "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region")
+                    "PhysX Force Region", "The force region component is used to apply a physical force on objects within the region.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/ForceVolume.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/ForceVolume.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("Game", 0x232b318c))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/force-region/")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC("PhysXTriggerService", 0x3a117d7b))
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces", "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
-                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, "Forces", "Forces in force region")
+                    ->Attribute(AZ::Edit::Attributes::RequiredService, AZ_CRC_CE("PhysicsTriggerService"))
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_visibleInEditor, "Visible", "Always show the component in viewport.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_debugForces, "Debug Forces",
+                        "Draws debug arrows when an entity enters a force region. This occurs in gameplay mode to show the force direction on an entity.")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &EditorForceRegionComponent::m_forces, "Forces", "Forces in force region.")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorForceRegionComponent::OnForcesChanged)
                     ;
@@ -221,19 +223,18 @@ namespace PhysX
 
     void EditorForceRegionComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        incompatible.push_back(AZ_CRC("ForceRegionService", 0x3c3e4061));
-        incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
+        incompatible.push_back(AZ_CRC_CE("ForceRegionService"));
     }
 
     void EditorForceRegionComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        provided.push_back(AZ_CRC("ForceRegionService", 0x3c3e4061));
+        provided.push_back(AZ_CRC_CE("ForceRegionService"));
     }
 
     void EditorForceRegionComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
-        required.push_back(AZ_CRC("PhysXTriggerService", 0x3a117d7b));
+        required.push_back(AZ_CRC_CE("TransformService"));
+        required.push_back(AZ_CRC_CE("PhysicsTriggerService"));
     }
 
     void EditorForceRegionComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -291,21 +292,20 @@ namespace PhysX
         }
 
         // Update AABB cache of collider components if they're outdated or dirty.
-        AZ::Aabb aabb;
-        ColliderShapeRequestBus::EventResult(aabb
-            , GetEntityId()
-            , &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
+        const AZStd::vector<AZ::Vector3> shapeAabbPoints = [this]()
+        {
+            AZ::Aabb aabb;
+            ColliderShapeRequestBus::EventResult(aabb, GetEntityId(), &ColliderShapeRequestBus::Events::GetColliderShapeAabb);
+
+            const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
+            const AZ::Vector3 aabbCenter = aabb.GetCenter();
+            return Utils::Geometry::GenerateBoxPoints(aabbCenter - halfExtents, aabbCenter + halfExtents);
+        }();
 
         const AZ::Entity::ComponentArrayType& enabledComponents = forceRegionEntity->GetComponents();
         for (AZ::Component* component : enabledComponents)
         {
-            EditorColliderComponent* editorColliderComponent = azrtti_cast<EditorColliderComponent*>(component);
-            EditorShapeColliderComponent* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component);
-            if (!editorColliderComponent && !editorShapeColliderComponent)
-            {
-                continue;
-            }
-            if (editorColliderComponent)
+            if (auto* editorColliderComponent = azrtti_cast<EditorColliderComponent*>(component))
             {
                 const PhysX::EditorProxyShapeConfig& shapeConfig = editorColliderComponent->GetShapeConfiguration();
                 AZStd::vector<AZ::Vector3> randomPoints;
@@ -327,31 +327,20 @@ namespace PhysX
                     float radius = shapeConfig.m_sphere.m_radius;
                     randomPoints = Utils::Geometry::GenerateSpherePoints(radius);
                 }
-                else if (shapeConfig.IsAssetConfig())
-                {
-                    const AZ::Vector3 halfExtents = aabb.GetExtents() * 0.5f;
-                    randomPoints = Utils::Geometry::GenerateBoxPoints(-halfExtents, halfExtents);
-                }
 
-                if (!shapeConfig.IsAssetConfig())
-                {
-                    PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
-                        , GetWorldTM()
-                        , editorColliderComponent->GetColliderConfiguration().m_position
-                        , editorColliderComponent->GetColliderConfiguration().m_rotation
-                        , m_cachedNonUniformScale);
-                }
-                else
-                {
-                    const AZ::Vector3 aabbCenter = aabb.GetCenter();
-                    AZStd::transform(randomPoints.begin(), randomPoints.end(), randomPoints.begin(),
-                        [&aabbCenter](AZ::Vector3& point) {return point + aabbCenter; });
-                }
+                PhysX::Utils::ColliderPointsLocalToWorld(randomPoints
+                    , GetWorldTM()
+                    , editorColliderComponent->GetColliderConfiguration().m_position
+                    , editorColliderComponent->GetColliderConfiguration().m_rotation
+                    , m_cachedNonUniformScale);
 
                 DrawForceArrows(randomPoints, debugDisplayRequests);
             }
-
-            else if (editorShapeColliderComponent)
+            else if (azrtti_cast<EditorMeshColliderComponent*>(component))
+            {
+                DrawForceArrows(shapeAabbPoints, debugDisplayRequests);
+            }
+            else if (auto* editorShapeColliderComponent = azrtti_cast<EditorShapeColliderComponent*>(component))
             {
                 DrawForceArrows(editorShapeColliderComponent->GetSamplePoints(), debugDisplayRequests);
             }

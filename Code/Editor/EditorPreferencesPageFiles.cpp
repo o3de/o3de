@@ -9,23 +9,25 @@
 
 #include "EditorPreferencesPageFiles.h"
 
+#include <AzCore/Serialization/EditContext.h>
+
 // AzToolsFramework
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 
 // Editor
 #include "Settings.h"
+#include "EditorViewportSettings.h"
 
 
 
 void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
 {
     serialize.Class<Files>()
-        ->Version(2)
+        ->Version(3)
         ->Field("AutoNumberSlices", &Files::m_autoNumberSlices)
         ->Field("BackupOnSave", &Files::m_backupOnSave)
         ->Field("BackupOnSaveMaxCount", &Files::m_backupOnSaveMaxCount)
         ->Field("TempDirectory", &Files::m_standardTempDirectory)
-        ->Field("AutoSaveTagPoints", &Files::m_autoSaveTagPoints)
         ->Field("SliceSaveLocation", &Files::m_saveLocation);
 
     serialize.Class<ExternalEditors>()
@@ -43,17 +45,16 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
         ->Field("MaxCount", &AutoBackup::m_maxCount)
         ->Field("RemindTime", &AutoBackup::m_remindTime);
 
-    serialize.Class<AssetBrowserSearch>()
+    serialize.Class<AssetBrowserSettings>()
         ->Version(1)
-        ->Field("Max number of items displayed", &AssetBrowserSearch::m_maxNumberOfItemsShownInSearch);
+        ->Field("MaxEntriesShownCount", &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch);
 
     serialize.Class<CEditorPreferencesPage_Files>()
         ->Version(1)
         ->Field("Files", &CEditorPreferencesPage_Files::m_files)
         ->Field("Editors", &CEditorPreferencesPage_Files::m_editors)
         ->Field("AutoBackup", &CEditorPreferencesPage_Files::m_autoBackup)
-        ->Field("AssetBrowserSearch", &CEditorPreferencesPage_Files::m_assetBrowserSearch);
-
+        ->Field("AssetBrowserSettings", &CEditorPreferencesPage_Files::m_assetBrowserSettings);
 
     AZ::EditContext* editContext = serialize.GetEditContext();
     if (editContext)
@@ -65,15 +66,14 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Min, 1)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_standardTempDirectory, "Standard Temporary Directory", "Standard Temporary Directory")
-            ->DataElement(AZ::Edit::UIHandlers::CheckBox, &Files::m_autoSaveTagPoints, "Auto Save Camera Tag Points", "Instantly Save Changed Camera Tag Points")
             ->DataElement(AZ::Edit::UIHandlers::LineEdit, &Files::m_saveLocation, "Slice Save location", "Specify the default location to save new slices");
 
         editContext->Class<ExternalEditors>("External Editors", "External Editors")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
-            ->DataElement(AZ::Edit::UIHandlers::LineEdit, &ExternalEditors::m_animations, "Animation Editor", "Animation Editor");
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_scripts, "Scripts Editor", "Scripts Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_shaders, "Shaders Editor", "Shaders Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_BSpaces, "BSpace Editor", "Bspace Text Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_textures, "Texture Editor", "Texture Editor")
+            ->DataElement(AZ::Edit::UIHandlers::ExeSelectBrowseEdit, &ExternalEditors::m_animations, "Animation Editor", "Animation Editor");
 
         editContext->Class<AutoBackup>("Auto Backup", "Auto Backup")
             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &AutoBackup::m_enabled, "Enable", "Enable Auto Backup")
@@ -85,9 +85,10 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->Attribute(AZ::Edit::Attributes::Max, 100)
             ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AutoBackup::m_remindTime, "Remind Time", "Auto Remind Every (Minutes)");
 
-        editContext->Class<AssetBrowserSearch>("Asset Browser Search View", "Asset Browser Search View")
-            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSearch::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
-                "Maximum number of displayed items displayed in the Search View")
+         editContext->Class<AssetBrowserSettings>("Asset Browser Settings", "Asset Browser Settings")
+            ->DataElement(
+                AZ::Edit::UIHandlers::SpinBox, &AssetBrowserSettings::m_maxNumberOfItemsShownInSearch, "Maximum number of displayed items",
+                "Maximum number of items to display in the Search View.")
             ->Attribute(AZ::Edit::Attributes::Min, 50)
             ->Attribute(AZ::Edit::Attributes::Max, 5000);
 
@@ -97,7 +98,7 @@ void CEditorPreferencesPage_Files::Reflect(AZ::SerializeContext& serialize)
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_files, "Files", "File Preferences")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_editors, "External Editors", "External Editors")
             ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_autoBackup, "Auto Backup", "Auto Backup")
-            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSearch, "Asset Browser Search", "Asset Browser Search");
+            ->DataElement(AZ::Edit::UIHandlers::Default, &CEditorPreferencesPage_Files::m_assetBrowserSettings, "Asset Browser Settings","Asset Browser Settings");
     }
 }
 
@@ -117,13 +118,13 @@ QIcon& CEditorPreferencesPage_Files::GetIcon()
 void CEditorPreferencesPage_Files::OnApply()
 {
     using namespace AzToolsFramework::SliceUtilities;
+
     auto sliceSettings = AZ::UserSettings::CreateFind<SliceUserSettings>(AZ_CRC("SliceUserSettings", 0x055b32eb), AZ::UserSettings::CT_LOCAL);
     sliceSettings->m_autoNumber = m_files.m_autoNumberSlices;
     sliceSettings->m_saveLocation = m_files.m_saveLocation;
 
     gSettings.bBackupOnSave = m_files.m_backupOnSave;
     gSettings.backupOnSaveMaxCount = m_files.m_backupOnSaveMaxCount;
-    gSettings.bAutoSaveTagPoints = m_files.m_autoSaveTagPoints;
     gSettings.strStandardTempDirectory = m_files.m_standardTempDirectory.c_str();
 
     gSettings.textEditorForScript = m_editors.m_scripts.c_str();
@@ -137,7 +138,7 @@ void CEditorPreferencesPage_Files::OnApply()
     gSettings.autoBackupMaxCount = m_autoBackup.m_maxCount;
     gSettings.autoRemindTime = m_autoBackup.m_remindTime;
 
-    gSettings.maxNumberOfItemsShownInSearch = m_assetBrowserSearch.m_maxNumberOfItemsShownInSearch;
+    SandboxEditor::SetMaxItemsShownInAssetBrowserSearch(m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch);
 }
 
 void CEditorPreferencesPage_Files::InitializeSettings()
@@ -149,7 +150,6 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_files.m_saveLocation = sliceSettings->m_saveLocation;
     m_files.m_backupOnSave = gSettings.bBackupOnSave;
     m_files.m_backupOnSaveMaxCount = gSettings.backupOnSaveMaxCount;
-    m_files.m_autoSaveTagPoints = gSettings.bAutoSaveTagPoints;
     m_files.m_standardTempDirectory = gSettings.strStandardTempDirectory.toUtf8().data();
 
     m_editors.m_scripts = gSettings.textEditorForScript.toUtf8().data();
@@ -163,5 +163,5 @@ void CEditorPreferencesPage_Files::InitializeSettings()
     m_autoBackup.m_maxCount = gSettings.autoBackupMaxCount;
     m_autoBackup.m_remindTime = gSettings.autoRemindTime;
 
-    m_assetBrowserSearch.m_maxNumberOfItemsShownInSearch = gSettings.maxNumberOfItemsShownInSearch;
+    m_assetBrowserSettings.m_maxNumberOfItemsShownInSearch = SandboxEditor::MaxItemsShownInAssetBrowserSearch();
 }

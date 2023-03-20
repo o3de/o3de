@@ -23,19 +23,19 @@ class CBoolTrack
     : public TAnimTrack<IBoolKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CBoolTrack, AZ::SystemAllocator);
     AZ_RTTI(CBoolTrack, "{A98E28CB-DE42-47A3-8E4B-6B43A5F3D8B2}", IAnimTrack);
 
     CBoolTrack();
 
-    virtual AnimValueType GetValueType();
+    AnimValueType GetValueType() override;
 
 
-    virtual void GetValue(float time, bool& value);
-    virtual void SetValue(float time, const bool& value, bool bDefault = false);
+    void GetValue(float time, bool& value) override;
+    void SetValue(float time, const bool& value, bool bDefault = false) override;
 
-    void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) {};
-    void GetKeyInfo(int key, const char*& description, float& duration);
+    void SerializeKey([[maybe_unused]] IBoolKey& key, [[maybe_unused]] XmlNodeRef& keyNode, [[maybe_unused]] bool bLoading) override {};
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
 
     void SetDefaultValue(const bool bDefaultValue);
 

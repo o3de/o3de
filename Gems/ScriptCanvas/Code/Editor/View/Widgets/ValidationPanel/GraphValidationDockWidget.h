@@ -15,10 +15,10 @@
 #include <AzCore/Debug/TraceMessageBus.h>
 
 #include <AzQtComponents/Components/StyledDockWidget.h>
+#include <AzToolsFramework/UI/Notifications/ToastBus.h>
 
 #include <GraphCanvas/Editor/AssetEditorBus.h>
 #include <GraphCanvas/Components/SceneBus.h>
-#include <GraphCanvas/Components/ToastBus.h>
 
 #include <ScriptCanvas/Debugger/ValidationEvents/ValidationEvent.h>
 #include <ScriptCanvas/Debugger/StatusBus.h>
@@ -42,7 +42,7 @@ namespace ScriptCanvasEditor
     class ValidationEffect
     {
     public:
-        AZ_CLASS_ALLOCATOR(ValidationEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ValidationEffect, AZ::SystemAllocator);
 
         virtual ~ValidationEffect() = default;
 
@@ -55,7 +55,7 @@ namespace ScriptCanvasEditor
         : public ValidationEffect
     {
     public:
-        AZ_CLASS_ALLOCATOR(HighlightElementValidationEffect, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(HighlightElementValidationEffect, AZ::SystemAllocator);
 
         HighlightElementValidationEffect();
         HighlightElementValidationEffect(const QColor& color);
@@ -80,6 +80,7 @@ namespace ScriptCanvasEditor
         : public ValidationEffect
     {
     public:
+        AZ_CLASS_ALLOCATOR(UnusedNodeValidationEffect, AZ::SystemAllocator)
         void AddUnusedNode(const AZ::EntityId& graphCanvasNodeId);
         void RemoveUnusedNode(const AZ::EntityId& graphCanvasNodeId);
 
@@ -108,7 +109,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphValidationModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphValidationModel, AZ::SystemAllocator);
 
         enum ColumnIndex
         {
@@ -158,7 +159,7 @@ namespace ScriptCanvasEditor
         Q_OBJECT
     public:
 
-        AZ_CLASS_ALLOCATOR(GraphValidationSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphValidationSortFilterProxyModel, AZ::SystemAllocator);
     
         GraphValidationSortFilterProxyModel();
     
@@ -183,10 +184,10 @@ namespace ScriptCanvasEditor
     //! Owns the model for each currently opened graph
     class ValidationData
         : private ScriptCanvas::StatusRequestBus::Handler
-        , private GraphCanvas::ToastNotificationBus::MultiHandler
+        , private AzToolsFramework::ToastNotificationBus::MultiHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ValidationData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ValidationData, AZ::SystemAllocator);
 
         ValidationData();
         ValidationData(GraphCanvas::GraphId graphCanvasId, ScriptCanvas::ScriptCanvasId scriptCanvasId);
@@ -227,11 +228,11 @@ namespace ScriptCanvasEditor
         : public AzQtComponents::StyledDockWidget
         , public GraphCanvas::AssetEditorNotificationBus::Handler
         , public GraphCanvas::SceneNotificationBus::Handler
-        , public GraphCanvas::ToastNotificationBus::Handler
+        , public AzToolsFramework::ToastNotificationBus::Handler
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphValidationDockWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphValidationDockWidget, AZ::SystemAllocator);
         
         GraphValidationDockWidget(QWidget* parent = nullptr);
         ~GraphValidationDockWidget();

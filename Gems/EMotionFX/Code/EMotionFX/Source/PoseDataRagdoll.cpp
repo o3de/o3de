@@ -16,7 +16,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(PoseDataRagdoll, PoseAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(PoseDataRagdoll, PoseAllocator)
 
     PoseDataRagdoll::PoseDataRagdoll()
         : PoseData()
@@ -92,10 +92,10 @@ namespace EMotionFX
 
         // Blending from kinematic to dynamic joint
         if (nodeState.m_simulationType == Physics::SimulationType::Kinematic &&
-            destNodeState.m_simulationType == Physics::SimulationType::Dynamic)
+            destNodeState.m_simulationType == Physics::SimulationType::Simulated)
         {
-            nodeState.m_position = jointTransform.mPosition.Lerp(destNodeState.m_position, weight);
-            nodeState.m_orientation = jointTransform.mRotation.NLerp(destNodeState.m_orientation, weight);
+            nodeState.m_position = jointTransform.m_position.Lerp(destNodeState.m_position, weight);
+            nodeState.m_orientation = jointTransform.m_rotation.NLerp(destNodeState.m_orientation, weight);
 
             // We're blending from a kinematic to a dynamic joint, which means when starting the blend we know that the animation pose matches the ragdoll pose.
             // The closest a powered ragdoll joint can be to its target pose and thus matching the kinematic one is by using its maximum strength.
@@ -107,15 +107,15 @@ namespace EMotionFX
             if (weight > strengthEpsilon)
             {
                 // TODO: Evaluate if we should calculate the initial velocities here when we switch to dynamic. Or will we need to calculate that information every frame anyway additionally to the motors!?
-                nodeState.m_simulationType = Physics::SimulationType::Dynamic;
+                nodeState.m_simulationType = Physics::SimulationType::Simulated;
             }
         }
         // Blending from dynamic to kinematic joint
-        else if (nodeState.m_simulationType == Physics::SimulationType::Dynamic &&
+        else if (nodeState.m_simulationType == Physics::SimulationType::Simulated &&
                  destNodeState.m_simulationType == Physics::SimulationType::Kinematic)
         {
-            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.mPosition, weight);
-            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.mRotation, weight);
+            nodeState.m_position = nodeState.m_position.Lerp(destJointTransform.m_position, weight);
+            nodeState.m_orientation = nodeState.m_orientation.NLerp(destJointTransform.m_rotation, weight);
 
             // Inverse way here. Blending towards the maximum strength possible to make sure we're as close as possible to the target pose when switching simulation
             // state to kinematic.
@@ -128,8 +128,8 @@ namespace EMotionFX
             }
         }
         // Blending between two dynamic joints
-        else if (nodeState.m_simulationType == Physics::SimulationType::Dynamic &&
-                 destNodeState.m_simulationType == Physics::SimulationType::Dynamic)
+        else if (nodeState.m_simulationType == Physics::SimulationType::Simulated &&
+                 destNodeState.m_simulationType == Physics::SimulationType::Simulated)
         {
             nodeState.m_position = nodeState.m_position.Lerp(destNodeState.m_position, weight);
             nodeState.m_orientation = nodeState.m_orientation.NLerp(destNodeState.m_orientation, weight);
@@ -158,7 +158,7 @@ namespace EMotionFX
                 // Blend node states. Both, the destination pose as well as the current pose hold used ragdoll pose datas.
                 for (size_t i = 0; i < nodeStateCount; ++i)
                 {
-                    const AZ::u32 jointIndex = ragdollInstance->GetJointIndex(i);
+                    const size_t jointIndex = ragdollInstance->GetJointIndex(i);
                     const Transform& localTransform = m_pose->GetLocalSpaceTransform(jointIndex);
                     const Transform& destLocalTransform = destPose->GetLocalSpaceTransform(jointIndex);
 
@@ -192,7 +192,7 @@ namespace EMotionFX
             const Physics::RagdollNodeState& nodeState = m_nodeStates[i];
 
             AZ_Printf("EMotionFX", "     - Ragdoll Node State %d:", i);
-            AZ_Printf("EMotionFX", "         + Type %s:", nodeState.m_simulationType == Physics::SimulationType::Dynamic ? "Dynamic" : "Kinematic");
+            AZ_Printf("EMotionFX", "         + Type %s:", nodeState.m_simulationType == Physics::SimulationType::Simulated ? "Simulated" : "Kinematic");
             AZ_Printf("EMotionFX", "         + Position: (%f, %f, %f)", static_cast<float>(nodeState.m_position.GetX()), static_cast<float>(nodeState.m_position.GetY()), static_cast<float>(nodeState.m_position.GetZ()));
             AZ_Printf("EMotionFX", "         + Rotation: (%f, %f, %f, %f)", static_cast<float>(nodeState.m_orientation.GetX()), static_cast<float>(nodeState.m_orientation.GetY()), static_cast<float>(nodeState.m_orientation.GetZ()), static_cast<float>(nodeState.m_orientation.GetW()));
             AZ_Printf("EMotionFX", "         + Linear Velocity: (%f, %f, %f)", static_cast<float>(nodeState.m_linearVelocity.GetX()), static_cast<float>(nodeState.m_linearVelocity.GetY()), static_cast<float>(nodeState.m_linearVelocity.GetZ()));

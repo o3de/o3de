@@ -19,7 +19,7 @@ namespace AzFramework
         : public NativeWindow::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NativeWindowImpl_Darwin, AZ::SystemAllocator);
         NativeWindowImpl_Darwin() = default;
         ~NativeWindowImpl_Darwin() override;
         
@@ -30,16 +30,19 @@ namespace AzFramework
         NativeWindowHandle GetWindowHandle() const override;
         void SetWindowTitle(const AZStd::string& title) override;
 
-        void ResizeClientArea( WindowSize clientAreaSize ) override;
+        void ResizeClientArea(WindowSize clientAreaSize, const WindowPosOptions& options) override;
+        bool SupportsClientAreaResize() const override { return true; }
         bool GetFullScreenState() const override;
         void SetFullScreenState(bool fullScreenState) override;
         bool CanToggleFullScreenState() const override { return true; }
+        uint32_t GetDisplayRefreshRate() const override;
 
     private:
         static NSWindowStyleMask ConvertToNSWindowStyleMask(const WindowStyleMasks& styleMasks);
 
         NSWindow* m_nativeWindow;
         NSString* m_windowTitle;
+        uint32_t m_mainDisplayRefreshRate = 0;
     };
 
     NativeWindow::Implementation* NativeWindow::Implementation::Create()
@@ -76,6 +79,17 @@ namespace AzFramework
         // Make the window active
         [m_nativeWindow makeKeyAndOrderFront:nil];
         m_nativeWindow.title = m_windowTitle;
+
+        CGDirectDisplayID display = CGMainDisplayID();
+        CGDisplayModeRef currentMode = CGDisplayCopyDisplayMode(display);
+        m_mainDisplayRefreshRate = CGDisplayModeGetRefreshRate(currentMode);
+
+        // Assume 60hz if 0 is returned.
+        // This can happen on OSX. In future we can hopefully use maximumFramesPerSecond which wont have this issue
+        if (m_mainDisplayRefreshRate == 0)
+        {
+            m_mainDisplayRefreshRate = 60;
+        }
     }
 
     NativeWindowHandle NativeWindowImpl_Darwin::GetWindowHandle() const
@@ -89,7 +103,7 @@ namespace AzFramework
         m_nativeWindow.title = m_windowTitle;
     }
 
-    void NativeWindowImpl_Darwin::ResizeClientArea( WindowSize clientAreaSize )
+    void NativeWindowImpl_Darwin::ResizeClientArea(WindowSize clientAreaSize, [[maybe_unused]] const WindowPosOptions& options)
     {
         NSRect contentRect = [m_nativeWindow contentLayoutRect];
         if (clientAreaSize.m_width != NSWidth(contentRect) || clientAreaSize.m_height != NSHeight(contentRect))
@@ -127,5 +141,10 @@ namespace AzFramework
 
         const NSWindowStyleMask defaultMask = NSWindowStyleMaskResizable | NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable;
         return nativeMask ? nativeMask : defaultMask;
+    }
+
+    uint32_t NativeWindowImpl_Darwin::GetDisplayRefreshRate() const
+    {
+        return m_mainDisplayRefreshRate;
     }
 } // namespace AzFramework

@@ -1,0 +1,63 @@
+{
+    "entries": [
+        {
+            "base": "SphereShapeComponentRequestsBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Sphere Shape Component",
+                "category": "Shape"
+            },
+            "methods": [
+                {
+                    "base": "GetSphereConfiguration",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Configuration"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Configuration is invoked"
+                    },
+                    "details": {
+                        "name": "Get Configuration",
+                        "tooltip": "Returns the sphere configuration of a source entity"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{4AADFD75-48A7-4F31-8F30-FE4505F09E35}",
+                            "details": {
+                                "name": "Configuration",
+                                "tooltip": "Sphere shape configuration parameters"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetRadius",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Radius"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Radius is invoked"
+                    },
+                    "details": {
+                        "name": "Set Radius",
+                        "tooltip": "Sets the sphere radius"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Radius",
+                                "tooltip": "Radius in radians"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

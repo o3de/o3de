@@ -21,9 +21,14 @@ namespace AZ
     {
 
         AssImpMaterialWrapper::AssImpMaterialWrapper(aiMaterial* aiMaterial)
-            :SDKMaterial::MaterialWrapper(aiMaterial)
+            :m_assImpMaterial(aiMaterial)
         {
             AZ_Assert(aiMaterial, "Asset Importer Material cannot be null");
+        }
+
+        aiMaterial* AssImpMaterialWrapper::GetAssImpMaterial() const
+        {
+            return m_assImpMaterial;
         }
 
         AZStd::string AssImpMaterialWrapper::GetName() const
@@ -40,7 +45,7 @@ namespace AZ
                 m_assImpMaterial->GetTextureCount(aiTextureType_AMBIENT), m_assImpMaterial->GetTextureCount(aiTextureType_EMISSIVE));
             fingerprintString.append(extraInformation);
             AZ::Sha1 sha;
-            sha.ProcessBytes(fingerprintString.data(), fingerprintString.size());
+            sha.ProcessBytes(AZStd::as_bytes(AZStd::span(fingerprintString)));
             AZ::u32 digest[5]; //sha1 populate a 5 element array of AZ:u32
             sha.GetDigest(digest);
             return (static_cast<AZ::u64>(digest[0]) << 32) | digest[1];
@@ -51,7 +56,7 @@ namespace AZ
             aiColor3D color(1.f, 1.f, 1.f);
             if (m_assImpMaterial->Get(AI_MATKEY_COLOR_DIFFUSE, color) == aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get diffuse property from the material. Using default.");
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Unable to get diffuse property from material %.*s. Using default.\n", AZ_STRING_ARG(GetName()));
             }
             return AZ::Vector3(color.r, color.g, color.b);
         }
@@ -61,7 +66,7 @@ namespace AZ
             aiColor3D color(0.f, 0.f, 0.f);
             if (m_assImpMaterial->Get(AI_MATKEY_COLOR_SPECULAR, color) == aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get specular property from the material. Using default.");
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Unable to get specular property from material %.*s. Using default.\n", AZ_STRING_ARG(GetName()));
             }
             return AZ::Vector3(color.r, color.g, color.b);
         }
@@ -71,7 +76,7 @@ namespace AZ
             aiColor3D color(0.f, 0.f, 0.f);
             if (m_assImpMaterial->Get(AI_MATKEY_COLOR_EMISSIVE, color) == aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get emissive property from the material. Using default.");
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Unable to get emissive property from material %.*s. Using default.\n", AZ_STRING_ARG(GetName()));
             }
             return AZ::Vector3(color.r, color.g, color.b);
         }
@@ -81,7 +86,7 @@ namespace AZ
             float opacity = 1.0f;
             if (m_assImpMaterial->Get(AI_MATKEY_OPACITY, opacity) == aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get opacity from the material. Using default.");
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Unable to get opacity from material %.*s. Using default.\n", AZ_STRING_ARG(GetName()));
             }
             return opacity;
         }
@@ -91,7 +96,7 @@ namespace AZ
             float shininess = 0.0f;
             if (m_assImpMaterial->Get(AI_MATKEY_SHININESS, shininess) == aiReturn::aiReturn_FAILURE)
             {
-                AZ_Warning(AZ::SceneAPI::Utilities::WarningWindow, false, "Unable to get shininess from the material. Using default.");
+                AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "Unable to get shininess from material %.*s. Using default.\n", AZ_STRING_ARG(GetName()));
             }
             return shininess;
         }
@@ -194,7 +199,7 @@ namespace AZ
         AZStd::string AssImpMaterialWrapper::GetTextureFileName(MaterialMapType textureType) const
         {
             /// Engine currently doesn't support multiple textures. Right now we only use first texture.
-            int textureIndex = 0;
+            unsigned int textureIndex = 0;
             aiString absTexturePath;
             switch (textureType)
             {

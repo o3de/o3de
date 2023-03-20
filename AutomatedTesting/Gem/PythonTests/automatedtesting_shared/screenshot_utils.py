@@ -10,7 +10,6 @@ import string
 
 from .file_utils import move_file
 from ly_test_tools.environment.waiter import wait_for
-from ly_test_tools.image.screenshot_compare_qssim import qssim as compare_screenshots
 
 from ly_remote_console.remote_console_commands import capture_screenshot_command as capture_screenshot_command
 from ly_remote_console.remote_console_commands import send_command_and_expect_response as send_command_and_expect_response
@@ -187,7 +186,3 @@ def prepare_for_screenshot_compare(remote_console_instance):
     """
     wait_for(lambda: _retry_command(remote_console_instance, 'r_displayinfo 0',
                                     '$3r_DisplayInfo = $60 $5[DUMPTODISK, RESTRICTEDMODE]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'r_antialiasingmode 0',
-                                    '$3r_AntialiasingMode = $60 $5[]$4'))
-    wait_for(lambda: _retry_command(remote_console_instance, 'e_WaterOcean 0',
-                                    '$3e_WaterOcean = $60 $5[]$4'))

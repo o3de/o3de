@@ -17,7 +17,7 @@ namespace AzToolsFramework
         : public EditorEntityAPI
     {
     public:
-        ~EditorEntityManager();
+        virtual ~EditorEntityManager();
 
         void Start();
 
@@ -34,5 +34,4 @@ namespace AzToolsFramework
     private:
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
     };
-
 }

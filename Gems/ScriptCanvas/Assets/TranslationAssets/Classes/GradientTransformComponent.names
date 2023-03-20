@@ -1,0 +1,12 @@
+{
+    "entries": [
+        {
+            "base": "GradientTransformComponent",
+            "context": "BehaviorClass",
+            "variant": "",
+            "details": {
+                "name": "GradientTransformComponent"
+            }
+        }
+    ]
+}

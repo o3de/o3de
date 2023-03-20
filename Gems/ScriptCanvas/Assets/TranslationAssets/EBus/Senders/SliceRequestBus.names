@@ -1,0 +1,167 @@
+{
+    "entries": [
+        {
+            "base": "SliceRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Slice"
+            },
+            "methods": [
+                {
+                    "base": "CreateNewSlice",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke CreateNewSlice"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after CreateNewSlice is invoked"
+                    },
+                    "details": {
+                        "name": "CreateNewSlice"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "EntityId",
+                                "tooltip": "Entity Unique Id"
+                            }
+                        },
+                        {
+                            "typeid": "{3AB0037F-AF8D-48CE-BCA0-A170D18B2C03}",
+                            "details": {
+                                "name": "char"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "InstantiateSliceFromAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke InstantiateSliceFromAssetId"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after InstantiateSliceFromAssetId is invoked"
+                    },
+                    "details": {
+                        "name": "InstantiateSliceFromAssetId"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        },
+                        {
+                            "typeid": "{5D9958E9-9F1E-4985-B532-FFFDE75FEDFD}",
+                            "details": {
+                                "name": "Transform"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{E6E7C0C5-07C9-44BB-A38C-930431948667}",
+                            "details": {
+                                "name": "SliceInstantiationTicket"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetSliceDynamic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke SetSliceDynamic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after SetSliceDynamic is invoked"
+                    },
+                    "details": {
+                        "name": "SetSliceDynamic"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ShowPushDialog",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke ShowPushDialog"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after ShowPushDialog is invoked"
+                    },
+                    "details": {
+                        "name": "ShowPushDialog"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{4841CFF0-7A5C-519C-BD16-D3625E99605E}",
+                            "details": {
+                                "name": "AZStd::vector"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "IsSliceDynamic",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke IsSliceDynamic"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after IsSliceDynamic is invoked"
+                    },
+                    "details": {
+                        "name": "IsSliceDynamic"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "AssetId"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "bool"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

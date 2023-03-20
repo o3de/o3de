@@ -27,6 +27,7 @@
 #include <ScriptCanvas/Debugger/ValidationEvents/DataValidation/DataValidationIds.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationEvents.h>
 #include <ScriptCanvas/Debugger/ValidationEvents/ExecutionValidation/ExecutionValidationIds.h>
+#include <ScriptCanvas/Debugger/ValidationEvents/ParsingValidation/ParsingValidationIds.h>
 #include <ScriptCanvas/Grammar/AbstractCodeModel.h>
 #include <ScriptCanvas/Libraries/Core/BinaryOperator.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
@@ -37,7 +38,7 @@
 #include <ScriptCanvas/Libraries/Core/SendScriptEvent.h>
 #include <ScriptCanvas/Libraries/Core/Start.h>
 #include <ScriptCanvas/Libraries/Core/UnaryOperator.h>
-#include <ScriptCanvas/Profiler/Driller.h>
+#include <ScriptCanvas/Results/ErrorText.h>
 #include <ScriptCanvas/Translation/Translation.h>
 #include <ScriptCanvas/Variable/VariableBus.h>
 #include <ScriptCanvas/Variable/VariableData.h>
@@ -52,6 +53,7 @@ namespace GraphCpp
         VariablePanelSymantics,
         AddVersionData,
         RemoveFunctionGraphMarker,
+        FixupVersionDataTypeId,
         // label your version above
         Current
     };
@@ -71,11 +73,20 @@ namespace ScriptCanvas
             componentElementNode.AddElementWithData(context, "m_assetType", azrtti_typeid<RuntimeAsset>());
         }
 
-        if (componentElementNode.GetVersion() < GraphCpp::GraphVersion::RemoveFunctionGraphMarker)
+        if (auto subElement = componentElementNode.FindElement(AZ_CRC_CE("isFunctionGraph")); subElement > 0)
         {
-            componentElementNode.RemoveElementByName(AZ_CRC_CE("isFunctionGraph"));
+            componentElementNode.RemoveElement(subElement);
         }
 
+        if (auto subElement = componentElementNode.FindSubElement(AZ_CRC_CE("versionData")))
+        {
+            if (subElement->GetId() == azrtti_typeid<SlotId>())
+            {
+                componentElementNode.RemoveElementByName(AZ_CRC_CE("versionData"));
+            }
+        }
+
+        
         return true;
     }
 
@@ -116,6 +127,7 @@ namespace ScriptCanvas
                 ->Field("executionMode", &Graph::m_executionMode)
                 ->Field("m_assetType", &Graph::m_assetType)
                 ->Field("versionData", &Graph::m_versionData)
+                ->Field("isScriptEventExtension", &Graph::m_isScriptEventExtension)
                 ;
         }
     }
@@ -162,6 +174,18 @@ namespace ScriptCanvas
     const VersionData& Graph::GetVersion() const
     {
         return m_versionData;
+    }
+
+    bool Graph::HasDeprecatedNode() const
+    {
+        for (auto& nodeRef : m_graphData.m_nodes)
+        {
+            if (auto node = FindNode(nodeRef->GetId()); node->IsDeprecated())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     void Graph::Activate()
@@ -239,12 +263,12 @@ namespace ScriptCanvas
             elementEntity->Init();
         }
 
-        if (auto* node = AZ::EntityUtils::FindFirstDerivedComponent<Node>(elementEntity))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<Node>(elementEntity))
         {
             return AddNode(elementEntity->GetId());
         }
 
-        if (auto* connection = AZ::EntityUtils::FindFirstDerivedComponent<Connection>(elementEntity))
+        if (AZ::EntityUtils::FindFirstDerivedComponent<Connection>(elementEntity))
         {
             return AddConnection(elementEntity->GetId());
         }
@@ -294,7 +318,12 @@ namespace ScriptCanvas
 
             if (validationResults.HasResults())
             {
-                AZ_Error("ScriptCanvas", result.IsModelValid(), "Script Canvas parsing failed");
+                // reduce the noise of reporting against empty graphs
+                if (!(validationResults.ErrorCount() == 1
+                    && validationResults.GetEvents().front()->GetIdCrc() == ScriptCanvas::ParsingValidationIds::EmptyGraphCrc))
+                {
+                    AZ_Error("ScriptCanvas", result.IsModelValid(), "Script Canvas parsing failed");
+                }
             }
         }
     }
@@ -588,21 +617,35 @@ namespace ScriptCanvas
 
     void Graph::RemoveAllConnections()
     {
-        for (auto connectionEntity : m_graphData.m_connections)
+        for (auto connectionId : GetConnections())
         {
-            if (auto connection = connectionEntity ? AZ::EntityUtils::FindFirstDerivedComponent<Connection>(connectionEntity) : nullptr)
+            if (!RemoveConnection(connectionId))
             {
-                if (connection->GetSourceEndpoint().IsValid())
+                auto entry = AZStd::find_if(m_graphData.m_connections.begin(), m_graphData.m_connections.end(),
+                    [connectionId](const AZ::Entity* connection) { return connection->GetId() == connectionId; });
+                if (entry != m_graphData.m_connections.end())
                 {
-                    EndpointNotificationBus::Event(connection->GetSourceEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetTargetEndpoint());
-                }
-                if (connection->GetTargetEndpoint().IsValid())
-                {
-                    EndpointNotificationBus::Event(connection->GetTargetEndpoint(), &EndpointNotifications::OnEndpointDisconnected, connection->GetSourceEndpoint());
+                    if (auto connection = *entry ? AZ::EntityUtils::FindFirstDerivedComponent<Connection>(*entry) : nullptr)
+                    {
+                        if (connection->GetSourceEndpoint().IsValid())
+                        {
+                            EndpointNotificationBus::Event(
+                                connection->GetSourceEndpoint(),
+                                &EndpointNotifications::OnEndpointDisconnected,
+                                connection->GetTargetEndpoint());
+                        }
+                        if (connection->GetTargetEndpoint().IsValid())
+                        {
+                            EndpointNotificationBus::Event(
+                                connection->GetTargetEndpoint(),
+                                &EndpointNotifications::OnEndpointDisconnected,
+                                connection->GetSourceEndpoint());
+                        }
+                    }
+
+                    GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnConnectionRemoved, connectionId);
                 }
             }
-
-            GraphNotificationBus::Event(GetScriptCanvasId(), &GraphNotifications::OnConnectionRemoved, connectionEntity->GetId());
         }
 
         for (auto& connectionRef : m_graphData.m_connections)
@@ -1190,11 +1233,6 @@ namespace ScriptCanvas
         m_isObserved = isObserved;
     }
 
-    AZ::Data::AssetType Graph::GetAssetType() const
-    {
-        return m_assetType;
-    }
-
     void Graph::VersioningRemoveSlot(ScriptCanvas::Node& scriptCanvasNode, const SlotId& slotId)
     {
         bool deletedSlot = true;
@@ -1202,5 +1240,30 @@ namespace ScriptCanvas
         // Will suppress warnings based on the slotId being disconnected.
         scriptCanvasNode.RemoveConnectionsForSlot(slotId, deletedSlot);
         scriptCanvasNode.SignalSlotRemoved(slotId);
+    }
+
+    void Graph::MarkOwnership(ScriptCanvas::ScriptCanvasData& owner)
+    {
+        m_owner = &owner;
+    }
+
+    ScriptCanvas::DataPtr Graph::GetOwnership() const
+    {
+        return const_cast<Graph*>(this)->m_owner;
+    }
+
+    void Graph::ClearScriptEventExtension()
+    {
+        m_isScriptEventExtension = false;
+    }
+
+    bool Graph::IsScriptEventExtension() const
+    {
+        return m_isScriptEventExtension;
+    }
+
+    void Graph::MarkScriptEventExtension()
+    {
+        m_isScriptEventExtension = true;
     }
 }

@@ -1,0 +1,120 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "MultiplatformPresetSettings",
+    "ClassData": {
+        "DefaultPreset": {
+            "UUID": "{7273ACAE-6E34-487C-AF71-99423A6E1CB0}",
+            "Name": "IBLSpecularLow",
+            "Description": "The input cubemap generates an IBL specular output cubemap.",
+            "SourceColor": "Linear",
+            "DestColor": "Linear",
+            "SuppressEngineReduce": true,
+            "PixelFormat": "R9G9B9E5",
+            "DiscardAlpha": true,
+            "MinTextureSize": 128,
+            "MaxTextureSize": 128,
+            "IsPowerOf2": true,
+            "CubemapSettings": {
+                "Filter": "GGX",
+                "MipAngle": 7.0,
+                "MipSlope": 2.299999952316284,
+                "EdgeFixup": -431602080.0,
+                "SubId": 2000
+            },
+            "MipMapSetting": {
+                "MipGenType": "Box"
+            }
+        },
+        "PlatformsPresets": {
+            "android": {
+                "UUID": "{7273ACAE-6E34-487C-AF71-99423A6E1CB0}",
+                "Name": "IBLSpecularLow",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 128,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "GGX",
+                    "MipAngle": 7.0,
+                    "MipSlope": 2.299999952316284,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 2000
+                },
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "ios": {
+                "UUID": "{7273ACAE-6E34-487C-AF71-99423A6E1CB0}",
+                "Name": "IBLSpecularLow",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 128,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "GGX",
+                    "MipAngle": 7.0,
+                    "MipSlope": 2.299999952316284,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 2000
+                },
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "mac": {
+                "UUID": "{7273ACAE-6E34-487C-AF71-99423A6E1CB0}",
+                "Name": "IBLSpecularLow",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 128,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "GGX",
+                    "MipAngle": 7.0,
+                    "MipSlope": 2.299999952316284,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 2000
+                },
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            },
+            "provo": {
+                "UUID": "{7273ACAE-6E34-487C-AF71-99423A6E1CB0}",
+                "Name": "IBLSpecularLow",
+                "SourceColor": "Linear",
+                "DestColor": "Linear",
+                "SuppressEngineReduce": true,
+                "PixelFormat": "R9G9B9E5",
+                "DiscardAlpha": true,
+                "MinTextureSize": 128,
+                "MaxTextureSize": 128,
+                "IsPowerOf2": true,
+                "CubemapSettings": {
+                    "Filter": "GGX",
+                    "MipAngle": 7.0,
+                    "MipSlope": 2.299999952316284,
+                    "EdgeFixup": -431602080.0,
+                    "SubId": 2000
+                },
+                "MipMapSetting": {
+                    "MipGenType": "Box"
+                }
+            }
+        }
+    }
+}

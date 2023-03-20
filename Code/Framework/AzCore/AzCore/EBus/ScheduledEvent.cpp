@@ -76,7 +76,7 @@ namespace AZ
 
     TimeMs ScheduledEvent::TimeInQueueMs() const
     {
-        return GetElapsedTimeMs() - m_timeInserted;
+        return AZ::GetElapsedTimeMs() - m_timeInserted;
     }
 
     TimeMs ScheduledEvent::RemainingTimeInQueueMs() const
@@ -115,6 +115,10 @@ namespace AZ
 
     void ScheduledEvent::ClearHandle()
     {
+        if (m_handle)
+        {
+            m_handle->Clear();
+        }
         m_handle = nullptr;
     }
 }

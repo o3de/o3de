@@ -2,15 +2,13 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="ExpressionNodeBase"
-	       QualifiedName="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
-	       PreferredClassName="ExpressionNodeBase"
-           Uuid="{797C800D-8C96-4675-B5B5-2A321AC09433}"
-           Base="ScriptCanvas::Node"
-           Category="Internal"
-           Version="0"
-           DynamicSlotOrdering="True"
-           GeneratePropertyFriend="True"
-           Description="Base class for any node that wants to evaluate user given expressions.">
+        QualifiedName="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
+        PreferredClassName="ExpressionNodeBase"
+        Uuid="{797C800D-8C96-4675-B5B5-2A321AC09433}"
+        BaseClass="True"
+        Category="Internal"
+        DynamicSlotOrdering="True"
+        Description="Base class for any node that wants to evaluate user given expressions.">
         <In Name="In" Description="Input signal"/>
         <SerializedProperty Name="m_format" />
         <SerializedProperty Name="m_expressionTree" />

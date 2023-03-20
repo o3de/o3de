@@ -14,6 +14,7 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Components/ExportingComponent.h>
 #include <SceneAPI/SceneCore/Events/ExportEventContext.h>
+#include <SceneAPI/SceneCore/Events/ScriptConfigEventBus.h>
 
 namespace AzToolsFramework
 {
@@ -37,31 +38,43 @@ namespace AZ::SceneAPI::Behaviors
         , public Events::AssetImportRequestBus::Handler
     {
     public:
+        
         AZ_COMPONENT(ScriptProcessorRuleBehavior, "{24054E73-1B92-43B0-AC13-174B2F0E3F66}", SceneCore::BehaviorComponent);
 
         ~ScriptProcessorRuleBehavior() override = default;
 
         SCENE_DATA_API void Activate() override;
         SCENE_DATA_API void Deactivate() override;
-        static void Reflect(ReflectContext* context);
-
+        SCENE_DATA_API static void Reflect(ReflectContext* context);
+        
         // AssetImportRequestBus::Handler
         SCENE_DATA_API Events::ProcessingResult UpdateManifest(
             Containers::Scene& scene,
             ManifestAction action,
             RequestingApplication requester) override;
 
+        SCENE_DATA_API void GetManifestDependencyPaths(AZStd::vector<AZStd::string>& paths) override;
 
+        SCENE_DATA_API void GetPolicyName(AZStd::string& result) const override
+        {
+            result = "ScriptProcessorRuleBehavior";
+        }
     protected:
-        bool LoadPython(const AZ::SceneAPI::Containers::Scene& scene);
+        bool LoadPython();
         void UnloadPython();
         bool DoPrepareForExport(Events::PreExportEventContext& context);
+        AZStd::optional<AZStd::string> FindMatchingDefaultScript(const AZ::SceneAPI::Containers::Scene& scene);
+        AZStd::optional<AZStd::string> FindManifestScript(const AZ::SceneAPI::Containers::Scene& scene, Events::ProcessingResult& fallbackResult);
+        bool SignalScriptForUpdateManifest(Containers::Scene& scene, AZStd::string& manifestUpdate, AZStd::string& scriptPath);
+        void SignalScriptForExportEvent(Events::PreExportEventContext& context, AZStd::string& scriptPath);
+
+        static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
+        static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
 
     private:
-        AzToolsFramework::EditorPythonEventsInterface* m_editorPythonEventsInterface = nullptr;
-        AZStd::string m_scriptFilename;
+        bool m_pythonLoaded = false;
 
-        struct ExportEventHandler;
-        AZStd::shared_ptr<ExportEventHandler> m_exportEventHandler;
+        struct EventHandler;
+        AZStd::shared_ptr<EventHandler> m_eventHandler;
     };
 } // namespace AZ::SceneAPI::Behaviors

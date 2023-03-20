@@ -23,8 +23,9 @@ namespace GraphModel
     class GraphElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(GraphElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphElement, AZ::SystemAllocator);
         AZ_RTTI(GraphElement, "{FD83C7CA-556B-49F1-BACE-6E9C7A4D6347}");
+        static void Reflect(AZ::ReflectContext* context);
 
         GraphElement() = default; // Needed by SerializeContext
         virtual ~GraphElement() = default;
@@ -34,12 +35,12 @@ namespace GraphModel
         //! Returns the Graph that owns this GraphElement
         GraphPtr GetGraph() const;
 
-        //! Returns the IGraphContext for this GraphElement
-        IGraphContextPtr GetGraphContext() const;
+        //! Returns the GraphContext for this GraphElement
+        GraphContextPtr GetGraphContext() const;
 
     protected:
-
-        AZStd::weak_ptr<Graph> m_graph; // Every GraphElement will at least need a pointer to the Graph, so it can convert IDs into actual element pointers.
+        // Every GraphElement will at least need a pointer to the Graph, so it can convert IDs into actual element pointers.
+        AZStd::weak_ptr<Graph> m_graph;
     };
 
 } // namespace GraphModel

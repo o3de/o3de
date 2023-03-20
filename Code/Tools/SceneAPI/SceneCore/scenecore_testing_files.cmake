@@ -7,11 +7,11 @@
 #
 
 set(FILES
+    Mocks/MockBehaviorUtils.h
     Mocks/Containers/MockScene.h
     Mocks/DataTypes/GraphData/MockIMeshData.h
     Mocks/DataTypes/MockIGraphObject.h
     Mocks/DataTypes/Groups/MockIGroup.h
-    Mocks/DataTypes/Groups/MockIMeshGroup.h
     Mocks/DataTypes/ManifestBase/MockISceneNodeSelectionList.h
     Mocks/Events/MockAssetImportRequest.h
     Tests/TestsMain.cpp
@@ -31,5 +31,5 @@ set(FILES
     Tests/Containers/Utilities/FiltersTests.cpp
     Tests/Utilities/SceneGraphSelectorTests.cpp
     Tests/Utilities/PatternMatcherTests.cpp
-    Tests/Export/MaterialIOTests.cpp
+    Tests/Utilities/CoordinateSystemConverterTests.cpp
 )

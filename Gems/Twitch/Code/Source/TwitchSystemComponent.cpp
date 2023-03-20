@@ -37,7 +37,6 @@ namespace Twitch
                 ec->Class<TwitchSystemComponent>("Twitch", "Provides access to Twitch \"Friends\", \"Rich Presence\" APIs")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         // ->Attribute(AZ::Edit::Attributes::Category, "") Set a category
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -51,8 +50,6 @@ namespace Twitch
 
     void TwitchSystemComponent::SetApplicationID(const AZStd::string& twitchApplicationID)
     {
-        bool success = false;
-
         /*
         ** THIS CAN ONLY BE SET ONCE!!!!!!
         */
@@ -62,7 +59,6 @@ namespace Twitch
             if (IsValidTwitchAppID(twitchApplicationID))
             {
                 m_applicationID = twitchApplicationID;
-                success = true;
             }
             else
             {

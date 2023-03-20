@@ -6,7 +6,6 @@
  *
  */
 
-
 // Description : implementation filefov
 
 #include "EditorDefs.h"
@@ -14,28 +13,27 @@
 #include "EditorViewportWidget.h"
 
 // Qt
-#include <QPainter>
-#include <QScopedValueRollback>
+#include <QBoxLayout>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QPainter>
+#include <QScopedValueRollback>
 #include <QTimer>
-#include <QBoxLayout>
 
 // AzCore
 #include <AzCore/Component/EntityId.h>
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Math/VectorConversions.h>
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/Interface/Interface.h>
+#include <AzCore/Math/MathUtils.h>
+#include <AzCore/Math/VectorConversions.h>
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/DisplayContextRequestBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #if defined(AZ_PLATFORM_WINDOWS)
-#   include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
+#include <AzFramework/Input/Buses/Notifications/RawInputNotificationBus_Platform.h>
 #endif // defined(AZ_PLATFORM_WINDOWS)
-#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h>                   // for AzFramework::InputDeviceMouse
+#include <AzFramework/Input/Devices/Mouse/InputDeviceMouse.h> // for AzFramework::InputDeviceMouse
 #include <AzFramework/Viewport/ViewportControllerList.h>
 
 // AzQtComponents
@@ -43,111 +41,84 @@
 
 // AzToolsFramework
 #include <AzToolsFramework/API/ComponentEntityObjectBus.h>
+#include <AzToolsFramework/API/EditorCameraBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
+#include <AzToolsFramework/Viewport/ViewBookmarkLoaderInterface.h>
+#include <AzToolsFramework/Viewport/ViewportSettings.h>
 #include <AzToolsFramework/ViewportSelection/EditorInteractionSystemViewportSelectionRequestBus.h>
 #include <AzToolsFramework/ViewportSelection/EditorTransformComponentSelectionRequestBus.h>
-#include <AzToolsFramework/API/EditorCameraBus.h>
 
 // AtomToolsFramework
 #include <AtomToolsFramework/Viewport/RenderViewportWidget.h>
-#include <AtomToolsFramework/Viewport/ModularViewportCameraController.h>
 
 // CryCommon
-#include <CryCommon/HMDBus.h>
+#include <CryCommon/IRenderAuxGeom.h>
 
 // AzFramework
 #include <AzFramework/Render/IntersectorInterface.h>
 
 // Editor
-#include "Util/fastlib.h"
-#include "CryEditDoc.h"
-#include "GameEngine.h"
-#include "ViewManager.h"
-#include "Objects/DisplayContext.h"
-#include "DisplaySettings.h"
-#include "Include/IObjectManager.h"
-#include "Include/IDisplayViewport.h"
-#include "Objects/ObjectManager.h"
-#include "ProcessInfo.h"
-#include "IPostEffectGroup.h"
-#include "EditorPreferencesPageGeneral.h"
-#include "ViewportManipulatorController.h"
-#include "LegacyViewportCameraController.h"
-#include "EditorViewportSettings.h"
-
-#include "ViewPane.h"
-#include "CustomResolutionDlg.h"
 #include "AnimationContext.h"
-#include "Objects/SelectionGroup.h"
 #include "Core/QtEditorApplication.h"
-#include "MainWindow.h"
+#include "CryCommon/MathConversion.h"
+#include "CryEditDoc.h"
+#include "CustomResolutionDlg.h"
+#include "DisplaySettings.h"
+#include "EditorPreferencesPageGeneral.h"
+#include "EditorViewportCamera.h"
+#include "EditorViewportSettings.h"
+#include "GameEngine.h"
+#include "Include/IDisplayViewport.h"
+#include "Include/IObjectManager.h"
 #include "LayoutWnd.h"
+#include "MainWindow.h"
+#include "Objects/DisplayContext.h"
+#include "Objects/ObjectManager.h"
+#include "Objects/SelectionGroup.h"
+#include "ProcessInfo.h"
+#include "Util/fastlib.h"
+#include "ViewManager.h"
+#include "ViewPane.h"
+#include "ViewportManipulatorController.h"
 
 // ComponentEntityEditorPlugin
 #include <Plugins/ComponentEntityEditorPlugin/Objects/ComponentEntityObject.h>
 
-// LmbrCentral
-#include <LmbrCentral/Rendering/EditorCameraCorrectionBus.h>
-
 // Atom
+#include <Atom/RPI.Public/RenderPipeline.h>
 #include <Atom/RPI.Public/View.h>
-#include <Atom/RPI.Public/ViewportContextManager.h>
 #include <Atom/RPI.Public/ViewProviderBus.h>
+#include <Atom/RPI.Public/ViewportContextManager.h>
 
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MatrixUtils.h>
 
 #include <QtGui/private/qhighdpiscaling_p.h>
 
-#include <IEntityRenderState.h>
-#include <IPhysics.h>
-#include <IStatObj.h>
-
 AZ_CVAR(
     bool, ed_visibility_logTiming, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Output the timing of the new IVisibilitySystem query");
-AZ_CVAR(bool, ed_useNewCameraSystem, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the new Editor camera system");
-AZ_CVAR(bool, ed_showCursorCameraLook, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Show the cursor when using free look with the new camera system");
-
-namespace SandboxEditor
-{
-    bool UsingNewCameraSystem()
-    {
-        return ed_useNewCameraSystem;
-    }
-} // namespace SandboxEditor
 
 EditorViewportWidget* EditorViewportWidget::m_pPrimaryViewport = nullptr;
 
 #if AZ_TRAIT_OS_PLATFORM_APPLE
 void StopFixedCursorMode();
-void StartFixedCursorMode(QObject *viewport);
+void StartFixedCursorMode(QObject* viewport);
 #endif
 
 #define RENDER_MESH_TEST_DISTANCE (0.2f)
-#define CURSOR_FONT_HEIGHT  8.0f
-
-//! Viewport settings for the EditorViewportWidget
-struct EditorViewportSettings : public AzToolsFramework::ViewportInteraction::ViewportSettings
-{
-    bool GridSnappingEnabled() const override;
-    float GridSize() const override;
-    bool ShowGrid() const override;
-    bool AngleSnappingEnabled() const override;
-    float AngleStep() const override;
-};
-
-static const EditorViewportSettings g_EditorViewportSettings;
+#define CURSOR_FONT_HEIGHT 8.0f
 
 namespace AZ::ViewportHelpers
 {
     static const char TextCantCreateCameraNoLevel[] = "Cannot create camera when no level is loaded.";
 
-    class EditorEntityNotifications
-        : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
+    class EditorEntityNotifications : public AzToolsFramework::EditorEntityContextNotificationBus::Handler
     {
     public:
-        EditorEntityNotifications(EditorViewportWidget& renderViewport)
-            : m_renderViewport(renderViewport)
+        EditorEntityNotifications(EditorViewportWidget& editorViewportWidget)
+            : m_editorViewportWidget(editorViewportWidget)
         {
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         }
@@ -157,38 +128,88 @@ namespace AZ::ViewportHelpers
             AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
         }
 
-        // AzToolsFramework::EditorEntityContextNotificationBus
+        // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override
         {
-            m_renderViewport.OnStartPlayInEditor();
+            m_editorViewportWidget.OnStartPlayInEditor();
         }
+
         void OnStopPlayInEditor() override
         {
-            m_renderViewport.OnStopPlayInEditor();
+            m_editorViewportWidget.OnStopPlayInEditor();
         }
+
         void OnStartPlayInEditorBegin() override
         {
-            m_renderViewport.OnStartPlayInEditorBegin();
+            m_editorViewportWidget.OnStartPlayInEditorBegin();
         }
 
     private:
-        EditorViewportWidget& m_renderViewport;
+        EditorViewportWidget& m_editorViewportWidget;
     };
 } // namespace AZ::ViewportHelpers
 
-//////////////////////////////////////////////////////////////////////////
-// EditorViewportWidget
-//////////////////////////////////////////////////////////////////////////
+// helper to mark the view entity dirty that was moved using the 'Be this camera' functionality
+static void MarkCameraEntityDirty(const AZ::EntityId entityId)
+{
+    using AzToolsFramework::ToolsApplicationRequests;
+
+    AzToolsFramework::UndoSystem::URSequencePoint* undoBatch = nullptr;
+    ToolsApplicationRequests::Bus::BroadcastResult(
+        undoBatch, &ToolsApplicationRequests::Bus::Events::BeginUndoBatch, "EditorCameraComponentEntityChange");
+    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::AddDirtyEntity, entityId);
+    ToolsApplicationRequests::Bus::Broadcast(&ToolsApplicationRequests::Bus::Events::EndUndoBatch);
+}
+
+static void PopViewGroupForDefaultContext()
+{
+    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!atomViewportRequests)
+    {
+        return;
+    }
+
+    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+    if (!viewSystem)
+    {
+        return;
+    }
+
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    {
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        atomViewportRequests->PopViewGroup(contextName, viewGroup);
+    }
+}
+
+static void PushViewGroupForDefaultContext()
+{
+    auto* atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
+    if (!atomViewportRequests)
+    {
+        return;
+    }
+
+    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+    if (!viewSystem)
+    {
+        return;
+    }
+
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    {
+        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
+        atomViewportRequests->PushViewGroup(contextName, viewGroup);
+    }
+}
 
 EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     : QtViewport(parent)
     , m_defaultViewName(name)
-    , m_renderViewport(nullptr) //m_renderViewport is initialized later, in SetViewportId
+    , m_renderViewport(nullptr) // m_renderViewport is initialized later, in SetViewportId
 {
     // need this to be set in order to allow for language switching on Windows
     setAttribute(Qt::WA_InputMethodEnabled);
-
-    m_defaultViewTM.SetIdentity();
 
     if (GetIEditor()->GetViewManager()->GetSelectedViewport() == nullptr)
     {
@@ -215,6 +236,8 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
     m_editorEntityNotifications = AZStd::make_unique<AZ::ViewportHelpers::EditorEntityNotifications>(*this);
     AzFramework::AssetCatalogEventBus::Handler::BusConnect();
 
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusConnect();
+
     m_manipulatorManager = GetIEditor()->GetViewManager()->GetManipulatorManager();
     if (!m_pPrimaryViewport)
     {
@@ -230,6 +253,9 @@ EditorViewportWidget::~EditorViewportWidget()
         m_pPrimaryViewport = nullptr;
     }
 
+    AzToolsFramework::Prefab::PrefabPublicNotificationBus::Handler::BusDisconnect();
+
+    m_editorViewportSettings.Disconnect();
     DisconnectViewportInteractionRequestBus();
     m_editorEntityNotifications.reset();
     Camera::EditorCameraRequestBus::Handler::BusDisconnect();
@@ -268,7 +294,8 @@ void EditorViewportWidget::resizeEvent(QResizeEvent* event)
 void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
 {
     // Do not call CViewport::OnPaint() for painting messages
-    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead. (Repeats for other view port classes too).
+    // FIXME: paintEvent() isn't the best place for such logic. Should listen to proper eNotify events and to the stuff there instead.
+    // (Repeats for other view port classes too).
     CGameEngine* ge = GetIEditor()->GetGameEngine();
     if ((ge && ge->IsLevelLoaded()) || (GetType() != ET_ViewportCamera))
     {
@@ -294,7 +321,7 @@ void EditorViewportWidget::paintEvent([[maybe_unused]] QPaintEvent* event)
             const char* kFontName = "Arial";
             const QColor kTextColor(255, 255, 255);
             const QColor kTextShadowColor(0, 0, 0);
-            const QFont font(kFontName, kFontSize / 10.0);
+            const QFont font(kFontName, static_cast<int>(kFontSize / 10.0f));
             painter.setFont(font);
 
             QString friendlyName = QFileInfo(GetIEditor()->GetLevelName()).fileName();
@@ -318,28 +345,13 @@ void EditorViewportWidget::mousePressEvent(QMouseEvent* event)
     QtViewport::mousePressEvent(event);
 }
 
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePickInternal(const QPoint& point) const
+AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MousePick mousePick;
-    mousePick.m_screenCoordinates = ScreenPointFromQPoint(point);
-    const auto& ray = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
-    if (ray.has_value())
-    {
-        mousePick.m_rayOrigin = ray.value().origin;
-        mousePick.m_rayDirection = ray.value().direction;
-    }
-    return mousePick;
-}
-
-AzToolsFramework::ViewportInteraction::MousePick EditorViewportWidget::BuildMousePick(const QPoint& point)
-{
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    PreWidgetRendering();
-    const MousePick mousePick = BuildMousePickInternal(point);
-    PostWidgetRendering();
+    AzToolsFramework::ViewportInteraction::MousePick mousePick;
+    mousePick.m_screenCoordinates = AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(point);
+    const auto [origin, direction] = m_renderViewport->ViewportScreenToWorldRay(mousePick.m_screenCoordinates);
+    mousePick.m_rayOrigin = origin;
+    mousePick.m_rayDirection = direction;
     return mousePick;
 }
 
@@ -348,9 +360,7 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
     const AzToolsFramework::ViewportInteraction::KeyboardModifiers modifiers,
     const AzToolsFramework::ViewportInteraction::MousePick& mousePick) const
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-
-    MouseInteraction mouse;
+    AzToolsFramework::ViewportInteraction::MouseInteraction mouse;
     mouse.m_interactionId.m_cameraId = m_viewEntityId;
     mouse.m_interactionId.m_viewportId = GetViewportId();
     mouse.m_mouseButtons = buttons;
@@ -362,12 +372,10 @@ AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::Bu
 AzToolsFramework::ViewportInteraction::MouseInteraction EditorViewportWidget::BuildMouseInteraction(
     const Qt::MouseButtons buttons, const Qt::KeyboardModifiers modifiers, const QPoint& point)
 {
-    using namespace AzToolsFramework::ViewportInteraction;
+    namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
     return BuildMouseInteractionInternal(
-        BuildMouseButtons(buttons),
-        BuildKeyboardModifiers(modifiers),
-        BuildMousePick(WidgetToViewport(point)));
+        AztfVi::BuildMouseButtons(buttons), AztfVi::BuildKeyboardModifiers(modifiers), BuildMousePick(WidgetToViewport(point)));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -377,7 +385,8 @@ bool EditorViewportWidget::event(QEvent* event)
     {
     case QEvent::WindowActivate:
         GetIEditor()->GetViewManager()->SelectViewport(this);
-        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll get the keyrelease event anyways)
+        // also kill the keys; if we alt-tab back to the viewport, or come back from the debugger, it's done (and there's no guarantee we'll
+        // get the keyrelease event anyways)
         m_keyDown.clear();
         break;
 
@@ -403,8 +412,6 @@ void EditorViewportWidget::UpdateContent(int flags)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::Update()
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     if (Editor::EditorQtApplication::instance()->isMovingOrResizing())
     {
         return;
@@ -454,26 +461,22 @@ void EditorViewportWidget::Update()
             // Disable rendering to avoid recursion into Update()
             PushDisableRendering();
 
-
-            //get debug display interface for the viewport
+            // get debug display interface for the viewport
             AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
             AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, GetViewportId());
             AZ_Assert(debugDisplayBus, "Invalid DebugDisplayRequestBus.");
 
-            AzFramework::DebugDisplayRequests* debugDisplay =
-                AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
-
+            AzFramework::DebugDisplayRequests* debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
 
             // draw debug visualizations
             if (debugDisplay)
             {
                 const AZ::u32 prevState = debugDisplay->GetState();
-                debugDisplay->SetState(
-                    e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
+                debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
                 AzFramework::EntityDebugDisplayEventBus::Broadcast(
-                    &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport,
-                    AzFramework::ViewportInfo{ GetViewportId() }, *debugDisplay);
+                    &AzFramework::EntityDebugDisplayEvents::DisplayEntityViewport, AzFramework::ViewportInfo{ GetViewportId() },
+                    *debugDisplay);
 
                 debugDisplay->SetState(prevState);
             }
@@ -489,6 +492,18 @@ void EditorViewportWidget::Update()
         }
     }
 
+    if (m_playInEditorState == PlayInEditorState::Stopping)
+    {
+        m_playInEditorState = PlayInEditorState::Editor;
+
+        // Note that:
+        // - this is assuming that the Atom camera components will share the same view ptr in editor as in game mode.
+        // - if `m_viewEntityIdCachedForEditMode' is invalid, the camera before game mode was the default editor camera
+        // - we must set the camera again when exiting game mode, because when rendering with track view, the editor camera gets set again
+        SetViewFromEntityPerspective(m_viewEntityIdCachedForEditMode);
+        m_viewEntityIdCachedForEditMode.SetInvalid();
+    }
+
     // Prevents rendering recursion due to recursive Paint messages.
     if (IsRenderingDisabled())
     {
@@ -499,9 +514,6 @@ void EditorViewportWidget::Update()
 
     // Render
     {
-        // TODO: Move out this logic to a controller and refactor to work with Atom
-        ProcessRenderLisneters(m_displayContext);
-
         m_displayContext.Flush2D();
 
         // Post Render Callback
@@ -515,10 +527,11 @@ void EditorViewportWidget::Update()
         }
     }
 
+    if(!m_hasUpdatedVisibility)
     {
         auto start = std::chrono::steady_clock::now();
 
-        m_entityVisibilityQuery.UpdateVisibility(GetCameraState());
+        m_entityVisibilityQuery.UpdateVisibility(m_renderViewport->GetCameraState());
 
         if (ed_visibility_logTiming)
         {
@@ -526,6 +539,8 @@ void EditorViewportWidget::Update()
             std::chrono::duration<double> diff = stop - start;
             AZ_Printf("Visibility", "FindVisibleEntities (new) - Duration: %f", diff);
         }
+
+        m_hasUpdatedVisibility = true;
     }
 
     QtViewport::Update();
@@ -534,16 +549,9 @@ void EditorViewportWidget::Update()
     m_bUpdateViewport = false;
 }
 
-
-
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::PostCameraSet()
 {
-    if (m_viewPane)
-    {
-        m_viewPane->OnFOVChanged(GetFOV());
-    }
-
     // CryLegacy notify
     GetIEditor()->Notify(eNotify_CameraChanged);
 
@@ -553,8 +561,7 @@ void EditorViewportWidget::PostCameraSet()
     if (m_viewSourceType == ViewSourceType::None)
     {
         m_sendingOnActiveChanged = true;
-        Camera::CameraNotificationBus::Broadcast(
-            &Camera::CameraNotificationBus::Events::OnActiveViewChanged, AZ::EntityId());
+        Camera::CameraNotificationBus::Broadcast(&Camera::CameraNotificationBus::Events::OnActiveViewChanged, AZ::EntityId());
         m_sendingOnActiveChanged = false;
     }
 
@@ -587,43 +594,32 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     switch (event)
     {
     case eNotify_OnBeginGameMode:
-    {
-        if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
         {
-            m_preGameModeViewTM = GetViewTM();
-            // this should only occur for the main viewport and no others.
-            ShowCursor();
-
-            // If the user has selected game mode, enable outputting to any attached HMD and properly size the context
-            // to the resolution specified by the VR device.
-            if (gSettings.bEnableGameModeVR)
+            if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
             {
-                const AZ::VR::HMDDeviceInfo* deviceInfo = nullptr;
-                EBUS_EVENT_RESULT(deviceInfo, AZ::VR::HMDDeviceRequestBus, GetDeviceInfo);
-                AZ_Warning("Render Viewport", deviceInfo, "No VR device detected");
-
-                if (deviceInfo)
+                if (m_viewEntityId.IsValid())
                 {
-                    // Note: This may also need to adjust the viewport size
-                    SetActiveWindow();
-                    SetFocus();
-                    SetSelected(true);
+                    MarkCameraEntityDirty(m_viewEntityId);
+                }
+
+                m_preGameModeViewTM = GetViewTM();
+                // this should only occur for the main viewport and no others.
+                ShowCursor();
+
+                SetCurrentCursor(STD_CURSOR_GAME);
+
+                if (ShouldPreviewFullscreen())
+                {
+                    StartFullscreenPreview();
                 }
             }
-            SetCurrentCursor(STD_CURSOR_GAME);
 
-            if (ShouldPreviewFullscreen())
+            if (m_renderViewport)
             {
-                StartFullscreenPreview();
+                m_renderViewport->SetInputProcessingEnabled(false);
             }
         }
-
-        if (m_renderViewport)
-        {
-            m_renderViewport->SetInputProcessingEnabled(false);
-        }
-    }
-    break;
+        break;
 
     case eNotify_OnEndGameMode:
         if (GetIEditor()->GetViewManager()->GetGameViewport() == this)
@@ -640,16 +636,19 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
         if (m_renderViewport)
         {
-            m_renderViewport->GetControllerList()->SetEnabled(true);
+            m_renderViewport->SetInputProcessingEnabled(true);
         }
         break;
 
     case eNotify_OnCloseScene:
-        m_renderViewport->SetScene(nullptr);
+        // we restore the default viewport camera when closing the level to ensure if there is a pushed view group for a particular
+        // editor camera component (view entity) it is popped/cleared to return to a default state when opening the next level
         SetDefaultCamera();
+        m_renderViewport->SetScene(nullptr);
         break;
 
-    case eNotify_OnEndSceneOpen:
+    case eNotify_OnEndLoad:
+    case eNotify_OnEndCreate:
         UpdateScene();
         break;
 
@@ -659,44 +658,7 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
     case eNotify_OnEndNewScene:
         PopDisableRendering();
-
-        {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
-            Matrix34 viewTM;
-            viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
-            SetViewTM(viewTM);
-
-            UpdateScene();
-        }
-        break;
-
-    case eNotify_OnBeginTerrainCreate:
-        PushDisableRendering();
-        break;
-
-    case eNotify_OnEndTerrainCreate:
-        PopDisableRendering();
-
-        {
-            AZ::Aabb terrainAabb = AZ::Aabb::CreateFromPoint(AZ::Vector3::CreateZero());
-            AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(terrainAabb, &AzFramework::Terrain::TerrainDataRequests::GetTerrainAabb);
-            float sx = terrainAabb.GetXExtent();
-            float sy = terrainAabb.GetYExtent();
-
-            Matrix34 viewTM;
-            viewTM.SetIdentity();
-            // Initial camera will be at middle of the map at the height of 2
-            // meters above the terrain (default terrain height is 32)
-            viewTM.SetTranslation(Vec3(sx * 0.5f, sy * 0.5f, 34.0f));
-            SetViewTM(viewTM);
-        }
+        UpdateScene();
         break;
 
     case eNotify_OnBeginLayerExport:
@@ -707,21 +669,15 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
     case eNotify_OnEndSceneSave:
         PopDisableRendering();
         break;
-
-    case eNotify_OnBeginLoad: // disables viewport input when starting to load an existing level
-    case eNotify_OnBeginCreate: // disables viewport input when starting to create a new level
-        m_freezeViewportInput = true;
-        break;
-
-    case eNotify_OnEndLoad: // enables viewport input when finished loading an existing level
-    case eNotify_OnEndCreate: // enables viewport input when finished creating a new level
-        m_freezeViewportInput = false;
-        break;
     }
 }
 
 void EditorViewportWidget::OnBeginPrepareRender()
 {
+    AZ_PROFILE_FUNCTION(Editor);
+
+    m_hasUpdatedVisibility = false;
+
     if (!m_debugDisplay)
     {
         AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
@@ -740,37 +696,24 @@ void EditorViewportWidget::OnBeginPrepareRender()
     Update();
     m_isOnPaint = false;
 
-
     if (GetIEditor()->IsInGameMode())
     {
         return;
     }
 
-    PreWidgetRendering();
-
     RenderAll();
 
     // Draw 2D helpers.
-    TransformationMatrices backupSceneMatrices;
     m_debugDisplay->DepthTestOff();
-    //m_renderer->Set2DMode(m_rcClient.right(), m_rcClient.bottom(), backupSceneMatrices);
     auto prevState = m_debugDisplay->GetState();
     m_debugDisplay->SetState(e_Mode3D | e_AlphaBlended | e_FillModeSolid | e_CullModeBack | e_DepthWriteOn | e_DepthTestOn);
 
-    if (gSettings.viewports.bShowSafeFrame)
-    {
-        UpdateSafeFrame();
-        RenderSafeFrame();
-    }
-
     AzFramework::ViewportDebugDisplayEventBus::Event(
         AzToolsFramework::GetEntityContextId(), &AzFramework::ViewportDebugDisplayEvents::DisplayViewport2d,
-        AzFramework::ViewportInfo{GetViewportId()}, *m_debugDisplay);
+        AzFramework::ViewportInfo{ GetViewportId() }, *m_debugDisplay);
 
     m_debugDisplay->SetState(prevState);
     m_debugDisplay->DepthTestOn();
-
-    PostWidgetRendering();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -790,85 +733,19 @@ void EditorViewportWidget::RenderAll()
 
     if (m_manipulatorManager != nullptr)
     {
-        using namespace AzToolsFramework::ViewportInteraction;
+        namespace AztfVi = AzToolsFramework::ViewportInteraction;
+
+        AztfVi::KeyboardModifiers keyboardModifiers;
+        AztfVi::EditorModifierKeyRequestBus::BroadcastResult(
+            keyboardModifiers, &AztfVi::EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
 
         m_debugDisplay->DepthTestOff();
         m_manipulatorManager->DrawManipulators(
-            *m_debugDisplay, GetCameraState(),
+            *m_debugDisplay, m_renderViewport->GetCameraState(),
             BuildMouseInteractionInternal(
-                MouseButtons(TranslateMouseButtons(QGuiApplication::mouseButtons())),
-                BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()),
-                BuildMousePickInternal(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
+                AztfVi::MouseButtons(AztfVi::TranslateMouseButtons(QGuiApplication::mouseButtons())), keyboardModifiers,
+                BuildMousePick(WidgetToViewport(mapFromGlobal(QCursor::pos())))));
         m_debugDisplay->DepthTestOn();
-    }
-}
-
-//////////////////////////////////////////////////////////////////////////
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::UpdateSafeFrame()
-{
-    m_safeFrame = m_rcClient;
-
-    if (m_safeFrame.height() == 0)
-    {
-        return;
-    }
-
-    const bool allowSafeFrameBiggerThanViewport = false;
-
-    float safeFrameAspectRatio = float( m_safeFrame.width()) / m_safeFrame.height();
-    float targetAspectRatio = GetAspectRatio();
-    bool viewportIsWiderThanSafeFrame = (targetAspectRatio <= safeFrameAspectRatio);
-    if (viewportIsWiderThanSafeFrame || allowSafeFrameBiggerThanViewport)
-    {
-        float maxSafeFrameWidth = m_safeFrame.height() * targetAspectRatio;
-        float widthDifference = m_safeFrame.width() - maxSafeFrameWidth;
-
-        m_safeFrame.setLeft(m_safeFrame.left() + widthDifference * 0.5);
-        m_safeFrame.setRight(m_safeFrame.right() - widthDifference * 0.5);
-    }
-    else
-    {
-        float maxSafeFrameHeight = m_safeFrame.width() / targetAspectRatio;
-        float heightDifference = m_safeFrame.height() - maxSafeFrameHeight;
-
-        m_safeFrame.setTop(m_safeFrame.top() + heightDifference * 0.5);
-        m_safeFrame.setBottom(m_safeFrame.bottom() - heightDifference * 0.5);
-    }
-
-    m_safeFrame.adjust(0, 0, -1, -1); // <-- aesthetic improvement.
-
-    const float SAFE_ACTION_SCALE_FACTOR = 0.05f;
-    m_safeAction = m_safeFrame;
-    m_safeAction.adjust(m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR, m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR,
-        -m_safeFrame.width() * SAFE_ACTION_SCALE_FACTOR, -m_safeFrame.height() * SAFE_ACTION_SCALE_FACTOR);
-
-    const float SAFE_TITLE_SCALE_FACTOR = 0.1f;
-    m_safeTitle = m_safeFrame;
-    m_safeTitle.adjust(m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR, m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR,
-        -m_safeFrame.width() * SAFE_TITLE_SCALE_FACTOR, -m_safeFrame.height() * SAFE_TITLE_SCALE_FACTOR);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame()
-{
-    RenderSafeFrame(m_safeFrame, 0.75f, 0.75f, 0, 0.8f);
-    RenderSafeFrame(m_safeAction, 0, 0.85f, 0.80f, 0.8f);
-    RenderSafeFrame(m_safeTitle, 0.80f, 0.60f, 0, 0.8f);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSafeFrame(const QRect& frame, float r, float g, float b, float a)
-{
-    m_debugDisplay->SetColor(r, g, b, a);
-
-    const int LINE_WIDTH = 2;
-    for (int i = 0; i < LINE_WIDTH; i++)
-    {
-        AZ::Vector3 topLeft(frame.left() + i, frame.top() + i, 0);
-        AZ::Vector3 bottomRight(frame.right() - i, frame.bottom() - i, 0);
-        m_debugDisplay->DrawWireBox(topLeft, bottomRight);
     }
 }
 
@@ -953,66 +830,9 @@ void EditorViewportWidget::OnMenuSelectCurrentCamera()
     }
 }
 
-AzFramework::CameraState EditorViewportWidget::GetCameraState()
-{
-    return m_renderViewport->GetCameraState();
-}
-
-AZ::Vector3 EditorViewportWidget::PickTerrain(const AzFramework::ScreenPoint& point)
-{
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-    return LYVec3ToAZVec3(ViewToWorld(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), nullptr, true));
-}
-
-AZ::EntityId EditorViewportWidget::PickEntity(const AzFramework::ScreenPoint& point)
-{
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
-    PreWidgetRendering();
-
-    AZ::EntityId entityId;
-    HitContext hitInfo;
-    hitInfo.view = this;
-    if (HitTest(AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(point), hitInfo))
-    {
-        if (hitInfo.object && (hitInfo.object->GetType() == OBJTYPE_AZENTITY))
-        {
-            auto entityObject = static_cast<CComponentEntityObject*>(hitInfo.object);
-            entityId = entityObject->GetAssociatedEntityId();
-        }
-    }
-
-    PostWidgetRendering();
-
-    return entityId;
-}
-
-float EditorViewportWidget::TerrainHeight(const AZ::Vector2& position)
-{
-    return GetIEditor()->GetTerrainElevation(position.GetX(), position.GetY());
-}
-
 void EditorViewportWidget::FindVisibleEntities(AZStd::vector<AZ::EntityId>& visibleEntitiesOut)
 {
-    FUNCTION_PROFILER(GetIEditor()->GetSystem(), PROFILE_EDITOR);
-
     visibleEntitiesOut.assign(m_entityVisibilityQuery.Begin(), m_entityVisibilityQuery.End());
-}
-
-AzFramework::ScreenPoint EditorViewportWidget::ViewportWorldToScreen(const AZ::Vector3& worldPosition)
-{
-    return m_renderViewport->ViewportWorldToScreen(worldPosition);
-}
-
-bool EditorViewportWidget::IsViewportInputFrozen()
-{
-    return m_freezeViewportInput;
-}
-
-void EditorViewportWidget::FreezeViewportInput(bool freeze)
-{
-    m_freezeViewportInput = freeze;
 }
 
 QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
@@ -1020,222 +840,23 @@ QWidget* EditorViewportWidget::GetWidgetForViewportContextMenu()
     return this;
 }
 
-void EditorViewportWidget::BeginWidgetContext()
-{
-    PreWidgetRendering();
-}
-
-void EditorViewportWidget::EndWidgetContext()
-{
-    PostWidgetRendering();
-}
-
 bool EditorViewportWidget::ShowingWorldSpace()
 {
-    using namespace AzToolsFramework::ViewportInteraction;
-    return BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers()).Shift();
-}
+    namespace AztfVi = AzToolsFramework::ViewportInteraction;
 
-AZStd::shared_ptr<AtomToolsFramework::ModularViewportCameraController> CreateModularViewportCameraController(
-    AzFramework::ViewportId viewportId)
-{
-    auto controller = AZStd::make_shared<AtomToolsFramework::ModularViewportCameraController>();
+    AztfVi::KeyboardModifiers keyboardModifiers;
+    AztfVi::EditorModifierKeyRequestBus::BroadcastResult(
+        keyboardModifiers, &AztfVi::EditorModifierKeyRequestBus::Events::QueryKeyboardModifiers);
 
-    controller->SetCameraPriorityBuilderCallback(
-        [](AtomToolsFramework::CameraControllerPriorityFn& cameraControllerPriorityFn)
-        {
-            cameraControllerPriorityFn = AtomToolsFramework::DefaultCameraControllerPriority;
-        });
-
-    controller->SetCameraPropsBuilderCallback(
-        [](AzFramework::CameraProps& cameraProps)
-        {
-            cameraProps.m_rotateSmoothnessFn = []
-            {
-                return SandboxEditor::CameraRotateSmoothness();
-            };
-
-            cameraProps.m_translateSmoothnessFn = []
-            {
-                return SandboxEditor::CameraTranslateSmoothness();
-            };
-        });
-
-    controller->SetCameraListBuilderCallback(
-        [viewportId](AzFramework::Cameras& cameras)
-        {
-            const auto hideCursor = [viewportId]
-            {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::BeginCursorCapture);
-            };
-            const auto showCursor = [viewportId]
-            {
-                AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Event(
-                    viewportId, &AzToolsFramework::ViewportInteraction::ViewportMouseCursorRequestBus::Events::EndCursorCapture);
-            };
-
-            auto firstPersonRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraFreeLookChannelId());
-            firstPersonRotateCamera->m_rotateSpeedFn = []
-            {
-                return SandboxEditor::CameraRotateSpeed();
-            };
-
-            if (!ed_showCursorCameraLook)
-            {
-                // default behavior is to hide the cursor but this can be disabled (useful for remote desktop)
-                firstPersonRotateCamera->SetActivationBeganFn(hideCursor);
-                firstPersonRotateCamera->SetActivationEndedFn(showCursor);
-            }
-
-            auto firstPersonPanCamera =
-                AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraFreePanChannelId(), AzFramework::LookPan);
-            firstPersonPanCamera->m_panSpeedFn = []
-            {
-                return SandboxEditor::CameraPanSpeed();
-            };
-            firstPersonPanCamera->m_invertPanXFn = []
-            {
-                return SandboxEditor::CameraPanInvertedX();
-            };
-            firstPersonPanCamera->m_invertPanYFn = []
-            {
-                return SandboxEditor::CameraPanInvertedY();
-            };
-
-            AzFramework::TranslateCameraInputChannels translateCameraInputChannels;
-            translateCameraInputChannels.m_leftChannelId = SandboxEditor::CameraTranslateLeftChannelId();
-            translateCameraInputChannels.m_rightChannelId = SandboxEditor::CameraTranslateRightChannelId();
-            translateCameraInputChannels.m_forwardChannelId = SandboxEditor::CameraTranslateForwardChannelId();
-            translateCameraInputChannels.m_backwardChannelId = SandboxEditor::CameraTranslateBackwardChannelId();
-            translateCameraInputChannels.m_upChannelId = SandboxEditor::CameraTranslateUpChannelId();
-            translateCameraInputChannels.m_downChannelId = SandboxEditor::CameraTranslateDownChannelId();
-            translateCameraInputChannels.m_boostChannelId = SandboxEditor::CameraTranslateBoostChannelId();
-
-            auto firstPersonTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::LookTranslation, translateCameraInputChannels);
-            firstPersonTranslateCamera->m_translateSpeedFn = []
-            {
-                return SandboxEditor::CameraTranslateSpeed();
-            };
-            firstPersonTranslateCamera->m_boostMultiplierFn = []
-            {
-                return SandboxEditor::CameraBoostMultiplier();
-            };
-
-            auto firstPersonWheelCamera = AZStd::make_shared<AzFramework::ScrollTranslationCameraInput>();
-            firstPersonWheelCamera->m_scrollSpeedFn = []
-            {
-                return SandboxEditor::CameraScrollSpeed();
-            };
-
-            auto orbitCamera = AZStd::make_shared<AzFramework::OrbitCameraInput>(SandboxEditor::CameraOrbitChannelId());
-            orbitCamera->SetLookAtFn(
-                [viewportId](const AZ::Vector3& position, const AZ::Vector3& direction) -> AZStd::optional<AZ::Vector3>
-                {
-                    AZStd::optional<AZ::Vector3> lookAtAfterInterpolation;
-                    AtomToolsFramework::ModularViewportCameraControllerRequestBus::EventResult(
-                        lookAtAfterInterpolation, viewportId,
-                        &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookAtAfterInterpolation);
-
-                    // initially attempt to use the last set look at point after an interpolation has finished
-                    if (lookAtAfterInterpolation.has_value())
-                    {
-                        return *lookAtAfterInterpolation;
-                    }
-
-                    const float RayDistance = 1000.0f;
-                    AzFramework::RenderGeometry::RayRequest ray;
-                    ray.m_startWorldPosition = position;
-                    ray.m_endWorldPosition = position + direction * RayDistance;
-                    ray.m_onlyVisible = true;
-
-                    AzFramework::RenderGeometry::RayResult renderGeometryIntersectionResult;
-                    AzFramework::RenderGeometry::IntersectorBus::EventResult(
-                        renderGeometryIntersectionResult, AzToolsFramework::GetEntityContextId(),
-                        &AzFramework::RenderGeometry::IntersectorBus::Events::RayIntersect, ray);
-
-                    // attempt a ray intersection with any visible mesh and return the intersection position if successful
-                    if (renderGeometryIntersectionResult)
-                    {
-                        return renderGeometryIntersectionResult.m_worldPosition;
-                    }
-
-                    // if there is no selection or no intersection, fallback to default camera orbit behavior (ground plane
-                    // intersection)
-                    return {};
-                });
-
-            auto orbitRotateCamera = AZStd::make_shared<AzFramework::RotateCameraInput>(SandboxEditor::CameraOrbitLookChannelId());
-            orbitRotateCamera->m_rotateSpeedFn = []
-            {
-                return SandboxEditor::CameraRotateSpeed();
-            };
-            orbitRotateCamera->m_invertYawFn = []
-            {
-                return SandboxEditor::CameraOrbitYawRotationInverted();
-            };
-
-            auto orbitTranslateCamera =
-                AZStd::make_shared<AzFramework::TranslateCameraInput>(AzFramework::OrbitTranslation, translateCameraInputChannels);
-            orbitTranslateCamera->m_translateSpeedFn = []
-            {
-                return SandboxEditor::CameraTranslateSpeed();
-            };
-            orbitTranslateCamera->m_boostMultiplierFn = []
-            {
-                return SandboxEditor::CameraBoostMultiplier();
-            };
-
-            auto orbitDollyWheelCamera = AZStd::make_shared<AzFramework::OrbitDollyScrollCameraInput>();
-            orbitDollyWheelCamera->m_scrollSpeedFn = []
-            {
-                return SandboxEditor::CameraScrollSpeed();
-            };
-
-            auto orbitDollyMoveCamera =
-                AZStd::make_shared<AzFramework::OrbitDollyCursorMoveCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());
-            orbitDollyMoveCamera->m_cursorSpeedFn = []
-            {
-                return SandboxEditor::CameraDollyMotionSpeed();
-            };
-
-            auto orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(SandboxEditor::CameraOrbitPanChannelId(), AzFramework::OrbitPan);
-            orbitPanCamera->m_panSpeedFn = []
-            {
-                return SandboxEditor::CameraPanSpeed();
-            };
-            orbitPanCamera->m_invertPanXFn = []
-            {
-                return SandboxEditor::CameraPanInvertedX();
-            };
-            orbitPanCamera->m_invertPanYFn = []
-            {
-                return SandboxEditor::CameraPanInvertedY();
-            };
-
-            orbitCamera->m_orbitCameras.AddCamera(orbitRotateCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitTranslateCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitDollyWheelCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitDollyMoveCamera);
-            orbitCamera->m_orbitCameras.AddCamera(orbitPanCamera);
-
-            cameras.AddCamera(firstPersonRotateCamera);
-            cameras.AddCamera(firstPersonPanCamera);
-            cameras.AddCamera(firstPersonTranslateCamera);
-            cameras.AddCamera(firstPersonWheelCamera);
-            cameras.AddCamera(orbitCamera);
-        });
-
-    return controller;
+    return keyboardModifiers.Shift();
 }
 
 void EditorViewportWidget::SetViewportId(int id)
 {
     CViewport::SetViewportId(id);
 
-    // Clear the cached debugdisplay pointer. we're about to delete that render viewport, and deleting the render
-    // viewport invalidates the debugdisplay.
+    // Clear the cached DebugDisplay pointer. we're about to delete that render viewport, and deleting the render
+    // viewport invalidates the DebugDisplay.
     m_debugDisplay = nullptr;
 
     // First delete any existing layout
@@ -1265,25 +886,18 @@ void EditorViewportWidget::SetViewportId(int id)
         m_renderViewport = nullptr;
         return;
     }
-    auto viewportContext = m_renderViewport->GetViewportContext();
-    m_defaultViewportContextName = viewportContext->GetName();
-    m_defaultView = viewportContext->GetDefaultView();
+
     QBoxLayout* layout = new QBoxLayout(QBoxLayout::Direction::TopToBottom, this);
     layout->setContentsMargins(QMargins());
     layout->addWidget(m_renderViewport);
 
     m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::ViewportManipulatorController>());
 
-    if (ed_useNewCameraSystem)
-    {
-        m_renderViewport->GetControllerList()->Add(CreateModularViewportCameraController(AzFramework::ViewportId(id)));
-    }
-    else
-    {
-        m_renderViewport->GetControllerList()->Add(AZStd::make_shared<SandboxEditor::LegacyViewportCameraController>());
-    }
+    m_editorModularViewportCameraComposer =
+        AZStd::make_unique<SandboxEditor::EditorModularViewportCameraComposer>(AzFramework::ViewportId(id));
+    m_renderViewport->GetControllerList()->Add(m_editorModularViewportCameraComposer->CreateModularViewportCameraController());
 
-    m_renderViewport->SetViewportSettings(&g_EditorViewportSettings);
+    m_editorViewportSettings.Connect(AzFramework::ViewportId(id));
 
     UpdateScene();
 
@@ -1294,21 +908,79 @@ void EditorViewportWidget::SetViewportId(int id)
 
     m_editorViewportSettingsCallbacks = SandboxEditor::CreateEditorViewportSettingsCallbacks();
 
+    m_gridShowingHandler = SandboxEditor::GridShowingChangedEvent::Handler(
+        [id](const bool showing)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridShowingChanged, showing);
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetGridShowingChangedEvent(m_gridShowingHandler);
+
     m_gridSnappingHandler = SandboxEditor::GridSnappingChangedEvent::Handler(
         [id](const bool snapping)
         {
             AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
                 id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnGridSnappingChanged, snapping);
-        });
-
+        }
+    );
     m_editorViewportSettingsCallbacks->SetGridSnappingChangedEvent(m_gridSnappingHandler);
+
+    m_angleSnappingHandler = SandboxEditor::AngleSnappingChangedEvent::Handler(
+        [id](const bool snapping)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnAngleSnappingChanged, snapping);
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetAngleSnappingChangedEvent(m_angleSnappingHandler);
+
+    m_cameraSpeedScaleHandler = SandboxEditor::CameraSpeedScaleChangedEvent::Handler(
+        [id](const float scale)
+        {
+            AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Event(
+                id, &AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Events::OnCameraSpeedScaleChanged, scale);
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetCameraSpeedScaleChangedEvent(m_cameraSpeedScaleHandler);
+
+    m_perspectiveChangeHandler = SandboxEditor::PerspectiveChangedEvent::Handler(
+        [this](const float fovRadians)
+        {
+            if (m_viewSourceType == ViewSourceType::None)
+            {
+                if (m_viewPane)
+                {
+                    m_viewPane->OnFOVChanged(fovRadians);
+                }
+                SetFOV(fovRadians);
+            }
+        });
+    m_editorViewportSettingsCallbacks->SetPerspectiveChangedEvent(m_perspectiveChangeHandler);
+
+    m_nearPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this]([[maybe_unused]] float nearPlaneDistance)
+        {
+            OnDefaultCameraNearFarChanged();
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetNearPlaneDistanceChangedEvent(m_nearPlaneDistanceHandler);
+
+    m_farPlaneDistanceHandler = SandboxEditor::NearFarPlaneChangedEvent::Handler(
+        [this]([[maybe_unused]] float farPlaneDistance)
+        {
+            OnDefaultCameraNearFarChanged();
+        }
+    );
+    m_editorViewportSettingsCallbacks->SetFarPlaneDistanceChangedEvent(m_farPlaneDistanceHandler);
 }
 
 void EditorViewportWidget::ConnectViewportInteractionRequestBus()
 {
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusConnect(GetViewportId());
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusConnect(GetViewportId());
     m_viewportUi.ConnectViewportUiBus(GetViewportId());
+    AzFramework::ViewportBorderRequestBus::Handler::BusConnect(GetViewportId());
 
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusConnect();
 }
@@ -1317,9 +989,10 @@ void EditorViewportWidget::DisconnectViewportInteractionRequestBus()
 {
     AzFramework::InputSystemCursorConstraintRequestBus::Handler::BusDisconnect();
 
+    AzFramework::ViewportBorderRequestBus::Handler::BusDisconnect();
     m_viewportUi.DisconnectViewportUiBus();
+    AzToolsFramework::ViewportInteraction::EditorEntityViewportInteractionRequestBus::Handler::BusDisconnect();
     AzToolsFramework::ViewportInteraction::MainEditorViewportInteractionRequestBus::Handler::BusDisconnect();
-    AzToolsFramework::ViewportInteraction::ViewportFreezeRequestBus::Handler::BusDisconnect();
 }
 
 namespace AZ::ViewportHelpers
@@ -1341,7 +1014,11 @@ namespace AZ::ViewportHelpers
     void AddCheckbox(QMenu* menu, const QString& text, bool* variable, bool* disableVariableIfOn = nullptr)
     {
         QAction* action = menu->addAction(text);
-        QObject::connect(action, &QAction::triggered, action, [variable, disableVariableIfOn] { ToggleBool(variable, disableVariableIfOn);
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [variable, disableVariableIfOn]
+            {
+                ToggleBool(variable, disableVariableIfOn);
             });
         action->setCheckable(true);
         action->setChecked(*variable);
@@ -1350,7 +1027,11 @@ namespace AZ::ViewportHelpers
     void AddCheckbox(QMenu* menu, const QString& text, int* variable)
     {
         QAction* action = menu->addAction(text);
-        QObject::connect(action, &QAction::triggered, action, [variable] { ToggleInt(variable);
+        QObject::connect(
+            action, &QAction::triggered, action,
+            [variable]
+            {
+                ToggleInt(variable);
             });
         action->setCheckable(true);
         action->setChecked(*variable);
@@ -1362,16 +1043,17 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 {
     const bool bDisplayLabels = GetIEditor()->GetDisplaySettings()->IsDisplayLabels();
     QAction* action = menu->addAction(tr("Labels"));
-    connect(action, &QAction::triggered, this, [bDisplayLabels] {GetIEditor()->GetDisplaySettings()->DisplayLabels(!bDisplayLabels);
+    connect(
+        action, &QAction::triggered, this,
+        [bDisplayLabels]
+        {
+            GetIEditor()->GetDisplaySettings()->DisplayLabels(!bDisplayLabels);
         });
     action->setCheckable(true);
     action->setChecked(bDisplayLabels);
 
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Safe Frame"), &gSettings.viewports.bShowSafeFrame);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Construction Plane"), &gSettings.snap.constructPlaneDisplay);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Trigger Bounds"), &gSettings.viewports.bShowTriggerBounds);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Icons"), &gSettings.viewports.bShowIcons, &gSettings.viewports.bShowSizeBasedIcons);
-    AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Size-based Icons"), &gSettings.viewports.bShowSizeBasedIcons, &gSettings.viewports.bShowIcons);
     AZ::ViewportHelpers::AddCheckbox(menu, tr("Show Helpers of Frozen Objects"), &gSettings.viewports.nShowFrozenHelpers);
 
     if (!m_predefinedAspectRatios.IsEmpty())
@@ -1382,10 +1064,13 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         {
             const QString& aspectRatioString = m_predefinedAspectRatios.GetName(i);
             QAction* aspectRatioAction = aspectRatiosMenu->addAction(aspectRatioString);
-            connect(aspectRatioAction, &QAction::triggered, this, [i, this] {
-                const float aspect = m_predefinedAspectRatios.GetValue(i);
-                gSettings.viewports.fDefaultAspectRatio = aspect;
-            });
+            connect(
+                aspectRatioAction, &QAction::triggered, this,
+                [i, this]
+                {
+                    const float aspect = m_predefinedAspectRatios.GetValue(i);
+                    gSettings.viewports.fDefaultAspectRatio = aspect;
+                });
             aspectRatioAction->setCheckable(true);
             aspectRatioAction->setChecked(m_predefinedAspectRatios.IsCurrent(i));
         }
@@ -1401,7 +1086,9 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
         action = menu->addAction(tr("Create camera entity from current view"));
         connect(action, &QAction::triggered, this, &EditorViewportWidget::OnMenuCreateCameraEntityFromCurrentView);
 
-        if (!gameEngine || !gameEngine->IsLevelLoaded())
+        const auto prefabEditorEntityOwnershipInterface = AZ::Interface<AzToolsFramework::PrefabEditorEntityOwnershipInterface>::Get();
+        if (!gameEngine || !gameEngine->IsLevelLoaded() ||
+            (prefabEditorEntityOwnershipInterface && !prefabEditorEntityOwnershipInterface->IsRootPrefabAssigned()))
         {
             action->setEnabled(false);
             action->setToolTip(tr(AZ::ViewportHelpers::TextCantCreateCameraNoLevel));
@@ -1459,7 +1146,13 @@ void EditorViewportWidget::OnTitleMenu(QMenu* menu)
 
                 QStringList customResPresets;
                 CViewportTitleDlg::LoadCustomPresets("ResPresets", "ResPresetFor2ndView", customResPresets);
-                CViewportTitleDlg::AddResolutionMenus(resolutionMenu, [this](int width, int height) { ResizeView(width, height); }, customResPresets);
+                CViewportTitleDlg::AddResolutionMenus(
+                    resolutionMenu,
+                    [this](int width, int height)
+                    {
+                        ResizeView(width, height);
+                    },
+                    customResPresets);
                 if (!resolutionMenu->actions().isEmpty())
                 {
                     resolutionMenu->addSeparator();
@@ -1494,7 +1187,7 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
     Camera::CameraBus::BroadcastResult(getCameraResults, &Camera::CameraRequests::GetCameras);
 
     QVector<QAction*> additionalCameras;
-    additionalCameras.reserve(getCameraResults.values.size());
+    additionalCameras.reserve(static_cast<int>(getCameraResults.values.size()));
 
     for (const AZ::EntityId& entityId : getCameraResults.values)
     {
@@ -1504,11 +1197,13 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
         additionalCameras.append(action);
         action->setCheckable(true);
         action->setChecked(m_viewEntityId == entityId && m_viewSourceType == ViewSourceType::CameraComponent);
-        connect(action, &QAction::triggered, this, [this, entityId](bool isChecked)
+        connect(
+            action, &QAction::triggered, this,
+            [this, entityId](bool isChecked)
             {
                 if (isChecked)
                 {
-                    SetComponentCamera(entityId);
+                    SetEntityAsCamera(entityId);
                 }
                 else
                 {
@@ -1517,9 +1212,12 @@ bool EditorViewportWidget::AddCameraMenuItems(QMenu* menu)
             });
     }
 
-    std::sort(additionalCameras.begin(), additionalCameras.end(), [] (QAction* a1, QAction* a2) {
-        return QString::compare(a1->text(), a2->text(), Qt::CaseInsensitive) < 0;
-    });
+    std::sort(
+        additionalCameras.begin(), additionalCameras.end(),
+        [](QAction* a1, QAction* a2)
+        {
+            return QString::compare(a1->text(), a2->text(), Qt::CaseInsensitive) < 0;
+        });
 
     for (QAction* cameraAction : additionalCameras)
     {
@@ -1574,11 +1272,14 @@ void EditorViewportWidget::focusOutEvent([[maybe_unused]] QFocusEvent* event)
 
 void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 {
-    // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
-    // or clear the current selection
-    if (event->key() == Qt::Key_Escape)
+    if (!AzToolsFramework::IsNewActionManagerEnabled())
     {
-        QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        // Special case Escape key and bubble way up to the top level parent so that it can cancel us out of any active tool
+        // or clear the current selection
+        if (event->key() == Qt::Key_Escape)
+        {
+            QCoreApplication::sendEvent(GetIEditor()->GetEditorMainWindow(), event);
+        }
     }
 
     // NOTE: we keep track of key presses and releases explicitly because the OS/Qt will insert a slight delay between sending
@@ -1600,7 +1301,8 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
         const ushort* codeUnitsUTF16 = event->text().utf16();
         while (ushort codeUnitUTF16 = *codeUnitsUTF16)
         {
-            AzFramework::RawInputNotificationBusWindows::Broadcast(&AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, codeUnitUTF16);
+            AzFramework::RawInputNotificationBusWindows::Broadcast(
+                &AzFramework::RawInputNotificationsWindows::OnRawInputCodeUnitUTF16Event, codeUnitUTF16);
             ++codeUnitsUTF16;
         }
     }
@@ -1609,10 +1311,6 @@ void EditorViewportWidget::keyPressEvent(QKeyEvent* event)
 
 void EditorViewportWidget::SetViewTM(const Matrix34& tm)
 {
-    if (m_viewSourceType == ViewSourceType::None)
-    {
-        m_defaultViewTM = tm;
-    }
     SetViewTM(tm, false);
 }
 
@@ -1627,10 +1325,13 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
     // camera to another (seemingly random) camera
     enum class ShouldUpdateObject
     {
-        Yes, No, YesButViewsOutOfSync
+        Yes,
+        No,
+        YesButViewsOutOfSync
     };
 
-    const ShouldUpdateObject shouldUpdateObject = [&]() {
+    const ShouldUpdateObject shouldUpdateObject = [&]()
+    {
         if (!cameraObject)
         {
             return ShouldUpdateObject::No;
@@ -1642,21 +1343,21 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             {
                 // Should be impossible anyways
                 AZ_Assert(false, "Internal logic error - view entity Id and view source type out of sync. Please report this as a bug");
-                return ShouldUpdateObject::No; 
+                return ShouldUpdateObject::No;
             }
 
             // Check that the current view is the same view as the view entity view
             AZ::RPI::ViewPtr viewEntityView;
-            AZ::RPI::ViewProviderBus::EventResult(
-                viewEntityView, m_viewEntityId,
-                &AZ::RPI::ViewProviderBus::Events::GetView
-            );
+            AZ::RPI::ViewProviderBus::EventResult(viewEntityView, m_viewEntityId, &AZ::RPI::ViewProviderBus::Events::GetView);
 
             return viewEntityView == GetCurrentAtomView() ? ShouldUpdateObject::Yes : ShouldUpdateObject::YesButViewsOutOfSync;
         }
         else
         {
-            AZ_Assert(false, "Internal logic error - view source type is the default camera, but there is somehow a camera object. Please report this as a bug.");
+            AZ_Assert(
+                false,
+                "Internal logic error - view source type is the default camera, but there is somehow a camera object. Please report this "
+                "as a bug.");
 
             // For non-component cameras, can't do any complicated view-based checks
             return ShouldUpdateObject::No;
@@ -1665,20 +1366,14 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
 
     if (shouldUpdateObject == ShouldUpdateObject::Yes)
     {
-        AZ::Matrix3x3 lookThroughEntityCorrection = AZ::Matrix3x3::CreateIdentity();
-        if (m_viewEntityId.IsValid())
-        {
-            LmbrCentral::EditorCameraCorrectionRequestBus::EventResult(
-                lookThroughEntityCorrection, m_viewEntityId,
-                &LmbrCentral::EditorCameraCorrectionRequests::GetInverseTransformCorrection);
-        }
-
         int flags = 0;
         {
             // It isn't clear what this logic is supposed to do (it's legacy code)...
             // For now, instead of removing it, just assert if the m_pressedKeyState isn't as expected
             // Do not touch unless you really know what you're doing!
-            AZ_Assert(m_pressedKeyState == KeyPressedState::AllUp, "Internal logic error - key pressed state got changed. Please report this as a bug");
+            AZ_Assert(
+                m_pressedKeyState == KeyPressedState::AllUp,
+                "Internal logic error - key pressed state got changed. Please report this as a bug");
 
             AZStd::optional<CUndo> undo;
             if (m_pressedKeyState != KeyPressedState::PressedInPreviousFrame)
@@ -1693,7 +1388,7 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
             }
             else
             {
-                cameraObject->SetWorldTM(camMatrix * AZMatrix3x3ToLYMatrix3x3(lookThroughEntityCorrection), flags);
+                cameraObject->SetWorldTM(camMatrix, flags);
             }
         }
     }
@@ -1703,11 +1398,14 @@ void EditorViewportWidget::SetViewTM(const Matrix34& camMatrix, bool bMoveOnly)
         // of SetViewTm, for example, trying to set the view TM in the middle of a camera change.
         // If this is an important case, it can potentially be supported by caching the requested view TM
         // until the entity and view ptr become synchronized.
-        AZ_Error("EditorViewportWidget",
-            m_playInEditorState == PlayInEditorState::Editor,
+        AZ_Error(
+            "EditorViewportWidget", m_playInEditorState == PlayInEditorState::Editor,
             "Viewport camera entity ID and view out of sync; request view transform will be ignored. "
-            "Please report this as a bug."
-        );
+            "Please report this as a bug.");
+    }
+    else if (shouldUpdateObject == ShouldUpdateObject::No)
+    {
+        GetCurrentAtomView()->SetCameraTransform(LYTransformToAZMatrix3x4(camMatrix));
     }
 
     if (m_pressedKeyState == KeyPressedState::PressedThisFrame)
@@ -1730,211 +1428,31 @@ AZ::EntityId EditorViewportWidget::GetCurrentViewEntityId()
     {
         // Check that the current view is the same view as the view entity view
         AZ::RPI::ViewPtr viewEntityView;
-        AZ::RPI::ViewProviderBus::EventResult(
-            viewEntityView, m_viewEntityId,
-            &AZ::RPI::ViewProviderBus::Events::GetView
-        );
+        AZ::RPI::ViewProviderBus::EventResult(viewEntityView, m_viewEntityId, &AZ::RPI::ViewProviderBus::Events::GetView);
 
-        const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
-        AZ_Error("EditorViewportWidget", isViewEntityCorrect,
+        [[maybe_unused]] const bool isViewEntityCorrect = viewEntityView == GetCurrentAtomView();
+        AZ_Error(
+            "EditorViewportWidget", isViewEntityCorrect,
             "GetCurrentViewEntityId called while the current view is being changed. "
             "You may get inconsistent results if you make use of the returned entity ID. "
-            "This is an internal error, please report it as a bug."
-        );
+            "This is an internal error, please report it as a bug.");
     }
 
     return m_viewEntityId;
 }
 
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::RenderSelectedRegion()
-{
-    AABB box;
-    GetIEditor()->GetSelectedRegion(box);
-    if (box.IsEmpty())
-    {
-        return;
-    }
-
-    float x1 = box.min.x;
-    float y1 = box.min.y;
-    float x2 = box.max.x;
-    float y2 = box.max.y;
-
-    DisplayContext& dc = m_displayContext;
-
-    float fMaxSide = MAX(y2 - y1, x2 - x1);
-    if (fMaxSide < 0.1f)
-    {
-        return;
-    }
-    float fStep = fMaxSide / 100.0f;
-
-    float fMinZ = 0;
-    float fMaxZ = 0;
-
-    // Draw yellow border lines.
-    dc.SetColor(1, 1, 0, 1);
-    float offset = 0.01f;
-    Vec3 p1, p2;
-
-    const float defaultTerrainHeight = AzFramework::Terrain::TerrainDataRequests::GetDefaultTerrainHeight();
-    auto terrain = AzFramework::Terrain::TerrainDataRequestBus::FindFirstHandler();
-
-    for (float y = y1; y < y2; y += fStep)
-    {
-        p1.x = x1;
-        p1.y = y;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x1;
-        p2.y = y + fStep;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        p1.x = x2;
-        p1.y = y;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x2;
-        p2.y = y + fStep;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        fMinZ = min(fMinZ, min(p1.z, p2.z));
-        fMaxZ = max(fMaxZ, max(p1.z, p2.z));
-    }
-    for (float x = x1; x < x2; x += fStep)
-    {
-        p1.x = x;
-        p1.y = y1;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x + fStep;
-        p2.y = y1;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        p1.x = x;
-        p1.y = y2;
-        p1.z = terrain ? terrain->GetHeightFromFloats(p1.x, p1.y) + offset : defaultTerrainHeight + offset;
-
-        p2.x = x + fStep;
-        p2.y = y2;
-        p2.z = terrain ? terrain->GetHeightFromFloats(p2.x, p2.y) + offset : defaultTerrainHeight + offset;
-        dc.DrawLine(p1, p2);
-
-        fMinZ = min(fMinZ, min(p1.z, p2.z));
-        fMaxZ = max(fMaxZ, max(p1.z, p2.z));
-    }
-
-    {
-        // Draw a box area
-        float fBoxOver = fMaxSide / 5.0f;
-        float fBoxHeight = fBoxOver + fMaxZ - fMinZ;
-
-        ColorB boxColor(64, 64, 255, 128); // light blue
-        ColorB transparent(boxColor.r, boxColor.g, boxColor.b, 0);
-
-        Vec3 base[] = {
-            Vec3(x1, y1, fMinZ),
-            Vec3(x2, y1, fMinZ),
-            Vec3(x2, y2, fMinZ),
-            Vec3(x1, y2, fMinZ)
-        };
-
-        // Generate vertices
-        static AABB boxPrev(AABB::RESET);
-        static std::vector<Vec3> verts;
-        static std::vector<ColorB> colors;
-
-        if (!IsEquivalent(boxPrev, box))
-        {
-            verts.resize(0);
-            colors.resize(0);
-            for (int i = 0; i < 4; ++i)
-            {
-                Vec3& p = base[i];
-
-                verts.push_back(p);
-                verts.push_back(Vec3(p.x, p.y, p.z + fBoxHeight));
-                verts.push_back(Vec3(p.x, p.y, p.z + fBoxHeight + fBoxOver));
-
-                colors.push_back(boxColor);
-                colors.push_back(boxColor);
-                colors.push_back(transparent);
-            }
-            boxPrev = box;
-        }
-
-        // Generate indices
-        const int numInds = 4 * 12;
-        static vtx_idx inds[numInds];
-        static bool bNeedIndsInit = true;
-        if (bNeedIndsInit)
-        {
-            vtx_idx* pInds = &inds[0];
-
-            for (int i = 0; i < 4; ++i)
-            {
-                int over = 0;
-                if (i == 3)
-                {
-                    over = -12;
-                }
-
-                int ind = i * 3;
-                *pInds++ = ind;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 1;
-
-                *pInds++ = ind + 1;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 4 + over;
-
-                ind = i * 3 + 1;
-                *pInds++ = ind;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 1;
-
-                *pInds++ = ind + 1;
-                *pInds++ = ind + 3 + over;
-                *pInds++ = ind + 4 + over;
-            }
-            bNeedIndsInit = false;
-        }
-
-        // Draw lines
-        for (int i = 0; i < 4; ++i)
-        {
-            Vec3& p = base[i];
-
-            dc.DrawLine(p, Vec3(p.x, p.y, p.z + fBoxHeight), ColorF(1, 1, 0, 1), ColorF(1, 1, 0, 1));
-            dc.DrawLine(Vec3(p.x, p.y, p.z + fBoxHeight), Vec3(p.x, p.y, p.z + fBoxHeight + fBoxOver), ColorF(1, 1, 0, 1), ColorF(1, 1, 0, 0));
-        }
-
-        // Draw volume
-        dc.DepthWriteOff();
-        dc.CullOff();
-        dc.pRenderAuxGeom->DrawTriangles(&verts[0], verts.size(), &inds[0], numInds, &colors[0]);
-        dc.CullOn();
-        dc.DepthWriteOn();
-    }
-}
-
 Vec3 EditorViewportWidget::WorldToView3D(const Vec3& wp, [[maybe_unused]] int nFlags) const
 {
     Vec3 out(0, 0, 0);
-    float x, y, z;
+    float x, y;
 
-    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
-    if (_finite(x) && _finite(y) && _finite(z))
+    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y);
+    if (_finite(x) && _finite(y))
     {
         out.x = (x / 100) * m_rcClient.width();
         out.y = (y / 100) * m_rcClient.height();
-        out.x /= QHighDpiScaling::factor(windowHandle()->screen());
-        out.y /= QHighDpiScaling::factor(windowHandle()->screen());
-        out.z = z;
+        out.x /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
+        out.y /= static_cast<float>(QHighDpiScaling::factor(windowHandle()->screen()));
     }
     return out;
 }
@@ -1944,53 +1462,31 @@ QPoint EditorViewportWidget::WorldToView(const Vec3& wp) const
 {
     return AzToolsFramework::ViewportInteraction::QPointFromScreenPoint(m_renderViewport->ViewportWorldToScreen(LYVec3ToAZVec3(wp)));
 }
-//////////////////////////////////////////////////////////////////////////
-QPoint EditorViewportWidget::WorldToViewParticleEditor(const Vec3& wp, int width, int height) const
-{
-    QPoint p;
-    float x, y, z;
-
-    ProjectToScreen(wp.x, wp.y, wp.z, &x, &y, &z);
-    if (_finite(x) || _finite(y))
-    {
-        p.rx() = (x / 100) * width;
-        p.ry() = (y / 100) * height;
-    }
-    else
-    {
-        QPoint(0, 0);
-    }
-    return p;
-}
 
 //////////////////////////////////////////////////////////////////////////
 Vec3 EditorViewportWidget::ViewToWorld(
     const QPoint& vp, bool* collideWithTerrain, bool onlyTerrain, bool bSkipVegetation, bool bTestRenderMesh, bool* collideWithObject) const
 {
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
-    AZ_UNUSED(collideWithTerrain)
-    AZ_UNUSED(onlyTerrain)
-    AZ_UNUSED(bTestRenderMesh)
-    AZ_UNUSED(bSkipVegetation)
-    AZ_UNUSED(bSkipVegetation)
-    AZ_UNUSED(collideWithObject)
+    AZ_UNUSED(collideWithTerrain);
+    AZ_UNUSED(onlyTerrain);
+    AZ_UNUSED(bTestRenderMesh);
+    AZ_UNUSED(bSkipVegetation);
+    AZ_UNUSED(bSkipVegetation);
+    AZ_UNUSED(collideWithObject);
 
     auto ray = m_renderViewport->ViewportScreenToWorldRay(AzToolsFramework::ViewportInteraction::ScreenPointFromQPoint(vp));
-    if (!ray.has_value())
-    {
-        return Vec3(0, 0, 0);
-    }
 
     const float maxDistance = 10000.f;
-    Vec3 v = AZVec3ToLYVec3(ray.value().direction) * maxDistance;
+    Vec3 v = AZVec3ToLYVec3(ray.m_direction) * maxDistance;
 
     if (!_finite(v.x) || !_finite(v.y) || !_finite(v.z))
     {
         return Vec3(0, 0, 0);
     }
 
-    Vec3 colp = AZVec3ToLYVec3(ray.value().origin) + 0.002f * v;
+    Vec3 colp = AZVec3ToLYVec3(ray.m_origin) + 0.002f * v;
 
     return colp;
 }
@@ -1998,84 +1494,18 @@ Vec3 EditorViewportWidget::ViewToWorld(
 //////////////////////////////////////////////////////////////////////////
 Vec3 EditorViewportWidget::ViewToWorldNormal(const QPoint& vp, bool onlyTerrain, bool bTestRenderMesh)
 {
-    AZ_UNUSED(vp)
-    AZ_UNUSED(onlyTerrain)
-    AZ_UNUSED(bTestRenderMesh)
+    AZ_UNUSED(vp);
+    AZ_UNUSED(onlyTerrain);
+    AZ_UNUSED(bTestRenderMesh);
 
-    AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Editor);
+    AZ_PROFILE_FUNCTION(Editor);
 
     return Vec3(0, 0, 1);
 }
 
 //////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::AdjustObjectPosition(const ray_hit& hit, Vec3& outNormal, Vec3& outPos) const
-{
-    Matrix34A objMat, objMatInv;
-    Matrix33 objRot, objRotInv;
-
-    if (hit.pCollider->GetiForeignData() != PHYS_FOREIGN_ID_STATIC)
-    {
-        return false;
-    }
-
-    IRenderNode* pNode = (IRenderNode*) hit.pCollider->GetForeignData(PHYS_FOREIGN_ID_STATIC);
-    if (!pNode || !pNode->GetEntityStatObj())
-    {
-        return false;
-    }
-
-    IStatObj* pEntObject  = pNode->GetEntityStatObj(hit.partid, 0, &objMat, false);
-    if (!pEntObject || !pEntObject->GetRenderMesh())
-    {
-        return false;
-    }
-
-    objRot = Matrix33(objMat);
-    objRot.NoScale(); // No scale.
-    objRotInv = objRot;
-    objRotInv.Invert();
-
-    float fWorldScale = objMat.GetColumn(0).GetLength(); // GetScale
-    float fWorldScaleInv = 1.0f / fWorldScale;
-
-    // transform decal into object space
-    objMatInv = objMat;
-    objMatInv.Invert();
-
-    // put into normal object space hit direction of projection
-    Vec3 invhitn = -(hit.n);
-    Vec3 vOS_HitDir = objRotInv.TransformVector(invhitn).GetNormalized();
-
-    // put into position object space hit position
-    Vec3 vOS_HitPos = objMatInv.TransformPoint(hit.pt);
-    vOS_HitPos -= vOS_HitDir * RENDER_MESH_TEST_DISTANCE * fWorldScaleInv;
-
-    IRenderMesh* pRM = pEntObject->GetRenderMesh();
-
-    AABB aabbRNode;
-    pRM->GetBBox(aabbRNode.min, aabbRNode.max);
-    Vec3 vOut(0, 0, 0);
-    if (!Intersect::Ray_AABB(Ray(vOS_HitPos, vOS_HitDir), aabbRNode, vOut))
-    {
-        return false;
-    }
-
-    if (!pRM || !pRM->GetVerticesCount())
-    {
-        return false;
-    }
-
-    if (RayRenderMeshIntersection(pRM, vOS_HitPos, vOS_HitDir, outPos, outNormal))
-    {
-        outNormal = objRot.TransformVector(outNormal).GetNormalized();
-        outPos = objMat.TransformPoint(outPos);
-        return true;
-    }
-    return false;
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool EditorViewportWidget::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const
+bool EditorViewportWidget::RayRenderMeshIntersection(
+    IRenderMesh* pRenderMesh, const Vec3& vInPos, const Vec3& vInDir, Vec3& vOutPos, Vec3& vOutNormal) const
 {
     AZ_UNUSED(pRenderMesh);
     AZ_UNUSED(vInPos);
@@ -2096,21 +1526,19 @@ bool EditorViewportWidget::RayRenderMeshIntersection(IRenderMesh* pRenderMesh, c
     return bRes;*/
 }
 
-void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float sz, float* px, float* py, float* pz) const
+void EditorViewportWidget::UnProjectFromScreen(float sx, float sy, float* px, float* py, float* pz) const
 {
-    AZ::Vector3 wp;
-    wp = m_renderViewport->ViewportScreenToWorld(AzFramework::ScreenPoint{(int)sx, m_rcClient.bottom() - ((int)sy)}, sz).value_or(wp);
+    const AZ::Vector3 wp = m_renderViewport->ViewportScreenToWorld(AzFramework::ScreenPoint{ (int)sx, m_rcClient.bottom() - ((int)sy) });
     *px = wp.GetX();
     *py = wp.GetY();
     *pz = wp.GetZ();
 }
 
-void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy, float* sz) const
+void EditorViewportWidget::ProjectToScreen(float ptx, float pty, float ptz, float* sx, float* sy) const
 {
-    AzFramework::ScreenPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ptx, pty, ptz});
-    *sx = screenPosition.m_x;
-    *sy = screenPosition.m_y;
-    *sz = 0.f;
+    AzFramework::ScreenPoint screenPosition = m_renderViewport->ViewportWorldToScreen(AZ::Vector3{ ptx, pty, ptz });
+    *sx = static_cast<float>(screenPosition.m_x);
+    *sy = static_cast<float>(screenPosition.m_y);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2120,32 +1548,22 @@ void EditorViewportWidget::ViewToWorldRay(const QPoint& vp, Vec3& raySrc, Vec3& 
 
     Vec3 pos0, pos1;
     float wx, wy, wz;
-    UnProjectFromScreen(vp.x(), rc.bottom() - vp.y(), 0, &wx, &wy, &wz);
-    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
-    {
-        return;
-    }
-    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
-    {
-        return;
-    }
-    pos0(wx, wy, wz);
-    UnProjectFromScreen(vp.x(), rc.bottom() - vp.y(), 1, &wx, &wy, &wz);
-    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
-    {
-        return;
-    }
-    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
-    {
-        return;
-    }
-    pos1(wx, wy, wz);
+    UnProjectFromScreen(static_cast<float>(vp.x()), static_cast<float>(rc.bottom() - vp.y()), &wx, &wy, &wz);
 
-    Vec3 v = (pos1 - pos0);
-    v = v.GetNormalized();
+    if (!_finite(wx) || !_finite(wy) || !_finite(wz))
+    {
+        return;
+    }
+
+    if (fabs(wx) > 1000000 || fabs(wy) > 1000000 || fabs(wz) > 1000000)
+    {
+        return;
+    }
+
+    pos0(wx, wy, wz);
 
     raySrc = pos0;
-    rayDir = v;
+    rayDir = (pos0 - AZVec3ToLYVec3(m_renderViewport->GetCameraState().m_position)).GetNormalized();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2153,13 +1571,6 @@ float EditorViewportWidget::GetScreenScaleFactor([[maybe_unused]] const Vec3& wo
 {
     AZ_Error("CryLegacy", false, "EditorViewportWidget::GetScreenScaleFactor not implemented");
     return 1.f;
-}
-//////////////////////////////////////////////////////////////////////////
-float EditorViewportWidget::GetScreenScaleFactor(const CCamera& camera, const Vec3& object_position)
-{
-    Vec3 camPos = camera.GetPosition();
-    float dist = camPos.GetDistance(object_position);
-    return dist;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2181,7 +1592,6 @@ bool EditorViewportWidget::CheckRespondToInput() const
 //////////////////////////////////////////////////////////////////////////
 bool EditorViewportWidget::HitTest(const QPoint& point, HitContext& hitInfo)
 {
-    hitInfo.camera = nullptr;
     hitInfo.pExcludedObject = GetCameraObject();
     return QtViewport::HitTest(point, hitInfo);
 }
@@ -2239,17 +1649,17 @@ void EditorViewportWidget::CenterOnAABB(const AABB& aabb)
     orbitDistance = fabs(orbitDistance);
 
     SetViewTM(newTM);
-    SandboxEditor::OrbitCameraControlsBus::Event(GetViewportId(), &SandboxEditor::OrbitCameraControlsBus::Events::SetOrbitDistance, orbitDistance);
 }
 
 void EditorViewportWidget::CenterOnSliceInstance()
 {
     AzToolsFramework::EntityIdList selectedEntityList;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
     AZ::SliceComponent::SliceInstanceAddress sliceAddress;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(sliceAddress,
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonSliceInstanceAddress, selectedEntityList);
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        sliceAddress, &AzToolsFramework::ToolsApplicationRequestBus::Events::FindCommonSliceInstanceAddress, selectedEntityList);
 
     if (!sliceAddress.IsValid())
     {
@@ -2257,8 +1667,8 @@ void EditorViewportWidget::CenterOnSliceInstance()
     }
 
     AZ::EntityId sliceRootEntityId;
-    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(sliceRootEntityId,
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::GetRootEntityIdOfSliceInstance, sliceAddress);
+    AzToolsFramework::ToolsApplicationRequestBus::BroadcastResult(
+        sliceRootEntityId, &AzToolsFramework::ToolsApplicationRequestBus::Events::GetRootEntityIdOfSliceInstance, sliceAddress);
 
     if (!sliceRootEntityId.IsValid())
     {
@@ -2266,7 +1676,7 @@ void EditorViewportWidget::CenterOnSliceInstance()
     }
 
     AzToolsFramework::ToolsApplicationRequestBus::Broadcast(
-        &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{sliceRootEntityId});
+        &AzToolsFramework::ToolsApplicationRequestBus::Events::SetSelectedEntities, AzToolsFramework::EntityIdList{ sliceRootEntityId });
 
     const AZ::SliceComponent::InstantiatedContainer* instantiatedContainer = sliceAddress.GetInstance()->GetInstantiated();
 
@@ -2274,8 +1684,8 @@ void EditorViewportWidget::CenterOnSliceInstance()
     for (AZ::Entity* entity : instantiatedContainer->m_entities)
     {
         CEntityObject* entityObject = nullptr;
-        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(entityObject, entity->GetId(),
-            &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
+        AzToolsFramework::ComponentEntityEditorRequestBus::EventResult(
+            entityObject, entity->GetId(), &AzToolsFramework::ComponentEntityEditorRequestBus::Events::GetSandboxObject);
         AABB box;
         entityObject->GetBoundBox(box);
         aabb.Add(box.min);
@@ -2285,7 +1695,7 @@ void EditorViewportWidget::CenterOnSliceInstance()
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetFOV(float fov)
+void EditorViewportWidget::SetFOV(const float fov)
 {
     if (m_viewEntityId.IsValid())
     {
@@ -2293,9 +1703,18 @@ void EditorViewportWidget::SetFOV(float fov)
     }
     else
     {
-        auto m = m_defaultView->GetViewToClipMatrix();
-        AZ::SetPerspectiveMatrixFOV(m, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
-        m_defaultView->SetViewToClipMatrix(m);
+        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+        if (!viewSystem)
+        {
+            return;
+        }
+
+        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        {
+            auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
+            AZ::SetPerspectiveMatrixFOV(viewToClip, fov, aznumeric_cast<float>(width()) / aznumeric_cast<float>(height()));
+            viewGroup->GetView()->SetViewToClipMatrix(viewToClip);
+        }
     }
 }
 
@@ -2310,8 +1729,19 @@ float EditorViewportWidget::GetFOV() const
     }
     else
     {
-        return AZ::GetPerspectiveMatrixFOV(m_defaultView->GetViewToClipMatrix());
+        auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+        if (!viewSystem)
+        {
+            return AZ::Constants::HalfPi; // 90 degrees (default)
+        }
+
+        if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+        {
+            return AZ::GetPerspectiveMatrixFOV(viewGroup->GetView()->GetViewToClipMatrix());
+        }
     }
+
+    return AZ::Constants::HalfPi; // 90 degrees (default)
 }
 
 void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
@@ -2333,11 +1763,9 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
     {
         // Any such events for game entities should be filtered out by the check above
         AZ_Error(
-            "EditorViewportWidget",
-            Camera::EditorCameraViewRequestBus::FindFirstHandler(viewEntityId) != nullptr,
+            "EditorViewportWidget", Camera::EditorCameraViewRequestBus::FindFirstHandler(viewEntityId) != nullptr,
             "Internal logic error - active view changed to an entity which is not an editor camera. "
-            "Please report this as a bug."
-        );
+            "Please report this as a bug.");
 
         m_viewEntityId = viewEntityId;
         m_viewSourceType = ViewSourceType::CameraComponent;
@@ -2356,29 +1784,55 @@ void EditorViewportWidget::OnActiveViewChanged(const AZ::EntityId& viewEntityId)
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::SetDefaultCamera()
 {
+    if (m_viewEntityId.IsValid())
+    {
+        // remove pushed view group for view entity (editor camera component in 'Be this camera' mode
+        PopViewGroupForDefaultContext();
+    }
+
     m_viewEntityId.SetInvalid();
     m_viewSourceType = ViewSourceType::None;
     GetViewManager()->SetCameraObjectId(GUID_NULL);
     SetName(m_defaultViewName);
-    SetViewTM(m_defaultViewTM);
 
-    // Synchronize the configured editor viewport FOV to the default camera
+    // synchronize the configured editor viewport FOV to the default camera
     if (m_viewPane)
     {
-        const float fov = gSettings.viewports.fDefaultFov;
-        m_viewPane->OnFOVChanged(fov);
-        SetFOV(fov);
+        const float fovRadians = SandboxEditor::CameraDefaultFovRadians();
+        m_viewPane->OnFOVChanged(fovRadians);
+        SetFOV(fovRadians);
     }
 
-    // Push the default view as the active view
-    auto atomViewportRequests = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-    if (atomViewportRequests)
-    {
-        const AZ::Name contextName = atomViewportRequests->GetDefaultViewportContextName();
-        atomViewportRequests->PushView(contextName, m_defaultView);
-    }
+    // update camera matrix according to near / far values
+    SetDefaultCameraNearFar();
+
+    PushViewGroupForDefaultContext();
 
     PostCameraSet();
+}
+
+void EditorViewportWidget::SetDefaultCameraNearFar()
+{
+    auto viewSystem = AZ::RPI::ViewportContextRequests::Get();
+    if (!viewSystem)
+    {
+        return;
+    }
+
+    if (auto viewGroup = viewSystem->GetCurrentViewGroup(viewSystem->GetDefaultViewportContextName()))
+    {
+        auto viewToClip = viewGroup->GetView()->GetViewToClipMatrix();
+        AZ::SetPerspectiveMatrixNearFar(viewToClip, SandboxEditor::CameraDefaultNearPlaneDistance(), SandboxEditor::CameraDefaultFarPlaneDistance());
+        viewGroup->GetView()->SetViewToClipMatrix(viewToClip);
+    }
+}
+
+void EditorViewportWidget::OnDefaultCameraNearFarChanged()
+{
+    if (m_viewSourceType == ViewSourceType::None)
+    {
+        SetDefaultCameraNearFar();
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2395,15 +1849,9 @@ AZ::RPI::ViewPtr EditorViewportWidget::GetCurrentAtomView() const
 }
 
 //////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetComponentCamera(const AZ::EntityId& entityId)
+void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId)
 {
     SetViewFromEntityPerspective(entityId);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void EditorViewportWidget::SetEntityAsCamera(const AZ::EntityId& entityId, bool lockCameraMovement)
-{
-    SetViewAndMovementLockFromEntityPerspective(entityId, lockCameraMovement);
 }
 
 void EditorViewportWidget::SetFirstComponentCamera()
@@ -2412,11 +1860,11 @@ void EditorViewportWidget::SetFirstComponentCamera()
     Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
     AZStd::sort_heap(results.values.begin(), results.values.end());
     AZ::EntityId entityId;
-    if (results.values.size() > 0)
+    if (!results.values.empty())
     {
         entityId = results.values[0];
     }
-    SetComponentCamera(entityId);
+    SetEntityAsCamera(entityId);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2427,12 +1875,13 @@ void EditorViewportWidget::SetSelectedCamera()
     if (cameraList.values.size() > 0)
     {
         AzToolsFramework::EntityIdList selectedEntityList;
-        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
+        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+            selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
         for (const AZ::EntityId& entityId : selectedEntityList)
         {
             if (AZStd::find(cameraList.values.begin(), cameraList.values.end(), entityId) != cameraList.values.end())
             {
-                SetComponentCamera(entityId);
+                SetEntityAsCamera(entityId);
             }
         }
     }
@@ -2451,9 +1900,8 @@ bool EditorViewportWidget::IsSelectedCamera() const
     AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
         selectedEntityList, &AzToolsFramework::ToolsApplicationRequests::GetSelectedEntities);
 
-    if ((m_viewSourceType == ViewSourceType::CameraComponent)
-        && !selectedEntityList.empty()
-        && AZStd::find(selectedEntityList.begin(), selectedEntityList.end(), m_viewEntityId) != selectedEntityList.end())
+    if ((m_viewSourceType == ViewSourceType::CameraComponent) && !selectedEntityList.empty() &&
+        AZStd::find(selectedEntityList.begin(), selectedEntityList.end(), m_viewEntityId) != selectedEntityList.end())
     {
         return true;
     }
@@ -2469,62 +1917,68 @@ void EditorViewportWidget::CycleCamera()
     switch (m_viewSourceType)
     {
     case EditorViewportWidget::ViewSourceType::None:
-    {
-        SetFirstComponentCamera();
-        break;
-    }
-    case EditorViewportWidget::ViewSourceType::CameraComponent:
-    {
-        AZ::EBusAggregateResults<AZ::EntityId> results;
-        Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
-        AZStd::sort_heap(results.values.begin(), results.values.end());
-        auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
-        if (currentCameraIterator != results.values.end())
         {
-            ++currentCameraIterator;
+            SetFirstComponentCamera();
+            break;
+        }
+    case EditorViewportWidget::ViewSourceType::CameraComponent:
+        {
+            AZ::EBusAggregateResults<AZ::EntityId> results;
+            Camera::CameraBus::BroadcastResult(results, &Camera::CameraRequests::GetCameras);
+            AZStd::sort_heap(results.values.begin(), results.values.end());
+            auto&& currentCameraIterator = AZStd::find(results.values.begin(), results.values.end(), m_viewEntityId);
             if (currentCameraIterator != results.values.end())
             {
-                SetComponentCamera(*currentCameraIterator);
-                break;
+                ++currentCameraIterator;
+                if (currentCameraIterator != results.values.end())
+                {
+                    SetEntityAsCamera(*currentCameraIterator);
+                    break;
+                }
             }
+            SetDefaultCamera();
+            break;
         }
-        SetDefaultCamera();
-        break;
-    }
     default:
-    {
-        SetDefaultCamera();
-        break;
-    }
+        {
+            SetDefaultCamera();
+            break;
+        }
     }
 }
 
 void EditorViewportWidget::SetViewFromEntityPerspective(const AZ::EntityId& entityId)
 {
-    SetViewAndMovementLockFromEntityPerspective(entityId, false);
-}
-
-void EditorViewportWidget::SetViewAndMovementLockFromEntityPerspective(const AZ::EntityId& entityId, [[maybe_unused]] bool lockCameraMovement)
-{
     // This is an editor event, so is only serviced during edit mode, not play game mode
-    // 
     if (m_playInEditorState != PlayInEditorState::Editor)
     {
-        AZ_Warning("EditorViewportWidget", false,
-            "Tried to change the editor camera during play game in editor; this is currently unsupported"
-        );
+        AZ_Warning(
+            "EditorViewportWidget", false, "Tried to change the editor camera during play game in editor; this is currently unsupported");
         return;
     }
 
-    AZ_Assert(lockCameraMovement == false, "SetViewAndMovementLockFromEntityPerspective with lockCameraMovement == true not supported");
+    // when changing view, if an editor camera component (view entity) was in use, ensure we attempt to record an undo operation
+    // in case the transform of the entity changed (if no changes occurred then no undo operation will be stored)
+    if (m_viewEntityId.IsValid())
+    {
+        MarkCameraEntityDirty(m_viewEntityId);
+    }
 
     if (entityId.IsValid())
     {
+        // if we are switching between editor camera components (view entities) in the scene, if one is currently
+        // assigned, ensure we pop it from the stack before assigning a new one
+        if (m_viewEntityId.IsValid())
+        {
+            PopViewGroupForDefaultContext();
+        }
+
         Camera::CameraRequestBus::Event(entityId, &Camera::CameraRequestBus::Events::MakeActiveView);
     }
     else
     {
-        // The default camera
+        // note: SetDefaultCamera internally handles popping the current view group if an editor camera component
+        // (view entity) is assigned
         SetDefaultCamera();
     }
 }
@@ -2549,11 +2003,37 @@ bool EditorViewportWidget::GetActiveCameraPosition(AZ::Vector3& cameraPos)
     return false;
 }
 
+AZStd::optional<AZ::Transform> EditorViewportWidget::GetActiveCameraTransform()
+{
+    if (m_pPrimaryViewport == this)
+    {
+        if (GetIEditor()->IsInGameMode())
+        {
+            return m_renderViewport->GetViewportContext()->GetCameraTransform();
+        }
+        else
+        {
+            // Use viewTM, which is synced with the camera and guaranteed to be up-to-date
+            return GetCurrentAtomView()->GetCameraTransform();
+        }
+    }
+    return AZStd::nullopt;
+}
+
+AZStd::optional<float> EditorViewportWidget::GetCameraFoV()
+{
+    if (m_pPrimaryViewport == this)
+    {
+        return GetFOV();
+    }
+    return AZStd::nullopt;
+}
+
 bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& cameraState)
 {
     if (m_pPrimaryViewport == this)
     {
-        cameraState = GetCameraState();
+        cameraState = m_renderViewport->GetCameraState();
         return true;
     }
 
@@ -2563,6 +2043,34 @@ bool EditorViewportWidget::GetActiveCameraState(AzFramework::CameraState& camera
 void EditorViewportWidget::OnStartPlayInEditorBegin()
 {
     m_playInEditorState = PlayInEditorState::Starting;
+}
+
+void EditorViewportWidget::OnRootPrefabInstanceLoaded()
+{
+    // set the default camera on level/prefab load
+    SetDefaultCamera();
+
+    // set the camera position once we know the entire scene (level) has finished loading
+    Matrix34 defaultView = Matrix34::CreateIdentity();
+    // check to see if we have an existing last known location for this level
+    auto* viewBookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
+    if (const AZStd::optional<AzToolsFramework::ViewBookmark> lastKnownLocationBookmark = viewBookmarkInterface->LoadLastKnownLocation();
+        lastKnownLocationBookmark.has_value())
+    {
+        defaultView.SetTranslation(Vec3(lastKnownLocationBookmark->m_position));
+        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(SandboxEditor::CameraRotation(
+            AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetX()), AZ::DegToRad(lastKnownLocationBookmark->m_rotation.GetZ())))));
+    }
+    else
+    {
+        // set the default editor camera position and orientation if there was no last known location
+        const AZ::Vector2 pitchYawDegrees = m_editorViewportSettings.DefaultEditorCameraOrientation();
+        defaultView.SetTranslation(Vec3(m_editorViewportSettings.DefaultEditorCameraPosition()));
+        defaultView.SetRotation33(AZMatrix3x3ToLYMatrix3x3(AZ::Matrix3x3::CreateFromQuaternion(
+            SandboxEditor::CameraRotation(AZ::DegToRad(pitchYawDegrees.GetX()), AZ::DegToRad(pitchYawDegrees.GetY())))));
+    }
+
+    SetViewTM(defaultView);
 }
 
 void EditorViewportWidget::OnStartPlayInEditor()
@@ -2577,8 +2085,7 @@ void EditorViewportWidget::OnStartPlayInEditor()
         m_viewEntityIdCachedForEditMode = m_viewEntityId;
         AZ::EntityId runtimeEntityId;
         AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequestBus::Events::MapEditorIdToRuntimeId,
-            m_viewEntityId, runtimeEntityId);
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::MapEditorIdToRuntimeId, m_viewEntityId, runtimeEntityId);
 
         m_viewEntityId = runtimeEntityId;
     }
@@ -2586,14 +2093,7 @@ void EditorViewportWidget::OnStartPlayInEditor()
 
 void EditorViewportWidget::OnStopPlayInEditor()
 {
-    m_playInEditorState = PlayInEditorState::Editor;
-
-    // Note that:
-    // - this is assuming that the Atom camera components will share the same view ptr in editor as in game mode.
-    // - if `m_viewEntityIdCachedForEditMode' is invalid, the camera before game mode was the default editor camera
-    // - we MUST set the camera again when exiting game mode, because when rendering with trackview, the editor camera gets set somehow
-    SetViewFromEntityPerspective(m_viewEntityIdCachedForEditMode);
-    m_viewEntityIdCachedForEditMode.SetInvalid();
+    m_playInEditorState = PlayInEditorState::Stopping;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2629,7 +2129,6 @@ void EditorViewportWidget::ShowCursor()
 //////////////////////////////////////////////////////////////////////////
 void EditorViewportWidget::PushDisableRendering()
 {
-    assert(m_disableRenderingCount >= 0);
     ++m_disableRenderingCount;
 }
 
@@ -2689,34 +2188,27 @@ void EditorViewportWidget::EndUndoTransaction()
 
 void* EditorViewportWidget::GetSystemCursorConstraintWindow() const
 {
-    AzFramework::SystemCursorState systemCursorState = AzFramework::SystemCursorState::Unknown;
-
-    AzFramework::InputSystemCursorRequestBus::EventResult(
-        systemCursorState, AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::GetSystemCursorState);
-
-    const bool systemCursorConstrained =
-        (systemCursorState == AzFramework::SystemCursorState::ConstrainedAndHidden ||
-         systemCursorState == AzFramework::SystemCursorState::ConstrainedAndVisible);
-
-    return systemCursorConstrained ? renderOverlayHWND() : nullptr;
+    // Even when the mouse cursor is not in a constrained mode, we still return the viewport as the constraint window,
+    // so that the engine's mouse coordinates will be normalized to the editor viewport rather than the entire application window.
+    // This ensures that viewport mouse interactions are in the correct 2D coordinate space, for example when using ImGuiManager's
+    // debug tools.
+    return renderOverlayHWND();
 }
 
-void EditorViewportWidget::BuildDragDropContext(AzQtComponents::ViewportDragContext& context, const QPoint& pt)
+void EditorViewportWidget::BuildDragDropContext(
+    AzQtComponents::ViewportDragContext& context, const AzFramework::ViewportId viewportId, const QPoint& point)
 {
-    const auto scaledPoint = WidgetToViewport(pt);
-    QtViewport::BuildDragDropContext(context, scaledPoint);
+    QtViewport::BuildDragDropContext(context, viewportId, point);
 }
 
 void EditorViewportWidget::RestoreViewportAfterGameMode()
 {
     Matrix34 preGameModeViewTM = m_preGameModeViewTM;
 
-    QString text =
-        QString(
-            tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
-            "had entered Game mode.<br/><br/><small>If you dislike this setting you can always change this anytime in the global "
-            "preferences.</small><br/><br/>"))
-            .arg(EditorPreferencesGeneralRestoreViewportCameraSettingName);
+    QString text = QString(
+        tr("When leaving \" Game Mode \" the engine will automatically restore your camera position to the default position before you "
+           "had entered Game mode.<br/><br/><small>If you dislike this setting you can always change this anytime in the global "
+           "preferences.</small><br/><br/>"));
     QString restoreOnExitGameModePopupDisabledRegKey("Editor/AutoHide/ViewportCameraRestoreOnExitGameMode");
 
     // Read the popup disabled registry value
@@ -2735,8 +2227,8 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
         messageBox.setCheckBox(checkBox);
 
         // Unconstrain the system cursor and make it visible before we show the dialog box, otherwise the user can't see the cursor.
-        AzFramework::InputSystemCursorRequestBus::Event(AzFramework::InputDeviceMouse::Id,
-            &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
+        AzFramework::InputSystemCursorRequestBus::Event(
+            AzFramework::InputDeviceMouse::Id, &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
             AzFramework::SystemCursorState::UnconstrainedAndVisible);
 
         int response = messageBox.exec();
@@ -2762,7 +2254,7 @@ void EditorViewportWidget::RestoreViewportAfterGameMode()
     }
     else
     {
-        AZ_Error("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
+        AZ_Warning("CryLegacy", false, "Not restoring the editor viewport camera is currently unsupported");
         SetViewTM(preGameModeViewTM);
     }
 }
@@ -2777,7 +2269,26 @@ void EditorViewportWidget::UpdateScene()
         {
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             m_renderViewport->SetScene(mainScene);
-            AZ::RPI::SceneNotificationBus::Handler::BusConnect(m_renderViewport->GetViewportContext()->GetRenderScene()->GetId());
+            auto viewportContext = m_renderViewport->GetViewportContext();
+            AZ::RPI::SceneNotificationBus::Handler::BusConnect(viewportContext->GetRenderScene()->GetId());
+
+            // Don't enable the render pipeline until a level has been loaded
+            // Also show/hide the RenderViewportWidget accordingly so that we get the
+            // expected gradient background when no level is loaded
+            auto renderPipeline = viewportContext->GetCurrentPipeline();
+            if (renderPipeline)
+            {
+                if (GetIEditor()->IsLevelLoaded())
+                {
+                    m_renderViewport->show();
+                    renderPipeline->AddToRenderTick();
+                }
+                else
+                {
+                    m_renderViewport->hide();
+                    renderPipeline->RemoveFromRenderTick();
+                }
+            }
         }
     }
 }
@@ -2795,8 +2306,8 @@ void EditorViewportWidget::SetAsActiveViewport()
         if (viewportContext)
         {
             // Remove the old viewport's camera from the stack, as it's no longer the owning viewport
-            viewportContextManager->PopView(defaultContextName, viewportContext->GetDefaultView());
-            viewportContextManager->RenameViewportContext(viewportContext, m_pPrimaryViewport->m_defaultViewportContextName);
+            viewportContextManager->PopViewGroup(defaultContextName, viewportContext->GetViewGroup());
+            viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
         }
     }
 
@@ -2808,10 +2319,20 @@ void EditorViewportWidget::SetAsActiveViewport()
         {
             // Push our camera onto the default viewport's view stack to preserve camera state continuity
             // Other views can still be pushed on top of our view for e.g. game mode
-            viewportContextManager->PushView(defaultContextName, viewportContext->GetDefaultView());
             viewportContextManager->RenameViewportContext(viewportContext, defaultContextName);
+            viewportContextManager->PushViewGroup(defaultContextName, viewportContext->GetViewGroup());
         }
     }
+}
+
+void EditorViewportSettings::Connect(const AzFramework::ViewportId viewportId)
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusConnect(viewportId);
+}
+
+void EditorViewportSettings::Disconnect()
+{
+    AzToolsFramework::ViewportInteraction::ViewportSettingsRequestBus::Handler::BusDisconnect();
 }
 
 bool EditorViewportSettings::GridSnappingEnabled() const
@@ -2839,6 +2360,46 @@ float EditorViewportSettings::AngleStep() const
     return SandboxEditor::AngleSnappingSize();
 }
 
+float EditorViewportSettings::ManipulatorLineBoundWidth() const
+{
+    return SandboxEditor::ManipulatorLineBoundWidth();
+}
+
+float EditorViewportSettings::ManipulatorCircleBoundWidth() const
+{
+    return SandboxEditor::ManipulatorCircleBoundWidth();
+}
+
+bool EditorViewportSettings::StickySelectEnabled() const
+{
+    return SandboxEditor::StickySelectEnabled();
+}
+
+AZ::Vector3 EditorViewportSettings::DefaultEditorCameraPosition() const
+{
+    return SandboxEditor::CameraDefaultEditorPosition();
+}
+
+AZ::Vector2 EditorViewportSettings::DefaultEditorCameraOrientation() const
+{
+    return SandboxEditor::CameraDefaultEditorOrientation();
+}
+
+bool EditorViewportSettings::IconsVisible() const
+{
+    return AzToolsFramework::IconsVisible();
+}
+
+bool EditorViewportSettings::HelpersVisible() const
+{
+    return AzToolsFramework::HelpersVisible();
+}
+
+bool EditorViewportSettings::OnlyShowHelpersForSelectedEntities() const
+{
+    return AzToolsFramework::OnlyShowHelpersForSelectedEntities();
+}
+
 AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 bool EditorViewportWidget::ShouldPreviewFullscreen() const
@@ -2852,12 +2413,6 @@ bool EditorViewportWidget::ShouldPreviewFullscreen() const
 
     // Doesn't work with split layout
     if (layout->GetLayout() != EViewLayout::ET_Layout0)
-    {
-        return false;
-    }
-
-    // Not supported in VR
-    if (gSettings.bEnableGameModeVR)
     {
         return false;
     }
@@ -2949,6 +2504,26 @@ void EditorViewportWidget::StopFullscreenPreview()
 
     // Show the main window
     MainWindow::instance()->show();
+}
+
+AZStd::optional<AzFramework::ViewportBorderPadding> EditorViewportWidget::GetViewportBorderPadding() const
+{
+    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+    {
+        auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Focus) ||
+            viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Component))
+        {
+            AzFramework::ViewportBorderPadding viewportBorderPadding = {};
+            viewportBorderPadding.m_top = AzToolsFramework::ViewportUi::ViewportUiTopBorderSize;
+            viewportBorderPadding.m_left = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_right = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            viewportBorderPadding.m_bottom = AzToolsFramework::ViewportUi::ViewportUiLeftRightBottomBorderSize;
+            return viewportBorderPadding;
+        }
+    }
+
+    return AZStd::nullopt;
 }
 
 #include <moc_EditorViewportWidget.cpp>

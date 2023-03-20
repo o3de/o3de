@@ -1,0 +1,206 @@
+{
+    "entries": [
+        {
+            "base": "AWSResourceMappingRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "AWS Resource Mapping",
+                "category": "AWS Core"
+            },
+            "methods": [
+                {
+                    "base": "GetResourceNameId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Resource Name Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Resource Name Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Resource Name Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Key Name",
+                                "tooltip": "Resource mapping key name is used to identify individual resource attributes."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Name / Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetResourceRegion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Resource Region"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Resource Region is invoked"
+                    },
+                    "details": {
+                        "name": "Get Resource Region"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Key Name",
+                                "tooltip": "Resource mapping key name is used to identify individual resource attributes."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDefaultRegion",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Default Region"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Default Region is invoked"
+                    },
+                    "details": {
+                        "name": "Get Default Region"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Region"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDefaultAccountId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Default Account Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Default Account Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Default Account Id"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Default Account Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetResourceAccountId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Resource Account Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Resource Account Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Resource Account Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Key Name",
+                                "tooltip": "Resource mapping key name is used to identify individual resource attributes."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Account Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetResourceType",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Resource Type"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Resource Type is invoked"
+                    },
+                    "details": {
+                        "name": "Get Resource Type"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Key Name",
+                                "tooltip": "Resource mapping key name is used to identify individual resource attributes."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Resource Type"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ReloadConfigFile",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Reload Config File"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Reload Config File is invoked"
+                    },
+                    "details": {
+                        "name": "Reload Config File"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Is Reloading Config FileName",
+                                "tooltip": "Whether reload resource mapping config file name from AWS core configuration settings registry file."
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

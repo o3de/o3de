@@ -28,13 +28,15 @@ namespace UnitTest
     TEST_F(PrefabUpdateWithPatchesTest, ApplyPatchesToInstance_ComponentUpdated_PatchAppliedCorrectly)
     {
         // Create a single entity wheel instance with a PrefabTestComponent and create a template out of it.
-        AZ::Entity* wheelEntity = CreateEntity("WheelEntity1", false);
+        AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
+        wheelEntity->Deactivate();
         PrefabTestComponent* prefabTestComponent = aznew PrefabTestComponent(true);
         wheelEntity->AddComponent(prefabTestComponent);
         AZ::ComponentId prefabTestComponentId = prefabTestComponent->GetId();
+        const int expectedComponentCount = 10; // 9 of them are from AddRequiredEditorComponents.
+        wheelEntity->Activate();
 
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();
@@ -49,7 +51,7 @@ namespace UnitTest
         PrefabDomValue* wheelEntityComponents =
             PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(wheelTemplateDom);
         ASSERT_TRUE(wheelEntityComponents != nullptr && wheelEntityComponents->IsObject());
-        EXPECT_EQ(wheelEntityComponents->MemberCount(), 2);
+        EXPECT_EQ(wheelEntityComponents->MemberCount(), expectedComponentCount);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
         PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponentId);
@@ -68,7 +70,7 @@ namespace UnitTest
         // Create a car with 0 entities and 1 axle instance.
         AZStd::unique_ptr<Instance> axleUnderCar = m_prefabSystemComponent->InstantiatePrefab(axleTemplateId);
         AZStd::unique_ptr<Instance> carInstance = m_prefabSystemComponent->CreatePrefab({},
-            MakeInstanceList( AZStd::move(axleUnderCar) ), CarPrefabMockFilePath);
+            MakeInstanceList(AZStd::move(axleUnderCar)), CarPrefabMockFilePath);
         const TemplateId carTemplateId = carInstance->GetTemplateId();
         const AZStd::vector<InstanceAlias> axleInstanceAliasesUnderCar = carInstance->GetNestedInstanceAliases(axleTemplateId);
         PrefabDom& carTemplateDom = m_prefabSystemComponent->FindTemplateDom(carTemplateId);
@@ -78,7 +80,7 @@ namespace UnitTest
 
         //get the entity id
         AZStd::vector<AZ::EntityId> entityIdVector;
-        axleInstance->GetNestedEntityIds([&entityIdVector](AZ::EntityId entityId)
+        axleInstance->GetAllEntityIdsInHierarchy([&entityIdVector](AZ::EntityId entityId)
         {
             entityIdVector.push_back(entityId);
             return true;
@@ -105,7 +107,7 @@ namespace UnitTest
 
         //create document with before change snapshot
         PrefabDom entityDomBefore;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomBefore, *wheelEntityUnderAxle);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomBefore, *wheelEntityUnderAxle);
 
         PrefabTestComponent* axlewheelComponent = wheelEntityUnderAxle->FindComponent<PrefabTestComponent>();
         // Change the bool property of the component from Wheel instance and use it to update the wheel template.
@@ -113,7 +115,7 @@ namespace UnitTest
 
         //create document with after change snapshot
         PrefabDom entityDomAfter;
-        m_instanceToTemplateInterface->GenerateDomForEntity(entityDomAfter, *wheelEntityUnderAxle);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDomAfter, *wheelEntityUnderAxle);
 
         InstanceOptionalReference topMostInstanceInHierarchy = m_instanceToTemplateInterface->GetTopMostInstanceInHierarchy(wheelEntityIdUnderAxle);
         ASSERT_TRUE(topMostInstanceInHierarchy);
@@ -136,7 +138,10 @@ namespace UnitTest
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =
             PrefabDomUtils::FindPrefabDomValue(wheelEntityComponentValue->get(), PrefabTestDomUtils::BoolPropertyName);
-        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue.has_value());
+
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue.has_value());
+        ASSERT_TRUE(wheelEntityComponentBoolPropertyValue->get().IsBool());
+        ASSERT_FALSE(wheelEntityComponentBoolPropertyValue->get().GetBool());
 
         // Validate that the axles under the car have the same DOM as the axle template.
         PrefabTestDomUtils::ValidatePrefabDomInstances(axleInstanceAliasesUnderCar, carTemplateDom, axleTemplateDom);

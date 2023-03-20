@@ -53,7 +53,7 @@ namespace JsonSerializationTests
     };
 
     using BoolSerializerConformityTestTypes = ::testing::Types<BoolSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(JsonBoolSerializer, JsonSerializerConformityTests, BoolSerializerConformityTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(JsonBoolSerializer, JsonSerializerConformityTests, BoolSerializerConformityTestTypes));
 
     class JsonBoolSerializerTests
         : public BaseJsonSerializerFixture
@@ -83,6 +83,7 @@ namespace JsonSerializationTests
             BaseJsonSerializerFixture::TearDown();
         }
 
+        using BaseJsonSerializerFixture::RegisterAdditional;
         void RegisterAdditional(AZStd::unique_ptr<AZ::SerializeContext>& serializeContext) override
         {
             serializeContext->Class<BoolPointerWrapper>()

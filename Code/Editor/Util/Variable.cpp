@@ -10,7 +10,6 @@
 #include "EditorDefs.h"
 
 #include "Variable.h"
-#include "UIEnumsDatabase.h"
 
 #include "UsedResources.h"              // for CUsedResources
 
@@ -351,7 +350,7 @@ void CVarBlock::EnableUpdateCallbacks(bool boEnable)
 void CVarBlock::GatherUsedResourcesInVar(IVariable* pVar, CUsedResources& resources)
 {
     int type = pVar->GetDataType();
-    if (type == IVariable::DT_FILE || type == IVariable::DT_OBJECT || type == IVariable::DT_TEXTURE)
+    if (type == IVariable::DT_TEXTURE)
     {
         // this is file.
         QString filename;
@@ -496,49 +495,3 @@ void CVarObject::Serialize(XmlNodeRef node, bool load)
         m_vars->Serialize(node, load);
     }
 }
-
-
-CVarGlobalEnumList::CVarGlobalEnumList(CUIEnumsDatabase_SEnum* pEnum)
-    : m_pEnum(pEnum)
-{
-}
-
-CVarGlobalEnumList::CVarGlobalEnumList(const QString& enumName)
-{
-    m_pEnum = GetIEditor()->GetUIEnumsDatabase()->FindEnum(enumName);
-}
-
-//! Get the name of specified value in enumeration.
-QString CVarGlobalEnumList::GetItemName(uint index)
-{
-    if (!m_pEnum || index >= m_pEnum->strings.size())
-    {
-        return QString();
-    }
-    return m_pEnum->strings[index];
-}
-
-QString CVarGlobalEnumList::NameToValue(const QString& name)
-{
-    if (m_pEnum)
-    {
-        return m_pEnum->NameToValue(name);
-    }
-    else
-    {
-        return name;
-    }
-}
-
-QString CVarGlobalEnumList::ValueToName(const QString& value)
-{
-    if (m_pEnum)
-    {
-        return m_pEnum->ValueToName(value);
-    }
-    else
-    {
-        return value;
-    }
-}
-

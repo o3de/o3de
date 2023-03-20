@@ -1,5 +1,5 @@
 {
-    "Source" : "ReflectionScreenSpaceBlurVertical",
+    "Source" : "ReflectionScreenSpaceBlurVertical.azsl",
 
     "RasterState" :
     {
@@ -29,8 +29,5 @@
                 "type": "Fragment"
             }
         ]
-    },
-
-    "ProgramVariants": [
-    ]
+    }
 }

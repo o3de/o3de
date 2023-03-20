@@ -1,0 +1,129 @@
+{
+    "entries": [
+        {
+            "base": "ForceWorldSpaceRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Force Region (World Space)"
+            },
+            "methods": [
+                {
+                    "base": "SetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Set Direction",
+                        "tooltip": "Set the direction (in world space) for the force applied"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction",
+                                "tooltip": "The direction (in world space) for the force applied"
+
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDirection",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Direction"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Direction is invoked"
+                    },
+                    "details": {
+                        "name": "Get Direction",
+                        "tooltip": "Get the direction (in world space) for the force applied"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Direction",
+                                "tooltip": "The direction (in world space) for the force applied"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Set Magnitude",
+                        "tooltip": "Set the magnitude of the force applied"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude",
+                                "tooltip": "Magnitude of the force applied"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMagnitude",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Magnitude"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Magnitude is invoked"
+                    },
+                    "details": {
+                        "name": "Get Magnitude",
+                        "tooltip": "Get the magnitude of the force applied"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{6383F1D3-BB27-4E6B-A49A-6409B2059EAA}",
+                            "details": {
+                                "name": "Entity Id",
+                                "tooltip": "Id for the force region entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Magnitude",
+                                "tooltip": "Magnitude of the force applied"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

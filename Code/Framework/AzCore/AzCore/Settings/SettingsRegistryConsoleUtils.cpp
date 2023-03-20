@@ -9,8 +9,10 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ConsoleFunctor.h>
 #include <AzCore/IO/ByteContainerStream.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Settings/SettingsRegistryConsoleUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzCore/Settings/SettingsRegistryOriginTracker.h>
 #include <AzCore/StringFunc/StringFunc.h>
 
 namespace AZ::SettingsRegistryConsoleUtils
@@ -34,9 +36,9 @@ namespace AZ::SettingsRegistryConsoleUtils
             const auto setOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
                 R"(Successfully set value at path "%s" into the global settings registry)" "\n",
                 combinedKeyValueCommand.c_str());
-            AZ::Debug::Trace::Output("SettingsRegistry", setOutput.c_str());
+            AZ::Debug::Trace::Instance().Output("SettingsRegistry", setOutput.c_str());
         }
-    };
+    }
 
     static void ConsoleRemoveSettingsRegistryValue(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
     {
@@ -54,10 +56,10 @@ namespace AZ::SettingsRegistryConsoleUtils
                 const auto removeOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
                     R"(Successfully removed value at path "%.*s" from the global settings registry)" "\n",
                     aznumeric_cast<int>(commandArg.size()), commandArg.data());
-                AZ::Debug::Trace::Output("SettingsRegistry", removeOutput.c_str());
+                AZ::Debug::Trace::Instance().Output("SettingsRegistry", removeOutput.c_str());
             }
         }
-    };
+    }
 
     static void ConsoleDumpSettingsRegistryValue(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
     {
@@ -87,14 +89,76 @@ namespace AZ::SettingsRegistryConsoleUtils
             }
         }
 
-        AZ::Debug::Trace::Output("SettingsRegistry", outputString.c_str());
-    };
+        AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
+    }
 
     static void ConsoleDumpAllSettingsRegistryValues(SettingsRegistryInterface& settingsRegistry,
         [[maybe_unused]] const ConsoleCommandContainer& commandArgs)
     {
         ConsoleDumpSettingsRegistryValue(settingsRegistry, { "" });
-    };
+    }
+
+    static void ConsoleMergeFileToSettingsRegistry(SettingsRegistryInterface& settingsRegistry, const ConsoleCommandContainer& commandArgs)
+    {
+        if (commandArgs.empty())
+        {
+            AZ_Error("SettingsRegistryConsoleUtils", false, "Command %s requires a <file path> argument to locate json file to merge",
+                SettingsRegistryMergeFile);
+            return;
+        }
+
+        auto commandArgumentsIter = commandArgs.begin();
+        // Extract the JSON pointer path from the argument list
+        AZStd::string_view filePath{ *commandArgumentsIter++ };
+        AZ::SettingsRegistryInterface::FixedValueString jsonAnchorPath;
+        AZ::StringFunc::Join(jsonAnchorPath, commandArgumentsIter, commandArgs.end(), ' ');
+
+        const auto mergeFormat = AZ::IO::PathView(filePath).Extension() != ".setregpatch" ? AZ::SettingsRegistryInterface::Format::JsonMergePatch : AZ::SettingsRegistryInterface::Format::JsonPatch;
+        if (settingsRegistry.MergeSettingsFile(filePath, mergeFormat, jsonAnchorPath))
+        {
+            const auto mergeFileOutput = AZ::SettingsRegistryInterface::FixedValueString::format(
+                R"(Merged json file "%.*s" anchored to json path "%s" into the global settings registry)" "\n",
+                AZ_STRING_ARG(filePath), jsonAnchorPath.c_str());
+            AZ::Debug::Trace::Instance().Output("SettingsRegistry", mergeFileOutput.c_str());
+        }
+    }
+
+    static void ConsoleDumpSettingsFileOriginValue(SettingsRegistryOriginTracker& settingsRegistryOriginTracker, const ConsoleCommandContainer& commandArgs)
+    {
+        AZStd::string outputString;
+        auto JoinLastOrigin = [&outputString](const AZ::SettingsRegistryOriginTracker::SettingsRegistryOrigin& settingsRegistryOrigin)
+        {
+            outputString += AZStd::string::format("Key: \"%s\" Origin: \"%s\" Value when Merged: %s\n", settingsRegistryOrigin.m_settingsKey.c_str(),
+                settingsRegistryOrigin.m_originFilePath.c_str(),
+                settingsRegistryOrigin.m_settingsValue.has_value() ? settingsRegistryOrigin.m_settingsValue.value().c_str()
+                : "<removed>");
+            // Only visit the last file origin for each setting keys
+            return false;
+        };
+
+        for (AZStd::string_view settingsKeyToDump : (commandArgs.empty() ? ConsoleCommandContainer{""} : commandArgs))
+        {
+
+            settingsRegistryOriginTracker.VisitOrigins(settingsKeyToDump, AZStd::move(JoinLastOrigin));
+        }
+
+        AZ::Debug::Trace::Instance().Output("SettingsRegistry", outputString.c_str());
+    }
+
+    [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryOriginTracker& originTracker, AZ::IConsole& azConsole)
+    {
+        ConsoleFunctorHandle resultHandle{};
+        resultHandle.m_originTrackerConsoleFunctors.emplace_back(
+            azConsole,
+            SettingsRegistryDumpOrigin,
+        R"(Dump the file origin of one or more settings from the global settings registry at the input JSON pointer paths.)" "\n"
+        R"(If no pointer-path argument is supplied, then all file origins for the global settings registry are dumped)" "\n"
+        R"(@param pointer-path - space separate list of JSON key paths whose file origin should be dumped )",
+        ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), originTracker, &ConsoleDumpSettingsFileOriginValue);
+
+        return resultHandle;
+    }
+
 
     [[nodiscard]] ConsoleFunctorHandle RegisterAzConsoleCommands(SettingsRegistryInterface& registry, AZ::IConsole& azConsole)
     {
@@ -115,6 +179,11 @@ namespace AZ::SettingsRegistryConsoleUtils
         resultHandle.m_consoleFunctors.emplace_back(azConsole, SettingsRegistryDumpAll,
             R"(Dumps all values from the global settings registry)" "\n",
             ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), registry, &ConsoleDumpAllSettingsRegistryValues);
+        resultHandle.m_consoleFunctors.emplace_back(azConsole, SettingsRegistryMergeFile,
+            R"(Merges File into the global settings registry)" "\n"
+            R"(@param file-path - path to JSON formatted file to merge)" "\n"
+            R"(@param anchor-path - JSON path to anchor merge operation. Defaults to "")" "\n",
+            ConsoleFunctorFlags::Null, AZ::TypeId::CreateNull(), registry, &ConsoleMergeFileToSettingsRegistry);
 
         return resultHandle;
     }

@@ -31,25 +31,13 @@ namespace AZ::IO
         {
             return FullFileDecompressor(2, 2, m_arbitrarilyLargeAlignment);
         }
-
-        void SetUp() override
-        {
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
-        void TearDown() override
-        {
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-        }
     };
 
     INSTANTIATE_TYPED_TEST_CASE_P(
         Streamer_FullFileDecompressorConformityTests, StreamStackEntryConformityTests, FullFileDecompressorTestDescription);
 
     class Streamer_FullDecompressorTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         enum CompressionState
@@ -66,14 +54,6 @@ namespace AZ::IO
             Canceled
         };
 
-        void SetUp() override
-        {
-            UnitTest::AllocatorsFixture::SetUp();
-
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
-        }
-
         void TearDown() override
         {
             m_decompressor.reset();
@@ -88,10 +68,7 @@ namespace AZ::IO
             delete m_context;
             m_context = nullptr;
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy(); 
-
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void SetupEnvironment(u32 maxNumReads, u32 maxNumJobs)
@@ -123,7 +100,7 @@ namespace AZ::IO
                 .WillRepeatedly(Return(false));
             EXPECT_CALL(*m_mock, QueueRequest(_));
             EXPECT_CALL(*m_mock, UpdateStatus(_)).Times(AnyNumber());
-                    
+
             switch (mockResult)
             {
             case ReadResult::Success:
@@ -145,7 +122,7 @@ namespace AZ::IO
 
         void PrepareReadRequest(FileRequest* request)
         {
-            auto data = AZStd::get_if<FileRequest::ReadData>(&request->GetCommand());
+            auto data = AZStd::get_if<Requests::ReadData>(&request->GetCommand());
             ASSERT_NE(nullptr, data);
 
             u64 size = data->m_size >> 2;
@@ -175,7 +152,7 @@ namespace AZ::IO
             AZ_Assert(compressedSize == uncompressedBufferSize, "Fake decompression algorithm only supports copying data.");
             if (sleep)
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(80));
+                AZStd::this_thread::sleep_for(AZStd::chrono::microseconds(1));
             }
             memcpy(uncompressed, compressed, compressedSize);
             return true;
@@ -267,7 +244,7 @@ namespace AZ::IO
             {
                 allCompleted = allCompleted && request.GetStatus() == IStreamerTypes::RequestStatus::Completed;
             };
-                
+
             FileRequest* requests[count];
             AZStd::unique_ptr<u32[]> buffers[count];
             for (size_t i = 0; i < count; ++i)
@@ -300,7 +277,7 @@ namespace AZ::IO
             size = size >> 2;
             for (u64 i = 0; i < size; ++i)
             {
-                // Using assert here because in case of a problem EXPECT would 
+                // Using assert here because in case of a problem EXPECT would
                 // cause a large amount of log noise.
                 ASSERT_EQ(buffer[i], offset + (i << 2));
             }

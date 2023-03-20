@@ -13,6 +13,7 @@
 
 #include <GraphCanvas/Components/Nodes/NodeBus.h>
 #include <GraphCanvas/Components/Nodes/NodeTitleBus.h>
+#include <GraphCanvas/GraphCanvasBus.h>
 
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Core/NodelingBus.h>
@@ -30,6 +31,23 @@
 
 namespace ScriptCanvasEditor::Nodes
 {
+
+    void DataDrivenNodeCreationData::Reflect(AZ::ReflectContext* reflectContext)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflectContext);
+        if (serializeContext)
+        {
+            serializeContext->Class<DataDrivenNodeCreationData>()
+                ->Version(0)
+                ->Field("LexicalId", &DataDrivenNodeCreationData::m_lexicalId)
+                ->Field("UserData", &DataDrivenNodeCreationData::m_userData)
+                ->Field("Title", &DataDrivenNodeCreationData::m_title)
+                ->Field("ToolTip", &DataDrivenNodeCreationData::m_toolTip)
+                ->Field("DataType", &DataDrivenNodeCreationData::m_dataType)
+                ->Field("SubStyle", &DataDrivenNodeCreationData::m_subStyle);
+        }
+    }
+
     NodeIdPair CreateFunctionDefinitionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, bool isInput, AZStd::string rootName)
     {
         ScriptCanvasEditor::Nodes::StyleConfiguration styleConfiguration;
@@ -99,7 +117,7 @@ namespace ScriptCanvasEditor::Nodes
 
     AZStd::pair<ScriptCanvas::Node*, NodeIdPair> CreateAndGetNode(const AZ::Uuid& classId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const StyleConfiguration& styleConfiguration, AZStd::function<void(ScriptCanvas::Node*)> onCreateCallback)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         ScriptCanvas::Node* node{};
@@ -107,6 +125,7 @@ namespace ScriptCanvasEditor::Nodes
         scriptCanvasEntity->Init();
         nodeIdPair.m_scriptCanvasId = scriptCanvasEntity->GetId();
         ScriptCanvas::SystemRequestBus::BroadcastResult(node, &ScriptCanvas::SystemRequests::CreateNodeOnEntity, scriptCanvasEntity->GetId(), scriptCanvasId, classId);
+        
         if (onCreateCallback)
         {
             onCreateCallback(node);
@@ -134,7 +153,7 @@ namespace ScriptCanvasEditor::Nodes
 
     NodeIdPair CreateObjectMethodNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId, ScriptCanvas::PropertyStatus propertyStatus)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIds;
 
         ScriptCanvas::Node* node = nullptr;
@@ -161,7 +180,7 @@ namespace ScriptCanvasEditor::Nodes
 
     NodeIdPair CreateObjectMethodOverloadNode(AZStd::string_view className, AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIds;
 
         ScriptCanvas::Node* node = nullptr;
@@ -186,9 +205,9 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIds;
     }
 
-    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    NodeIdPair CreateGlobalMethodNode(AZStd::string_view methodName, bool isProperty, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIds;
 
         ScriptCanvas::Node* node = nullptr;
@@ -208,14 +227,14 @@ namespace ScriptCanvasEditor::Nodes
         AZ::EntityId graphCanvasGraphId;
         EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
 
-        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode);
+        nodeIds.m_graphCanvasId = DisplayMethodNode(graphCanvasGraphId, methodNode, isProperty);
 
         return nodeIds;
     }
 
     NodeIdPair CreateEbusWrapperNode(AZStd::string_view busName, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         ScriptCanvas::Node* node = nullptr;
@@ -237,11 +256,52 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
+    NodeIdPair CreateDataDrivenNode(const ScriptCanvasEditor::Nodes::DataDrivenNodeCreationData& nodeData, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
+    {
+        ScriptCanvas::Node* node = aznew ScriptCanvas::Node();
+        node->SetNodeName(nodeData.m_title);
+        node->SetNodeToolTip(nodeData.m_toolTip);
+        node->SetNodeLexicalId(nodeData.m_lexicalId);
+
+        ScriptCanvas::DynamicDataSlotConfiguration inputPin;
+        inputPin.m_name = " ";
+        inputPin.m_toolTip = "Input";
+        inputPin.m_canHaveInputField = false;
+        inputPin.SetConnectionType(ScriptCanvas::ConnectionType::Input);
+        inputPin.m_displayType = nodeData.m_dataType;
+
+        ScriptCanvas::DynamicDataSlotConfiguration outputPin;
+        outputPin.m_name = " ";
+        outputPin.m_toolTip = "Output";
+        outputPin.SetConnectionType(ScriptCanvas::ConnectionType::Output);
+        outputPin.m_displayType = nodeData.m_dataType;
+
+        AZ::Entity* nodeEntity{ aznew AZ::Entity };
+        nodeEntity->Init();
+        nodeEntity->SetName(node->GetNodeName());
+        nodeEntity->AddComponent(node);
+        ScriptCanvas::GraphRequestBus::Event(scriptCanvasId, &ScriptCanvas::GraphRequests::AddNode, nodeEntity->GetId());
+
+        node->AddSlot(inputPin, true);
+        node->AddSlot(outputPin, true);
+
+        node->SetNodeStyle(nodeData.m_subStyle);
+
+        AZ::EntityId graphCanvasGraphId;
+        EditorGraphRequestBus::EventResult(graphCanvasGraphId, scriptCanvasId, &EditorGraphRequests::GetGraphCanvasGraphId);
+
+        NodeIdPair nodeIdPair;
+        nodeIdPair.m_scriptCanvasId = nodeEntity->GetId();
+        nodeIdPair.m_graphCanvasId = DisplayScriptCanvasNode(graphCanvasGraphId, node);
+
+        return nodeIdPair;
+    }
+
     NodeIdPair CreateScriptEventReceiverNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const AZ::Data::AssetId& assetId)
     {
         AZ_Assert(assetId.IsValid(), "CreateScriptEventReceiverNode asset Id must be valid");
 
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
@@ -276,7 +336,7 @@ namespace ScriptCanvasEditor::Nodes
     {
         AZ_Assert(assetId.IsValid(), "CreateScriptEventSenderNode asset Id must be valid");
 
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         AZ::Data::Asset<ScriptEvents::ScriptEventsAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptEvents::ScriptEventsAsset>(assetId, AZ::Data::AssetLoadBehavior::Default);
@@ -300,9 +360,9 @@ namespace ScriptCanvasEditor::Nodes
         return nodeIdPair;
     }
 
-    NodeIdPair CreateGetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+    CreateNodeResult CreateGetVariableNodeResult(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         const AZ::Uuid k_VariableNodeTypeId = azrtti_typeid<ScriptCanvas::Nodes::Core::GetVariableNode>();
 
         NodeIdPair nodeIds;
@@ -328,12 +388,15 @@ namespace ScriptCanvasEditor::Nodes
 
         scriptCanvasEntity->SetName(AZStd::string::format("SC Node(GetVariable)"));
 
-        return nodeIds;
+        CreateNodeResult result;
+        result.node = node;
+        result.nodeIdPair = nodeIds;
+        return result;
     }
 
-    NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
+    CreateNodeResult CreateSetVariableNodeResult(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         const AZ::Uuid k_VariableNodeTypeId = azrtti_typeid<ScriptCanvas::Nodes::Core::SetVariableNode>();
 
         NodeIdPair nodeIds;
@@ -359,14 +422,27 @@ namespace ScriptCanvasEditor::Nodes
 
         scriptCanvasEntity->SetName(AZStd::string::format("SC Node(SetVariable)"));
 
-        return nodeIds;
+        CreateNodeResult result;
+        result.node = node;
+        result.nodeIdPair = nodeIds;
+        return result;
+    }
+
+    NodeIdPair CreateGetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+    {
+        return CreateGetVariableNodeResult(variableId, scriptCanvasGraphId).nodeIdPair;
+    }
+
+    NodeIdPair CreateSetVariableNode(const ScriptCanvas::VariableId& variableId, ScriptCanvas::ScriptCanvasId scriptCanvasGraphId)
+    {
+        return CreateSetVariableNodeResult(variableId, scriptCanvasGraphId).nodeIdPair;
     }
 
     NodeIdPair CreateFunctionNode(const ScriptCanvas::ScriptCanvasId& scriptCanvasGraphId, const AZ::Data::AssetId& assetId, const ScriptCanvas::Grammar::FunctionSourceId& sourceId)
     {
         AZ_Assert(assetId.IsValid(), "CreateFunctionNode source asset Id must be valid");
 
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         AZ::Data::Asset<ScriptCanvas::SubgraphInterfaceAsset> asset = AZ::Data::AssetManager::Instance().GetAsset<ScriptCanvas::SubgraphInterfaceAsset>(assetId, AZ::Data::AssetLoadBehavior::PreLoad);
@@ -394,7 +470,7 @@ namespace ScriptCanvasEditor::Nodes
     NodeIdPair CreateAzEventHandlerNode(const AZ::BehaviorMethod& methodWithAzEventReturn, ScriptCanvas::ScriptCanvasId scriptCanvasId,
         AZ::EntityId connectingMethodNodeId)
     {
-        AZ_PROFILE_TIMER("ScriptCanvas", __FUNCTION__);
+        AZ_PROFILE_FUNCTION(ScriptCanvas);
         NodeIdPair nodeIdPair;
 
         // Make sure the method returns an AZ::Event by reference or pointer
@@ -408,7 +484,7 @@ namespace ScriptCanvasEditor::Nodes
         AZ::BehaviorAzEventDescription behaviorAzEventDesc;
         AZ::AttributeReader azEventDescAttributeReader(nullptr, azEventDescAttribute);
         azEventDescAttributeReader.Read<decltype(behaviorAzEventDesc)>(behaviorAzEventDesc);
-        if(behaviorAzEventDesc.m_eventName.empty())
+        if (behaviorAzEventDesc.m_eventName.empty())
         {
             AZ_Error("NodeUtils", false, "Cannot create an AzEvent node with empty event name")
             return {};

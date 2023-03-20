@@ -44,7 +44,7 @@ FLEET_CONFIGURATIONS = [
             'build_path': '<build path>',
             # (Conditional) The operating system that the game server binaries are built to run on.
             # This parameter is required if the parameter build_path is defined.
-            # Choose from AMAZON_LINUX, AMAZON_LINUX or WINDOWS_2012.
+            # Choose from AMAZON_LINUX or WINDOWS_2012.
             'operating_system': 'WINDOWS_2012'
         },
         # (Optional) Information about the use of a TLS/SSL certificate for a fleet.
@@ -72,6 +72,7 @@ FLEET_CONFIGURATIONS = [
             },
             {
                 # Open the debug port for remote into a Windows fleet.
+                # Note: Remove this if fleet is Linux based, otherwise you will encounter restricted port failures
                 'from_port': 3389,
                 'ip_range': '<external ip range>',
                 'protocol': 'TCP',
@@ -79,6 +80,7 @@ FLEET_CONFIGURATIONS = [
             },
             {
                 # Open the debug port for remote into a Linux fleet.
+                # Note: Remove this if fleet is Windows based, otherwise you will encounter restricted port failures
                 'from_port': 22,
                 'ip_range': '<external ip range>',
                 'protocol': 'TCP',

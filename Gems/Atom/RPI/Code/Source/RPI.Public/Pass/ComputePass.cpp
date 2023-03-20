@@ -40,14 +40,28 @@ namespace AZ
             return pass;
         }
 
-        ComputePass::ComputePass(const PassDescriptor& descriptor)
+        ComputePass::ComputePass(const PassDescriptor& descriptor, AZ::Name supervariant)
             : RenderPass(descriptor)
             , m_passDescriptor(descriptor)
         {
-            LoadShader();
+            const ComputePassData* passData = PassUtils::GetPassData<ComputePassData>(m_passDescriptor);
+            if (passData == nullptr)
+            {
+                AZ_Error(
+                    "PassSystem", false, "[ComputePass '%s']: Trying to construct without valid ComputePassData!", GetPathName().GetCStr());
+                return;
+            }
+
+            RHI::DispatchDirect dispatchArgs;
+            dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
+            dispatchArgs.m_totalNumberOfThreadsY = passData->m_totalNumberOfThreadsY;
+            dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
+            m_dispatchItem.m_arguments = dispatchArgs;
+
+            LoadShader(supervariant);
         }
 
-        void ComputePass::LoadShader()
+        void ComputePass::LoadShader(AZ::Name supervariant)
         {
             // Load ComputePassData...
             const ComputePassData* passData = PassUtils::GetPassData<ComputePassData>(m_passDescriptor);
@@ -56,6 +70,12 @@ namespace AZ
                 AZ_Error("PassSystem", false, "[ComputePass '%s']: Trying to construct without valid ComputePassData!",
                     GetPathName().GetCStr());
                 return;
+            }
+
+            // Hardware Queue Class
+            if (passData->m_useAsyncCompute)
+            {
+                m_hardwareQueueClass = RHI::HardwareQueueClass::Compute;
             }
 
             // Load Shader
@@ -73,7 +93,7 @@ namespace AZ
                 return;
             }
 
-            m_shader = Shader::FindOrCreate(shaderAsset);
+            m_shader = Shader::FindOrCreate(shaderAsset, supervariant);
             if (m_shader == nullptr)
             {
                 AZ_Error("PassSystem", false, "[ComputePass '%s']: Failed to load shader '%s'!",
@@ -96,49 +116,30 @@ namespace AZ
             }
 
             // Load Draw SRG...
-            const auto drawSrgLayout = m_shader->FindShaderResourceGroupLayout(SrgBindingSlot::Draw);
-            if (drawSrgLayout)
+            const bool compileDrawSrg = false; // The SRG will be compiled in CompileResources()
+            m_drawSrg = m_shader->CreateDefaultDrawSrg(compileDrawSrg);
+
+            if (m_dispatchItem.m_arguments.m_type == RHI::DispatchType::Direct)
             {
-                m_drawSrg = ShaderResourceGroup::Create(shaderAsset, m_shader->GetSupervariantIndex(), drawSrgLayout->GetName());
-            }
-
-            RHI::DispatchDirect dispatchArgs;
-            dispatchArgs.m_totalNumberOfThreadsX = passData->m_totalNumberOfThreadsX;
-            dispatchArgs.m_totalNumberOfThreadsY = passData->m_totalNumberOfThreadsY;
-            dispatchArgs.m_totalNumberOfThreadsZ = passData->m_totalNumberOfThreadsZ;
-
-            const auto numThreads = m_shader->GetAsset()->GetAttribute(RHI::ShaderStage::Compute, Name{ "numthreads" });
-            if (numThreads)
-            {
-                const RHI::ShaderStageAttributeArguments& args = *numThreads;
-                bool validArgs = args.size() == 3;
-                if (validArgs)
+                const auto outcome = RPI::GetComputeShaderNumThreads(m_shader->GetAsset(), m_dispatchItem.m_arguments.m_direct);
+                if (!outcome.IsSuccess())
                 {
-                    validArgs &= args[0].type() == azrtti_typeid<int>();
-                    validArgs &= args[1].type() == azrtti_typeid<int>();
-                    validArgs &= args[2].type() == azrtti_typeid<int>();
-                }
-
-                if (!validArgs)
-                {
-                    AZ_Error("PassSystem", false, "[ComputePass '%s']: Shader '%s' contains invalid numthreads arguments.",
+                    AZ_Error(
+                        "PassSystem",
+                        false,
+                        "[ComputePass '%s']: Shader '%.*s' contains invalid numthreads arguments:\n%s",
                         GetPathName().GetCStr(),
-                        passData->m_shaderReference.m_filePath.data());
-                    return;
+                        passData->m_shaderReference.m_filePath.size(),
+                        passData->m_shaderReference.m_filePath.data(),
+                        outcome.GetError().c_str());
                 }
-
-                dispatchArgs.m_threadsPerGroupX = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[0]));
-                dispatchArgs.m_threadsPerGroupY = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[1]));
-                dispatchArgs.m_threadsPerGroupZ = aznumeric_cast<uint16_t>(AZStd::any_cast<int>(args[2]));
             }
-            m_dispatchItem.m_arguments = dispatchArgs;
 
             m_isFullscreenPass = passData->m_makeFullscreenPass;
 
             // Setup pipeline state...
             RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
-            const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
-            shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
+            m_shader->GetDefaultVariant().ConfigurePipelineState(pipelineStateDescriptor);
 
             m_dispatchItem.m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
 
@@ -147,12 +148,6 @@ namespace AZ
         }
 
         // Scope producer functions
-
-        void ComputePass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-        {
-            RenderPass::SetupFrameGraphDependencies(frameGraph);
-            frameGraph.SetEstimatedItemCount(1);
-        }
 
         void ComputePass::CompileResources(const RHI::FrameGraphCompileContext& context)
         {
@@ -180,14 +175,14 @@ namespace AZ
         void ComputePass::MatchDimensionsToOutput()
         {
             PassAttachment* outputAttachment = nullptr;
-            
+
             if (GetOutputCount() > 0)
             {
-                outputAttachment = GetOutputBinding(0).m_attachment.get();
+                outputAttachment = GetOutputBinding(0).GetAttachment().get();
             }
             else if (GetInputOutputCount() > 0)
             {
-                outputAttachment = GetInputOutputBinding(0).m_attachment.get();
+                outputAttachment = GetInputOutputBinding(0).GetAttachment().get();
             }
 
             AZ_Assert(outputAttachment != nullptr, "[ComputePass '%s']: A fullscreen compute pass must have a valid output or input/output.",
@@ -210,9 +205,14 @@ namespace AZ
             arguments.m_totalNumberOfThreadsZ = targetThreadCountZ;
         }
 
-        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup()
+        Data::Instance<ShaderResourceGroup> ComputePass::GetShaderResourceGroup() const
         {
             return m_shaderResourceGroup;
+        }
+
+        Data::Instance<Shader> ComputePass::GetShader() const
+        {
+            return m_shader;
         }
 
         void ComputePass::FrameBeginInternal(FramePrepareParams params)

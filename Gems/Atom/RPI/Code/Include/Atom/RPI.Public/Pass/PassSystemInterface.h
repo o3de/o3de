@@ -12,6 +12,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/string/string_view.h>
 
+#include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/PassDefines.h>
 
 #include <Atom/RPI.Reflect/Base.h>
@@ -39,32 +40,30 @@ namespace AZ
         // Enum to track the different execution phases of the Pass System
         enum class PassSystemState : u32
         {
-            // Default state, 
-            Unitialized,
+            Unitialized,            // Default state
+            InitializingPassSystem, // Initial Pass System setup. Transitions to Idle
+            RemovingPasses,         // Processing passes queued for Removal. Transitions to Idle
+            BuildingPasses,         // Processing passes queued for Build (and their child passes). Transitions to Idle
+            InitializingPasses,     // Processing passes queued for Initialization (and their child passes). Transitions to Idle
+            ValidatingPasses,       // Validating that the Pass hierarchy is in a valid state after Build and Initialization. Transitions to Idle
+            Idle,                   // Idle state. Can transition to any other state (except FrameEnd)
+            Rendering,              // Rendering a frame. Transitions to FrameEnd
+            FrameEnd,               // Finishing a frame. Transitions to Idle
+        };
 
-            // Initial Pass System setup. Transitions to Idle
-            InitializingPassSystem,
+        //! Frame counters used for collecting statistics
+        struct PassSystemFrameStatistics
+        {
+            u32 m_numRenderPassesExecuted = 0;
+            u32 m_totalDrawItemsRendered = 0;
+            u32 m_maxDrawItemsRenderedInAPass = 0;
+        };
 
-            // Pass System is processing passes queued for Removal. Transitions to Idle
-            RemovingPasses,
-
-            // Pass System is processing passes queued for Build (and their child passes). Transitions to Idle
-            BuildingPasses,
-
-            // Pass System is processing passes queued for Initialization (and their child passes). Transitions to Idle
-            InitializingPasses,
-
-            // Pass System is validating that the Pass hierarchy is in a valid state after Build and Initialization. Transitions to Idle
-            ValidatingPasses,
-
-            // Pass System is idle and can transition to any other state (except FrameEnd)
-            Idle,
-
-            // Pass System is currently rendering a frame. Transitions to FrameEnd
-            Rendering,
-
-            // Pass System is finishing rendering a frame. Transitions to Idle
-            FrameEnd,
+        
+        enum PassFilterExecutionFlow : uint8_t
+        {
+            StopVisitingPasses,
+            ContinueVisitingPasses,
         };
 
         class PassSystemInterface
@@ -86,6 +85,15 @@ namespace AZ
             //! Returns the root of the pass hierarchy
             virtual const Ptr<ParentPass>& GetRootPass() = 0;
 
+            //! Registers a render pipeline with the pass system
+            virtual void AddRenderPipeline(RenderPipeline* renderPipeline) = 0;
+
+            //! Removes a render pipeline from the pass system
+            virtual void RemoveRenderPipeline(RenderPipeline* renderPipeline) = 0;
+
+            //! Used to add passes that do not belong to any render pipeline
+            virtual void AddPassWithoutPipeline(const Ptr<Pass>& pass) = 0;
+
             //! Processes pass tree changes that were queued by QueueFor*() functions. This is called
             //! automatically in FrameUpdate(), but may be called manually when needed, like when 
             //! initializing a scene;
@@ -104,17 +112,38 @@ namespace AZ
             //! Prints the entire pass hierarchy from the root
             virtual void DebugPrintPassHierarchy() = 0;
 
-            //! Returns whether the Pass System is currently hot reloading
-            virtual bool IsHotReloading() const = 0;
-
-            //! Sets whether the Pass System is currently hot reloading
-            virtual void SetHotReloading(bool hotReloading) = 0;
-
             //! The pass system enables targeted debugging of a specific pass given the name of the pass
             //! These are the setters and getters for the specific Pass's name
             //! To break in your pass code for a specified pass name, use the macro below
             virtual void SetTargetedPassDebuggingName(const AZ::Name& targetPassName) = 0;
             virtual const AZ::Name& GetTargetedPassDebuggingName() const = 0;
+
+            //! Find the SwapChainPass associated with window Handle
+            virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
+
+            using OnReadyLoadTemplatesEvent = AZ::Event<>;
+            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
+            //! The event is triggered when pass system is initialized and asset system is ready.
+            //! The handler can add new pass templates or load pass template mappings from assets
+            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
+
+            virtual PassSystemState GetState() const = 0;
+
+            // Passes call this function to notify the pass system that they are drawing X draw items this frame
+            // Used for Pass System statistics
+            virtual void IncrementFrameDrawItemCount(u32 numDrawItems) = 0;
+
+            // Increments the counter for the number of render passes executed this frame (does not include passes that are disabled) 
+            virtual void IncrementFrameRenderPassCount() = 0;
+
+            // Get frame statistics from the Pass System
+            virtual PassSystemFrameStatistics GetFrameStatistics() = 0;
+
+            // Function for debug breaking into a pass provided the criteria for the break are met
+            // The default criteria is that the pass's name matches the TargetedPassDebuggingName (see above)
+            // Users can customize the logic in this function to suit their own debugging needs
+            // BUT these customizations should never be submitted and remain local changes only
+            virtual void DebugBreakOnPass(const Pass* pass) const = 0;
 
             // --- Pass Factory related functionality ---
 
@@ -141,7 +170,7 @@ namespace AZ
             virtual Ptr<Pass> CreatePassFromClass(Name passClassName, Name passName) = 0;
 
             //! Creates a Pass using a PassTemplate
-            virtual Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<PassTemplate>& passTemplate, Name passName) = 0;
+            virtual Ptr<Pass> CreatePassFromTemplate(const AZStd::shared_ptr<const PassTemplate>& passTemplate, Name passName) = 0;
 
             //! Creates a Pass using the name of a PassTemplate
             virtual Ptr<Pass> CreatePassFromTemplate(Name templateName, Name passName) = 0;
@@ -154,34 +183,33 @@ namespace AZ
 
             // --- Pass Library related functionality ---
 
+            //! Returns true if the pass library contains a pass template with the given template name
+            virtual bool HasTemplate(const Name& templateName) const = 0;
+
             //! Returns true if the pass factory contains passes created with the given template name
             virtual bool HasPassesForTemplateName(const Name& templateName) const = 0;
-
-            //! Get the passes created with the given template name.
-            virtual const AZStd::vector<Pass*>& GetPassesForTemplateName(const Name& templateName) const = 0;
 
             //! Adds a PassTemplate to the library
             virtual bool AddPassTemplate(const Name& name, const AZStd::shared_ptr<PassTemplate>& passTemplate) = 0;
 
             //! Retrieves a PassTemplate from the library
-            virtual const AZStd::shared_ptr<PassTemplate> GetPassTemplate(const Name& name) const = 0;
+            virtual const AZStd::shared_ptr<const PassTemplate> GetPassTemplate(const Name& name) const = 0;
+
+            //! See remarks in PassLibrary.h for the function with this name.
+            virtual void RemovePassTemplate(const Name& name) = 0;
 
             //! Removes all references to the given pass from the pass library
             virtual void RemovePassFromLibrary(Pass* pass) = 0;
+                        
+            //! Visit the matching passes from registered passes with specified filter
+            //! The return value of the passFunction decides if the search continues or not
+            //! Note: this function will find all the passes which match the pass filter even they are for render pipelines which are not added to a scene
+            //! This function is fast if a pass name or a pass template name is specified. 
+            virtual void ForEachPass(const PassFilter& filter, AZStd::function<PassFilterExecutionFlow(Pass*)> passFunction) = 0;
 
-            //! Find matching passes from registered passes with specified filter
-            virtual AZStd::vector<Pass*> FindPasses(const PassFilter& passFilter) const = 0;
-
-            //! Find the SwapChainPass associated with window Handle
-            virtual SwapChainPass* FindSwapChainPass(AzFramework::NativeWindowHandle windowHandle) const = 0;
-
-            using OnReadyLoadTemplatesEvent = AZ::Event<>;
-            //! Connect a handler to listen to the event that the pass system is ready to load pass templates
-            //! The event is triggered when pass system is initialized and asset system is ready.
-            //! The handler can add new pass templates or load pass template mappings from assets
-            virtual void ConnectEvent(OnReadyLoadTemplatesEvent::Handler& handler) = 0;
-
-            virtual PassSystemState GetState() const = 0;
+            //! Find the first matching pass from registered passes with specified filter
+            //! Note: this function SHOULD ONLY be used when you are certain you only need to handle the first pass found
+            virtual Pass* FindFirstPass(const PassFilter& filter) = 0;
 
         private:
             // These functions are only meant to be used by the Pass class
@@ -200,7 +228,6 @@ namespace AZ
 
             //! Unregisters the pass with the pass library. Called in the Pass destructor.
             virtual void UnregisterPass(Pass* pass) = 0;
-
         };
                 
         namespace PassSystemEvents

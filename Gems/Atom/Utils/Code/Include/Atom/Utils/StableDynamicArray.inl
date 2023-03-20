@@ -305,7 +305,7 @@ namespace AZ
     template<typename T, size_t ElementsPerPage, class Allocator>
     size_t StableDynamicArray<T, ElementsPerPage, Allocator>::Page::Reserve()
     {
-        for (m_bitStartIndex; m_bitStartIndex < NumUint64_t; ++m_bitStartIndex)
+        for (; m_bitStartIndex < NumUint64_t; ++m_bitStartIndex)
         {
             if (m_bits[m_bitStartIndex] != FullBits)
             {
@@ -462,7 +462,7 @@ namespace AZ
         }
 
         // skip the empty bitfields in the page
-        for (m_bitGroupIndex; m_bitGroupIndex < Page::NumUint64_t && m_page->m_bits.at(m_bitGroupIndex) == 0; ++m_bitGroupIndex)
+        for (; m_bitGroupIndex < Page::NumUint64_t && m_page->m_bits.at(m_bitGroupIndex) == 0; ++m_bitGroupIndex)
         {
         }
 
@@ -614,6 +614,38 @@ namespace AZ
         m_remainingBitsInBitGroup &= (m_remainingBitsInBitGroup - 1);
     }
 
+
+    // StableDynamicArray::WeakHandle
+    template<typename ValueType>
+    StableDynamicArrayWeakHandle<ValueType>::StableDynamicArrayWeakHandle(ValueType* data)
+        : m_data(data)
+    {
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::IsValid() const
+    {
+        return m_data != nullptr;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::IsNull() const
+    {
+        return m_data == nullptr;
+    }
+
+    template<typename ValueType>
+    ValueType& StableDynamicArrayWeakHandle<ValueType>::operator*() const
+    {
+        return *m_data;
+    }
+
+    template<typename ValueType>
+    ValueType* StableDynamicArrayWeakHandle<ValueType>::operator->() const
+    {
+        return m_data;
+    }
+
     // StableDynamicArray::Handle
 
 
@@ -734,6 +766,12 @@ namespace AZ
         m_data = nullptr;
         m_destructorCallback = nullptr;
         m_page = nullptr;
+    }
+
+    template<typename ValueType>
+    StableDynamicArrayWeakHandle<ValueType> StableDynamicArrayHandle<ValueType>::GetWeakHandle() const
+    {
+        return StableDynamicArrayWeakHandle<ValueType>(m_data);
     }
 
 } // end namespace AZ

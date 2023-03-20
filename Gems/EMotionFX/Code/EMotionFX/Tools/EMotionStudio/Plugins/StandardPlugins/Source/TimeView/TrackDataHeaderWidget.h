@@ -57,26 +57,26 @@ namespace EMStudio
         void keyReleaseEvent(QKeyEvent* event) override;
 
     private:
-        QBrush              mBrushBackgroundOutOfRange;
-        TimeViewPlugin*     mPlugin;
-        bool                mMouseLeftClicked;
-        bool                mMouseMidClicked;
-        bool                mMouseRightClicked;
-        bool                mIsScrolling;
-        int32               mLastMouseX;
-        int32               mLastMouseY;
-        bool                mAllowContextMenu;
+        QBrush              m_brushBackgroundOutOfRange;
+        TimeViewPlugin*     m_plugin;
+        bool                m_mouseLeftClicked;
+        bool                m_mouseMidClicked;
+        bool                m_mouseRightClicked;
+        bool                m_isScrolling;
+        int32               m_lastMouseX;
+        int32               m_lastMouseY;
+        bool                m_allowContextMenu;
 
-        QPixmap             mTimeHandleTop;
+        QPixmap             m_timeHandleTop;
 
-        QFont               mTimeLineFont;
-        QFont               mDataFont;
-        AZStd::string       mTimeString;
-        QLinearGradient     mHeaderGradientActive;
-        QLinearGradient     mHeaderGradientInactive;
-        QLinearGradient     mHeaderGradientActiveFocus;
-        QLinearGradient     mHeaderGradientInactiveFocus;
-        QPen                mPenMainTimeStepLinesActive;
+        QFont               m_timeLineFont;
+        QFont               m_dataFont;
+        AZStd::string       m_timeString;
+        QLinearGradient     m_headerGradientActive;
+        QLinearGradient     m_headerGradientInactive;
+        QLinearGradient     m_headerGradientActiveFocus;
+        QLinearGradient     m_headerGradientInactiveFocus;
+        QPen                m_penMainTimeStepLinesActive;
 
         void UpdateMouseOverCursor();
         void DrawTimeLine(QPainter& painter, const QRect& rect);

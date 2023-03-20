@@ -20,16 +20,16 @@ namespace AzToolsFramework
             : public TemplateInstanceMapperInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(TemplateInstanceMapper, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TemplateInstanceMapper, AZ::SystemAllocator);
             AZ_RTTI(TemplateInstanceMapper, "{28EA46C7-F107-4D41-A008-960BED6371FB}", TemplateInstanceMapperInterface);
 
             TemplateInstanceMapper();
             ~TemplateInstanceMapper() override;
 
-            InstanceSetConstReference FindInstancesOwnedByTemplate(const TemplateId& templateId) const override;
+            InstanceSetConstReference FindInstancesOwnedByTemplate(TemplateId templateId) const override;
 
-            bool RegisterTemplate(const TemplateId& templateId);
-            bool UnregisterTemplate(const TemplateId& templateId);
+            bool RegisterTemplate(TemplateId templateId);
+            bool UnregisterTemplate(TemplateId templateId);
 
         protected:
             bool RegisterInstanceToTemplate(Instance& instance) override;

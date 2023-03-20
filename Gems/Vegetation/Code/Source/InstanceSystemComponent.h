@@ -15,8 +15,9 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Math/Aabb.h>
-#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/containers/list.h>
+#include <AzCore/std/containers/map.h>
+#include <AzCore/std/containers/vector.h>
 #include <AzCore/std/function/function_fwd.h>
 
 #include <Vegetation/Descriptor.h>
@@ -43,7 +44,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(InstanceSystemConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(InstanceSystemConfig, AZ::SystemAllocator);
         AZ_RTTI(InstanceSystemConfig, "{63984856-F883-4F8C-9049-5A8F26477B76}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

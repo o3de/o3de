@@ -20,7 +20,7 @@ namespace O3DE::ProjectManager
     class ScreenHeader 
         : public QFrame 
     {
-        Q_OBJECT // AUTOMOC
+        Q_OBJECT
 
     public:
         ScreenHeader(QWidget* parent = nullptr);

@@ -562,21 +562,22 @@ namespace UnitTest
     };
 
     class AddComponentsTest
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             AZ::SettingsRegistryInterface* registry = AZ::SettingsRegistry::Get();
             auto projectPathKey =
                 AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
-            registry->Set(projectPathKey, "AutomatedTesting");
+            AZ::IO::FixedMaxPath enginePath;
+            registry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
             AzFramework::Application::Descriptor descriptor;
-            descriptor.m_enableDrilling = false;
             m_app.Start(descriptor);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -609,7 +610,7 @@ namespace UnitTest
         {
             m_app.Stop();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzToolsFramework::ToolsApplication m_app;
@@ -1084,7 +1085,7 @@ namespace UnitTest
     //      Memory
     //      Serialize (and Edit) contexts
     class MockApplicationFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
@@ -1114,22 +1115,20 @@ namespace UnitTest
         SerializeContext* GetSerializeContext() override { return m_serializeContext.get(); }
         BehaviorContext*  GetBehaviorContext() override { return nullptr; }
         JsonRegistrationContext* GetJsonRegistrationContext() override { return nullptr; }
-        const char* GetAppRoot() const override { return nullptr; }
         const char* GetEngineRoot() const override { return nullptr; }
         const char* GetExecutableFolder() const override { return nullptr; }
-        Debug::DrillerManager* GetDrillerManager() override { return nullptr; }
         void EnumerateEntities(const EntityCallback& /*callback*/) override {}
         void QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const override {}
         //////////////////////////////////////////////////////////////////////////
 
         MockApplicationFixture()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             ComponentApplicationBus::Handler::BusConnect();
             AZ::Interface<AZ::ComponentApplicationRequests>::Register(this);
@@ -1150,7 +1149,7 @@ namespace UnitTest
             AZ::Interface<AZ::ComponentApplicationRequests>::Unregister(this);
             ComponentApplicationBus::Handler::BusDisconnect();
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 
@@ -1203,7 +1202,7 @@ namespace UnitTest
             AZ_COMPONENT(HiddenComponent, "{E4D2AD8B-3930-46FC-837A-8DDFCA0FB1AF}", AzToolsFramework::Components::EditorComponentBase);
 
             static Component* s_wasDeleted;
-            virtual ~HiddenComponent()
+            ~HiddenComponent() override
             {
                 s_wasDeleted = this;
             }

@@ -50,7 +50,6 @@ namespace AZ
                 {
                     ec->Class<AtomBridgeSystemComponent>("AtomBridge", "[Description of functionality provided by this System Component]")
                         ->ClassElement(Edit::ClassElements::EditorData, "")
-                            ->Attribute(Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                             ->Attribute(Edit::Attributes::AutoExpand, true)
                     ;
                 }
@@ -67,12 +66,12 @@ namespace AZ
 
         void AtomBridgeSystemComponent::GetProvidedServices(ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+            provided.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
         }
 
         void AtomBridgeSystemComponent::GetIncompatibleServices(ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("AtomBridgeService", 0xdb816a99));
+            incompatible.push_back(AZ_CRC("AtomBridgeService", 0x92d990b5));
         }
 
         void AtomBridgeSystemComponent::GetRequiredServices(ComponentDescriptor::DependencyArrayType& required)
@@ -108,7 +107,7 @@ namespace AZ
         { 
             m_dynamicDrawManager.reset();
             AZ::RPI::ViewportContextManagerNotificationsBus::Handler::BusDisconnect();
-            RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
+            RPI::Scene* scene = AZ::RPI::Scene::GetSceneForEntityContextId(m_entityContextId);
             // Check if scene is emptry since scene might be released already when running AtomSampleViewer 
             if (scene)
             {
@@ -157,9 +156,9 @@ namespace AZ
 
         void AtomBridgeSystemComponent::OnBootstrapSceneReady(AZ::RPI::Scene* bootstrapScene)
         {
-            AZ_UNUSED(bootstrapScene);
             // Make default AtomDebugDisplayViewportInterface
-            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay = AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId);
+            AZStd::shared_ptr<AtomDebugDisplayViewportInterface> mainEntityDebugDisplay =
+                AZStd::make_shared<AtomDebugDisplayViewportInterface>(AzFramework::g_defaultSceneEntityDebugDisplayId, bootstrapScene);
             m_activeViewportsList[AzFramework::g_defaultSceneEntityDebugDisplayId] = mainEntityDebugDisplay;
         }
 

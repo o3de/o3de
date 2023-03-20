@@ -1,0 +1,42 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridUpdatePassTemplate",
+            "PassClass": "ParentPass",
+            "PassRequests": [
+                {
+                    "Name": "DiffuseProbeGridPreparePass",
+                    "TemplateName": "DiffuseProbeGridPreparePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridRayTracingPass",
+                    "TemplateName": "DiffuseProbeGridRayTracingPassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridBlendIrradiancePass",
+                    "TemplateName": "DiffuseProbeGridBlendIrradiancePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridBlendDistancePass",
+                    "TemplateName": "DiffuseProbeGridBlendDistancePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridBorderUpdatePass",
+                    "TemplateName": "DiffuseProbeGridBorderUpdatePassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridRelocationPass",
+                    "TemplateName": "DiffuseProbeGridRelocationPassTemplate"
+                },
+                {
+                    "Name": "DiffuseProbeGridClassificationPass",
+                    "TemplateName": "DiffuseProbeGridClassificationPassTemplate"
+                }
+            ]
+        }
+    }
+}
+ 

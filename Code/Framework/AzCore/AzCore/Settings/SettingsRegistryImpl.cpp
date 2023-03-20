@@ -9,22 +9,78 @@
 #include <cctype>
 #include <cerrno>
 #include <AzCore/Casting/numeric_cast.h>
+#include <AzCore/IO/FileIO.h>
+#include <AzCore/IO/FileReader.h>
 #include <AzCore/JSON/error/en.h>
-#include <AzCore/NativeUI//NativeUIRequests.h>
+#include <AzCore/NativeUI/NativeUIRequests.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Serialization/Json/StackedString.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/parallel/scoped_lock.h>
+#include <AzCore/std/ranges/ranges_algorithm.h>
+#include <AzCore/std/ranges/split_view.h>
+
+namespace AZ::SettingsRegistryImplInternal
+{
+    [[nodiscard]] AZ::SettingsRegistryInterface::Type RapidjsonToSettingsRegistryType(const rapidjson::Value& value)
+    {
+        using Type = AZ::SettingsRegistryInterface::Type;
+        switch (value.GetType())
+        {
+        case rapidjson::Type::kNullType:
+            return Type::Null;
+        case rapidjson::Type::kFalseType:
+            return Type::Boolean;
+        case rapidjson::Type::kTrueType:
+            return Type::Boolean;
+        case rapidjson::Type::kObjectType:
+            return Type::Object;
+        case rapidjson::Type::kArrayType:
+            return Type::Array;
+        case rapidjson::Type::kStringType:
+            return Type::String;
+        case rapidjson::Type::kNumberType:
+            return value.IsDouble() ? Type::FloatingPoint :
+                Type::Integer;
+        }
+
+        return Type::NoType;
+    }
+}
 
 namespace AZ
 {
+    SettingsRegistryImpl::ScopedMergeEvent::ScopedMergeEvent(SettingsRegistryImpl& settingsRegistry,
+        MergeEventArgs mergeEventArgs)
+        : m_settingsRegistry{ settingsRegistry }
+        , m_mergeEventArgs{ AZStd::move(mergeEventArgs) }
+    {
+        {
+            // Push the file to be merged under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.LockForWriting());
+            m_settingsRegistry.m_mergeFilePathStack.emplace(m_mergeEventArgs.m_mergeFilePath);
+        }
+        m_settingsRegistry.m_preMergeEvent.Signal(mergeEventArgs);
+    }
+
+    SettingsRegistryImpl::ScopedMergeEvent::~ScopedMergeEvent()
+    {
+        m_settingsRegistry.m_postMergeEvent.Signal(m_mergeEventArgs);
+
+        {
+            // Pop the file that finished merging under protection of the Settings Mutex
+            AZStd::scoped_lock lock(m_settingsRegistry.LockForWriting());
+            m_settingsRegistry.m_mergeFilePathStack.pop();
+        }
+    }
+
     template<typename T>
-    bool SettingsRegistryImpl::SetValueInternal(AZStd::string_view path, T value, SettingsRegistryInterface::Type type)
+    bool SettingsRegistryImpl::SetValueInternal(AZStd::string_view path, T value)
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -56,7 +112,6 @@ namespace AZ
                 static_assert(!AZStd::is_same_v<T, T>, "SettingsRegistryImpl::SetValueInternal called with unsupported type.");
             }
 
-            m_notifiers.Signal(path, type);
             return true;
         }
         return false;
@@ -67,7 +122,7 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
@@ -75,6 +130,8 @@ namespace AZ
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
+            AZStd::scoped_lock lock(LockForReading());
+
             const rapidjson::Value* value = pointer.Get(m_settings);
             if constexpr (AZStd::is_same_v<T, bool>)
             {
@@ -132,9 +189,17 @@ namespace AZ
         pointer.Create(m_settings, m_settings.GetAllocator()).SetArray();
     }
 
+    SettingsRegistryImpl::SettingsRegistryImpl(bool useFileIo)
+        : SettingsRegistryImpl()
+    {
+        m_useFileIo = useFileIo;
+    }
+
+    SettingsRegistryImpl::~SettingsRegistryImpl() = default;
+
     void SettingsRegistryImpl::SetContext(SerializeContext* context)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
+        AZStd::scoped_lock lock(LockForWriting());
 
         m_serializationSettings.m_serializeContext = context;
         m_deserializationSettings.m_serializeContext = context;
@@ -142,7 +207,7 @@ namespace AZ
 
     void SettingsRegistryImpl::SetContext(JsonRegistrationContext* context)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
+        AZStd::scoped_lock lock(LockForWriting());
 
         m_serializationSettings.m_registrationContext = context;
         m_deserializationSettings.m_registrationContext = context;
@@ -152,16 +217,19 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
-        AZStd::scoped_lock lock(m_settingMutex);
 
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
+            // During GetValue and Visit, we are not about to mutate
+            // the values in the registry, so do NOT call LockForWriting, just
+            // lock the mutex.
+            AZStd::scoped_lock lock(LockForReading());
             const rapidjson::Value* value = pointer.Get(m_settings);
             if (value)
             {
@@ -169,7 +237,9 @@ namespace AZ
                 if (!path.empty())
                 {
                     path.remove_prefix(1); // Remove the leading slash as the StackedString will add this back in.
-                    jsonPath.Push(path);
+                    // Push each JSON pointer reference token to avoid '/' being encoded
+                    AZStd::ranges::for_each(path | AZStd::views::split(JsonPointerReferenceTokenPrefix),
+                        [&jsonPath](AZStd::string_view refToken) { jsonPath.Push(refToken); });
                 }
                 // Extract the last token of the JSON pointer to use as the valueName
                 AZStd::string_view valueName;
@@ -192,9 +262,9 @@ namespace AZ
         {
             explicit CallbackVisitor(const VisitorCallback& callback) : m_callback(callback) {};
 
-            VisitResponse Traverse(AZStd::string_view path, AZStd::string_view valueName, VisitAction action, Type type) override
+            VisitResponse Traverse(const AZ::SettingsRegistryInterface::VisitArgs& visitArgs, VisitAction action) override
             {
-                return m_callback(path, valueName, action, type);
+                return m_callback(visitArgs, action);
             }
 
             const VisitorCallback& m_callback;
@@ -203,124 +273,218 @@ namespace AZ
         return Visit(visitor, path);
     }
 
-    auto SettingsRegistryImpl::RegisterNotifier(const NotifyCallback& callback) -> NotifyEventHandler
+    auto SettingsRegistryImpl::RegisterNotifier(NotifyCallback callback) -> NotifyEventHandler
     {
-        NotifyEventHandler notifyHandler{ callback };
+        NotifyEventHandler notifyHandler{ AZStd::move(callback) };
         {
-            AZStd::scoped_lock lock(m_settingMutex);
+            AZStd::scoped_lock lock(m_notifierMutex);
             notifyHandler.Connect(m_notifiers);
         }
         return notifyHandler;
     }
 
-    auto SettingsRegistryImpl::RegisterNotifier(NotifyCallback&& callback) -> NotifyEventHandler
+    auto SettingsRegistryImpl::RegisterNotifier(NotifyEventHandler& notifyHandler) -> void
     {
-        NotifyEventHandler notifyHandler{ AZStd::move(callback) };
-        {
-            AZStd::scoped_lock lock(m_settingMutex);
-            notifyHandler.Connect(m_notifiers);
-        }
-        return notifyHandler;
+        AZStd::scoped_lock lock(m_notifierMutex);
+        notifyHandler.Connect(m_notifiers);
     }
 
     void SettingsRegistryImpl::ClearNotifiers()
     {
-        AZStd::scoped_lock lock(m_settingMutex);
+        AZStd::scoped_lock lock(m_notifierMutex);
         m_notifiers.DisconnectAllHandlers();
     }
 
-    SettingsRegistryInterface::Type SettingsRegistryImpl::GetType(AZStd::string_view path) const
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventCallback callback) -> PreMergeEventHandler
+    {
+        PreMergeEventHandler preMergeHandler{ AZStd::move(callback) };
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+            preMergeHandler.Connect(m_preMergeEvent);
+        }
+        return preMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPreMergeEvent(PreMergeEventHandler& preMergeHandler) -> void
+    {
+        AZStd::scoped_lock lock(LockForWriting());
+        preMergeHandler.Connect(m_preMergeEvent);
+    }
+
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventCallback callback) -> PostMergeEventHandler
+    {
+        PostMergeEventHandler postMergeHandler{ AZStd::move(callback) };
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+            postMergeHandler.Connect(m_postMergeEvent);
+        }
+        return postMergeHandler;
+    }
+
+    auto SettingsRegistryImpl::RegisterPostMergeEvent(PostMergeEventHandler& postMergeHandler) -> void
+    {
+        AZStd::scoped_lock lock(LockForWriting());
+        postMergeHandler.Connect(m_postMergeEvent);
+    }
+
+    void SettingsRegistryImpl::ClearMergeEvents()
+    {
+        AZStd::scoped_lock lock(LockForWriting());
+        m_preMergeEvent.DisconnectAllHandlers();
+        m_postMergeEvent.DisconnectAllHandlers();
+    }
+
+    void SettingsRegistryImpl::SignalNotifier(AZStd::string_view jsonPath, SettingsType type)
+    {
+        // Move the Notifier AZ::Event to a local AZ::Event in order to allow
+        // the notifier handlers to be signaled outside of the notifier mutex
+        // This allows other threads to register notifiers while this thread
+        // is invoking the handlers
+        decltype(m_notifiers) localNotifierEvent;
+        {
+            AZStd::scoped_lock lock(m_notifierMutex);
+            localNotifierEvent = AZStd::move(m_notifiers);
+        }
+
+        // Signal the NotifyEvent for each queued argument
+        decltype(m_signalNotifierQueue) localNotifierQueue;
+        {
+            AZStd::scoped_lock signalLock(m_signalMutex);
+            m_signalNotifierQueue.push_back({
+                FixedValueString{jsonPath},
+                type,
+                !m_mergeFilePathStack.empty() ? m_mergeFilePathStack.top() : "<in-memory>"});
+            // If the signal count was 0, then a dispatch is in progress
+            if (m_signalCount++ == 0)
+            {
+                AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+            }
+        }
+
+        while (!localNotifierQueue.empty())
+        {
+            for (const SignalNotifierArgs& notifierArgs : localNotifierQueue)
+            {
+                localNotifierEvent.Signal({ notifierArgs.m_jsonPath, notifierArgs.m_type, notifierArgs.m_mergeFilePath.Native()});
+            }
+            // Clear the local notifier queue and check if more notifiers have been added
+            localNotifierQueue = {};
+            {
+                AZStd::scoped_lock signalLock(m_signalMutex);
+                AZStd::swap(localNotifierQueue, m_signalNotifierQueue);
+            }
+        }
+
+        {
+            AZStd::scoped_lock signalLock(m_signalMutex);
+            --m_signalCount;
+        }
+
+        {
+            // Swap the local handlers with the current m_notifiers which
+            // will contain any handlers added during the signaling of the
+            // local event
+            AZStd::scoped_lock lock(m_notifierMutex);
+            AZStd::swap(m_notifiers, localNotifierEvent);
+            // Append any added handlers to the m_notifier structure
+            m_notifiers.ClaimHandlers(AZStd::move(localNotifierEvent));
+        }
+    }
+
+    [[nodiscard]] SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetType(AZStd::string_view path) const
     {
         if (path.empty())
         {
-            //rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
 
-        AZStd::scoped_lock lock(m_settingMutex);
-
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
-            const rapidjson::Value* value = pointer.Get(m_settings);
-            if (value)
+            AZStd::scoped_lock lock(LockForReading());
+            return GetTypeNoLock(path);
+        }
+        return SettingsType{};
+    }
+
+    [[nodiscard]] SettingsRegistryInterface::SettingsType SettingsRegistryImpl::GetTypeNoLock(AZStd::string_view path) const
+    {
+        if (path.empty())
+        {
+            // rapidjson::Pointer asserts that the supplied string
+            // is not nullptr even if the supplied size is 0
+            // Setting to empty string to prevent assert
+            path = "";
+        }
+        rapidjson::Pointer pointer(path.data(), path.length());
+        if (pointer.IsValid())
+        {
+            if (const rapidjson::Value* value = pointer.Get(m_settings); value != nullptr)
             {
-                switch (value->GetType())
+                SettingsType type;
+                type.m_type = SettingsRegistryImplInternal::RapidjsonToSettingsRegistryType(*value);
+                if (value->IsInt64())
                 {
-                case rapidjson::Type::kNullType:
-                    return Type::Null;
-                case rapidjson::Type::kFalseType:
-                    return Type::Boolean;
-                case rapidjson::Type::kTrueType:
-                    return Type::Boolean;
-                case rapidjson::Type::kObjectType:
-                    return Type::Object;
-                case rapidjson::Type::kArrayType:
-                    return Type::Array;
-                case rapidjson::Type::kStringType:
-                    return Type::String;
-                case rapidjson::Type::kNumberType:
-                    return 
-                        value->IsDouble() ? Type::FloatingPoint :
-                        Type::Integer;
+                    type.m_signedness = Signedness::Signed;
                 }
+                else if (value->IsUint64())
+                {
+                    type.m_signedness = Signedness::Unsigned;
+                }
+                return type;
             }
         }
-        return Type::NoType;
+        return { Type::NoType, Signedness::None };
     }
+
 
     bool SettingsRegistryImpl::Get(bool& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
     bool SettingsRegistryImpl::Get(s64& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
     bool SettingsRegistryImpl::Get(u64& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
     bool SettingsRegistryImpl::Get(double& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
     bool SettingsRegistryImpl::Get(AZStd::string& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
     bool SettingsRegistryImpl::Get(FixedValueString& result, AZStd::string_view path) const
     {
-        AZStd::scoped_lock lock(m_settingMutex);
         return GetValueInternal(result, path);
     }
 
-    bool SettingsRegistryImpl::GetObject(void* result, Uuid resultTypeID, AZStd::string_view path) const
+    bool SettingsRegistryImpl::GetObject(void* result, AZ::Uuid resultTypeID, AZStd::string_view path) const
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
-        AZStd::scoped_lock lock(m_settingMutex);
 
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
+            AZStd::scoped_lock lock(LockForReading());
             const rapidjson::Value* value = pointer.Get(m_settings);
             if (value)
             {
@@ -333,32 +497,52 @@ namespace AZ
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, bool value)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
-        return SetValueInternal(path, value, Type::Boolean);
+        if (AZStd::scoped_lock lock(LockForWriting()); !SetValueInternal(path, value))
+        {
+            return false;
+        }
+        SignalNotifier(path, { Type::Boolean });
+        return true;
     }
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, s64 value)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
-        return SetValueInternal(path, value, Type::Integer);
+        if (AZStd::scoped_lock lock(LockForWriting()); !SetValueInternal(path, value))
+        {
+            return false;
+        }
+        SignalNotifier(path, { Type::Integer, Signedness::Signed });
+        return true;
     }
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, u64 value)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
-        return SetValueInternal(path, value, Type::Integer);
+        if (AZStd::scoped_lock lock(LockForWriting()); !SetValueInternal(path, value))
+        {
+            return false;
+        }
+        SignalNotifier(path, { Type::Integer, Signedness::Unsigned });
+        return true;
     }
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, double value)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
-        return SetValueInternal(path, value, Type::FloatingPoint);
+        if (AZStd::scoped_lock lock(LockForWriting()); !SetValueInternal(path, value))
+        {
+            return false;
+        }
+        SignalNotifier(path, { Type::FloatingPoint });
+        return true;
     }
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, AZStd::string_view value)
     {
-        AZStd::scoped_lock lock(m_settingMutex);
-        return SetValueInternal(path, value, Type::String);
+        if (AZStd::scoped_lock lock(LockForWriting()); !SetValueInternal(path, value))
+        {
+            return false;
+        }
+        SignalNotifier(path, SettingsType{ Type::String });
+        return true;
     }
 
     bool SettingsRegistryImpl::Set(AZStd::string_view path, const char* value)
@@ -366,29 +550,32 @@ namespace AZ
         return Set(path, AZStd::string_view{ value });
     }
 
-    bool SettingsRegistryImpl::SetObject(AZStd::string_view path, const void* value, Uuid valueTypeID)
+    bool SettingsRegistryImpl::SetObject(AZStd::string_view path, const void* value, AZ::Uuid valueTypeID)
     {
         if (path.empty())
         {
-            //rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
 
-        AZStd::scoped_lock lock(m_settingMutex);
-
         rapidjson::Pointer pointer(path.data(), path.length());
         if (pointer.IsValid())
         {
             rapidjson::Value store;
-            JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(), 
+            JsonSerializationResult::ResultCode jsonResult = JsonSerialization::Store(store, m_settings.GetAllocator(),
                 value, nullptr, valueTypeID, m_serializationSettings);
             if (jsonResult.GetProcessing() != JsonSerializationResult::Processing::Halted)
             {
-                rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
-                setting = AZStd::move(store);
-                m_notifiers.Signal(path, Type::Object);
+                SettingsType anchorType;
+                {
+                    AZStd::scoped_lock lock(LockForWriting());
+                    rapidjson::Value& setting = pointer.Create(m_settings, m_settings.GetAllocator());
+                    setting = AZStd::move(store);
+                    anchorType = GetTypeNoLock(path);
+                }
+                SignalNotifier(path, anchorType);
                 return true;
             }
         }
@@ -399,19 +586,28 @@ namespace AZ
     {
         if (path.empty())
         {
-            // rapidjson::Pointer assets that the supplied string
+            // rapidjson::Pointer asserts that the supplied string
             // is not nullptr even if the supplied size is 0
             // Setting to empty string to prevent assert
             path = "";
         }
-        AZStd::scoped_lock lock(m_settingMutex);
         rapidjson::Pointer pointerPath(path.data(), path.size());
         if (!pointerPath.IsValid())
         {
             return false;
         }
 
-        return pointerPath.Erase(m_settings);
+        bool removeSuccess;
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+            removeSuccess = pointerPath.Erase(m_settings);
+        }
+
+        // The removal type is Type::NoType
+        constexpr SettingsType removeType;
+        SignalNotifier(path, removeType);
+
+        return removeSuccess;
     }
 
     bool SettingsRegistryImpl::MergeCommandLineArgument(AZStd::string_view argument, AZStd::string_view rootKey,
@@ -504,7 +700,7 @@ namespace AZ
         return Set(key, value);
     }
 
-    bool SettingsRegistryImpl::MergeSettings(AZStd::string_view data, Format format)
+    bool SettingsRegistryImpl::MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey)
     {
         rapidjson::Document jsonPatch;
         constexpr int flags = rapidjson::kParseStopWhenDoneFlag | rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag;
@@ -530,30 +726,90 @@ namespace AZ
             return false;
         }
 
-        AZStd::scoped_lock lock(m_settingMutex);
-
-        JsonSerializationResult::ResultCode mergeResult =
-            JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach);
-        if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
+        rapidjson::Pointer anchorPath;
+        if (!anchorKey.empty())
         {
-            AZ_Error("Settings Registry", false, "Failed to fully merge data into registry.");
-            return false;
+            anchorPath = rapidjson::Pointer(anchorKey.data(), anchorKey.size());
+            if (!anchorPath.IsValid())
+            {
+                rapidjson::Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
+                AZ_Error("Settings Registry", false, R"(Anchor path "%.*s" is invalid.)", AZ_STRING_ARG(anchorKey));
+                AZStd::scoped_lock lock(LockForWriting());
+                pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
+                    .AddMember(rapidjson::StringRef("Error"), rapidjson::StringRef("Invalid anchor key."), m_settings.GetAllocator())
+                    .AddMember(rapidjson::StringRef("Path"),
+                    rapidjson::Value(anchorKey.data(), aznumeric_caster(anchorKey.size()), m_settings.GetAllocator()),
+                    m_settings.GetAllocator());
+                return false;
+            }
         }
 
-        m_notifiers.Signal("", Type::Object);
+        // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
+        // option is enabled
+        JsonApplyPatchSettings applyPatchSettings;
+        if (m_mergeOperationNotify)
+        {
+            applyPatchSettings.m_reporting = [this, scratchBuffer = AZStd::string{}]
+            (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) mutable
+                -> AZ::JsonSerializationResult::ResultCode
+            {
+                if (result.GetTask() == JsonSerializationResult::Tasks::Merge
+                    && result.GetProcessing() == JsonSerializationResult::Processing::Completed)
+                {
+                    if (auto type = GetType(path);
+                        type != SettingsRegistryInterface::Type::NoType)
+                    {
+                        SignalNotifier(path, type);
+                    }
+                }
+
+                // This is the default issue reporting, that logs using the warning category
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+                return result;
+            };
+        }
+
+        SettingsType anchorType;
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+
+            rapidjson::Value& anchorRoot = anchorPath.IsValid() ? anchorPath.Create(m_settings, m_settings.GetAllocator())
+                : m_settings;
+
+            JsonSerializationResult::ResultCode mergeResult =
+                JsonSerialization::ApplyPatch(anchorRoot, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
+            if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
+            {
+                AZ_Error("Settings Registry", false, "Failed to fully merge data into registry.");
+                return false;
+            }
+
+            // The settings have been successfully merged, query the type at the anchor key
+            anchorType = GetTypeNoLock(anchorKey);
+        }
+
+        SignalNotifier(anchorKey, anchorType);
 
         return true;
     }
 
-    bool SettingsRegistryImpl::MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey,
+    AZ::Outcome<void, AZStd::string> SettingsRegistryImpl::MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>* scratchBuffer)
     {
         using namespace rapidjson;
 
         if (path.empty())
         {
-            AZ_Error("Settings Registry", false, "Path provided for MergeSettingsFile is empty.");
-            return false;
+            return AZ::Failure("Path provided for MergeSettingsFile is empty.");
         }
 
         AZStd::vector<char> buffer;
@@ -562,9 +818,7 @@ namespace AZ
             scratchBuffer = &buffer;
         }
 
-        AZStd::scoped_lock lock(m_settingMutex);
-
-        bool result = false;
+        AZ::Outcome<void, AZStd::string> result;
         if (path[path.length()] == 0)
         {
             result = MergeSettingsFileInternal(path.data(), format, rootKey, *scratchBuffer);
@@ -577,11 +831,15 @@ namespace AZ
                     R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
                     static_cast<int>(path.length()), path.data());
                 Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
+
+                AZStd::scoped_lock lock(LockForWriting());
                 Value pathValue(path.data(), aznumeric_caster(path.length()), m_settings.GetAllocator());
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Unable to read registry file."), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), AZStd::move(pathValue), m_settings.GetAllocator());
-                return false;
+                return AZ::Failure(AZStd::string::format(
+                    R"(Path "%.*s" is too long. Either make sure that the provided path is terminated or use a shorter path.)",
+                    static_cast<int>(path.length()), path.data()));
             }
             AZ::IO::FixedMaxPathString filePath(path);
             result = MergeSettingsFileInternal(filePath.c_str(), format, rootKey, *scratchBuffer);
@@ -622,6 +880,7 @@ namespace AZ
         {
             AZ_Error("Settings Registry", false, "Folder path for the Setting Registry is too long: %.*s",
                 static_cast<int>(path.size()), path.data());
+            AZStd::scoped_lock lock(LockForWriting());
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Folder path for the Setting Registry is too long."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path.data(), aznumeric_caster(path.length()), m_settings.GetAllocator()), m_settings.GetAllocator());
@@ -631,15 +890,10 @@ namespace AZ
         RegistryFileList fileList;
         scratchBuffer->clear();
 
-        AZ::IO::FixedMaxPathString folderPath{ path };
-        constexpr AZStd::string_view pathSeparators{ AZ_CORRECT_AND_WRONG_DATABASE_SEPARATOR };
-        if (pathSeparators.find_first_of(folderPath.back()) == AZStd::string_view::npos)
-        {
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-        }
+        AZ::IO::FixedMaxPath folderPath{ path };
 
-        const size_t platformKeyOffset = folderPath.size();
-        folderPath.push_back('*');
+        const size_t platformKeyOffset = folderPath.Native().size();
+        folderPath /= '*';
 
         Value specialzationArray(kArrayType);
         size_t specializationCount = specializations.GetCount();
@@ -649,65 +903,31 @@ namespace AZ
             specialzationArray.PushBack(Value(name.data(), aznumeric_caster(name.length()), m_settings.GetAllocator()), m_settings.GetAllocator());
         }
         pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
-            .AddMember(StringRef("Folder"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
+            .AddMember(StringRef("Folder"), Value(folderPath.c_str(), aznumeric_caster(folderPath.Native().size()), m_settings.GetAllocator()), m_settings.GetAllocator())
             .AddMember(StringRef("Specializations"), AZStd::move(specialzationArray), m_settings.GetAllocator());
 
-        auto callback = [this, &fileList, &specializations, &pointer, &folderPath](const char* filename, bool isFile) -> bool
+
+        auto CreateSettingsFindCallback = [this, &fileList, &specializations, &pointer, &folderPath](bool isPlatformFile)
         {
-            if (isFile)
-            {
-                if (fileList.size() >= MaxRegistryFolderEntries)
-                {
-                    AZ_Error("Settings Registry", false, "Too many files in registry folder.");
-                    pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
-                        .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
-                        .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
-                        .AddMember(StringRef("File"), Value(filename, m_settings.GetAllocator()), m_settings.GetAllocator());
-                    return false;
-                }
-
-                fileList.push_back();
-                RegistryFile& registryFile = fileList.back();
-                if (!ExtractFileDescription(registryFile, filename, specializations))
-                {
-                    fileList.pop_back();
-                }
-            }
-            return true;
-        };
-        SystemFile::FindFiles(folderPath.c_str(), callback);
-
-
-        AZStd::scoped_lock lock(m_settingMutex);
-        if (!platform.empty())
-        {
-            // Move the folderPath prefix back to the supplied path before the wildcard
-            folderPath.erase(platformKeyOffset);
-            folderPath += PlatformFolder;
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-            folderPath += platform;
-            folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-            folderPath.push_back('*');
-
-            auto platformCallback = [this, &fileList, &specializations, &pointer, &folderPath](const char* filename, bool isFile) -> bool
+            return [this, &fileList, &specializations, &pointer, &folderPath, isPlatformFile](AZStd::string_view filename, bool isFile) -> bool
             {
                 if (isFile)
                 {
                     if (fileList.size() >= MaxRegistryFolderEntries)
                     {
                         AZ_Error("Settings Registry", false, "Too many files in registry folder.");
+                        AZStd::scoped_lock lock(LockForWriting());
                         pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                             .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
-                            .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.size()), m_settings.GetAllocator()), m_settings.GetAllocator())
-                            .AddMember(StringRef("File"), Value(filename, m_settings.GetAllocator()), m_settings.GetAllocator());
+                            .AddMember(StringRef("Path"), Value(folderPath.c_str(), aznumeric_caster(folderPath.Native().size()), m_settings.GetAllocator()), m_settings.GetAllocator())
+                            .AddMember(StringRef("File"), Value(filename.data(), aznumeric_caster(filename.size()), m_settings.GetAllocator()), m_settings.GetAllocator());
                         return false;
                     }
 
-                    fileList.push_back();
-                    RegistryFile& registryFile = fileList.back();
+                    RegistryFile& registryFile = fileList.emplace_back();
                     if (ExtractFileDescription(registryFile, filename, specializations))
                     {
-                        registryFile.m_isPlatformFile = true;
+                        registryFile.m_isPlatformFile = isPlatformFile;
                     }
                     else
                     {
@@ -716,7 +936,42 @@ namespace AZ
                 }
                 return true;
             };
-            SystemFile::FindFiles(folderPath.c_str(), platformCallback);
+        };
+
+        struct FindFilesPayload
+        {
+            bool m_isPlatformFile{};
+            AZStd::fixed_vector<AZStd::string_view, 2> m_pathSegmentsToAppend;
+        };
+
+        AZStd::fixed_vector<FindFilesPayload, 2> findFilesPayloads{ {false} };
+        if (!platform.empty())
+        {
+            findFilesPayloads.push_back(FindFilesPayload{ true, { PlatformFolder, platform } });
+        }
+
+        for (const FindFilesPayload& findFilesPayload : findFilesPayloads)
+        {
+            // Erase back to initial path
+            folderPath.Native().erase(platformKeyOffset);
+            for (AZStd::string_view pathSegmentToAppend : findFilesPayload.m_pathSegmentsToAppend)
+            {
+                folderPath /= pathSegmentToAppend;
+            }
+
+            auto findFilesCallback = CreateSettingsFindCallback(findFilesPayload.m_isPlatformFile);
+            if (AZ::IO::FileIOBase* fileIo = m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr; fileIo != nullptr)
+            {
+                auto FileIoToSystemFileFindFiles = [findFilesCallback = AZStd::move(findFilesCallback), fileIo](const char* filePath) -> bool
+                {
+                    return findFilesCallback(AZ::IO::PathView(filePath).Filename().Native(), !fileIo->IsDirectory(filePath));
+                };
+                fileIo->FindFiles(folderPath.c_str(), "*", FileIoToSystemFileFindFiles);
+            }
+            else
+            {
+                SystemFile::FindFiles((folderPath / "*").c_str(), findFilesCallback);
+            }
         }
 
         if (!fileList.empty())
@@ -738,16 +993,14 @@ namespace AZ
             // Load the registry files in the sorted order.
             for (RegistryFile& registryFile : fileList)
             {
-                folderPath.erase(platformKeyOffset); // Erase all characters after the platformKeyOffset
+                folderPath.Native().erase(platformKeyOffset); // Erase all characters after the platformKeyOffset
                 if (registryFile.m_isPlatformFile)
                 {
-                    folderPath += PlatformFolder;
-                    folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
-                    folderPath += platform;
-                    folderPath.push_back(AZ_CORRECT_DATABASE_SEPARATOR);
+                    folderPath /= PlatformFolder;
+                    folderPath /= platform;
                 }
 
-                folderPath += registryFile.m_relativePath;
+                folderPath /= registryFile.m_relativePath;
 
                 if (!registryFile.m_isPatch)
                 {
@@ -766,28 +1019,42 @@ namespace AZ
     SettingsRegistryInterface::VisitResponse SettingsRegistryImpl::Visit(Visitor& visitor, StackedString& path, AZStd::string_view valueName,
         const rapidjson::Value& value) const
     {
+        ++m_visitDepth;
         VisitResponse result;
+        VisitArgs visitArgs(*this);
         switch (value.GetType())
         {
         case rapidjson::Type::kNullType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Null);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Null };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             break;
         case rapidjson::Type::kFalseType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Boolean);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Boolean };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::Boolean, false);
+                visitor.Visit(visitArgs, false);
             }
             break;
         case rapidjson::Type::kTrueType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Boolean);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Boolean };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::Boolean, true);
+                visitor.Visit(visitArgs, true);
             }
             break;
         case rapidjson::Type::kObjectType:
-            result = visitor.Traverse(path, valueName, VisitAction::Begin, Type::Object);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Object };
+            result = visitor.Traverse(visitArgs, VisitAction::Begin);
             if (result == VisitResponse::Continue)
             {
                 for (const auto& member : value.GetObject())
@@ -796,18 +1063,28 @@ namespace AZ
                     path.Push(fieldName);
                     if (Visit(visitor, path, fieldName, member.value) == VisitResponse::Done)
                     {
+                        --m_visitDepth;
                         return VisitResponse::Done;
                     }
                     path.Pop();
                 }
-                if (visitor.Traverse(path, valueName, VisitAction::End, Type::Object) == VisitResponse::Done)
+
+                // Must refresh the m_jsonKeyPath string view as the for loop would modify the StackedString
+                // and therefore invalidate the string_view
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                if (visitor.Traverse(visitArgs, VisitAction::End) == VisitResponse::Done)
                 {
+                    --m_visitDepth;
                     return VisitResponse::Done;
                 }
             }
             break;
         case rapidjson::Type::kArrayType:
-            result = visitor.Traverse(path, valueName, VisitAction::Begin, Type::Array);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::Array };
+            result = visitor.Traverse(visitArgs, VisitAction::Begin);
             if (result == VisitResponse::Continue)
             {
                 size_t counter = 0;
@@ -821,47 +1098,63 @@ namespace AZ
                     entryName.remove_prefix(endIndex + 1);
                     if (Visit(visitor, path, entryName, entry) == VisitResponse::Done)
                     {
+                        --m_visitDepth;
                         return VisitResponse::Done;
                     }
                     counter++;
                     path.Pop();
                 }
-                if (visitor.Traverse(path, valueName, VisitAction::End, Type::Array) == VisitResponse::Done)
+
+                // Must refresh the m_jsonKeyPath string view as the for loop would modify the StackedString
+                // and therefore invalidate the string_view
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                if (visitor.Traverse(visitArgs, VisitAction::End) == VisitResponse::Done)
                 {
+                    --m_visitDepth;
                     return VisitResponse::Done;
                 }
             }
             break;
         case rapidjson::Type::kStringType:
-            result = visitor.Traverse(path, valueName, VisitAction::Value, Type::String);
+            visitArgs.m_jsonKeyPath = path;
+            visitArgs.m_fieldName = valueName;
+            visitArgs.m_type = { Type::String };
+            result = visitor.Traverse(visitArgs, VisitAction::Value);
             if (result == VisitResponse::Continue)
             {
-                visitor.Visit(path, valueName, Type::String, AZStd::string_view(value.GetString(), value.GetStringLength()));
+                visitor.Visit(visitArgs, AZStd::string_view(value.GetString(), value.GetStringLength()));
             }
             break;
         case rapidjson::Type::kNumberType:
             if (value.IsDouble())
             {
-                result = visitor.Traverse(path, valueName, VisitAction::Value, Type::FloatingPoint);
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                visitArgs.m_type = { Type::FloatingPoint };
+                result = visitor.Traverse(visitArgs, VisitAction::Value);
                 if (result == VisitResponse::Continue)
                 {
-                    visitor.Visit(path, valueName, Type::FloatingPoint, value.GetDouble());
+                    visitor.Visit(visitArgs, value.GetDouble());
                 }
             }
             else
             {
-                result = visitor.Traverse(path, valueName, VisitAction::Value, Type::Integer);
+                visitArgs.m_jsonKeyPath = path;
+                visitArgs.m_fieldName = valueName;
+                visitArgs.m_type = { Type::Integer, value.IsInt64() ? Signedness::Signed : Signedness::Unsigned };
+                result = visitor.Traverse(visitArgs, VisitAction::Value);
                 if (result == VisitResponse::Continue)
                 {
-                    if (value.IsInt64())
+                    if (visitArgs.m_type.m_signedness == Signedness::Signed)
                     {
                         s64 integerValue = value.GetInt64();
-                        visitor.Visit(path, valueName, Type::Integer, integerValue);
+                        visitor.Visit(visitArgs, integerValue);
                     }
                     else
                     {
                         u64 integerValue = value.GetUint64();
-                        visitor.Visit(path, valueName, Type::Integer, integerValue);
+                        visitor.Visit(visitArgs, integerValue);
                     }
                 }
             }
@@ -870,6 +1163,8 @@ namespace AZ
             AZ_Assert(false, "Unsupported RapidJSON type: %i.", aznumeric_cast<int>(value.GetType()));
             result = VisitResponse::Done;
         }
+
+        --m_visitDepth;
         return result;
     }
 
@@ -877,7 +1172,7 @@ namespace AZ
         const Specializations& specializations, const rapidjson::Pointer& historyPointer, AZStd::string_view folderPath)
     {
         using namespace rapidjson;
-        
+
         if (&lhs == &rhs)
         {
             // Early return to avoid setting the collisionFound reference to true
@@ -923,6 +1218,8 @@ namespace AZ
         collisionFound = true;
         AZ_Error("Settings Registry", false, R"(Two registry files in "%.*s" point to the same specialization: "%s" and "%s")",
             AZ_STRING_ARG(folderPath), lhs.m_relativePath.c_str(), rhs.m_relativePath.c_str());
+
+        AZStd::scoped_lock lock(LockForWriting());
         historyPointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
             .AddMember(StringRef("Error"), StringRef("Too many files in registry folder."), m_settings.GetAllocator())
             .AddMember(StringRef("Path"),
@@ -932,39 +1229,44 @@ namespace AZ
         return false;
     }
 
-    bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, const char* filename, const Specializations& specializations)
+    bool SettingsRegistryImpl::ExtractFileDescription(RegistryFile& output, AZStd::string_view filename, const Specializations& specializations)
     {
-        if (!filename || filename[0] == 0)
+        static constexpr auto PatchExtensionWithDot = AZStd::fixed_string<32>(".") + PatchExtension;
+        static constexpr auto ExtensionWithDot = AZStd::fixed_string<32>(".") + Extension;
+        static constexpr AZ::IO::PathView PatchExtensionView(PatchExtensionWithDot);
+        static constexpr AZ::IO::PathView ExtensionView(ExtensionWithDot);
+
+        if (filename.empty())
         {
             AZ_Error("Settings Registry", false, "Settings file without name found");
             return false;
         }
 
-        AZStd::string_view filePath{ filename };
-        const size_t filePathSize = filePath.size();
+        AZ::IO::PathView filePath{ filename };
+        const size_t filePathSize = filePath.Native().size();
 
         // The filePath.empty() check makes sure that the file extension after the final <dot> isn't added to the output.m_tags
-        AZStd::optional<AZStd::string_view> pathTag = AZ::StringFunc::TokenizeNext(filePath, '.');
-        for (; pathTag && !filePath.empty(); pathTag = AZ::StringFunc::TokenizeNext(filePath, '.'))
+        auto AppendSpecTags = [&output](AZStd::string_view pathTag)
         {
-            output.m_tags.push_back(Specializations::Hash(*pathTag));
-        }
+            output.m_tags.push_back(Specializations::Hash(pathTag));
+        };
+        AZ::StringFunc::TokenizeVisitor(filePath.Stem().Native(), AppendSpecTags, '.');
 
         // If token is invalid, then the filename has no <dot> characters and therefore no extension
-        if (pathTag)
+        if (AZ::IO::PathView fileExtension = filePath.Extension(); !fileExtension.empty())
         {
-            if (pathTag->size() >= AZStd::char_traits<char>::length(PatchExtension) && azstrnicmp(pathTag->data(), PatchExtension, pathTag->size()) == 0)
+            if (fileExtension == PatchExtensionView)
             {
                 output.m_isPatch = true;
             }
-            else if (pathTag->size() != AZStd::char_traits<char>::length(Extension) || azstrnicmp(pathTag->data(), Extension, pathTag->size()) != 0)
+            else if (fileExtension != ExtensionView)
             {
                 return false;
             }
         }
         else
         {
-            AZ_Error("Settings Registry", false, R"(Settings file without extension found: "%s")", filename);
+            AZ_Error("Settings Registry", false, R"(Settings file without extension found: "%.*s")", AZ_STRING_ARG(filename));
             return false;
         }
 
@@ -979,7 +1281,7 @@ namespace AZ
             {
                 if (*currentIt == *(currentIt - 1))
                 {
-                    AZ_Error("Settings Registry", false, R"(One or more tags are duplicated in registry file "%s")", filename);
+                    AZ_Error("Settings Registry", false, R"(One or more tags are duplicated in registry file "%.*s")", AZ_STRING_ARG(filename));
                     return false;
                 }
                 ++currentIt;
@@ -1008,12 +1310,12 @@ namespace AZ
         }
         else
         {
-            AZ_Error("Settings Registry", false, R"(Found relative path to settings file "%s" is too long.)", filename);
+            AZ_Error("Settings Registry", false, R"(Found relative path to settings file "%.*s" is too long.)", AZ_STRING_ARG(filename));
             return false;
         }
     }
 
-    bool SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
+    AZ::Outcome<void, AZStd::string>  SettingsRegistryImpl::MergeSettingsFileInternal(const char* path, Format format, AZStd::string_view rootKey,
         AZStd::vector<char>& scratchBuffer)
     {
         using namespace AZ::IO;
@@ -1021,35 +1323,33 @@ namespace AZ
 
         Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
 
-        SystemFile file;
-        if (!file.Open(path, SystemFile::OpenMode::SF_OPEN_READ_ONLY))
+        FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr, path);
+        if (!fileReader.IsOpen())
         {
-            AZ_Error("Settings Registry", false, R"(Unable to open registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to open registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Unable to open registry file "%s".)", path));
         }
 
-        u64 fileSize = file.Length();
+        u64 fileSize = fileReader.Length();
         if (fileSize == 0)
         {
-            AZ_Warning("Settings Registry", false, R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path);
             pointer.Create(m_settings, m_settings.GetAllocator())
                 .SetObject()
                 .AddMember(StringRef("Error"), StringRef("registry file is 0 bytes."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Registry file "%s" is 0 bytes in length. There is no nothing to merge)", path));
         }
+
         scratchBuffer.clear();
         scratchBuffer.resize_no_construct(fileSize + 1);
-        if (file.Read(fileSize, scratchBuffer.data()) != fileSize)
+        if (fileReader.Read(fileSize, scratchBuffer.data()) != fileSize)
         {
-            AZ_Error("Settings Registry", false, R"(Unable to read registry file "%s".)", path);
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to read registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            return AZ::Failure(AZStd::string::format(R"(Unable to read registry file "%s".)", path));
         }
         scratchBuffer[fileSize] = 0;
 
@@ -1058,31 +1358,36 @@ namespace AZ
         jsonPatch.ParseInsitu<flags>(scratchBuffer.data());
         if (jsonPatch.HasParseError())
         {
+            AZ::Outcome<void, AZStd::string> result;
             auto nativeUI = AZ::Interface<NativeUI::NativeUIRequests>::Get();
             if (jsonPatch.GetParseError() == rapidjson::kParseErrorDocumentEmpty)
             {
-                AZ_Warning("Settings Registry", false, R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
-                    path, GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
+                result = AZ::Failure(AZStd::string::format(
+                    R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)",
+                    path,
+                    GetParseError_En(jsonPatch.GetParseError()),
+                    jsonPatch.GetErrorOffset()));
             }
             else
             {
                 using ErrorString = AZStd::fixed_string<4096>;
                 auto jsonError = ErrorString::format(R"(Unable to parse registry file "%s" due to json error "%s" at offset %zu.)", path,
                     GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
-                AZ_Error("Settings Registry", false, "%s", jsonError.c_str());
+                result = AZ::Failure(jsonError.c_str());
 
                 if (nativeUI)
                 {
                     nativeUI->DisplayOkDialog("Setreg(Patch) Merge Issue", AZStd::string_view(jsonError), false);
                 }
             }
-            
+
+            AZStd::scoped_lock lock(LockForWriting());
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Unable to parse registry file due to invalid json."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator())
                 .AddMember(StringRef("Message"), StringRef(GetParseError_En(jsonPatch.GetParseError())), m_settings.GetAllocator())
                 .AddMember(StringRef("Offset"), aznumeric_cast<uint64_t>(jsonPatch.GetErrorOffset()), m_settings.GetAllocator());
-            return false;
+            return result;
         }
 
         JsonMergeApproach mergeApproach;
@@ -1095,71 +1400,149 @@ namespace AZ
             mergeApproach = JsonMergeApproach::JsonMergePatch;
             if (!jsonPatch.IsObject())
             {
-                AZ_Error("Settings Registry", false, R"(Attempting to merge the settings registry file "%s" where the root element is a)"
-                    R"( non-JSON Object using the JSON MergePatch approach. The JSON MergePatch algorithm would therefore)"
-                    R"( overwrite all settings at the supplied root-key path and therefore merging has been)"
-                    R"( disallowed to prevent field destruction.)" "\n"
-                    R"(To merge the supplied settings registry file, the settings within it must be placed within a JSON Object '{}')"
-                    R"( in order to allow moving of its fields using the root-key as an anchor.)", path);
-
+                AZStd::scoped_lock lock(LockForWriting());
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Cannot merge registry file with a root which is not a JSON Object,"
                         " an empty root key and a merge approach of JsonMergePatch. Otherwise the Settings Registry would be overridden."
                         " See RFC 7386 for more information"), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-                return false;
+
+                return AZ::Failure(AZStd::string::format( R"(Attempting to merge the settings registry file "%s" where the root element is a)"
+                    R"( non-JSON Object using the JSON MergePatch approach. The JSON MergePatch algorithm would therefore)"
+                    R"( overwrite all settings at the supplied root-key path and therefore merging has been)"
+                    R"( disallowed to prevent field destruction.)" "\n"
+                    R"(To merge the supplied settings registry file, the settings within it must be placed within a JSON Object '{}')"
+                    R"( in order to allow moving of its fields using the root-key as an anchor.)", path));
             }
             break;
         default:
             AZ_Assert(false, "Provided format for merging settings into the Setting Registry is unsupported.");
-            return false;
+            return AZ::Failure("Provided format for merging settings into the Setting Registry is unsupported.");
         }
 
+        // Add a reporting callback to capture JSON patch operations while merging if the merge operations notify
+        // option is enabled
+        JsonApplyPatchSettings applyPatchSettings;
+
+        // Stores unique list of settings keys that are being merged in the JsonSerialization::ApplyPatch calls below
+        AZStd::vector<AZStd::string> mergedSettingsKeys;
+        if (m_mergeOperationNotify)
+        {
+            applyPatchSettings.m_reporting = [&mergedSettingsKeys, scratchBuffer = AZStd::string{}]
+            (AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) mutable
+                -> AZ::JsonSerializationResult::ResultCode
+            {
+                if (result.GetTask() == JsonSerializationResult::Tasks::Merge
+                    && result.GetProcessing() == JsonSerializationResult::Processing::Completed)
+                {
+                    auto FindSettingsKey = [&path](AZStd::string_view settingKeyPath)
+                    {
+                        return path == settingKeyPath;
+                    };
+
+                    // If the settings key entry is not part of the merged Settings Key set append it to it
+                    if (AZStd::ranges::find_if(mergedSettingsKeys, FindSettingsKey) == AZStd::ranges::end(mergedSettingsKeys))
+                    {
+                        mergedSettingsKeys.push_back(path);
+                    }
+                }
+
+                // This is the default issue reporting, that logs using the warning category
+                if (result.GetProcessing() != JsonSerializationResult::Processing::Completed)
+                {
+                    scratchBuffer.append(message.begin(), message.end());
+                    scratchBuffer.append("\n    Reason: ");
+                    result.AppendToString(scratchBuffer, path);
+                    scratchBuffer.append(".");
+                    AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                    scratchBuffer.clear();
+                }
+                return result;
+            };
+        }
+
+        ScopedMergeEvent scopedMergeEvent(*this, { path, rootKey });
         JsonSerializationResult::ResultCode mergeResult(JsonSerializationResult::Tasks::Merge);
+        SettingsType anchorType;
         if (rootKey.empty())
         {
-            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+            AZStd::scoped_lock lock(LockForWriting());
+            mergeResult = JsonSerialization::ApplyPatch(m_settings, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
+            anchorType = GetTypeNoLock(rootKey);
         }
         else
         {
             Pointer root(rootKey.data(), rootKey.length());
             if (root.IsValid())
             {
+                AZStd::scoped_lock lock(LockForWriting());
                 Value& rootValue = root.Create(m_settings, m_settings.GetAllocator());
-                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, m_applyPatchSettings);
+                mergeResult = JsonSerialization::ApplyPatch(rootValue, m_settings.GetAllocator(), jsonPatch, mergeApproach, applyPatchSettings);
+                anchorType = GetTypeNoLock(rootKey);
             }
             else
             {
-                AZ_Error("Settings Registry", false, R"(Failed to root path "%.*s" is invalid.)",
-                    aznumeric_cast<int>(rootKey.length()), rootKey.data());
+                AZStd::scoped_lock lock(LockForWriting());
                 pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                     .AddMember(StringRef("Error"), StringRef("Invalid root key."), m_settings.GetAllocator())
                     .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-                return false;
+
+                return AZ::Failure(AZStd::string::format(R"(Failed to root path "%.*s" is invalid.)",
+                    aznumeric_cast<int>(rootKey.length()), rootKey.data()));
             }
         }
         if (mergeResult.GetProcessing() != JsonSerializationResult::Processing::Completed)
         {
-            AZ_Error("Settings Registry", false, R"(Failed to fully merge registry file "%s".)", path);
+            AZStd::scoped_lock lock(LockForWriting());
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
                 .AddMember(StringRef("Error"), StringRef("Failed to fully merge registry file."), m_settings.GetAllocator())
                 .AddMember(StringRef("Path"), Value(path, m_settings.GetAllocator()), m_settings.GetAllocator());
-            return false;
+            
+           return AZ::Failure(AZStd::string::format(R"(Failed to fully merge registry file "%s".)", path));
         }
 
-        pointer.Create(m_settings, m_settings.GetAllocator()).SetString(path, m_settings.GetAllocator());
+        {
+            AZStd::scoped_lock lock(LockForWriting());
+            pointer.Create(m_settings, m_settings.GetAllocator()).SetString(path, m_settings.GetAllocator());
+        }
 
-        m_notifiers.Signal("", Type::Object);
+        // For each merged settings key, signal the notifier event
+        for (AZStd::string_view mergedSettingsKey : mergedSettingsKeys)
+        {
+            SignalNotifier(mergedSettingsKey, GetType(mergedSettingsKey));
+        }
 
-        return true;
+        SignalNotifier(rootKey, anchorType);
+
+        return AZ::Success();
     }
 
-    void SettingsRegistryImpl::SetApplyPatchSettings(const AZ::JsonApplyPatchSettings& applyPatchSettings)
+    void SettingsRegistryImpl::SetNotifyForMergeOperations(bool notify)
     {
-        m_applyPatchSettings = applyPatchSettings;
+        m_mergeOperationNotify = notify;
     }
-    void SettingsRegistryImpl::GetApplyPatchSettings(AZ::JsonApplyPatchSettings& applyPatchSettings)
+    bool SettingsRegistryImpl::GetNotifyForMergeOperations() const
     {
-        applyPatchSettings = m_applyPatchSettings;
+        return m_mergeOperationNotify;
+    }
+
+    void SettingsRegistryImpl::SetUseFileIO(bool useFileIo)
+    {
+        m_useFileIo = useFileIo;
+    }
+
+    AZStd::scoped_lock<AZStd::recursive_mutex> SettingsRegistryImpl::LockForWriting() const
+    {
+        // ensure that we aren't actively iterating over this data that is about to be
+        // invalid.
+        AZ_Assert(m_visitDepth == 0, "Attempt to mutate the Settings Registry while visiting, "
+            "this may invalidate visitor iterators and cause crashes.  Visit depth is %i", m_visitDepth);
+        return AZStd::scoped_lock(m_settingMutex);
+    }
+
+    AZStd::scoped_lock<AZStd::recursive_mutex> SettingsRegistryImpl::LockForReading() const
+    {
+        return AZStd::scoped_lock(m_settingMutex);
     }
 } // namespace AZ

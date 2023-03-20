@@ -23,14 +23,12 @@ namespace AzToolsFramework
         return transformNormalizedScale;
     }
 
-    /**
-     * @brief Take a transform and return it with uniform scale - choose the largest element.
-     */
+    // O3DE_DEPRECATION_NOTICE(GHI-7573)
+    /// @deprecated Transforms now always have uniform scale, so this function is now a no-op.
+    /// Take a transform and return it with uniform scale - choose the largest element.
     inline AZ::Transform TransformUniformScale(const AZ::Transform& transform)
     {
-        AZ::Transform transformUniformScale = transform;
-        transformUniformScale.SetUniformScale(transformUniformScale.GetUniformScale());
-        return transformUniformScale;
+        return transform;
     }
 
     /**

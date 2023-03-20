@@ -19,8 +19,8 @@ namespace LmbrCentral
         : public RandomTimedSpawnerConfiguration
     {
     public:
-        AZ_TYPE_INFO_LEGACY(EditorRandomTimedSpawnerConfiguration, "{AA68F544-917B-4F72-AEA7-3A906B9DEB2B}", RandomTimedSpawnerConfiguration);
-        AZ_CLASS_ALLOCATOR(EditorRandomTimedSpawnerConfiguration, AZ::SystemAllocator, 0);
+        AZ_TYPE_INFO(EditorRandomTimedSpawnerConfiguration, "{AA68F544-917B-4F72-AEA7-3A906B9DEB2B}");
+        AZ_CLASS_ALLOCATOR(EditorRandomTimedSpawnerConfiguration, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
     };
@@ -57,7 +57,7 @@ namespace LmbrCentral
         void SetSpawnDelayVariation(double spawnDelayVariation) override { m_config.m_spawnDelayVariation = spawnDelayVariation; }
         double GetSpawnDelayVariation() override { return m_config.m_spawnDelayVariation; }
 
-        void BuildGameEntity(AZ::Entity* gameEntity);
+        void BuildGameEntity(AZ::Entity* gameEntity) override;
 
     private:
         //Reflected members

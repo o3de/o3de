@@ -1,5 +1,5 @@
 {
-    "Source": "SsaoCompute",
+    "Source": "SsaoCompute.azsl",
 
     "ProgramSettings" :
     {

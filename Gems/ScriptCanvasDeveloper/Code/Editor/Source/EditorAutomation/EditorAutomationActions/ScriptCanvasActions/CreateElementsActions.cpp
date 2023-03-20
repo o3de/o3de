@@ -35,7 +35,7 @@
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/ScriptCanvasActions/EditorViewActions.h>
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/WidgetActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     ////////////////////////////////
     // CreateNodeFromPaletteAction
@@ -153,7 +153,7 @@ namespace ScriptCanvasDeveloper
                 GraphCanvas::AssetEditorSettingsRequestBus::EventResult(connectionDelay, ScriptCanvasEditor::AssetEditorId, &GraphCanvas::AssetEditorSettingsRequests::GetDropConnectionSpliceTime);
 
                 // Give it some buffer room on the delay before we release.
-                connectionDelay = connectionDelay + connectionDelay * 0.5f;
+                connectionDelay = connectionDelay + connectionDelay / 2;
 
                 AddAction(aznew ProcessUserEventsAction(connectionDelay));
             }
@@ -539,8 +539,8 @@ namespace ScriptCanvasDeveloper
 
         AZ::Vector2 stepDirection = AZ::Vector2::CreateZero();
 
-        stepDirection.SetX(jutDirection.x() * stepSize.GetX());
-        stepDirection.SetY(jutDirection.y() * stepSize.GetY());
+        stepDirection.SetX(static_cast<float>(jutDirection.x() * stepSize.GetX()));
+        stepDirection.SetY(static_cast<float>(jutDirection.y() * stepSize.GetY()));
 
         m_scenePoint.setX(m_scenePoint.x() + stepDirection.GetX() * 2);
     }

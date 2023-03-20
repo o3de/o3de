@@ -16,7 +16,7 @@
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzFramework/Physics/AnimationConfiguration.h>
 #include <AzFramework/Physics/Character.h>
-
+#include <Integration/Assets/ActorAsset.h>
 
 namespace EMotionFX
 {
@@ -55,7 +55,7 @@ namespace EMotionFX
             : public AZ::ComponentBus
         {
         public:
-            using MutexType = AZStd::mutex;
+            using MutexType = AZStd::recursive_mutex;
 
             /// Retrieve component's actor instance.
             /// \return pointer to actor instance.
@@ -85,17 +85,22 @@ namespace EMotionFX
             /// Detach from parent entity, if attached.
             virtual void DetachFromEntity() {}
 
-            /// Enables debug-drawing of the actor's root.
-            virtual void DebugDrawRoot(bool /*enable*/) {}
-
             /// Enables rendering of the actor.
             virtual bool GetRenderCharacter() const = 0;
             virtual void SetRenderCharacter(bool enable) = 0;
+            virtual bool GetRenderActorVisible() const = 0;
 
             /// Returns skinning method used by the actor.
             virtual SkinningMethod GetSkinningMethod() const = 0;
 
-            static const size_t s_invalidJointIndex = ~0;
+            // Use this to alter the actor asset.
+            virtual void SetActorAsset(AZ::Data::Asset<EMotionFX::Integration::ActorAsset> actorAsset) = 0;
+
+            // Use this bus to enable or disable the actor instance update in the job scheduler system.
+            // This could be useful if you want to manually update the actor instance.
+            virtual void EnableInstanceUpdate(bool enableInstanceUpdate) = 0;
+
+            static const size_t s_invalidJointIndex = std::numeric_limits<size_t>::max();
         };
 
         using ActorComponentRequestBus = AZ::EBus<ActorComponentRequests>;

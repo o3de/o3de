@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AZ::Render::LightingPreset",
+    "ClassData": {
+        "iblDiffuseImageAsset": {
+            "assetId": {
+                "guid": "{774DB244-5F01-50DF-8D62-FE9298357F87}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/greenwich_park_03_2k_cm_ibldiffuse.exr.streamingimage"
+        },
+        "iblSpecularImageAsset": {
+            "assetId": {
+                "guid": "{774DB244-5F01-50DF-8D62-FE9298357F87}",
+                "subId": 2000
+            },
+            "assetHint": "testdata/lightingpresets/greenwich_park_03_2k_cm_iblspecular.exr.streamingimage"
+        },
+        "skyboxImageAsset": {
+            "assetId": {
+                "guid": "{FCADE311-31AC-5B7F-AA7E-E229363787E8}",
+                "subId": 1000
+            },
+            "assetHint": "testdata/lightingpresets/greenwich_park_03_2k_skyboxcm.exr.streamingimage"
+        },
+        "alternateSkyboxImageAsset": {
+            "assetId": {
+                "guid": "{774DB244-5F01-50DF-8D62-FE9298357F87}",
+                "subId": 3000
+            },
+            "assetHint": "testdata/lightingpresets/greenwich_park_03_2k_cm_ibldiffuse.exr.streamingimage"
+        },
+        "shadowCatcherOpacity": 0.3499999940395355,
+        "lights": [
+            {
+                "direction": [
+                    -0.15000000596046449,
+                    -0.15000000596046449,
+                    -1.0
+                ],
+                "shadowCascadeCount": 4,
+                "shadowRatioLogarithmUniform": 1.0,
+                "shadowmapSize": "Size2048"
+            }
+        ]
+    }
+}

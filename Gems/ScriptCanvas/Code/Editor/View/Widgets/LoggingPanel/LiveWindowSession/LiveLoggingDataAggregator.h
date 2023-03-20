@@ -7,8 +7,6 @@
  */
 #pragma once
 
-#include <AzFramework/TargetManagement/TargetManagementAPI.h>
-
 #include <Editor/Include/ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <Editor/View/Widgets/LoggingPanel/LoggingDataAggregator.h>
 
@@ -30,7 +28,7 @@ namespace ScriptCanvasEditor
         };
 
     public:
-        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LiveLoggingDataAggregator, AZ::SystemAllocator);
         LiveLoggingDataAggregator();
         ~LiveLoggingDataAggregator();
 
@@ -38,8 +36,8 @@ namespace ScriptCanvasEditor
         void OnCurrentTargetChanged() override;
         ////
 
-        bool CanCaptureData() const;
-        bool IsCapturingData() const;
+        bool CanCaptureData() const override;
+        bool IsCapturingData() const override;
 
         void StartCaptureData();
         void StopCaptureData();

@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <AzCore/IO/IStreamerTypes.h>
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/IO/Streamer/StreamerContext.h>
 #include <AzCore/IO/Streamer/StreamStackEntry.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -42,7 +43,7 @@ namespace AZ::IO
 
     template<typename T>
     class StreamStackEntryConformityTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         using Descriptor = T;
@@ -50,7 +51,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             m_description.SetUp();
 
             m_context = AZStd::make_unique<StreamerContext>();
@@ -61,7 +62,7 @@ namespace AZ::IO
             m_context.reset();
 
             m_description.TearDown();
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         FileRequest* CreateUnknownRequest()
@@ -97,7 +98,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, SetContext_ContextIsForwardedToNext_SetContextOnMockIsCalled)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);
@@ -194,14 +195,14 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_ForwardsCallToNext_NextRecievedCall)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);
 
         EXPECT_CALL(*mock, UpdateStatus(_))
             .Times(1);
-            
+
         StreamStackEntry::Status status;
         entry.UpdateStatus(status);
     }
@@ -241,7 +242,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_NextHasSmallerNumSlots_ReturnsSmallestNumSlots)
     {
         using ::testing::_;
-        
+
         if (this->m_description.UsesSlots())
         {
             auto mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -250,7 +251,7 @@ namespace AZ::IO
 
             constexpr s32 minValue = std::numeric_limits<s32>::min();
             EXPECT_CALL(*mock, UpdateStatus(_))
-                .WillOnce([minValue](StreamStackEntry::Status& status)
+                .WillOnce([](StreamStackEntry::Status& status)
                 {
                     status.m_numAvailableSlots = minValue;
                 });
@@ -264,7 +265,7 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateStatus_NextHasLargerNumSlots_ReturnsSmallestNumSlots)
     {
         using ::testing::_;
-        
+
         if (this->m_description.UsesSlots())
         {
             auto mock = AZStd::make_shared<StreamStackEntryMock>();
@@ -289,14 +290,14 @@ namespace AZ::IO
     TYPED_TEST_P(StreamStackEntryConformityTests, UpdateCompletionEstimates_ForwardsCallToNext_NextRecievedCall)
     {
         using ::testing::_;
-        
+
         auto mock = AZStd::make_shared<StreamStackEntryMock>();
         auto entry = this->m_description.CreateInstance();
         entry.SetNext(mock);
 
         EXPECT_CALL(*mock, UpdateCompletionEstimates(_, _, _, _)).Times(1);
 
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         AZStd::vector<FileRequest*> internalRequests;
         StreamerContext::PreparedQueue pendingRequests;
         entry.UpdateCompletionEstimates(now, internalRequests, pendingRequests.begin(), pendingRequests.end());

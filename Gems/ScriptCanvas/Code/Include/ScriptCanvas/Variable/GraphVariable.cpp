@@ -335,6 +335,11 @@ namespace ScriptCanvas
         return &m_datum;
     }
 
+    Datum& GraphVariable::ModDatum()
+    {
+        return m_datum;
+    }
+
     void GraphVariable::ConfigureDatumView(ModifiableDatumView& datumView)
     {
         datumView.ConfigureView((*this));
@@ -491,14 +496,6 @@ namespace ScriptCanvas
     int GraphVariable::GetSortPriority() const
     {
         return m_sortPriority;
-    }
-
-    bool GraphVariable::IsInFunction() const
-    {
-        AZ::Data::AssetType assetType = AZ::Data::AssetType::CreateNull();
-        ScriptCanvas::GraphRequestBus::EventResult(assetType, m_scriptCanvasId, &ScriptCanvas::GraphRequests::GetAssetType);
-
-        return assetType == azrtti_typeid<ScriptCanvas::SubgraphInterfaceAsset>();
     }
 
     AZ::u32 GraphVariable::OnInitialValueSourceChanged()

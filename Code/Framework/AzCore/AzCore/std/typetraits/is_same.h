@@ -13,4 +13,8 @@ namespace AZStd
 {
     using std::is_same;
     using std::is_same_v;
+
+    // models the same_as concept
+    template <class T, class U>
+    /*concept*/ constexpr bool same_as = is_same_v<T, U>;
 }

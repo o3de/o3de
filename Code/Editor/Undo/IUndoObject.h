@@ -8,10 +8,6 @@
 
 
 // Description : Interface for implementation of IUndo objects.
-
-
-#ifndef CRYINCLUDE_EDITOR_UNDO_IUNDOOBJECT_H
-#define CRYINCLUDE_EDITOR_UNDO_IUNDOOBJECT_H
 #pragma once
 
 #include <QString>
@@ -26,8 +22,6 @@ struct IUndoObject
     virtual void Release() { delete this; };
     //! Return size of this Undo object.
     virtual int GetSize() = 0;
-    //! Return description of this Undo object.
-    virtual QString GetDescription() = 0;
 
     //! Undo this object.
     //! @param bUndo If true this operation called in response to Undo operation.
@@ -37,14 +31,5 @@ struct IUndoObject
     virtual void Redo() = 0;
 
     // Returns the name of undo object
-    virtual QString GetObjectName(){ return QString(); };
-
-    // Returns the name of related editor object.
-    // Ex: For a undo action which would modify value for var "Emitter Strength" of emitter "Level.example",
-    // this function will return emitter name "Level.example" - Vera, Confetti
-    virtual QString GetEditorObjectName() { return QString(); };
-
-    virtual bool IsChanged([[maybe_unused]] unsigned int& compareValue) const { return false; }
+    virtual QString GetObjectName(){ return QString(); }
 };
-
-#endif // CRYINCLUDE_EDITOR_UNDO_IUNDOOBJECT_H

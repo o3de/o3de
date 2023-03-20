@@ -6,6 +6,7 @@
  *
  */
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/Console.h>
 #include <AzCore/Interface/Interface.h>
@@ -25,6 +26,7 @@
 #include <AzCore/std/functional.h>
 #include <AzCore/std/parallel/condition_variable.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <Streamer/IStreamerMock.h>
 #include <Tests/Asset/BaseAssetManagerTest.h>
@@ -37,8 +39,7 @@ namespace UnitTest
     using namespace AZ;
     using namespace AZ::Data;
 
-    struct OnAssetReadyListener
-        : public AssetBus::Handler,
+    struct OnAssetReadyListener :
         public AssetLoadBus::Handler
     {
         using OnAssetReadyCheck = AZStd::function<bool(const OnAssetReadyListener&)>;
@@ -48,15 +49,13 @@ namespace UnitTest
         {
             if (autoConnect && m_assetId.IsValid())
             {
-                AssetBus::Handler::BusConnect(m_assetId);
                 AssetLoadBus::Handler::BusConnect(m_assetId);
             }
         }
-        ~OnAssetReadyListener()
+        ~OnAssetReadyListener() override
         {
             m_assetId.SetInvalid();
             m_latest = {};
-            AssetBus::Handler::BusDisconnect();
             AssetLoadBus::Handler::BusDisconnect();
         }
         void OnAssetReady(Asset<AssetData> asset) override
@@ -109,7 +108,7 @@ namespace UnitTest
         {
             BusConnect(assetId);
         }
-        ~ContainerReadyListener()
+        ~ContainerReadyListener() override
         {
             BusDisconnect();
         }
@@ -130,8 +129,8 @@ namespace UnitTest
     * This will test the aspect of the system where ObjectStreams and asset jobs loading dependent
     * assets will do the work in their own thread.
     */
-    class AssetJobsFloodTest
-        : public BaseAssetManagerTest
+
+    class AssetJobsFloodTest : public DisklessAssetManagerBase
     {
     public:
         TestAssetManager* m_testAssetManager{ nullptr };
@@ -182,15 +181,14 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
             SetupTest();
         }
 
         void TearDown() override
         {
-            TearDownTest();
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
 
         void SetupAssets()
@@ -205,7 +203,7 @@ namespace UnitTest
             catalog->AddAsset<AssetWithSerializedData>(MyAsset5Id, "TestAsset5.txt");
             catalog->AddAsset<AssetWithSerializedData>(MyAsset6Id, "TestAsset6.txt");
 
-            catalog->AddAsset<AssetWithAssetReference>(DelayLoadAssetId, "DelayLoadAsset.txt", 2000);
+            catalog->AddAsset<AssetWithAssetReference>(DelayLoadAssetId, "DelayLoadAsset.txt", 10);
             catalog->AddAsset<AssetWithAssetReference>(NoLoadAssetId, "NoLoadAsset.txt")->AddNoLoad(MyAsset2Id);
 
             catalog->AddAsset<AssetWithQueueAndPreLoadReferences>(PreloadAssetRootId, "PreLoadRoot.txt")->AddPreload(PreloadAssetAId)->AddQueueLoad(QueueLoadAssetAId);
@@ -256,9 +254,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, m_serializeContext));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -272,11 +270,11 @@ namespace UnitTest
                 noLoadAsset.m_asset = m_testAssetManager->CreateAsset<AssetWithSerializedData>(MyAsset2Id, AssetLoadBehavior::NoLoad);
                 EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 4);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DelayLoadAsset.txt", AZ::DataStream::ST_XML, &delayedAsset, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "NoLoadAsset.txt", AZ::DataStream::ST_XML, &noLoadAsset, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("DelayLoadAsset.txt", &delayedAsset, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("NoLoadAsset.txt", &noLoadAsset, m_serializeContext));
 
                 AssetWithQueueAndPreLoadReferences preLoadRoot;
                 AssetWithQueueAndPreLoadReferences preLoadA;
@@ -296,16 +294,16 @@ namespace UnitTest
                 preLoadBrokenA.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(PreloadBrokenDepBId, AssetLoadBehavior::PreLoad);
                 preLoadBrokenB.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(PreloadAssetNoDataId, AssetLoadBehavior::PreLoad);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadRoot.txt", AZ::DataStream::ST_XML, &preLoadRoot, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadA.txt", AZ::DataStream::ST_XML, &preLoadA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadB.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadC.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadA.txt", AZ::DataStream::ST_XML, &queueLoadA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadB.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "QueueLoadC.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadBrokenA.txt", AZ::DataStream::ST_XML, &preLoadBrokenA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadBrokenB.txt", AZ::DataStream::ST_XML, &preLoadBrokenB, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "PreLoadNoData.txt", AZ::DataStream::ST_XML, &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadRoot.txt", &preLoadRoot, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadA.txt", &preLoadA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadB.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadC.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadA.txt", &queueLoadA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadB.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("QueueLoadC.txt", &noRefs, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadBrokenA.txt", &preLoadBrokenA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadBrokenB.txt", &preLoadBrokenB, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("PreLoadNoData.txt", &noRefs, m_serializeContext));
 
                 AssetWithQueueAndPreLoadReferences circularA;
                 AssetWithQueueAndPreLoadReferences circularB;
@@ -317,41 +315,13 @@ namespace UnitTest
                 circularC.m_preLoad = m_testAssetManager->CreateAsset<AssetWithAssetReference>(CircularBId, AssetLoadBehavior::PreLoad);
                 circularD.m_preLoad = circularC.m_preLoad;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularA.txt", AZ::DataStream::ST_XML, &circularA, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularB.txt", AZ::DataStream::ST_XML, &circularB, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularC.txt", AZ::DataStream::ST_XML, &circularC, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "CircularD.txt", AZ::DataStream::ST_XML, &circularD, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularA.txt", &circularA, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularB.txt", &circularB, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularC.txt", &circularC, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("CircularD.txt", &circularD, m_serializeContext));
+
                 m_assetHandlerAndCatalog->m_numCreations = 0;
             }
-        }
-
-        void TearDownTest()
-        {
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset4.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset5.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset6.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset1.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset2.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "TestAsset3.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "DelayLoadAsset.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "NoLoadAsset.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadRoot.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "QueueLoadC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadBrokenA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadBrokenB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "PreLoadNoData.txt");
-
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularA.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularB.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularC.txt");
-            DeleteAssetFromDisk(GetTestFolderPath() + "CircularD.txt");
         }
 
         void CheckFinishedCreationsAndDestructions()
@@ -364,6 +334,42 @@ namespace UnitTest
         }
 
     };
+
+    static constexpr AZStd::chrono::seconds MaxDispatchTimeoutSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds * 12;
+
+    template <typename Pred>
+    bool DispatchEventsUntilCondition(AZ::Data::AssetManager& assetManager, Pred&& conditionPredicate,
+        AZStd::chrono::seconds logIntervalSeconds = BaseAssetManagerTest::DefaultTimeoutSeconds,
+        AZStd::chrono::seconds maxTimeoutSeconds = MaxDispatchTimeoutSeconds)
+    {
+        // If the Max Timeout is hit the test will be marked as a failure
+
+        auto dispatchEventTimeStart = AZStd::chrono::steady_clock::now();
+        AZStd::chrono::seconds dispatchEventNextLogTime = logIntervalSeconds;
+
+        while (!conditionPredicate())
+        {
+            auto currentTime = AZStd::chrono::steady_clock::now();
+            if (auto elapsedTime{ currentTime - dispatchEventTimeStart };
+                elapsedTime >= dispatchEventNextLogTime)
+            {
+                const testing::TestInfo* test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+                AZ_Printf("AssetManagerLoadingTest", "The DispatchEventsUntiTimeout function has been waiting for %llu seconds"
+                    " in test %s.%s", elapsedTime.count(), test_info->test_case_name(), test_info->name());
+                // Update the next log time to be the next multiple of DefaultTimeout Seconds
+                // after current elapsed time
+                dispatchEventNextLogTime = AZStd::chrono::duration_cast<AZStd::chrono::seconds>(elapsedTime + logIntervalSeconds - ((elapsedTime + logIntervalSeconds) % logIntervalSeconds));
+                if (elapsedTime >= maxTimeoutSeconds)
+                {
+                    return false;
+                }
+            }
+            assetManager.DispatchEvents();
+            AZStd::this_thread::yield();
+        }
+
+        return true;
+    }
 
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_ASSET_MANAGER_FLOOD_TEST
     TEST_F(AssetJobsFloodTest, DISABLED_FloodTest)
@@ -425,12 +431,12 @@ namespace UnitTest
         EXPECT_TRUE(asset6Block.IsReady());
 
         // Assets above can be ready (PreNotify) before the signal has reached our listener - allow for a small window to hear
-        auto maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         bool timedOut = false;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            AssetManager::Instance().DispatchEvents();
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -457,6 +463,11 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
+
         // This should process
         m_testAssetManager->ReloadAsset(MyAsset1Id, AZ::Data::AssetLoadBehavior::Default);
         // This should process
@@ -469,11 +480,11 @@ namespace UnitTest
         streamer->ResumeProcessing();
 
         // Allow our reloads to process and signal our listeners
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (!assetStatus1.m_reloaded || !assetStatus2.m_reloaded || !assetStatus3.m_reloaded)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -495,6 +506,10 @@ namespace UnitTest
         EXPECT_EQ(assetStatus5.m_reloaded, 0);
         EXPECT_EQ(assetStatus6.m_reloaded, 0);
 
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
 
         OnAssetReadyListener delayLoadAssetStatus(DelayLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
 
@@ -504,11 +519,11 @@ namespace UnitTest
             AZ::Data::AssetLoadBehavior::Default);
 
         // this verifies that a reloading asset in "loading" state queues another load when it is complete
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (!delayLoadAssetStatus.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            m_testAssetManager->DispatchEvents();
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -519,13 +534,18 @@ namespace UnitTest
 
         EXPECT_EQ(delayLoadAssetStatus.m_ready, 1);
 
+        // Since Asset Container cleanup is queued on the ebus, dispatch events one last time to be sure the containers are released
+        AssetManager::Instance().DispatchEvents();
+
+        EXPECT_EQ(m_testAssetManager->GetAssetContainers().size(), 0);
+
         // This should go through to loading
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (m_testAssetManager->GetReloadStatus(DelayLoadAssetId) != AZ::Data::AssetData::AssetStatus::Loading)
         {
-            AssetBus::ExecuteQueuedEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            m_testAssetManager->DispatchEvents();
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -534,17 +554,16 @@ namespace UnitTest
         // Make sure we didn't time out.
         ASSERT_FALSE(timedOut);
 
-
         // This should mark the first for an additional reload
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
         // This should do nothing
         m_testAssetManager->ReloadAsset(DelayLoadAssetId, AZ::Data::AssetLoadBehavior::Default);
 
-        maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         while (delayLoadAssetStatus.m_reloaded < 2)
         {
             m_testAssetManager->DispatchEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -572,23 +591,8 @@ namespace UnitTest
         EXPECT_EQ(baseStatus, expected_base_status);
     }
 
-    struct DebugListener : AZ::Interface<IDebugAssetEvent>::Registrar
-    {
-        void AssetStatusUpdate(AZ::Data::AssetId id, AZ::Data::AssetData::AssetStatus status) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Status %s - %d\n", id.ToString<AZStd::string>().c_str(), static_cast<int>(status)).c_str());
-        }
-        void ReleaseAsset(AZ::Data::AssetId id) override
-        {
-            AZ::Debug::Trace::Output(
-                "", AZStd::string::format("Release %s\n", id.ToString<AZStd::string>().c_str()).c_str());
-        }
-    };
-
     TEST_F(AssetJobsFloodTest, RapidAcquireAndRelease)
     {
-        DebugListener listener;  
         auto assetUuids = {
             MyAsset1Id,
             MyAsset2Id,
@@ -615,11 +619,11 @@ namespace UnitTest
             threads.emplace_back([this, &threadCount, &cv, assetUuid]() {
                 bool checkLoaded = true;
 
-                for (int i = 0; i < 5000; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     Asset<AssetWithAssetReference> asset1 =
                         m_testAssetManager->GetAsset(assetUuid, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::PreLoad);
-                    
+
                     if (checkLoaded)
                     {
                         asset1.BlockUntilLoadComplete();
@@ -641,7 +645,7 @@ namespace UnitTest
         while (threadCount > 0 && !timedOut)
         {
             AZStd::unique_lock<AZStd::mutex> lock(mutex);
-            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds * 20000));
+            timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
         }
 
         ASSERT_EQ(threadCount, 0) << "Thread count is non-zero, a thread has likely deadlocked.  Test will not shut down cleanly.";
@@ -683,8 +687,8 @@ namespace UnitTest
         // Dispatched event leads to another blocking load of asset B
 
         // Setup
-        constexpr char AssetNoRefA[] = "{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}";
-        constexpr char AssetNoRefB[] = "{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}";
+        constexpr auto AssetNoRefA = AZ::Uuid("{EC5E3E4F-518C-4B03-A8BF-C9966CF763EB}");
+        constexpr auto AssetNoRefB = AZ::Uuid("{C07E55B5-E60C-4575-AE07-32DD3DC68B1A}");
 
         {
             m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(AssetNoRefA, "a.txt");
@@ -692,14 +696,17 @@ namespace UnitTest
 
             AssetWithSerializedData ap;
 
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "a.txt", AZ::DataStream::ST_XML, &ap, m_serializeContext));
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "b.txt", AZ::DataStream::ST_XML, &ap, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("a.txt", &ap, m_serializeContext));
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("b.txt", &ap, m_serializeContext));
         }
 
         auto& assetManager = AssetManager::Instance();
 
         AssetBusCallbacks callbacks{};
+        AZ_PUSH_DISABLE_WARNING(5233, "-Wunknown-warning-option") // Older versions of MSVC toolchain require to pass constexpr in the
+                                                                  // capture. Newer versions issue unused warning
         callbacks.SetOnAssetReadyCallback([&, AssetNoRefB](const Asset<AssetData>&, AssetBusCallbacks&)
+        AZ_POP_DISABLE_WARNING
             {
                 // This callback should run inside the "main thread" dispatch events loop
                 auto loadAsset = assetManager.GetAsset<AssetWithSerializedData>(AZ::Uuid(AssetNoRefB), AssetLoadBehavior::Default);
@@ -730,7 +737,7 @@ namespace UnitTest
 
         AZStd::thread thread([streamer, &completeSignal]()
             {
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(30));
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
                 streamer->ResumeProcessing();
 
                 if (!completeSignal.try_acquire_for(AZStd::chrono::seconds(5)))
@@ -753,7 +760,7 @@ namespace UnitTest
     * Verify that loads without using the Asset Container still work correctly
     */
     class AssetContainerDisableTest
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     public:
         static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
@@ -772,7 +779,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
             SetupTest();
 
         }
@@ -782,7 +789,7 @@ namespace UnitTest
             AssetManager::Instance().UnregisterHandler(m_assetHandlerAndCatalog);
             delete m_assetHandlerAndCatalog;
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
 
         void SetupAssets()
@@ -824,9 +831,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, m_serializeContext));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -837,9 +844,9 @@ namespace UnitTest
                 assetWithPreload3.m_asset = m_testAssetManager->CreateAsset<AssetWithSerializedData>(MyAsset6Id, AssetLoadBehavior::PreLoad);
                 EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 3);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, m_serializeContext));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, m_serializeContext));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, m_serializeContext));
 
                 m_assetHandlerAndCatalog->m_numCreations = 0;
             }
@@ -875,7 +882,7 @@ namespace UnitTest
 
         while (m_loadDataSynchronizer.m_numBlocking < 2)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(5));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
         }
 
         m_loadDataSynchronizer.m_readyToLoad = true;
@@ -895,11 +902,11 @@ namespace UnitTest
         EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, 6);
 
         // Assets above can be ready (PreNotify) before the signal has reached our listener - allow for a small window to hear
-        auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
         while (!assetStatus1.m_ready || !assetStatus2.m_ready || !assetStatus3.m_ready)
         {
-            AssetBus::ExecuteQueuedEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            AssetManager::Instance().DispatchEvents();
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 AZ_Assert(false, "Timeout reached.");
                 break;
@@ -917,11 +924,11 @@ namespace UnitTest
         m_testAssetManager->SetParallelDependentLoadingEnabled(true);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_LoadTest_SameAsset_DifferentFilters)
 #else
     TEST_F(AssetJobsFloodTest, LoadTest_SameAsset_DifferentFilters)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
 
@@ -1015,12 +1022,12 @@ namespace UnitTest
 
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready || !preloadBListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1039,7 +1046,7 @@ namespace UnitTest
 
 
 
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerCoreTest_BasicDependencyManagement_Success)
+    TEST_F(AssetJobsFloodTest, ContainerCoreTest_BasicDependencyManagement_Success)
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1061,12 +1068,12 @@ namespace UnitTest
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
             auto asset3Container = m_testAssetManager->GetAssetContainer(asset3);
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener1.m_ready || !readyListener2.m_ready || !readyListener3.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1124,12 +1131,12 @@ namespace UnitTest
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             asset1Container = m_testAssetManager->GetAssetContainer(asset1);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1150,7 +1157,7 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #else
-    TEST_F(AssetJobsFloodTest, DISABLED_ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
+    TEST_F(AssetJobsFloodTest, ContainerFilterTest_ContainersWithAndWithoutFiltering_Success)
 #endif // !AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
@@ -1162,12 +1169,12 @@ namespace UnitTest
             auto asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1, AssetLoadParameters{ filterNone });
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1182,11 +1189,11 @@ namespace UnitTest
             AZ::Data::AssetFilterCB noDependencyCB = [](const AZ::Data::AssetFilterInfo& filterInfo) { return filterInfo.m_assetType != azrtti_typeid<AssetWithSerializedData>(); };
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             asset1Container = m_testAssetManager->GetAssetContainer(asset1, AssetLoadParameters{ noDependencyCB });
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset1Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1217,12 +1224,12 @@ namespace UnitTest
             auto asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset1Container = m_testAssetManager->GetAssetContainer(asset1);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener1.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1237,12 +1244,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset2Container->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1266,11 +1273,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_NoLoadNotLoaded)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1284,12 +1291,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto noLoadRefContainer = m_testAssetManager->GetAssetContainer(noLoadRef);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1307,11 +1314,11 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadContainerDependencies_LoadAllLoadsNoLoad)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
@@ -1325,12 +1332,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto noLoadRefContainer = m_testAssetManager->GetAssetContainer(noLoadRef, AssetLoadParameters(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll));
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1346,53 +1353,85 @@ namespace UnitTest
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsFloodTest, DISABLED_AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
 #else
     TEST_F(AssetJobsFloodTest, AssetWithNoLoadReference_LoadDependencies_BehaviorObeyed)
-#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS || AZ_TRAIT_DISABLE_FAILED_ASSET_LOAD_TESTS
+#endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusConnect();
         // Setup has already created/destroyed assets
         m_assetHandlerAndCatalog->m_numCreations = 0;
         m_assetHandlerAndCatalog->m_numDestructions = 0;
         {
+            ContainerReadyListener containerLoadingCompleteListener(NoLoadAssetId);
             OnAssetReadyListener readyListener(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>());
-            OnAssetReadyListener depenencyListener(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
+            OnAssetReadyListener dependencyListener(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>());
+
+            SCOPED_TRACE("LoadDependencies_BehaviorObeyed");
+
+            auto AssetOnlyReady = [&readyListener]() -> bool
+            {
+                return readyListener.m_ready;
+            };
+            auto AssetAndDependencyReady = [&readyListener, &dependencyListener]() -> bool
+            {
+                return readyListener.m_ready && dependencyListener.m_ready;
+            };
+            auto AssetContainerReady = [&containerLoadingCompleteListener]() -> bool
+            {
+                return containerLoadingCompleteListener.m_ready;
+            };
 
             auto noLoadRef = m_testAssetManager->GetAsset(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>(),
                 AZ::Data::AssetLoadBehavior::Default);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            // Dispatch AssetBus events until the NoLoadAssetId has signaled an OnAssetReady
+            // event or the timeout has been reached
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetOnlyReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
 
-            while (!readyListener.m_ready)
-            {
-                m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
-                {
-                    break;
-                }
-                AZStd::this_thread::yield();
-            }
-            EXPECT_EQ(readyListener.m_ready, 1);
-            EXPECT_EQ(depenencyListener.m_ready, 0);
-            
+            // Dispatch AssetBus events until the asset container used to load
+            // NoLoadAssetId has signaled an OnAssetContainerReady event
+            // or the timeout has been reached
+            // Wait until the current asset container has finished loading the NoLoadAssetId
+            // before trigger another load
+            // If the wait does not occur here, most likely what would occur is
+            // the AssetManager::m_ownedAssetContainers object is still loading the NoLoadAssetId
+            // using the default AssetLoadParameters
+            // If a call to GetAsset occurs at this point while the Asset is still loading
+            // it will ignore the new loadParams below and instead just re-use the existing
+            // AssetContainerReader instance, resulting in the dependent MyAsset2Id not
+            // being loaded
+            // The function that can return an existing AssetContainer instance is the
+            // AssetManager::GetAssetContainer. Since it can be in the middle of a load,
+            // updating the AssetLoadParams would have an effect on the current in progress
+            // load
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
+
+            // Reset the ContainerLoadingComplete ready status back to 0
+            containerLoadingCompleteListener.m_ready = 0;
+
             AZ::Data::AssetLoadParameters loadParams(nullptr, AZ::Data::AssetDependencyLoadRules::LoadAll);
             loadParams.m_reloadMissingDependencies = true;
             auto loadDependencyRef = m_testAssetManager->GetAsset(NoLoadAssetId, azrtti_typeid<AssetWithAssetReference>(),
                 AZ::Data::AssetLoadBehavior::Default, loadParams);
 
-            while (!depenencyListener.m_ready || !readyListener.m_ready)
-            {
-                m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
-                {
-                    break;
-                }
-                AZStd::this_thread::yield();
-            }
+            // Dispatch AssetBus events until the NoLoadAssetId and the MyAsset2Id has signaled
+            // an OnAssetReady event or the timeout has been reached
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetAndDependencyReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
+
             EXPECT_EQ(readyListener.m_ready, 1);
-            EXPECT_EQ(depenencyListener.m_ready, 1);
+            EXPECT_EQ(dependencyListener.m_ready, 1);
+
+            EXPECT_TRUE(DispatchEventsUntilCondition(*m_testAssetManager, AssetContainerReady))
+                << "The DispatchEventsUntiTimeout function has not completed in "
+                << MaxDispatchTimeoutSeconds.count() << " seconds. The test will be marked as a failure\n";
         }
 
         CheckFinishedCreationsAndDestructions();
@@ -1415,11 +1454,11 @@ namespace UnitTest
             ContainerReadyListener readyListener(MyAsset2Id);
 
             auto asset2Get = m_testAssetManager->GetAssetInternal(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AZ::Data::AssetFilterNoAssetLoading });
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset2Get->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1429,12 +1468,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1468,11 +1507,11 @@ namespace UnitTest
 
             auto asset2PrimeGet = m_testAssetManager->GetAsset(MyAsset5Id, azrtti_typeid<AssetWithSerializedData>(), AZ::Data::AssetLoadBehavior::Default);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
             while (!asset2PrimeGet->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1482,12 +1521,12 @@ namespace UnitTest
             auto asset2 = m_testAssetManager->FindOrCreateAsset(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
             auto asset2Container = m_testAssetManager->GetAssetContainer(asset2);
 
-            maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1520,12 +1559,12 @@ namespace UnitTest
             ContainerReadyListener readyListener(MyAsset2Id);
             auto asset2Get = m_testAssetManager->GetAssetInternal(MyAsset2Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AssetFilterNoAssetLoading });
             auto asset2PrimeGet = m_testAssetManager->GetAssetInternal(MyAsset5Id, azrtti_typeid<AssetWithSerializedData>(), AZ::Data::AssetLoadBehavior::Default, AssetLoadParameters{ &AssetFilterNoAssetLoading });
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!asset2Get->IsReady() || !asset2PrimeGet->IsReady())
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1578,12 +1617,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1645,12 +1684,12 @@ namespace UnitTest
             auto asset = m_testAssetManager->FindOrCreateAsset(PreloadAssetRootId, azrtti_typeid<AssetWithQueueAndPreLoadReferences>(), AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1700,12 +1739,12 @@ namespace UnitTest
             auto asset = m_testAssetManager->FindOrCreateAsset(PreloadBrokenDepBId, azrtti_typeid<AssetWithQueueAndPreLoadReferences>(), AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1752,12 +1791,12 @@ namespace UnitTest
                 AZ::Data::AssetLoadBehavior::Default);
             auto containerReady = m_testAssetManager->GetAssetContainer(asset);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1807,12 +1846,12 @@ namespace UnitTest
             // We should catch the basic ciruclar dependency error as well as that it's a preload
             AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1863,12 +1902,12 @@ namespace UnitTest
             // We should catch the basic circular dependency error as well as that it's a preload
             AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1924,12 +1963,12 @@ namespace UnitTest
             // One error in SetupPreloads - Two of the assets create a dependency loop
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
-            auto maxTimeout = AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds;
+            auto maxTimeout = AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds;
 
             while (!readyListener.m_ready)
             {
                 m_testAssetManager->DispatchEvents();
-                if (AZStd::chrono::system_clock::now() > maxTimeout)
+                if (AZStd::chrono::steady_clock::now() > maxTimeout)
                 {
                     break;
                 }
@@ -1957,27 +1996,50 @@ namespace UnitTest
         CheckFinishedCreationsAndDestructions();
         m_assetHandlerAndCatalog->AssetCatalogRequestBus::Handler::BusDisconnect();
     }
+
+    using AssetLoadingTest = AssetJobsFloodTest;
+
+    TEST_F(AssetLoadingTest, CreateAssetWithOutdatedAssetId_LegacyIdAddedAfterwards_UpgradesAndLoadsSuccessfully)
+    {
+        static constexpr AZ::Uuid MyOutdatedUuid{ "{30583432-95F0-4071-883E-114D57CD7CE1}" };
+
+        Asset<AssetWithAssetReference> asset;
+        asset.Create(MyOutdatedUuid);
+
+        EXPECT_EQ(asset.GetId().m_guid, MyOutdatedUuid);
+
+        m_assetHandlerAndCatalog->AddLegacyAssetId(MyOutdatedUuid, MyAsset1Id);
+
+        EXPECT_TRUE(asset.QueueLoad());
+        EXPECT_EQ(asset.GetId().m_guid, MyAsset1Id);
+
+        asset.BlockUntilLoadComplete();
+
+        EXPECT_TRUE(asset.IsReady());
+    }
+
     /**
     * Run multiple threads that get and release assets simultaneously to test AssetManager's thread safety
     */
     class AssetJobsMultithreadedTest
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     public:
-        static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
-        static inline const AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
-        static inline const AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
-        static inline const AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
-        static inline const AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
-        static inline const AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+        static inline constexpr AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
+        static inline constexpr AZ::Uuid MyAsset2Id{ "{BD354AE5-B5D5-402A-A12E-BE3C96F6522B}" };
+        static inline constexpr AZ::Uuid MyAsset3Id{ "{622C3FC9-5AE2-4E52-AFA2-5F7095ADAB53}" };
+        static inline constexpr AZ::Uuid MyAsset4Id{ "{EE99215B-7AB4-4757-B8AF-F78BD4903AC4}" };
+        static inline constexpr AZ::Uuid MyAsset5Id{ "{D9CDAB04-D206-431E-BDC0-1DD615D56197}" };
+        static inline constexpr AZ::Uuid MyAsset6Id{ "{B2F139C3-5032-4B52-ADCA-D52A8F88E043}" };
+
 
         // Initialize the Job Manager with 2 threads for the Asset Manager to use.
         size_t GetNumJobManagerThreads() const override { return 2; }
 
-        static constexpr inline char MyAssetAId[] = "{C5B08D5D-8589-4706-A53F-96248CFDCE73}";
-        static constexpr inline char MyAssetBId[] = "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}";
-        static constexpr inline char MyAssetCId[] = "{F7091500-A220-4407-BEF4-B658D8D24289}";
-        static constexpr inline char MyAssetDId[] = "{1BB6CA5B-CE56-497B-B721-9460365E1125}";
+        static constexpr inline AZ::Uuid MyAssetAId{ "{C5B08D5D-8589-4706-A53F-96248CFDCE73}" };
+        static constexpr inline AZ::Uuid MyAssetBId{ "{E1DECFB8-6FAC-4FE4-BD54-3A4A4E6616A5}" };
+        static constexpr inline AZ::Uuid MyAssetCId{ "{F7091500-A220-4407-BEF4-B658D8D24289}" };
+        static constexpr inline AZ::Uuid MyAssetDId{ "{1BB6CA5B-CE56-497B-B721-9460365E1125}" };
 
         void SetupAssets(DataDrivenHandlerAndCatalog* catalog)
         {
@@ -2021,9 +2083,9 @@ namespace UnitTest
                 AssetWithSerializedData ap2;
                 AssetWithSerializedData ap3;
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &ap1, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &ap2, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &ap3, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &ap1, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &ap2, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &ap3, &context));
 
                 AssetWithAssetReference assetWithPreload1;
                 AssetWithAssetReference assetWithPreload2;
@@ -2032,9 +2094,9 @@ namespace UnitTest
                 assetWithPreload2.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset5Id, AssetLoadBehavior::PreLoad);
                 assetWithPreload3.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset6Id, AssetLoadBehavior::PreLoad);
 
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &assetWithPreload1, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &assetWithPreload2, &context));
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &assetWithPreload3, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &assetWithPreload1, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &assetWithPreload2, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &assetWithPreload3, &context));
 
                 EXPECT_TRUE(assetHandlerAndCatalog->m_numCreations == 3);
                 assetHandlerAndCatalog->m_numCreations = 0;
@@ -2093,7 +2155,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds *2));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds *2));
             }
 
             EXPECT_EQ(threadCount, 0);
@@ -2134,22 +2196,22 @@ namespace UnitTest
                 // A will be saved to disk with MyAsset1Id
                 AssetWithAssetReference a;
                 a.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset2Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &a, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
                 AssetWithAssetReference b;
                 b.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset3Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &b, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &b, &context));
                 AssetWithAssetReference c;
                 c.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset4Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &c, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &c, &context));
                 AssetWithAssetReference d;
                 d.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset5Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &d, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &d, &context));
                 AssetWithAssetReference e;
                 e.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset6Id);
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset5.txt", AZ::DataStream::ST_XML, &e, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset5.txt", &e, &context));
                 AssetWithAssetReference f;
                 f.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(MyAsset1Id); // refer back to asset1
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset6.txt", AZ::DataStream::ST_XML, &f, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset6.txt", &f, &context));
 
                 EXPECT_TRUE(assetHandlerAndCatalog->m_numCreations == 6);
                 assetHandlerAndCatalog->m_numCreations = 0;
@@ -2209,7 +2271,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
             }
 
             EXPECT_TRUE(threadCount == 0);
@@ -2225,6 +2287,46 @@ namespace UnitTest
             AssetManager::Destroy();
         }
 
+        struct MockAssetContainer : AssetContainer
+        {
+            MockAssetContainer(Asset<AssetData> assetData, const AssetLoadParameters& loadParams, bool isReload)
+            {
+                // Copying the code in the original constructor, we can't call that constructor because it will not invoke our virtual method
+                m_rootAsset = AssetInternal::WeakAsset<AssetData>(assetData);
+                m_containerAssetId = m_rootAsset.GetId();
+                m_isReload = isReload;
+
+                AddDependentAssets(assetData, loadParams);
+            }
+
+        protected:
+            AZStd::vector<AZStd::pair<AssetInfo, Asset<AssetData>>> CreateAndQueueDependentAssets(
+                const AZStd::vector<AssetInfo>& dependencyInfoList, const AssetLoadParameters& loadParamsCopyWithNoLoadingFilter) override
+            {
+                auto result = AssetContainer::CreateAndQueueDependentAssets(dependencyInfoList, loadParamsCopyWithNoLoadingFilter);
+
+                // Sleep for a long enough time to allow asset loads to complete and start triggering AssetReady events
+                // This forces the race condition to occur
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(500));
+
+                return result;
+            }
+        };
+
+        struct MockAssetManager : AssetManager
+        {
+            explicit MockAssetManager(const Descriptor& desc)
+                : AssetManager(desc)
+            {
+            }
+
+        protected:
+            AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload) const override
+            {
+                return AZStd::shared_ptr<AssetContainer>(aznew MockAssetContainer(asset, loadParams, isReload));
+            }
+        };
+
         void ParallelDeepAssetReferences()
         {
             SerializeContext context;
@@ -2232,7 +2334,7 @@ namespace UnitTest
             AssetWithAssetReference::Reflect(context);
 
             AssetManager::Descriptor desc;
-            AssetManager::Create(desc);
+            AssetManager::SetInstance(aznew MockAssetManager(desc));
 
             auto& db = AssetManager::Instance();
 
@@ -2251,26 +2353,26 @@ namespace UnitTest
                 // AssetD is MYASSETD
                 AssetWithSerializedData d;
                 d.m_data = 42;
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset4.txt", AZ::DataStream::ST_XML, &d, &context));
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset4.txt", &d, &context));
 
                 // AssetC is MYASSETC
                 AssetWithAssetReference c;
-                c.m_asset = AssetManager::Instance().CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset3.txt", AZ::DataStream::ST_XML, &c, &context));
+                c.m_asset = db.CreateAsset<AssetWithSerializedData>(AssetId(MyAssetDId)); // point at D
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset3.txt", &c, &context));
 
                 // AssetB is MYASSETB
                 AssetWithAssetReference b;
-                b.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset2.txt", AZ::DataStream::ST_XML, &b, &context));
+                b.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetCId)); // point at C
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset2.txt", &b, &context));
 
                 // AssetA will be written to disk as MYASSETA
                 AssetWithAssetReference a;
-                a.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
-                EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "TestAsset1.txt", AZ::DataStream::ST_XML, &a, &context));
+                a.m_asset = db.CreateAsset<AssetWithAssetReference>(AssetId(MyAssetBId)); // point at B
+                EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile("TestAsset1.txt", &a, &context));
             }
 
-            const size_t numThreads = 4;
-            AZStd::atomic_int threadCount(numThreads);
+            constexpr size_t NumThreads = 4;
+            AZStd::atomic_int threadCount(NumThreads);
             AZStd::condition_variable cv;
             AZStd::vector<AZStd::thread> threads;
             AZStd::atomic_bool keepDispatching(true);
@@ -2285,7 +2387,7 @@ namespace UnitTest
 
             AZStd::thread dispatchThread(dispatch);
 
-            for (size_t threadIdx = 0; threadIdx < numThreads; ++threadIdx)
+            for (size_t threadIdx = 0; threadIdx < NumThreads; ++threadIdx)
             {
                 threads.emplace_back([&threadCount, &db, &cv]()
                     {
@@ -2318,7 +2420,7 @@ namespace UnitTest
             while (threadCount > 0 && !timedOut)
             {
                 AZStd::unique_lock<AZStd::mutex> lock(mutex);
-                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::system_clock::now() + DefaultTimeoutSeconds));
+                timedOut = (AZStd::cv_status::timeout == cv.wait_until(lock, AZStd::chrono::steady_clock::now() + DefaultTimeoutSeconds));
             }
 
             EXPECT_TRUE(threadCount == 0);
@@ -2417,8 +2519,8 @@ namespace UnitTest
             // We have ensured that all the threads have started at this point and we can let them start hammering at the AssetManager
             wait = false;
 
-            AZStd::chrono::system_clock::time_point start = AZStd::chrono::system_clock::now();
-            while (AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::system_clock::now() - start) < AZStd::chrono::seconds(2))
+            AZStd::chrono::steady_clock::time_point start = AZStd::chrono::steady_clock::now();
+            while (AZStd::chrono::duration_cast<AZStd::chrono::milliseconds>(AZStd::chrono::steady_clock::now() - start) < AZStd::chrono::seconds(2))
             {
                 AZStd::this_thread::yield();
             }
@@ -2473,15 +2575,14 @@ namespace UnitTest
 #if AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
 #else
-    // temporarily disabled until sporadic failures can be root caused
-    TEST_F(AssetJobsMultithreadedTest, DISABLED_ParallelDeepAssetReferences)
+    TEST_F(AssetJobsMultithreadedTest, ParallelDeepAssetReferences)
 #endif // AZ_TRAIT_DISABLE_FAILED_ASSET_MANAGER_TESTS
     {
         ParallelDeepAssetReferences();
     }
 
     class AssetManagerTests
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     protected:
         static inline const AZ::Uuid MyAsset1Id{ "{5B29FE2B-6B41-48C9-826A-C723951B0560}" };
@@ -2496,7 +2597,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            BaseAssetManagerTest::SetUp();
+            DisklessAssetManagerBase::SetUp();
 
             m_console = AZStd::make_unique<AZ::Console>();
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
@@ -2535,7 +2636,7 @@ namespace UnitTest
             AssetManager::Destroy();
             AZ::Interface<AZ::IConsole>::Unregister(m_console.get());
             m_console = nullptr;
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
     };
 
@@ -2658,7 +2759,7 @@ namespace UnitTest
             m_canceled = true;
         }
 
-        ~CancelListener()
+        ~CancelListener() override
         {
             BusDisconnect();
         }
@@ -2700,7 +2801,7 @@ namespace UnitTest
             EXPECT_TRUE(asset1.IsReady());
             EXPECT_TRUE(asset2.IsReady());
 
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             AssetManager::Instance().DispatchEvents();
 
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numLoads, 2);
@@ -2739,7 +2840,7 @@ namespace UnitTest
             EXPECT_TRUE(asset1.IsReady());
             EXPECT_TRUE(asset2.IsReady());
 
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             AssetManager::Instance().DispatchEvents();
 
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numLoads, 2);
@@ -2776,10 +2877,10 @@ namespace UnitTest
 
                 ASSERT_TRUE(asset1);
 
-                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
+                AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             }
 
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(80));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
             AssetManager::Instance().DispatchEvents();
 
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numLoads, 1);
@@ -2886,12 +2987,14 @@ namespace UnitTest
     * the middle of loading.  The tests help ensure that assets can't get stuck in perpetual loading states.
     **/
     class AssetManagerClearAssetReferenceTests
-        : public BaseAssetManagerTest
+        : public DisklessAssetManagerBase
     {
     protected:
         static inline const AZ::Uuid RootAssetId{ "{AB13F568-C676-41FE-A7E9-341F71A78104}" };
         static inline const AZ::Uuid DependentPreloadAssetId{ "{9E0AE541-0080-4ADA-B4F4-A0F25D0A6D1A}" };
         static inline const AZ::Uuid NestedDependentPreloadBlockingAssetId{ "{FED70BCD-2846-4CBA-84D1-ED24DA7FCD4B}" };
+
+        static inline const AZ::Uuid RootWithSynchronizerAssetId{ "{6470ED30-D530-4023-9DEB-AC1E40062A2B}" };
 
         DataDrivenHandlerAndCatalog* m_assetHandlerAndCatalog;
         LoadAssetDataSynchronizer m_loadDataSynchronizer;
@@ -2903,13 +3006,39 @@ namespace UnitTest
         AssetManagerClearAssetReferenceTests() = default;
         ~AssetManagerClearAssetReferenceTests() override = default;
 
-        void SetUp() override
+        void CreateAsset(AZ::Uuid assetId, const char* filename, LoadAssetDataSynchronizer* synchronizer = nullptr)
         {
-            BaseAssetManagerTest::SetUp();
+            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(assetId, filename, 0, false, false, synchronizer);
 
-            // create the database
+            AssetWithSerializedData asset;
+
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile(filename, &asset, m_serializeContext));
+        }
+
+        template<typename T>
+        void CreateAssetRef(AZ::Uuid assetId, const char* filename, AZ::Uuid referencedAssetId, LoadAssetDataSynchronizer* synchronizer = nullptr)
+        {
+            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(assetId, filename, 0, false, false, synchronizer)->AddPreload(referencedAssetId);
+
+            AssetWithAssetReference asset;
+            asset.m_asset = AssetManager::Instance().FindOrCreateAsset(referencedAssetId, azrtti_typeid<T>(), PreLoad);
+
+            EXPECT_TRUE(asset.m_asset.GetData());
+            EXPECT_TRUE(m_streamerWrapper->WriteMemoryFile(filename, &asset, m_serializeContext));
+        }
+
+        virtual void SetUpAssetManager()
+        {
             AssetManager::Descriptor desc;
             AssetManager::Create(desc);
+        }
+
+        void SetUp() override
+        {
+            DisklessAssetManagerBase::SetUp();
+
+            // create the database
+            SetUpAssetManager();
 
             // create and register an asset handler
             m_assetHandlerAndCatalog = aznew DataDrivenHandlerAndCatalog;
@@ -2919,6 +3048,16 @@ namespace UnitTest
             AssetWithSerializedData::Reflect(*m_serializeContext);
             AssetWithAssetReference::Reflect(*m_serializeContext);
 
+            for (auto&& type : {
+                     azrtti_typeid<AssetWithCustomData>(),
+                     azrtti_typeid<AssetWithSerializedData>(),
+                     azrtti_typeid<AssetWithAssetReference>(),
+                 })
+            {
+                AssetManager::Instance().RegisterHandler(m_assetHandlerAndCatalog, type);
+                AssetManager::Instance().RegisterCatalog(m_assetHandlerAndCatalog, type);
+            }
+
             // For our tests, we will set up a chain of assets that look like this:
             // RootAssetId -(Preload)-> DependentPreloadAssetId -(Preload)-> NestedDependentPreloadBlockingAssetId
             // The asset at the end of the chain uses a loadDataSynchronizer to ensure that we can synchronize logic perfectly
@@ -2926,38 +3065,14 @@ namespace UnitTest
             // These tests validate behaviors when the root asset is released while a dependent asset is in the middle of loading,
             // so getting the timing correct is mandatory for these tests.
 
-            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(RootAssetId,
-                "RootAsset.txt")->AddPreload(DependentPreloadAssetId);
-            m_assetHandlerAndCatalog->AddAsset<AssetWithAssetReference>(DependentPreloadAssetId,
-                "DependentPreloadAsset.txt")->AddPreload(NestedDependentPreloadBlockingAssetId);
-            m_assetHandlerAndCatalog->AddAsset<AssetWithSerializedData>(NestedDependentPreloadBlockingAssetId,
-                "DependentPreloadBlockingAsset.txt", 0, false, false, &m_loadDataSynchronizer);
-
-            AZStd::vector<AssetType> types;
-            m_assetHandlerAndCatalog->GetHandledAssetTypes(types);
-            for (const auto& type : types)
-            {
-                AssetManager::Instance().RegisterHandler(m_assetHandlerAndCatalog, type);
-                AssetManager::Instance().RegisterCatalog(m_assetHandlerAndCatalog, type);
-            }
-
-            // Create and save the dependent asset first, so that we can get a reference to it.
-            AssetWithSerializedData dependentBlockingAsset;
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DependentPreloadBlockingAsset.txt",
-                AZ::DataStream::ST_XML, &dependentBlockingAsset, m_serializeContext));
-
-            AssetWithAssetReference dependentAsset;
-            dependentAsset.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(
-                NestedDependentPreloadBlockingAssetId, AssetLoadBehavior::PreLoad);
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "DependentPreloadAsset.txt",
-                AZ::DataStream::ST_XML, &dependentAsset, m_serializeContext));
-
-            // Create and save the top-level asset.
-            AssetWithAssetReference rootAsset;
-            rootAsset.m_asset = AssetManager::Instance().CreateAsset<AssetWithAssetReference>(
-                DependentPreloadAssetId, AssetLoadBehavior::PreLoad);
-            EXPECT_TRUE(AZ::Utils::SaveObjectToFile(GetTestFolderPath() + "RootAsset.txt",
-                AZ::DataStream::ST_XML, &rootAsset, m_serializeContext));
+            CreateAsset(NestedDependentPreloadBlockingAssetId, "DependentPreloadBlockingAsset.txt", &m_loadDataSynchronizer);
+            CreateAssetRef<AssetWithSerializedData>(DependentPreloadAssetId, "DependentPreloadAsset.txt", NestedDependentPreloadBlockingAssetId);
+            CreateAssetRef<AssetWithAssetReference>(RootAssetId, "RootAsset.txt", DependentPreloadAssetId);
+            CreateAssetRef<AssetWithAssetReference>(
+                RootWithSynchronizerAssetId,
+                "RootWithSynchronizerAsset.txt",
+                NestedDependentPreloadBlockingAssetId,
+                &m_loadDataSynchronizer);
         }
 
         void TearDown() override
@@ -2969,7 +3084,7 @@ namespace UnitTest
             delete m_assetHandlerAndCatalog;
 
             AssetManager::Destroy();
-            BaseAssetManagerTest::TearDown();
+            DisklessAssetManagerBase::TearDown();
         }
     };
 
@@ -2994,7 +3109,7 @@ namespace UnitTest
         auto rootAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootAssetId, AssetLoadBehavior::Default);
         while (m_loadDataSynchronizer.m_numBlocking < 1)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(5));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
         }
 
         // Verify that the loading state on the nested dependent asset has been reached.
@@ -3055,7 +3170,7 @@ namespace UnitTest
         auto rootAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootAssetId, AssetLoadBehavior::Default);
         while (m_loadDataSynchronizer.m_numBlocking < 1)
         {
-            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(5));
+            AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(1));
         }
 
         // Get references to the dependent and nested dependent assets
@@ -3085,12 +3200,12 @@ namespace UnitTest
         // We specifically wait for OnAssetReady to be triggered instead of using BlockUntilLoadComplete() to ensure that
         // all loading jobs have 100% completed and there aren't any other outstanding asset references held on other threads.
         const auto timeoutSeconds = AZStd::chrono::seconds(20);
-        auto maxTimeout = AZStd::chrono::system_clock::now() + timeoutSeconds;
+        auto maxTimeout = AZStd::chrono::steady_clock::now() + timeoutSeconds;
         bool timedOut = false;
         while (!(assetStatus1.m_ready && assetStatus2.m_ready))
         {
-            AssetBus::ExecuteQueuedEvents();
-            if (AZStd::chrono::system_clock::now() > maxTimeout)
+            AssetManager::Instance().DispatchEvents();
+            if (AZStd::chrono::steady_clock::now() > maxTimeout)
             {
                 timedOut = true;
                 break;
@@ -3099,6 +3214,415 @@ namespace UnitTest
         EXPECT_FALSE(timedOut);
         EXPECT_TRUE(dependentAsset.IsReady());
         EXPECT_TRUE(nestedDependentAsset.IsReady());
+    }
+
+    TEST_F(AssetManagerClearAssetReferenceTests, ReloadTest_SUITE_sandbox)
+    {
+        // Regression test - there was a bug where rapid reloads could get stuck due to the owning container being invalidated
+        // Note that for this bug to occur, the loaded asset needs to have dependencies
+        // Order of events to reproduce:
+        // 1) Asset is loaded
+        // 2) Reload occurs
+        // 3) Another reload begins
+        // 4) Old asset is reassigned
+        // 4a) Old asset ref count hits 0
+        // 4b) Old asset triggers OnAssetUnused
+        // 4c) Container is released <-- This is where the bug happens, which should not occur with the fix
+        // 5) Reload stalls because container is gone
+
+        AZStd::atomic_bool running = true;
+        using SignalType = AZStd::unique_ptr<AZStd::binary_semaphore>;
+
+        // Start up a thread to dispatch queued events in the background
+        AZStd::thread eventThread(
+            [&running]()
+            {
+                while (running)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
+            });
+
+        struct ReloadHandler : AZ::Data::AssetBus::Handler
+        {
+            ReloadHandler(SignalType& reloadSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+                : m_asset(asset), m_reloadSignal(reloadSignal)
+            {
+                BusConnect(asset.GetId());
+            }
+
+            ~ReloadHandler()
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReloaded(Asset<AssetData> asset) override
+            {
+                m_reloadedAsset = asset;
+                m_reloadSignal->release(); // Signal the reload has finished
+            }
+
+            AZ::Data::Asset<AZ::Data::AssetData> m_reloadedAsset;
+            AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+            SignalType& m_reloadSignal;
+        };
+
+        SignalType reloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+
+        {
+            // Intentional scope to allow asset references to be released before shutdown
+
+            // 1) Load the asset
+            ReloadHandler reloadHandler(
+                reloadSignal,
+                AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
+
+            reloadHandler.m_asset.BlockUntilLoadComplete();
+
+            ASSERT_TRUE(reloadHandler.m_asset.IsReady());
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
+
+            // 2) Start a reload which will complete
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload to complete\n");
+
+            reloadSignal->acquire(); // Wait until reload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another reload of asset\n");
+
+            // 3) Start another reload
+            m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the reload from progressing too far
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default); // Start another reload
+
+            // 4) Reassign the asset, which should cause the old asset to be unloaded
+            reloadHandler.m_asset = reloadHandler.m_reloadedAsset;
+
+            // Resume loading
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
+            // 5) If the bug is still active, this will fail because the asset can never finish loading
+            EXPECT_TRUE(reloadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
+        }
+
+        // Shut down the event thread
+        running = false;
+
+        if (eventThread.joinable())
+        {
+            eventThread.join();
+        }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
+    }
+
+    TEST_F(AssetManagerClearAssetReferenceTests, ReleaseOldReferenceWhileLoadingNewReference_DoesNotDeleteContainer_SUITE_sandbox)
+    {
+        // Regression test very similar to the above test but this time it occurs when releasing an old asset reference while *loading* (not reloading) the same asset
+        // Order of events to reproduce:
+        // 1) Asset is loaded
+        // 2) Asset is reloaded
+        // Reference to old asset is kept, newly loaded reference is released
+        // 3) Asset load is started again
+        // 4) Reference to old asset is released
+        // 4a) Old asset ref count hits 0
+        // 4b) Old asset triggers OnAssetUnused
+        // 4c) Container is released <-- This is where the bug happens, which should not occur with the fix
+        // 5) Load stalls because container is gone
+
+        AZStd::atomic_bool running = true;
+        using SignalType = AZStd::unique_ptr<AZStd::binary_semaphore>;
+
+        // Start up a thread to dispatch queued events in the background
+        AZStd::thread eventThread(
+            [&running]()
+            {
+                while (running)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
+            });
+
+        struct AssetEventHandler : AZ::Data::AssetBus::Handler
+        {
+            AssetEventHandler(SignalType& loadSignal, SignalType& unloadSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+                : m_asset(asset)
+                , m_loadSignal(loadSignal)
+                , m_unloadSignal(unloadSignal)
+            {
+                BusConnect(asset.GetId());
+            }
+
+            ~AssetEventHandler() override
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReady(Asset<AssetData> asset) override
+            {
+                m_loadSignal->release();
+            }
+
+            void OnAssetUnloaded([[maybe_unused]] const AssetId assetId, [[maybe_unused]] const AssetType assetType) override
+            {
+                m_unloadSignal->release();
+            }
+
+            AZ::Data::Asset<AZ::Data::AssetData> m_reloadedAsset;
+            AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+            SignalType& m_loadSignal;
+            SignalType& m_unloadSignal;
+        };
+
+        SignalType loadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+        SignalType unloadSignal = AZStd::make_unique<AZStd::binary_semaphore>();
+
+        {
+            // Intentional scope to allow asset references to be released before shutdown
+
+            // 1) Load the asset
+            AssetEventHandler assetEventHandler(
+                loadSignal, unloadSignal,
+                AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default));
+
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for initial asset load to complete\n");
+
+            loadSignal->acquire();
+
+            ASSERT_TRUE(assetEventHandler.m_asset.IsReady());
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting reload of asset\n");
+
+            // 2) Start a reload which will complete
+            AssetManager::Instance().ReloadAsset(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for reload of asset to complete\n");
+
+            unloadSignal->acquire(); // Wait until unload is done
+
+            ColoredPrintf(COLOR_DEFAULT, "Starting another load of asset\n");
+
+            // 3) Start another load
+            m_loadDataSynchronizer.m_readyToLoad = false; // Prevent the load from progressing too far
+            auto loadingAsset = AssetManager::Instance().GetAsset<AssetWithAssetReference>(RootWithSynchronizerAssetId, AssetLoadBehavior::Default);
+
+            // 4) Unload the old asset reference
+            assetEventHandler.m_asset = {};
+
+            // Resume loading
+            m_loadDataSynchronizer.m_readyToLoad = true;
+            m_loadDataSynchronizer.m_condition.notify_all();
+
+            ColoredPrintf(COLOR_DEFAULT, "Waiting for 2nd reload to complete\n");
+
+            // 5) If the bug is still active, this will fail because the asset can never finish loading
+            EXPECT_TRUE(loadSignal->try_acquire_for(AZStd::chrono::seconds(5)));
+
+            ColoredPrintf(COLOR_DEFAULT, "Test conditions complete, beginning shutdown\n");
+        }
+
+        // Shut down the event thread
+        running = false;
+
+        if (eventThread.joinable())
+        {
+            eventThread.join();
+        }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
+    }
+
+    struct IContainerEvents
+    {
+        AZ_RTTI(IContainerEvents, "{4B29804D-DBC9-49C3-8968-87105915B251}");
+
+        virtual ~IContainerEvents() = default;
+
+        virtual void CreatingContainer() = 0;
+    };
+
+    // Test class to inject a Interface event before create a container
+    struct SignallingAssetManager : AssetManager
+    {
+        explicit SignallingAssetManager(const Descriptor& desc)
+            : AssetManager(desc)
+        {
+        }
+
+    private:
+        AZStd::shared_ptr<AssetContainer> CreateAssetContainer(Asset<AssetData> asset, const AssetLoadParameters& loadParams, bool isReload) const override
+        {
+            if(auto events = AZ::Interface<IContainerEvents>::Get())
+            {
+                events->CreatingContainer();
+            }
+
+            return AssetManager::CreateAssetContainer(asset, loadParams, isReload);
+        }
+    };
+
+    // Test class to listen to interface event and signal a semaphore when one occurs
+    class ContainerListener : public AZ::Interface<IContainerEvents>::Registrar
+    {
+    public:
+        explicit ContainerListener(AZStd::binary_semaphore& signal)
+            : m_signal(signal)
+        {
+        }
+
+    private:
+        void CreatingContainer() override
+        {
+            m_signal.release();
+        }
+
+        AZStd::binary_semaphore& m_signal;
+    };
+
+    // Tests make sure GetAsset can be called within an OnAsset* callback without causing a deadlock
+    class AssetManagerEbusSafety : public AssetManagerClearAssetReferenceTests
+    {
+    public:
+        static inline const AZ::Uuid AssetA{ "{CD2EBA84-9637-44D5-B9A5-1BDA82F5F433}" };
+        static inline const AZ::Uuid AssetB{ "{96C368C3-C96D-4C36-8E48-EA5A1B1A51F9}" };
+        static inline const AZ::Uuid AssetC{ "{189212F5-E430-4EF7-834D-AD4EF2856554}" };
+
+    private:
+        void SetUpAssetManager() override
+        {
+            AssetManager::Descriptor desc;
+            m_assetManager = aznew SignallingAssetManager(desc);
+            AssetManager::SetInstance(m_assetManager);
+        }
+
+        void SetUp() override
+        {
+            AssetManagerClearAssetReferenceTests::SetUp();
+
+            CreateAsset(AssetA, "AssetA.txt");
+            CreateAsset(AssetB, "AssetB.txt");
+            CreateAsset(AssetC, "AssetC.txt");
+        }
+
+        SignallingAssetManager* m_assetManager{};
+    };
+
+    TEST_F(AssetManagerEbusSafety, OnAssetReady_GetAsset_DoesNotDeadlock_SUITE_sandbox)
+    {
+        // Regression test
+        // Steps to repro:
+        // 1) An asset load is started
+        // 2) OnAssetReady is called on ThreadA
+        // 3) ThreadB calls GetAsset and blocks waiting for ThreadA to release the ebux mutex
+        // 4) ThreadA calls GetAsset
+        // 5) At this point, the threads deadlock each other because of lock inversion.  The first thread is holding the ebus mutex and trying to acquire the asset container mutex
+        // The second thread is holding the asset container mutex and trying to acquire the asset events ebus mutex
+
+        AZStd::atomic_bool running = true;
+        using SignalType = AZStd::binary_semaphore;
+
+        // Start up a thread to dispatch queued events in the background
+        AZStd::thread threadA(
+            [&running]()
+            {
+                while (running)
+                {
+                    AssetManager::Instance().DispatchEvents();
+                }
+            });
+
+        struct AssetBusHandler : AZ::Data::AssetBus::Handler
+        {
+            AssetBusHandler(SignalType& onAssetReadySignal, SignalType& clearToStartLoadingSignal, AZ::Data::Asset<AZ::Data::AssetData> asset)
+                : m_asset(asset)
+                , m_onAssetReadySignal(onAssetReadySignal)
+                , m_clearToStartLoadingSignal(clearToStartLoadingSignal)
+            {
+                BusConnect(asset.GetId());
+            }
+
+            ~AssetBusHandler() override
+            {
+                BusDisconnect();
+            }
+
+            void OnAssetReady(Asset<AssetData> asset) override
+            {
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: OnAssetReady called \n");
+                m_onAssetReadySignal.release();
+                m_clearToStartLoadingSignal.acquire();
+
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Resumed\n");
+                m_otherAsset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetC, Default);
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Got asset\n");
+                m_otherAsset.BlockUntilLoadComplete();
+                ColoredPrintf(COLOR_YELLOW, "ThreadA: Asset loaded\n");
+            }
+
+            AZ::Data::Asset<AZ::Data::AssetData> m_otherAsset;
+            AZ::Data::Asset<AZ::Data::AssetData> m_asset;
+            SignalType& m_onAssetReadySignal;
+            SignalType& m_clearToStartLoadingSignal;
+        };
+
+        SignalType onAssetReadySignal;
+        SignalType clearToStartLoadingSignal;
+        SignalType threadBFinishedSignal;
+
+        // This thread will wait until the initial OnAssetReady event has fired on threadA, at which point it will call GetAsset
+        // and signal for threadA to continue after the AssetContainer lock has been acquired
+        AZStd::thread threadB([&onAssetReadySignal, &clearToStartLoadingSignal, &threadBFinishedSignal]()
+        {
+            // Wait for threadA to get into the OnAssetReady event
+            onAssetReadySignal.acquire();
+
+            ContainerListener listener(clearToStartLoadingSignal);
+
+            ColoredPrintf(COLOR_YELLOW, "ThreadB: Starting\n");
+            auto asset = AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetB, Default);
+            ColoredPrintf(COLOR_YELLOW, "ThreadB: Got asset\n");
+            asset.BlockUntilLoadComplete();
+            ColoredPrintf(COLOR_YELLOW, "ThreadB: Asset loaded\n");
+            threadBFinishedSignal.release();
+        });
+
+        {
+            // Intentional scope to allow asset references to be released before shutdown
+            AssetBusHandler assetBusHandler(onAssetReadySignal, clearToStartLoadingSignal, AssetManager::Instance().GetAsset<AssetWithSerializedData>(AssetA, Default));
+
+            ASSERT_TRUE(threadBFinishedSignal.try_acquire_for(AZStd::chrono::seconds(5)));
+        }
+
+        running = false;
+
+        if (threadA.joinable())
+        {
+            threadA.join();
+        }
+
+        if(threadB.joinable())
+        {
+            threadB.join();
+        }
+
+        // Make sure any pending events are flushed out (to clear any remaining references)
+        AssetManager::Instance().DispatchEvents();
     }
 
     using AssetManagerErrorTests = AssetManagerTests;

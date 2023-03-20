@@ -17,13 +17,12 @@ namespace AzGameFramework
         : public AzFramework::Application
     {
     public:
-        AZ_CLASS_ALLOCATOR(GameApplication, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameApplication, AZ::SystemAllocator);
 
         GameApplication();
         GameApplication(int argc, char** argvS);
         ~GameApplication();
 
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
         void CreateStaticModules(AZStd::vector<AZ::Module*>& outModules) override;
 
         //////////////////////////////////////////////////////////////////////////

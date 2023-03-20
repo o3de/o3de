@@ -58,7 +58,7 @@ namespace AzFramework
             handle->Break();
         }
 
-        return bytesAvailable;
+        return static_cast<AZ::u32>(bytesAvailable);
     }
 
     AZ::u32 StdInOutCommunication::ReadDataFromHandle(StdProcessCommunicatorHandle& handle, void* readBuffer, AZ::u32 bufferSize)
@@ -75,7 +75,7 @@ namespace AzFramework
             FD_ZERO(&set);
             FD_SET(handle->GetHandle(), &set);
 
-            int numReady = select(handle->GetHandle() + 1, &set, NULL, NULL, NULL);
+            [[maybe_unused]] int numReady = select(handle->GetHandle() + 1, &set, NULL, NULL, NULL);
 
             // if numReady == -1 and errno == EINTR then the child process died unexpectedly and
             // the handle was closed. Not something to assert about in regards to trying to read
@@ -84,7 +84,7 @@ namespace AzFramework
             // dead and return any error codes the child may have written to the error stream.
             AZ_Assert(numReady != -1 || errno == EINTR, "Could not determine if any data is available for reading due to an error. Errno: %d", errno);
 
-            const bool wasSet = FD_ISSET(handle->GetHandle(), &set);
+            [[maybe_unused]] const bool wasSet = FD_ISSET(handle->GetHandle(), &set);
             AZ_Assert(wasSet, "handle was not set when we selected it for read");
 
             return 0;
@@ -99,10 +99,10 @@ namespace AzFramework
             {
                 // Child process exited, we may have read something, so return amount
                 handle->Break();
-                return bytesRead;
+                return static_cast<AZ::u32>(bytesRead);
             }
             AZ_Assert(false, "Unexpected error from ReadFile %d", errno);
-            return bytesRead;
+            return static_cast<AZ::u32>(bytesRead);
         }
 
         //EOF
@@ -110,7 +110,7 @@ namespace AzFramework
         {
             handle->Break();
         }
-        return bytesRead;
+        return static_cast<AZ::u32>(bytesRead);
     }
 
     AZ::u32 StdInOutCommunication::WriteDataToHandle(StdProcessCommunicatorHandle& handle, const void* writeBuffer, AZ::u32 bytesToWrite)
@@ -130,13 +130,13 @@ namespace AzFramework
             {
                 // Child process exited, may have written something, so return amount
                 handle->Break();
-                return bytesWritten;
+                return static_cast<AZ::u32>(bytesWritten);
             }
             AZ_Assert(false, "Unexpected error trying to write to child process. errno = %d", errno);
             return 0;
         }
 
-        return bytesWritten;
+        return static_cast<AZ::u32>(bytesWritten);
     }
 
     bool StdInOutProcessCommunicator::CreatePipesForProcess(ProcessData* processData)

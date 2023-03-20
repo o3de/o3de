@@ -146,7 +146,9 @@ void CanvasSizeToolbarSection::InitWidgets(QToolBar* parent, bool addSeparator)
         m_canvasHeightAction->setVisible(false);
 
         m_lineEditCanvasWidth->setMaximumWidth(35);
+        m_lineEditCanvasWidth->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasWidth));
         m_lineEditCanvasHeight->setMaximumWidth(35);
+        m_lineEditCanvasHeight->setValidator(new QIntValidator(1, AZStd::numeric_limits<int>::max(), m_lineEditCanvasHeight));
 
         // Delimit between width x height
         m_labelCustomSizeDelimiter->setText("x");
@@ -518,7 +520,7 @@ void ReferenceCanvasSizeToolbarSection::SetCanvasSizeByComboBoxIndex()
     AZ::Vector2 canvasSize(aznumeric_cast<float>(m_canvasSizePresets[comboIndex].width), aznumeric_cast<float>(m_canvasSizePresets[comboIndex].height));
 
     // set the canvas size on the canvas entity being edited
-    EBUS_EVENT_ID(m_editorWindow->GetCanvas(), UiCanvasBus, SetCanvasSize, canvasSize);
+    UiCanvasBus::Event(m_editorWindow->GetCanvas(), &UiCanvasBus::Events::SetCanvasSize, canvasSize);
     m_editorWindow->GetViewport()->GetViewportInteraction()->CenterCanvasInViewport(&canvasSize);
     m_editorWindow->GetViewport()->Refresh();
 }

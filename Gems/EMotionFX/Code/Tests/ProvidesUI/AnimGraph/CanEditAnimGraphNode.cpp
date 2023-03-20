@@ -75,7 +75,7 @@ namespace EMotionFX
             ASSERT_TRUE(activeAnimGraph) << "An anim graph was not created with command: " << createAnimGraphCommand.c_str();
 
             // Create a new AnimGraph Node
-            const AZ::u32 nodeCount = activeAnimGraph->GetNumNodes();
+            const size_t nodeCount = activeAnimGraph->GetNumNodes();
             EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(createNodeCommand, result)) << result.c_str();
             EXPECT_EQ(activeAnimGraph->GetNumNodes(), nodeCount + 1) << "Expected one more anim graph node after running command: " << createNodeCommand.c_str();
         }

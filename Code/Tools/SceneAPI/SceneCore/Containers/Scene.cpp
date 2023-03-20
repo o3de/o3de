@@ -47,6 +47,16 @@ namespace AZ
                 return m_sourceGuid;
             }
 
+            void Scene::SetWatchFolder(const AZStd::string& watchFolder)
+            {
+                m_watchFolder = watchFolder;
+            }
+
+            const AZStd::string& Scene::GetWatchFolder() const
+            {
+                return m_watchFolder;
+            }
+
             void Scene::SetManifestFilename(const AZStd::string& name)
             {
                 m_manifestFilename = name;
@@ -92,9 +102,35 @@ namespace AZ
                 m_originalOrientation = orientation;
             }
 
+            void Scene::SetSceneDimension(Vector3 dimension)
+            {
+                m_sceneDimension = dimension;
+                m_hasDimension = true;
+            }
+
+            void Scene::SetSceneVertices(uint32_t vertices)
+            {
+                m_vertices = vertices;
+            }
+
+            bool Scene::HasDimension() const
+            {
+                return m_hasDimension;
+            }
+
             Scene::SceneOrientation Scene::GetOriginalSceneOrientation() const
             {
                 return m_originalOrientation;
+            }
+
+            Vector3& Scene::GetSceneDimension()
+            {
+                return m_sceneDimension;
+            }
+
+            uint32_t Scene::GetSceneVertices() const
+            {
+                return m_vertices;
             }
 
             void Scene::Reflect(ReflectContext* context)
@@ -103,14 +139,16 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<Scene>()
-                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
+                        ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
+                        ->Constructor<const AZStd::string&>()
                         ->Property("name", BehaviorValueGetter(&Scene::m_name), nullptr)
                         ->Property("manifestFilename", BehaviorValueGetter(&Scene::m_manifestFilename), nullptr)
                         ->Property("sourceFilename", BehaviorValueGetter(&Scene::m_sourceFilename), nullptr)
                         ->Property("sourceGuid", BehaviorValueGetter(&Scene::m_sourceGuid), nullptr)
                         ->Property("graph", BehaviorValueGetter(&Scene::m_graph), nullptr)
                         ->Property("manifest", BehaviorValueGetter(&Scene::m_manifest), nullptr)
+                        ->Property("watchFolder", BehaviorValueGetter(&Scene::m_watchFolder), nullptr)
                         ->Constant("SceneOrientation_YUp", BehaviorConstant(SceneOrientation::YUp))
                         ->Constant("SceneOrientation_ZUp", BehaviorConstant(SceneOrientation::ZUp))
                         ->Constant("SceneOrientation_XUp", BehaviorConstant(SceneOrientation::XUp))

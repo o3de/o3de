@@ -45,7 +45,7 @@ namespace AZ
             Device& device = static_cast<Device&>(deviceBase);
             
             RHI::HeapMemoryUsage* heapMemoryUsage = &m_memoryUsage.GetHeapMemoryUsage(descriptorBase.m_heapMemoryLevel);
-            uint32_t bufferPageSize = RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes;
+            uint32_t bufferPageSize = static_cast<uint32_t>(RHI::RHISystemInterface::Get()->GetPlatformLimitsDescriptor()->m_platformDefaultValues.m_bufferPoolPageSizeInBytes);
             
             // The descriptor provides an explicit buffer page size override.
             if (const Metal::BufferPoolDescriptor* descriptor = azrtti_cast<const Metal::BufferPoolDescriptor*>(&descriptorBase))
@@ -102,8 +102,7 @@ namespace AZ
         void BufferPool::ShutdownResourceInternal(RHI::Resource& resourceBase)
         {
             Buffer& buffer = static_cast<Buffer&>(resourceBase);
-            auto& device = static_cast<Device&>(GetDevice());
-            
+
             if (auto* resolver = GetResolver())
             {
                 resolver->OnResourceShutdown(resourceBase);
@@ -185,6 +184,14 @@ namespace AZ
         {
             GetDevice().GetAsyncUploadQueue().QueueUpload(request);
             return RHI::ResultCode::Success;
+        }
+
+        void BufferPool::ComputeFragmentation() const
+        {
+            float fragmentation = m_allocator.ComputeFragmentation();
+
+            const RHI::BufferPoolDescriptor& descriptor = GetDescriptor();
+            m_memoryUsage.GetHeapMemoryUsage(descriptor.m_heapMemoryLevel).m_fragmentation = fragmentation;
         }
     }
 }

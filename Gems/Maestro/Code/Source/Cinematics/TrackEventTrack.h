@@ -15,12 +15,13 @@
 #include "IMovieSystem.h"
 #include "AnimTrack.h"
 #include "AnimKey.h"
+#include "StlUtils.h"
 
 class CAnimStringTable
     : public IAnimStringTable
 {
 public:
-    AZ_CLASS_ALLOCATOR(CAnimStringTable, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CAnimStringTable, AZ::SystemAllocator);
     AZ_RTTI(CAnimStringTable, "{B7C435CF-A763-41B5-AA1E-3BA2CD4232B2}", IAnimStringTable);
 
     CAnimStringTable();
@@ -60,7 +61,7 @@ class CTrackEventTrack
     : public TAnimTrack<IEventKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CTrackEventTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CTrackEventTrack, AZ::SystemAllocator);
     AZ_RTTI(CTrackEventTrack, "{3F659864-D66B-4211-93FB-1401EF4614D4}", IAnimTrack);
 
     explicit CTrackEventTrack(IAnimStringTable* pStrings);
@@ -69,9 +70,9 @@ public:
     //////////////////////////////////////////////////////////////////////////
     // Overrides of IAnimTrack.
     //////////////////////////////////////////////////////////////////////////
-    void GetKeyInfo(int key, const char*& description, float& duration);
-    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading);
-    void SetKey(int index, IKey* key);
+    void GetKeyInfo(int key, const char*& description, float& duration) override;
+    void SerializeKey(IEventKey& key, XmlNodeRef& keyNode, bool bLoading) override;
+    void SetKey(int index, IKey* key) override;
     void InitPostLoad(IAnimSequence* sequence) override;
 
     static void Reflect(AZ::ReflectContext* context);

@@ -12,6 +12,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Module/Environment.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <SceneAPI/SceneCore/Components/BehaviorComponent.h>
@@ -22,6 +23,7 @@
 #include <SceneAPI/SceneCore/Components/SceneSystemComponent.h>
 
 #include <SceneAPI/SceneCore/Containers/RuleContainer.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
 #include <SceneAPI/SceneCore/DataTypes/IManifestObject.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
@@ -39,6 +41,7 @@
 #include <SceneAPI/SceneCore/DataTypes/Rules/ILodRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/ISkeletonProxyRule.h>
 #include <SceneAPI/SceneCore/DataTypes/Rules/IScriptProcessorRule.h>
+#include <SceneAPI/SceneCore/DataTypes/Rules/IUnmodifiableRule.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IAnimationData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBlendShapeData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IBoneData.h>
@@ -50,7 +53,6 @@
 #include <SceneAPI/SceneCore/DataTypes/GraphData/ITransform.h>
 
 #include <SceneAPI/SceneCore/DataTypes/ManifestBase/ISceneNodeSelectionList.h>
-#include <SceneAPI/SceneCore/Export/MtlMaterialExporter.h>
 #include <SceneAPI/SceneCore/Import/ManifestImportRequestHandler.h>
 #include <SceneAPI/SceneCore/Utilities/PatternMatcher.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
@@ -72,7 +74,7 @@ namespace AZ
                 : public AZ::EntityBus::Handler
             {
             public:
-                AZ_CLASS_ALLOCATOR(EntityMonitor, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(EntityMonitor, AZ::SystemAllocator);
 
                 EntityMonitor()
                 {
@@ -137,7 +139,7 @@ namespace AZ
 
                 // Check if this library hasn't already been reflected. This can happen as the ResourceCompilerScene needs
                 //      to explicitly load and reflect the SceneAPI libraries to discover the available extension, while
-                //      Gems with system components need to do the same in the Project Configurator.
+                //      Gems with system components need to do the same in the Project Manager.
                 if (context && (context->IsRemovingReflection() || !context->FindClassData(AZ::SceneAPI::DataTypes::IGroup::TYPEINFO_Uuid())))
                 {
                     AZ::SceneAPI::DataTypes::IManifestObject::Reflect(context);
@@ -147,7 +149,6 @@ namespace AZ
                     AZ::SceneAPI::SceneCore::LoadingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::GenerationComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::ExportingComponent::Reflect(context);
-                    AZ::SceneAPI::SceneCore::RCExportingComponent::Reflect(context);
                     AZ::SceneAPI::SceneCore::SceneSystemComponent::Reflect(context);
                     // Register group interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IGroup, AZ::SceneAPI::DataTypes::IManifestObject>()->Version(1);
@@ -166,6 +167,7 @@ namespace AZ
                     context->Class<AZ::SceneAPI::DataTypes::ILodRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::ISkeletonProxyRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IScriptProcessorRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
+                    context->Class<AZ::SceneAPI::DataTypes::IUnmodifiableRule, AZ::SceneAPI::DataTypes::IRule>()->Version(1);
                     // Register graph data interfaces
                     context->Class<AZ::SceneAPI::DataTypes::IAnimationData, AZ::SceneAPI::DataTypes::IGraphObject>()->Version(1);
                     context->Class<AZ::SceneAPI::DataTypes::IBlendShapeData, AZ::SceneAPI::DataTypes::IGraphObject>()->Version(1);
@@ -186,6 +188,7 @@ namespace AZ
 
                     // Register utilities
                     AZ::SceneAPI::SceneCore::PatternMatcher::Reflect(context);
+                    AZ::SceneAPI::Utilities::DebugSceneGraph::Reflect(context);
                 }
             }
 
@@ -197,8 +200,6 @@ namespace AZ
                 // there's an application.
                 if (g_componentDescriptors.empty())
                 {
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::MaterialExporterComponent::CreateDescriptor());
-                    g_componentDescriptors.push_back(AZ::SceneAPI::Export::RCMaterialExporterComponent::CreateDescriptor());
                     for (AZ::ComponentDescriptor* descriptor : g_componentDescriptors)
                     {
                         AZ::ComponentApplicationBus::Broadcast(&AZ::ComponentApplicationBus::Handler::RegisterComponentDescriptor, descriptor);
@@ -282,14 +283,15 @@ namespace AZ
     } // namespace SceneAPI
 } // namespace AZ
 
-extern "C" AZ_DLL_EXPORT void InitializeDynamicModule(void* env)
+static bool g_sceneCoreInitialized = false;
+
+extern "C" AZ_DLL_EXPORT void InitializeDynamicModule()
 {
-    if (AZ::Environment::IsReady())
+    if (g_sceneCoreInitialized)
     {
         return;
     }
-
-    AZ::Environment::Attach(static_cast<AZ::EnvironmentInstance>(env));
+    g_sceneCoreInitialized = true;
 
     AZ::SceneAPI::SceneCore::Initialize();
 }
@@ -309,6 +311,11 @@ extern "C" AZ_DLL_EXPORT void ReflectTypes(AZ::SerializeContext * context)
     AZ::SceneAPI::SceneCore::ReflectTypes(context);
 }
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneCoreGenericClassInfo()
+{
+    AZ::GetCurrentSerializeContextModule().Cleanup();
+}
+
 extern "C" AZ_DLL_EXPORT void Activate()
 {
     AZ::SceneAPI::SceneCore::Activate();
@@ -321,24 +328,13 @@ extern "C" AZ_DLL_EXPORT void Deactivate()
 
 extern "C" AZ_DLL_EXPORT void UninitializeDynamicModule()
 {
-    if (!AZ::Environment::IsReady())
+    if (!g_sceneCoreInitialized)
     {
         return;
     }
+    g_sceneCoreInitialized = false;
+
     AZ::SceneAPI::SceneCore::Uninitialize();
-
-    // This module does not own these allocators, but must clear its cached EnvironmentVariables
-    // because it is linked into other modules, and thus does not get unloaded from memory always
-    if (AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
-
-    AZ::Environment::Detach();
 }
 
 #endif // !defined(AZ_MONOLITHIC_BUILD)

@@ -1,0 +1,14 @@
+{
+	"LOAD_DOTENV": true,
+	"COMPANY": "Amazon",
+	"DCCSI_GDEBUG": "False",
+	"DCCSI_DEV_MODE": "False",
+	"DCCSI_GDEBUGGER": "WING",
+	"DCCSI_LOGLEVEL": 20,
+	"DEFAULT_SETTINGS_PATHS": [
+		"settings.py",
+		"settings.json",
+		".secrets.py",
+		".secrets.json"
+	]
+}

@@ -84,25 +84,25 @@ namespace Audio
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Initialize all internal components of the audio middleware implementation.
-        //! @return eARS_SUCCESS if the initialization was successful, eARS_FAILURE otherwise.
+        //! @return Success if the initialization was successful, Failure otherwise.
         virtual EAudioRequestStatus Initialize() = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Shuts down all of the internal components of the audio middleware implementation.
         //! After calling ShutDown the system can still be brought back up by calling Initialize.
-        //! @return eARS_SUCCESS if the shutdown was successful, eARS_FAILURE otherwise.
+        //! @return Success if the shutdown was successful, Failure otherwise.
         virtual EAudioRequestStatus ShutDown() = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Frees all of the resources used by the audio middleware implementation and destroys it.
         //! This action is not reversible.
-        //! @return eARS_SUCCESS if the action was successful, eARS_FAILURE otherwise.
+        //! @return Success if the action was successful, Failure otherwise.
         virtual EAudioRequestStatus Release() = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Stops all currently playing sounds.
         //! Has no effect on anything triggered after this method is called.
-        //! @return eARS_SUCCESS if the action was successful, eARS_FAILURE otherwise.
+        //! @return Success if the action was successful, Failure otherwise.
         virtual EAudioRequestStatus StopAllSounds() = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -111,7 +111,7 @@ namespace Audio
         //! or set parameters and switches.
         //! @prarm objectData Implementation-specific audio object data.
         //! @param objectName The name of the audio object to be shown in debug info.
-        //! @return eARS_SUCCESS if the object was registered, eARS_FAILURE otherwise.
+        //! @return Success if the object was registered, Failure otherwise.
         virtual EAudioRequestStatus RegisterAudioObject(IATLAudioObjectData* objectData, const char* objectName = nullptr) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,20 +119,20 @@ namespace Audio
         //! After this action, executing triggers, setting position, states, or rtpcs no longer have
         //! an effect on the audio object.
         //! @prarm objectData Implementation-specific audio object data
-        //! @return eARS_SUCCESS if the object was unregistered, eARS_FAILURE otherwise.
+        //! @return Success if the object was unregistered, Failure otherwise.
         virtual EAudioRequestStatus UnregisterAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Clear out the audio object's internal state and reset it.
         //! After this action, the object can be recycled back to the pool of available audio objects.
         //! @param objectData Implementation-specific audio object data.
-        //! @return eARS_SUCCESS if the object was reset, eARS_FAILURE otherwise.
+        //! @return Success if the object was reset, Failure otherwise.
         virtual EAudioRequestStatus ResetAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Performs actions that need to be executed regularly on an audio object.
         //! @param objectData Implementation-specific audio object data.
-        //! @return eARS_SUCCESS if the object was updated, eARS_FAILURE otherwise.
+        //! @return Success if the object was updated, Failure otherwise.
         virtual EAudioRequestStatus UpdateAudioObject(IATLAudioObjectData* objectData) = 0;
 
         ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -140,7 +140,7 @@ namespace Audio
         //! Loads any metadata and media needed by the audio middleware to execute the trigger.
         //! @param objectData Implementation-specific audio object data.
         //! @param triggerData Implementation-specific trigger data.
-        //! @return eARS_SUCCESS if the the trigger was successfully prepared, eARS_FAILURE otherwise.
+        //! @return Success if the the trigger was successfully prepared, Failure otherwise.
         virtual EAudioRequestStatus PrepareTriggerSync(
             IATLAudioObjectData* audioObjectData,
             const IATLTriggerImplData* triggerData) = 0;
@@ -150,7 +150,7 @@ namespace Audio
         //! The metadata and media associated with the trigger are released.
         //! @param objectData Implementation-specific audio object data.
         //! @param triggerData Implementation-specific trigger data.
-        //! @return eARS_SUCCESS if the trigger data was successfully unloaded, eARS_FAILURE otherwise.
+        //! @return Success if the trigger data was successfully unloaded, Failure otherwise.
         virtual EAudioRequestStatus UnprepareTriggerSync(
             IATLAudioObjectData* objectData,
             const IATLTriggerImplData* triggerData) = 0;
@@ -164,8 +164,8 @@ namespace Audio
         //! @param triggerData Implementation-specific trigger data.
         //! @param eventData Implementation-specific event data.
         //!     Used to manage the prepare event.
-        //! @return eARS_SUCCESS if the trigger prepare event was successfully sent to the audio
-        //!     middleware, eARS_FAILURE otherwise.
+        //! @return Success if the trigger prepare event was successfully sent to the audio
+        //!     middleware, Failure otherwise.
         virtual EAudioRequestStatus PrepareTriggerAsync(
             IATLAudioObjectData* objectData,
             const IATLTriggerImplData* triggerData,
@@ -179,8 +179,8 @@ namespace Audio
         //! @param objectData Implementation-specific audio object data.
         //! @param triggerData Implementation-specific trigger data.
         //! @param eventData Implementation-specific event data.
-        //! @return eARS_SUCCESS if the trigger unprepare event was successfully sent to the audio
-        //!     middleware, eARS_FAILURE otherwise.
+        //! @return Success if the trigger unprepare event was successfully sent to the audio
+        //!     middleware, Failure otherwise.
         virtual EAudioRequestStatus UnprepareTriggerAsync(
             IATLAudioObjectData* pAudioObjectData,
             const IATLTriggerImplData* pTriggerData,
@@ -191,8 +191,8 @@ namespace Audio
         //! @param objectData Implementation-specific audio object data.
         //! @param triggerData Implementation-specific trigger data.
         //! @param eventData Implementation-specific event data.
-        //! @return eARS_SUCCESS if the trigger was activated and the event posted to the audio
-        //!     middleware, eARS_FAILURE otherwise.
+        //! @return Success if the trigger was activated and the event posted to the audio
+        //!     middleware, Failure otherwise.
         virtual EAudioRequestStatus ActivateTrigger(
             IATLAudioObjectData* objectData,
             const IATLTriggerImplData* triggerData,
@@ -203,7 +203,7 @@ namespace Audio
         //! Stop an event active on an audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @param eventData Implementation-specific event data.
-        //! @return eARS_SUCCESS if the event was successfully stopped, eARS_FAILURE otherwise.
+        //! @return Success if the event was successfully stopped, Failure otherwise.
         virtual EAudioRequestStatus StopEvent(
             IATLAudioObjectData* objectData,
             const IATLEventData* eventData) = 0;
@@ -211,7 +211,7 @@ namespace Audio
         ///////////////////////////////////////////////////////////////////////////////////////////////
         //! Stop all events currently active on an audio object.
         //! @param objectData Implementation-specific audio object data.
-        //! @return eARS_SUCCESS if the events were successfully stopped, eARS_FAILURE otherwise.
+        //! @return Success if the events were successfully stopped, Failure otherwise.
         virtual EAudioRequestStatus StopAllEvents(
             IATLAudioObjectData* objectData) = 0;
 
@@ -219,7 +219,7 @@ namespace Audio
         //! Set the world position of an audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @param worldPosition The transform to set the audio object to.
-        //! @return eARS_SUCCESS if the position was successfully set, eARS_FAILURE otherwise.
+        //! @return Success if the position was successfully set, Failure otherwise.
         virtual EAudioRequestStatus SetPosition(
             IATLAudioObjectData* objectData,
             const SATLWorldPosition& worldPosition) = 0;
@@ -228,7 +228,7 @@ namespace Audio
         //! Sets multiple world positions of an audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @param multiPositions Position parameter object containing world positions.
-        //! @return eARS_SUCCESS if the position's were successfully set, eARS_FAILURE otherwise.
+        //! @return Success if the position's were successfully set, Failure otherwise.
         virtual EAudioRequestStatus SetMultiplePositions(
             IATLAudioObjectData* objectData,
             const MultiPositionParams& multiPositions) = 0;
@@ -238,7 +238,7 @@ namespace Audio
         //! @param objectData Implementation-specific audio object data.
         //! @param rtpcData Implementation-specific audio rtpc data.
         //! @param value The value to be set, normally in the range [0.0, 1.0].
-        //! @return eARS_SUCCESS if the rtpc value was set on the audio object, eARS_FAILURE otherwise.
+        //! @return Success if the rtpc value was set on the audio object, Failure otherwise.
         virtual EAudioRequestStatus SetRtpc(
             IATLAudioObjectData* objectData,
             const IATLRtpcImplData* rtpcData,
@@ -248,7 +248,7 @@ namespace Audio
         //! Set the audio switchstate on a given audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @param switchStateData Implementation-specific audio switchstate data.
-        //! @return eARS_SUCCESS if the audio switchstate has been successfully set, eARS_FAILURE
+        //! @return Success if the audio switchstate has been successfully set, Failure
         //!     otherwise.
         virtual EAudioRequestStatus SetSwitchState(
             IATLAudioObjectData* objectData,
@@ -261,7 +261,7 @@ namespace Audio
         //!     Obstruction describes direct sound path being blocked but other paths may exist.
         //! @param occlusion The amount of occlusion associated with the audio object.
         //!     Occlusion describes all paths being blocked, direct and environmental reflection paths.
-        //! @return eARS_SUCCESS if the values were set, eARS_FAILURE otherwise.
+        //! @return Success if the values were set, Failure otherwise.
         virtual EAudioRequestStatus SetObstructionOcclusion(
             IATLAudioObjectData* objectData,
             float obstruction,
@@ -272,7 +272,7 @@ namespace Audio
         //! @param objectData Implementation-specific audio object data.
         //! @param environmentData Implementation-specific audio environment data.
         //! @param amount The float value to set, in the range [0.0, 1.0].
-        //! @return eARS_SUCCESS if the environment amount was set, eARS_FAILURE otherwise.
+        //! @return Success if the environment amount was set, Failure otherwise.
         virtual EAudioRequestStatus SetEnvironment(
             IATLAudioObjectData* objectData,
             const IATLEnvironmentImplData* environmentData,
@@ -282,8 +282,8 @@ namespace Audio
         //! Set the world transform of an audio listener.
         //! @param listenerData Implementation-specific audio listener data.
         //! @param newPosition The transform to set the listener to.
-        //! @return eARS_SUCCESS if the audio listener's world transform has been successfully set,
-        //!     eARS_FAILURE otherwise.
+        //! @return Success if the audio listener's world transform has been successfully set,
+        //!     Failure otherwise.
         virtual EAudioRequestStatus SetListenerPosition(
             IATLListenerData* listenerData,
             const SATLWorldPosition& newPosition) = 0;
@@ -292,7 +292,7 @@ namespace Audio
         //! Resets the audio rtpc data to the default state for the provided audio object.
         //! @param objectData Implementation-specific audio object data.
         //! @param rtpcData Implementation-specific audio rtpc data.
-        //! @return eARS_SUCCESS if the provided rtpc has been successfully reset, eARS_FAILURE
+        //! @return Success if the provided rtpc has been successfully reset, Failure
         //!     otherwise.
         virtual EAudioRequestStatus ResetRtpc(
             IATLAudioObjectData* objectData,
@@ -302,7 +302,7 @@ namespace Audio
         //! Inform the audio middleware about the memory location of loaded audio data file.
         //! @param audioFileEntry ATL-specific information describing the in-memory file being
         //!     registered.
-        //! @return eARS_SUCCESS if the audio middleware successfully registered the file, eARS_FAILURE
+        //! @return Success if the audio middleware successfully registered the file, Failure
         //!     otherwise.
         virtual EAudioRequestStatus RegisterInMemoryFile(SATLAudioFileEntryInfo* audioFileEntry) = 0;
 
@@ -310,7 +310,7 @@ namespace Audio
         //! Inform the audio middleware that the memory containing the audio data file should no longer
         //! be used.
         //! @param audioFileEntry ATL-specific information describing the file being invalidated.
-        //! @return eARS_SUCCESS if the audio middleware unregistered the file contents, eARS_FAILURE
+        //! @return Success if the audio middleware unregistered the file contents, Failure
         //!     otherwise.
         virtual EAudioRequestStatus UnregisterInMemoryFile(SATLAudioFileEntryInfo* audioFileEntry) = 0;
 
@@ -322,7 +322,7 @@ namespace Audio
         //!     Assumes that strings are null-terminated (i.e. the xml_document has been
         //!     parsed without the 'parse_no_string_terminators' flag).
         //! @param fileEntryInfo Pointer to the struct containing the file entry information.
-        //! @return eARS_SUCCESS if the XML node was parsed successfully, eARS_FAILURE otherwise.
+        //! @return Success if the XML node was parsed successfully, Failure otherwise.
         virtual EAudioRequestStatus ParseAudioFileEntry(
             const AZ::rapidxml::xml_node<char>* audioFileEntryNode,
             SATLAudioFileEntryInfo* fileEntryInfo) = 0;

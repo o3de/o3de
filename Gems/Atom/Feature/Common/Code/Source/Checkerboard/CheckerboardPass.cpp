@@ -129,7 +129,7 @@ namespace AZ
                         // the attachment id saved in bindings need to be updated too. so the frame attachment will be attached properly.
                         for (auto& binding : m_attachmentBindings)
                         {
-                            if (binding.m_attachment == attachment)
+                            if (binding.GetAttachment() == attachment)
                             {
                                 binding.m_unifiedScopeDesc.m_attachmentId = nextAttachment->GetAttachmentId();
                                 break;

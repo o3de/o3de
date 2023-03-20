@@ -97,7 +97,7 @@ namespace EMotionFX
     TEST_P(QuaternionParameterFixture, ParameterOutputsCorrectQuaternion)
     {
         // Parameter node needs to connect to another node, otherwise it will not update.
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortIndex("quaternionTest"), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALROT);
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_caster(m_paramNode->FindOutputPortIndex("quaternionTest")), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALROT);
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Check correct output for quaternion parameter.
@@ -112,7 +112,7 @@ namespace EMotionFX
 
     TEST_P(QuaternionParameterFixture, QuaternionSetValueOutputsCorrectQuaternion)
     {
-        m_twoLinkIKNode->AddConnection(m_paramNode, m_paramNode->FindOutputPortIndex("quaternionTest"), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALROT);
+        m_twoLinkIKNode->AddConnection(m_paramNode, aznumeric_caster(m_paramNode->FindOutputPortIndex("quaternionTest")), BlendTreeTwoLinkIKNode::PORTID_INPUT_GOALROT);
         GetEMotionFX().Update(1.0f / 60.0f);
 
         // Shuffle the Quaternion parameter values to check changing quaternion values will be processed correctly.

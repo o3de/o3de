@@ -17,7 +17,6 @@
 #include <Editor/InputDialogValidatable.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/Source/Actor.h>
-#include <EMotionFX/Source/AutoRegisteredActor.h>
 #include <EMotionFX/Tools/EMotionStudio/EMStudioSDK/Source/DockWidgetPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioPlugin.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
@@ -202,11 +201,7 @@ namespace EMotionFX
         QString m_saveLayoutFileName;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanUseLayoutMenuFixture, DISABLED_CanUseLayoutMenu)
-#else
     TEST_F(CanUseLayoutMenuFixture, CanUseLayoutMenu)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C1698603");
 

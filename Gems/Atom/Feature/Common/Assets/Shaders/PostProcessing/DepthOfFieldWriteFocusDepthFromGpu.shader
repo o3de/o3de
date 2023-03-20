@@ -1,5 +1,5 @@
 {
-    "Source": "DepthOfFieldWriteFocusDepthFromGpu",
+    "Source": "DepthOfFieldWriteFocusDepthFromGpu.azsl",
     
     "ProgramSettings" :
     {

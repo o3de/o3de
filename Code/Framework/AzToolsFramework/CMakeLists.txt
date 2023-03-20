@@ -10,6 +10,8 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
     return()
 endif()
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
+
 ly_add_target(
     NAME AzToolsFramework STATIC
     NAMESPACE AZ
@@ -20,7 +22,8 @@ ly_add_target(
         AzToolsFramework/aztoolsframework_files.cmake
         AzToolsFramework/aztoolsframework_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
         Platform/${PAL_PLATFORM_NAME}/platform_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
-        Platform/Common/${PAL_TRAIT_COMPILER_ID}/aztoolsframework_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
+    PLATFORM_INCLUDE_FILES
+        ${pal_dir}/platform_${PAL_PLATFORM_NAME_LOWERCASE}.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             .
@@ -60,6 +63,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PUBLIC
                 AZ::AzTestShared
             PRIVATE
+                3rdParty::Qt::Test
                 3rdParty::googletest::GMock
                 3rdParty::GoogleBenchmark
                 AZ::AzToolsFramework
@@ -76,13 +80,15 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 Tests
         BUILD_DEPENDENCIES
-            PRIVATE
+            PUBLIC
                 AZ::AzTestShared
+            PRIVATE
                 3rdParty::Qt::Test
                 AZ::AzFrameworkTestShared
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static
+                AZ::AzCoreTestCommon
                 AZ::AzTest
                 AZ::AzQtComponents
         RUNTIME_DEPENDENCIES

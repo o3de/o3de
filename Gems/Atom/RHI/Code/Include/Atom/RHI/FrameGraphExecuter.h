@@ -124,7 +124,7 @@ namespace AZ
             FrameGraphExecuteGroupType* AddGroup();
 
             //! Returns a list of the registered execute groups.
-            AZStd::array_view<AZStd::unique_ptr<FrameGraphExecuteGroup>> GetGroups() const;
+            AZStd::span<const AZStd::unique_ptr<FrameGraphExecuteGroup>> GetGroups() const;
 
         private:
             //////////////////////////////////////////////////////////////////////////

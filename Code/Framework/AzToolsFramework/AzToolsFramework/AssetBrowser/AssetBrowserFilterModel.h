@@ -27,6 +27,8 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
+        using ShownColumnsSet = AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)>;
+
         class AssetBrowserFilterModel
             : public QSortFilterProxyModel
             , public AssetBrowserComponentNotificationBus::Handler
@@ -34,19 +36,23 @@ namespace AzToolsFramework
             Q_OBJECT
 
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserFilterModel, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserFilterModel, AZ::SystemAllocator);
             explicit AssetBrowserFilterModel(QObject* parent = nullptr);
             ~AssetBrowserFilterModel() override;
+
+            // QSortFilterProxyModel
+            QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
             //asset type filtering
             void SetFilter(FilterConstType filter);
             void FilterUpdatedSlotImmediate();
+
             const FilterConstType& GetFilter() const { return m_filter; }
             //////////////////////////////////////////////////////////////////////////
             // AssetBrowserComponentNotificationBus
             //////////////////////////////////////////////////////////////////////////
             void OnAssetBrowserComponentReady() override;
-
+            QSharedPointer<const StringFilter> GetStringFilter() const;
         Q_SIGNALS:
             void filterChanged();
             //////////////////////////////////////////////////////////////////////////
@@ -61,14 +67,14 @@ namespace AzToolsFramework
             void filterUpdatedSlot();
 
         protected:
-            //set for filtering columns
-            //if the column is in the set the column is not filtered and is shown
-            AZStd::fixed_unordered_set<int, 3, aznumeric_cast<int>(AssetBrowserEntry::Column::Count)> m_showColumn;
+            // Set for filtering columns
+            // If the column is in the set the column is not filtered and is shown
+            ShownColumnsSet m_shownColumns;
             bool m_alreadyRecomputingFilters = false;
-            //asset source name match filter
+            //Asset source name match filter
             FilterConstType m_filter;
             AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
-            QWeakPointer<const StringFilter> m_stringFilter;
+            QSharedPointer<const StringFilter> m_stringFilter;
             QWeakPointer<const CompositeFilter> m_assetTypeFilter;
             QCollator m_collator;  // cache the collator as its somewhat expensive to constantly create and destroy one.
             AZ_POP_DISABLE_WARNING

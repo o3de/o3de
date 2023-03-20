@@ -39,7 +39,7 @@ namespace ScriptedEntityTweener
             };
         }
 
-        void OnSystemEvent(ESystemEvent systemEvent, UINT_PTR wparam, UINT_PTR lparam)
+        void OnSystemEvent(ESystemEvent systemEvent, UINT_PTR wparam, UINT_PTR lparam) override
         {
             CryHooksModule::OnSystemEvent(systemEvent, wparam, lparam);
 
@@ -51,7 +51,7 @@ namespace ScriptedEntityTweener
                 bool inGame = wparam == 1;
                 if (!inGame)
                 {
-                    EBUS_EVENT(ScriptedEntityTweenerBus, Reset);
+                    ScriptedEntityTweenerBus::Broadcast(&ScriptedEntityTweenerBus::Events::Reset);
                 }
             } break;
             default:

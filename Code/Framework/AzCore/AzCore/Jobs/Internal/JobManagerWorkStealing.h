@@ -86,7 +86,7 @@ namespace AZ
 
             struct ThreadInfo
             {
-                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator, 0)
+                AZ_CLASS_ALLOCATOR(ThreadInfo, ThreadPoolAllocator);
 
                 AZStd::thread::id m_threadId;
                 bool m_isWorker = false;
@@ -115,7 +115,7 @@ namespace AZ
             void ProcessJobsAssist(ThreadInfo* info, Job* suspendedJob, AZStd::atomic<bool>* notifyFlag);
             void ProcessJobsSynchronous(ThreadInfo* info, Job* suspendedJob, AZStd::atomic<bool>* notifyFlag);
             void ProcessJobsInternal(ThreadInfo* info, Job* suspendedJob, AZStd::atomic<bool>* notifyFlag);
-            ThreadList CreateWorkerThreads(const JobManagerDesc::DescList& workerDescList);
+            ThreadList CreateWorkerThreads(const JobManagerDesc& jmDesc);
 #ifndef AZ_MONOLITHIC_BUILD
             ThreadInfo* CrossModuleFindAndSetWorkerThreadInfo() const;
 #endif

@@ -12,13 +12,17 @@
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <SurfaceData/Utility/SurfaceDataUtility.h>
 #include <Vegetation/Ebuses/AreaRequestBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
 #include <Vegetation/Ebuses/FilterRequestBus.h>
 #include <Vegetation/InstanceData.h>
+#include <Atom/RPI.Reflect/Model/ModelAsset.h>
+
+#include <VegetationProfiler.h>
+
+AZ_DECLARE_BUDGET(Vegetation);
 
 namespace Vegetation
 {
@@ -197,7 +201,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::PrepareToClaim([[maybe_unused]] EntityIdStack& stackIds)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -217,7 +221,7 @@ namespace Vegetation
 
     bool MeshBlockerComponent::ClaimPosition(EntityIdStack& processedIds, const ClaimPoint& point, InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 
@@ -259,7 +263,7 @@ namespace Vegetation
         for (const auto& id : processedIds)
         {
             bool accepted = true;
-            FilterRequestBus::EnumerateHandlersId(id, [this, &instanceData, &accepted](FilterRequestBus::Events* handler) {
+            FilterRequestBus::EnumerateHandlersId(id, [&instanceData, &accepted](FilterRequestBus::Events* handler) {
                 accepted = handler->Evaluate(instanceData);
                 return accepted;
             });
@@ -283,7 +287,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::ClaimPositions(EntityIdStack& stackIds, ClaimContext& context)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         //adding entity id to the stack of entity ids affecting vegetation
         EntityIdStack emptyIds;
@@ -346,7 +350,11 @@ namespace Vegetation
         }
     }
 
-    void MeshBlockerComponent::OnSurfaceChanged(const AZ::EntityId& /*entityId*/, const AZ::Aabb& /*oldBounds*/, const AZ::Aabb& /*newBounds*/)
+    void MeshBlockerComponent::OnSurfaceChanged(
+        [[maybe_unused]] const AZ::EntityId& entityId,
+        [[maybe_unused]] const AZ::Aabb& oldBounds,
+        [[maybe_unused]] const AZ::Aabb& newBounds,
+        [[maybe_unused]] const SurfaceData::SurfaceTagSet& changedSurfaceTags)
     {
         // If our surfaces have changed, we will need to refresh our cache.  
         // Our cache performs lookups based on ClaimPoint handles, but the list of handles can potentially change
@@ -371,7 +379,7 @@ namespace Vegetation
 
     void MeshBlockerComponent::UpdateMeshData()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_cacheMutex)> cacheLock(m_cacheMutex);
 

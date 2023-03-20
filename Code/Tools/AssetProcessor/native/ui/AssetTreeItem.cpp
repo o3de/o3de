@@ -12,6 +12,7 @@
 #include <QFileIconProvider>
 #include <QStyle>
 #include <QVariant>
+#include <AzCore/Casting/numeric_cast.h>
 
 namespace AssetProcessor
 {
@@ -26,17 +27,43 @@ namespace AssetProcessor
         m_extension = fileInfo.completeSuffix();
     }
 
+    int AssetTreeItemData::GetColumnCount() const
+    {
+        return aznumeric_cast<int>(AssetTreeColumns::Max);
+    }
+
+    QVariant AssetTreeItemData::GetDataForColumn(int column) const
+    {
+        switch (column)
+        {
+        case aznumeric_cast<int>(AssetTreeColumns::Name):
+            return m_name;
+        case aznumeric_cast<int>(AssetTreeColumns::Extension):
+            if (m_isFolder)
+            {
+                return QVariant();
+            }
+            return m_extension;
+        default:
+            AZ_Warning("AssetProcessor", false, "Unhandled AssetTree column %d", column);
+            break;
+        }
+        return QVariant();
+    }
+
     AssetTreeItem::AssetTreeItem(
         AZStd::shared_ptr<AssetTreeItemData> data,
         QIcon errorIcon,
+        QIcon folderIcon,
+        QIcon fileIcon,
         AssetTreeItem* parentItem) :
         m_data(data),
         m_parent(parentItem),
-        m_errorIcon(errorIcon), // QIcon is implicitily shared.
-        m_folderIcon(QIcon(QStringLiteral(":/Gallery/Asset_Folder.svg"))),
-        m_fileIcon(QIcon(QStringLiteral(":/Gallery/Asset_File.svg")))
+        m_errorIcon(errorIcon), // QIcon is implicitly shared.
+        m_folderIcon(folderIcon),
+        m_fileIcon(fileIcon)
     {
-        m_folderIcon.addFile(QStringLiteral(":/Gallery/Asset_Folder.svg"), QSize(), QIcon::Selected);
+
     }
 
     AssetTreeItem::~AssetTreeItem()
@@ -45,7 +72,7 @@ namespace AssetProcessor
 
     AssetTreeItem* AssetTreeItem::CreateChild(AZStd::shared_ptr<AssetTreeItemData> data)
     {
-        m_childItems.emplace_back(new AssetTreeItem(data, m_errorIcon, this));
+        m_childItems.emplace_back(new AssetTreeItem(data, m_errorIcon, m_folderIcon, m_fileIcon, this));
         return m_childItems.back().get();
     }
 
@@ -94,7 +121,7 @@ namespace AssetProcessor
 
     int AssetTreeItem::GetColumnCount() const
     {
-        return static_cast<int>(AssetTreeColumns::Max);
+        return m_data->GetColumnCount();
     }
 
     QVariant AssetTreeItem::GetDataForColumn(int column) const
@@ -103,21 +130,8 @@ namespace AssetProcessor
         {
             return QVariant();
         }
-        switch (column)
-        {
-            case static_cast<int>(AssetTreeColumns::Name):
-                return m_data->m_name;
-            case static_cast<int>(AssetTreeColumns::Extension):
-                if (m_data->m_isFolder)
-                {
-                    return QVariant();
-                }
-                return m_data->m_extension;
-            default:
-                AZ_Warning("AssetProcessor", false, "Unhandled AssetTree column %d", column);
-                break;
-        }
-        return QVariant();
+
+        return m_data->GetDataForColumn(column);
     }
 
     QIcon AssetTreeItem::GetIcon() const

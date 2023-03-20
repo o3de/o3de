@@ -25,13 +25,13 @@
 #include <AzToolsFramework/Slice/SliceCompilation.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <LyShine/UiAssetTypes.h>
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
 #include <AzQtComponents/Utilities/ScopedCleanup.h>
 
 namespace LyShine
 {
-    static const char* const s_uiSliceBuilder = "UiSliceBuilder";
+    [[maybe_unused]] static const char* const s_uiSliceBuilder = "UiSliceBuilder";
 
     void UiCanvasBuilderWorker::ShutDown()
     {

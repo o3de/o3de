@@ -40,7 +40,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(AssetEditorUserSettings, "{B4F3513D-40BF-4A74-AFAF-EC884D13DEE6}", AZ::UserSettings);
-        AZ_CLASS_ALLOCATOR(AssetEditorUserSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorUserSettings, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -55,6 +55,8 @@ namespace GraphCanvas
 
     struct AssetEditorWindowConfig
     {
+        virtual ~AssetEditorWindowConfig() = default;
+
         /// General AssetEditor config parameters
         EditorId m_editorId;
         AZStd::string_view m_baseStyleSheet;
@@ -82,12 +84,12 @@ namespace GraphCanvas
     {
         Q_OBJECT // AUTOMOC
     public:
-        AZ_CLASS_ALLOCATOR(AssetEditorMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetEditorMainWindow, AZ::SystemAllocator);
         
         explicit AssetEditorMainWindow(AssetEditorWindowConfig* config, QWidget* parent = nullptr);
         virtual ~AssetEditorMainWindow();
         
-        virtual void SetupUI();
+        void SetupUI();
         void SetDropAreaText(AZStd::string_view text);        
 
         const EditorId& GetEditorId() const;

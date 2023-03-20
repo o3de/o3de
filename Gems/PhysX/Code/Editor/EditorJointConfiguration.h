@@ -19,7 +19,7 @@ namespace PhysX
     class EditorJointLimitBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorJointLimitBase, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitBase, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitBase, "{7D6BD28B-6DAF-42F7-8EFF-0F5ACBBDBAE7}");
 
         static const float s_springMax; ///< Maximum value for spring stiffness and damping.
@@ -31,7 +31,7 @@ namespace PhysX
     class EditorJointLimitConfig : public EditorJointLimitBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorJointLimitConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitConfig, "{3A874895-D9A7-404A-95E4-8C05D032FA0B}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -59,7 +59,7 @@ namespace PhysX
         static const float s_angleMax;
         static const float s_angleMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointLimitPairConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitPairConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitPairConfig, "{319BD38C-A48F-43E2-B7F5-E6E40C88C61C}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -71,6 +71,28 @@ namespace PhysX
         float m_limitNegative = -45.0f;
     };
 
+    /// Pair (linear) limits for joints.
+    class EditorJointLimitLinearPairConfig : public EditorJointLimitBase
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(EditorJointLimitLinearPairConfig, AZ::SystemAllocator);
+        AZ_TYPE_INFO(EditorJointLimitLinearPairConfig, "{20A3AE4C-1B92-4541-ACA7-5FA2BFDDEDC0}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        bool IsLimited() const;
+        JointLimitProperties ToGameTimeConfig() const;
+
+        static const float LinearLimitMin;
+        static const float LinearLimitMax;
+
+        EditorJointLimitConfig m_standardLimitConfig;
+        float m_limitLower = -1.0f;
+        float m_limitUpper = 1.0f;
+    private:
+        AZ::Crc32 OnLimitLowerChanged();
+        AZ::Crc32 OnLimitUpperChanged();
+    };
+
     /// Cone (swing) limits for joints.
     class EditorJointLimitConeConfig : public EditorJointLimitBase
     {
@@ -78,7 +100,7 @@ namespace PhysX
         static const float s_angleMax;
         static const float s_angleMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointLimitConeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointLimitConeConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointLimitConeConfig, "{FF481FEF-7033-440B-8046-B459AC309976}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -96,16 +118,25 @@ namespace PhysX
         static const float s_breakageMax;
         static const float s_breakageMin;
 
-        AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");
         static void Reflect(AZ::ReflectContext* context);
+
+        enum class DisplaySetupState : AZ::u8
+        {
+            Never = 0,
+            Selected,
+            Always
+        };
 
         void SetLeadEntityId(AZ::EntityId leadEntityId);
         JointGenericProperties ToGenericProperties() const;
         JointComponentConfiguration ToGameTimeConfig() const;
 
+        bool ShowSetupDisplay() const;
+
         bool m_breakable = false;
-        bool m_displayJointSetup = false;
+        DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
         bool m_inComponentMode = false;
         bool m_selectLeadOnSnap = true;
         bool m_selfCollide = false;
@@ -129,3 +160,8 @@ namespace PhysX
     };
 
 } // namespace PhysX
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(PhysX::EditorJointConfig::DisplaySetupState, "{17EBE6BD-289A-4326-8A24-DCE3B7FEC51E}");
+} // namespace AZ

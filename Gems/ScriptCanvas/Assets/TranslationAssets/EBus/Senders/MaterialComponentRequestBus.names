@@ -1,0 +1,1450 @@
+{
+    "entries": [
+        {
+            "base": "MaterialComponentRequestBus",
+            "context": "EBusSender",
+            "variant": "",
+            "details": {
+                "name": "Material Component Request Bus",
+                "category": "Render"
+            },
+            "methods": [
+                {
+                    "base": "GetPropertyValues",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Values"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Values is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Values"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "Property Value Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValues",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Values"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Values is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Values"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{6E6962E1-04C9-56F9-89C4-361031CC1384}",
+                            "details": {
+                                "name": "Property Value Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearPropertyValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Property Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Property Value is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Property Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearPropertyValues",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Property Values"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Property Values is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Property Values"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueVector4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Vector4 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Vector4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueUInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value UInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value UInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value UInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Bool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Bool is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Bool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueEnum",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Enum"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Enum is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Enum"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Vector2 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Vector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueImage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Image"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Image is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Image"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearAllPropertyValues",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear All Property Values"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear All Property Values is invoked"
+                    },
+                    "details": {
+                        "name": "Clear All Property Values"
+                    }
+                },
+                {
+                    "base": "GetActiveMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Active Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Active Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Active Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialLabel",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Label"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Label is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Label"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Label"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Vector3 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Vector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialsWithMissingAssets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Materials With Missing Assets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Materials With Missing Assets is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Materials With Missing Assets"
+                    }
+                },
+                {
+                    "base": "SetPropertyValueBool",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Bool"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Bool is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Bool"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{A0CA880C-AFE4-43CB-926C-59AC48496112}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RepairMaterialsWithMissingAssets",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Repair Materials With Missing Assets"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Repair Materials With Missing Assets is invoked"
+                    },
+                    "details": {
+                        "name": "Repair Materials With Missing Assets"
+                    }
+                },
+                {
+                    "base": "SetPropertyValueString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value String is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMaterialAssetIdOnDefaultSlot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Material Asset Id On Default Slot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Material Asset Id On Default Slot is invoked"
+                    },
+                    "details": {
+                        "name": "Set Material Asset Id On Default Slot"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialAssetIdOnDefaultSlot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Asset Id On Default Slot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Asset Id On Default Slot is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Asset Id On Default Slot"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMaterialMap",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Material Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Material Map is invoked"
+                    },
+                    "details": {
+                        "name": "Set Material Map"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "Material Assignment Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueString",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value String"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value String is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value String"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialMap",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "Material Assignment Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueVector4",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Vector4"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Vector4 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Vector4"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{0CE9FA36-1E3A-4C06-9254-B7C73A732053}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueUInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value UInt32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value UInt32 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value UInt32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "FindMaterialAssignmentId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Find Material Assignment Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Find Material Assignment Id is invoked"
+                    },
+                    "details": {
+                        "name": "Find Material Assignment Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{D6597933-47CD-4FC8-B911-63F3E2B0993A}",
+                            "details": {
+                                "name": "LOD Index",
+                                "tooltip": "Specifies which LOD index will be used to look up the Material Assignment Id. -1 should be used for the default material or model materials."
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Label Search String",
+                                "tooltip": "The function will return the first Material Assignment Id with a matching LOD index and a label containing this search string."
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Int32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Int32 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Int32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueEnum",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Enum"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Enum is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Enum"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetDefautMaterialMap",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Defaut Material Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Defaut Material Map is invoked"
+                    },
+                    "details": {
+                        "name": "Get Defaut Material Map"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{50F6716F-698B-5A6C-AACD-940597FDEC24}",
+                            "details": {
+                                "name": "Material Assignment Map"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValue",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{03924488-C7F4-4D6D-948B-ABC2D1AE2FD3}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialsOnModelSlots",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Materials On Model Slots"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Materials On Model Slots is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Materials On Model Slots"
+                    }
+                },
+                {
+                    "base": "GetDefaultMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Default Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Default Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Get Default Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueInt32",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Int32"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Int32 is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Int32"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueImage",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Image"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Image is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Image"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueVector2",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector2"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Vector2 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Vector2"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{3D80F623-C85C-4741-90D0-E4E66164E6BF}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialMap",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Material Map"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Material Map is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Material Map"
+                    }
+                },
+                {
+                    "base": "GetPropertyValueColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Color is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetPropertyValueFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Float"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Float is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Float"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "RepairMaterialsWithRenamedProperties",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Repair Materials With Renamed Properties"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Repair Materials With Renamed Properties is invoked"
+                    },
+                    "details": {
+                        "name": "Repair Materials With Renamed Properties"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{43DA906B-7DEF-4CA8-9790-854106D3F983}",
+                            "details": {
+                                "name": "Num Materials Updated "
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialsOnLodSlots",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Materials On Lod Slots"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Materials On Lod Slots is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Materials On Lod Slots"
+                    }
+                },
+                {
+                    "base": "ClearMaterialsOnInvalidSlots",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Materials On Invalid Slots"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Materials On Invalid Slots is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Materials On Invalid Slots"
+                    }
+                },
+                {
+                    "base": "GetPropertyValueVector3",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Vector3"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Vector3 is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Vector3"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{8379EB7D-01FA-4538-B64B-A6543B4BE73D}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "ClearMaterialAssetIdOnDefaultSlot",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Clear Material Asset Id On Default Slot"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Clear Material Asset Id On Default Slot is invoked"
+                    },
+                    "details": {
+                        "name": "Clear Material Asset Id On Default Slot"
+                    }
+                },
+                {
+                    "base": "SetPropertyValueColor",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Property Value Color"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Property Value Color is invoked"
+                    },
+                    "details": {
+                        "name": "Set Property Value Color"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        },
+                        {
+                            "typeid": "{7894072A-9050-4F0F-901B-34B1A0D29417}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "SetMaterialAssetId",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Set Material Asset Id"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Set Material Asset Id is invoked"
+                    },
+                    "details": {
+                        "name": "Set Material Asset Id"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{652ED536-3402-439B-AEBE-4A5DBC554085}",
+                            "details": {
+                                "name": "Material Asset Id"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "base": "GetPropertyValueFloat",
+                    "entry": {
+                        "name": "In",
+                        "tooltip": "When signaled, this will invoke Get Property Value Float"
+                    },
+                    "exit": {
+                        "name": "Out",
+                        "tooltip": "Signaled after Get Property Value Float is invoked"
+                    },
+                    "details": {
+                        "name": "Get Property Value Float"
+                    },
+                    "params": [
+                        {
+                            "typeid": "{EB603581-4654-4C17-B6DE-AE61E79EDA97}",
+                            "details": {
+                                "name": "Material Assignment Id",
+                                "tooltip": "Unique id to address a specific material on an entity"
+                            }
+                        },
+                        {
+                            "typeid": "{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}",
+                            "details": {
+                                "name": "Property Id"
+                            }
+                        }
+                    ],
+                    "results": [
+                        {
+                            "typeid": "{EA2C3E90-AFBE-44D4-A90D-FAAF79BAF93D}",
+                            "details": {
+                                "name": "Property Value"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

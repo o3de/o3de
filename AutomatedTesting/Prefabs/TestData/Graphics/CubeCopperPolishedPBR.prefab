@@ -1,0 +1,156 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "CubeCopperPolishedPBR",
+        "Components": {
+            "Component_[14120317269315619433]": {
+                "$type": "SelectionComponent",
+                "Id": 14120317269315619433
+            },
+            "Component_[143917687187100454]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 143917687187100454
+            },
+            "Component_[15260876699496078513]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 15260876699496078513
+            },
+            "Component_[1746418914802949089]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 1746418914802949089
+            },
+            "Component_[18443523081045072277]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 18443523081045072277
+            },
+            "Component_[4010874908443542212]": {
+                "$type": "EditorLockComponent",
+                "Id": 4010874908443542212
+            },
+            "Component_[4271734532103635304]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 4271734532103635304
+            },
+            "Component_[4383829137523954163]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 4383829137523954163
+            },
+            "Component_[5749675910289562089]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 5749675910289562089,
+                "Parent Entity": ""
+            },
+            "Component_[6232920837132171119]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 6232920837132171119
+            },
+            "Component_[7306146920796854544]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 7306146920796854544,
+                "Child Entity Order": [
+                    "Entity_[1658660942025]"
+                ]
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[1658660942025]": {
+            "Id": "Entity_[1658660942025]",
+            "Name": "Entity1",
+            "Components": {
+                "Component_[11024839750215572075]": {
+                    "$type": "SelectionComponent",
+                    "Id": 11024839750215572075
+                },
+                "Component_[11384176886283708819]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 11384176886283708819,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[1606410272595503925]": {
+                    "$type": "EditorMaterialComponent",
+                    "Id": 1606410272595503925,
+                    "Controller": {
+                        "Configuration": {
+                            "materials": [
+                                {
+                                    "Key": {
+                                        "materialSlotStableId": 2418540911
+                                    },
+                                    "Value": {
+                                        "MaterialAsset": {
+                                            "assetId": {
+                                                "guid": "{CF5C7B01-4912-58AE-991A-F25251E505AC}"
+                                            },
+                                            "assetHint": "materials/presets/pbr/metal_copper_polished.azmaterial"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                },
+                "Component_[16470114336751653654]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 16470114336751653654,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 11384176886283708819
+                        },
+                        {
+                            "ComponentId": 89717634602996901,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 1606410272595503925,
+                            "SortIndex": 2
+                        }
+                    ]
+                },
+                "Component_[4303036201889516060]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 4303036201889516060
+                },
+                "Component_[44336138790150350]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 44336138790150350
+                },
+                "Component_[4558973254917759795]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 4558973254917759795
+                },
+                "Component_[4674030476408790307]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 4674030476408790307
+                },
+                "Component_[4802851695039968062]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 4802851695039968062
+                },
+                "Component_[5821006029055754615]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 5821006029055754615
+                },
+                "Component_[8587156575497792590]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 8587156575497792590
+                },
+                "Component_[89717634602996901]": {
+                    "$type": "AZ::Render::EditorMeshComponent",
+                    "Id": 89717634602996901,
+                    "Controller": {
+                        "Configuration": {
+                            "ModelAsset": {
+                                "assetId": {
+                                    "guid": "{E14975EF-E676-51A4-B826-3EF59CB645AA}",
+                                    "subId": 285127096
+                                },
+                                "assetHint": "testdata/objects/cube/cube.azmodel"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

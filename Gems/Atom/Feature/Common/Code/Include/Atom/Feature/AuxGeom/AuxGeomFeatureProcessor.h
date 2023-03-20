@@ -25,8 +25,9 @@ namespace AZ
             : public RPI::AuxGeomFeatureProcessorInterface
         {
         public: // functions
+            AZ_CLASS_ALLOCATOR(AuxGeomFeatureProcessor, AZ::SystemAllocator)
 
-            AZ_RTTI(AuxGeomFeatureProcessor, "{75E17417-C8E3-4B64-8469-7662D1E0904A}", RPI::AuxGeomFeatureProcessorInterface);
+            AZ_RTTI(AZ::Render::AuxGeomFeatureProcessor, "{75E17417-C8E3-4B64-8469-7662D1E0904A}", AZ::RPI::AuxGeomFeatureProcessorInterface);
             AZ_FEATURE_PROCESSOR(AuxGeomFeatureProcessor);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -47,8 +48,7 @@ namespace AZ
             void ReleaseDrawQueueForView(const RPI::View* view) override;
 
             // RPI::SceneNotificationBus::Handler overrides...
-            void OnRenderPipelineAdded(RPI::RenderPipelinePtr pipeline) override;
-            void OnRenderPipelineRemoved(RPI::RenderPipeline* pipeline) override;
+            void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
         private: // functions
 

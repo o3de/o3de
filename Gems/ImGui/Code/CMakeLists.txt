@@ -8,7 +8,7 @@
 
 set(config_base_defines $<IF:$<CONFIG:release>,IMGUI_DISABLED,IMGUI_ENABLED>)
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 # This library is the 3rdParty imgui that is in the Gem's External
 ly_add_target(
@@ -93,6 +93,7 @@ ly_add_target(
 # Load the above "Gem::ImGui" module in Clients and Servers:
 ly_create_alias(NAME ImGui.Clients NAMESPACE Gem TARGETS Gem::ImGui)
 ly_create_alias(NAME ImGui.Servers NAMESPACE Gem TARGETS Gem::ImGui)
+ly_create_alias(NAME ImGui.Unified NAMESPACE Gem TARGETS Gem::ImGui)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

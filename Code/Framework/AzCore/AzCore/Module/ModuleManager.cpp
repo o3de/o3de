@@ -10,16 +10,13 @@
 #include <AzCore/Module/Internal/ModuleManagerSearchPathTool.h>
 
 #include <AzCore/Module/Module.h>
-#include <AzCore/RTTI/AttributeReader.h>
-#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Component/Entity.h>
-#include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/ComponentApplication.h>
+#include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/NativeUI/NativeUIRequests.h>
-#include <AzCore/Script/ScriptSystemBus.h>
-#include <AzCore/Script/ScriptContext.h>
 
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
@@ -107,7 +104,7 @@ namespace AZ
         // If module is from DLL, return DLL name.
         if (m_dynamicHandle)
         {
-            AZStd::string_view handleFilename(m_dynamicHandle->GetFilename().c_str());
+            AZStd::string_view handleFilename(m_dynamicHandle->GetFilename());
             AZStd::string_view::size_type lastSlash = handleFilename.find_last_of("\\/");
             if (lastSlash != AZStd::string_view::npos)
             {
@@ -139,7 +136,7 @@ namespace AZ
         {
             auto destroyFunc = m_dynamicHandle->GetFunction<DestroyModuleClassFunction>(DestroyModuleClassFunctionName);
             AZ_Assert(destroyFunc, "Unable to locate '%s' entry point in module at \"%s\".",
-                DestroyModuleClassFunctionName, m_dynamicHandle->GetFilename().c_str());
+                DestroyModuleClassFunctionName, m_dynamicHandle->GetFilename());
             if (destroyFunc)
             {
                 destroyFunc(m_module);
@@ -221,11 +218,16 @@ namespace AZ
             }
         }
 
+        AZStd::string componentNamesArray = R"({ "SystemComponents":[)";
+        const char* comma = "";
         // For all system components, deactivate
         for (auto componentIt = m_systemComponents.rbegin(); componentIt != m_systemComponents.rend(); ++componentIt)
         {
             ModuleEntity::DeactivateComponent(**componentIt);
+            componentNamesArray += AZStd::string::format(R"(%s"%s")", comma, (*componentIt)->RTTI_GetTypeName());
+            comma = ", ";
         }
+        componentNamesArray += R"(]})";
 
         // For all modules that we created an entity for, set them to "Init" (meaning not Activated)
         for (auto& moduleData : m_ownedModules)
@@ -239,6 +241,13 @@ namespace AZ
 
         // Since the system components have been deactivated clear out the vector.
         m_systemComponents.clear();
+
+        // Signal that the System Components have deactivated
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemComponentsDeactivated", componentNamesArray);
+        }
+
     }
 
     //=========================================================================
@@ -284,7 +293,11 @@ namespace AZ
     {
         // Split the tag list
         AZStd::vector<AZStd::string_view> tagList;
-        AZStd::tokenize<AZStd::string_view>(tags, ",", tagList);
+        auto TokenizeTags = [&tagList](AZStd::string_view token)
+        {
+            tagList.push_back(token);
+        };
+        AZ::StringFunc::TokenizeVisitor(tags, TokenizeTags, ',');
 
         m_systemComponentTags.resize(tagList.size());
         AZStd::transform(tagList.begin(), tagList.end(), m_systemComponentTags.begin(), [](const AZStd::string_view& tag)
@@ -392,7 +405,7 @@ namespace AZ
                     if (!moduleDataPtr->m_dynamicHandle->Load(true))
                     {
                         return AZ::Failure(AZStd::string::format("Failed to load dynamic library at path \"%s\".",
-                            moduleDataPtr->m_dynamicHandle->GetFilename().c_str()));
+                            moduleDataPtr->m_dynamicHandle->GetFilename()));
                     }
 
                     return AZ::Success();
@@ -724,7 +737,7 @@ namespace AZ
         for (auto componentIt = componentsToActivate.begin(); componentIt != componentsToActivate.end(); )
         {
             Component* component = *componentIt;
-        
+
             // Remove the system entity and already activated components, we don't need to activate or store those
             if (component->GetEntityId() == SystemEntityId ||
                 AZStd::find(m_systemComponents.begin(), m_systemComponents.end(), component) != m_systemComponents.end())
@@ -737,11 +750,17 @@ namespace AZ
             }
         }
 
+        AZStd::string componentNamesArray = R"({ "SystemComponents":[)";
+        const char* comma = "";
         // Activate the entities in the appropriate order
         for (Component* component : componentsToActivate)
         {
             ModuleEntity::ActivateComponent(*component);
+
+            componentNamesArray += AZStd::string::format(R"(%s"%s")", comma, component->RTTI_GetTypeName());
+            comma = ", ";
         }
+        componentNamesArray += R"(]})";
 
         // Done activating; set state to active
         for (auto& moduleData : modulesToInit)
@@ -755,5 +774,12 @@ namespace AZ
 
         // Save the activated components for deactivation later
         m_systemComponents.insert(m_systemComponents.end(), componentsToActivate.begin(), componentsToActivate.end());
+
+        // Signal that the System Components are activated
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "SystemComponentsActivated",
+                componentNamesArray);
+        }
     }
 } // namespace AZ

@@ -13,6 +13,10 @@
 #include <AzCore/IO/Path/Path.h>
 #include <native/utilities/assetUtils.h>
 #include <AzCore/Console/IConsole.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
+
+#include <QDebug>
+
 
 namespace AssetProcessor
 {
@@ -29,6 +33,10 @@ namespace AssetProcessor
 
     void SourceAssetTreeModel::ResetModel()
     {
+        // We need m_root to contain SourceAssetTreeItemData to show the stat column
+        m_root.reset(new AssetTreeItem(
+            AZStd::make_shared<SourceAssetTreeItemData>(nullptr, nullptr, "", "", true), m_errorIcon, m_folderIcon, m_fileIcon));
+
         if (ap_disableAssetTreeView)
         {
             return;
@@ -37,18 +45,100 @@ namespace AssetProcessor
         m_sourceToTreeItem.clear();
         m_sourceIdToTreeItem.clear();
 
-        m_sharedDbConnection->QuerySourceAndScanfolder(
-            [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
+        // Load stat table and attach matching stat to the source asset
+        AZStd::unordered_map<AZStd::string, AZ::s64> statsTable;
+        AZStd::string queryString{ "CreateJobs,%" };
+        m_sharedDbConnection->QueryStatLikeStatName(
+            queryString.c_str(),
+            [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry& stat)
             {
-                AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
-                return true; // return true to continue iterating over additional results, we are populating a container
+                static constexpr int numTokensExpected = 3;
+                AZStd::vector<AZStd::string> tokens;
+                AZ::StringFunc::Tokenize(stat.m_statName, tokens, ',');
+                if (tokens.size() == numTokensExpected)
+                {
+                    statsTable[tokens[1]] += stat.m_statValue;
+                }
+                else
+                {
+                    AZ_Warning(
+                        "AssetProcessor",
+                        false,
+                        "Analysis Job (CreateJob) stat entry \"%s\" could not be parsed and will not be used. Expected %d tokens, but found %d. A wrong "
+                        "stat name may be used in Asset Processor code, or the asset database may be corrupted. If you keep encountering "
+                        "this warning, report an issue on GitHub with O3DE version number.",
+                        stat.m_statName.c_str(),
+                        numTokensExpected,
+                        tokens.size()); 
+                }
+                return true;
             });
+ 
+        if (!m_intermediateAssets)
+        {
+            // AddOrUpdateEntry will remove intermediate assets if they shouldn't be included in this tree.
+            m_sharedDbConnection->QuerySourceAndScanfolder(
+                [&](AzToolsFramework::AssetDatabase::SourceAndScanFolderDatabaseEntry& sourceAndScanFolder)
+                {
+                    if (statsTable.count(sourceAndScanFolder.m_sourceName))
+                    {
+                        AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true, statsTable[sourceAndScanFolder.m_sourceName]);
+                    }
+                    else
+                    {
+                        AddOrUpdateEntry(sourceAndScanFolder, sourceAndScanFolder, true);
+                    }
+                    return true; // return true to continue iterating over additional results, we are populating a container
+                });
+        }
+        else
+        {
+            AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanFolderEntry;
+
+            if(!m_intermediateAssetFolderId.has_value())
+            {
+                // When building the intermediate asset source asset tree, search by the scan folder to save time
+                m_sharedDbConnection->QueryScanFolderByPortableKey(
+                    AssetProcessor::IntermediateAssetsFolderName,
+                    [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        m_intermediateAssetFolderId = scanFolder.m_scanFolderID;
+                        scanFolderEntry = scanFolder;
+                        return false;
+                    });
+            }
+            else
+            {
+                m_sharedDbConnection->QueryScanFolderByScanFolderID(
+                    m_intermediateAssetFolderId.value(),
+                    [&](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder)
+                    {
+                        scanFolderEntry = scanFolder;
+                        return false;
+                    });
+            }
+
+            m_sharedDbConnection->QuerySourceByScanFolderID(
+                scanFolderEntry.m_scanFolderID,
+                [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                {
+                    if (statsTable.count(sourceEntry.m_sourceName))
+                    {
+                        AddOrUpdateEntry(sourceEntry, scanFolderEntry, true, statsTable[sourceEntry.m_sourceName]);
+                    }
+                    else
+                    {
+                        AddOrUpdateEntry(sourceEntry, scanFolderEntry, true);
+                    }
+                    return true; // return true to continue iterating over additional results, we are populating a container
+                });
+        }
     }
 
     void SourceAssetTreeModel::AddOrUpdateEntry(
         const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& source,
         const AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry& scanFolder,
-        bool modelIsResetting)
+        bool modelIsResetting, AZ::s64 createJobDuration)
     {
         const auto& existingEntry = m_sourceToTreeItem.find(source.m_sourceName);
         if (existingEntry != m_sourceToTreeItem.end())
@@ -58,9 +148,22 @@ namespace AssetProcessor
             // This item already exists, refresh the related data.
             sourceItemData->m_scanFolderInfo = scanFolder;
             sourceItemData->m_sourceInfo = source;
+            if (createJobDuration != -1)
+            {
+                // existing item: update duration only if it is provided
+                sourceItemData->m_analysisDuration = createJobDuration;
+            }
+
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
             dataChanged(existingIndexStart, existingIndexEnd);
+            return;
+        }
+
+        if (m_intermediateAssetFolderId.has_value() &&
+            ((source.m_scanFolderPK == m_intermediateAssetFolderId.value() && !m_intermediateAssets) ||
+             (source.m_scanFolderPK != m_intermediateAssetFolderId.value() && m_intermediateAssets)))
+        {
             return;
         }
 
@@ -87,14 +190,12 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex newIndicesStart;
-
         AssetTreeItem* parentItem = m_root.get();
         // Use posix path separator for each child item
         AZ::IO::Path currentFullFolderPath(AZ::IO::PosixPathSeparator);
         const AZ::IO::FixedMaxPath filename = fullPath.Filename();
         fullPath.RemoveFilename();
-        AZStd::fixed_string<AZ::IO::MaxPathLength> currentPath;
+        AZ::IO::FixedMaxPathString currentPath;
         for (auto pathIt = fullPath.begin(); pathIt != fullPath.end(); ++pathIt)
         {
             currentPath = pathIt->FixedMaxPathString();
@@ -104,10 +205,12 @@ namespace AssetProcessor
             {
                 if (!modelIsResetting)
                 {
-                    QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+                    QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+                    Q_ASSERT(checkIndex(parentIndex));
                     beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
                 }
-                nextParent = parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
+                nextParent = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
+                    nullptr, nullptr, currentFullFolderPath.Native(), currentPath.c_str(), true));
                 m_sourceToTreeItem[currentFullFolderPath.Native()] = nextParent;
                 // Folders don't have source IDs, don't add to m_sourceIdToTreeItem
                 if (!modelIsResetting)
@@ -120,12 +223,13 @@ namespace AssetProcessor
 
         if (!modelIsResetting)
         {
-            QModelIndex parentIndex = createIndex(parentItem->GetRow(), 0, parentItem);
+            QModelIndex parentIndex = parentItem == m_root.get() ? QModelIndex() : createIndex(parentItem->GetRow(), 0, parentItem);
+            Q_ASSERT(checkIndex(parentIndex));
             beginInsertRows(parentIndex, parentItem->getChildCount(), parentItem->getChildCount());
         }
 
-        m_sourceToTreeItem[source.m_sourceName] =
-            parentItem->CreateChild(SourceAssetTreeItemData::MakeShared(&source, &scanFolder, source.m_sourceName, AZStd::fixed_string<AZ::IO::MaxPathLength>(filename.Native()).c_str(), false));
+        m_sourceToTreeItem[source.m_sourceName] = parentItem->CreateChild(AZStd::make_shared<SourceAssetTreeItemData>(
+            &source, &scanFolder, source.m_sourceName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, createJobDuration));
         m_sourceIdToTreeItem[source.m_sourceID] = m_sourceToTreeItem[source.m_sourceName];
         if (!modelIsResetting)
         {
@@ -137,6 +241,12 @@ namespace AssetProcessor
     {
         if (ap_disableAssetTreeView)
         {
+            return;
+        }
+
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
             return;
         }
 
@@ -175,7 +285,8 @@ namespace AssetProcessor
             return;
         }
 
-        QModelIndex parentIndex = createIndex(parent->GetRow(), 0, parent);
+        QModelIndex parentIndex = parent == m_root.get() ? QModelIndex() : createIndex(parent->GetRow(), 0, parent);
+        Q_ASSERT(checkIndex(parentIndex));
 
         beginRemoveRows(parentIndex, assetToRemove->GetRow(), assetToRemove->GetRow());
 
@@ -199,6 +310,12 @@ namespace AssetProcessor
             return;
         }
 
+        if (!m_root)
+        {
+            // we haven't reset the model yet, which means all of this will happen when we do.
+            return;
+        }
+
         // UI changes need to be done on the main thread.
         AZ::SystemTickBus::QueueFunction([&, sourceId]()
             {
@@ -211,6 +328,27 @@ namespace AssetProcessor
                 }
                 RemoveAssetTreeItem(existingSource->second);
             });
+    }
+
+    QVariant SourceAssetTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
+    {
+        if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
+        {
+            return QVariant();
+        }
+        if (section < 0 || section >= static_cast<int>(SourceAssetTreeColumns::Max))
+        {
+            return QVariant();
+        }
+
+        switch (section)
+        {
+        case aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration):
+            return tr("Last Analysis Job Duration");
+        default:
+            return AssetTreeModel::headerData(section, orientation, role);
+        }
+
     }
 
     QModelIndex SourceAssetTreeModel::GetIndexForSource(const AZStd::string& source)
@@ -226,5 +364,31 @@ namespace AssetProcessor
             return QModelIndex();
         }
         return createIndex(sourceItem->second->GetRow(), 0, sourceItem->second);
+    }
+
+    void SourceAssetTreeModel::OnCreateJobsDurationChanged(QString sourceName)
+    {
+        // update the source asset's CreateJob duration, if such asset exists in the tree
+        const auto& existingEntry = m_sourceToTreeItem.find(sourceName.toUtf8().constData());
+        if (existingEntry != m_sourceToTreeItem.end())
+        {
+            AZStd::shared_ptr<SourceAssetTreeItemData> sourceItemData =
+                AZStd::rtti_pointer_cast<SourceAssetTreeItemData>(existingEntry->second->GetData());
+
+            AZ::s64 accumulateJobDuration = 0;
+            QString statKey = QString("CreateJobs,%1").arg(sourceName).append("%");
+            m_sharedDbConnection->QueryStatLikeStatName(
+                statKey.toUtf8().data(),
+                [&](AzToolsFramework::AssetDatabase::StatDatabaseEntry statEntry)
+                {
+                    accumulateJobDuration += statEntry.m_statValue;
+                    return true;
+                });
+            sourceItemData->m_analysisDuration = accumulateJobDuration;
+
+            QModelIndex existingIndex = createIndex(
+                existingEntry->second->GetRow(), aznumeric_cast<int>(SourceAssetTreeColumns::AnalysisJobDuration), existingEntry->second);
+            dataChanged(existingIndex, existingIndex);
+        }
     }
 }

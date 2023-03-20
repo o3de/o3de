@@ -19,7 +19,6 @@
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/SimpleAsset.h>
-#include <AzFramework/TargetManagement/TargetManagementComponent.h>
 
 #include <SystemComponent.h>
 

@@ -28,12 +28,12 @@ namespace JsonSerializationTests
             AZ::NameDictionary::Destroy();
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::SerializeContext>& context) override
         {
             AZ::Name::Reflect(context.get());
         }
 
-        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context)
+        void Reflect(AZStd::unique_ptr<AZ::JsonRegistrationContext>& context) override
         {
             AZ::Name::Reflect(context.get());
         }
@@ -75,7 +75,7 @@ namespace JsonSerializationTests
     };
 
     using NameJsonSerializerTestTypes = ::testing::Types<NameJsonSerializerTestDescription>;
-    INSTANTIATE_TYPED_TEST_CASE_P(NameJsonSerializer, JsonSerializerConformityTests, NameJsonSerializerTestTypes);
+    IF_JSON_CONFORMITY_ENABLED(INSTANTIATE_TYPED_TEST_CASE_P(NameJsonSerializer, JsonSerializerConformityTests, NameJsonSerializerTestTypes));
 
     class NameJsonSerializerTests
         : public BaseJsonSerializerFixture

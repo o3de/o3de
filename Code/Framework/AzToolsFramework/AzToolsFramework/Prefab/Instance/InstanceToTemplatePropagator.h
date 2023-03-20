@@ -7,6 +7,9 @@
  */
 
 #pragma once
+#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/RTTI/RTTI.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceDomGenerator.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplateInterface.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
@@ -19,30 +22,37 @@ namespace AzToolsFramework
             : private InstanceToTemplateInterface
         {
         public:
+            AZ_RTTI(InstanceToTemplatePropagator, "{526F7B55-84F9-4EA9-8180-19C5DBCD0103}", InstanceToTemplateInterface);
+            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator);
+
             void RegisterInstanceToTemplateInterface();
             void UnregisterInstanceToTemplateInterface();
 
-            bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) override;
-            bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) override;
-            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState, const PrefabDom& modifiedState) override;
+            bool GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity) override;
+            bool GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance) override;
+            bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;
             bool PatchEntityInTemplate(PrefabDom& providedPatch, AZ::EntityId entityId) override;
 
-            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId) override;
+            AZStd::string GenerateEntityAliasPath(AZ::EntityId entityId) override;
 
-            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId);
+            AZ::Dom::Path GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId) override;
 
-            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude = AZStd::nullopt) override;
+            void AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix = "") override;
+            void AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath) override;
+
+            InstanceOptionalReference GetTopMostInstanceInHierarchy(AZ::EntityId entityId) override;
+
+            bool PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt) override;
 
             void ApplyPatchesToInstance(const AZ::EntityId& entityId, PrefabDom& patches, const Instance& instanceToAddPatches) override;
 
-            void AddPatchesToLink(const PrefabDom& patches, Link& link);
-
         private:
-
-            InstanceEntityMapperInterface* m_instanceEntityMapperInterface;
-            PrefabSystemComponentInterface* m_prefabSystemComponentInterface;
+            InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
+            PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+            InstanceDomGenerator m_instanceDomGenerator;
+            static AzFramework::EntityContextId s_editorEntityContextId;
         };
     }
 }

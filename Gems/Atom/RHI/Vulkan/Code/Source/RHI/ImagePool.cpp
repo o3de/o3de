@@ -49,7 +49,11 @@ namespace AZ
             uint32_t memoryTypeBits = 0;
             {
                 // Use an image descriptor of size 1x1 to get the memory requirements.
-                RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(descriptorBase.m_bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
+                // Note: The descriptorBase.m_bindFlags may contain both ImageBindFlags::Color and ImageBindFlags::DepthStencil.
+                //       Vulkan can't create an image with both color and depthstencil usage for RHI::Format::R8G8B8A8_UNORM.
+                //       Use compatiable ImageBindFlags instead
+                RHI::ImageBindFlags bindFlags = RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite;
+                RHI::ImageDescriptor imageDescriptor = RHI::ImageDescriptor::Create2D(bindFlags, 1, 1, RHI::Format::R8G8B8A8_UNORM);
                 VkMemoryRequirements memRequirements = device.GetImageMemoryRequirements(imageDescriptor);
                 memoryTypeBits = memRequirements.memoryTypeBits;
             }
@@ -61,7 +65,7 @@ namespace AZ
             memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
+            memoryAllocDescriptor.m_recycleOnCollect = false;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_memoryAllocator.Init(memoryAllocDescriptor);
 
@@ -80,13 +84,16 @@ namespace AZ
             // Add copy write flag since images can be copy into or clear using a command list.
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
 
-            RHI::ResultCode result = image->Init(device, imageDescriptor);
+            RHI::ResultCode result = image->Init(device, imageDescriptor, false);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            MemoryView memoryView = m_memoryAllocator.Allocate(image->m_memoryRequirements.size, image->m_memoryRequirements.alignment);
-            result = image->BindMemoryView(
-                memoryView,
-                m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
+            MemoryView memoryView = m_memoryAllocator.Allocate(image->m_memoryRequirements.size, image->m_memoryRequirements.alignment, false);
+
+            if (!memoryView.IsValid())
+            {
+                return RHI::ResultCode::OutOfMemory;
+            }
+            result = image->BindMemoryView(memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             image->SetResidentSizeInBytes(memoryView.GetSize());

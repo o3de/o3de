@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -112,12 +112,12 @@ namespace UnitTest
             : AZ::RHI::ShaderStageFunction(shaderStage)
         {}
 
-        void SetIndex(size_t index)
+        void SetIndex(uint32_t index)
         {
             m_index = index;
         }
 
-        size_t m_index;
+        int32_t m_index;
 
         ShaderByteCode m_byteCode;
 
@@ -300,7 +300,7 @@ namespace UnitTest
             srgLayout->SetName(srgId);
             srgLayout->SetBindingSlot(aznumeric_caster(index));
             srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
-                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index), static_cast<uint32_t>(index)});
 
             EXPECT_TRUE(srgLayout->Finalize());
 
@@ -311,7 +311,7 @@ namespace UnitTest
         {
             Name srgId = CreateShaderResourceGroupId(index);
             AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo;
-            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index)} });
+            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index), static_cast<uint32_t>(index)} });
             return bindingInfo;
         }
 
@@ -345,16 +345,15 @@ namespace UnitTest
             while (nextValue != optionValues.end() &&
                 nextOption != m_shaderOptionGroupLayoutForVariants->GetShaderOptions().end())
             {
-                AZStd::string optionNameStr(nextOption->GetName().GetCStr());
                 if (nextValue->empty())
                 {
                     // TODO (To consider) If we decide to support gaps (unqualified options) in the lookup key
                     //  we can actually remove this check
-                    variantInfo.m_options[optionNameStr] = nextOption->GetDefaultValue().GetCStr();
+                    variantInfo.m_options[nextOption->GetName()] = nextOption->GetDefaultValue();
                 }
                 else
                 {
-                    variantInfo.m_options[optionNameStr] = *nextValue;
+                    variantInfo.m_options[nextOption->GetName()] = Name{*nextValue};
                 }
                 nextValue++;
                 nextOption++;
@@ -538,7 +537,11 @@ namespace UnitTest
 
             auto shaderAsset = shader->GetAsset();
             EXPECT_EQ(shader->GetPipelineStateType(), shaderAsset->GetPipelineStateType());
-            EXPECT_EQ(shader->GetShaderResourceGroupLayouts(), shaderAsset->GetShaderResourceGroupLayouts());
+            using ShaderResourceGroupLayoutSpan = AZStd::span<const AZ::RHI::Ptr<AZ::RHI::ShaderResourceGroupLayout>>;
+            ShaderResourceGroupLayoutSpan shaderResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            ShaderResourceGroupLayoutSpan shaderAssetResourceGroupLayoutSpan = shader->GetShaderResourceGroupLayouts();
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.data(), shaderAssetResourceGroupLayoutSpan.data());
+            EXPECT_EQ(shaderResourceGroupLayoutSpan.size(), shaderAssetResourceGroupLayoutSpan.size());
             
             const RPI::ShaderVariant& rootShaderVariant = shader->GetVariant( RPI::ShaderVariantStableId{0} );
             
@@ -789,16 +792,6 @@ namespace UnitTest
         EXPECT_FALSE(success);
         errorMessageFinder.CheckExpectedErrorsFound();
 
-        // Add shader option with an empty default value.
-        errorMessageFinder.Reset();
-        errorMessageFinder.AddExpectedErrorMessage("invalid default value");
-        AZStd::vector<RPI::ShaderOptionValuePair> list5;
-        list5.push_back({ Name("0"),    RPI::ShaderOptionValue(0) }); // 1+ bit
-        list5.push_back({ Name("1"),    RPI::ShaderOptionValue(1) }); // ...
-        success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"Invalid"}, intRangeType, 16, order++, list5, Name() });
-        EXPECT_FALSE(success);
-        errorMessageFinder.CheckExpectedErrorsFound();
-
         // Add shader option with an invalid default int value.
         errorMessageFinder.Reset();
         errorMessageFinder.AddExpectedErrorMessage("invalid default value");
@@ -881,6 +874,18 @@ namespace UnitTest
         EXPECT_FALSE(shaderOptionGroupLayout->FindValue(Name{ "Blah" }, Name{ "Navy" }).IsValid());
 
         EXPECT_FALSE(shaderOptionGroupLayout->FindShaderOptionIndex(Name{ "Invalid" }).IsValid());
+    }
+    
+    TEST_F(ShaderTests, ImplicitDefaultValue)
+    {
+        // Add shader option with no default value.
+
+        RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout = RPI::ShaderOptionGroupLayout::Create();
+
+        AZStd::vector<RPI::ShaderOptionValuePair> values = AZ::RPI::CreateEnumShaderOptionValues({"A", "B", "C"});
+        bool success = shaderOptionGroupLayout->AddShaderOption(AZ::RPI::ShaderOptionDescriptor{ Name{"NoDefaultSpecified"}, RPI::ShaderOptionType::Enumeration, 0, 0, values });
+        EXPECT_TRUE(success);
+        EXPECT_STREQ("A", shaderOptionGroupLayout->GetShaderOptions().back().GetDefaultValue().GetCStr());
     }
 
     TEST_F(ShaderTests, ShaderOptionGroupTest)
@@ -1286,6 +1291,26 @@ namespace UnitTest
         EXPECT_FALSE(shaderVariantTreeAsset);
     }
 
+    TEST_F(ShaderTests, ShaderAsset_DefaultShaderOptions)
+    {
+        using namespace AZ;
+               
+        RPI::ShaderAssetCreator creator;
+        BeginCreatingTestShaderAsset(creator);
+        // Override two of the default values. The others will maintain the default value from the shader options layout, see SetUp().
+        creator.SetShaderOptionDefaultValue(Name{"Quality"}, Name{"Quality::Average"});
+        creator.SetShaderOptionDefaultValue(Name{"Raytracing"}, Name{"On"});
+        Data::Asset<RPI::ShaderAsset> shaderAssetWithShaderOptionOverrides = EndCreatingTestShaderAsset(creator);
+
+        // These options were overridden
+        EXPECT_EQ(3, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Quality"}).GetIndex());
+        EXPECT_EQ(1, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Raytracing"}).GetIndex());
+
+        // These options maintain their original default values
+        EXPECT_EQ(13, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Color"}).GetIndex());
+        EXPECT_EQ(50, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"NumberSamples"}).GetIndex());
+    }
+
     TEST_F(ShaderTests, Shader_Baseline_Test)
     {
         using namespace AZ;
@@ -1662,20 +1687,21 @@ namespace UnitTest
         EXPECT_FALSE(result7.IsFullyBaked());
         EXPECT_EQ(result7.GetStableId().GetIndex(), stableId7);
 
-        // All searches so far found exactly the node we were looking for
-        // The next couple of searches will not find the requested node
-        //  and will instead default to its parent, up the tree to the root
-        //
-        // []                       [Root]
-        //                          /    \
-        // [Color]              [Teal]  [Fuchsia]
-        //                        /        \
-        // [Quality]          [Sublime]   [Auto]
-        //                                  /
-        // [NumberSamples]                [50]
-        //                                /  \
-        // [Raytracing]                [On]  [Off]
-
+        /*
+           All searches so far found exactly the node we were looking for
+           The next couple of searches will not find the requested node
+            and will instead default to its parent, up the tree to the root
+          
+           []                       [Root]
+                                    /    \
+           [Color]              [Teal]  [Fuchsia]
+                                  /        \
+           [Quality]          [Sublime]   [Auto]
+                                            /
+           [NumberSamples]                [50]
+                                          /  \
+           [Raytracing]                [On]  [Off]
+        */
 
         // ----------------------------------------
         // [Quality::Poor]

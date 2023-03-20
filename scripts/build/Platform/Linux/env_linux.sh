@@ -18,3 +18,8 @@ if ! command -v ninja &> /dev/null; then
     echo "[ci_build] Ninja not found"
     exit 1
 fi
+
+if [[ -n "${COMMAND_CWD}" ]]; then
+    echo $(eval echo [ci_build] Changing CWD to $COMMAND_CWD)
+    cd $(eval echo ${COMMAND_CWD})
+fi

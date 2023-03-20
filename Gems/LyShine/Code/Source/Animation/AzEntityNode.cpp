@@ -16,57 +16,22 @@
 #include "PNoise3.h"
 #include "AnimSequence.h"
 
-#include <IAudioSystem.h>
-#include <Cry_Camera.h>
-
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <LyShine/Bus/UiAnimateEntityBus.h>
-#include <CryCommon/StaticInstance.h>
-
-#define s_nodeParamsInitialized s_nodeParamsInitializedEnt
-#define s_nodeParams s_nodeParamsEnt
-#define AddSupportedParam AddSupportedParamEnt
-
-static const float TIMEJUMPED_TRANSITION_TIME = 1.0f;
-static const float EPSILON = 0.01f;
-
-static const char* s_VariablePrefixes[] =
-{
-    "n", "i", "b", "f", "s", "ei", "es",
-    "shader", "clr", "color", "vector",
-    "snd", "sound", "dialog", "tex", "texture",
-    "obj", "object", "file", "text", "equip", "reverbpreset", "eaxpreset",
-    "aianchor", "customaction", "gametoken", "seq_", "mission_", "seqid_", "lightanimation_"
-};
 
 //////////////////////////////////////////////////////////////////////////
 namespace
 {
     const char* kScriptTablePrefix = "ScriptTable:";
 
-    bool s_nodeParamsInitialized = false;
-    StaticInstance<std::vector<CUiAnimNode::SParamInfo>> s_nodeParams;
-
-    void AddSupportedParam(std::vector<CUiAnimNode::SParamInfo>& nodeParams, const char* sName, int paramId, EUiAnimValue valueType, int flags = 0)
-    {
-        CUiAnimNode::SParamInfo param;
-        param.name = sName;
-        param.paramType = paramId;
-        param.valueType = valueType;
-        param.flags = (IUiAnimNode::ESupportedParamFlags)flags;
-        nodeParams.push_back(param);
-    }
-
-    // Quat::IsEquivalent has numerical problems with very similar values
-    bool CompareRotation(const Quat& q1, const Quat& q2, float epsilon)
-    {
-        return (fabs_tpl(q1.v.x - q2.v.x) <= epsilon)
-               && (fabs_tpl(q1.v.y - q2.v.y) <= epsilon)
-               && (fabs_tpl(q1.v.z - q2.v.z) <= epsilon)
-               && (fabs_tpl(q1.w - q2.w) <= epsilon);
-    }
-};
+    AZStd::array<CUiAnimNode::SParamInfo, 1> s_nodeParams{ { {
+        /*.name =*/"Component Field float",
+        /*.paramType =*/eUiAnimParamType_AzComponentField,
+        /*.valueType =*/eUiAnimValue_Float,
+        /*.flags =*/(IUiAnimNode::ESupportedParamFlags)0,
+    } } };
+}
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
@@ -90,25 +55,12 @@ CUiAnimAzEntityNode::CUiAnimAzEntityNode(const int id)
     #endif
 
     UiAnimNodeBus::Handler::BusConnect(this);
-
-    CUiAnimAzEntityNode::Initialize();
 }
 
 //////////////////////////////////////////////////////////////////////////
 CUiAnimAzEntityNode::CUiAnimAzEntityNode()
     : CUiAnimAzEntityNode(0)
 {
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CUiAnimAzEntityNode::Initialize()
-{
-    if (!s_nodeParamsInitialized)
-    {
-        s_nodeParamsInitialized = true;
-        s_nodeParams.reserve(1);
-        AddSupportedParam(s_nodeParams, "Component Field float", eUiAnimParamType_AzComponentField, eUiAnimValue_Float);
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -278,20 +230,12 @@ const AZ::SerializeContext::ClassElement* CUiAnimAzEntityNode::ComputeOffsetFrom
 
         if (mismatch)
         {
-            string warnMsg = "Data mismatch reading animation data for type ";
-            warnMsg += classData->m_typeId.ToString<string>();
-            warnMsg += ". The field \"";
-            warnMsg += paramData.GetName();
-            if (!element)
-            {
-                warnMsg += "\" cannot be found.";
-            }
-            else
-            {
-                warnMsg += "\" has a different type to that in the animation data.";
-            }
-            warnMsg += " This part of the animation data will be ignored.";
-            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING, warnMsg.c_str());
+            CryWarning(VALIDATOR_MODULE_SHINE, VALIDATOR_WARNING,
+                "Data mismatch reading animation data for type %s. The field \"%s\" %s. This part of the animation data will be ignored.",
+                classData->m_typeId.ToString<AZStd::string>().c_str(),
+                paramData.GetName(),
+                (!element ? "cannot be found" : "has a different type to that in the animation data")
+            );
             return nullptr;
         }
     }
@@ -308,12 +252,12 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 {
     // Get the serialize context for the application
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     // Get the AZ entity that this node is animating
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -385,7 +329,7 @@ void CUiAnimAzEntityNode::ComputeOffsetsFromElementNames()
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
+AZStd::string CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) const
 {
     SParamInfo info;
     if (GetParamInfoFromType(param, info))
@@ -403,7 +347,7 @@ const char* CUiAnimAzEntityNode::GetParamName(const CUiAnimParamType& param) con
 }
 
 //////////////////////////////////////////////////////////////////////////
-const char* CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
+AZStd::string CUiAnimAzEntityNode::GetParamNameForTrack(const CUiAnimParamType& param, const IUiAnimTrack* track) const
 {
     // for Az Component Fields we use the name from the ClassElement
     if (param == eUiAnimParamType_AzComponentField)
@@ -448,7 +392,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
     }
 
     AZ::Entity* entity = nullptr;
-    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, m_entityId);
+    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, m_entityId);
     if (!entity)
     {
         // This can happen, if a UI element is deleted we do not delete all AnimNodes
@@ -583,7 +527,7 @@ void CUiAnimAzEntityNode::Animate(SUiAnimContext& ec)
         m_bIgnoreSetParam = false;
     }
 
-    EBUS_EVENT_ID(m_entityId, UiAnimateEntityBus, PropertyValuesChanged);
+    UiAnimateEntityBus::Event(m_entityId, &UiAnimateEntityBus::Events::PropertyValuesChanged);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -669,7 +613,7 @@ IUiAnimTrack* CUiAnimAzEntityNode::GetTrackForAzField(const UiAnimParamData& par
 IUiAnimTrack* CUiAnimAzEntityNode::CreateTrackForAzField(const UiAnimParamData& param)
 {
     AZ::SerializeContext* context = nullptr;
-    EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+    AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
     AZ_Assert(context, "No serialization context found");
 
     IUiAnimTrack* track = nullptr;

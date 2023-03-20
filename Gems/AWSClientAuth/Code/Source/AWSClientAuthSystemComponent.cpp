@@ -7,17 +7,23 @@
  */
 
 #include <AWSClientAuthSystemComponent.h>
+#include <AWSClientAuthResourceMappingConstants.h>
+
 #include <Authentication/AuthenticationProviderTypes.h>
 #include <Authentication/AuthenticationNotificationBusBehaviorHandler.h>
-#include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationNotificationBusBehaviorHandler.h>
 #include <Authorization/AWSCognitoAuthorizationController.h>
-#include <AzCore/std/smart_ptr/make_shared.h>
-#include <ResourceMapping/AWSResourceMappingBus.h>
+
 #include <Framework/AWSApiJobConfig.h>
+
+#include <ResourceMapping/AWSResourceMappingBus.h>
+#include <ResourceMapping/AWSResourceMappingBus.h>
+#include <UserManagement/UserManagementNotificationBusBehaviorHandler.h>
 
 #include <aws/cognito-identity/CognitoIdentityClient.h>
 #include <aws/cognito-idp/CognitoIdentityProviderClient.h>
+
+#include <AWSCoreBus.h>
 
 namespace AZ
 {
@@ -33,13 +39,12 @@ namespace AWSClientAuth
         AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context);
         if (serialize)
         {
-            serialize->Class<AWSClientAuthSystemComponent, AZ::Component>()->Version(0);
+            serialize->Class<AWSClientAuthSystemComponent, AZ::Component>()->Version(2);
 
             if (AZ::EditContext* ec = serialize->GetEditContext())
             {
                 ec->Class<AWSClientAuthSystemComponent>("AWSClientAuth", "Provides Client Authentication and Authorization implementations")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
             AWSClientAuth::LWAProviderSetting::Reflect(*serialize);
@@ -55,26 +60,44 @@ namespace AWSClientAuth
                 ->Enum<(int)ProviderNameEnum::AWSCognitoIDP>("ProviderNameEnum_AWSCognitoIDP")
                 ->Enum<(int)ProviderNameEnum::LoginWithAmazon>("ProviderNameEnum_LoginWithAmazon")
                 ->Enum<(int)ProviderNameEnum::Google>("ProviderNameEnum_Google");
-
             behaviorContext->EBus<AuthenticationProviderScriptCanvasRequestBus>("AuthenticationProviderRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AuthenticationProviderScriptCanvasRequestBus::Events::Initialize)
-                ->Event("IsSignedIn", &AuthenticationProviderScriptCanvasRequestBus::Events::IsSignedIn)
-                ->Event("GetAuthenticationTokens", &AuthenticationProviderScriptCanvasRequestBus::Events::GetAuthenticationTokens)
+                ->Event("IsSignedIn", &AuthenticationProviderScriptCanvasRequestBus::Events::IsSignedIn,
+                    { { { "Provider name", "The identity provider name" } } })
+                ->Event("GetAuthenticationTokens", &AuthenticationProviderScriptCanvasRequestBus::Events::GetAuthenticationTokens,
+                    { { { "Provider name", "The identity provider name" } } })
                 ->Event(
                     "PasswordGrantSingleFactorSignInAsync",
-                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantSingleFactorSignInAsync)
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantSingleFactorSignInAsync,
+                    { { { "Provider name", "The identity provider" }, { "Username", "The client's username" }, { "Password", "The client's password" } } })
                 ->Event(
                     "PasswordGrantMultiFactorSignInAsync",
-                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorSignInAsync)
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorSignInAsync,
+                    { { { "Provider name", "The identity provider name" },
+                        { "Username", "The client's username" },
+                        { "Password", "The client's password" } } })
                 ->Event(
                     "PasswordGrantMultiFactorConfirmSignInAsync",
-                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorConfirmSignInAsync)
-                ->Event("DeviceCodeGrantSignInAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantSignInAsync)
-                ->Event("DeviceCodeGrantConfirmSignInAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantConfirmSignInAsync)
-                ->Event("RefreshTokensAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::RefreshTokensAsync)
-                ->Event("GetTokensWithRefreshAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::GetTokensWithRefreshAsync)
-                ->Event("SignOut", &AuthenticationProviderScriptCanvasRequestBus::Events::SignOut);
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::PasswordGrantMultiFactorConfirmSignInAsync,
+                    { { { "Provider name", "The identity provider name" },
+                        { "Username", "The client's username" },
+                        { "Confirmation code", "The client's confirmation code" } } })
+                ->Event(
+                    "DeviceCodeGrantSignInAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantSignInAsync,
+                    { { { "Provider name", "The identity provider name" } } })
+                ->Event(
+                    "DeviceCodeGrantConfirmSignInAsync",
+                    &AuthenticationProviderScriptCanvasRequestBus::Events::DeviceCodeGrantConfirmSignInAsync,
+                    { { { "Provider name", "The identity provider name" } } })
+                ->Event(
+                    "RefreshTokensAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::RefreshTokensAsync,
+                    { { { "Provider name", "The identity provider name" } } })
+                ->Event("GetTokensWithRefreshAsync", &AuthenticationProviderScriptCanvasRequestBus::Events::GetTokensWithRefreshAsync,
+                    { { { "Provider name", "The identity provider name" } } })
+                ->Event(
+                    "SignOut", &AuthenticationProviderScriptCanvasRequestBus::Events::SignOut,
+                    { { { "Provider name", "The identity provider name" } } });
 
             behaviorContext->EBus<AWSCognitoAuthorizationRequestBus>("AWSCognitoAuthorizationRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
@@ -87,12 +110,22 @@ namespace AWSClientAuth
             behaviorContext->EBus<AWSCognitoUserManagementRequestBus>("AWSCognitoUserManagementRequestBus")
                 ->Attribute(AZ::Script::Attributes::Category, SerializeComponentName)
                 ->Event("Initialize", &AWSCognitoUserManagementRequestBus::Events::Initialize)
-                ->Event("EmailSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::EmailSignUpAsync)
-                ->Event("PhoneSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::PhoneSignUpAsync)
-                ->Event("ConfirmSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmSignUpAsync)
-                ->Event("ForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ForgotPasswordAsync)
-                ->Event("ConfirmForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmForgotPasswordAsync)
-                ->Event("EnableMFAAsync", &AWSCognitoUserManagementRequestBus::Events::EnableMFAAsync);
+                ->Event(
+                    "EmailSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::EmailSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Password", "The client's password" }, { "Email", "The email address used to sign up" } } })
+                ->Event(
+                    "PhoneSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::PhoneSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Password", "The client's password" }, { "Phone number", "The phone number used to sign up" } } })
+                ->Event(
+                    "ConfirmSignUpAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmSignUpAsync,
+                    { { { "Username", "The client's username" }, { "Confirmation code", "The client's confirmation code" } } })
+                ->Event(
+                    "ForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ForgotPasswordAsync,
+                    { { { "Username", "The client's username" } } })
+                ->Event(
+                    "ConfirmForgotPasswordAsync", &AWSCognitoUserManagementRequestBus::Events::ConfirmForgotPasswordAsync,
+                    { { { "Username", "The client's username" }, { "Confirmation code", "The client's confirmation code" }, { "New password", "The new password for the client" } } })
+                ->Event("EnableMFAAsync", &AWSCognitoUserManagementRequestBus::Events::EnableMFAAsync, { { { "Access token", "The MFA access token" } } });
 
 
             behaviorContext->EBus<AuthenticationProviderNotificationBus>("AuthenticationProviderNotificationBus")
@@ -141,12 +174,29 @@ namespace AWSClientAuth
         AZ::Interface<IAWSClientAuthRequests>::Register(this);
         AWSClientAuthRequestBus::Handler::BusConnect();
 
-        // Objects below depend on bus above.
         m_authenticationProviderManager = AZStd::make_unique<AuthenticationProviderManager>();
-        m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
-        m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
 
-        AWSCore::AWSCoreEditorRequestBus::Broadcast(&AWSCore::AWSCoreEditorRequests::SetAWSClientAuthEnabled);
+        // Sanity check if code should setup Cognito user and autorization controllers.
+        // Only set up if Cognito settings appear to be provided in resource mapping file.
+        AZStd::string userPoolId;
+        AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            userPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoUserPoolIdResourceMappingKey);
+
+        AZStd::string cognitoIdentityPoolId;
+         AWSCore::AWSResourceMappingRequestBus::BroadcastResult(
+            cognitoIdentityPoolId, &AWSCore::AWSResourceMappingRequests::GetResourceNameId, CognitoIdentityPoolIdResourceMappingKey);
+
+        if (userPoolId.empty() && cognitoIdentityPoolId.empty())
+        {
+            AZ_Warning("AWSClientAuthSystemComponent",  false,
+                "Missing Cognito settings in resource mappings. Skipping set up of Cognito controllers.");
+        }
+        else
+        {
+            // Objects below depend on bus above.
+            m_awsCognitoUserManagementController = AZStd::make_unique<AWSCognitoUserManagementController>();
+            m_awsCognitoAuthorizationController = AZStd::make_unique<AWSCognitoAuthorizationController>();
+        }
     }
 
     void AWSClientAuthSystemComponent::Deactivate()
@@ -154,7 +204,7 @@ namespace AWSClientAuth
         m_authenticationProviderManager.reset();
         m_awsCognitoUserManagementController.reset();
         m_awsCognitoAuthorizationController.reset();
-
+        
         AWSClientAuthRequestBus::Handler::BusDisconnect();
         AWSCore::AWSCoreNotificationsBus::Handler::BusDisconnect();
         AZ::Interface<IAWSClientAuthRequests>::Unregister(this);
@@ -192,6 +242,11 @@ namespace AWSClientAuth
     std::shared_ptr<Aws::CognitoIdentity::CognitoIdentityClient> AWSClientAuthSystemComponent::GetCognitoIdentityClient()
     {
         return m_cognitoIdentityClient;
+    }
+
+    bool AWSClientAuthSystemComponent::HasCognitoControllers() const
+    {
+        return (m_awsCognitoUserManagementController != nullptr) || (m_awsCognitoAuthorizationController != nullptr);
     }
 
 } // namespace AWSClientAuth

@@ -8,15 +8,12 @@
 #include <VegetationProfiler.h>
 #include "InstanceSystemComponent.h"
 
-#include <AzCore/Debug/Profiler.h> 
+#include <AzCore/Debug/Profiler.h>
 #include <AzCore/Jobs/JobFunction.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
-
-#include <LmbrCentral/Rendering/MaterialAsset.h>
-#include <LmbrCentral/Rendering/MeshAsset.h>
 
 #include <Vegetation/Ebuses/AreaInfoBus.h>
 #include <Vegetation/Ebuses/AreaSystemRequestBus.h>
@@ -94,7 +91,6 @@ namespace Vegetation
                 editContext->Class<InstanceSystemComponent>("Vegetation Instance System", "Manages and processes requests to create and destroy vegetation instance render nodes")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(0, &InstanceSystemComponent::m_configuration, "Configuration", "")
@@ -169,7 +165,7 @@ namespace Vegetation
 
     DescriptorPtr InstanceSystemComponent::RegisterUniqueDescriptor(const Descriptor& descriptor)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -189,7 +185,7 @@ namespace Vegetation
                 if (*existingDescriptorPtr == descriptor)
                 {
                     DescriptorDetails& details = descPair.second;
-                    details.m_refCount++;  
+                    details.m_refCount++;
                     return existingDescriptorPtr;
                 }
 
@@ -217,7 +213,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ReleaseUniqueDescriptor(DescriptorPtr descriptorPtr)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -267,7 +263,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstance(InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!IsDescriptorValid(instanceData.m_descriptorPtr))
         {
@@ -299,7 +295,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::DestroyInstance(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         if (instanceId == InvalidInstanceId)
         {
@@ -439,7 +435,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::IsInstanceSkippable(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         //if the instance was queued for deletion before its creation task executed then skip it
         AZStd::lock_guard<decltype(m_instanceDeletionSetMutex)> instanceDeletionSet(m_instanceDeletionSetMutex);
@@ -448,7 +444,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstanceNode(const InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (IsInstanceSkippable(instanceData))
         {
@@ -489,7 +485,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ReleaseInstanceNode(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         DescriptorPtr descriptor = nullptr;
         InstancePtr opaqueInstanceData = nullptr;
@@ -521,20 +517,19 @@ namespace Vegetation
 
     void InstanceSystemComponent::AddTask(const Task& task)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (m_mainThreadTaskQueue.empty() || m_mainThreadTaskQueue.back().size() >= m_configuration.m_maxInstanceTaskBatchSize)
         {
-            m_mainThreadTaskQueue.push_back();
-            m_mainThreadTaskQueue.back().reserve(m_configuration.m_maxInstanceTaskBatchSize);
+            m_mainThreadTaskQueue.emplace_back().reserve(m_configuration.m_maxInstanceTaskBatchSize);
         }
         m_mainThreadTaskQueue.back().emplace_back(task);
     }
 
     void InstanceSystemComponent::ClearTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> mainThreadTaskInProgressLock(m_mainThreadTaskInProgressMutex);
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
@@ -546,7 +541,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::GetTasks(TaskList& removedTasks)
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (!m_mainThreadTaskQueue.empty())
@@ -559,12 +554,12 @@ namespace Vegetation
 
     void InstanceSystemComponent::ExecuteTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> scopedLock(m_mainThreadTaskInProgressMutex);
 
-        AZStd::chrono::system_clock::time_point initialTime = AZStd::chrono::system_clock::now();
-        AZStd::chrono::system_clock::time_point currentTime = initialTime;
+        AZStd::chrono::steady_clock::time_point initialTime = AZStd::chrono::steady_clock::now();
+        AZStd::chrono::steady_clock::time_point currentTime = initialTime;
 
         auto removedTasksPtr = AZStd::make_shared<TaskList>();
         while (GetTasks(*removedTasksPtr))
@@ -574,21 +569,21 @@ namespace Vegetation
                 task();
             }
 
-            currentTime = AZStd::chrono::system_clock::now();
-            if (AZStd::chrono::microseconds(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
+            currentTime = AZStd::chrono::steady_clock::now();
+            if (AZStd::chrono::duration_cast<AZStd::chrono::microseconds>(currentTime - initialTime).count() > m_configuration.m_maxInstanceProcessTimeMicroseconds)
             {
                 break;
             }
         }
 
         //offloading garbage collection to job to save time deallocating tasks on main thread
-        auto garbageCollectionJob = AZ::CreateJobFunction([removedTasksPtr]() mutable {}, true);
+        auto garbageCollectionJob = AZ::CreateJobFunction([]() mutable {}, true);
         garbageCollectionJob->Start();
     }
 
     void InstanceSystemComponent::ProcessMainThreadTasks()
     {
-        AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         ExecuteTasks();
     }

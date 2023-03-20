@@ -20,6 +20,7 @@
 
 // Editor
 #include "MainWindow.h"
+#include "Controls/ReflectedPropertyControl/ReflectedVar.h"
 #include "CryEdit.h"
 #include "DisplaySettingsPythonFuncs.h"
 #include "GameEngine.h"
@@ -34,10 +35,14 @@ namespace EditorInternal
         : ToolsApplication(argc, argv)
     {
         EditorToolsApplicationRequests::Bus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusConnect();
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusConnect();
     }
 
     EditorToolsApplication::~EditorToolsApplication()
     {
+        AzToolsFramework::ViewportInteraction::EditorViewportInputTimeNowRequestBus::Handler::BusDisconnect();
+        AzToolsFramework::ViewportInteraction::EditorModifierKeyRequestBus::Handler::BusDisconnect();
         EditorToolsApplicationRequests::Bus::Handler::BusDisconnect();
         Stop();
     }
@@ -47,7 +52,6 @@ namespace EditorInternal
     {
         return m_StartupAborted;
     }
-
 
     void EditorToolsApplication::RegisterCoreComponents()
     {
@@ -126,6 +130,12 @@ namespace EditorInternal
     {
         ToolsApplication::Reflect(context);
 
+        // Reflect property control classes to the serialize context...
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            ReflectedVarInit::setupReflection(serializeContext);
+        }
+
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
             behaviorContext->EBus<EditorToolsApplicationRequestBus>("EditorToolsApplicationRequestBus")
@@ -196,10 +206,10 @@ namespace EditorInternal
         
         auto previousDocument = GetIEditor()->GetDocument();
         QString previousPathName = (previousDocument != nullptr) ? previousDocument->GetLevelPathName() : "";
-        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.c_str());
+        auto newDocument = CCryEditApp::instance()->OpenDocumentFile(levelPath.c_str(), true, COpenSameLevelOptions::ReopenLevelIfSame);
 
         // the underlying document pointer doesn't change, so we can't check that; use the path name's instead
-        return newDocument && !newDocument->IsLevelLoadFailed() && (newDocument->GetLevelPathName() != previousPathName);
+        return newDocument && !newDocument->IsLevelLoadFailed();
     }
 
     bool EditorToolsApplication::OpenLevelNoPrompt(AZStd::string_view levelName)
@@ -274,5 +284,14 @@ namespace EditorInternal
         Exit();
     }
 
-}
+    AzToolsFramework::ViewportInteraction::KeyboardModifiers EditorToolsApplication::QueryKeyboardModifiers()
+    {
+        return AzToolsFramework::ViewportInteraction::BuildKeyboardModifiers(QGuiApplication::queryKeyboardModifiers());
+    }
 
+    AZStd::chrono::milliseconds EditorToolsApplication::EditorViewportInputTimeNow()
+    {
+        const auto now = AZStd::chrono::steady_clock::now();
+        return AZStd::chrono::time_point_cast<AZStd::chrono::milliseconds>(now).time_since_epoch();
+    }
+} // namespace EditorInternal

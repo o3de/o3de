@@ -7,7 +7,6 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <Mocks/StubTimer.h>
 #include <Gestures/GestureRecognizerClickOrTap.h>
 #include "BaseGestureTest.h"
 
@@ -20,6 +19,7 @@ class MockRecognizer
     : public Gestures::RecognizerClickOrTap
 {
 public:
+    AZ_CLASS_ALLOCATOR(MockRecognizer, AZ::SystemAllocator)
     MockRecognizer()
         : m_count(0)
     {

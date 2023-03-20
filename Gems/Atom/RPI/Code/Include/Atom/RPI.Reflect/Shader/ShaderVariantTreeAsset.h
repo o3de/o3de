@@ -41,6 +41,7 @@ namespace AZ
             friend struct ShaderVariantTreeNode;
 
         public:
+            AZ_CLASS_ALLOCATOR(ShaderVariantTreeAsset , SystemAllocator)
             AZ_RTTI(ShaderVariantTreeAsset, "{EBF48506-F8BB-4B37-8FAC-F132BF83E42D}", Data::AssetData);
 
             static void Reflect(ReflectContext* context);
@@ -75,7 +76,7 @@ namespace AZ
 
         private:
 
-            static constexpr uint32_t UnspecifiedIndex = -1;
+            static constexpr uint32_t UnspecifiedIndex = std::numeric_limits<uint32_t>::max();
 
             //! Returns the node associated with the provided index.
             const ShaderVariantTreeNode& GetNode(uint32_t index) const;

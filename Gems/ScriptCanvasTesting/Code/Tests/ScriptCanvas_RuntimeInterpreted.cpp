@@ -14,7 +14,6 @@
 #include <ScriptCanvas/Core/SubgraphInterfaceUtility.h>
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Execution/Interpreted/ExecutionInterpretedAPI.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <Source/Framework/ScriptCanvasTestFixture.h>
 #include <Source/Framework/ScriptCanvasTestNodes.h>
 #include <Source/Framework/ScriptCanvasTestUtilities.h>
@@ -29,7 +28,7 @@ using namespace ScriptCanvasEditor;
 class GlobalHandler : ScriptCanvasTesting::GlobalEBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(GlobalHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(GlobalHandler, AZ::SystemAllocator);
 
     AZ::Event<> m_zeroParam;
     AZ::Event<AZStd::vector<AZStd::string>&> m_byReference;
@@ -86,10 +85,11 @@ public:
 
 TEST_F(ScriptCanvasTestFixture, EntityIdInputForOnGraphStart)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
+    ExpectParseError("LY_SC_UnitTest_EntityIdInputForOnGraphStart");
 }
 
-TEST_F(ScriptCanvasTestFixture, ParseErrorOnKnownNull)
+// disabled due to lack of confirming known null on nodes that are not BC method nodes
+TEST_F(ScriptCanvasTestFixture, DISABLED_ParseErrorOnKnownNull)
 {
     ExpectParseError("LY_SC_UnitTest_ParseErrorOnKnownNull");
 }
@@ -112,11 +112,6 @@ TEST_F(ScriptCanvasTestFixture, UseRawBehaviorProperties)
 TEST_F(ScriptCanvasTestFixture, StringSanitization)
 {
     RunUnitTestGraph("LY_SC_UnitTest_StringSanitization");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedHelloWorld)
-{
-    RunUnitTestGraph("LY_SC_UnitTest_HelloWorld");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedReadEnumConstant)
@@ -365,11 +360,6 @@ TEST_F(ScriptCanvasTestFixture, InterpretedCycleDetectSimple)
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleOutDataFlowParseError)
 {
     ExpectParseError("LY_SC_UnitTest_MultipleOutDataFlowParseError");
-}
-
-TEST_F(ScriptCanvasTestFixture, InterpretedSimultaneousDataInputError)
-{
-    ExpectParseError("LY_SC_UnitTest_SimultaneousDataInputError");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedAnyAsTailNoOp)
@@ -677,14 +667,14 @@ TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResults)
     RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResults", ExecutionMode::Interpreted);
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsGeneric)
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsByValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsGeneric", ExecutionMode::Interpreted);
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsByValue", ExecutionMode::Interpreted);
 }
 
-TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnResultsGenericByValue)
+TEST_F(ScriptCanvasTestFixture, InterpretedMultipleReturnSameTypeResults)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnResultsGenericByValue", ExecutionMode::Interpreted);
+    RunUnitTestGraph("LY_SC_UnitTest_MultipleReturnSameTypeResults", ExecutionMode::Interpreted);
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedMultipleStartNodes)
@@ -784,7 +774,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedPrintConnectedInput)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedPrintFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_PrintFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_PrintFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedProperties)
@@ -824,7 +814,7 @@ TEST_F(ScriptCanvasTestFixture, InterpretedStringFormat)
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatEmptyValue)
 {
-    RunUnitTestGraph("LY_SC_UnitTest_StringFormatEmptyValue", ExecutionMode::Interpreted);
+    ExpectParseError("LY_SC_UnitTest_StringFormatEmptyValue");
 }
 
 TEST_F(ScriptCanvasTestFixture, InterpretedStringFormatWithRepeatedValueName)
@@ -895,6 +885,12 @@ TEST_F(ScriptCanvasTestFixture, InterpretedDivideByNumber)
     RunUnitTestGraph("LY_SC_UnitTest_DivideByNumber");
 }
 
+// move to in-editor test, where (required) assetids are available
+// TEST_F(ScriptCanvasTestFixture, InterpretedUseLocallyDefinedFunction)
+// {
+//     RunUnitTestGraph("LY_SC_UnitTest_UseLocallyDefinedFunction", ExecutionMode::Interpreted);
+//}
+
 TEST_F(ScriptCanvasTestFixture, InterpretedPathologicalFlowOfControl)
 {
     RunUnitTestGraph("LY_SC_UnitTest_PathologicalFlowOfControl");
@@ -939,4 +935,39 @@ TEST_F(ScriptCanvasTestFixture, InterpretedNodeableInputMethodSharedDataSlot)
 TEST_F(ScriptCanvasTestFixture, InterpretedExecutionOutPerformance)
 {
     RunUnitTestGraph("LY_SC_UnitTest_ExecutionOutPerformance", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, PromotedUserVariables)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_PromotedUserVariables", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, UseClassWithDefaultOut)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_UseClassWithDefaultOut", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMethodsCheckedOperation)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMethodsCheckedOperation", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResults)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResults", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, GlobalMultipleReturnResultsByValue)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_GlobalMultipleReturnResultsByValue", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, StringFormatSquareBracketTranslation)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_StringFormatSquareBracketTranslation", ExecutionMode::Interpreted);
+}
+
+TEST_F(ScriptCanvasTestFixture, AutoGenFunctions)
+{
+    RunUnitTestGraph("LY_SC_UnitTest_AutoGenFunctions", ExecutionMode::Interpreted);
 }

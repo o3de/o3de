@@ -217,22 +217,6 @@ typedef uintptr_t uintPointer;
     #define NULL 0
 #endif
 
-// alignment macro
-#if (MCORE_COMPILER == MCORE_COMPILER_MSVC || MCORE_COMPILER == MCORE_COMPILER_INTELC)
-    #define MCORE_ALIGN(NUMBYTES, X) __declspec(align(NUMBYTES)) X
-    #define MCORE_ALIGN_PRE(NUMBYTES) __declspec(align(NUMBYTES))
-    #define MCORE_ALIGN_POST(NUMBYTES)
-#elif (MCORE_COMPILER == MCORE_COMPILER_GCC)
-    #define MCORE_ALIGN(NUMBYTES, X) X __attribute__((aligned(NUMBYTES)))
-    #define MCORE_ALIGN_PRE(NUMBYTES)
-    #define MCORE_ALIGN_POST(NUMBYTES) __attribute__((aligned(NUMBYTES)))
-#else
-    #define MCORE_ALIGN(NUMBYTES, X) X
-    #define MCORE_ALIGN_PRE(NUMBYTES)
-    #define MCORE_ALIGN_POST(NUMBYTES)
-#endif
-
-
 // detect and enable OpenMP support
 #if defined(_OPENMP)
     #define MCORE_OPENMP_ENABLED

@@ -14,7 +14,7 @@
 
 #include <ScriptCanvasDeveloperEditor/EditorAutomation/EditorAutomationActions/GenericActions.h>
 
-namespace ScriptCanvasDeveloper
+namespace ScriptCanvas::Developer
 {
     /**
         EditorAutomationAction that will select the specified entity inside of the active Graph scene
@@ -23,7 +23,7 @@ namespace ScriptCanvasDeveloper
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SelectSceneElementAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SelectSceneElementAction, AZ::SystemAllocator);
         AZ_RTTI(SelectSceneElementAction, "{D1EA3B23-D7FD-411A-87BC-4D9D88D35A03}", CompoundAction);
 
         SelectSceneElementAction(AZ::EntityId sceneMemberId);
@@ -32,7 +32,7 @@ namespace ScriptCanvasDeveloper
         bool IsMissingPrecondition() override;
         EditorAutomationAction* GenerateMissingPreconditionAction() override;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 
@@ -52,7 +52,7 @@ namespace ScriptCanvasDeveloper
         , public GraphCanvas::SceneNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(AltClickSceneElementAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AltClickSceneElementAction, AZ::SystemAllocator);
         AZ_RTTI(AltClickSceneElementAction, "{FF99EC14-53B3-474E-A7A1-6D30800B9583}", CompoundAction);
 
         AltClickSceneElementAction(AZ::EntityId sceneMemberId);
@@ -66,9 +66,9 @@ namespace ScriptCanvasDeveloper
         ActionReport GenerateReport() const override;
 
         // SceneNotificaitonBus
-        void OnNodeRemoved(const AZ::EntityId& nodeId);
+        void OnNodeRemoved(const AZ::EntityId& nodeId) override;
 
-        void OnConnectionRemoved(const AZ::EntityId& connectionId);
+        void OnConnectionRemoved(const AZ::EntityId& connectionId) override;
         ////
 
     protected:
@@ -92,13 +92,13 @@ namespace ScriptCanvasDeveloper
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MouseToNodePropertyEditorAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MouseToNodePropertyEditorAction, AZ::SystemAllocator);
         AZ_RTTI(MouseToNodePropertyEditorAction, "{03BE0BBE-B977-4103-BC6D-0357B7CEA46E}", CompoundAction);
 
         MouseToNodePropertyEditorAction(GraphCanvas::SlotId slotId);
         ~MouseToNodePropertyEditorAction() override = default;
 
-        void SetupAction();
+        void SetupAction() override;
 
     private:
 

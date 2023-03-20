@@ -14,6 +14,8 @@
 
 namespace AzToolsFramework
 {
+    class ViewportEditorModeTracker;
+
     //! System Component to wrap active input handler.
     //! EditorInteractionSystemComponent is notified of viewport mouse events from RenderViewport
     //! and forwards them to a concrete implementation of ViewportSelectionRequests.
@@ -26,9 +28,13 @@ namespace AzToolsFramework
     public:
         AZ_COMPONENT(EditorInteractionSystemComponent, "{146D0317-AF42-45AB-A953-F54198525DD5}")
 
+        EditorInteractionSystemComponent();
+        ~EditorInteractionSystemComponent();
+
         static void Reflect(AZ::ReflectContext* context);
 
         // EditorInteractionSystemViewportSelectionRequestBus
+        const EditorVisibleEntityDataCacheInterface* GetEntityDataCache() const override;
         void SetHandler(const ViewportSelectionRequestsBuilderFn& interactionRequestsBuilder) override;
         void SetDefaultHandler() override;
 
@@ -54,5 +60,7 @@ namespace AzToolsFramework
         AZStd::unique_ptr<InternalViewportSelectionRequests> m_interactionRequests; //!< Hold a concrete implementation of
                                                                                     //!< ViewportSelectionRequests to handle viewport
                                                                                     //!< input and drawing for the Editor.
+
+        AZStd::unique_ptr<ViewportEditorModeTracker> m_viewportEditorMode; //!< Editor mode tracker for each viewport.
     };
 } // namespace AzToolsFramework

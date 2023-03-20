@@ -7,13 +7,13 @@
  */
 
 #include <Model/MaterialAssetBuilderComponent.h>
+#include <Material/MaterialBuilderUtils.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Math/Color.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <AzToolsFramework/Debug/TraceContext.h>
 
 #include <SceneAPI/SceneCore/Containers/Scene.h>
 #include <SceneAPI/SceneCore/Containers/SceneManifest.h>
@@ -28,22 +28,26 @@
 
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialConverterBus.h>
+#include <Atom/RPI.Edit/Material/MaterialUtils.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AzCore/Settings/SettingsRegistry.h>
+
 
 namespace AZ
 {
     namespace RPI
     {
-        static const char* MaterialExporterName = "Scene Material Builder";
+        [[maybe_unused]] static const char* MaterialExporterName = "Scene Material Builder";
 
         void MaterialAssetDependenciesComponent::Reflect(ReflectContext* context)
         {
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetDependenciesComponent, Component>()
-                    ->Version(4)
+                    ->Version(5) // <<<<< If you have made changes to material code and need to force scene files to be reprocessed, this probably is
+                                 // NOT the version number you want to bump . What you're looking for is MaterialAssetBuilderComponent::Reflect below.
                     ->Attribute(Edit::Attributes::SystemComponentTags, AZStd::vector<Crc32>({ AssetBuilderSDK::ComponentTags::AssetBuilder }));
             }
         }
@@ -70,20 +74,36 @@ namespace AZ
 
         void MaterialAssetDependenciesComponent::ReportJobDependencies(SceneAPI::JobDependencyList& jobDependencyList, const char* platformIdentifier)
         {
-            AssetBuilderSDK::SourceFileDependency materialTypeSource;
+            bool conversionEnabled = false;
+            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
+            
             // Right now, scene file importing only supports a single material type, once that changes, this will have to be re-designed, see ATOM-3554
-            RPI::MaterialConverterBus::BroadcastResult(materialTypeSource.m_sourceFileDependencyPath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
+            AZStd::string materialTypePath;
+            RPI::MaterialConverterBus::BroadcastResult(materialTypePath, &RPI::MaterialConverterBus::Events::GetMaterialTypePath);
 
-            AssetBuilderSDK::JobDependency jobDependency;
-            jobDependency.m_jobKey = "Atom Material Builder";
-            jobDependency.m_sourceFile = materialTypeSource;
-            jobDependency.m_platformIdentifier = platformIdentifier;
-            jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-
-            if (!materialTypeSource.m_sourceFileDependencyPath.empty())
+            if (conversionEnabled && !materialTypePath.empty())
             {
+                AssetBuilderSDK::SourceFileDependency materialTypeSource;
+                materialTypeSource.m_sourceFileDependencyPath = materialTypePath;
+
+                AssetBuilderSDK::JobDependency jobDependency;
+                jobDependency.m_jobKey = "Material Type Builder (Final Stage)";
+                jobDependency.m_sourceFile = materialTypeSource;
+                jobDependency.m_platformIdentifier = platformIdentifier;
+                jobDependency.m_productSubIds.push_back(0);
+                jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+
                 jobDependencyList.push_back(jobDependency);
             }
+        }
+        
+        void MaterialAssetDependenciesComponent::AddFingerprintInfo(AZStd::set<AZStd::string>& fingerprintInfo)
+        {
+            // This will cause scene files to be reprocessed whenever the global MaterialConverter settings change.
+
+            AZStd::string conversionInfo = "[Material conversion info missing]";
+            RPI::MaterialConverterBus::BroadcastResult(conversionInfo, &RPI::MaterialConverterBus::Events::GetFingerprintInfo);
+            fingerprintInfo.insert(conversionInfo);
         }
 
         void MaterialAssetBuilderComponent::Reflect(ReflectContext* context)
@@ -91,7 +111,31 @@ namespace AZ
             if (auto* serialize = azrtti_cast<SerializeContext*>(context))
             {
                 serialize->Class<MaterialAssetBuilderComponent, SceneAPI::SceneCore::ExportingComponent>()
-                    ->Version(16);  // Optional material conversion
+                    ->Version(26);  // Add productSubId dependency for materialtype
+            }
+        }
+        
+        Data::Asset<MaterialAsset> MaterialAssetBuilderComponent::GetDefaultMaterialAsset() const
+        {
+            AZStd::string defaultMaterialPath;
+            RPI::MaterialConverterBus::BroadcastResult(defaultMaterialPath, &RPI::MaterialConverterBus::Events::GetDefaultMaterialPath);
+
+            if (defaultMaterialPath.empty())
+            {
+                return {};
+            }
+            else
+            {
+                auto defaultMaterialAssetId = RPI::AssetUtils::MakeAssetId(defaultMaterialPath, 0);
+                if (!defaultMaterialAssetId.IsSuccess())
+                {
+                    AZ_Error("MaterialAssetBuilderComponent", false, "Could not find asset '%s'", defaultMaterialPath.c_str());
+                    return {};
+                }
+                else
+                {
+                    return Data::AssetManager::Instance().CreateAsset<RPI::MaterialAsset>(defaultMaterialAssetId.GetValue(), Data::AssetLoadBehaviorNamespace::PreLoad);
+                }
             }
         }
 
@@ -119,8 +163,8 @@ namespace AZ
 
             BindToCall(&MaterialAssetBuilderComponent::BuildMaterials);
         }
-
-        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::BuildMaterials(MaterialAssetBuilderContext& context) const
+        
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::ConvertMaterials(MaterialAssetBuilderContext& context) const
         {
             const auto& scene = context.m_scene;
             const Uuid sourceSceneUuid = scene.GetSourceGuid();
@@ -171,7 +215,7 @@ namespace AZ
                     }
                 }
             }
-
+            
             // Build material assets. 
             for (auto& itr : materialSourceDataByUid)
             {
@@ -192,6 +236,63 @@ namespace AZ
             }
 
             return SceneAPI::Events::ProcessingResult::Success;
+        }
+
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::AssignDefaultMaterials(MaterialAssetBuilderContext& context) const
+        {
+            Data::Asset<MaterialAsset> defaultMaterialAsset = GetDefaultMaterialAsset();
+
+            if (!defaultMaterialAsset.GetId().IsValid())
+            {
+                AZ_Warning("MaterialAssetBuilderComponent", false, "Material conversion is disabled but no default material was provided. The model will likely be invisible by default.");
+                // Return success because it's just a warning.
+                return SceneAPI::Events::ProcessingResult::Success;
+            }
+
+            const auto& scene = context.m_scene;
+            const auto& sceneGraph = scene.GetGraph();
+
+            auto names = sceneGraph.GetNameStorage();
+            auto content = sceneGraph.GetContentStorage();
+            auto pairView = SceneAPI::Containers::Views::MakePairView(names, content);
+
+            auto view = SceneAPI::Containers::Views::MakeSceneGraphDownwardsView<
+                SceneAPI::Containers::Views::BreadthFirst>(
+                    sceneGraph, sceneGraph.GetRoot(), pairView.cbegin(), true);
+
+            for (const auto& viewIt : view)
+            {
+                if (viewIt.second == nullptr)
+                {
+                    continue;
+                }
+
+                if (azrtti_istypeof<SceneAPI::DataTypes::IMaterialData>(viewIt.second.get()))
+                {
+                    auto materialData = AZStd::static_pointer_cast<const SceneAPI::DataTypes::IMaterialData>(viewIt.second);
+                    uint64_t materialUid = materialData->GetUniqueId();
+
+                    context.m_outputMaterialsByUid[materialUid] = { defaultMaterialAsset, materialData->GetMaterialName() };
+                }
+            }
+
+            return SceneAPI::Events::ProcessingResult::Success;
+        }
+
+        SceneAPI::Events::ProcessingResult MaterialAssetBuilderComponent::BuildMaterials(MaterialAssetBuilderContext& context) const
+        {
+            bool conversionEnabled = false;
+            RPI::MaterialConverterBus::BroadcastResult(conversionEnabled, &RPI::MaterialConverterBus::Events::IsEnabled);
+
+            if (conversionEnabled)
+            {
+                return ConvertMaterials(context);
+            }
+            else
+            {
+                return AssignDefaultMaterials(context);
+            }
+
         }
     } // namespace RPI
 } // namespace AZ

@@ -14,12 +14,14 @@
 
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
-#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
+#include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
+#include <AzToolsFramework/Prefab/PrefabFocusNotificationBus.h>
 #include <AzToolsFramework/Prefab/PrefabPublicNotificationBus.h>
 #include <AzToolsFramework/ToolsMessaging/EntityHighlightBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerCacheBus.h>
+#include <AzToolsFramework/UI/Outliner/EntityOutlinerRequestBus.h>
 #include <AzToolsFramework/UI/Outliner/EntityOutlinerSearchWidget.h>
 #include <AzToolsFramework/UI/SearchWidget/SearchWidgetTypes.hxx>
 
@@ -41,7 +43,10 @@ namespace AzToolsFramework
 {
     class EditorEntityUiInterface;
     class EntityOutlinerListModel;
+    class EntityOutlinerContainerProxyModel;
     class EntityOutlinerSortFilterProxyModel;
+    class FocusModeInterface;
+    class ReadOnlyEntityPublicInterface;
 
     namespace EntityOutliner
     {
@@ -58,13 +63,15 @@ namespace AzToolsFramework
         , private ToolsApplicationEvents::Bus::Handler
         , private EditorEntityContextNotificationBus::Handler
         , private EditorEntityInfoNotificationBus::Handler
-        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ViewportEditorModeNotificationsBus::Handler
+        , private Prefab::PrefabFocusNotificationBus::Handler
         , private Prefab::PrefabPublicNotificationBus::Handler
         , private EditorWindowUIRequestBus::Handler
+        , private EntityOutlinerRequestBus::Handler
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityOutlinerWidget, AZ::SystemAllocator)
 
         explicit EntityOutlinerWidget(QWidget* pParent = NULL, Qt::WindowFlags flags = Qt::WindowFlags());
         virtual ~EntityOutlinerWidget();
@@ -100,16 +107,25 @@ namespace AzToolsFramework
         void OnEntityInfoUpdatedAddChildEnd(AZ::EntityId /*parentId*/, AZ::EntityId /*childId*/) override;
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& /*name*/) override;
 
-        // EditorComponentModeNotificationBus
-        void EnteredComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
-        void LeftComponentMode(const AZStd::vector<AZ::Uuid>& componentModeTypes) override;
+        // ViewportEditorModeNotificationsBus overrides ...
+        void OnEditorModeActivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
+        void OnEditorModeDeactivated(
+            const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // PrefabPublicNotificationBus
+        // PrefabFocusNotificationBus overrides ...
+        void OnPrefabEditScopeChanged() override;
+
+        // PrefabPublicNotificationBus  overrides ...
         void OnPrefabInstancePropagationBegin() override;
         void OnPrefabInstancePropagationEnd() override;
+        void OnPrefabTemplateDirtyFlagUpdated(Prefab::TemplateId templateId, bool status) override;
 
-        // EditorWindowUIRequestBus overrides
+        // EditorWindowUIRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
+
+        // EntityOutlinerRequestBus overrides ...
+        void TriggerRenameEntityUi(const AZ::EntityId& entityId) override;
 
         // Build a selection object from the given entities. Entities already in the Widget's selection buffers are ignored.
         template <class EntityIdCollection>
@@ -118,7 +134,6 @@ namespace AzToolsFramework
         Ui::EntityOutlinerWidgetUI* m_gui;
         EntityOutlinerListModel* m_listModel;
         EntityOutlinerSortFilterProxyModel* m_proxyModel;
-        AZ::u64 m_selectionContextId;
         AZStd::vector<AZ::EntityId> m_selectedEntityIds;
 
         void PrepareSelection();
@@ -140,7 +155,6 @@ namespace AzToolsFramework
         QAction* m_actionToDeleteSelection;
         QAction* m_actionToDeleteSelectionAndDescendants;
         QAction* m_actionToRenameSelection;
-        QAction* m_actionToReparentSelection;
         QAction* m_actionToMoveEntityUp;
         QAction* m_actionToMoveEntityDown;
         QAction* m_actionGoToEntitiesInViewport;
@@ -149,7 +163,6 @@ namespace AzToolsFramework
         void OnTreeItemDoubleClicked(const QModelIndex& index);
         void OnTreeItemExpanded(const QModelIndex& index);
         void OnTreeItemCollapsed(const QModelIndex& index);
-        void OnExpandEntity(const AZ::EntityId& entityId, bool expand);
         void OnSelectEntity(const AZ::EntityId& entityId, bool selected);
         void OnEnableSelectionUpdates(bool enable);
         void OnDropEvent();
@@ -199,7 +212,11 @@ namespace AzToolsFramework
         EntityOutliner::DisplaySortMode m_sortMode;
         bool m_sortContentQueued;
 
+        AzFramework::EntityContextId m_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         EditorEntityUiInterface* m_editorEntityUiInterface = nullptr;
+        FocusModeInterface* m_focusModeInterface = nullptr;
+        ReadOnlyEntityPublicInterface* m_readOnlyEntityPublicInterface = nullptr;
     };
 
 }

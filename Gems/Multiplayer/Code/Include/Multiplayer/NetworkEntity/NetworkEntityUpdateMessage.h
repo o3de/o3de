@@ -15,9 +15,6 @@
 
 namespace Multiplayer
 {
-    // The maximum number of entity updates we can stuff into a single update packet
-    static const uint32_t MaxAggregateEntityMessages = 2048;
-
     //! @class NetworkEntityUpdateMessage
     //! @brief Property replication packet.
     class NetworkEntityUpdateMessage
@@ -43,8 +40,7 @@ namespace Multiplayer
         //! Constructor for an entity delete message.
         //! @param entityId      the networkId of the entity being deleted
         //! @param isMigrated    whether or not the entity is being migrated or deleted
-        //! @param takeOwnership true if the remote replicator should take ownership of the entity
-        explicit NetworkEntityUpdateMessage(NetEntityId entityId, bool isMigrated, bool takeOwnership);
+        explicit NetworkEntityUpdateMessage(NetEntityId entityId, bool isMigrated);
 
         NetworkEntityUpdateMessage& operator =(NetworkEntityUpdateMessage&& rhs);
         NetworkEntityUpdateMessage& operator =(const NetworkEntityUpdateMessage& rhs);
@@ -59,8 +55,8 @@ namespace Multiplayer
         //! @return the current value of NetworkRole
         NetEntityRole GetNetworkRole() const;
 
-        //! Gets the entities networkId.
-        //! @return the entities networkId
+        //! Gets the entity's networkId.
+        //! @return the entity's networkId
         NetEntityId GetEntityId() const;
 
         //! Gets the current value of IsDelete (true if this represents a DeleteProxy message).
@@ -70,10 +66,6 @@ namespace Multiplayer
         //! Returns whether or not the entity was migrated.
         //! @return whether or not the entity was migrated
         bool GetWasMigrated() const;
-
-        //! Gets the current value of TakeOwnership.
-        //! @return the current value of TakeOwnership
-        bool GetTakeOwnership() const;
 
         //! Gets the current value of HasValidPrefabId.
         //! @return the current value of HasValidPrefabId
@@ -110,7 +102,6 @@ namespace Multiplayer
         NetEntityId    m_entityId = InvalidNetEntityId;
         bool           m_isDelete = false;
         bool           m_wasMigrated = false;
-        bool           m_takeOwnership = false;
         bool           m_hasValidPrefabId = false;
         PrefabEntityId m_prefabEntityId;
 
@@ -118,4 +109,5 @@ namespace Multiplayer
         // This is to prevent blowing out stack memory if we declare an array of these EntityUpdateMessages
         AZStd::unique_ptr<AzNetworking::PacketEncodingBuffer> m_data;
     };
+    using NetworkEntityUpdateVector = AZStd::fixed_vector<NetworkEntityUpdateMessage, MaxAggregateEntityMessages>;
 }

@@ -2,20 +2,17 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Core/FunctionCallNode.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="FunctionCallNode"
-           QualifiedName="ScriptCanvas::Nodes::Core::FunctionCallNode"
-           PreferredClassName="Function Call Node"
-           Uuid="{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}"
-           Base="ScriptCanvas::Node"
-           Icon="Icons/ScriptCanvas/Bus.png"
-           Version="Version::Current"
-           VersionConverter="ScriptCanvas::VersionConverters::FunctionNodeVersionConverter"
-           DynamicSlotOrdering="True"
-           EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
-           GeneratePropertyFriend="True"
-           Description="Displays a node that represents a call to a function in a user graph">
-      <SerializedProperty Name="m_sourceId" />
-      <SerializedProperty Name="m_asset" />
-      <SerializedProperty Name="m_slotExecutionMap" />
-      <SerializedProperty Name="m_slotExecutionMapSourceInterface" />
+        QualifiedName="ScriptCanvas::Nodes::Core::FunctionCallNode"
+        PreferredClassName="Function Call Node"
+        Uuid="{ECFDD30E-A16D-4435-97B7-B2A4DF3C543A}"
+        Version="Version::Current"
+        VersionConverter="ScriptCanvas::VersionConverters::FunctionNodeVersionConverter"
+        DynamicSlotOrdering="True"
+        EditAttributes="AZ::Script::Attributes::ExcludeFrom@AZ::Script::Attributes::ExcludeFlags::All"
+        Description="Displays a node that represents a call to a function in a user graph">
+        <SerializedProperty Name="m_sourceId" />
+        <SerializedProperty Name="m_asset" />
+        <SerializedProperty Name="m_slotExecutionMap" />
+        <SerializedProperty Name="m_slotExecutionMapSourceInterface" />
     </Class>
 </ScriptCanvas>

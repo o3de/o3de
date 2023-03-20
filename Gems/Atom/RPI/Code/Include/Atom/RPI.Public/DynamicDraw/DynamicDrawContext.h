@@ -32,10 +32,10 @@ namespace AZ
             : public AZStd::intrusive_base
         {
             friend class DynamicDrawSystem;
-            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
-            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator, 0);
 
         public:
+            AZ_RTTI(AZ::RPI::DynamicDrawContext, "{9F6645D7-2C64-4963-BAAB-5144E92F61E2}");
+            AZ_CLASS_ALLOCATOR(DynamicDrawContext, AZ::SystemAllocator);
             virtual ~DynamicDrawContext() = default;
 
             // Type of render state which can be changed for dynamic draw context
@@ -162,6 +162,7 @@ namespace AZ
             RHI::DrawListTag GetDrawListTag();
 
             //! Create a draw srg
+            //! Note: the draw srg can only be used in the current frame. It can't be cached and used for following frames.
             Data::Instance<ShaderResourceGroup> NewDrawSrg();
 
             //! Get per context srg
@@ -268,6 +269,8 @@ namespace AZ
             AZStd::vector<RHI::StreamBufferView> m_cachedStreamBufferViews;
             AZStd::vector<RHI::IndexBufferView> m_cachedIndexBufferViews;
             AZStd::vector<Data::Instance<ShaderResourceGroup>> m_cachedDrawSrg;
+
+            uint32_t m_nextDrawSrgIdx = 0;
             
             // structure includes DrawItem and stream and index buffer index
             using BufferViewIndexType = uint32_t;

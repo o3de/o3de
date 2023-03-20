@@ -8,7 +8,6 @@
 #include <Atom/RHI/MemoryStatisticsBuilder.h>
 #include <Atom/RHI.Reflect/TransientImageDescriptor.h>
 #include <Atom/RHI.Reflect/TransientBufferDescriptor.h>
-#include <AzCore/Debug/EventTrace.h>
 #include <RHI/AliasedHeap.h>
 #include <RHI/AliasingBarrierTracker.h>
 #include <RHI/Buffer.h>

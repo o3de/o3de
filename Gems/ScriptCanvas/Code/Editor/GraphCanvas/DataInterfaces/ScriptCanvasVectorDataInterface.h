@@ -18,7 +18,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasDataInterface<GraphCanvas::VectorDataInterface>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasVectorizedDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasVectorizedDataInterface, AZ::SystemAllocator);
         ScriptCanvasVectorizedDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasDataInterface(nodeId, slotId)
         {
@@ -73,7 +73,7 @@ namespace ScriptCanvasEditor
         : public ScriptCanvasVectorizedDataInterface<Type, ElementCount>
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptCanvasVectorDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasVectorDataInterface, AZ::SystemAllocator);
         ScriptCanvasVectorDataInterface(const AZ::EntityId& nodeId, const ScriptCanvas::SlotId& slotId)
             : ScriptCanvasVectorizedDataInterface<Type, ElementCount>(nodeId, slotId)
         {
@@ -103,7 +103,7 @@ namespace ScriptCanvasEditor
             return "???";
         }
 
-        AZStd::string GetStyle() const
+        AZStd::string GetStyle() const override
         {
             return "vectorized";
         }

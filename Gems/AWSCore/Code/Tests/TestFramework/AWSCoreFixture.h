@@ -8,13 +8,17 @@
 
 #pragma once
 
+#include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Memory/PoolAllocator.h>
 #include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 #include <Framework/JsonObjectHandler.h>
 #include <Framework/JsonWriter.h>
+
+#include <AWSNativeSDKTestManager.h>
 
 namespace AWSCoreTestingUtils
 {
@@ -104,47 +108,88 @@ struct TestObject
 };
 
 class AWSCoreFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
-    AWSCoreFixture() {}
-    virtual ~AWSCoreFixture() = default;
+    AWSCoreFixture() = default;
+    ~AWSCoreFixture() override = default;
 
     void SetUp() override
     {
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
+        SetUpFixture();
+    }
 
+    void SetUpFixture(bool mockSettingsRegistry = true)
+    {
         m_localFileIO = aznew AZ::IO::LocalFileIO();
         m_otherFileIO = AZ::IO::FileIOBase::GetInstance();
         AZ::IO::FileIOBase::SetInstance(nullptr);
         AZ::IO::FileIOBase::SetInstance(m_localFileIO);
 
-        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
-        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+        if (mockSettingsRegistry)
+        {
+            m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+            AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+        }
+        else
+        {
+            m_app = AZStd::make_unique<AZ::ComponentApplication>();
+        }
+
+        // Add AWSCore as an active gem for unit test
+        if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+        {
+            auto projectPathKey =
+                AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey) + "/project_path";
+            AZ::IO::FixedMaxPath enginePath;
+            settingsRegistry->Get(enginePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            settingsRegistry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*settingsRegistry);
+
+            // Merge in the o3de manifest files gem root paths to the Settings Registry
+            // and set the AWSCore gem as an active gem which will add it to the active gem
+            // section of the Settings Registry as well as add a @gemroot@ alias for it
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(*settingsRegistry);
+            AZ::Test::AddActiveGem("AWSCore", *settingsRegistry, m_localFileIO);
+        }
+
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Init();
     }
 
     void TearDown() override
     {
-        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
-        m_settingsRegistry.reset();
+        TearDownFixture();
+    }
 
-        AZ::IO::FileIOBase::SetInstance(nullptr);
-        
-        if (m_otherFileIO)
+    void TearDownFixture(bool mockSettingsRegistry = true) 
+    {
+        AWSNativeSDKTestLibs::AWSNativeSDKTestManager::Shutdown();
+
+        if (mockSettingsRegistry)
         {
-            delete m_localFileIO;
-            AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+            AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+            m_settingsRegistry.reset();
+        }
+        else
+        {
+            m_app.reset();
         }
 
-        AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
+        AZ::IO::FileIOBase::SetInstance(nullptr);
+
+        delete m_localFileIO;
+        m_localFileIO = nullptr;
+
+        if (m_otherFileIO)
+        {
+            AZ::IO::FileIOBase::SetInstance(m_otherFileIO);
+        }
     }
 
     bool CreateFile(const AZStd::string& filePath, const AZStd::string& content)
     {
         AZ::IO::HandleType fileHandle;
-        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
+        if (!m_localFileIO->Open(filePath.c_str(), AZ::IO::OpenMode::ModeCreatePath | AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeText, fileHandle))
         {
             return false;
         }
@@ -170,5 +215,13 @@ private:
     AZ::IO::FileIOBase* m_otherFileIO = nullptr;
 
 protected:
+    AZ::IO::Path GetTestTempDirectoryPath()
+    {
+        AZ::IO::Path testTempDirPath{ m_testTempDirectory.GetDirectory() };
+        return testTempDirPath;
+    }
+
+    AZ::Test::ScopedAutoTempDirectory m_testTempDirectory;
     AZStd::unique_ptr<AZ::SettingsRegistryImpl> m_settingsRegistry;
+    AZStd::unique_ptr<AZ::ComponentApplication> m_app;
 };

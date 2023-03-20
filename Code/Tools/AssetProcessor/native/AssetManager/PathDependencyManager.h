@@ -39,9 +39,27 @@ namespace AssetProcessor
 
         PathDependencyManager(AZStd::shared_ptr<AssetDatabaseConnection> stateData, PlatformConfiguration* platformConfig);
 
+        void QueueSourceForDependencyResolution(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry);
+
+        void ProcessQueuedDependencyResolves();
+
+        struct SearchEntry
+        {
+            SearchEntry(AZStd::string path, bool isSourcePath, const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* sourceEntry, const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* productEntry)
+                : m_path(std::move(path)),
+                  m_isSourcePath(isSourcePath),
+                  m_sourceEntry(sourceEntry),
+                  m_productEntry(productEntry) {}
+
+            AZStd::string m_path;
+            bool m_isSourcePath;
+            const AzToolsFramework::AssetDatabase::SourceDatabaseEntry* m_sourceEntry = nullptr;
+            const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* m_productEntry = nullptr;
+        };
+
         /// This function is responsible for looking up existing, unresolved dependencies that the current asset satisfies.
         /// These can be dependencies on either the source asset or one of the product assets
-        void RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry);
+        void RetryDeferredDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const AZStd::unordered_map<const SearchEntry*, AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>>& matches, const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDatabaseEntry>& products);
 
         /// This function is responsible for taking the path dependencies output by the current asset and trying to resolve them to AssetIds
         /// This does not look for dependencies that the current asset satisfies.
@@ -66,7 +84,7 @@ namespace AssetProcessor
 
         MapSet PopulateExclusionMaps() const;
         void NotifyResolvedDependencies(const AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& dependencyContainer) const;
-        void SaveResolvedDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const MapSet& exclusionMaps, const AZStd::string& sourceNameWithScanFolder, const AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyEntries, AZStd::string_view matchedPath, bool isSourceDependency, const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& matchedProducts, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer& dependencyContainer) const;
+        void SaveResolvedDependencies(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry, const MapSet& exclusionMaps, const AZStd::string& sourceNameWithScanFolder, const AZStd::unordered_set<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyEntries, AZStd::string_view matchedPath, bool isSourceDependency, const AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer& matchedProducts, AZStd::vector<AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry>& dependencyContainer) const;
         static DependencyProductMap& SelectMap(MapSet& mapSet, bool wildcard, AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntry::DependencyType type);
 
         /// Returns false if a path contains wildcards, true otherwise
@@ -93,5 +111,6 @@ namespace AssetProcessor
         AZStd::shared_ptr<AssetDatabaseConnection> m_stateData;
         PlatformConfiguration* m_platformConfig{};
         DependencyResolvedCallback m_dependencyResolvedCallback{};
+        AZStd::vector<AzToolsFramework::AssetDatabase::SourceDatabaseEntry> m_queuedForResolve;
     };
 } // namespace AssetProcessor

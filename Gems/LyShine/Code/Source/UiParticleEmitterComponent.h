@@ -14,6 +14,7 @@
 #include <LyShine/Bus/UiRenderBus.h>
 #include <LyShine/Bus/UiCanvasUpdateNotificationBus.h>
 #include <LyShine/Bus/UiVisualBus.h>
+#include <LyShine/Bus/UiIndexableImageBus.h>
 #include <LyShine/UiComponentTypes.h>
 #include <LyShine/IRenderGraph.h>
 
@@ -21,11 +22,9 @@
 #include <AzCore/Math/Color.h>
 #include <AzCore/Math/Random.h>
 
-#include <LmbrCentral/Rendering/MaterialAsset.h>
+#include <LmbrCentral/Rendering/TextureAsset.h>
 
 #include <Particle/UiParticle.h>
-
-#include <VertexFormats.h>
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 class UiParticleEmitterComponent
@@ -37,6 +36,7 @@ class UiParticleEmitterComponent
     , public UiCanvasUpdateNotificationBus::Handler
     , public UiElementNotificationBus::Handler
     , public UiVisualBus::Handler
+    , public UiIndexableImageBus::Handler
 {
 public: // member functions
 
@@ -181,6 +181,14 @@ public: // member functions
     void SetOverrideAlpha(float alpha) override;
     // ~UiVisualInterface
 
+    // UiIndexableImageBus
+    void SetImageIndex(AZ::u32 index) override;
+    const AZ::u32 GetImageIndex() override;
+    const AZ::u32 GetImageIndexCount() override;
+    AZStd::string GetImageIndexAlias(AZ::u32 index) override;
+    void SetImageIndexAlias(AZ::u32 index, const AZStd::string& alias) override;
+    AZ::u32 GetImageIndexFromAlias(const AZStd::string& alias) override;
+    // ~UiIndexableImageBus
 public:  // static member functions
 
     static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -349,5 +357,5 @@ protected: // data
     AZStd::vector<UiParticle> m_particleContainer;
 
     AZ::u32 m_particleBufferSize                    = 0;
-    IRenderer::DynUiPrimitive m_cachedPrimitive;
+    LyShine::UiPrimitive m_cachedPrimitive;
 };

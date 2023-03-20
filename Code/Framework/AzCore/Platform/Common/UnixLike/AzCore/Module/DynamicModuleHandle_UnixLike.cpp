@@ -21,7 +21,7 @@ namespace AZ
     namespace Platform
     {
         AZ::IO::FixedMaxPath GetModulePath();
-        void* OpenModule(const AZ::OSString& fileName, bool& alreadyOpen);
+        void* OpenModule(const AZ::IO::FixedMaxPathString& fileName, bool& alreadyOpen);
         void ConstructModuleFullFileName(AZ::IO::FixedMaxPath& fullPath);
     }
 
@@ -29,7 +29,7 @@ namespace AZ
         : public DynamicModuleHandle
     {
     public:
-        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator, 0)
+        AZ_CLASS_ALLOCATOR(DynamicModuleHandleUnixLike, OSAllocator)
 
         DynamicModuleHandleUnixLike(const char* fullFileName)
             : DynamicModuleHandle(fullFileName)
@@ -50,6 +50,7 @@ namespace AZ
                 }
 
                 fullFilePath.ReplaceFilename(AZStd::string_view(fileNamePath));
+                m_fileName.assign(fullFilePath.Native().data(), fullFilePath.Native().size());
             }
 
             Platform::ConstructModuleFullFileName(fullFilePath);
@@ -66,12 +67,13 @@ namespace AZ
                 }
             }
 
-            // If the path still doesn't exist at this point, check the SettingsRegistryMergeUtils
-            // FilePathKey_ProjectBuildPath key to see if a project-build-path argument has been supplied
+            // If the path still doesn't exist at this point, check the SettingsRegistry.
             if (!AZ::IO::SystemFile::Exists(fullFilePath.c_str()))
             {
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
+                    // Check FilePathKey_ProjectConfigurationBinPath if a project-build-path argument has been supplied
+                    bool fileFound = false;
                     if (AZ::IO::FixedMaxPath projectModulePath;
                         settingsRegistry->Get(projectModulePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectConfigurationBinPath))
                     {
@@ -79,6 +81,24 @@ namespace AZ
                         if (AZ::IO::SystemFile::Exists(projectModulePath.c_str()))
                         {
                             m_fileName.assign(projectModulePath.c_str(), projectModulePath.Native().size());
+                            fileFound = true;
+                        }
+                    }
+                    if (!fileFound)
+                    {
+                        // Check FilePathKey_InstalledBinaryFolder path, which would be the case if this is an installation
+                        if (AZ::IO::FixedMaxPath installedBinariesPath;
+                            settingsRegistry->Get(installedBinariesPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_InstalledBinaryFolder))
+                        {
+                            if (AZ::IO::FixedMaxPath engineRootFolder;
+                                settingsRegistry->Get(engineRootFolder.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder))
+                            {
+                                installedBinariesPath = engineRootFolder / installedBinariesPath / fullFilePath;
+                                if (AZ::IO::SystemFile::Exists(installedBinariesPath.c_str()))
+                                {
+                                    m_fileName.assign(installedBinariesPath.c_str(), installedBinariesPath.Native().size());
+                                }
+                            }
                         }
                     }
                 }
@@ -101,16 +121,16 @@ namespace AZ
 
         LoadStatus LoadModule() override
         {
-            AZ::Debug::Trace::Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
+            AZ::Debug::Trace::Instance().Printf("Module", "Attempting to load module:%s\n", m_fileName.c_str());
             bool alreadyOpen = false;
 
             m_handle = Platform::OpenModule(m_fileName, alreadyOpen);
 
-            if(m_handle)
+            if (m_handle)
             {
                 if (alreadyOpen)
                 {
-                    AZ::Debug::Trace::Printf("Module", "Success! System already had it opened.\n");
+                    AZ::Debug::Trace::Instance().Printf("Module", "Success! System already had it opened.\n");
                     // We want to return LoadSuccess and not AlreadyLoaded
                     // because the system may have already loaded the DLL (because
                     // it is a dependency of another library we have loaded) but
@@ -122,13 +142,13 @@ namespace AZ
                 }
                 else
                 {
-                    AZ::Debug::Trace::Printf("Module", "Success!\n");
+                    AZ::Debug::Trace::Instance().Printf("Module", "Success!\n");
                     return LoadStatus::LoadSuccess;
                 }
             }
             else
             {
-                AZ::Debug::Trace::Printf("Module", "Failed with error:\n%s\n", dlerror());
+                AZ::Debug::Trace::Instance().Printf("Module", "Failed with error:\n%s\n", dlerror());
                 return LoadStatus::LoadFailure;
             }
         }
@@ -139,7 +159,7 @@ namespace AZ
             if (m_handle)
             {
                 result = dlclose(m_handle) == 0 ? true : false;
-                m_handle = 0;
+                m_handle = nullptr;
             }
             return result;
         }

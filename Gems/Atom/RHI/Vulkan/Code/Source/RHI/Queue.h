@@ -23,7 +23,6 @@ namespace AZ
         class SwapChain;
         class Fence;
 
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
         struct QueueId
         {
             uint32_t m_familyIndex = 0;
@@ -32,7 +31,6 @@ namespace AZ
             bool operator==(const QueueId& other) const { return ::memcmp(this, &other, sizeof(other)) == 0; }
             bool operator!=(const QueueId& other) const { return !(*this == other); }
         };
-        AZ_ASSERT_NO_ALIGNMENT_PADDING_END
 
         class Queue final
             : public RHI::DeviceObject
@@ -41,7 +39,7 @@ namespace AZ
             friend class CommandQueue;
 
         public:
-            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Queue, AZ::SystemAllocator);
             AZ_RTTI(Queue, "C3420514-4BB2-4416-A6A1-FEFFF041BCB4", Base);
 
             struct Descriptor

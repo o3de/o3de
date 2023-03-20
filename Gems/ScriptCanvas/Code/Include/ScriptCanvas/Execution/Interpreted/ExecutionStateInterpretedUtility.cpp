@@ -6,14 +6,15 @@
  *
  */
 
-#include "ExecutionStateInterpretedUtility.h"
 
 #include <AzCore/Script/ScriptContext.h>
 #include <AzCore/Script/ScriptSystemBus.h>
 #include <AzCore/Script/lua/lua.h>
-
 #include <ScriptCanvas/Data/DataRegistry.h>
 #include <ScriptCanvas/Grammar/DebugMap.h>
+#include <ScriptCanvas/Execution/ExecutionStateDeclarations.h>
+
+#include <ScriptCanvas/Execution/Interpreted/ExecutionStateInterpretedUtility.h>
 
 namespace ExecutionStateInterpretedUtilityCpp
 {
@@ -31,7 +32,7 @@ namespace ExecutionStateInterpretedUtilityCpp
                 AZ::BehaviorParameter param;
                 param.m_typeId = debugDataSource.m_slotDatumType.GetAZType();
                 debugDataSource.m_fromStack = FromLuaStack(behaviorContext, &param, behaviorClassUnused);
-                AZ_Assert(debugDataSource.m_fromStack, "LuaLoadFromStack function not found")
+                SC_RUNTIME_CHECK(debugDataSource.m_fromStack, "LuaLoadFromStack function not found")
             }            
         }
     }
@@ -53,7 +54,7 @@ namespace ScriptCanvas
         {
             AZ::ScriptContext* scriptContext{};
             AZ::ScriptSystemRequestBus::BroadcastResult(scriptContext, &AZ::ScriptSystemRequests::GetContext, AZ::ScriptContextIds::DefaultScriptContextId);
-            AZ_Assert(scriptContext, "Must have a default script context");
+            SC_RUNTIME_CHECK_RETURN(scriptContext, "Must have a default script context");
             auto behaviorContext = scriptContext->GetBoundContext();
 
             ExecutionStateInterpretedUtilityCpp::InitializeFromLuaStackFunctions(behaviorContext, debugMap.m_ins);
@@ -90,7 +91,7 @@ namespace ScriptCanvas
 
             case ScriptCanvas::Data::eType::Invalid:
             default:
-                AZ_Error("ScriptCanvas", false, "Invalid type in ScriptCanvas");
+                SC_RUNTIME_CHECK(false, "Invalid type in ScriptCanvas runtime");
                 return false;
             }
         }
@@ -152,7 +153,7 @@ namespace ScriptCanvas
 
             case ScriptCanvas::Data::eType::Invalid:
             default:
-                AZ_Assert(false, "Invalid type in ScriptCanvas");
+                SC_RUNTIME_CHECK(false, "Invalid type in ScriptCanvas");
                 return AZ::Failure(AZStd::string("Invalid type in ScriptCanvas"));
             }
 

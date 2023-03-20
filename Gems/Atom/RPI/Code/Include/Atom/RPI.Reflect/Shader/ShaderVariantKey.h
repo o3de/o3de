@@ -13,6 +13,8 @@
 
 namespace AZ
 {
+    class ReflectContext;
+
     namespace RPI
     {
         //! Defines the maximum bit size of the shader variant key on the runtime.
@@ -44,7 +46,7 @@ namespace AZ
         struct ShaderVariantId final
         {
             AZ_RTTI(ShaderVariantId, "{27B1FEC2-8C8A-47D7-A034-6609FA092B34}");
-            AZ_CLASS_ALLOCATOR(ShaderVariantId, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderVariantId, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

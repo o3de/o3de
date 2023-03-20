@@ -29,8 +29,10 @@ namespace AZ
             AZStd::vector<Task>&& tasks,
             AZStd::unordered_map<uint32_t, AZStd::vector<uint32_t>>& links,
             size_t linkCount,
-            TaskGraph* parent)
+            TaskGraph* parent,
+            const char* parentLabel)
             : m_parent{ parent }
+            , m_parentLabel{ parentLabel }
         {
             m_tasks = AZStd::move(tasks);
             m_successors.resize(linkCount);
@@ -41,7 +43,7 @@ namespace AZ
             {
                 Task& task = m_tasks[i];
                 task.m_graph = this;
-                task.m_successorOffset = cursor - m_successors.data();
+                task.m_successorOffset = static_cast<uint32_t>(cursor - m_successors.data());
                 cursor += task.m_outboundLinkCount;
 
                 AZ_Assert(task.m_outboundLinkCount == links[i].size(), "Task outbound link information mismatch");
@@ -55,32 +57,40 @@ namespace AZ
             // TODO: Check for dependency cycles
         }
 
-        uint32_t CompiledTaskGraph::Release()
+        uint32_t CompiledTaskGraph::Release(CompiledTaskGraphTracker& eventTracker)
         {
+            // Release is run from many threads, and another thread can azdestroy(this) as soon as the remaining count is decremented.
+            // READ ALL NECESSARY DATA BEFORE DECREMENTING THE REMAINING COUNT!
+            bool isRetained = IsRetained();
+            TaskGraph* parent = m_parent;
+            TaskGraphEvent* waitEvent = m_waitEvent;
             uint32_t remaining = --m_remaining;
 
-            if (m_parent)
+            if (isRetained)
             {
                 if (remaining == 1)
                 {
                     // Allow the parent graph to be submitted again
-                    m_parent->m_submitted = false;
+                    parent->m_submitted = false;
+                    if (waitEvent)
+                    {
+                        eventTracker.WriteEventInfo(this, CTGEvent::Signalled, "CTG::Release parent=true");
+                        waitEvent->Signal();
+                    }
                 }
             }
             else if (remaining == 0)
             {
-                if (m_waitEvent)
+                if (waitEvent)
                 {
-                    m_waitEvent->Signal();
+
+                    eventTracker.WriteEventInfo(this, CTGEvent::Signalled, "CTG::Release parent=false");
+                    waitEvent->Signal();
                 }
 
-                azdestroy(this);
-                return remaining;
-            }
+                eventTracker.WriteEventInfo(this, CTGEvent::Deallocated, "CTG::Release parent=false");
 
-            if (m_waitEvent && remaining == (m_parent ? 1 : 0))
-            {
-                m_waitEvent->Signal();
+                azdestroy(this);
             }
 
             return remaining;
@@ -190,25 +200,44 @@ namespace AZ
         class TaskWorker
         {
         public:
-            void Spawn(::AZ::TaskExecutor& executor, size_t id, AZStd::semaphore& initSemaphore, bool affinitize)
+            static thread_local TaskWorker* t_worker;
+
+            void Spawn(::AZ::TaskExecutor& executor, uint32_t id, AZStd::semaphore& initSemaphore, bool affinitize)
             {
                 m_executor = &executor;
 
-                AZStd::string threadName = AZStd::string::format("TaskWorker %zu", id);
+                m_threadName = AZStd::string::format("TaskWorker %u", id);
                 AZStd::thread_desc desc = {};
-                desc.m_name = threadName.c_str();
+                desc.m_name = m_threadName.c_str();
                 if (affinitize)
                 {
                     desc.m_cpuId = 1 << id;
                 }
                 m_active.store(true, AZStd::memory_order_release);
 
-                m_thread = AZStd::thread{ [this, &initSemaphore]
+                m_thread = AZStd::thread{ desc,
+                                          [this, &initSemaphore]
                                           {
+                                              t_worker = this;
                                               initSemaphore.release();
                                               Run();
-                                          },
-                                          &desc };
+                                          } };
+            }
+
+            // Threads that wait on a graph to complete are disqualified from receiving tasks until the wait finishes
+            void Disable()
+            {
+                m_enabled = false;
+            }
+
+            void Enable()
+            {
+                m_enabled = true;
+            }
+
+            bool Enabled() const
+            {
+                return m_enabled;
             }
 
             void Join()
@@ -222,27 +251,22 @@ namespace AZ
             {
                 m_queue.Enqueue(task);
 
-                if (!m_busy.exchange(true))
-                {
-                    // The worker was idle prior to enqueueing the task, release the semaphore
-                    m_semaphore.release();
-                }
+                m_semaphore.release();
             }
+
+            const char* GetThreadName() {return m_threadName.c_str();}
 
         private:
             void Run()
             {
                 while (m_active)
                 {
-                    m_busy = false;
                     m_semaphore.acquire();
 
                     if (!m_active)
                     {
                         return;
                     }
-
-                    m_busy = true;
 
                     Task* task = m_queue.TryDequeue();
                     while (task)
@@ -259,7 +283,7 @@ namespace AZ
                         }
 
                         bool isRetained = task->m_graph->m_parent != nullptr;
-                        if (task->m_graph->Release() == (isRetained ? 1 : 0))
+                        if (task->m_graph->Release(m_executor->GetEventTracker()) == (isRetained ? 1u : 0u))
                         {
                             m_executor->ReleaseGraph();
                         }
@@ -271,12 +295,55 @@ namespace AZ
 
             AZStd::thread m_thread;
             AZStd::atomic<bool> m_active;
-            AZStd::atomic<bool> m_busy;
+            AZStd::atomic<bool> m_enabled = true;
             AZStd::binary_semaphore m_semaphore;
 
             ::AZ::TaskExecutor* m_executor;
             TaskQueue m_queue;
+            AZStd::string m_threadName;
+            friend class ::AZ::TaskExecutor;
         };
+
+        thread_local TaskWorker* TaskWorker::t_worker = nullptr;
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        // Implement basic CompiledTaskGraph event breadcrumbs to help debug
+        // https://github.com/o3de/o3de/issues/12015
+
+#ifdef ENABLE_COMPILED_TASK_GRAPH_EVENT_TRACKING
+        void CompiledTaskGraphTracker::WriteEventInfo(const CompiledTaskGraph* ctg, CTGEvent eventCode, const char* identifier)
+        {
+            const char* threadName = "None TaskGraph thread";
+            if (m_taskExecutor)
+            {
+                if (auto taskWorker = m_taskExecutor->GetTaskWorker(); taskWorker)
+                {
+                    threadName = taskWorker->GetThreadName();
+                }
+            }
+            // record event breadcrumbs
+            AZStd::scoped_lock<AZStd::mutex> lock(m_mutex);
+
+            CTGEventData& slot = m_recentEvents[m_nextEventSlot++ % NumTrackedRecentEvents];
+            if (ctg)
+            {
+                slot.m_parentLabel = ctg->GetParentLabel();
+                slot.m_remainingCount = ctg->GetRemainingCount();
+                slot.m_retained = ctg->IsRetained();
+            }
+            else
+            {
+                slot.m_parentLabel = "Null ctg";
+                slot.m_remainingCount = 0;
+                slot.m_retained = true;
+            }
+            slot.m_identifier = identifier;
+            slot.m_threadName = threadName;
+            slot.m_ctg = ctg;
+            slot.m_eventCode = eventCode;
+        }
+#endif
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
     } // namespace Internal
 
     static EnvironmentVariable<TaskExecutor*> s_executor;
@@ -291,30 +358,32 @@ namespace AZ
         return **s_executor;
     }
 
-    // TODO: Create the default executor as part of a component (as in TaskManagerComponent)
     void TaskExecutor::SetInstance(TaskExecutor* executor)
     {
-        AZ_Assert(!s_executor, "Attempting to set the global task executor more than once");
-
-        s_executor = AZ::Environment::CreateVariable<TaskExecutor*>("GlobalTaskExecutor");
-        s_executor.Set(executor);
+        if (!executor) // allow unsetting the executor
+        {
+            s_executor.Reset();
+        }
+        else if (!s_executor) // ignore any extra executors after the first (this happens during unit tests)
+        {
+            s_executor = AZ::Environment::CreateVariable<TaskExecutor*>(s_executorName, executor);
+        }
     }
 
     TaskExecutor::TaskExecutor(uint32_t threadCount)
+        : m_eventTracker(this)
     {
         // TODO: Configure thread count + affinity based on configuration
         m_threadCount = threadCount == 0 ? AZStd::thread::hardware_concurrency() : threadCount;
 
         m_workers = reinterpret_cast<Internal::TaskWorker*>(azmalloc(m_threadCount * sizeof(Internal::TaskWorker)));
 
-        bool affinitize = m_threadCount == AZStd::thread::hardware_concurrency();
-
         AZStd::semaphore initSemaphore;
 
-        for (size_t i = 0; i != m_threadCount; ++i)
+        for (uint32_t i = 0; i != m_threadCount; ++i)
         {
             new (m_workers + i) Internal::TaskWorker{};
-            m_workers[i].Spawn(*this, i, initSemaphore, affinitize);
+            m_workers[i].Spawn(*this, i, initSemaphore, false);
         }
 
         for (size_t i = 0; i != m_threadCount; ++i)
@@ -334,9 +403,25 @@ namespace AZ
         azfree(m_workers);
     }
 
-    void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph)
+    Internal::TaskWorker* TaskExecutor::GetTaskWorker()
+    {
+        if (Internal::TaskWorker::t_worker && Internal::TaskWorker::t_worker->m_executor == this)
+        {
+            return Internal::TaskWorker::t_worker;
+        }
+        return nullptr;
+    }
+
+    void TaskExecutor::Submit(Internal::CompiledTaskGraph& graph, TaskGraphEvent* event)
     {
         ++m_graphsRemaining;
+
+        if (event)
+        {
+            event->IncWaitCount();
+            event->m_executor = this; // Used to validate event is not waited for inside a job
+        }
+
         // Submit all tasks that have no inbound edges
         for (Internal::Task& task : graph.Tasks())
         {
@@ -352,11 +437,24 @@ namespace AZ
         // TODO: Something more sophisticated is likely needed here.
         // First, we are completely ignoring affinity.
         // Second, some heuristics on core availability will help distribute work more effectively
-        m_workers[++m_lastSubmission % m_threadCount].Enqueue(&task);
+        uint32_t nextWorker = ++m_lastSubmission % m_threadCount;
+        while (!m_workers[nextWorker].Enabled())
+        {
+            // Graphs that are waiting for the completion of a task graph cannot enqueue tasks onto
+            // the thread issuing the wait.
+            nextWorker = ++m_lastSubmission % m_threadCount;
+        }
+
+        m_workers[nextWorker].Enqueue(&task);
     }
 
     void TaskExecutor::ReleaseGraph()
     {
         --m_graphsRemaining;
+    }
+
+    void TaskExecutor::ReactivateTaskWorker()
+    {
+        GetTaskWorker()->Enable();
     }
 } // namespace AZ

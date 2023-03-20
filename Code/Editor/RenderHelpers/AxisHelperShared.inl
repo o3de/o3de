@@ -191,7 +191,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
     {
         if (axis)
         {
-            float col[4] = { 1, 0, 0, 1 };
             if (axis == AXIS_X || axis == AXIS_XY || axis == AXIS_XZ || axis == AXIS_XYZ)
             {
                 colX = colSelected;
@@ -436,7 +435,6 @@ void CAxisHelper::DrawAxis(const Matrix34& worldTM, const SGizmoParameters& setu
             {
                 dc.SetColor(QColor(128, 32, 32), 0.4f);
             }
-            Vec3 org = worldTM.GetTranslation();
             dc.DrawBall(Vec3(0.0f),  m_size * kSelectionBallScale);
         }
 
@@ -727,13 +725,11 @@ bool CAxisHelper::HitTest(const Matrix34& worldTM, const SGizmoParameters& setup
     // Calc sizes.
     //////////////////////////////////////////////////////////////////////////
     float headOfs[8];
-    float headScl[8];
+    
     headOfs[MOVE_MODE] = 0;
-    headScl[MOVE_MODE] = 0.07f * m_fScreenScale;
     headOfs[ROTATE_MODE] = 0;
-    headScl[ROTATE_MODE] = 0.01f * m_fScreenScale;
     headOfs[SCALE_MODE] = 0;
-    headScl[SCALE_MODE] = 0.01f * m_fScreenScale;
+    
     if (m_nModeFlags == (MOVE_MODE | ROTATE_MODE | SCALE_MODE))
     {
         headOfs[ROTATE_MODE] += 0.05f * m_fScreenScale;

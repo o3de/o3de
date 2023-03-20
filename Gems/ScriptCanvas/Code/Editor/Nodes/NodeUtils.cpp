@@ -12,43 +12,13 @@
 #include <GraphCanvas/Components/Slots/SlotBus.h>
 #include <GraphCanvas/Components/DynamicOrderingDynamicSlotComponent.h>
 
+#include <ScriptCanvas/Core/ModifiableDatumView.h>
 #include <ScriptCanvas/Core/NodeBus.h>
-
-namespace
-{
-    ScriptCanvas::ConnectionType ToScriptCanvasConnectionType(GraphCanvas::ConnectionType connectionType)
-    {
-        ScriptCanvas::ConnectionType scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Unknown;
-        switch (connectionType)
-        {
-        case GraphCanvas::CT_Input:
-            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Input;
-            break;
-        case GraphCanvas::CT_Output:
-            scriptCanvasConnectionType = ScriptCanvas::ConnectionType::Output;
-            break;
-        default:
-            break;
-        }
-
-        return scriptCanvasConnectionType;
-    }
-}
 
 namespace ScriptCanvasEditor::Nodes
 {
-    void CopyTranslationKeyedNameToDatumLabel(const AZ::EntityId& graphCanvasNodeId,
-        ScriptCanvas::SlotId scSlotId,
-        const AZ::EntityId& graphCanvasSlotId)
+    void UpdateSlotDatumLabel(const AZ::EntityId& graphCanvasNodeId, ScriptCanvas::SlotId scSlotId, const AZStd::string& name)
     {
-        GraphCanvas::TranslationKeyedString name;
-        GraphCanvas::SlotRequestBus::EventResult(name, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetTranslationKeyedName);
-        if (name.GetDisplayString().empty())
-        {
-            return;
-        }
-
-        // GC node -> SC node.
         AZStd::any* userData = nullptr;
         GraphCanvas::NodeRequestBus::EventResult(userData, graphCanvasNodeId, &GraphCanvas::NodeRequests::GetUserData);
         AZ::EntityId scNodeEntityId = userData && userData->is<AZ::EntityId>() ? *AZStd::any_cast<AZ::EntityId>(userData) : AZ::EntityId();
@@ -57,11 +27,11 @@ namespace ScriptCanvasEditor::Nodes
             ScriptCanvas::ModifiableDatumView datumView;
             ScriptCanvas::NodeRequestBus::Event(scNodeEntityId, &ScriptCanvas::NodeRequests::FindModifiableDatumView, scSlotId, datumView);
 
-            datumView.RelabelDatum(name.GetDisplayString());
+            datumView.RelabelDatum(name);
         }
     }
 
-    void CopySlotTranslationKeyedNamesToDatums(AZ::EntityId graphCanvasNodeId)
+    void UpdateSlotDatumLabels(AZ::EntityId graphCanvasNodeId)
     {
         AZStd::vector<AZ::EntityId> graphCanvasSlotIds;
         GraphCanvas::NodeRequestBus::EventResult(graphCanvasSlotIds, graphCanvasNodeId, &GraphCanvas::NodeRequests::GetSlotIds);
@@ -72,47 +42,10 @@ namespace ScriptCanvasEditor::Nodes
 
             if (auto scriptCanvasSlotId = AZStd::any_cast<ScriptCanvas::SlotId>(slotUserData))
             {
-                CopyTranslationKeyedNameToDatumLabel(graphCanvasNodeId, *scriptCanvasSlotId, graphCanvasSlotId);
+                AZStd::string slotName;
+                GraphCanvas::SlotRequestBus::EventResult(slotName, graphCanvasSlotId, &GraphCanvas::SlotRequests::GetName);
+                UpdateSlotDatumLabel(graphCanvasNodeId, *scriptCanvasSlotId, slotName);
             }
         }
-    }
-
-    //////////////////////
-    // NodeConfiguration
-    //////////////////////
-    AZStd::string GetCategoryName(const AZ::SerializeContext::ClassData& classData)
-    {
-        if (auto editorDataElement = classData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData))
-        {
-            if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::Category))
-            {
-                if (auto data = azrtti_cast<AZ::Edit::AttributeData<const char*>*>(attribute))
-                {
-                    return data->Get(nullptr);
-                }
-            }
-        }
-
-        return {};
-    }
-
-    AZStd::string GetContextName(const AZ::SerializeContext::ClassData& classData)
-    {
-        if (auto editorDataElement = classData.m_editData ? classData.m_editData->FindElementData(AZ::Edit::ClassElements::EditorData) : nullptr)
-        {
-            if (auto attribute = editorDataElement->FindAttribute(AZ::Edit::Attributes::Category))
-            {
-                if (auto data = azrtti_cast<AZ::Edit::AttributeData<const char*>*>(attribute))
-                {
-                    AZStd::string fullCategoryName = data->Get(nullptr);
-                    AZStd::string delimiter = "/";
-                    AZStd::vector<AZStd::string> results;
-                    AZStd::tokenize(fullCategoryName, delimiter, results);
-                    return results.back();
-                }
-            }
-        }
-
-        return {};
     }
 }

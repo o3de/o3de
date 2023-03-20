@@ -36,7 +36,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float3 m_position;
         float m_invAttenuationRadiusSquared; // For a radius at which this light no longer has an effect, 1 / radius^2.
         float3 m_rgbIntensityCandelas;
-        float m_padding; // explicit padding.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
 
     struct SimpleSpotLight
@@ -47,6 +49,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_cosInnerConeAngle; // cosine of the outer cone angle
         float3 m_rgbIntensityCandelas;
         float m_cosOuterConeAngle; // cosine of the inner cone angle
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
 
     struct PointLight
@@ -56,7 +61,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float3 m_rgbIntensityCandelas;
         float m_bulbRadius;
         uint3 m_shadowIndices;
-        uint m_padding;
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float3 m_padding;
     };
 
     struct DiskLight
@@ -71,6 +78,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_cosOuterConeAngle;
         float m_bulbPositionOffset;
         uint m_shadowIndex;
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
 
     struct CapsuleLight
@@ -81,6 +91,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_length;        // length of the line segment making up the inside of the capsule. Doesn't include caps (0 length capsule == sphere)
         float3 m_rgbIntensityCandelas; // total rgb luminous intensity of the capsule in candela
         float m_invAttenuationRadiusSquared; // Inverse of the distance at which this light no longer has an effect, squared. Also used for falloff calculations.
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
     
     struct QuadLight
@@ -93,6 +106,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float m_halfHeight; // Half the height of the quad. m_upDir * m_halfHeight is a vector from the center to the top edge.
         float3 m_rgbIntensityNits;
         uint m_flags; // See QuadLightFlag
+        float m_affectsGIFactor;
+        bool m_affectsGI;
+        float2 m_padding;
     };
     
     struct LightCullingConstants
@@ -136,10 +152,10 @@ ShaderResourceGroup PassSrg : SRG_PerPass
         float4 m_quaternion;
         float3 m_halfSize;
         float m_angleAttenuation;
+        float m_normalMapOpacity;
         uint m_sortKeyPacked;
         uint m_textureArrayIndex;
         uint m_textureIndex;
-        uint m_padding[1];
     };
     
     StructuredBuffer<Decal> m_decals;
@@ -368,16 +384,19 @@ void CullDecals(uint groupIndex, TileLightData tileLightData, float3 aabb_center
         float3 decalPosition = WorldToView_Point(decal.m_position); 
         
         // just wrapping a bounding sphere around a cube for now to get a minor perf boost. i.e. the sphere radius is sqrt(x*x + y*y + z*z)
-        // ATOM-4224 - try AABB-AABB and implement depth binning for the decals
-        float maxHalfSize = max(max(decal.m_halfSize.x, decal.m_halfSize.y), decal.m_halfSize.z);
-        float boundingSphereRadiusSqr = maxHalfSize * maxHalfSize * 3;            
+        // ATOM-4224 - try AABB-AABB 
+        float boundingSphereRadiusSqr = dot(decal.m_halfSize, decal.m_halfSize);
           
         bool potentiallyIntersects = TestSphereVsAabb(decalPosition, boundingSphereRadiusSqr, aabb_center, aabb_extents);
+        
         if (potentiallyIntersects) 
         {                                           
-            // Implement and profile fine-grained light culling testing
-            // ATOM-3732 
-            MarkLightAsVisibleInSharedMemory(decalIndex, 0xFFFF);            
+            uint inside = 0;
+            float2 minmax = ComputePointLightMinMaxZ(sqrt(boundingSphereRadiusSqr), decalPosition);
+            if (IsObjectInsideTile(tileLightData, minmax, inside))
+            {
+                MarkLightAsVisibleInSharedMemory(decalIndex, inside);            
+            }
         }          
     }   
 }

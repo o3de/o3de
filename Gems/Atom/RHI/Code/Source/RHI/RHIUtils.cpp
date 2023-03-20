@@ -9,8 +9,11 @@
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/Factory.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/CommandLine/CommandLine.h>
+
+static constexpr char GraphicsDevModeSetting[] = "/O3DE/Atom/RHI/GraphicsDevMode";
 
 namespace AZ
 {
@@ -19,7 +22,7 @@ namespace AZ
         Ptr<Device> GetRHIDevice()
         {
             RHISystemInterface* rhiSystem = RHISystemInterface::Get();
-            AZ_Assert(rhiSystem, "Failed to retrieve rpi system.");
+            AZ_Assert(rhiSystem, "Failed to retrieve rhi system.");
             return rhiSystem->GetDevice();
         }
 
@@ -102,7 +105,7 @@ namespace AZ
             return originalFormat;
         }
         
-        bool IsNullRenderer()
+        bool IsNullRHI()
         {
             return RHI::Factory::Get().GetAPIUniqueIndex() == static_cast<uint32_t>(APIIndex::Null);
         }
@@ -133,6 +136,17 @@ namespace AZ
                 return commandLine->HasSwitch(commandLineOption);
             }
             return false;
+        }
+
+        bool IsGraphicsDevModeEnabled()
+        {
+            AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+            bool graphicsDevMode = false;
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(graphicsDevMode, GraphicsDevModeSetting);
+            }
+            return graphicsDevMode;
         }
     }
 }

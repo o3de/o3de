@@ -18,9 +18,9 @@
 
 namespace EMStudio
 {
-    AZ_CLASS_ALLOCATOR_IMPL(MeshInfo, EMStudio::UIAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(MeshInfo, EMStudio::UIAllocator)
 
-    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, unsigned int lodLevel, EMotionFX::Mesh* mesh)
+    MeshInfo::MeshInfo(EMotionFX::Actor* actor, [[maybe_unused]] EMotionFX::Node* node, size_t lodLevel, EMotionFX::Mesh* mesh)
         : m_lod(lodLevel)
     {
         // vertices, indices and polygons etc.
@@ -33,7 +33,7 @@ namespace EMStudio
 
         if (m_orgVerticesCount)
         {
-            m_vertexDupeRatio = mesh->GetNumVertices() / (float)mesh->GetNumOrgVertices();
+            m_vertexDupeRatio = (float)mesh->GetNumVertices() / (float)mesh->GetNumOrgVertices();
         }
         else
         {
@@ -44,15 +44,15 @@ namespace EMStudio
         mesh->CalcMaxNumInfluences(m_verticesByInfluences);
         
         // sub meshes
-        const uint32 numSubMeshes = mesh->GetNumSubMeshes();
-        for (uint32 i = 0; i < numSubMeshes; ++i)
+        const size_t numSubMeshes = mesh->GetNumSubMeshes();
+        for (size_t i = 0; i < numSubMeshes; ++i)
         {
             EMotionFX::SubMesh* subMesh = mesh->GetSubMesh(i);
             m_submeshes.emplace_back(actor, lodLevel, subMesh);
         }
 
         // vertex attribute layers
-        const uint32 numVertexAttributeLayers = mesh->GetNumVertexAttributeLayers();
+        const size_t numVertexAttributeLayers = mesh->GetNumVertexAttributeLayers();
         AZStd::string tmpString;
         for (uint32 i = 0; i < numVertexAttributeLayers; ++i)
         {
@@ -73,14 +73,8 @@ namespace EMStudio
             case EMotionFX::Mesh::ATTRIB_UVCOORDS:
                 tmpString = "Vertex uv coordinates";
                 break;
-            case EMotionFX::Mesh::ATTRIB_COLORS32:
-                tmpString = "Vertex colors in 32-bits";
-                break;
             case EMotionFX::Mesh::ATTRIB_ORGVTXNUMBERS:
                 tmpString = "Original vertex numbers";
-                break;
-            case EMotionFX::Mesh::ATTRIB_COLORS128:
-                tmpString = "Vertex colors in 128-bits";
                 break;
             case EMotionFX::Mesh::ATTRIB_BITANGENTS:
                 tmpString = "Vertex bitangents";
@@ -89,7 +83,7 @@ namespace EMStudio
                 tmpString = AZStd::string::format("Unknown data (TypeID=%d)", attributeLayerType);
             }
 
-            if (attributeLayer->GetNameString().size() > 0)
+            if (!attributeLayer->GetNameString().empty())
             {
                 tmpString += AZStd::string::format(" [%s]", attributeLayer->GetName());
             }
@@ -99,8 +93,8 @@ namespace EMStudio
 
 
         // shared vertex attribute layers
-        const uint32 numSharedVertexAttributeLayers = mesh->GetNumSharedVertexAttributeLayers();
-        for (uint32 i = 0; i < numSharedVertexAttributeLayers; ++i)
+        const size_t numSharedVertexAttributeLayers = mesh->GetNumSharedVertexAttributeLayers();
+        for (size_t i = 0; i < numSharedVertexAttributeLayers; ++i)
         {
             EMotionFX::VertexAttributeLayer* attributeLayer = mesh->GetSharedVertexAttributeLayer(i);
 
@@ -114,7 +108,7 @@ namespace EMStudio
                 tmpString = AZStd::string::format("Unknown data (TypeID=%d)", attributeLayerType);
             }
 
-            if (attributeLayer->GetNameString().size() > 0)
+            if (!attributeLayer->GetNameString().empty())
             {
                 tmpString += AZStd::string::format(" [%s]", attributeLayer->GetName());
             }

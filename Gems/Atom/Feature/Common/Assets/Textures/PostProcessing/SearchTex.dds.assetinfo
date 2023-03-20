@@ -62,6 +62,14 @@
 					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}"/>
 				</Class>
 			</Class>
+			<Class name="AZStd::pair" field="element" type="{CAC4E67F-D626-5452-A057-ACB57D53F549}">
+				<Class name="AZStd::string" field="value1" value="linux" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
+				<Class name="DataPatch" field="value2" type="{BFF7A3F5-9014-4000-92C7-9B2BC7913DA9}">
+					<Class name="AZ::Uuid" field="m_targetClassId" value="{980132FF-C450-425D-8AE0-BD96A8486177}" type="{E152C105-A133-4D03-BBF8-3D4B2FBA3E2A}"/>
+					<Class name="unsigned int" field="m_targetClassVersion" value="1" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
+					<Class name="AZStd::unordered_map" field="m_patch" type="{CEA836FC-77E0-5E46-BD0F-2E5A39D845E9}"/>
+				</Class>
+			</Class>
 		</Class>
 		<Class name="AZStd::string" field="OverridingPlatform" value="" type="{03AAAB3F-5C47-5A66-9EBC-D5FA4DB353C9}"/>
 	</Class>

@@ -30,7 +30,7 @@ namespace Audio
     class MicrophoneSystemComponentWindows : public MicrophoneSystemComponent::Implementation
     {
     public:
-        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentWindows, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MicrophoneSystemComponentWindows, AZ::SystemAllocator);
 
         ///////////////////////////////////////////////////////////////////////////////////////////
         bool InitializeDevice() override
@@ -225,7 +225,7 @@ namespace Audio
             AZStd::thread_desc threadDesc;
             threadDesc.m_name = "MicrophoneCapture-WASAPI";
             auto captureFunc = AZStd::bind(&MicrophoneSystemComponentWindows::RunAudioCapture, this);
-            m_captureThread = AZStd::thread(captureFunc, &threadDesc);
+            m_captureThread = AZStd::thread(threadDesc, captureFunc);
 
             return true;
         }

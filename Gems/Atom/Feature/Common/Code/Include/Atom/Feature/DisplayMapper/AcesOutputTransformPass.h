@@ -36,7 +36,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AcesOutputTransformPass, "{705F8A80-CAF2-4A9C-BF40-2141ABD70BDC}", DisplayMapperFullScreenPass);
-            AZ_CLASS_ALLOCATOR(AcesOutputTransformPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AcesOutputTransformPass, SystemAllocator);
 
             //! Creates a DisplayMapperPass
             static RPI::Ptr<AcesOutputTransformPass> Create(const RPI::PassDescriptor& descriptor);

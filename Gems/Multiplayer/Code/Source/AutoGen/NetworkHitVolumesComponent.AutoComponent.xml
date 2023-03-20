@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+
+<Component
+    Name="NetworkHitVolumesComponent"
+    Namespace="Multiplayer"
+    OverrideComponent="true"
+    OverrideController="false"
+    OverrideInclude="Multiplayer/Components/NetworkHitVolumesComponent.h"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+    <ComponentRelation Constraint="Weak" HasController="false" Name="TransformComponent" Namespace="AzFramework" Include="AzFramework/Components/TransformComponent.h" />
+</Component>

@@ -17,8 +17,8 @@
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
 #include <EMotionFX/CommandSystem/Source/RagdollCommands.h>
 #include <Editor/ColliderContainerWidget.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeInspectorPlugin.h>
-#include <Editor/Plugins/Ragdoll/RagdollNodeWidget.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollOutlinerNotificationHandler.h>
+#include <Editor/Plugins/ColliderWidgets/RagdollNodeWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
@@ -26,20 +26,18 @@
 #include <Tests/Mocks/PhysicsSystem.h>
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/SimpleActors.h>
+#include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/UI/UIFixture.h>
+#include <UI/SkeletonOutlinerTestFixture.h>
 
 namespace EMotionFX
 {
-    class CopyPasteRagdollCollidersFixture : public UIFixture
+    class CopyPasteRagdollCollidersFixture : public SkeletonOutlinerTestFixture
     {
     public:
         void SetUp() override
         {
             using ::testing::_;
-
-            UIFixture::SetUp();
-
-            D6JointLimitConfiguration::Reflect(GetSerializeContext());
 
             EXPECT_CALL(m_jointHelpers, GetSupportedJointTypeIds)
                 .WillRepeatedly(testing::Return(AZStd::vector<AZ::TypeId>{ azrtti_typeid<D6JointLimitConfiguration>() }));
@@ -62,26 +60,30 @@ namespace EMotionFX
                                    [[maybe_unused]] const AZ::Vector3& axis,
                                    [[maybe_unused]] const AZStd::vector<AZ::Quaternion>& exampleLocalRotations)
                                 { return AZStd::make_unique<D6JointLimitConfiguration>(); });
+
+            SkeletonOutlinerTestFixture::SetUp();
         }
 
-    private:
+      // todo teardown m_join.reset()
+    protected:
+        virtual bool ShouldReflectPhysicSystem() override { return true; }
+
         Physics::MockPhysicsSystem m_physicsSystem;
         Physics::MockPhysicsInterface m_physicsInterface;
         Physics::MockJointHelpersInterface m_jointHelpers;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CopyPasteRagdollCollidersFixture, DISABLED_CanCopyCollider)
-#else
     TEST_F(CopyPasteRagdollCollidersFixture, CanCopyCollider)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
-        AutoRegisteredActor actor{ActorFactory::CreateAndInit<SimpleJointChainActor>(4)};
-        const Physics::RagdollConfiguration& ragdollConfig = actor->GetPhysicsSetup()->GetRagdollConfig();
-        const Physics::CharacterColliderConfiguration& simulatedObjectConfig = actor->GetPhysicsSetup()->GetSimulatedObjectColliderConfig();
+        using ::testing::_;
+
+        SetUpPhysics();
+
+        const Physics::RagdollConfiguration& ragdollConfig = m_actor->GetPhysicsSetup()->GetRagdollConfig();
+        const Physics::CharacterColliderConfiguration& simulatedObjectConfig = m_actor->GetPhysicsSetup()->GetSimulatedObjectColliderConfig();
 
         CommandRagdollHelpers::AddJointsToRagdoll(
-            actor->GetID(),
+            m_actor->GetID(),
             {"rootJoint", "joint1", "joint2", "joint3"},
             /*commandGroup =*/nullptr,
             /* executeInsideCommand =*/false,
@@ -89,7 +91,7 @@ namespace EMotionFX
         EXPECT_EQ(ragdollConfig.m_colliders.m_nodes.size(), 0);
 
         CommandColliderHelpers::AddCollider(
-            actor->GetID(),
+            m_actor->GetID(),
             "rootJoint",
             PhysicsSetup::Ragdoll,
             azrtti_typeid<Physics::BoxShapeConfiguration>(),
@@ -101,21 +103,13 @@ namespace EMotionFX
 
         {
             AZStd::string result;
-            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand(
-                "Select -actorId " + AZStd::to_string(actor->GetID()),
+            EXPECT_TRUE(CommandSystem::GetCommandManager()->ExecuteCommand("Select -actorId " + AZStd::to_string(m_actor->GetID()),
                 result))
                 << result.c_str();
         }
 
-        auto* ragdollPlugin = EMStudio::GetPluginManager()->FindActivePlugin<RagdollNodeInspectorPlugin>();
-        ASSERT_TRUE(ragdollPlugin) << "Ragdoll plugin not found.";
-        ragdollPlugin->Init();
-
-        auto* skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<SkeletonOutlinerPlugin>();
-        ASSERT_TRUE(skeletonOutlinerPlugin) << "Skeleton outliner plugin not found.";
-
-        SkeletonModel* model = skeletonOutlinerPlugin->GetModel();
-        const QModelIndex rootIndex = model->index(0, 0);
+        SkeletonModel* model = m_skeletonOutlinerPlugin->GetModel();
+        const QModelIndex rootIndex = model->index(0, 0, model->index(0, 0));
         const QModelIndex joint1Index = model->index(0, 0, rootIndex);
         const QModelIndex joint2Index = model->index(0, 0, joint1Index);
         const QModelIndex joint3Index = model->index(0, 0, joint2Index);
@@ -132,7 +126,7 @@ namespace EMotionFX
         QItemSelectionModel& selectionModel = model->GetSelectionModel();
         selectionModel.select(rootIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
 
-        auto* ragdollColliderContainer = ragdollPlugin->GetDockWidget()->findChild<ColliderContainerWidget*>();
+        auto* ragdollColliderContainer = GetJointPropertyWidget()->findChild<RagdollNodeWidget*>()->findChild<ColliderContainerWidget*>();
         ASSERT_TRUE(ragdollColliderContainer);
 
         // Copy the Box collider

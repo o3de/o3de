@@ -24,12 +24,11 @@ public:
     CUndoBaseObjectNew(CBaseObject* object);
 
 protected:
-    virtual int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() override { return "New BaseObject"; };
-    virtual QString GetObjectName() override { return m_object->GetName(); };
+    int GetSize() override { return sizeof(*this); } // Return size of xml state.
+    QString GetObjectName() override { return m_object->GetName(); }
 
-    virtual void Undo(bool bUndo) override;
-    virtual void Redo() override;
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 private:
     CBaseObjectPtr m_object;
@@ -47,12 +46,11 @@ public:
     CUndoBaseObjectDelete(CBaseObject* object);
 
 protected:
-    virtual int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() override { return "Delete BaseObject"; };
-    virtual QString GetObjectName() override { return m_object->GetName(); };
+    int GetSize() override { return sizeof(*this); } // Return size of xml state.
+    QString GetObjectName() override { return m_object->GetName(); }
 
-    virtual void Undo(bool bUndo) override;
-    virtual void Redo() override;
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 private:
     CBaseObjectPtr m_object;
@@ -73,20 +71,19 @@ public:
     * This Undo command can be used for either Legacy or Component Entities, though for
     * performance reasons Component Entities are typically undone using CUndoBaseObjectBulkSelect
     *
-    * @param pObj The object to perform the undo/redo operation on.
+    * @param object The object to perform the undo/redo operation on.
     * @param isSelect This is true if you are trying to undo a select operation, and false if
     *        trying to undo a deselect operation
     */
     CUndoBaseObjectSelect(CBaseObject* object, bool isSelect);
 
 protected:
-    virtual void Release() override { delete this; };
-    virtual int GetSize() override { return sizeof(*this); }; // Return size of xml state.
-    virtual QString GetDescription() override { return "Select Object"; };
-    virtual QString GetObjectName() override; 
+    void Release() override { delete this; }
+    int GetSize() override { return sizeof(*this); } // Return size of xml state.
+    QString GetObjectName() override; 
 
-    virtual void Undo(bool bUndo) override;
-    virtual void Redo() override;
+    void Undo(bool bUndo) override;
+    void Redo() override;
 
 private:
     GUID m_guid;
@@ -116,7 +113,6 @@ public:
 
 protected:
     int GetSize() override { return sizeof(*this); } // Return size of xml state.
-    QString GetDescription() override { return QObject::tr("Select Objects"); }
 
     /*
     * Deselects the objects
@@ -153,7 +149,6 @@ public:
 
 protected:
     int GetSize() override { return sizeof(*this); } // Return size of xml state.
-    QString GetDescription() override { return QObject::tr("Select Objects"); }
 
     void Undo(bool bUndo) override;
 

@@ -36,6 +36,10 @@ namespace AzToolsFramework
         //! the entity type.
         virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByEntityType(const AZStd::vector<AZStd::string>& componentTypeNames, EntityType entityType) = 0;
 
+        //! Return a list of type ids for components that match the required services filter,
+        //! and don't conflict with any of the incompatible services filter
+        virtual AZStd::vector<AZ::Uuid> FindComponentTypeIdsByService(const AZStd::vector<AZ::ComponentServiceType>& serviceFilter, const AZStd::vector<AZ::ComponentServiceType>& incompatibleServiceFilter) = 0;
+
         //! Finds the component names from their type ids
         virtual AZStd::vector<AZStd::string> FindComponentTypeNames(const AZ::ComponentTypeList& componentTypeIds) = 0;
 

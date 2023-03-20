@@ -11,6 +11,7 @@
 #include "EditorWhiteBoxMeshAsset.h"
 #include "Util/WhiteBoxEditorUtil.h"
 
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -19,7 +20,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxMeshAsset, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxMeshAsset, AZ::SystemAllocator)
 
     static constexpr const char* const AssetModifiedUndoRedoDesc = "White Box Mesh asset was updated";
 

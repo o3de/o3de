@@ -19,7 +19,7 @@ namespace AWSGameLift
     {
     public:
         AZ_RTTI(AWSGameLiftServerModule, "{898416ca-dc11-4731-87de-afe285aedb04}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSGameLiftServerModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSGameLiftServerModule, AZ::SystemAllocator);
 
         AWSGameLiftServerModule()
             : AZ::Module()
@@ -42,4 +42,4 @@ namespace AWSGameLift
     };
 }// namespace AWSGameLift
 
-AZ_DECLARE_MODULE_CLASS(Gem_AWSGameLift_Server, AWSGameLift::AWSGameLiftServerModule)
+AZ_DECLARE_MODULE_CLASS(Gem_AWSGameLift_Servers, AWSGameLift::AWSGameLiftServerModule)

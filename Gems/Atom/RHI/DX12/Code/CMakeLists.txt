@@ -6,19 +6,10 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED
-
-if(PAL_TRAIT_PIX_AVAILABLE)
-    set(USE_PIX_DEFINE "USE_PIX")
-    set(PIX_BUILD_DEPENDENCY "3rdParty::pix")
-else()
-    set(USE_PIX_DEFINE "")
-    set(PIX_BUILD_DEPENDENCY "")
-endif()
-
 
 if(PAL_TRAIT_AFTERMATH_AVAILABLE)
     set(USE_NSIGHT_AFTERMATH_DEFINE $<IF:$<CONFIG:release>,"","USE_NSIGHT_AFTERMATH">)
@@ -32,7 +23,7 @@ set(pal_builder_tools_files)
 set(pal_builder_tools_includes)
 foreach(enabled_platform ${LY_PAL_TOOLS_ENABLED})
     string(TOLOWER ${enabled_platform} enabled_platform_lowercase)
-    ly_get_list_relative_pal_filename(pal_builder_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform})
+    o3de_pal_dir(pal_builder_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${enabled_platform} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
     list(APPEND pal_builder_tools_includes ${pal_builder_source_dir})
     list(APPEND pal_builder_tools_files ${pal_builder_source_dir}/platform_builders_${enabled_platform_lowercase}_tools_files.cmake)
 endforeach()
@@ -92,11 +83,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            ${PIX_BUILD_DEPENDENCY}
             Gem::Atom_RHI.Reflect
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            ${USE_PIX_DEFINE}
 )
 
 ly_add_target(
@@ -120,11 +107,9 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_DX12.Reflect
             3rdParty::d3dx12
-            ${AFTERMATH_BUILD_DEPENDENCY}           
-            ${PIX_BUILD_DEPENDENCY}
+            ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE
-            ${USE_PIX_DEFINE}
             ${USE_NSIGHT_AFTERMATH_DEFINE}
             
 )
@@ -143,15 +128,10 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-        
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI.Public
             Gem::Atom_RHI_DX12.Reflect
             Gem::Atom_RHI_DX12.Private.Static
-            ${PIX_BUILD_DEPENDENCY}
-    COMPILE_DEFINITIONS 
-        PRIVATE
-            ${USE_PIX_DEFINE}
 )
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)

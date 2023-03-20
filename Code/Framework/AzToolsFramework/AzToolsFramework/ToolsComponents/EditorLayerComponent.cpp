@@ -7,6 +7,7 @@
  */
 #include "EditorLayerComponent.h"
 #include <AzCore/IO/FileIO.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -63,6 +64,14 @@ namespace AzToolsFramework
                         ->DataElement(AZ::Edit::UIHandlers::Color, &LayerProperties::m_color, "Color", "Color for the layer.")
                         ->DataElement(AZ::Edit::UIHandlers::CheckBox, &LayerProperties::m_saveAsBinary, "Save as binary", "Save the layer as an XML or binary file.");
                 }
+            }
+        }
+
+        EditorLayer::~EditorLayer()
+        {
+            for (AZ::Entity* entity : m_layerEntities)
+            {
+                delete entity;
             }
         }
 
@@ -345,7 +354,7 @@ namespace AzToolsFramework
             EntityList& entityList,
             AZ::SliceComponent::SliceReferenceToInstancePtrs& layerInstances)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             EditorLayer layer;
             LayerResult layerPrepareResult = PrepareLayerForSaving(layer, entityList, layerInstances);
             if (!layerPrepareResult.IsSuccess())
@@ -373,15 +382,15 @@ namespace AzToolsFramework
             AZ::SliceComponent::SliceAssetToSliceInstancePtrs& sliceInstances,
             AZStd::unordered_map<AZ::EntityId, AZ::Entity*>& uniqueEntities)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             // If this layer is being loaded, it won't have a level save dependency yet, so clear that flag.
             m_mustSaveLevelWhenLayerSaves = false;
             QString fullPathName = levelPakFile;
-            if (fullPathName.contains("@devassets@"))
+            if (fullPathName.contains("@projectroot@"))
             {
                 AZ::IO::FileIOBase* fileIO = AZ::IO::FileIOBase::GetInstance();
                 // Resolving the path through resolvepath would normalize and lowcase it, and in this case, we don't want that.
-                fullPathName.replace("@devassets@", fileIO->GetAlias("@devassets@"));
+                fullPathName.replace("@projectroot@", fileIO->GetAlias("@projectroot@"));
             }
 
             QFileInfo fileNameInfo(fullPathName);
@@ -518,7 +527,7 @@ namespace AzToolsFramework
             EntityList& entityList,
             AZ::SliceComponent::SliceReferenceToInstancePtrs& layerInstances)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             // Move the editable data into the data serialized to the layer, and not the layer component.
             layer.m_layerProperties = m_editableLayerProperties;
             layer.m_layerEntityId = GetEntityId();
@@ -640,7 +649,7 @@ namespace AzToolsFramework
             const EditorLayer& layer,
             AZ::IO::ByteContainerStream<AZStd::vector<char> >& entitySaveStream)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             m_otherLayersToSave.clear();
             m_mustSaveLevelWhenLayerSaves = false;
 
@@ -662,7 +671,7 @@ namespace AzToolsFramework
             QString levelAbsoluteFolder,
             const AZ::IO::ByteContainerStream<AZStd::vector<char> >& entitySaveStream)
         {
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzToolsFramework);
+            AZ_PROFILE_FUNCTION(AzToolsFramework);
             AZStd::string layerBaseFileName(m_layerFileName);
 
             // Write to a temp file first.

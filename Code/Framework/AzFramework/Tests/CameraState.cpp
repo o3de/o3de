@@ -11,6 +11,7 @@
 #include <AzFramework/Viewport/CameraState.h>
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AzCore/Math/SimdMath.h>
+#include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Matrix4x4.h>
 
 namespace UnitTest
@@ -21,7 +22,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AZ::Vector2(1024, 768));
+            m_cameraState = AzFramework::CreateDefaultCamera(AZ::Transform::CreateIdentity(), AzFramework::ScreenSize(1024, 768));
         }
 
         AzFramework::CameraState m_cameraState;
@@ -41,7 +42,7 @@ namespace UnitTest
 
     class WorldFromViewMatrix
         : public CameraStateFixture
-        , public ::testing::WithParamInterface<AZStd::tuple<AZ::Vector3, AZ::Vector3, AZ::Vector2>>
+        , public ::testing::WithParamInterface<AZStd::tuple<AZ::Vector3, AZ::Vector3, AzFramework::ScreenSize>>
     {
     };
 
@@ -50,22 +51,6 @@ namespace UnitTest
         , public ::testing::WithParamInterface<AZStd::tuple<float, float, float, float>>
     {
     };
-
-    // Taken from Atom::MatrixUtils for testing purposes, this can be removed if MakePerspectiveFovMatrixRH makes it into AZ
-    static AZ::Matrix4x4 MakePerspectiveMatrixRH(float fovY, float aspectRatio, float nearClip, float farClip)
-    {
-        float sinFov, cosFov;
-        AZ::SinCos(0.5f * fovY, sinFov, cosFov);
-        float yScale = cosFov / sinFov; //cot(fovY/2)
-        float xScale = yScale / aspectRatio;
-
-        AZ::Matrix4x4 out;
-        out.SetRow(0,   xScale, 0.f,    0.f,                                0.f                                     );
-        out.SetRow(1,   0.f,    yScale, 0.f,                                0.f                                     );
-        out.SetRow(2,   0.f,    0.f,    farClip / (nearClip - farClip),     nearClip*farClip / (nearClip - farClip) );
-        out.SetRow(3,   0.f,    0.f,    -1.f,                               0.f                                     );
-        return out;
-    }
 
     TEST_P(Translation, Permutation)
     {
@@ -96,7 +81,7 @@ namespace UnitTest
 
     TEST_P(Rotation, Permutation)
     {
-        int expectedErrors = -1;
+        [[maybe_unused]] int expectedErrors = -1;
         AZ_TEST_START_TRACE_SUPPRESSION;
 
         // Given an orientation derived from the look at points
@@ -157,8 +142,9 @@ namespace UnitTest
         EXPECT_EQ(m_cameraState.m_viewportSize, viewportSize);
         EXPECT_THAT(m_cameraState.m_position, IsCloseTolerance(translation, 0.01f));
         // Translate back into a quaternion to safely compare rotations
-        auto decomposedCameraStateRotation = AZ::Quaternion::CreateFromBasis(m_cameraState.m_side, m_cameraState.m_forward, m_cameraState.m_up);
-        auto rotationDelta = 1.f - decomposedCameraStateRotation.Dot(decomposedCameraStateRotation);
+        auto decomposedCameraStateRotation =
+            AZ::Quaternion::CreateFromBasis(m_cameraState.m_side, m_cameraState.m_forward, m_cameraState.m_up);
+        auto rotationDelta = 1.0f - decomposedCameraStateRotation.Dot(decomposedCameraStateRotation);
         EXPECT_NEAR(rotationDelta, 0.f, 0.01f);
     }
 
@@ -168,7 +154,7 @@ namespace UnitTest
         testing::Combine(
             testing::Values(AZ::Vector3{0.f, 0.f, 0.f}, AZ::Vector3{100.f, 0.f, 0.f}, AZ::Vector3{-5.f,10.f,-1.f}),
             testing::Values(AZ::Vector3{0.f, 0.f, 0.f}, AZ::Vector3{90.f, 0.f, 0.f}, AZ::Vector3{-45.f, -45.f, -45.f}),
-            testing::Values(AZ::Vector2{100.f, 100.f})
+            testing::Values(AzFramework::ScreenSize(100, 100))
         )
     );
 
@@ -176,7 +162,8 @@ namespace UnitTest
     {
         auto [fovY, aspectRatio, nearClip, farClip] = GetParam();
 
-        AZ::Matrix4x4 clipFromView = MakePerspectiveMatrixRH(fovY, aspectRatio, nearClip, farClip);
+        AZ::Matrix4x4 clipFromView;
+        MakePerspectiveFovMatrixRH(clipFromView, fovY, aspectRatio, nearClip, farClip);
 
         AzFramework::SetCameraClippingVolumeFromPerspectiveFovMatrixRH(m_cameraState, clipFromView);
 

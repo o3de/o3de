@@ -10,8 +10,6 @@
 #include <Atom/RHI/DeviceObject.h>
 #include <RHI/Device.h>
 #include <RHI/MemoryTypeView.h>
-#include <AzCore/Debug/EventTrace.h>
-
 namespace AZ
 {
     namespace Vulkan
@@ -38,7 +36,7 @@ namespace AZ
 
             void Init(const Descriptor& descriptor);
 
-            void Shutdown();
+            void Shutdown() override;
 
             void GarbageCollect();
 
@@ -47,6 +45,8 @@ namespace AZ
             void DeAllocate(const View& memory);
 
             const Descriptor& GetDescriptor() const;
+
+            float ComputeFragmentation() const;
 
         private:
             View AllocateUnique(const uint64_t sizeInBytes);
@@ -108,8 +108,7 @@ namespace AZ
         template<typename SubAllocator, typename View>
         View MemoryTypeAllocator<SubAllocator, View>::Allocate(size_t sizeInBytes, size_t alignmentInBytes, bool forceUnique /*=false*/)
         {
-            AZ_TRACE_METHOD();
-
+            AZ_PROFILE_FUNCTION(RHI);
 
             View memoryView;
 
@@ -125,6 +124,12 @@ namespace AZ
             {
                 memoryView = AllocateUnique(sizeInBytes);
             }
+            else
+            {
+                RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                heapMemoryUsage->m_usedResidentInBytes += memoryView.GetSize();
+                heapMemoryUsage->Validate();
+            }
 
             return memoryView;
         }
@@ -137,6 +142,11 @@ namespace AZ
             case MemoryAllocationType::SubAllocated:
             {
                 AZStd::lock_guard<AZStd::mutex> lock(m_subAllocatorMutex);
+                if (memoryView.IsValid())
+                {
+                    RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+                    heapMemoryUsage->m_usedResidentInBytes -= memoryView.GetSize();
+                }
                 m_subAllocator.DeAllocate(memoryView.GetAllocation());
                 break;
             }
@@ -153,14 +163,25 @@ namespace AZ
         }
 
         template<typename SubAllocator, typename View>
+        float MemoryTypeAllocator<SubAllocator, View>::ComputeFragmentation() const
+        {
+            return m_subAllocator.ComputeFragmentation();
+        }
+
+        template<typename SubAllocator, typename View>
         View MemoryTypeAllocator<SubAllocator, View>::AllocateUnique(const uint64_t sizeInBytes)
         {
-            AZ_TRACE_METHOD();
+            AZ_PROFILE_FUNCTION(RHI);
             auto memory = const_cast<typename PageAllocator::ObjectFactoryType&>(m_pageAllocator.GetFactory()).CreateObject(sizeInBytes);
             if (!memory)
             {
                 return View();
             }
+
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            heapMemoryUsage->m_usedResidentInBytes += sizeInBytes;
+            heapMemoryUsage->m_uniqueAllocationBytes += sizeInBytes;
+            heapMemoryUsage->Validate();
 
             const char* name = GetName().IsEmpty() ? "Unique Allocation" : GetName().GetCStr();
             memory->SetName(Name{ name });
@@ -171,6 +192,12 @@ namespace AZ
         void MemoryTypeAllocator<SubAllocator, View>::DeAllocateUnique(const View& memoryView)
         {
             AZ_Assert(memoryView.GetAllocationType() == MemoryAllocationType::Unique, "This call only supports unique MemoryView allocations.");
+
+            RHI::HeapMemoryUsage* heapMemoryUsage = m_descriptor.m_getHeapMemoryUsageFunction();
+            const size_t sizeInBytes = memoryView.GetSize();
+            heapMemoryUsage->m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage->m_uniqueAllocationBytes -= sizeInBytes;
+
             auto memory = memoryView.GetAllocation().m_memory;
             const_cast<typename PageAllocator::ObjectFactoryType&>(m_pageAllocator.GetFactory()).ShutdownObject(*memory);
             static_cast<Device&>(GetDevice()).QueueForRelease(memory);

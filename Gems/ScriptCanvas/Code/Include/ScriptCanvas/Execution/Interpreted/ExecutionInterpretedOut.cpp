@@ -17,7 +17,6 @@
 #include <ScriptCanvas/Core/Nodeable.h>
 #include <ScriptCanvas/Core/NodeableOut.h>
 #include <ScriptCanvas/Execution/ExecutionState.h>
-#include <ScriptCanvas/Execution/NodeableOut/NodeableOutNative.h>
 #include <ScriptCanvas/Grammar/PrimitivesDeclarations.h>
 
 #include "ExecutionInterpretedAPI.h"
@@ -68,7 +67,7 @@ namespace ScriptCanvas
             return *this;
         }
 
-        void OutInterpreted::operator()(AZ::BehaviorValueParameter* /*resultBVP*/, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        void OutInterpreted::operator()(AZ::BehaviorArgument* /*resultBVP*/, AZ::BehaviorArgument* argsBVPs, int numArguments)
         {
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:
@@ -108,7 +107,7 @@ namespace ScriptCanvas
 
         OutInterpretedResult::OutInterpretedResult(const OutInterpretedResult& /*source*/)
         {
-            AZ_Assert(false, "This will result in a double delete of a Lua function. Don't use this");
+            AZ_Assert(false, "OutInterpretedResult::OutInterpretedResult copy ctr is for compiler compatibility only.");
         }
 
         OutInterpretedResult& OutInterpretedResult::operator=(OutInterpretedResult&& source) noexcept
@@ -121,9 +120,9 @@ namespace ScriptCanvas
             return *this;
         }
 
-        void OutInterpretedResult::operator()(AZ::BehaviorValueParameter* resultBVP, AZ::BehaviorValueParameter* argsBVPs, int numArguments)
+        void OutInterpretedResult::operator()(AZ::BehaviorArgument* resultBVP, AZ::BehaviorArgument* argsBVPs, int numArguments)
         {
-            AZ_Assert(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and will always have a location for a return value");
+            SC_RUNTIME_CHECK(resultBVP && resultBVP->m_value, "This function is only expected for BehaviorConext bound event handling, and must always have a location for a return value");
 
             auto behaviorContext = AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
             // Lua:
@@ -149,61 +148,6 @@ namespace ScriptCanvas
                 lua_pop(m_lua, 1);
             }
             // Lua:
-        }
-
-        OutInterpretedUserSubgraph::OutInterpretedUserSubgraph(lua_State* lua)
-            : m_lambdaRegistryIndex(ExecutionStateInterpretedCpp::luaL_ref_Checked(lua))
-            , m_lua(lua)
-        {
-        }
-
-        OutInterpretedUserSubgraph::OutInterpretedUserSubgraph(OutInterpretedUserSubgraph&& source) noexcept
-        {
-            *this = AZStd::move(source);
-        }
-
-        OutInterpretedUserSubgraph::~OutInterpretedUserSubgraph()
-        {
-            luaL_unref(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
-        }
-
-        OutInterpretedUserSubgraph::OutInterpretedUserSubgraph(const OutInterpretedUserSubgraph& /*source*/)
-        {
-            AZ_Assert(false, "This will result in a double delete of a Lua function. Don't use this");
-        }
-
-        OutInterpretedUserSubgraph& OutInterpretedUserSubgraph::operator=(OutInterpretedUserSubgraph&& source) noexcept
-        {
-            AZ_Assert(this != &source, "abuse of OutInterpretedUserSubgraph move operator");
-            m_lambdaRegistryIndex = source.m_lambdaRegistryIndex;
-            source.m_lambdaRegistryIndex = LUA_NOREF;
-            m_lua = source.m_lua;
-            source.m_lua = nullptr;
-            return *this;
-        }
-
-        void OutInterpretedUserSubgraph::operator()(AZ::BehaviorValueParameter* /*resultBVP*/, AZ::BehaviorValueParameter* /*argsBVPs*/, int argsCount)
-        {
-            // Lua: executionState, outKey, args...
-            /*auto behaviorContext =*/ AZ::ScriptContext::FromNativeContext(m_lua)->GetBoundContext();
-            lua_rawgeti(m_lua, LUA_REGISTRYINDEX, m_lambdaRegistryIndex);
-            // Lua: executionState, outKey, args..., lambda
-            lua_remove(m_lua, 1);
-            // Lua: outKey, args..., lambda
-            lua_replace(m_lua, 1);
-            AZ_Assert(lua_isfunction(m_lua, 1), "OutInterpretedUserSubgraph::operator(): Error in compiled lua file, user lambda was not found");
-            // Lua: lambda, args...
-            const int result = InterpretedSafeCall(m_lua, argsCount, LUA_MULTRET);
-            // Lua: ?
-            if (result != LUA_OK)
-            {
-                // Lua: error
-                lua_pop(m_lua, 1);
-            }
-            else
-            {
-                // Lua: results...
-            }
         }
     }
 }

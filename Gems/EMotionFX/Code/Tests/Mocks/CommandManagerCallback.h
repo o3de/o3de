@@ -21,8 +21,8 @@ namespace MCore
         MOCK_METHOD2(OnPreExecuteCommandGroup, void(MCore::CommandGroup*, bool));
         MOCK_METHOD2(OnPostExecuteCommandGroup, void(MCore::CommandGroup*, bool));
 
-        MOCK_METHOD4(OnAddCommandToHistory, void(uint32, MCore::CommandGroup*, MCore::Command*, const MCore::CommandLine&));
-        MOCK_METHOD1(OnRemoveCommand, void(uint32));
-        MOCK_METHOD1(OnSetCurrentCommand, void(uint32));
+        MOCK_METHOD4(OnAddCommandToHistory, void(size_t, MCore::CommandGroup*, MCore::Command*, const MCore::CommandLine&));
+        MOCK_METHOD1(OnRemoveCommand, void(size_t));
+        MOCK_METHOD1(OnSetCurrentCommand, void(size_t));
     };
 } // namespace MCore

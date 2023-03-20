@@ -145,6 +145,8 @@ namespace LmbrCentral
 
     void EditorPolygonPrismShapeComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorPolygonPrismShapeComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorPolygonPrismShapeComponent, EditorBaseShapeComponent>()
@@ -183,7 +185,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawPolygonPrismShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_polygonShapeConfig.GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_polygonPrismMesh, debugDisplay);
 
                 debugDisplay.SetColor(m_shapeWireColor);
@@ -193,7 +195,7 @@ namespace LmbrCentral
                     AzToolsFramework::VertexContainerDisplay::DisplayVertexContainerIndices(
                         debugDisplay, AzToolsFramework::VariableVerticesVertexContainer<AZ::Vector2>(
                             m_polygonPrismShape.GetPolygonPrism()->m_vertexContainer),
-                        AzToolsFramework::TransformUniformScale(m_polygonPrismShape.GetCurrentTransform()),
+                        m_polygonPrismShape.GetCurrentTransform(),
                         m_polygonPrismShape.GetCurrentNonUniformScale(),
                         IsSelected());
                 }

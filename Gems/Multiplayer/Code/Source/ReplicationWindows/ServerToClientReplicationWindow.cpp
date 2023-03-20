@@ -7,7 +7,9 @@
  */
 
 #include <Source/ReplicationWindows/ServerToClientReplicationWindow.h>
+#include <Source/AutoGen/Multiplayer.AutoPackets.h>
 #include <Multiplayer/Components/NetBindComponent.h>
+#include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
 #include <AzFramework/Visibility/IVisibilitySystem.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Console/ILogger.h>
@@ -21,7 +23,6 @@ namespace Multiplayer
     AZ_CVAR(uint32_t, sv_MaxEntitiesToReplicate, 256, nullptr, AZ::ConsoleFunctorFlags::Null, "The default max number of entities to replicate to a client connection");
     AZ_CVAR(uint32_t, sv_PacketsToIntegrateQos, 1000, nullptr, AZ::ConsoleFunctorFlags::Null, "The number of packets to accumulate before updating connection quality of service metrics");
     AZ_CVAR(float, sv_BadConnectionThreshold, 0.25f, nullptr, AZ::ConsoleFunctorFlags::Null, "The loss percentage beyond which we consider our network bad");
-    AZ_CVAR(AZ::TimeMs, sv_ClientReplicationWindowUpdateMs, AZ::TimeMs{ 300 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Rate for replication window updates.");
     AZ_CVAR(float, sv_ClientAwarenessRadius, 500.0f, nullptr, AZ::ConsoleFunctorFlags::Null, "The maximum distance entities can be from the client and still be relevant");
 
     const char* GetConnectionStateString(bool isPoor)
@@ -50,24 +51,16 @@ namespace Multiplayer
         return m_priority < rhs.m_priority;
     }
 
-    ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, const AzNetworking::IConnection* connection)
+    ServerToClientReplicationWindow::ServerToClientReplicationWindow(NetworkEntityHandle controlledEntity, AzNetworking::IConnection* connection)
         : m_controlledEntity(controlledEntity)
-        , m_entityActivatedEventHandler([this](AZ::Entity* entity) { OnEntityActivated(entity); })
-        , m_entityDeactivatedEventHandler([this](AZ::Entity* entity) { OnEntityDeactivated(entity); })
         , m_connection(connection)
         , m_lastCheckedSentPackets(connection->GetMetrics().m_packetsSent)
         , m_lastCheckedLostPackets(connection->GetMetrics().m_packetsLost)
-        , m_updateWindowEvent([this]() { UpdateWindow(); }, AZ::Name("Server to client replication window update event"))
     {
         AZ::Entity* entity = m_controlledEntity.GetEntity();
         AZ_Assert(entity, "Invalid controlled entity provided to replication window");
         m_controlledEntityTransform = entity ? entity->GetTransform() : nullptr;
         AZ_Assert(m_controlledEntityTransform, "Controlled player entity must have a transform");
-
-        m_updateWindowEvent.Enqueue(sv_ClientReplicationWindowUpdateMs, true);
-
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityActivatedEventHandler(m_entityActivatedEventHandler);
-        AZ::Interface<AZ::ComponentApplicationRequests>::Get()->RegisterEntityDeactivatedEventHandler(m_entityDeactivatedEventHandler);
     }
 
     bool ServerToClientReplicationWindow::ReplicationSetUpdateReady()
@@ -90,23 +83,16 @@ namespace Multiplayer
         return m_isPoorConnection ? sv_MinEntitiesToReplicate : sv_MaxEntitiesToReplicate;
     }
 
-    bool ServerToClientReplicationWindow::IsInWindow(const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
+    bool ServerToClientReplicationWindow::IsInWindow([[maybe_unused]] const ConstNetworkEntityHandle& entityHandle, NetEntityRole& outNetworkRole) const
     {
-        // TODO: Clean up this interface, this function is used for server->server migrations, and probably shouldn't be exposed in it's current setup
         AZ_Assert(false, "IsInWindow should not be called on the ServerToClientReplicationWindow");
         outNetworkRole = NetEntityRole::InvalidRole;
-        auto iter = m_replicationSet.find(entityHandle);
-        if (iter != m_replicationSet.end())
-        {
-            outNetworkRole = iter->second.m_netEntityRole;
-            return true;
-        }
         return false;
     }
 
     void ServerToClientReplicationWindow::UpdateWindow()
     {
-        // clear the candidate queue, we're going to rebuild it
+        // Clear the candidate queue, we're going to rebuild it
         ReplicationCandidateQueue::container_type clearQueueContainer;
         clearQueueContainer.reserve(sv_MaxEntitiesToTrackReplication);
         // Move the clearQueueContainer into the ReplicationCandidateQueue to maintain the reserved memory
@@ -117,7 +103,7 @@ namespace Multiplayer
         NetBindComponent* netBindComponent = m_controlledEntity.GetNetBindComponent();
         if (!netBindComponent || !netBindComponent->HasController())
         {
-            // if we don't have a controlled entity, or we no longer have control of the entity, don't run the update
+            // If we don't have a controlled entity, or we no longer have control of the entity, don't run the update
             return;
         }
 
@@ -128,62 +114,121 @@ namespace Multiplayer
 
         AZStd::vector<AzFramework::VisibilityEntry*> gatheredEntries;
         AZ::Sphere awarenessSphere = AZ::Sphere(controlledEntityPosition, sv_ClientAwarenessRadius);
-        AZ::Interface<AzFramework::IVisibilitySystem>::Get()->GetDefaultVisibilityScene()->Enumerate(awarenessSphere, [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
-            {
-                gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
-                for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
+        AzFramework::IVisibilitySystem* visibilitySystem = AZ::Interface<AzFramework::IVisibilitySystem>::Get();
+        if (visibilitySystem)
+        {
+            visibilitySystem->GetDefaultVisibilityScene()->Enumerate(
+                awarenessSphere,
+                [&gatheredEntries](const AzFramework::IVisibilityScene::NodeData& nodeData)
                 {
-                    if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                    gatheredEntries.reserve(gatheredEntries.size() + nodeData.m_entries.size());
+                    for (AzFramework::VisibilityEntry* visEntry : nodeData.m_entries)
                     {
-                        gatheredEntries.push_back(visEntry);
+                        if (visEntry->m_typeFlags & AzFramework::VisibilityEntry::TypeFlags::TYPE_Entity)
+                        {
+                            gatheredEntries.push_back(visEntry);
+                        }
                     }
-                }
-            }
-        );
+                });
+        }
 
         NetworkEntityTracker* networkEntityTracker = GetNetworkEntityTracker();        
-        IFilterEntityManager* filterEntityManager = GetMultiplayer()->GetFilterEntityManager();
+        IFilterEntityManager* filterEntityManager = AZ::Interface<IFilterEntityManager>::Get();
 
-        // Add all the neighbors
+        // Add all the neighbours
         for (AzFramework::VisibilityEntry* visEntry : gatheredEntries)
         {
             AZ::Entity* entity = static_cast<AZ::Entity*>(visEntry->m_userData);
+            NetworkEntityHandle entityHandle(entity, networkEntityTracker);
+            if (entityHandle.GetNetBindComponent() == nullptr)
+            {
+                // Entity does not have netbinding, skip this entity
+                continue;
+            }
 
             if (filterEntityManager && filterEntityManager->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
             {
                 continue;
             }
 
-            NetBindComponent* entryNetBindComponent = entity->template FindComponent<NetBindComponent>();
-            if (entryNetBindComponent != nullptr)
-            {
-                // We want to find the closest extent to the player and prioritize using that distance
-                const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
-                const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
-                const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
-                const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
+            // We want to find the closest extent to the player and prioritize using that distance
+            const AZ::Vector3 supportNormal = controlledEntityPosition - visEntry->m_boundingVolume.GetCenter();
+            const AZ::Vector3 closestPosition = visEntry->m_boundingVolume.GetSupport(supportNormal);
+            const float gatherDistanceSquared = controlledEntityPosition.GetDistanceSq(closestPosition);
+            const float priority = (gatherDistanceSquared > 0.0f) ? 1.0f / gatherDistanceSquared : 0.0f;
+                
+            AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+        }
 
-                NetworkEntityHandle entityHandle(entryNetBindComponent, networkEntityTracker);
-                AddEntityToReplicationSet(entityHandle, priority, gatherDistanceSquared);
+        // Add in all entities that have forced relevancy
+        const Multiplayer::NetEntityHandleSet& alwaysRelevantToClients = GetNetworkEntityManager()->GetAlwaysRelevantToClientsSet();
+        for (const ConstNetworkEntityHandle& entityHandle : alwaysRelevantToClients)
+        {
+            if (entityHandle.Exists())
+            {
+                AZ_Assert(entityHandle.GetNetBindComponent()->IsNetEntityRoleAuthority(), "Encountered forced relevant entity that is not in an authority role");
+                m_replicationSet[entityHandle] = { NetEntityRole::Client, 1.0f }; // Always replicate entities with forced relevancy
             }
         }
 
         // Add in Autonomous Entities
         // Note: Do not add any Client entities after this point, otherwise you stomp over the Autonomous mode
-        m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f };  // Always replicate autonomous entities
+        m_replicationSet[m_controlledEntity] = { NetEntityRole::Autonomous, 1.0f }; // Always replicate autonomous entities
 
-        //auto hierarchyController = FindController<EntityHierarchyComponent::Authority>(m_ControlledEntity);
-        //if (hierarchyController != nullptr)
-        //{
-        //    CollectControlledEntitiesRecursive(m_replicationSet, *hierarchyController);
-        //}
+        auto* hierarchyComponent = m_controlledEntity.FindComponent<NetworkHierarchyRootComponent>();
+        if (hierarchyComponent != nullptr)
+        {
+            UpdateHierarchyReplicationSet(m_replicationSet, *hierarchyComponent);
+        }
+    }
+
+    AzNetworking::PacketId ServerToClientReplicationWindow::SendEntityUpdateMessages(NetworkEntityUpdateVector& entityUpdateVector)
+    {
+        MultiplayerPackets::EntityUpdates entityUpdatePacket;
+        entityUpdatePacket.SetHostTimeMs(GetNetworkTime()->GetHostTimeMs());
+        entityUpdatePacket.SetHostFrameId(GetNetworkTime()->GetHostFrameId());
+        entityUpdatePacket.SetEntityMessages(entityUpdateVector);
+        return m_connection->SendUnreliablePacket(entityUpdatePacket);
+    }
+
+    void ServerToClientReplicationWindow::SendEntityRpcs(NetworkEntityRpcVector& entityRpcVector, bool reliable)
+    {
+        MultiplayerPackets::EntityRpcs entityRpcsPacket;
+        entityRpcsPacket.SetEntityRpcs(entityRpcVector);
+        if (reliable)
+        {
+            m_connection->SendReliablePacket(entityRpcsPacket);
+        }
+        else
+        {
+            m_connection->SendUnreliablePacket(entityRpcsPacket);
+        }
+    }
+
+    void ServerToClientReplicationWindow::SendEntityResets(const NetEntityIdSet& resetIds)
+    {
+        MultiplayerPackets::RequestReplicatorReset entityResetPacket;
+        for (NetEntityId entityId : resetIds)
+        {
+            if (entityResetPacket.GetEntityIds().full())
+            {
+                m_connection->SendUnreliablePacket(entityResetPacket);
+                entityResetPacket.ModifyEntityIds().clear();
+            }
+            entityResetPacket.ModifyEntityIds().push_back(entityId);
+        }
+
+        if (!entityResetPacket.GetEntityIds().empty())
+        {
+            m_connection->SendUnreliablePacket(entityResetPacket);
+        }
     }
 
     void ServerToClientReplicationWindow::DebugDraw() const
     {
-        static const float   BoundaryStripeHeight = 1.0f;
-        static const float   BoundaryStripeSpacing = 0.5f;
-        static const int32_t BoundaryStripeCount = 10;
+        //static const float   BoundaryStripeHeight = 1.0f;
+        //static const float   BoundaryStripeSpacing = 0.5f;
+        //static const int32_t BoundaryStripeCount = 10;
 
         //if (auto localEnt = m_ControlledEntity.lock())
         //{
@@ -202,45 +247,40 @@ namespace Multiplayer
         //}
     }
 
-    void ServerToClientReplicationWindow::OnEntityActivated(AZ::Entity* entity)
+    bool ServerToClientReplicationWindow::AddEntity(AZ::Entity* entity)
     {
-        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
-        if (netBindComponent != nullptr)
+        ConstNetworkEntityHandle entityHandle(entity);
+
+        if (IFilterEntityManager* filter = AZ::Interface<IFilterEntityManager>::Get())
         {
-            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
-
-            if (netBindComponent->HasController())
+            if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
             {
-                if (IFilterEntityManager* filter = GetMultiplayer()->GetFilterEntityManager())
-                {
-                    if (filter->IsEntityFiltered(entity, m_controlledEntity, m_connection->GetConnectionId()))
-                    {
-                        return;
-                    }
-                }
-
-                AZ::TransformInterface* transformInterface = entity->GetTransform();
-                if (transformInterface != nullptr)
-                {
-                    const AZ::Vector3 clientPosition = m_controlledEntityTransform->GetWorldTranslation();
-                    float distSq = clientPosition.GetDistanceSq(transformInterface->GetWorldTranslation());
-                    float awarenessSq = sv_ClientAwarenessRadius * sv_ClientAwarenessRadius;
-                    // Make sure we would be in the awareness radius
-                    if (distSq < awarenessSq)
-                    {
-                        AddEntityToReplicationSet(entityHandle, 1.0f, distSq);
-                    }
-                }
+                return false;
             }
         }
+
+        AZ::TransformInterface* transformInterface = entity->GetTransform();
+        if (transformInterface != nullptr)
+        {
+            const AZ::Vector3 clientPosition = m_controlledEntityTransform->GetWorldTranslation();
+            float distSq = clientPosition.GetDistanceSq(transformInterface->GetWorldTranslation());
+            float awarenessSq = sv_ClientAwarenessRadius * sv_ClientAwarenessRadius;
+            // Make sure we would be in the awareness radius
+            if (distSq < awarenessSq)
+            {
+                AddEntityToReplicationSet(entityHandle, 1.0f, distSq);
+                return true;
+            }
+        }
+
+        return false;
     }
 
-    void ServerToClientReplicationWindow::OnEntityDeactivated(AZ::Entity* entity)
+    void ServerToClientReplicationWindow::RemoveEntity(AZ::Entity* entity)
     {
-        NetBindComponent* netBindComponent = entity->FindComponent<NetBindComponent>();
-        if (netBindComponent != nullptr)
+        ConstNetworkEntityHandle entityHandle(entity);
+        if (entityHandle.GetNetBindComponent() != nullptr)
         {
-            ConstNetworkEntityHandle entityHandle(netBindComponent, GetNetworkEntityTracker());
             m_replicationSet.erase(entityHandle);
         }
     }
@@ -277,7 +317,6 @@ namespace Multiplayer
     void ServerToClientReplicationWindow::AddEntityToReplicationSet(ConstNetworkEntityHandle& entityHandle, float priority, [[maybe_unused]] float distanceSquared)
     {
         // Assumption: the entity has been checked for filtering prior to this call.
-
         if (!sv_ReplicateServerProxies)
         {
             NetBindComponent* netBindComponent = entityHandle.GetNetBindComponent();
@@ -288,12 +327,11 @@ namespace Multiplayer
             }
         }
 
-        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication);  // See if have the maximum number of entities in our set
-        const bool isBetterChoice = !m_candidateQueue.empty() && (priority > m_candidateQueue.top().m_priority);  // Check if the new thing we are adding is better than the worst item in our set
+        const bool isQueueFull = (m_candidateQueue.size() >= sv_MaxEntitiesToTrackReplication); // See if have the maximum number of entities in our set
         const bool isInReplicationSet = m_replicationSet.find(entityHandle) != m_replicationSet.end();
         if (!isInReplicationSet)
         {
-            if (isQueueFull)  // if our set is full, then we need to remove the worst priority in our set
+            if (isQueueFull) // If our set is full, then we need to remove the worst priority in our set
             {
                 ConstNetworkEntityHandle removeEnt = m_candidateQueue.top().m_entityHandle;
                 m_candidateQueue.pop();
@@ -304,18 +342,20 @@ namespace Multiplayer
         }
     }
 
-    //void ServerToClientReplicationWindow::CollectControlledEntitiesRecursive(ReplicationSet& replicationSet, EntityHierarchyComponent::Authority& hierarchyController)
-    //{
-    //    auto controlledEnts = hierarchyController.GetChildrenRelatedEntities();
-    //    for (auto& controlledEnt : controlledEnts)
-    //    {
-    //        AZ_Assert(controlledEnt != nullptr, "We have lost a controlled entity unexpectedly");
-    //        replicationSet[controlledEnt.GetConstEntity()] = EntityReplicationData(EntityNetworkRoleT::e_Autonomous, EntityPrioritySystem::k_MaxPriority); // Always replicate controlled entities
-    //        auto hierarchyController = controlledEnt.FindController<EntityHierarchyComponent::Authority>();
-    //        if (hierarchyController != nullptr)
-    //        {
-    //            CollectControlledEntitiesRecursive(replicationSet, *hierarchyController);
-    //        }
-    //    }
-    //}
+    void ServerToClientReplicationWindow::UpdateHierarchyReplicationSet(ReplicationSet& replicationSet, NetworkHierarchyRootComponent& hierarchyComponent)
+    {
+        INetworkEntityManager* networkEntityManager = AZ::Interface<INetworkEntityManager>::Get();
+        AZ_Assert(networkEntityManager, "NetworkEntityManager must be created.");
+
+        for (const AZ::Entity* controlledEntity : hierarchyComponent.GetHierarchicalEntities())
+        {
+            NetEntityId controlledNetEntitydId = networkEntityManager->GetNetEntityIdById(controlledEntity->GetId());
+            AZ_Assert(controlledNetEntitydId != InvalidNetEntityId, "Unable to find the hierarchy entity in Network Entity Manager");
+
+            ConstNetworkEntityHandle controlledEntityHandle = networkEntityManager->GetEntity(controlledNetEntitydId);
+            AZ_Assert(controlledEntityHandle != nullptr, "We have lost a controlled entity unexpectedly");
+            
+            replicationSet[controlledEntityHandle] = { NetEntityRole::Autonomous, 1.0f };
+        }
+    }
 }

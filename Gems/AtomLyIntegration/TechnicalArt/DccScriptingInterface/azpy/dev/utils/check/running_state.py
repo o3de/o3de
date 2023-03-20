@@ -21,10 +21,11 @@ import logging as _logging
 
 # --------------------------------------------------------------------------
 # -- Global Definitions --
-_DCCSI_DCC_APP = None
+_DCCSI_G_DCC_APP = None
 
 _MODULENAME = 'azpy.dev.utils.check.running_state'
 _LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 # -------------------------------------------------------------------------
 
 
@@ -36,7 +37,7 @@ class CheckRunningState(object):
     """
 
     # Class Variables
-    DCCSI_DCC_APP = None
+    DCCSI_G_DCC_APP = None
 
     def __init__(self, *args, **kwargs):
         '''
@@ -82,32 +83,35 @@ class CheckRunningState(object):
     def check_known(self):
         # -- init --
         # first let's check if any of these DCC apps are running
+
+        # To Do?: Add O3DE checks, treat as a DCC app?
+        
         # 0 - maya first
-        CheckRunningState.DCCSI_DCC_APP = self.maya_running()
+        CheckRunningState.DCCSI_G_DCC_APP = self.maya_running()
 
         # 1 - then max
-        if not CheckRunningState.DCCSI_DCC_APP:
-            CheckRunningState.DCCSI_DCC_APP = self.max_running()
+        if not CheckRunningState.DCCSI_G_DCC_APP:
+            CheckRunningState.DCCSI_G_DCC_APP = self.max_running()
         else:
-            _LOGGER.warning('DCCSI_DCC_APP is already set: {}'.format(CheckRunningState.DCCSI_DCC_APP))
+            _LOGGER.warning('DCCSI_G_DCC_APP is already set: {}'.format(CheckRunningState.DCCSI_G_DCC_APP))
 
         # 2 - then blender
-        if not CheckRunningState.DCCSI_DCC_APP:
-            CheckRunningState.DCCSI_DCC_APP = self.blender_running()
+        if not CheckRunningState.DCCSI_G_DCC_APP:
+            CheckRunningState.DCCSI_G_DCC_APP = self.blender_running()
         else:
-            _LOGGER.warning('DCCSI_DCC_APP is already set: {}'.format(CheckRunningState.DCCSI_DCC_APP))
+            _LOGGER.warning('DCCSI_G_DCC_APP is already set: {}'.format(CheckRunningState.DCCSI_G_DCC_APP))
 
         # store checks for DCC info
-        if CheckRunningState.DCCSI_DCC_APP:
+        if CheckRunningState.DCCSI_G_DCC_APP:
             self.dcc_py = True
 
         # store check for is maya  running headless
-        if CheckRunningState.DCCSI_DCC_APP == 'maya':
+        if CheckRunningState.DCCSI_G_DCC_APP == 'maya':
             self.maya_headless = self.is_maya_headless()
 
         # set a envar other modules can easily check
-        if CheckRunningState.DCCSI_DCC_APP:
-            os.environ['DCCSI_DCC_APP'] = CheckRunningState.DCCSI_DCC_APP
+        if CheckRunningState.DCCSI_G_DCC_APP:
+            os.environ['DCCSI_G_DCC_APP'] = CheckRunningState.DCCSI_G_DCC_APP
     # ---------------------------------------------------------------------
 
 
@@ -164,13 +168,13 @@ class CheckRunningState(object):
         """< To Do: Need to document >"""
         try:
             import azpy.dev.utils.check.maya_app as check_dcc
-            DCCSI_DCC_APP = check_dcc.validate_state()
+            DCCSI_G_DCC_APP = check_dcc.validate_state()
         except ImportError as e:
             _LOGGER.info('Not Implemented: azpy.dev.utils.check.maya_app')
-        if DCCSI_DCC_APP:
-            CheckRunningState.DCCSI_DCC_APP = check_dcc.validate_state()
-            os.environ["DCCSI_DCC_APP"] = str(DCCSI_DCC_APP)
-        return CheckRunningState.DCCSI_DCC_APP
+        if DCCSI_G_DCC_APP:
+            CheckRunningState.DCCSI_G_DCC_APP = check_dcc.validate_state()
+            os.environ["DCCSI_G_DCC_APP"] = str(DCCSI_G_DCC_APP)
+        return CheckRunningState.DCCSI_G_DCC_APP
     #----------------------------------------------------------------------
 
     # --method-------------------------------------------------------------
@@ -200,13 +204,13 @@ class CheckRunningState(object):
         """
         try:
             import azpy.dev.utils.check.max_app as check_dcc
-            CheckRunningState.DCCSI_DCC_APP = check_dcc.validate_state()
+            CheckRunningState.DCCSI_G_DCC_APP = check_dcc.validate_state()
         except ImportError as e:
             _LOGGER.info('Not Implemented: azpy.dev.utils.check.max')
-        if CheckRunningState.DCCSI_DCC_APP:
-            CheckRunningState.DCCSI_DCC_APP = check_dcc.validate_state()
-            os.environ["DCCSI_DCC_APP"] = str(CheckRunningState.DCCSI_DCC_APP)
-        return CheckRunningState.DCCSI_DCC_APP
+        if CheckRunningState.DCCSI_G_DCC_APP:
+            CheckRunningState.DCCSI_G_DCC_APP = check_dcc.validate_state()
+            os.environ["DCCSI_G_DCC_APP"] = str(CheckRunningState.DCCSI_G_DCC_APP)
+        return CheckRunningState.DCCSI_G_DCC_APP
     #----------------------------------------------------------------------
 
 
@@ -217,13 +221,13 @@ class CheckRunningState(object):
         """
         try:
             import azpy.dev.utils.check.blender_app as check_dcc
-            CheckRunningState.DCCSI_DCC_APP = check_dcc.validate_state()
+            CheckRunningState.DCCSI_G_DCC_APP = check_dcc.validate_state()
         except ImportError as e:
             _LOGGER.info('Not Implemented: azpy.dev.utils.check.blender')
-        if CheckRunningState.DCCSI_DCC_APP:
-            CheckRunningState.DCCSI_DCC_APP = check_dcc.validate_state()
-            os.environ["DCCSI_DCC_APP"] = str(CheckRunningState.DCCSI_DCC_APP)
-        return CheckRunningState.DCCSI_DCC_APP
+        if CheckRunningState.DCCSI_G_DCC_APP:
+            CheckRunningState.DCCSI_G_DCC_APP = check_dcc.validate_state()
+            os.environ["DCCSI_G_DCC_APP"] = str(CheckRunningState.DCCSI_G_DCC_APP)
+        return CheckRunningState.DCCSI_G_DCC_APP
     #----------------------------------------------------------------------
 
 
@@ -231,7 +235,7 @@ class CheckRunningState(object):
 # Class Test
 #==========================================================================
 if __name__ == '__main__':
-    _G_DEBUG = True
+    _DCCSI_GDEBUG = True
     _DCCSI_DEV_MODE = True
     _LOGGER.setLevel(_logging.DEBUG)  # force debugging
 
@@ -251,4 +255,4 @@ if __name__ == '__main__':
     _LOGGER.info(STR_CROSSBAR)
 
     foo = CheckRunningState()
-    _LOGGER.info('DCCSI_DCC_APP: {}'.format(foo.DCCSI_DCC_APP))
+    _LOGGER.info('DCCSI_G_DCC_APP: {}'.format(foo.DCCSI_G_DCC_APP))

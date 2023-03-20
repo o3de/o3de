@@ -17,12 +17,15 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(AddSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AddSlotMenuAction, AZ::SystemAllocator);
 
         AddSlotMenuAction(QObject* parent);
         virtual ~AddSlotMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -30,12 +33,15 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(RemoveSlotMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RemoveSlotMenuAction, AZ::SystemAllocator);
 
         RemoveSlotMenuAction(QObject* parent);
         virtual ~RemoveSlotMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -44,12 +50,15 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ClearConnectionsMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ClearConnectionsMenuAction, AZ::SystemAllocator);
         
         ClearConnectionsMenuAction(QObject* parent);
         virtual ~ClearConnectionsMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -61,12 +70,15 @@ namespace GraphCanvas
         : public SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ResetToDefaultValueMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ResetToDefaultValueMenuAction, AZ::SystemAllocator);
 
         ResetToDefaultValueMenuAction(QObject* parent);
         virtual ~ResetToDefaultValueMenuAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -74,12 +86,15 @@ namespace GraphCanvas
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ToggleReferenceStateAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ToggleReferenceStateAction, AZ::SystemAllocator);
 
         ToggleReferenceStateAction(QObject* parent);
         virtual ~ToggleReferenceStateAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -87,12 +102,15 @@ namespace GraphCanvas
         : public GraphCanvas::SlotContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(PromoteToVariableAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PromoteToVariableAction, AZ::SystemAllocator);
 
         PromoteToVariableAction(QObject* parent);
         virtual ~PromoteToVariableAction() = default;
 
+        using SlotContextMenuAction::RefreshAction;
         void RefreshAction() override;
+
+        using SlotContextMenuAction::TriggerAction;
         GraphCanvas::ContextMenuAction::SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 

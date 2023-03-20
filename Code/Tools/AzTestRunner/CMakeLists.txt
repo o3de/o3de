@@ -6,7 +6,7 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME})
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 
 include(${pal_dir}/platform_traits_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
 
@@ -27,7 +27,6 @@ if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
             PRIVATE
                 AZ::AzCore
                 AZ::AzTest
-                AZ::AzFramework
     )
     
     if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)

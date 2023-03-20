@@ -55,5 +55,8 @@ namespace UnitTest
             unusedBitTest.SetBit(i, false);
         }
         EXPECT_FALSE(unusedBitTest.AnySet());
+
+        unusedBitTest.SetBit(0, true);
+        EXPECT_TRUE(unusedBitTest.AnySet());
     }
 }

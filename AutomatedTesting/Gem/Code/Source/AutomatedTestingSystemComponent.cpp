@@ -9,8 +9,12 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <Source/AutoGen/AutoComponentTypes.h>
+#include <Multiplayer/IMultiplayer.h>
+#include <AzCore/Console/ILogger.h>
 
 #include <AutomatedTestingSystemComponent.h>
+#include <Multiplayer/ReplicationWindows/IReplicationWindow.h>
 
 namespace AutomatedTesting
 {
@@ -26,7 +30,6 @@ namespace AutomatedTesting
             {
                 ec->Class<AutomatedTestingSystemComponent>("AutomatedTesting", "[Description of functionality provided by this System Component]")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -45,7 +48,7 @@ namespace AutomatedTesting
 
     void AutomatedTestingSystemComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
-        AZ_UNUSED(required);
+        required.push_back(AZ_CRC_CE("MultiplayerService"));
     }
 
     void AutomatedTestingSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
@@ -60,6 +63,7 @@ namespace AutomatedTesting
     void AutomatedTestingSystemComponent::Activate()
     {
         AutomatedTestingRequestBus::Handler::BusConnect();
+        RegisterMultiplayerComponents(); //< Register AutomatedTesting's multiplayer components to assign NetComponentIds
     }
 
     void AutomatedTestingSystemComponent::Deactivate()

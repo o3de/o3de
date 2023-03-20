@@ -61,18 +61,18 @@ namespace UnitTest
 
     // Fixture for non-typed tests
     class AnyTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     { };
 
     // Fixture for tests with 1 type
     template<typename TestStruct>
     class AnySizedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             TestStruct::Reset();
         }
@@ -83,7 +83,7 @@ namespace UnitTest
     // Fixture for tests with 2 types (for converting between types)
     template <typename StructPair>
     class AnyConversionTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         using LHS = typename StructPair::first_type;
@@ -91,7 +91,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             LHS::Reset();
             RHS::Reset();
@@ -480,7 +480,9 @@ namespace UnitTest
         TEST_F(AnyTest, Any_CopyAssignSelfEmpty_IsEmpty)
         {
             any a;
+            AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
             a = a;
+            AZ_POP_DISABLE_WARNING
             EXPECT_TRUE(a.empty());
         }
 
@@ -491,7 +493,9 @@ namespace UnitTest
                 any a((TypeParam(1)));
                 EXPECT_EQ(TypeParam::s_count, 1);
 
+                AZ_PUSH_DISABLE_WARNING(, "-Wself-assign-overloaded")
                 a = a;
+                AZ_POP_DISABLE_WARNING
 
                 EXPECT_EQ(TypeParam::s_count, 1);
                 EXPECT_EQ(any_cast<const TypeParam&>(a).val(), 1);

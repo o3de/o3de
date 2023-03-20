@@ -27,6 +27,11 @@ namespace AZ
 
 namespace EditorPythonBindings
 {
+    namespace Internal
+    {
+        struct FileHandle;
+    }
+
     //! Exports Python symbols to the log folder for Python script developers to include into their local projects
     class PythonLogSymbolsComponent
         : public AZ::Component
@@ -51,12 +56,19 @@ namespace EditorPythonBindings
 
         ////////////////////////////////////////////////////////////////////////
         // PythonSymbolEventBus::Handler
-        void LogClass(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass) override;
-        void LogClassWithName(AZStd::string_view moduleName, AZ::BehaviorClass* behaviorClass, AZStd::string_view className) override;
-        void LogClassMethod(AZStd::string_view moduleName, AZStd::string_view globalMethodName, AZ::BehaviorClass* behaviorClass, AZ::BehaviorMethod* behaviorMethod) override;
-        void LogBus(AZStd::string_view moduleName, AZStd::string_view busName, AZ::BehaviorEBus* behaviorEBus) override;
-        void LogGlobalMethod(AZStd::string_view moduleName, AZStd::string_view methodName, AZ::BehaviorMethod* behaviorMethod) override;
-        void LogGlobalProperty(AZStd::string_view moduleName, AZStd::string_view propertyName, AZ::BehaviorProperty* behaviorProperty) override;
+        void LogClass(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass) override;
+        void LogClassWithName(const AZStd::string moduleName, const AZ::BehaviorClass* behaviorClass, const AZStd::string className) override;
+        void LogClassMethod(
+            const AZStd::string moduleName,
+            const AZStd::string globalMethodName,
+            const AZ::BehaviorClass* behaviorClass,
+            const AZ::BehaviorMethod* behaviorMethod) override;
+        void LogBus(const AZStd::string moduleName, const AZStd::string busName, const AZ::BehaviorEBus* behaviorEBus) override;
+        void LogGlobalMethod(const AZStd::string moduleName, const AZStd::string methodName, const AZ::BehaviorMethod* behaviorMethod) override;
+        void LogGlobalProperty(
+            const AZStd::string moduleName,
+            const AZStd::string propertyName,
+            const AZ::BehaviorProperty* behaviorProperty) override;
         void Finalize() override;
         AZStd::string FetchPythonTypeName(const AZ::BehaviorParameter& param) override;
 
@@ -70,11 +82,13 @@ namespace EditorPythonBindings
         AZStd::string_view FetchPythonTypeAndTraits(const AZ::TypeId& typeId, AZ::u32 traits);
 
     private:
+
         using ModuleSet = AZStd::unordered_set<AZStd::string>;
         using GlobalFunctionEntry = AZStd::pair<const AZ::BehaviorMethod*, AZStd::string>;
         using GlobalFunctionList = AZStd::vector<GlobalFunctionEntry>;
         using GlobalFunctionMap = AZStd::unordered_map<AZStd::string_view, GlobalFunctionList>;
         using TypeMap = AZStd::unordered_map<AZ::TypeId, AZStd::string>;
+        using FileHandlePtr = AZStd::shared_ptr<Internal::FileHandle>;
 
         AZStd::string m_basePath;
         ModuleSet m_moduleSet;
@@ -85,8 +99,8 @@ namespace EditorPythonBindings
         AZStd::string FetchMapType(const AZ::TypeId& typeId);
         AZStd::string FetchOutcomeType(const AZ::TypeId& typeId);
         AZStd::string TypeNameFallback(const AZ::TypeId& typeId);
-        AZ::IO::HandleType OpenInitFileAt(AZStd::string_view moduleName);
-        AZ::IO::HandleType OpenModuleAt(AZStd::string_view moduleName);
+        FileHandlePtr OpenInitFileAt(AZStd::string_view moduleName);
+        FileHandlePtr OpenModuleAt(AZStd::string_view moduleName);
         void WriteMethod(AZ::IO::HandleType handle, AZStd::string_view methodName, const AZ::BehaviorMethod& behaviorMethod, const AZ::BehaviorClass* behaviorClass);
         void WriteProperty(AZ::IO::HandleType handle, int level, AZStd::string_view propertyName, const AZ::BehaviorProperty& property, const AZ::BehaviorClass* behaviorClass);
     };

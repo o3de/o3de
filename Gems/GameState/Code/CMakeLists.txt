@@ -17,8 +17,8 @@ ly_add_target(
         PUBLIC
             Include
     BUILD_DEPENDENCIES
-        PRIVATE
-            Legacy::CryCommon
+        PUBLIC
+            AZ::AzCore
 )
 
 ly_add_target(
@@ -33,13 +33,13 @@ ly_add_target(
             Include
     BUILD_DEPENDENCIES
         PRIVATE
-            Legacy::CryCommon
             Gem::GameState.Static
 )
 
 # Clients and Servers use the above module.  There is no editor or tools module required.
 ly_create_alias(NAME GameState.Clients  NAMESPACE Gem TARGETS GameState)
 ly_create_alias(NAME GameState.Servers  NAMESPACE Gem TARGETS GameState)
+ly_create_alias(NAME GameState.Unified  NAMESPACE Gem TARGETS GameState)
 
 ################################################################################
 # Tests
@@ -58,7 +58,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzTest
-                Legacy::CryCommon
                 Gem::GameState.Static
     )
     ly_add_googletest(

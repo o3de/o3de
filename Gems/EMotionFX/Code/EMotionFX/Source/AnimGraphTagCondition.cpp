@@ -23,7 +23,7 @@ namespace EMotionFX
     const char* AnimGraphTagCondition::s_functionOneOrMoreActive = "One or more tags active";
     const char* AnimGraphTagCondition::s_functionNoTagActive = "No tag active";
 
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagCondition, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphTagCondition, AnimGraphAllocator)
 
     AnimGraphTagCondition::AnimGraphTagCondition()
         : AnimGraphTransitionCondition()
@@ -54,7 +54,7 @@ namespace EMotionFX
         for (size_t i = 0; i < numTags; ++i)
         {
             // Search for the parameter with the name of the tag and save the index.
-            const AZ::Outcome<size_t> parameterIndex = mAnimGraph->FindValueParameterIndexByName(m_tags[i]);
+            const AZ::Outcome<size_t> parameterIndex = m_animGraph->FindValueParameterIndexByName(m_tags[i]);
             if (parameterIndex.IsSuccess())
             {
                 // Cache the parameter index to avoid string lookups at runtime.

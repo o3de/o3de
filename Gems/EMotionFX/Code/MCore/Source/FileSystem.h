@@ -34,6 +34,6 @@ namespace MCore
          */
         static bool SaveToFileSecured(const char* filename, const AZStd::function<bool()>& saveFunction, CommandManager* commandManager = nullptr);
 
-        static StaticString     mSecureSavePath;        /**< The folder path used to keep a backup in SaveToFileSecured. */
+        static StaticString     s_secureSavePath;        /**< The folder path used to keep a backup in SaveToFileSecured. */
     };
 } // namespace MCore

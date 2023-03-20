@@ -7,20 +7,17 @@
  */
 
 #include "Components/WhiteBoxColliderComponent.h"
-#include "WhiteBoxAllocator.h"
 #include "WhiteBoxComponent.h"
 #include "WhiteBoxModule.h"
 #include "WhiteBoxSystemComponent.h"
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(WhiteBoxModule, AZ::SystemAllocator)
 
     WhiteBoxModule::WhiteBoxModule()
         : CryHooksModule()
     {
-        AZ::AllocatorInstance<WhiteBoxAllocator>::Create();
-
         // push results of [MyComponent]::CreateDescriptor() into m_descriptors here
         m_descriptors.insert(
             m_descriptors.end(),
@@ -33,7 +30,6 @@ namespace WhiteBox
 
     WhiteBoxModule::~WhiteBoxModule()
     {
-        AZ::AllocatorInstance<WhiteBoxAllocator>::Destroy();
     }
 
     AZ::ComponentTypeList WhiteBoxModule::GetRequiredSystemComponents() const

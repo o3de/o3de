@@ -2,12 +2,11 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="OperatorSub"
-	       QualifiedName="ScriptCanvas::Nodes::Operators::OperatorSub"
-	       PreferredClassName="Subtract (-)"
-           Uuid="{D0615D0A-027F-47F6-A02B-E35DAF22F431}"
-           Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
-           Category="Math"
-           Version="0"
-           Description="Subtracts two of more elements">
+        QualifiedName="ScriptCanvas::Nodes::Operators::OperatorSub"
+        PreferredClassName="Subtract (-)"
+        Uuid="{D0615D0A-027F-47F6-A02B-E35DAF22F431}"
+        Base="ScriptCanvas::Nodes::Operators::OperatorArithmetic"
+        Category="Math"
+        Description="Subtracts two of more elements">
     </Class>
 </ScriptCanvas>

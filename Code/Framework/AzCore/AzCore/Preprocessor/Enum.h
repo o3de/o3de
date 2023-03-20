@@ -31,6 +31,20 @@
 //!             Ex. AZ_CLASS_ENUM(E, (a, 1), (b, 2), (c, 2) )
 //!             Invoking either ToString(E::b) or ToString(E::c) will result in the string "b" being returned
 //! limitation: maximum of 125 enumerators
+//!
+//! By default, all enums declared with these macros will be assigned a default UUID due to the default enum specialization in TypeInfo.h.
+//! To create a unique UUID, you must use the AZ_TYPE_INFO_SPECIALIZE macro as well. This macro must be declared in the AZ namespace.
+//! Ex:
+//! namespace MyNamespace
+//! {
+//!     AZ_ENUM(MyCoolEnum, A, B);
+//! }
+//!
+//! namespace AZ
+//! {
+//!     AZ_TYPE_INFO_SPECIALIZE(MyNamespace::MyCoolEnum, "{<SomeGuid>}");
+//! }
+//!
 #define AZ_ENUM(EnumTypeName, ...)                                                      MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, __VA_ARGS__)
 
 //! Generate a decorated enumeration as AZ_ENUM, but with a specific underlying type.
@@ -52,170 +66,35 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/optional.h>
-
-// For each macro where a fixed first argument is supplied to the supplied macro
-#define AZ_FOR_EACH_BIND1ST_1(pppredicate,  boundarg, param)      pppredicate(boundarg, param)
-#define AZ_FOR_EACH_BIND1ST_2(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_3(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_4(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_5(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_6(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_7(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_8(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_9(pppredicate,  boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_10(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_11(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_12(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_13(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_14(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_15(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_16(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_17(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_18(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_19(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_20(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_21(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_22(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_23(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_24(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_25(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_26(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_27(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_28(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_29(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_30(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_31(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_32(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_33(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_34(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_35(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_36(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_37(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_38(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_39(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_40(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_41(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_42(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_43(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_44(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_45(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_46(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_47(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_48(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_49(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_50(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_51(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_52(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_53(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_54(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_55(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_56(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_57(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_58(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_59(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_60(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_61(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_62(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_63(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_64(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_65(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_66(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_67(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_68(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_69(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_70(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_71(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_72(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_73(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_74(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_75(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_76(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_77(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_78(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_79(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_80(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_81(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_82(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_83(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_84(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_85(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_86(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_87(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_88(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_89(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_90(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_91(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_92(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_93(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_94(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_95(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_96(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_97(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_98(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_99(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_100(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_101(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_102(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_103(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_104(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_105(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_106(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_107(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_108(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_109(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_110(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_111(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_112(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_113(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_114(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_115(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_116(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_117(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_118(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_119(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_120(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_121(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_122(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_123(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_124(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-#define AZ_FOR_EACH_BIND1ST_125(pppredicate, boundarg, param, ...) pppredicate(boundarg, param) AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, __VA_ARGS__)
-
-#define AZ_FOR_EACH_BIND1ST(pppredicate, boundarg, ...) AZ_MACRO_CALL(AZ_JOIN(AZ_FOR_EACH_BIND1ST_, AZ_VA_NUM_ARGS(__VA_ARGS__)), pppredicate, boundarg, __VA_ARGS__)
-
-#define AZ_REMOVE_PARENTHESIS(...) AZ_REMOVE_PARENTHESIS __VA_ARGS__
-#define AAZ_REMOVE_PARENTHESIS
-#define AZ_JOIN_VA_ARGS_IMPL(X, ...) X ## __VA_ARGS__
-#define AZ_JOIN_VA_ARGS(X, ...) AZ_JOIN_VA_ARGS_IMPL(X, __VA_ARGS__)
-#define AZ_UNWRAP(...)  AZ_JOIN_VA_ARGS(A, AZ_REMOVE_PARENTHESIS __VA_ARGS__)
-#define AZ_WRAP(...) (__VA_ARGS__)
+#include <AzCore/variadic.h>
 
 
-#define AZ_MACRO_CALL(macro, ...)  macro AZ_WRAP(__VA_ARGS__)
-#define AZ_MACRO_CALL_INDEX(prefix, ...) AZ_MACRO_CALL(AZ_JOIN(prefix, AZ_VA_NUM_ARGS(AZ_UNWRAP(__VA_ARGS__))), AZ_UNWRAP(__VA_ARGS__))
-#define AZ_MACRO_CALL_WRAP(macro, ...)  AZ_MACRO_CALL(macro, __VA_ARGS__)
-// Needed for clang preprocessor to argument prescan to expand arguments subs
-// https://gcc.gnu.org/onlinedocs/gcc-9.2.0/cpp/Argument-Prescan.html#Argument-Prescan
-#define AZ_IDENTITY_128(...) AZ_IDENTITY_64(AZ_IDENTITY_64(__VA_ARGS__))
-#define AZ_IDENTITY_64(...) AZ_IDENTITY_32(AZ_IDENTITY_32(__VA_ARGS__))
-#define AZ_IDENTITY_32(...) AZ_IDENTITY_16(AZ_IDENTITY_16(__VA_ARGS__))
-#define AZ_IDENTITY_16(...) AZ_IDENTITY_8(AZ_IDENTITY_8(__VA_ARGS__))
-#define AZ_IDENTITY_8(...) AZ_IDENTITY_4(AZ_IDENTITY_4(__VA_ARGS__))
-#define AZ_IDENTITY_4(...) AZ_IDENTITY_2(AZ_IDENTITY_2(__VA_ARGS__))
-#define AZ_IDENTITY_2(...) AZ_IDENTITY(AZ_IDENTITY(__VA_ARGS__))
-#define AZ_IDENTITY(...) __VA_ARGS__
+// Indirection macro to allow expansion of macro parameters in a macro call that joins parameters together
+#define AZ_ENUM_CALL_II(macro, ...) macro(__VA_ARGS__)
+#define AZ_ENUM_CALL_I(macro, ...) AZ_ENUM_CALL_II(macro, __VA_ARGS__)
+#define AZ_ENUM_CALL(macro, ...) AZ_ENUM_CALL_I(macro, __VA_ARGS__)
 
 // 1. as a plain `EnumTypeName` argument in which case the enum has no underlying type
 // 2. surrounded by parenthesis `(EnumTypeName, AZ::u8)` in which case the enum underlying type is the second element
 // The underlying type of the enum is the second argument
+#define GET_ENUM_OPTION_NAME_0()
 #define GET_ENUM_OPTION_NAME_1(_name) _name
 #define GET_ENUM_OPTION_NAME_2(_name, _initializer) _name
 #define GET_ENUM_OPTION_NAME(_name) AZ_MACRO_CALL_INDEX(GET_ENUM_OPTION_NAME_, _name)
+#define GET_ENUM_OPTION_INITIALIZER_0()
 #define GET_ENUM_OPTION_INITIALIZER_1(_name) _name,
 #define GET_ENUM_OPTION_INITIALIZER_2(_name, _initializer) _name = _initializer,
 #define GET_ENUM_OPTION_INITIALIZER(_name) AZ_MACRO_CALL_INDEX(GET_ENUM_OPTION_INITIALIZER_, _name)
 
 #define INIT_ENUM_STRING_PAIR_IMPL(_enumname, _optionname) { _enumname::_optionname, AZ_STRINGIZE(_optionname) },
-#define INIT_ENUM_STRING_PAIR(_enumname, _optionname) INIT_ENUM_STRING_PAIR_IMPL(_enumname, GET_ENUM_OPTION_NAME(_optionname))
+#define INIT_ENUM_STRING_PAIR(_enumname, _optionname) AZ_ENUM_CALL( \
+    AZ_JOIN(INIT_ENUM_STRING_PAIR_, AZ_VA_NUM_ARGS(AZ_UNWRAP(_optionname))), \
+    _enumname, _optionname)
+// Wrapper macro used to delegate to the enum option name to string macro
+// If a line only contains a comma it would expand to an empty argument
+#define INIT_ENUM_STRING_PAIR_0(_enumname, _optionname)
+#define INIT_ENUM_STRING_PAIR_1(_enumname, _optionname) INIT_ENUM_STRING_PAIR_IMPL(_enumname, GET_ENUM_OPTION_NAME(_optionname))
+#define INIT_ENUM_STRING_PAIR_2(_enumname, _optionname) INIT_ENUM_STRING_PAIR_1(_enumname, _optionname)
 
 #define MAKE_REFLECTABLE_ENUM_UNSCOPED(EnumTypeName, ...) MAKE_REFLECTABLE_ENUM_(, EnumTypeName,, __VA_ARGS__)
 #define MAKE_REFLECTABLE_ENUM_UNSCOPED_WITH_UNDERLYING_TYPE(EnumTypeName, EnumUnderlyingType, ...) MAKE_REFLECTABLE_ENUM_(, EnumTypeName, : EnumUnderlyingType, __VA_ARGS__)
@@ -223,25 +102,25 @@
 #define MAKE_REFLECTABLE_ENUM_SCOPED_WITH_UNDERLYING_TYPE(EnumTypeName, EnumUnderlyingType, ...)   MAKE_REFLECTABLE_ENUM_(class, EnumTypeName, : EnumUnderlyingType, __VA_ARGS__)
 #define MAKE_REFLECTABLE_ENUM_(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, ...) \
     MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName \
-    , EnumUnderlyingType, AZ_VA_NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
+    , EnumUnderlyingType, __VA_ARGS__)
 
-#define MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, EnumTypeCount, ...) \
+#define MAKE_REFLECTABLE_ENUM_ARGS(SCOPE_QUAL, EnumTypeName, EnumUnderlyingType, ...) \
 inline namespace AZ_JOIN(EnumTypeName, Namespace) \
 { \
     enum SCOPE_QUAL EnumTypeName EnumUnderlyingType \
     { \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(AZ_MACRO_CALL_WRAP, GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__)) \
+        AZ_FOR_EACH(GET_ENUM_OPTION_INITIALIZER, __VA_ARGS__) \
     };\
-    inline constexpr size_t AZ_JOIN(EnumTypeName, Count) = EnumTypeCount; \
     struct AZ_JOIN(EnumTypeName, EnumeratorValueAndString) \
     { \
         EnumTypeName m_value; \
         AZStd::string_view m_string; \
     }; \
-    constexpr AZStd::array<AZ_JOIN(EnumTypeName, EnumeratorValueAndString), AZ_JOIN(EnumTypeName, Count)> AZ_JOIN(EnumTypeName, Members) = \
-    {{ \
-        AZ_IDENTITY_128(AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__)) \
-    }}; \
+    constexpr auto AZ_JOIN(EnumTypeName, Members) = AZStd::to_array<AZ_JOIN(EnumTypeName, EnumeratorValueAndString)> \
+    ({ \
+        AZ_FOR_EACH_BIND1ST(INIT_ENUM_STRING_PAIR, EnumTypeName, __VA_ARGS__) \
+    }); \
+    inline constexpr size_t AZ_JOIN(EnumTypeName, Count) = AZ_JOIN(EnumTypeName, Members).size(); \
     constexpr AZStd::optional<EnumTypeName> FromString(AZStd::string_view stringifiedEnumerator)\
     { \
         auto cbegin = AZ_JOIN(EnumTypeName, Members).cbegin();\
@@ -264,13 +143,68 @@ inline namespace AZ_JOIN(EnumTypeName, Namespace) \
     } \
 } \
 \
-template< typename T > struct AzEnumTraits; \
-\
-template<> \
-struct AzEnumTraits< AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName > \
-{ \
-    using MembersArrayType                              = decltype( AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members) ); \
-    inline static constexpr MembersArrayType& Members   = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members); \
-    inline static constexpr size_t Count                = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Count); \
-    inline static constexpr AZStd::string_view EnumName = AZ_STRINGIZE(EnumTypeName); \
-}; 
+    struct AZ_JOIN(EnumTypeName, EnumTraits)                                                                                               \
+    {                                                                                                                                      \
+        using MembersArrayType = decltype(AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members));                               \
+        inline static constexpr MembersArrayType& Members = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Members);              \
+        inline static constexpr size_t Count = AZ_JOIN(EnumTypeName, Namespace)::AZ_JOIN(EnumTypeName, Count);                             \
+        inline static constexpr AZStd::string_view EnumName = AZ_STRINGIZE(EnumTypeName);                                                  \
+        /* Visitor must accept a type convertible from EnumTypeName as the first parameter and an AZStd::string_view as the second */      \
+        template<class Visitor>                                                                                                            \
+        static constexpr void Visit(Visitor&& enumVisitor)                                                                                 \
+        {                                                                                                                                  \
+            for (const auto& member : Members)                                                                                             \
+            {                                                                                                                              \
+                enumVisitor(member.m_value, member.m_string);                                                                              \
+            }                                                                                                                              \
+        }                                                                                                                                  \
+    };                                                                                                                                     \
+                                                                                                                                           \
+    inline auto GetAzEnumTraits(AZ_JOIN(EnumTypeName, Namespace)::EnumTypeName)                                                            \
+    {                                                                                                                                      \
+        return AZ_JOIN(EnumTypeName, EnumTraits){};                                                                                        \
+    };
+
+namespace AZ::Internal
+{
+    template <class T, class = void>
+    inline constexpr bool HasGetAzEnumTraits = false;
+    template <class T>
+    inline constexpr bool HasGetAzEnumTraits<T, AZStd::enable_if_t<!AZStd::is_void_v<decltype(GetAzEnumTraits(AZStd::declval<T>()))>>> = true;
+
+    // Deleted function to provide the AZ::Internal namespace with the GetAzEnumTraits symbol
+    // This is to make an overload which the AzEnumTraitsImpl would use with its
+    // template parameter to use Argument Dependent Lookup to find the GetAzEnumTraits
+    // function for the Enum Type in the correct namespace.
+    template<typename T>
+    void GetAzEnumTraits(T&&) = delete;
+
+    template <class T, class = void>
+    struct GetAzEnumTraits_Impl {};
+    template <class T>
+    struct GetAzEnumTraits_Impl<T, AZStd::enable_if_t<HasGetAzEnumTraits<T>>>
+    {
+        // The AZ_ENUM macros contain a function which returns a struct
+        // with the enum traits within it
+        // We use decltype here to get the type of that function
+        using type = decltype(GetAzEnumTraits(AZStd::declval<T>()));
+    };
+
+    template<class T, class = void>
+    inline constexpr bool HasAzEnumTraitsImpl = false;
+
+    template<class T>
+    inline constexpr bool HasAzEnumTraitsImpl<T, AZStd::enable_if_t<!AZStd::is_void_v<typename GetAzEnumTraits_Impl<T>::type>>> = true;
+} // namespace AZ::Internal
+
+namespace AZ
+{
+    template<class T>
+    using AzEnumTraits = typename Internal::GetAzEnumTraits_Impl<AZStd::remove_cvref_t<T>>::type;
+
+    template<class T>
+    using HasAzEnumTraits = AZStd::bool_constant<Internal::HasAzEnumTraitsImpl<AZStd::remove_cvref_t<T>>>;
+
+    template<class T>
+    /*concept*/ inline constexpr bool HasAzEnumTraits_v = HasAzEnumTraits<T>::value;
+}

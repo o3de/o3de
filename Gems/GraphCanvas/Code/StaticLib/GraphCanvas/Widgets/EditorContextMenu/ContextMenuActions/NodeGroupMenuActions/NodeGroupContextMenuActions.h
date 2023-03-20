@@ -17,7 +17,7 @@ namespace GraphCanvas
         : public NodeGroupContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CreateNodeGroupMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CreateNodeGroupMenuAction, AZ::SystemAllocator);
 
         CreateNodeGroupMenuAction(QObject* parent, bool collapseGroup);
         virtual ~CreateNodeGroupMenuAction() = default;
@@ -25,6 +25,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
 
     private:
@@ -35,7 +37,7 @@ namespace GraphCanvas
         : public NodeGroupContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(UngroupNodeGroupMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(UngroupNodeGroupMenuAction, AZ::SystemAllocator);
 
         UngroupNodeGroupMenuAction(QObject* parent);
         virtual ~UngroupNodeGroupMenuAction() = default;
@@ -43,6 +45,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -50,7 +54,7 @@ namespace GraphCanvas
         : public NodeGroupContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(CollapseNodeGroupMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CollapseNodeGroupMenuAction, AZ::SystemAllocator);
 
         CollapseNodeGroupMenuAction(QObject* parent);
         virtual ~CollapseNodeGroupMenuAction() = default;
@@ -58,6 +62,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -65,7 +71,7 @@ namespace GraphCanvas
         : public NodeGroupContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ExpandNodeGroupMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExpandNodeGroupMenuAction, AZ::SystemAllocator);
 
         ExpandNodeGroupMenuAction(QObject* parent);
         virtual ~ExpandNodeGroupMenuAction() = default;
@@ -73,6 +79,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 
@@ -80,7 +88,7 @@ namespace GraphCanvas
         : public NodeGroupContextMenuAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditGroupTitleMenuAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditGroupTitleMenuAction, AZ::SystemAllocator);
 
         EditGroupTitleMenuAction(QObject* parent);
         virtual ~EditGroupTitleMenuAction() = default;
@@ -88,6 +96,8 @@ namespace GraphCanvas
         using ContextMenuAction::RefreshAction;
 
         void RefreshAction() override;
+
+        using NodeGroupContextMenuAction::TriggerAction;
         SceneReaction TriggerAction(const AZ::Vector2& scenePos) override;
     };
 }

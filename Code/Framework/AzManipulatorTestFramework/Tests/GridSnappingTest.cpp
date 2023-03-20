@@ -22,11 +22,12 @@
 
 namespace UnitTest
 {
-    class GridSnappingFixture : public ToolsApplicationFixture
+    class GridSnappingFixture : public ToolsApplicationFixture<>
     {
     public:
         GridSnappingFixture()
-            : m_viewportManipulatorInteraction(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>())
+            : m_viewportManipulatorInteraction(AZStd::make_unique<AzManipulatorTestFramework::DirectCallManipulatorViewportInteraction>(
+                  AZStd::make_shared<NullDebugDisplayRequests>()))
             , m_actionDispatcher(
                   AZStd::make_unique<AzManipulatorTestFramework::ImmediateModeActionDispatcher>(*m_viewportManipulatorInteraction))
         {
@@ -71,12 +72,12 @@ namespace UnitTest
 
         // callback to update the manipulator's current position
         linearManipulator->InstallMouseMoveCallback(
-            [this, linearManipulator](const AzToolsFramework::LinearManipulator::Action& action)
+            [linearManipulator = linearManipulator.get()](const AzToolsFramework::LinearManipulator::Action& action)
             {
                 linearManipulator->SetLocalPosition(action.LocalPosition());
             });
 
-        m_actionDispatcher->EnableSnapToGrid()
+        m_actionDispatcher->SetSnapToGrid(true)
             ->GridSize(5.0f)
             ->CameraState(m_cameraState)
             ->MousePosition(initialPositionScreen)
@@ -109,12 +110,12 @@ namespace UnitTest
 
         // callback to update the manipulator's current position
         manipulator->InstallMouseMoveCallback(
-            [manipulator](const typename Manipulator::Action& action)
+            [manipulator = manipulator.get()](const typename Manipulator::Action& action)
             {
                 manipulator->SetLocalPosition(action.LocalPosition());
             });
 
-        actionDispatcher->EnableSnapToGrid()
+        actionDispatcher->SetSnapToGrid(true)
             ->GridSize(1.0f)
             ->CameraState(cameraState)
             ->MousePosition(initialPositionScreen)

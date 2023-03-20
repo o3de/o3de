@@ -1,5 +1,3 @@
-# coding:utf-8
-#!/usr/bin/python
 #
 # Copyright (c) Contributors to the Open 3D Engine Project.
 # For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -9,8 +7,12 @@
 #
 # -------------------------------------------------------------------------
 
-"""qt_settings.py: Manages a QSettings for a tool"""
+"""! Manages a QSettings for a GUI tool
 
+:file: < DCCsi >/azpy/shared/ui/settings.py
+:Status: Prototype
+:Version: 0.0.1
+"""
 # built in's
 import os
 import logging as _logging
@@ -24,7 +26,7 @@ import azpy.config_utils
 _config = azpy.config_utils.get_dccsi_config()
 # ^ this is effectively an import and retreive of <dccsi>\config.py
 # init lumberyard Qy/PySide2 access
-_config.init_ly_pyside(settings.LY_DEV)
+_config.init_o3de_pyside(settings.O3DE_DEV)
 
 # now we can import lumberyards PySide2
 import PySide2.QtCore as QtCore
@@ -32,7 +34,7 @@ import PySide2.QtWidgets as QtWidgets
 
 # -------------------------------------------------------------------------
 #  global space debug flag
-_G_DEBUG = settings.DCCSI_GDEBUG
+_DCCSI_GDEBUG = settings.DCCSI_GDEBUG
 
 #  global space debug flag
 _DCCSI_DEV_MODE = settings.DCCSI_DEV_MODE

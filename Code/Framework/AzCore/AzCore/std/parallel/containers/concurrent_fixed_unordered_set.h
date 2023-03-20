@@ -18,7 +18,7 @@ namespace AZStd
         struct ConcurrentUnorderedFixedSetTableTraits
         {
             typedef Key         key_type;
-            typedef EqualKey    key_eq;
+            typedef EqualKey    key_equal;
             typedef Hasher      hasher;
             typedef Key         value_type;
             typedef AZStd::no_default_allocator allocator_type;
@@ -51,7 +51,7 @@ namespace AZStd
         typedef Internal::concurrent_hash_table< Internal::ConcurrentUnorderedFixedSetTableTraits<Key, Hasher, EqualKey, false, FixedNumBuckets, FixedNumElements, NumLocks> > base_type;
     public:
         typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
+        typedef typename base_type::key_equal   key_equal;
         typedef typename base_type::hasher      hasher;
 
         typedef typename base_type::allocator_type              allocator_type;
@@ -65,13 +65,13 @@ namespace AZStd
         typedef typename base_type::value_type                  value_type;
 
         AZ_FORCE_INLINE concurrent_fixed_unordered_set()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE concurrent_fixed_unordered_set(const hasher& hash, const key_eq& keyEqual)
+            : base_type(hasher(), key_equal()) {}
+        AZ_FORCE_INLINE concurrent_fixed_unordered_set(const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual)
         {}
         template<class Iterator>
         AZ_FORCE_INLINE concurrent_fixed_unordered_set(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
+            : base_type(hasher(), key_equal())
         {
             for (; first != last; ++first)
             {
@@ -79,7 +79,7 @@ namespace AZStd
             }
         }
         template<class Iterator>
-        AZ_FORCE_INLINE concurrent_fixed_unordered_set(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
+        AZ_FORCE_INLINE concurrent_fixed_unordered_set(Iterator first, Iterator last, const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual)
         {
             for (; first != last; ++first)
@@ -112,7 +112,7 @@ namespace AZStd
         typedef Internal::concurrent_hash_table< Internal::ConcurrentUnorderedFixedSetTableTraits<Key, Hasher, EqualKey, true, FixedNumBuckets, FixedNumElements, NumLocks> > base_type;
     public:
         typedef typename base_type::key_type    key_type;
-        typedef typename base_type::key_eq      key_eq;
+        typedef typename base_type::key_equal   key_equal;
         typedef typename base_type::hasher      hasher;
 
         typedef typename base_type::allocator_type              allocator_type;
@@ -126,13 +126,13 @@ namespace AZStd
         typedef typename base_type::value_type                  value_type;
 
         AZ_FORCE_INLINE concurrent_fixed_unordered_multiset()
-            : base_type(hasher(), key_eq()) {}
-        AZ_FORCE_INLINE concurrent_fixed_unordered_multiset(const hasher& hash, const key_eq& keyEqual)
+            : base_type(hasher(), key_equal()) {}
+        AZ_FORCE_INLINE concurrent_fixed_unordered_multiset(const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual)
         {}
         template<class Iterator>
         AZ_FORCE_INLINE concurrent_fixed_unordered_multiset(Iterator first, Iterator last)
-            : base_type(hasher(), key_eq())
+            : base_type(hasher(), key_equal())
         {
             for (; first != last; ++first)
             {
@@ -140,7 +140,7 @@ namespace AZStd
             }
         }
         template<class Iterator>
-        AZ_FORCE_INLINE concurrent_fixed_unordered_multiset(Iterator first, Iterator last, const hasher& hash, const key_eq& keyEqual)
+        AZ_FORCE_INLINE concurrent_fixed_unordered_multiset(Iterator first, Iterator last, const hasher& hash, const key_equal& keyEqual)
             : base_type(hash, keyEqual)
         {
             for (; first != last; ++first)

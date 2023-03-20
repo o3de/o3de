@@ -65,6 +65,8 @@ namespace GraphCanvas
             // Custom Widgets
             const char* const CheckBox = "checkBox";
 
+            const char* const Small = ".small";
+
         } // namespace Elements
 
         enum class Element : AZ::u32
@@ -157,6 +159,8 @@ namespace GraphCanvas
 
             const char* const Spacing = "spacing";
 
+            const char* const LayoutOrientation = "layout-orientation";
+
             // Custom Attributes
             const char* const ConnectionJut = "connection-jut";
             const char* const ConnectionDragMaximumDistance = "connection-drag-max-distance";
@@ -234,6 +238,8 @@ namespace GraphCanvas
             Spacing,
             TextAlignment,
             TextVerticalAlignment,
+
+            LayoutOrientation,
 
             // Custom Attributes
             ConnectionJut,

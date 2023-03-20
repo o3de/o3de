@@ -36,7 +36,7 @@ namespace AtomFontInternal
         ELEMENT_PASS_BLEND      = 14
     };
 
-    inline int GetBlendModeFromString(const string& str, bool dst)
+    inline int GetBlendModeFromString(const AZStd::string& str, bool dst)
     {
         int blend = GS_BLSRC_ONE;
 
@@ -100,7 +100,7 @@ namespace AtomFontInternal
             );
     }
 
-    inline AZ::FontSmoothMethod TranslateSmoothMethod(const string& value)
+    inline AZ::FontSmoothMethod TranslateSmoothMethod(const AZStd::string& value)
     {
         AZ::FontSmoothMethod smoothMethod = AZ::FontSmoothMethod::None;
         if (value == "blur")
@@ -179,9 +179,8 @@ namespace AtomFontInternal
         void FoundElementImpl();
 
         // notify methods
-        void FoundElement(const string& name)
+        void FoundElement(const AZStd::string& name)
         {
-            //MessageBox(NULL, string("[" + name + "]").c_str(), "FoundElement", MB_OK);
             // process the previous element
             switch (m_nElement)
             {
@@ -192,7 +191,15 @@ namespace AtomFontInternal
                     m_FontTexSize.set(512, 512);
                 }
 
-                bool fontLoaded = m_font->Load(m_strFontPath.c_str(), m_FontTexSize.x, m_FontTexSize.y, m_slotSizes.x, m_slotSizes.y, CreateTTFFontFlag(m_FontSmoothMethod, m_FontSmoothAmount), m_SizeRatio);
+                bool fontLoaded = m_font->Load(
+                                            m_strFontPath.c_str(), 
+                                            static_cast<unsigned int>(m_FontTexSize.x), 
+                                            static_cast<unsigned int>(m_FontTexSize.y), 
+                                            m_slotSizes.x, 
+                                            m_slotSizes.y, 
+                                            CreateTTFFontFlag(m_FontSmoothMethod, m_FontSmoothAmount), 
+                                            m_SizeRatio
+                                            );
                 if (!fontLoaded)
                 {
                     FoundElementImpl();
@@ -246,9 +253,8 @@ namespace AtomFontInternal
             }
         }
 
-        void FoundAttribute(const string& name, const string& value)
+        void FoundAttribute(const AZStd::string& name, const AZStd::string& value)
         {
-            //MessageBox(NULL, string(name + "\n" + value).c_str(), "FoundAttribute", MB_OK);
             switch (m_nElement)
             {
             case ELEMENT_FONT:
@@ -388,8 +394,8 @@ namespace AtomFontInternal
         AZ::FFont::FontEffect*  m_effect;
         AZ::FFont::FontRenderingPass* m_pass;
 
-        string                  m_strFontPath;
-        string                  m_strFontEffectPath;
+        AZStd::string           m_strFontPath;
+        AZStd::string           m_strFontEffectPath;
         vector2l                m_FontTexSize;
         AZ::AtomFont::GlyphSize m_slotSizes;
         float                   m_SizeRatio = IFFontConstants::defaultSizeRatio;

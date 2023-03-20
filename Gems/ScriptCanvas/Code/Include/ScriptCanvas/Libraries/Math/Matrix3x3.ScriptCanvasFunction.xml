@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScriptCanvas>
+    <Library
+        Include="Include/ScriptCanvas/Libraries/Math/Matrix3x3.h"
+        Namespace="ScriptCanvas::Matrix3x3Functions"
+        Category="Math/Matrix3x3">
+
+        <Function Name="FromColumns">
+            <Parameter Name="Column1"/>
+            <Parameter Name="Column2"/>
+            <Parameter Name="Column3"/>
+        </Function>
+        
+        <Function Name="FromCrossProduct">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromDiagonal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromMatrix4x4">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromQuaternion">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="FromRotationXDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="FromRotationYDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="FromRotationZDegrees">
+            <Parameter Name="Degrees"/>
+        </Function>
+        
+        <Function Name="FromRows">
+            <Parameter Name="Row1"/>
+            <Parameter Name="Row2"/>
+            <Parameter Name="Row3"/>
+        </Function>
+        
+        <Function Name="FromScale">
+            <Parameter Name="Scale"/>
+        </Function>
+        
+        <Function Name="FromTransform">
+            <Parameter Name="Transform"/>
+        </Function>
+        
+        <Function Name="GetColumn">
+            <Parameter Name="Source"/>
+            <Parameter Name="Column"/>
+        </Function>
+
+        <Function Name="GetColumns">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetDiagonal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="GetElement">
+            <Parameter Name="Source"/>
+            <Parameter Name="Row"/>
+            <Parameter Name="Column"/>
+        </Function>
+        
+        <Function Name="GetRow">
+            <Parameter Name="Source"/>
+            <Parameter Name="Row"/>
+        </Function>
+        
+        <Function Name="GetRows">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Invert">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsClose">
+            <Parameter Name="A"/>
+            <Parameter Name="B"/>
+            <Parameter Name="Tolerance" DefaultValue="0.01"/>
+        </Function>
+        
+        <Function Name="IsFinite">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="IsOrthogonal">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="MultiplyByNumber">
+            <Parameter Name="Source"/>
+            <Parameter Name="Multiplier"/>
+        </Function>
+        
+        <Function Name="MultiplyByVector">
+            <Parameter Name="Source"/>
+            <Parameter Name="Vector"/>
+        </Function>
+        
+        <Function Name="Orthogonalize">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="ToAdjugate">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="ToDeterminant">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="ToScale">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Transpose">
+            <Parameter Name="Source"/>
+        </Function>
+        
+        <Function Name="Zero"/>
+    </Library>
+</ScriptCanvas>

@@ -2,22 +2,19 @@
 
 <ScriptCanvas Include="Include/ScriptCanvas/Libraries/Math/MathExpression.h" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <Class Name="MathExpression"
-	       QualifiedName="ScriptCanvas::Nodes::Math::MathExpression"
-	       PreferredClassName="Math Expression"
-           Uuid="{A5841DE8-CA11-4364-9C34-5ECE8B9623D7}"
-           Base="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
-           Category="Math"
-           Version="0"
-           DynamicSlotOrdering="True"
-           EditAttributes="AZ::Edit::Attributes::CategoryStyle@.math;ScriptCanvas::Attributes::Node::TitlePaletteOverride@MathNodeTitlePalette"
-           GeneratePropertyFriend="True"
-           Description="Will evaluate a series of math operations, allowing users to specify inputs using {}.">
+        QualifiedName="ScriptCanvas::Nodes::Math::MathExpression"
+        PreferredClassName="Math Expression"
+        Uuid="{A5841DE8-CA11-4364-9C34-5ECE8B9623D7}"
+        Base="ScriptCanvas::Nodes::Internal::ExpressionNodeBase"
+        Category="Math"
+        DynamicSlotOrdering="True"
+        Description="Will evaluate a series of math operations, allowing users to specify inputs using {}.">
         <Out Name="Out" Description="Output signal"/>
         <Property Name="Result"
-                  Description="The resulting string."
-                  Type="double"
-                  DisplayGroup="ExpressionDisplayGroup"
-                  IsInput="False"
-                  IsOutput="True" />
+            Description="The resulting string."
+            Type="double"
+            DisplayGroup="ExpressionDisplayGroup"
+            IsInput="False"
+            IsOutput="True" />
     </Class>
 </ScriptCanvas>

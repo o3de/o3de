@@ -29,12 +29,6 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CTVEventsDialog dialog
 
-namespace
-{
-    const int kCountSubItemIndex = 1;
-    const int kTimeSubItemIndex = 2;
-}
-
 class TVEventsModel
     : public QAbstractTableModel
 {
@@ -74,14 +68,28 @@ public:
 
         AzToolsFramework::ScopedUndoBatch undo("Remove Track Event");
 
-        for (int r = row; r < row + count; ++r)
+        for (int r = row, max = row + count; r < max; ++r)
         {
             const QString eventName = index(r, 0).data().toString();
-            beginRemoveRows(QModelIndex(), r, r);
-            result &= sequence->RemoveTrackEvent(eventName.toUtf8().data());
-            endRemoveRows();
+            bool remove = true;
+            float timeFirstUsed;
+            int usageCount = GetNumberOfUsageAndFirstTimeUsed(eventName.toStdString().c_str(), timeFirstUsed);
+            if (usageCount > 0)
+            {
+                remove = QMessageBox::warning(
+                             nullptr,
+                             tr("Remove Event"),
+                             tr("Remove \"") + eventName + tr("\" event might cause some link breakages in Flow Graph.\nStill continue?"),
+                             QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes;
+            }
 
-            undo.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+            if (remove)
+            {
+                beginRemoveRows(QModelIndex(), r, r);
+                result &= sequence->RemoveTrackEvent(eventName.toUtf8().data());
+                endRemoveRows();
+                undo.MarkEntityDirty(sequence->GetSequenceComponentEntityId());
+            }
         }
 
         return result;
@@ -254,10 +262,7 @@ void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 
     for (auto index : indexes)
     {
-        if (QMessageBox::warning(this, tr("Remove Event"), tr("This removal might cause some link breakages in Flow Graph.\nStill continue?"), QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
-        {
-            m_ui->m_List->model()->removeRow(index.row());
-        }
+        m_ui->m_List->model()->removeRow(index.row());
     }
     m_ui->m_List->setFocus();
 }
@@ -265,10 +270,10 @@ void CTVEventsDialog::OnBnClickedButtonRemoveEvent()
 void CTVEventsDialog::OnBnClickedButtonRenameEvent()
 {
     const QModelIndex index = m_ui->m_List->currentIndex();
-
+    QString oldName = m_ui->m_List->model()->index(index.row(), 0).data().toString();
     if (index.isValid())
     {
-        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString());
+        const QString newName = QInputDialog::getText(this, tr("Track Event Name"), QString(), QLineEdit::Normal, oldName);
         if (!newName.isEmpty())
         {
             m_ui->m_List->model()->setData(index.sibling(index.row(), 0), newName);
@@ -363,7 +368,7 @@ int TVEventsModel::GetNumberOfUsageAndFirstTimeUsed(const char* eventName, float
         {
             CTrackViewTrack* pTrack = tracks.GetTrack(currentTrack);
 
-            for (int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
+            for (unsigned int currentKey = 0; currentKey < pTrack->GetKeyCount(); ++currentKey)
             {
                 CTrackViewKeyHandle keyHandle = pTrack->GetKey(currentKey);
 

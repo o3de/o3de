@@ -155,7 +155,7 @@ int PushButton::menuButtonIndicatorWidth(const Style* style, const QStyleOption*
     Q_UNUSED(option);
 
     int size = -1;
-    if (auto pushButton = qobject_cast<const QPushButton*>(widget))
+    if (qobject_cast<const QPushButton*>(widget))
     {
         size = config.dropdownButton.menuIndicatorWidth;
     }

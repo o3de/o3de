@@ -6,12 +6,8 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_INCLUDE_IICONMANAGER_H
-#define CRYINCLUDE_EDITOR_INCLUDE_IICONMANAGER_H
 #pragma once
 
-struct IStatObj;
 struct IMaterial;
 class CBitmap;
 
@@ -56,12 +52,9 @@ enum EIconEffect
 struct IIconManager
 {
     virtual ~IIconManager() = default;
-    virtual IStatObj*   GetObject(EStatObject object) = 0;
     virtual int GetIconTexture(EIcon icon) = 0;
     virtual int GetIconTexture(const char* iconName) = 0;
     virtual QImage* GetIconBitmap(const char* filename, bool& haveAlpha, uint32 effects = 0) = 0;
     // Register an Icon for the specific command
     virtual void RegisterCommandIcon([[maybe_unused]] const char* filename, [[maybe_unused]] int nCommandId) {}
 };
-
-#endif // CRYINCLUDE_EDITOR_INCLUDE_IICONMANAGER_H

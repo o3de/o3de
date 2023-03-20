@@ -1,0 +1,402 @@
+{
+    "ContainerEntity": {
+        "Id": "ContainerEntity",
+        "Name": "MotionMatchingCharacter",
+        "Components": {
+            "Component_[10421653208695349271]": {
+                "$type": "EditorPrefabComponent",
+                "Id": 10421653208695349271
+            },
+            "Component_[10503861839908529015]": {
+                "$type": "EditorEntitySortComponent",
+                "Id": 10503861839908529015,
+                "Child Entity Order": [
+                    "Entity_[1110653248529]",
+                    "Entity_[1114948215825]"
+                ]
+            },
+            "Component_[10900147350174034752]": {
+                "$type": "EditorLockComponent",
+                "Id": 10900147350174034752
+            },
+            "Component_[14332818003016737869]": {
+                "$type": "EditorOnlyEntityComponent",
+                "Id": 14332818003016737869
+            },
+            "Component_[14443890263706898300]": {
+                "$type": "EditorInspectorComponent",
+                "Id": 14443890263706898300
+            },
+            "Component_[17619149969499031413]": {
+                "$type": "SelectionComponent",
+                "Id": 17619149969499031413
+            },
+            "Component_[3213794155680141963]": {
+                "$type": "EditorDisabledCompositionComponent",
+                "Id": 3213794155680141963
+            },
+            "Component_[3442814422333466356]": {
+                "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                "Id": 3442814422333466356,
+                "Parent Entity": ""
+            },
+            "Component_[3497845786920068853]": {
+                "$type": "EditorPendingCompositionComponent",
+                "Id": 3497845786920068853
+            },
+            "Component_[8092851862834001952]": {
+                "$type": "EditorEntityIconComponent",
+                "Id": 8092851862834001952
+            },
+            "Component_[8560779926477822330]": {
+                "$type": "EditorVisibilityComponent",
+                "Id": 8560779926477822330
+            }
+        }
+    },
+    "Entities": {
+        "Entity_[1110653248529]": {
+            "Id": "Entity_[1110653248529]",
+            "Name": "Camera",
+            "Components": {
+                "Component_[11895140916889160460]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 11895140916889160460
+                },
+                "Component_[16880285896855930892]": {
+                    "$type": "{CA11DA46-29FF-4083-B5F6-E02C3A8C3A3D} EditorCameraComponent",
+                    "Id": 16880285896855930892,
+                    "Controller": {
+                        "Configuration": {
+                            "Field of View": 55.0,
+                            "EditorEntityId": 15012666920316081205
+                        }
+                    }
+                },
+                "Component_[17187464423780271193]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 17187464423780271193
+                },
+                "Component_[17495696818315413311]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 17495696818315413311
+                },
+                "Component_[18086214374043522055]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 18086214374043522055,
+                    "Parent Entity": "ContainerEntity",
+                    "Transform Data": {
+                        "Translate": [
+                            0.0,
+                            -2.457879066467285,
+                            1.1005425453186035
+                        ],
+                        "Rotate": [
+                            -20.83465003967285,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                "Component_[18387556550380114975]": {
+                    "$type": "SelectionComponent",
+                    "Id": 18387556550380114975
+                },
+                "Component_[1919051653718009214]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 1919051653718009214,
+                    "m_template": {
+                        "$type": "InputConfigurationComponent",
+                        "Input Event Bindings": {
+                            "assetId": {
+                                "guid": "{C62D87E2-273A-55E0-B006-E176B6CD84A4}"
+                            },
+                            "assetHint": "controllablecharacter/inputbindings_controllablecharacter.inputbindings"
+                        }
+                    }
+                },
+                "Component_[2654521436129313160]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 2654521436129313160
+                },
+                "Component_[444962702619705400]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 444962702619705400,
+                    "m_name": "CameraController_ControllableCharacter.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{3B337212-148B-5622-A780-F7E3197E3113}",
+                            "path": "E:/Dev/o3de/Gems/MotionMatching/Assets/ControllableCharacter/CameraController_ControllableCharacter.scriptcanvas"
+                        },
+                        "entityId": [
+                            [
+                                {
+                                    "m_id": "{41580E96-162D-4B0C-A1FF-93339C9DD3F3}"
+                                },
+                                ""
+                            ]
+                        ],
+                        "overrides": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[1114948215825]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{41580E96-162D-4B0C-A1FF-93339C9DD3F3}"
+                                },
+                                "VariableName": "FollowEntity",
+                                "InitialValueSource": 1
+                            }
+                        ]
+                    },
+                    "sourceHandle": {
+                        "id": "{3B337212-148B-5622-A780-F7E3197E3113}",
+                        "path": "E:/Dev/o3de/Gems/MotionMatching/Assets/ControllableCharacter/CameraController_ControllableCharacter.scriptcanvas"
+                    }
+                },
+                "Component_[5265045084611556958]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 5265045084611556958
+                },
+                "Component_[7169798125182238623]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 7169798125182238623
+                },
+                "Component_[8866210352157164042]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 8866210352157164042,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 18086214374043522055
+                        },
+                        {
+                            "ComponentId": 1919051653718009214,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 444962702619705400,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 16880285896855930892,
+                            "SortIndex": 3
+                        }
+                    ]
+                },
+                "Component_[9129253381063760879]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 9129253381063760879
+                }
+            }
+        },
+        "Entity_[1114948215825]": {
+            "Id": "Entity_[1114948215825]",
+            "Name": "Character",
+            "Components": {
+                "Component_[11597229343526178171]": {
+                    "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
+                    "Id": 11597229343526178171,
+                    "Parent Entity": "ContainerEntity"
+                },
+                "Component_[14107982186732641271]": {
+                    "$type": "EditorPendingCompositionComponent",
+                    "Id": 14107982186732641271
+                },
+                "Component_[14228236558420546799]": {
+                    "$type": "SelectionComponent",
+                    "Id": 14228236558420546799
+                },
+                "Component_[14693492906077785104]": {
+                    "$type": "GenericComponentWrapper",
+                    "Id": 14693492906077785104,
+                    "m_template": {
+                        "$type": "InputConfigurationComponent",
+                        "Input Event Bindings": {
+                            "assetId": {
+                                "guid": "{C62D87E2-273A-55E0-B006-E176B6CD84A4}"
+                            },
+                            "assetHint": "controllablecharacter/inputbindings_controllablecharacter.inputbindings"
+                        }
+                    }
+                },
+                "Component_[15181032946508333816]": {
+                    "$type": "EditorScriptCanvasComponent",
+                    "Id": 15181032946508333816,
+                    "m_name": "CharacterController.scriptcanvas",
+                    "runtimeDataOverrides": {
+                        "source": {
+                            "id": "{3E3B19D5-DA28-52F8-A485-EC7C29AD32C1}",
+                            "path": "E:/Dev/o3de/Gems/MotionMatching/Assets/ControllableCharacter/CharacterController.scriptcanvas"
+                        },
+                        "entityId": [
+                            [
+                                {
+                                    "m_id": "{866C5F71-DEED-4202-B9B5-1599131BE2AB}"
+                                },
+                                ""
+                            ],
+                            [
+                                {
+                                    "m_id": "{AEACDC24-C124-4E6B-AA1C-FD74940450C3}"
+                                },
+                                ""
+                            ]
+                        ],
+                        "overrides": [
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[1110653248529]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{866C5F71-DEED-4202-B9B5-1599131BE2AB}"
+                                },
+                                "VariableName": "Camera",
+                                "InitialValueSource": 1
+                            },
+                            {
+                                "Datum": {
+                                    "scriptCanvasType": {
+                                        "m_type": 1
+                                    },
+                                    "isNullPointer": false,
+                                    "$type": "EntityId",
+                                    "value": "Entity_[1114948215825]"
+                                },
+                                "InputControlVisibility": {
+                                    "Value": 850104567
+                                },
+                                "VariableId": {
+                                    "m_id": "{AEACDC24-C124-4E6B-AA1C-FD74940450C3}"
+                                },
+                                "VariableName": "Character",
+                                "InitialValueSource": 1
+                            }
+                        ]
+                    },
+                    "sourceHandle": {
+                        "id": "{3E3B19D5-DA28-52F8-A485-EC7C29AD32C1}",
+                        "path": "E:/Dev/o3de/Gems/MotionMatching/Assets/ControllableCharacter/CharacterController.scriptcanvas"
+                    }
+                },
+                "Component_[15604336135208144911]": {
+                    "$type": "EditorLockComponent",
+                    "Id": 15604336135208144911
+                },
+                "Component_[16342601629016048675]": {
+                    "$type": "EditorInspectorComponent",
+                    "Id": 16342601629016048675,
+                    "ComponentOrderEntryArray": [
+                        {
+                            "ComponentId": 11597229343526178171
+                        },
+                        {
+                            "ComponentId": 14693492906077785104,
+                            "SortIndex": 1
+                        },
+                        {
+                            "ComponentId": 6845599104697207399,
+                            "SortIndex": 2
+                        },
+                        {
+                            "ComponentId": 5478644887482298038,
+                            "SortIndex": 3
+                        },
+                        {
+                            "ComponentId": 15181032946508333816,
+                            "SortIndex": 4
+                        },
+                        {
+                            "ComponentId": 17265393425283505607,
+                            "SortIndex": 5
+                        }
+                    ]
+                },
+                "Component_[17265393425283505607]": {
+                    "$type": "EditorCharacterControllerComponent",
+                    "Id": 17265393425283505607,
+                    "Configuration": {
+                        "entityId": "",
+                        "Material": {
+                            "MaterialIds": [
+                                {}
+                            ]
+                        },
+                        "ContactOffset": 0.08999999612569809,
+                        "ScaleCoeff": 0.9800000190734863
+                    },
+                    "ShapeConfig": {
+                        "Capsule": {
+                            "Height": 1.600000023841858
+                        }
+                    }
+                },
+                "Component_[2381308685144705877]": {
+                    "$type": "EditorEntityIconComponent",
+                    "Id": 2381308685144705877
+                },
+                "Component_[2746443750569725403]": {
+                    "$type": "EditorEntitySortComponent",
+                    "Id": 2746443750569725403
+                },
+                "Component_[3162062719870617335]": {
+                    "$type": "EditorDisabledCompositionComponent",
+                    "Id": 3162062719870617335
+                },
+                "Component_[3194309617651850877]": {
+                    "$type": "EditorVisibilityComponent",
+                    "Id": 3194309617651850877
+                },
+                "Component_[5478644887482298038]": {
+                    "$type": "EditorAnimGraphComponent",
+                    "Id": 5478644887482298038,
+                    "AnimGraphAsset": {
+                        "assetId": {
+                            "guid": "{8EDB1A2C-74A8-5C4B-88C5-CD1FBFF76761}"
+                        },
+                        "assetHint": "controllablecharacter/motionmatching_controllablecharacter.animgraph"
+                    },
+                    "MotionSetAsset": {
+                        "assetId": {
+                            "guid": "{E983A8BE-51DB-5A30-83B9-20E6EECE3BBE}"
+                        },
+                        "assetHint": "motionmatching.motionset"
+                    },
+                    "ActiveMotionSetName": "MotionMatching"
+                },
+                "Component_[6845599104697207399]": {
+                    "$type": "EditorActorComponent",
+                    "Id": 6845599104697207399,
+                    "ActorAsset": {
+                        "assetId": {
+                            "guid": "{0D974177-48F4-50A2-881E-D7D4EA559030}",
+                            "subId": 1149045819
+                        },
+                        "loadBehavior": "QueueLoad",
+                        "assetHint": "character/rinmm.actor"
+                    },
+                    "AttachmentTarget": ""
+                },
+                "Component_[9034336184923007978]": {
+                    "$type": "EditorOnlyEntityComponent",
+                    "Id": 9034336184923007978
+                }
+            }
+        }
+    }
+}

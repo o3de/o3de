@@ -7,12 +7,6 @@
 #
 
 set(FILES
-    base.h
-    Docs.h
-    Platform.cpp
-    Platform.h
-    PlatformDef.h
-    PlatformIncl.h
     AzCoreModule.h
     AzCoreModule.cpp
     Asset/AssetCommon.cpp
@@ -25,20 +19,26 @@ set(FILES
     Asset/AssetJsonSerializer.h
     Asset/AssetManager.cpp
     Asset/AssetManager.h
+    Asset/AssetManager_private.h
     Asset/AssetManagerBus.h
     Asset/AssetManagerComponent.cpp
     Asset/AssetManagerComponent.h
     Asset/AssetSerializer.cpp
     Asset/AssetSerializer.h
     Asset/AssetTypeInfoBus.h
+    Asset/AssetTypeInfoBus.cpp
     Asset/AssetInternal/WeakAsset.h
+    base.h
     Casting/lossy_cast.h
     Casting/numeric_cast.h
+    Casting/numeric_cast_internal.h
     Component/Component.cpp
     Component/Component.h
     Component/ComponentApplication.cpp
     Component/ComponentApplication.h
     Component/ComponentApplicationBus.h
+    Component/ComponentApplicationLifecycle.cpp
+    Component/ComponentApplicationLifecycle.h
     Component/ComponentBus.cpp
     Component/ComponentBus.h
     Component/ComponentExport.h
@@ -58,6 +58,10 @@ set(FILES
     Component/NonUniformScaleBus.h
     Component/TickBus.h
     Component/TransformBus.h
+    Compression/compression.cpp
+    Compression/Compression.h
+    Compression/zstd_compression.cpp
+    Compression/zstd_compression.h
     Console/Console.cpp
     Console/Console.h
     Console/ConsoleDataWrapper.h
@@ -72,67 +76,57 @@ set(FILES
     Console/ILogger.h
     Console/LoggerSystemComponent.cpp
     Console/LoggerSystemComponent.h
-    Slice/SliceAsset.cpp
-    Slice/SliceAsset.h
-    Slice/SliceAssetHandler.cpp
-    Slice/SliceAssetHandler.h
-    Slice/SliceBus.h
-    Slice/SliceComponent.cpp
-    Slice/SliceComponent.h
-    Slice/SliceSystemComponent.h
-    Slice/SliceSystemComponent.cpp
-    Slice/SliceMetadataInfoBus.h
-    Slice/SliceMetadataInfoComponent.h
-    Slice/SliceMetadataInfoComponent.cpp
-    Compression/compression.cpp
-    Compression/Compression.h
-    Compression/zstd_compression.cpp
-    Compression/zstd_compression.h
-    Debug/AssetTracking.cpp
-    Debug/AssetTracking.h
-    Debug/AssetTrackingTypesImpl.h
-    Debug/AssetTrackingTypes.h
-    Debug/LocalFileEventLogger.h
-    Debug/LocalFileEventLogger.cpp
-    Debug/FrameProfiler.h
-    Debug/FrameProfilerBus.h
-    Debug/FrameProfilerComponent.cpp
-    Debug/FrameProfilerComponent.h
-    Debug/IEventLogger.h
-    Debug/ProfileModuleInit.cpp
-    Debug/ProfileModuleInit.h
+    Date/DateFormat.cpp
+    Date/DateFormat.h
+    Debug/Budget.h
+    Debug/Budget.cpp
+    Debug/BudgetTracker.h
+    Debug/BudgetTracker.cpp
+    Debug/MemoryProfiler.h
+    Debug/PerformanceCollector.h
+    Debug/PerformanceCollector.cpp
     Debug/Profiler.cpp
+    Debug/Profiler.inl
     Debug/Profiler.h
     Debug/ProfilerBus.h
-    Debug/ProfilerDriller.cpp
-    Debug/ProfilerDriller.h
-    Debug/ProfilerDrillerBus.h
+    Debug/ProfilerReflection.cpp
+    Debug/ProfilerReflection.h
     Debug/StackTracer.h
-    Debug/EventTrace.h
-    Debug/EventTrace.cpp
-    Debug/EventTraceDriller.h
-    Debug/EventTraceDriller.cpp
-    Debug/EventTraceDrillerBus.h
     Debug/Timer.h
     Debug/Trace.cpp
     Debug/Trace.h
     Debug/TraceMessageBus.h
-    Debug/TraceMessagesDriller.cpp
-    Debug/TraceMessagesDriller.h
-    Debug/TraceMessagesDrillerBus.h
     Debug/TraceReflection.cpp
     Debug/TraceReflection.h
-    Driller/DefaultStringPool.h
-    Driller/Driller.cpp
-    Driller/Driller.h
-    Driller/DrillerBus.cpp
-    Driller/DrillerBus.h
-    Driller/DrillerRootHandler.h
-    Driller/Stream.cpp
-    Driller/Stream.h
+    Dependency/Dependency.h
+    Dependency/Dependency.inl
+    Dependency/Version.h
+    Docs.h
+    DOM/DomBackend.cpp
+    DOM/DomBackend.h
+    DOM/DomPatch.cpp
+    DOM/DomPatch.h
+    DOM/DomPath.cpp
+    DOM/DomPath.h
+    DOM/DomUtils.cpp
+    DOM/DomUtils.h
+    DOM/DomValue.cpp
+    DOM/DomValue.h
+    DOM/DomValueWriter.cpp
+    DOM/DomValueWriter.h
+    DOM/DomVisitor.cpp
+    DOM/DomVisitor.h
+    DOM/DomComparison.cpp
+    DOM/DomComparison.h
+    DOM/DomPrefixTree.h
+    DOM/DomPrefixTree.inl
+    DOM/Backends/JSON/JsonBackend.h
+    DOM/Backends/JSON/JsonSerializationUtils.cpp
+    DOM/Backends/JSON/JsonSerializationUtils.h
     EBus/BusImpl.h
     EBus/EBus.h
     EBus/EBusEnvironment.cpp
+    EBus/EBusSharedDispatchTraits.h
     EBus/Environment.h
     EBus/Event.h
     EBus/Event.inl
@@ -152,6 +146,7 @@ set(FILES
     EBus/Internal/Debug.h
     EBus/Internal/Handlers.h
     EBus/Internal/StoragePolicies.h
+    Instance/InstancePool.h
     Interface/Interface.h
     IO/ByteContainerStream.h
     IO/CompressionBus.h
@@ -166,18 +161,26 @@ set(FILES
     IO/CompressorZStd.h
     IO/FileIO.cpp
     IO/FileIO.h
-    IO/FileIOEventBus.h
+    IO/FileReader.cpp
+    IO/FileReader.h
     IO/IOUtils.h
     IO/IOUtils.cpp
     IO/IStreamer.h
+    IO/IStreamerProfiler.h
     IO/IStreamerTypes.h
     IO/IStreamerTypes.inl
     IO/IStreamerTypes.cpp
     IO/GenericStreams.cpp
     IO/GenericStreams.h
+    IO/OpenMode.h
+    IO/OpenMode.cpp
     IO/Path/Path.cpp
     IO/Path/Path.h
     IO/Path/Path.inl
+    IO/Path/PathIterable.inl
+    IO/Path/PathParser.inl
+    IO/Path/PathReflect.cpp
+    IO/Path/PathReflect.h
     IO/Path/Path_fwd.h
     IO/SystemFile.cpp
     IO/SystemFile.h
@@ -236,12 +239,38 @@ set(FILES
     Jobs/JobManagerComponent.cpp
     Jobs/JobManagerComponent.h
     Jobs/JobManagerDesc.h
-    Jobs/LegacyJobExecutor.h
     Jobs/MultipleDependentJob.h
     Jobs/task_group.h
+    JSON/allocators.h
+    JSON/cursorstreamwrapper.h
+    JSON/document.h
+    JSON/encodedstream.h
+    JSON/encodings.h
+    JSON/filereadstream.h
+    JSON/filewritestream.h
+    JSON/fwd.h
+    JSON/istreamwrapper.h
+    JSON/memorybuffer.h
+    JSON/memorystream.h
+    JSON/ostreamwrapper.h
+    JSON/pointer.h
+    JSON/prettywriter.h
+    JSON/rapidjson.h
+    JSON/rapidjson.cpp
+    JSON/RapidJsonAllocator.h
+    JSON/RapidjsonAllocatorAdapter.h
+    JSON/reader.h
+    JSON/schema.h
+    JSON/stream.h
+    JSON/stringbuffer.h
+    JSON/writer.h
+    JSON/error/en.h
+    JSON/error/error.h
     Math/Aabb.cpp
     Math/Aabb.h
     Math/Aabb.inl
+    Math/Capsule.h
+    Math/Capsule.inl
     Math/Color.cpp
     Math/Color.h
     Math/Color.inl
@@ -256,7 +285,11 @@ set(FILES
     Math/Frustum.inl
     Math/Geometry2DUtils.cpp
     Math/Geometry2DUtils.h
+    Math/Geometry3DUtils.cpp
+    Math/Geometry3DUtils.h
     Math/Guid.h
+    Math/Hemisphere.h
+    Math/Hemisphere.inl
     Math/Internal/MathTypes.h
     Math/Internal/SimdMathVec1_neon.inl
     Math/Internal/SimdMathVec1_scalar.inl
@@ -279,8 +312,11 @@ set(FILES
     Math/Internal/VertexContainer.inl
     Math/InterpolationSample.h
     Math/IntersectPoint.h
+    Math/IntersectSegment.inl
     Math/IntersectSegment.cpp
     Math/IntersectSegment.h
+    Math/LineSegment.cpp
+    Math/LineSegment.h
     Math/MathIntrinsics.h
     Math/MathReflection.cpp
     Math/MathReflection.h
@@ -290,6 +326,8 @@ set(FILES
     Math/MathUtils.h
     Math/MathMatrixSerializer.h
     Math/MathMatrixSerializer.cpp
+    Math/MathStringConversions.h
+    Math/MathStringConversions.cpp
     Math/MathVectorSerializer.h
     Math/MathVectorSerializer.cpp
     Math/Matrix3x3.cpp
@@ -315,8 +353,11 @@ set(FILES
     Math/Quaternion.inl
     Math/Quaternion.h
     Math/Random.h
+    Math/Ray.cpp
+    Math/Ray.h
     Math/Sfmt.cpp
     Math/Sfmt.h
+    Math/ShapeIntersection.cpp
     Math/ShapeIntersection.h
     Math/ShapeIntersection.inl
     Math/SimdMath.h
@@ -336,6 +377,7 @@ set(FILES
     Math/TransformSerializer.h
     Math/Uuid.cpp
     Math/Uuid.h
+    Math/Uuid.inl
     Math/UuidSerializer.h
     Math/UuidSerializer.cpp
     Math/Vector2.cpp
@@ -356,55 +398,48 @@ set(FILES
     Math/Color.cpp
     Math/ColorSerializer.h
     Math/ColorSerializer.cpp
-    Math/ToString.h
-    Math/ToString.cpp
     Memory/AllocationRecords.cpp
     Memory/AllocationRecords.h
     Memory/AllocatorBase.cpp
     Memory/AllocatorBase.h
+    Memory/AllocatorInstance.h
     Memory/AllocatorManager.cpp
     Memory/AllocatorManager.h
-    Memory/AllocatorOverrideShim.cpp
-    Memory/AllocatorOverrideShim.h
+    Memory/AllocatorTrackingRecorder.cpp
+    Memory/AllocatorTrackingRecorder.h
     Memory/AllocatorWrapper.h
-    Memory/AllocatorScope.h
-    Memory/BestFitExternalMapAllocator.cpp
-    Memory/BestFitExternalMapAllocator.h
-    Memory/BestFitExternalMapSchema.cpp
-    Memory/BestFitExternalMapSchema.h
+    Memory/ChildAllocatorSchema.h
     Memory/Config.h
     Memory/dlmalloc.inl
-    Memory/HeapSchema.h
-    Memory/HphaSchema.cpp
-    Memory/HphaSchema.h
-    Memory/IAllocator.cpp
+    Memory/HphaAllocator.cpp
+    Memory/HphaAllocator.h
     Memory/IAllocator.h
-    Memory/MallocSchema.cpp
-    Memory/MallocSchema.h
+    Memory/Memory_fwd.h
     Memory/Memory.cpp
     Memory/Memory.h
-    Memory/MemoryComponent.cpp
-    Memory/MemoryComponent.h
-    Memory/MemoryDriller.cpp
-    Memory/MemoryDriller.h
-    Memory/MemoryDrillerBus.h
     Memory/nedmalloc.inl
     Memory/NewAndDelete.inl
     Memory/OSAllocator.cpp
     Memory/OSAllocator.h
-    Memory/OverrunDetectionAllocator.cpp
-    Memory/OverrunDetectionAllocator.h
-    Memory/PlatformMemoryInstrumentation.h
+    Memory/PoolAllocator.cpp
     Memory/PoolAllocator.h
-    Memory/PoolSchema.cpp
-    Memory/PoolSchema.h
     Memory/SimpleSchemaAllocator.h
     Memory/SystemAllocator.cpp
     Memory/SystemAllocator.h
+    Metrics/EventLoggerFactoryImpl.h
+    Metrics/EventLoggerFactoryImpl.cpp
+    Metrics/EventLoggerReflectUtils.cpp
+    Metrics/EventLoggerReflectUtils.h
+    Metrics/EventLoggerUtils.cpp
+    Metrics/EventLoggerUtils.h
+    Metrics/JsonTraceEventLogger.h
+    Metrics/JsonTraceEventLogger.cpp
+    Metrics/IEventLogger.h
+    Metrics/IEventLogger.cpp
+    Metrics/IEventLogger.inl
+    Metrics/IEventLoggerFactory.h
     Module/DynamicModuleHandle.cpp
     Module/DynamicModuleHandle.h
-    Module/Environment.cpp
-    Module/Environment.h
     Module/Module.cpp
     Module/Module.h
     Module/ModuleManagerBus.h
@@ -412,9 +447,6 @@ set(FILES
     Module/ModuleManager.h
     Module/Internal/ModuleManagerSearchPathTool.h
     Module/Internal/ModuleManagerSearchPathTool.cpp
-    NativeUI/NativeUISystemComponent.cpp
-    NativeUI/NativeUISystemComponent.h
-    NativeUI/NativeUIRequests.h
     Name/Name.h
     Name/Name.cpp
     Name/NameDictionary.h
@@ -425,29 +457,59 @@ set(FILES
     Name/NameSerializer.cpp
     Name/Internal/NameData.h
     Name/Internal/NameData.cpp
+    NativeUI/NativeUISystemComponent.cpp
+    NativeUI/NativeUISystemComponent.h
+    NativeUI/NativeUIRequests.h
     Outcome/Outcome.h
-    Outcome/Internal/OutcomeStorage.h
     Outcome/Internal/OutcomeImpl.h
-    Preprocessor/CodeGen.h
+    Platform.cpp
+    Platform.h
+    PlatformDef.h
+    PlatformId/PlatformDefaults.h
+    PlatformId/PlatformDefaults.cpp
+    PlatformId/PlatformId.h
+    PlatformId/PlatformId.cpp
+    PlatformIncl.h
     Preprocessor/Enum.h
     Preprocessor/EnumReflectUtils.h
     Preprocessor/Sequences.h
-    RTTI/RTTI.h
-    RTTI/TypeInfo.h
+    Process/ProcessInfo.h
+    RTTI/AttributeReader.h
+    RTTI/AzStdOnDemandPrettyName.inl
+    RTTI/AzStdOnDemandReflection.inl
+    RTTI/AzStdOnDemandReflectionSpecializations.cpp
+    RTTI/AzStdOnDemandReflectionLuaFunctions.inl
+    RTTI/BehaviorClassBuilder.cpp
+    RTTI/BehaviorClassBuilder.inl
+    RTTI/BehaviorContext.cpp
+    RTTI/BehaviorContext.h
+    RTTI/BehaviorContextUtilities.cpp
+    RTTI/BehaviorContextUtilities.h
+    RTTI/BehaviorEBusBuilder.cpp
+    RTTI/BehaviorEBusBuilder.inl
+    RTTI/BehaviorEBusEvent.cpp
+    RTTI/BehaviorEBusEvent.inl
+    RTTI/BehaviorEBusHandler.cpp
+    RTTI/BehaviorEBusHandler.inl
+    RTTI/BehaviorInterfaceProxy.h
+    RTTI/BehaviorMethodImpl.cpp
+    RTTI/BehaviorMethodImpl.inl
+    RTTI/BehaviorObjectSignals.h
+    RTTI/BehaviorObjectSignals.cpp
+    RTTI/ChronoReflection.cpp
+    RTTI/ChronoReflection.h
     RTTI/ReflectContext.h
     RTTI/ReflectContext.cpp
     RTTI/ReflectionManager.h
     RTTI/ReflectionManager.cpp
-    RTTI/AttributeReader.h
-    RTTI/AzStdOnDemandPrettyName.inl
-    RTTI/AzStdOnDemandReflection.inl
-    RTTI/AzStdOnDemandReflectionLuaFunctions.inl
-    RTTI/BehaviorContext.cpp
-    RTTI/BehaviorContext.h
-    RTTI/BehaviorContextUtilities.h
-    RTTI/BehaviorContextUtilities.cpp
-    RTTI/BehaviorObjectSignals.h
+    RTTI/RTTI.h
+    RTTI/RTTIMacros.h
+    RTTI/TemplateInfo.h
+    RTTI/TypeInfo.h
+    RTTI/TypeInfo.cpp
+    RTTI/TypeInfoSimple.h
     RTTI/TypeSafeIntegral.h
+    Script/lua/lua.h
     Script/ScriptAsset.cpp
     Script/ScriptAsset.h
     Script/ScriptContext.h
@@ -462,6 +524,8 @@ set(FILES
     Script/ScriptTimePoint.h
     Script/ScriptProperty.h
     Script/ScriptProperty.cpp
+    Script/ScriptPropertySerializer.h
+    Script/ScriptPropertySerializer.cpp
     Script/ScriptPropertyTable.h
     Script/ScriptPropertyTable.cpp
     Script/ScriptPropertyWatcherBus.h
@@ -490,6 +554,7 @@ set(FILES
     Serialization/ObjectStream.h
     Serialization/SerializeContext.cpp
     Serialization/SerializeContext.h
+    Serialization/SerializeContext_fwd.h
     Serialization/SerializeContextEnum.cpp
     Serialization/SerializeContextEnum.inl
     Serialization/DataPatch.h
@@ -497,6 +562,8 @@ set(FILES
     Serialization/DataPatchBus.h
     Serialization/DataPatchUpgradeManager.h
     Serialization/DataPatchUpgradeManager.cpp
+    Serialization/Json/AnySerializer.h
+    Serialization/Json/AnySerializer.cpp
     Serialization/Json/ArraySerializer.h
     Serialization/Json/ArraySerializer.cpp
     Serialization/Json/BaseJsonSerializer.h
@@ -514,6 +581,8 @@ set(FILES
     Serialization/Json/IntSerializer.cpp
     Serialization/Json/JsonDeserializer.h
     Serialization/Json/JsonDeserializer.cpp
+    Serialization/Json/JsonImporter.cpp
+    Serialization/Json/JsonImporter.h
     Serialization/Json/JsonMerger.h
     Serialization/Json/JsonMerger.cpp
     Serialization/Json/JsonSerialization.h
@@ -528,8 +597,12 @@ set(FILES
     Serialization/Json/JsonStringConversionUtils.h
     Serialization/Json/JsonSystemComponent.h
     Serialization/Json/JsonSystemComponent.cpp
+    Serialization/Json/JsonUtils.h
+    Serialization/Json/JsonUtils.cpp
     Serialization/Json/MapSerializer.h
     Serialization/Json/MapSerializer.cpp
+    Serialization/Json/PathSerializer.h
+    Serialization/Json/PathSerializer.cpp
     Serialization/Json/RegistrationContext.h
     Serialization/Json/RegistrationContext.cpp
     Serialization/Json/SmartPointerSerializer.h
@@ -547,6 +620,11 @@ set(FILES
     Serialization/std/VariantReflection.inl
     Settings/CommandLine.cpp
     Settings/CommandLine.h
+    Settings/ConfigParser.cpp
+    Settings/ConfigParser.h
+    Settings/ConfigurableStack.cpp
+    Settings/ConfigurableStack.inl
+    Settings/ConfigurableStack.h
     Settings/SettingsRegistry.cpp
     Settings/SettingsRegistry.h
     Settings/SettingsRegistryConsoleUtils.cpp
@@ -555,8 +633,27 @@ set(FILES
     Settings/SettingsRegistryImpl.h
     Settings/SettingsRegistryMergeUtils.cpp
     Settings/SettingsRegistryMergeUtils.h
+    Settings/SettingsRegistryOriginTracker.cpp
+    Settings/SettingsRegistryOriginTracker.h
     Settings/SettingsRegistryScriptUtils.cpp
     Settings/SettingsRegistryScriptUtils.h
+    Settings/SettingsRegistryVisitorUtils.cpp
+    Settings/SettingsRegistryVisitorUtils.h
+    Slice/SliceAsset.cpp
+    Slice/SliceAsset.h
+    Slice/SliceAssetHandler.cpp
+    Slice/SliceAssetHandler.h
+    Slice/SliceBus.h
+    Slice/SliceComponent.cpp
+    Slice/SliceComponent.h
+    Slice/SliceSystemComponent.h
+    Slice/SliceSystemComponent.cpp
+    Slice/SliceMetadataInfoBus.h
+    Slice/SliceMetadataInfoComponent.h
+    Slice/SliceMetadataInfoComponent.cpp
+    Socket/AzSocket_fwd.h
+    Socket/AzSocket.cpp
+    Socket/AzSocket.h
     State/HSM.cpp
     State/HSM.h
     Statistics/NamedRunningStatistic.h
@@ -567,55 +664,8 @@ set(FILES
     Statistics/StatisticalProfilerProxySystemComponent.cpp
     Statistics/StatisticalProfilerProxySystemComponent.h
     Statistics/StatisticsManager.h
-    Statistics/TimeDataStatisticsManager.cpp
-    Statistics/TimeDataStatisticsManager.h
     StringFunc/StringFunc.cpp
     StringFunc/StringFunc.h
-    UserSettings/UserSettings.cpp
-    UserSettings/UserSettings.h
-    UserSettings/UserSettingsComponent.cpp
-    UserSettings/UserSettingsComponent.h
-    UserSettings/UserSettingsProvider.cpp
-    UserSettings/UserSettingsProvider.h
-    XML/rapidxml.h
-    XML/rapidxml_iterators.h
-    XML/rapidxml_print.h
-    XML/rapidxml_utils.h
-    JSON/allocators.h
-    JSON/cursorstreamwrapper.h
-    JSON/document.h
-    JSON/encodedstream.h
-    JSON/encodings.h
-    JSON/filereadstream.h
-    JSON/filewritestream.h
-    JSON/fwd.h
-    JSON/istreamwrapper.h
-    JSON/memorybuffer.h
-    JSON/memorystream.h
-    JSON/ostreamwrapper.h
-    JSON/pointer.h
-    JSON/prettywriter.h
-    JSON/rapidjson.h
-    JSON/reader.h
-    JSON/schema.h
-    JSON/stream.h
-    JSON/stringbuffer.h
-    JSON/writer.h
-    JSON/error/en.h
-    JSON/error/error.h
-    Utils/TypeHash.cpp
-    Utils/TypeHash.h
-    Utils/Utils.cpp
-    Utils/Utils.h
-    Script/lua/lua.h
-    Memory/HeapSchema.cpp
-    PlatformId/PlatformDefaults.h
-    PlatformId/PlatformDefaults.cpp
-    PlatformId/PlatformId.h
-    PlatformId/PlatformId.cpp
-    Socket/AzSocket_fwd.h
-    Socket/AzSocket.cpp
-    Socket/AzSocket.h
     Task/Internal/Task.cpp
     Task/Internal/Task.inl
     Task/Internal/Task.h
@@ -626,17 +676,30 @@ set(FILES
     Task/TaskGraph.cpp
     Task/TaskGraph.h
     Task/TaskGraph.inl
+    Task/TaskGraphSystemComponent.h
+    Task/TaskGraphSystemComponent.cpp
     Threading/ThreadSafeDeque.h
     Threading/ThreadSafeDeque.inl
     Threading/ThreadSafeObject.h
     Threading/ThreadSafeObject.inl
+    Threading/ThreadUtils.h
+    Threading/ThreadUtils.cpp
     Time/ITime.h
-    Time/TimeSystemComponent.cpp
-    Time/TimeSystemComponent.h
-)
-
-# Prevent the following files from being grouped in UNITY builds
-set(SKIP_UNITY_BUILD_INCLUSION_FILES
-    # In some platforms, dlmalloc.inl gives issues when compiled in unity because there is a getpagesize defined differently
-    Memory/HeapSchema.cpp
+    Time/TimeSystem.cpp
+    Time/TimeSystem.h
+    UserSettings/UserSettings.cpp
+    UserSettings/UserSettings.h
+    UserSettings/UserSettingsComponent.cpp
+    UserSettings/UserSettingsComponent.h
+    UserSettings/UserSettingsProvider.cpp
+    UserSettings/UserSettingsProvider.h
+    Utils/TypeHash.cpp
+    Utils/TypeHash.h
+    Utils/Utils.cpp
+    Utils/Utils.h
+    variadic.h
+    XML/rapidxml.h
+    XML/rapidxml_iterators.h
+    XML/rapidxml_print.h
+    XML/rapidxml_utils.h
 )

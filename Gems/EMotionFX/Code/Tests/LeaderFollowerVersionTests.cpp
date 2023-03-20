@@ -166,10 +166,6 @@ namespace EMotionFX
                         <Class name="bool" field="alwaysStartInEntryState" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
                     </Class>
                     <Class name="AZStd::vector" field="nodeGroups" type="{9A7148E6-1DCA-5BDA-80D7-5FF35D43170E}"/>
-                    <Class name="AnimGraphGameControllerSettings" field="gameControllerSettings" version="1" type="{05DF1B3B-2073-4E6D-B5B6-7B87F46CCCB7}">
-                        <Class name="unsigned int" field="activePresetIndex" value="4294967295" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-                        <Class name="AZStd::vector" field="presets" type="{7EF271EC-720F-5899-B522-39F46AEC02F1}"/>
-                    </Class>
                     <Class name="bool" field="retarget" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
                 </Class>
             </ObjectStream>
@@ -342,10 +338,6 @@ namespace EMotionFX
                             <Class name="bool" field="alwaysStartInEntryState" value="true" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
                         </Class>
                         <Class name="AZStd::vector" field="nodeGroups" type="{9A7148E6-1DCA-5BDA-80D7-5FF35D43170E}"/>
-                        <Class name="AnimGraphGameControllerSettings" field="gameControllerSettings" version="1" type="{05DF1B3B-2073-4E6D-B5B6-7B87F46CCCB7}">
-                            <Class name="unsigned int" field="activePresetIndex" value="4294967295" type="{43DA906B-7DEF-4CA8-9790-854106D3F983}"/>
-                            <Class name="AZStd::vector" field="presets" type="{7EF271EC-720F-5899-B522-39F46AEC02F1}"/>
-                        </Class>
                         <Class name="bool" field="retarget" value="false" type="{A0CA880C-AFE4-43CB-926C-59AC48496112}"/>
                     </Class>
                 </ObjectStream>

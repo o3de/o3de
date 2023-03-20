@@ -10,48 +10,9 @@
 #include "EditorDefs.h"
 
 // Editor
+#include "KeyUIControls.h"
 #include "TrackViewKeyPropertiesDlg.h"
 #include "Controls/ReflectedPropertyControl/ReflectedPropertyItem.h"
-
-
-//////////////////////////////////////////////////////////////////////////
-class C2DBezierKeyUIControls
-    : public CTrackViewKeyUIControls
-{
-public:
-    C2DBezierKeyUIControls()
-    : m_skipOnUIChange(false)
-    {}
-
-    CSmartVariableArray mv_table;
-    CSmartVariable<float> mv_value;
-
-    void OnCreateVars() override
-    {
-        AddVariable(mv_table, "Key Properties");
-        AddVariable(mv_table, mv_value, "Value");
-    }
-    bool SupportTrackType([[maybe_unused]] const CAnimParamType& paramType, EAnimCurveType trackType, [[maybe_unused]] AnimValueType valueType) const override
-    {
-        return trackType == eAnimCurveType_BezierFloat;
-    }
-    bool OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys) override;
-    void OnUIChange(IVariable* pVar, CTrackViewKeyBundle& selectedKeys) override;
-
-    unsigned int GetPriority() const override { return 0; }
-
-    static const GUID& GetClassID()
-    {
-        // {DBD76F4B-8EFC-45b6-AFB8-56F171FA150A}
-        static const GUID guid =
-        {
-            0xdbd76f4b, 0x8efc, 0x45b6, { 0xaf, 0xb8, 0x56, 0xf1, 0x71, 0xfa, 0x15, 0xa }
-        };
-        return guid;
-    }
-
-    bool m_skipOnUIChange;
-};
 
 //////////////////////////////////////////////////////////////////////////
 bool C2DBezierKeyUIControls::OnKeySelectionChange(CTrackViewKeyBundle& selectedKeys)
@@ -143,5 +104,3 @@ void C2DBezierKeyUIControls::OnUIChange(IVariable* pVar, CTrackViewKeyBundle& se
         }
     }
 }
-
-REGISTER_QT_CLASS_DESC(C2DBezierKeyUIControls, "TrackView.KeyUI.2DBezier", "TrackViewKeyUI");

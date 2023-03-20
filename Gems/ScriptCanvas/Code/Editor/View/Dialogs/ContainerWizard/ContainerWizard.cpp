@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor
     ////////////////////
 
     ContainerWizard::ContainerWizard(QWidget* parent)
-        : QDialog(parent, Qt::FramelessWindowHint)
+        : QDialog(parent)
         , m_serializeContext(nullptr)
         , m_validationAction(nullptr)
         , m_invalidIcon(":/ScriptCanvasEditorResources/Resources/error_icon.png")
@@ -226,7 +226,6 @@ namespace ScriptCanvasEditor
             auto dataTypeIter = m_containerDataTypeSets.find(workingCrc);
             if (dataTypeIter == m_containerDataTypeSets.end())
             {
-                // No idea wtf do here we've managed to put ourselves into an invalid state
                 AZ_Error("ScriptCanvas", false, "Unknown partial type found in Container Creation. Aborting.");
                 close();
                 break;

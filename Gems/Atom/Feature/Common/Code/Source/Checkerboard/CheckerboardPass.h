@@ -26,7 +26,7 @@ namespace AZ
       
         public:
             AZ_RTTI(CheckerboardPass, "{C78A4C90-3915-4D8C-80BE-3698CF72C2C1}", Base);
-            AZ_CLASS_ALLOCATOR(CheckerboardPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CheckerboardPass, SystemAllocator);
 
             ~CheckerboardPass() = default;
             static RPI::Ptr<CheckerboardPass> Create(const RPI::PassDescriptor& descriptor);
@@ -35,7 +35,7 @@ namespace AZ
 
         protected:
             // Pass overrides...
-            void FrameBeginInternal(FramePrepareParams params);
+            void FrameBeginInternal(FramePrepareParams params) override;
             void BuildInternal() override;
             void FrameEndInternal() override;
 

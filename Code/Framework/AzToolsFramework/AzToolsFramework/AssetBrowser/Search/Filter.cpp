@@ -128,6 +128,11 @@ namespace AzToolsFramework
             return false;
         }
 
+        bool AssetBrowserEntryFilter::MatchWithoutPropagation(const AssetBrowserEntry* entry) const
+        {
+            return MatchInternal(entry);
+        }
+
         void AssetBrowserEntryFilter::Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
         {
             FilterInternal(result, entry);
@@ -229,6 +234,11 @@ namespace AzToolsFramework
             Q_EMIT updatedSignal();
         }
 
+        QString StringFilter::GetFilterString() const
+        {
+            return m_filterString;
+        }
+
         QString StringFilter::GetNameInternal() const
         {
             return m_filterString;
@@ -236,19 +246,46 @@ namespace AzToolsFramework
 
         bool StringFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            // no filter string matches any asset
-            if (m_filterString.isEmpty())
-            {
-                return true;
-            }
+            // Return true if the filter is empty or the display name matches.
+            return m_filterString.isEmpty() || StringMatch(m_filterString, entry->GetDisplayName());
+        }
 
-            // entry's name matches search pattern
-            if (StringMatch(m_filterString, entry->GetDisplayName()))
-            {
-                return true;
-            }
+        //////////////////////////////////////////////////////////////////////////
+        // CustomFilter
+        //////////////////////////////////////////////////////////////////////////
+        CustomFilter::CustomFilter(const AZStd::function<bool(const AssetBrowserEntry*)>& filterFn)
+            : m_filterFn(filterFn)
+        {
+        }
 
-            return false;
+        QString CustomFilter::GetNameInternal() const
+        {
+            return "Custom Filter";
+        }
+
+        bool CustomFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            return m_filterFn && m_filterFn(entry);
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        // RegExpFilter
+        //////////////////////////////////////////////////////////////////////////
+        void RegExpFilter::SetFilterPattern(const QRegExp& filterPattern)
+        {
+            m_filterPattern = filterPattern;
+            Q_EMIT updatedSignal();
+        }
+
+        QString RegExpFilter::GetNameInternal() const
+        {
+            return m_filterPattern.pattern();
+        }
+
+        bool RegExpFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            // Return true if the filter is empty or the display name matches.
+            return m_filterPattern.isEmpty() || m_filterPattern.exactMatch(entry->GetDisplayName());
         }
 
         //////////////////////////////////////////////////////////////////////////
@@ -353,7 +390,9 @@ namespace AzToolsFramework
         // EntryTypeFilter
         //////////////////////////////////////////////////////////////////////////
         EntryTypeFilter::EntryTypeFilter()
-            : m_entryType(AssetBrowserEntry::AssetEntryType::Product) {}
+            : m_entryType(AssetBrowserEntry::AssetEntryType::Product)
+        {
+        }
 
         void EntryTypeFilter::SetEntryType(AssetBrowserEntry::AssetEntryType entryType)
         {
@@ -373,6 +412,39 @@ namespace AzToolsFramework
         bool EntryTypeFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
             return entry->GetEntryType() == m_entryType;
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        // AssetPathFilter
+        //////////////////////////////////////////////////////////////////////////
+        AssetPathFilter::AssetPathFilter()
+            : m_assetPath("")
+        {
+        }
+
+        void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
+        {
+            m_assetPath = path.LexicallyNormal();
+        }
+
+        QString AssetPathFilter::GetNameInternal() const
+        {
+            return QString::fromUtf8(m_assetPath.c_str(), static_cast<int32_t>(m_assetPath.Native().size()));
+        }
+
+        bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        {
+            if (m_assetPath.empty())
+            {
+                return false;
+            }
+
+            AZ::IO::Path absolutePath =
+                (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product && entry->GetParent()
+                    ? entry->GetParent()->GetFullPath()
+                    : AZ::IO::Path(entry->GetFullPath()));
+
+            return absolutePath.IsRelativeTo(m_assetPath);
         }
 
         //////////////////////////////////////////////////////////////////////////

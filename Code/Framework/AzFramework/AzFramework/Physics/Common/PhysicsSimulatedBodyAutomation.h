@@ -17,7 +17,7 @@
 namespace AZ
 {
     class ReflectContext;
-    struct BehaviorValueParameter;
+    struct BehaviorArgument;
 }
 
 namespace AzPhysics::Automation
@@ -80,10 +80,10 @@ namespace AzPhysics::Automation
         };
 
         // AZ::BehaviorEBusHandler interface
-        void Disconnect() override;
-        bool Connect(AZ::BehaviorValueParameter* id = nullptr) override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
+        bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
-        bool IsConnectedId(AZ::BehaviorValueParameter* id) override;
+        bool IsConnectedId(AZ::BehaviorArgument* id) override;
         int GetFunctionIndex(const char* functionName) const override;
 
         void OnCollisionBeginEvent(const CollisionEvent& event);
@@ -127,10 +127,10 @@ namespace AzPhysics::Automation
         };
 
         // AZ::BehaviorEBusHandler interface
-        void Disconnect() override;
-        bool Connect(AZ::BehaviorValueParameter* id = nullptr) override;
+        void Disconnect(AZ::BehaviorArgument* id = nullptr) override;
+        bool Connect(AZ::BehaviorArgument* id = nullptr) override;
         bool IsConnected() override;
-        bool IsConnectedId(AZ::BehaviorValueParameter* id) override;
+        bool IsConnectedId(AZ::BehaviorArgument* id) override;
         int GetFunctionIndex(const char* functionName) const override;
 
         void OnTriggerEnterEvent(const TriggerEvent& event);

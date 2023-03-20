@@ -9,6 +9,10 @@
 #pragma once
 
 #include <AssetBuilderSDK/AssetBuilderBusses.h>
+#include <Atom/RPI.Reflect/Material/MaterialAsset.h>
+#include <Atom/RPI.Reflect/Material/MaterialTypeAsset.h>
+#include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <AzCore/JSON/document.h>
 
 namespace AZ
 {
@@ -36,6 +40,10 @@ namespace AZ
             void RegisterBuilder();
 
         private:
+
+            AZ::Data::Asset<MaterialAsset> CreateMaterialAsset(AZStd::string_view materialSourceFilePath, const rapidjson::Value& json) const;
+            bool ShouldReportMaterialAssetWarningsAsErrors() const;
+            AZStd::string GetBuilderSettingsFingerprint() const;
             
             bool m_isShuttingDown = false;
         };

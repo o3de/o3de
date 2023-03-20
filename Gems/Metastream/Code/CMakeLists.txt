@@ -6,8 +6,8 @@
 #
 #
 
-ly_get_list_relative_pal_filename(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME})
-ly_get_list_relative_pal_filename(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
+o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+set(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common)
 
 ly_add_target(
     NAME Metastream.Static STATIC
@@ -50,6 +50,7 @@ ly_add_target(
 # The above "Metastream" target is used by all types of applications, including dev tools.
 ly_create_alias(NAME Metastream.Clients  NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Servers  NAMESPACE Gem TARGETS Gem::Metastream)
+ly_create_alias(NAME Metastream.Unified  NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Builders NAMESPACE Gem TARGETS Gem::Metastream)
 ly_create_alias(NAME Metastream.Tools    NAMESPACE Gem TARGETS Gem::Metastream)
 

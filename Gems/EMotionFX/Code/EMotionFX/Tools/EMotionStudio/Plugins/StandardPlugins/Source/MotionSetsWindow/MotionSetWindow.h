@@ -62,11 +62,11 @@ namespace EMStudio
         void Accepted();
 
     private:
-        EMotionFX::MotionSet*           mMotionSet;
+        EMotionFX::MotionSet*           m_motionSet;
         AZStd::vector<AZStd::string>    m_existingIds;
         AZStd::string                   m_motionId;
-        QLineEdit*                      mLineEdit;
-        QPushButton*                    mOKButton;
+        QLineEdit*                      m_lineEdit;
+        QPushButton*                    m_okButton;
     };
 
 
@@ -88,19 +88,19 @@ namespace EMStudio
         void UpdateTableAndButton();
 
     private:
-        EMotionFX::MotionSet*           mMotionSet;
-        AZStd::vector<AZStd::string>    mMotionIDs;
-        AZStd::vector<AZStd::string>    mModifiedMotionIDs;
-        AZStd::vector<uint32>           mMotionToModifiedMap;
-        AZStd::vector<uint32>           mValids;
-        QTableWidget*                   mTableWidget;
-        QLineEdit*                      mStringALineEdit;
-        QLineEdit*                      mStringBLineEdit;
-        QPushButton*                    mApplyButton;
-        QLabel*                         mNumMotionIDsLabel;
-        QLabel*                         mNumModifiedIDsLabel;
-        QLabel*                         mNumDuplicateIDsLabel;
-        QComboBox*                      mComboBox;
+        EMotionFX::MotionSet*           m_motionSet;
+        AZStd::vector<AZStd::string>    m_motionIDs;
+        AZStd::vector<AZStd::string>    m_modifiedMotionIDs;
+        AZStd::vector<size_t>           m_motionToModifiedMap;
+        AZStd::vector<size_t>           m_valids;
+        QTableWidget*                   m_tableWidget;
+        QLineEdit*                      m_stringALineEdit;
+        QLineEdit*                      m_stringBLineEdit;
+        QPushButton*                    m_applyButton;
+        QLabel*                         m_numMotionIDsLabel;
+        QLabel*                         m_numModifiedIDsLabel;
+        QLabel*                         m_numDuplicateIDsLabel;
+        QComboBox*                      m_comboBox;
     };
 
 
@@ -108,7 +108,7 @@ namespace EMStudio
         : public QTableWidget
     {
         Q_OBJECT
-                 MCORE_MEMORYOBJECTCATEGORY(MotionSetTableWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        MCORE_MEMORYOBJECTCATEGORY(MotionSetTableWidget, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         MotionSetTableWidget(MotionSetsWindowPlugin* parentPlugin, QWidget* parent);
@@ -124,15 +124,15 @@ namespace EMStudio
         void dragEnterEvent(QDragEnterEvent* event) override;
         void dragMoveEvent(QDragMoveEvent* event) override;
 
-        MotionSetsWindowPlugin* mPlugin;
+        MotionSetsWindowPlugin* m_plugin;
     };
 
 
     class MotionSetWindow
         : public QWidget
     {
-        Q_OBJECT
-                 MCORE_MEMORYOBJECTCATEGORY(MotionSetWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
+        Q_OBJECT // AUTOMOC
+        MCORE_MEMORYOBJECTCATEGORY(MotionSetWindow, MCore::MCORE_DEFAULT_ALIGNMENT, MEMCATEGORY_STANDARDPLUGINS);
 
     public:
         MotionSetWindow(MotionSetsWindowPlugin* parentPlugin, QWidget* parent);
@@ -145,6 +145,15 @@ namespace EMStudio
         bool UpdateMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry, const AZStd::string& oldMotionId);
         bool RemoveMotion(EMotionFX::MotionSet* motionSet, EMotionFX::MotionSet::MotionEntry* motionEntry);
         void PlayMotion(EMotionFX::Motion* motion);
+
+        void Select(EMotionFX::MotionSet::MotionEntry* motionEntry);
+
+        EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
+        EMotionFX::MotionSet::MotionEntry* FindMotionEntryByMotionId(AZ::u32 motionId) const;
+        QTableWidgetItem* FindTableWidgetItemByEntry(EMotionFX::MotionSet::MotionEntry* motionEntry) const;
+        MotionSetTableWidget* GetTableWidget() const { return m_tableWidget; }
+
+        void SyncMotionDirtyFlag(int motionId);
 
     signals:
         void MotionSelectionChanged();
@@ -161,6 +170,7 @@ namespace EMStudio
         void OnCopyMotionID();
         void OnClearMotions();
         void OnEditButton();
+        void OnSave();
 
         void OnTextFilterChanged(const QString& text);
 
@@ -181,21 +191,21 @@ namespace EMStudio
         void AddMotions(const AZStd::vector<AZStd::string>& filenames);
         void contextMenuEvent(QContextMenuEvent* event) override;
 
-        EMotionFX::MotionSet::MotionEntry* FindMotionEntry(QTableWidgetItem* item) const;
-
         void GetRowIndices(const QList<QTableWidgetItem*>& items, AZStd::vector<int>& outRowIndices);
-        uint32 CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
+        size_t CalcNumMotionEntriesUsingMotionExcluding(const AZStd::string& motionFilename, EMotionFX::MotionSet* excludedMotionSet);
 
     private:
-        QVBoxLayout* mVLayout = nullptr;
+        void SetRowItalic(int row, bool italic);
+
         MotionSetTableWidget* m_tableWidget = nullptr;
 
         QAction* m_addAction = nullptr;
         QAction* m_loadAction = nullptr;
         QAction* m_editAction = nullptr;
+        QAction* m_saveAction = nullptr;
 
         AzQtComponents::FilteredSearchWidget* m_searchWidget = nullptr;
         AZStd::string m_searchWidgetText;
-        MotionSetsWindowPlugin* mPlugin = nullptr;
+        MotionSetsWindowPlugin* m_plugin = nullptr;
     };
 } // namespace EMStudio

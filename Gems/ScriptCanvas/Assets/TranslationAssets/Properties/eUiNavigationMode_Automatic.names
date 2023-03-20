@@ -1,0 +1,29 @@
+{
+    "entries": [
+        {
+            "base": "eUiNavigationMode_Automatic",
+            "context": "Constant",
+            "variant": "",
+            "details": {
+                "name": "Automatic",
+                "category": "Constants/UI/Navigation Mode"
+            },
+            "methods": [
+                {
+                    "base": "GeteUiNavigationMode_Automatic",
+                    "details": {
+                        "name": "Automatic"
+                    },
+                    "results": [
+                        {
+                            "typeid": "{72039442-EB38-4D42-A1AD-CB68F7E0EEF6}",
+                            "details": {
+                                "name": "int"
+                            }
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

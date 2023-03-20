@@ -22,7 +22,7 @@ namespace AZ
         {
             using Base = RHI::CommandList;
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
             AZ_RTTI(CommandList, "{265B877D-21DC-48FF-9D82-AA30C3E16422}", Base);
 
             static RHI::Ptr<CommandList> Create();
@@ -33,14 +33,17 @@ namespace AZ
             void SetScissors([[maybe_unused]] const RHI::Scissor* scissors, [[maybe_unused]] uint32_t count) override {}
             void SetShaderResourceGroupForDraw([[maybe_unused]] const RHI::ShaderResourceGroup& shaderResourceGroup) override {}
             void SetShaderResourceGroupForDispatch([[maybe_unused]] const RHI::ShaderResourceGroup& shaderResourceGroup) override {}
-            void Submit([[maybe_unused]] const RHI::DrawItem& drawItem) override {}
-            void Submit([[maybe_unused]] const RHI::CopyItem& copyItem) override {}
-            void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem) override {}
-            void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem) override {}
+            void Submit([[maybe_unused]] const RHI::DrawItem& drawItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::CopyItem& copyItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::DispatchItem& dispatchItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
+            void Submit([[maybe_unused]] const RHI::DispatchRaysItem& dispatchRaysItem, [[maybe_unused]] uint32_t submitIndex = 0) override {}
             void BeginPredication([[maybe_unused]] const RHI::Buffer& buffer, [[maybe_unused]] uint64_t offset, [[maybe_unused]] RHI::PredicationOp operation) override {}
             void EndPredication() override {}
             void BuildBottomLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingBlas& rayTracingBlas) override {}
             void BuildTopLevelAccelerationStructure([[maybe_unused]] const RHI::RayTracingTlas& rayTracingTlas) override {}
+            void SetFragmentShadingRate(
+                [[maybe_unused]] RHI::ShadingRate rate,
+                [[maybe_unused]] const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override {}
             /////////////////////////////////////////////////////////////////////////////////////////////////
 
             ///////////////////////////////////////////////////////////////////

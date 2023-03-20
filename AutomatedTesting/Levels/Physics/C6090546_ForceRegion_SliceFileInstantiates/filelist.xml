@@ -1,6 +1,0 @@
-<download name="C6090546_ForceRegion_SliceLevel" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39317" md5="9bd8ab92cf0474e5897e6149492a289b"/>
- </files>
-</download>

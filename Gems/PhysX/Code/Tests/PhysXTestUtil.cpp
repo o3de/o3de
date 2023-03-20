@@ -9,6 +9,7 @@
 #include "PhysXTestUtil.h"
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Collision/CollisionEvents.h>
+#include <AzCore/Interface/Interface.h>
 
 namespace PhysX
 {

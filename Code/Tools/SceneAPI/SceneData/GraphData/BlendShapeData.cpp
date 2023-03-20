@@ -10,6 +10,7 @@
 #include <SceneAPI/SceneData/GraphData/BlendShapeData.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/std/containers/bitset.h>
 
 namespace AZ
 {
@@ -36,6 +37,7 @@ namespace AZ
                 if (behaviorContext)
                 {
                     behaviorContext->Class<SceneAPI::DataTypes::IBlendShapeData>()
+                        ->Attribute(AZ::Script::Attributes::ExcludeFrom, AZ::Script::Attributes::ExcludeFlags::ListOnly)
                         ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                         ->Attribute(AZ::Script::Attributes::Module, "scene")
                         ->Method("GetUsedControlPointCount", &SceneAPI::DataTypes::IBlendShapeData::GetUsedControlPointCount)

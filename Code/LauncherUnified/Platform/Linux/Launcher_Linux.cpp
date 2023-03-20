@@ -10,8 +10,7 @@
 
 #include <AzCore/Debug/StackTracer.h>
 #include <AzCore/IO/SystemFile.h> // for AZ_MAX_PATH_LEN
-
-#include <CryLibrary.h>
+#include <AzCore/Math/Vector2.h>
 
 #include <execinfo.h>
 #include <libgen.h>
@@ -64,6 +63,7 @@ namespace
 
 int main(int argc, char** argv)
 {
+    const AZ::Debug::Trace tracer;
     bool waitForDebugger = false;
     for (int i = 1; i < argc; ++i)
     {
@@ -75,7 +75,7 @@ int main(int argc, char** argv)
     }
     if (waitForDebugger)
     {
-        while(!AZ::Debug::Trace::IsDebuggerPresent())
+        while(!AZ::Debug::Trace::Instance().IsDebuggerPresent())
         {
             AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(50));
         }
@@ -84,17 +84,6 @@ int main(int argc, char** argv)
     InitStackTracer();
 
     using namespace O3DELauncher;
-
-#if !defined(AZ_MONOLITHIC_BUILD)
-    char exePath[AZ_MAX_PATH_LEN] = { 0 };
-    if (readlink("/proc/self/exe", exePath, AZ_MAX_PATH_LEN) == -1)
-    {
-        return static_cast<int>(ReturnCode::ErrExePath);
-    }
-
-    char* runDir = dirname(exePath);
-    SetModulePath(runDir);
-#endif // !defined(AZ_MONOLITHIC_BUILD)
 
     PlatformMainInfo mainInfo;
 

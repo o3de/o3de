@@ -17,7 +17,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 // CGenericSelectItemDialog dialog
 
-CGenericSelectItemDialog::CGenericSelectItemDialog(QWidget* pParent /*=NULL*/)
+CGenericSelectItemDialog::CGenericSelectItemDialog(QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , ui(new Ui::CGenericSelectItemDialog)
     , m_initialized(false)
@@ -90,20 +90,6 @@ void CGenericSelectItemDialog::ReloadTree()
     ui->m_tree->clear();
 
     QTreeWidgetItem* hSelected = nullptr;
-
-    /*
-    std::vector<CString>::const_iterator iter = m_items.begin();
-    while (iter != m_items.end())
-    {
-        const CString& itemName = *iter;
-        HTREEITEM hItem = m_tree.InsertItem(itemName, 0, 0, TVI_ROOT, TVI_SORT);
-        if (!m_preselect.IsEmpty() && m_preselect.CompareNoCase(itemName) == 0)
-        {
-            hSelected = hItem;
-        }
-        ++iter;
-    }
-    */
 
     std::map<QString, QTreeWidgetItem*, less_qstring_icmp> items;
 

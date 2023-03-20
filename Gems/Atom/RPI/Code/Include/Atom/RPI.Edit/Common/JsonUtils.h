@@ -10,8 +10,7 @@
 
 #include <AzCore/JSON/document.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
-#include <AtomCore/Serialization/Json/JsonUtils.h>
-#include <Atom/RPI.Edit/Common/JsonFileLoadContext.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <Atom/RPI.Edit/Common/JsonReportingHelper.h>
 
 namespace AZ
@@ -20,26 +19,35 @@ namespace AZ
     {
         namespace JsonUtils
         {
+            //! Protects from allocating too much memory. The choice of a 1MB threshold is arbitrary.
+            //! If you need to work with larger files, please use AZ::IO directly instead of these utility functions.
+            inline constexpr size_t DefaultMaxFileSize = 1024 * 1024;
+
             // Declarations...
 
             //! Loads serialized object data from a json file at the specified path
             //! Errors will be reported using AZ trace
             template<typename ObjectType>
-            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData);
+            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData, size_t maxFileSize = DefaultMaxFileSize);
 
             //! Saves serialized object data to a json file at the specified path
             //! Errors will be reported using AZ trace
             template<typename ObjectType>
             bool SaveObjectToFile(const AZStd::string& path, const ObjectType& objectData);
 
+            //! Saves serialized object data to a json string
+            //! Errors will be reported using AZ trace
+            template<typename ObjectType>
+            bool SaveObjectToString(AZStd::string& output, const ObjectType& objectData);
+
             // Definitions...
 
             template<typename ObjectType>
-            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData)
+            bool LoadObjectFromFile(const AZStd::string& path, ObjectType& objectData, size_t maxFileSize)
             {
                 objectData = ObjectType();
 
-                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path);
+                auto loadOutcome = AZ::JsonSerializationUtils::ReadJsonFile(path, maxFileSize);
                 if (!loadOutcome.IsSuccess())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "%s", loadOutcome.GetError().c_str());
@@ -48,13 +56,9 @@ namespace AZ
 
                 rapidjson::Document& document = loadOutcome.GetValue();
 
-                AZ::RPI::JsonFileLoadContext fileLoadContext;
-                fileLoadContext.PushFilePath(path);
-
                 AZ::JsonDeserializerSettings jsonSettings;
                 AZ::RPI::JsonReportingHelper reportingHelper;
                 reportingHelper.Attach(jsonSettings);
-                jsonSettings.m_metadata.Add(AZStd::move(fileLoadContext));
 
                 AZ::JsonSerialization::Load(objectData, document, jsonSettings);
                 if (reportingHelper.ErrorsReported())
@@ -87,6 +91,33 @@ namespace AZ
                 if (reportingHelper.ErrorsReported())
                 {
                     AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write JSON document to file: %s", path.c_str());
+                    return false;
+                }
+
+                return true;
+            }
+
+            template<typename ObjectType>
+            bool SaveObjectToString(AZStd::string& output, const ObjectType& objectData)
+            {
+                rapidjson::Document document;
+                document.SetObject();
+
+                AZ::JsonSerializerSettings settings;
+                AZ::RPI::JsonReportingHelper reportingHelper;
+                reportingHelper.Attach(settings);
+
+                AZ::JsonSerialization::Store(document, document.GetAllocator(), objectData, settings);
+                if (reportingHelper.ErrorsReported())
+                {
+                    AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write object data to string");
+                    return false;
+                }
+
+                AZ::JsonSerializationUtils::WriteJsonString(document, output);
+                if (reportingHelper.ErrorsReported())
+                {
+                    AZ_Error("AZ::RPI::JsonUtils", false, "Failed to write JSON document to string");
                     return false;
                 }
 

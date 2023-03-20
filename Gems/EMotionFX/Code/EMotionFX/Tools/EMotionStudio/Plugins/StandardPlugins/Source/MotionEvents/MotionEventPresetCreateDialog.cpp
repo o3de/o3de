@@ -16,7 +16,6 @@
 #include <QMessageBox>
 #include <QDialogButtonBox>
 
-
 namespace EMStudio
 {
     MotionEventPresetCreateDialog::MotionEventPresetCreateDialog(const MotionEventPreset& preset, QWidget* parent)
@@ -24,8 +23,27 @@ namespace EMStudio
         , m_preset(preset)
         , m_eventDataEditor(nullptr, nullptr, &m_preset.GetEventDatas(), this)
     {
-        Init();
-        resize(450, 300);
+        setWindowTitle("Motion Event Preset Creation");
+        AZ::SerializeContext* context;
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
+
+        m_editor = new EMotionFX::ObjectEditor(context, this);
+        m_editor->AddInstance(&m_preset, azrtti_typeid<MotionEventPreset>());
+        m_editor->setFixedWidth(450);
+
+        QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::StandardButton::Ok | QDialogButtonBox::StandardButton::Cancel);
+        connect(buttonBox, &QDialogButtonBox::accepted, this, &MotionEventPresetCreateDialog::OnCreateButton);
+        connect(buttonBox, &QDialogButtonBox::rejected, this, &MotionEventPresetCreateDialog::reject);
+        
+        QVBoxLayout* mainLayout = new QVBoxLayout();
+        mainLayout->setSizeConstraint(QLayout::SetFixedSize);
+        mainLayout->setSpacing(5);
+        mainLayout->addWidget(m_editor);
+        mainLayout->addWidget(&m_eventDataEditor);
+        mainLayout->addStretch(0);
+        mainLayout->addWidget(buttonBox);
+        mainLayout->setAlignment(Qt::AlignTop);
+        setLayout(mainLayout);
     }
 
     MotionEventPreset& MotionEventPresetCreateDialog::GetPreset()
@@ -33,30 +51,6 @@ namespace EMStudio
         m_eventDataEditor.MoveEventDataSet(m_preset.GetEventDatas());
         return m_preset;
     }
-
-    void MotionEventPresetCreateDialog::Init()
-    {
-        setWindowTitle("Motion Event Preset Creation");
-
-        AZ::SerializeContext* context;
-        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
-
-        m_editor = new EMotionFX::ObjectEditor(context, this);
-        m_editor->AddInstance(&m_preset, azrtti_typeid<MotionEventPreset>());
-
-        QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::StandardButton::Ok | QDialogButtonBox::StandardButton::Cancel);
-        connect(buttonBox, &QDialogButtonBox::accepted, this, &MotionEventPresetCreateDialog::OnCreateButton);
-        connect(buttonBox, &QDialogButtonBox::rejected, this, &MotionEventPresetCreateDialog::reject);
-
-        QVBoxLayout* verticalLayout = new QVBoxLayout(this);
-        verticalLayout->setSpacing(5);
-        verticalLayout->setSizeConstraint(QLayout::SizeConstraint::SetMinAndMaxSize);
-        verticalLayout->addWidget(m_editor);
-        verticalLayout->addWidget(&m_eventDataEditor);
-        verticalLayout->addStretch();
-        verticalLayout->addWidget(buttonBox);
-    }
-
     
     void MotionEventPresetCreateDialog::OnCreateButton()
     {

@@ -24,7 +24,6 @@ namespace PhysX
     {
     protected:
         const AZStd::string DefaultLayer = "Default";
-        const AZStd::string TouchBendLayer = "TouchBend";
         const AZStd::string LayerA = "LayerA";
         const AZStd::string LayerB = "LayerB";
         const AZStd::string GroupA = "GroupA";
@@ -42,7 +41,6 @@ namespace PhysX
             AZStd::vector<AZStd::string> TestCollisionLayers =
             {
                 DefaultLayer,
-                TouchBendLayer, // This is needed here as placeholder as collision events are disabled on this layer.
                 LayerA,
                 LayerB
             };

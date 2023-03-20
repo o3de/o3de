@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-
 #include <Atom/RPI.Public/RPISystem.h>
+#include <Atom/RPI.Public/RPIUtils.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetReference.h>
 #include <Atom/RPI.Reflect/Asset/AssetHandler.h>
@@ -30,11 +30,15 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/XRRenderingInterface.h>
 
-#include <AzCore/Debug/EventTrace.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Time/ITime.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
+
+AZ_DEFINE_BUDGET(AzRender);
+AZ_DEFINE_BUDGET(RPI);
 
 // This will cause the RPI System to print out global state (like the current pass hierarchy) when an assert is hit
 // This is useful for rendering engineers debugging a crash in the RPI/RHI layers
@@ -69,13 +73,25 @@ namespace AZ
 
             RPISystemDescriptor::Reflect(context);
             GpuQuerySystemDescriptor::Reflect(context);
-            ShaderMetricsSystem::Reflect(context);
 
             PipelineStatisticsResult::Reflect(context);
         }
 
         void RPISystem::Initialize(const RPISystemDescriptor& rpiSystemDescriptor)
         {
+            //If xr system is registered with RPI init xr instance
+            if (m_xrSystem)
+            {
+                AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
+                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
+                if (resultCode == AZ::RHI::ResultCode::Fail)
+                {
+                    UnregisterXRSystem();
+                }
+                AZ_Error("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled");
+            }
+
+            //Init RHI device
             m_rhiSystem.InitDevice();
 
             // Gather asset handlers from sub-systems.
@@ -91,7 +107,6 @@ namespace AZ
             m_materialSystem.Init();
             m_modelSystem.Init();
             m_shaderSystem.Init();
-            m_shaderMetricsSystem.Init();
             m_passSystem.Init();
             m_featureProcessorFactory.Init();
             m_querySystem.Init(m_descriptor.m_gpuQuerySystemDescriptor);
@@ -127,7 +142,6 @@ namespace AZ
             m_materialSystem.Shutdown();
             m_modelSystem.Shutdown();
             m_shaderSystem.Shutdown();
-            m_shaderMetricsSystem.Shutdown();
             m_imageSystem.Shutdown();
             m_querySystem.Shutdown();
             m_rhiSystem.Shutdown();
@@ -156,6 +170,11 @@ namespace AZ
                     AZ_Assert(false, "Scene was already registered");
                     return;
                 }
+                else if (!scene->GetName().IsEmpty() && scene->GetName() == sceneItem->GetName())
+                {
+                    // only report a warning if there is a scene with duplicated name
+                    AZ_Warning("RPISystem", false, "There is a registered scene with same name [%s]", scene->GetName().GetCStr());
+                }
             }
 
             m_scenes.push_back(scene);
@@ -174,27 +193,41 @@ namespace AZ
             AZ_Assert(false, "Can't unregister scene which wasn't registered");
         }
 
-        ScenePtr RPISystem::GetScene(const SceneId& sceneId) const
+        Scene* RPISystem::GetScene(const SceneId& sceneId) const
         {
             for (const auto& scene : m_scenes)
             {
                 if (scene->GetId() == sceneId)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+
+        Scene* RPISystem::GetSceneByName(const AZ::Name& name) const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == name)
+                {
+                    return scene.get();
+                }
+            }
+            return nullptr;
+        }
+        
+        ScenePtr RPISystem::GetDefaultScene() const
+        {
+            for (const auto& scene : m_scenes)
+            {
+                if (scene->GetName() == AZ::Name("Main"))
                 {
                     return scene;
                 }
             }
             return nullptr;
         }
-
-        ScenePtr RPISystem::GetDefaultScene() const
-        {
-            if (m_scenes.size() > 0)
-            {
-                return m_scenes[0];
-            }
-            return nullptr;
-        }
-
 
         RenderPipelinePtr RPISystem::GetRenderPipelineForWindow(AzFramework::NativeWindowHandle windowHandle)
         {
@@ -230,7 +263,7 @@ namespace AZ
 
         void RPISystem::OnSystemTick()
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: OnSystemTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: OnSystemTick");
 
             // Image system update is using system tick but not game tick so it can stream images in background even game is pausing
             m_imageSystem.Update();
@@ -238,40 +271,37 @@ namespace AZ
 
         void RPISystem::SimulationTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
                 return;
             }
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: SimulationTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: SimulationTick");
 
             AssetInitBus::Broadcast(&AssetInitBus::Events::PostLoadInit);
 
-            // Update tick time info
-            FillTickTimeInfo();
+            m_currentSimulationTime = GetCurrentTime();
 
             for (auto& scene : m_scenes)
             {
-                scene->Simulate(m_tickTime, m_simulationJobPolicy);
+                scene->Simulate(m_simulationJobPolicy, m_currentSimulationTime);
             }
         }
 
-        void RPISystem::FillTickTimeInfo()
+        float RPISystem::GetCurrentTime() const
         {
-            AZ::TickRequestBus::BroadcastResult(m_tickTime.m_gameDeltaTime, &AZ::TickRequestBus::Events::GetTickDeltaTime);
-            ScriptTimePoint currentTime;
-            AZ::TickRequestBus::BroadcastResult(currentTime, &AZ::TickRequestBus::Events::GetTimeAtCurrentTick);
-            m_tickTime.m_currentGameTime = static_cast<float>(currentTime.GetMilliseconds());
+            const AZ::TimeUs currentSimulationTimeUs = AZ::GetRealElapsedTimeUs();
+            return AZ::TimeUsToSeconds(currentSimulationTimeUs);
         }
 
         void RPISystem::RenderTick()
         {
-            if (!m_systemAssetsInitialized)
+            if (!m_systemAssetsInitialized || IsNullRenderer())
             {
+                m_dynamicDraw.FrameEnd();
                 return;
             }
 
-            AZ_PROFILE_FUNCTION(AZ::Debug::ProfileCategory::AzRender);
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "RPISystem: RenderTick");
+            AZ_PROFILE_SCOPE(RPI, "RPISystem: RenderTick");
 
             // Query system update is to increment the frame count
             m_querySystem.Update();
@@ -280,7 +310,7 @@ namespace AZ
             // [GFX TODO] We may parallel scenes' prepare render.
             for (auto& scenePtr : m_scenes)
             {
-                scenePtr->PrepareRender(m_tickTime, m_prepareRenderJobPolicy);
+                scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
             m_rhiSystem.FrameUpdate(
@@ -290,7 +320,7 @@ namespace AZ
                     // scope producers only can be added to the frame when frame started which cleans up previous scope producers.
                     m_passSystem.FrameUpdate(frameGraphBuilder);
 
-                    // Update View Srgs
+                    // Update Scene and View Srgs
                     for (auto& scenePtr : m_scenes)
                     {
                         scenePtr->UpdateSrgs();
@@ -298,7 +328,7 @@ namespace AZ
                 });
 
             {
-                AZ_ATOM_PROFILE_TIME_GROUP_REGION("RPI", "RPISystem: FrameEnd");
+                AZ_PROFILE_SCOPE(RPI, "RPISystem: FrameEnd");
                 m_dynamicDraw.FrameEnd();
                 m_passSystem.FrameEnd();
 
@@ -345,28 +375,16 @@ namespace AZ
         {
             if (m_systemAssetsInitialized)
             {
-                AZ_Warning("RPISystem", false , "InitializeSystemAssets should only be called once'");
                 return;
-            }
-
-            //[GFX TODO][ATOM-5867] - Move file loading code within RHI to reduce coupling with RPI
-            AZStd::string platformLimitsFilePath = AZStd::string::format("config/platform/%s/%s/platformlimits.azasset", AZ_TRAIT_OS_PLATFORM_NAME, GetRenderApiName().GetCStr());
-            AZStd::to_lower(platformLimitsFilePath.begin(), platformLimitsFilePath.end());
-            
-            Data::Asset<AnyAsset> platformLimitsAsset;
-            platformLimitsAsset = RPI::AssetUtils::LoadCriticalAsset<AnyAsset>(platformLimitsFilePath.c_str(), RPI::AssetUtils::TraceLevel::None);
-            // Only read the m_platformLimits if the platformLimitsAsset is ready.
-            // The platformLimitsAsset may not exist for null renderer which is allowed
-            if (platformLimitsAsset.IsReady())
-            {
-                m_descriptor.m_rhiSystemDescriptor.m_platformLimits = RPI::GetDataFromAnyAsset<RHI::PlatformLimits>(platformLimitsAsset);
             }
 
             m_commonShaderAssetForSrgs = AssetUtils::LoadCriticalAsset<ShaderAsset>( m_descriptor.m_commonSrgsShaderAssetPath.c_str());
             if (!m_commonShaderAssetForSrgs.IsReady())
             {
+                AZ_Error("RPI system", false, "Failed to load RPI system asset %s", m_descriptor.m_commonSrgsShaderAssetPath.c_str());
                 return;
             }
+
             m_sceneSrgLayout = m_commonShaderAssetForSrgs->FindShaderResourceGroupLayout(SrgBindingSlot::Scene);
             if (!m_sceneSrgLayout)
             {
@@ -382,7 +400,7 @@ namespace AZ
                 return;
             }
 
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
             m_dynamicDraw.Init(m_descriptor.m_dynamicDrawSystemDescriptor);
@@ -390,11 +408,17 @@ namespace AZ
             m_passSystem.InitPassTemplates();
 
             m_systemAssetsInitialized = true;
+            AZ_TracePrintf("RPI system", "System assets initialized\n");
         }
 
         bool RPISystem::IsInitialized() const
         {
             return m_systemAssetsInitialized;
+        }
+
+        bool RPISystem::IsNullRenderer() const
+        {
+            return m_descriptor.m_isNullRenderer;
         }
 
         void RPISystem::InitializeSystemAssetsForTests()
@@ -406,7 +430,7 @@ namespace AZ
             }
 
             //Init rhi/image/buffer systems to match InitializeSystemAssets
-            m_rhiSystem.Init(m_descriptor.m_rhiSystemDescriptor);
+            m_rhiSystem.Init();
             m_imageSystem.Init(m_descriptor.m_imageSystemDescriptor);
             m_bufferSystem.Init();
 
@@ -429,5 +453,52 @@ namespace AZ
             return m_renderTick;
         }
 
+        void RPISystem::SetApplicationMultisampleState(const RHI::MultisampleState& multisampleState)
+        {
+            m_multisampleState = multisampleState;
+
+            bool isNonMsaaPipeline = (m_multisampleState.m_samples == 1);
+            const char* supervariantName = isNonMsaaPipeline ? AZ::RPI::NoMsaaSupervariantName : "";
+            AZ::RPI::ShaderSystemInterface::Get()->SetSupervariantName(AZ::Name(supervariantName));
+
+            // reinitialize pipelines for all scenes
+            for (auto& scene : m_scenes)
+            {
+                for (auto& renderPipeline : scene->GetRenderPipelines())
+                {
+                    // MSAA state set to the render pipeline at creation time from its data might be different
+                    // from the one set to the application. So it can arrive here having the same new
+                    // target state, but still needs to be marked as its MSAA state has changed so its passes
+                    // are recreated using the new supervariant name coming from MSAA at application level just set above.
+                    // In conclusion, it's not safe to skip here setting MSAA state to the render pipeline when it's the
+                    // same as the target.
+                    renderPipeline->GetRenderSettings().m_multisampleState = multisampleState;
+                    renderPipeline->MarkPipelinePassChanges(PipelinePassChanges::MultisampleStateChanged);
+                }
+            }
+        }
+
+        const RHI::MultisampleState& RPISystem::GetApplicationMultisampleState() const
+        {
+            return m_multisampleState;
+        }
+
+        void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
+        { 
+            AZ_Assert(!m_xrSystem, "XR System is already registered");
+            m_xrSystem = xrSystemInterface;
+            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
+        }
+
+        void RPISystem::UnregisterXRSystem()
+        {
+            m_rhiSystem.UnregisterXRSystem();
+            m_xrSystem = nullptr;
+        }
+
+        XRRenderingInterface* RPISystem::GetXRSystem() const
+        {
+            return m_xrSystem;
+        } 
     } //namespace RPI
 } //namespace AZ

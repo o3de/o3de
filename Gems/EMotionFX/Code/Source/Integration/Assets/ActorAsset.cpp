@@ -6,7 +6,6 @@
  *
  */
 
-#include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/Source/ActorInstance.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <EMotionFX/Source/Importer/Importer.h>
@@ -18,8 +17,8 @@ namespace EMotionFX
 {
     namespace Integration
     {
-        AZ_CLASS_ALLOCATOR_IMPL(ActorAsset, EMotionFXAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(ActorAssetHandler, EMotionFXAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(ActorAsset, EMotionFXAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(ActorAssetHandler, EMotionFXAllocator)
 
         ActorAsset::ActorAsset(AZ::Data::AssetId id)
             : EMotionFXAsset(id)
@@ -55,7 +54,7 @@ namespace EMotionFX
             Importer::ActorSettings actorSettings;
             if (GetEMotionFX().GetEnableServerOptimization())
             {
-                actorSettings.mOptimizeForServer = true;
+                actorSettings.m_optimizeForServer = true;
             }
 
             assetData->m_emfxActor = EMotionFX::GetImporter().LoadActor(
@@ -64,8 +63,7 @@ namespace EMotionFX
                 &actorSettings,
                 "");
 
-            // Set the is owned by runtime flag before finalizing the actor, as that uses the flag already.
-            assetData->m_emfxActor->SetIsOwnedByRuntime(true);
+            assetData->m_emfxActor->SetFileName(asset.GetHint().c_str());
             assetData->m_emfxActor->Finalize();
 
             // Clear out the EMFX raw asset data.
@@ -105,6 +103,17 @@ namespace EMotionFX
         const char* ActorAssetHandler::GetBrowserIcon() const
         {
             return "Editor/Images/AssetBrowser/Actor_16.svg";
+        }
+
+        int ActorAssetHandler::GetAssetTypeDragAndDropCreationPriority() const
+        {
+            // this function is used when the user drags and drops a file that produces
+            // many different kinds of assets into the viewport (for example, dragging a FBX file
+            // that produces both an actor and a mesh).  It is used to select which component
+            // is ultimately chosen to spawn in the viewport, since only one can be chosen to represent
+            // the dropped object.  In the case of an imported file which produces an actor, its very likely
+            // that the actor is representative of the file, moreso than other parts.
+            return AZ::AssetTypeInfo::s_HighPriority;
         }
     } //namespace Integration
 } // namespace EMotionFX

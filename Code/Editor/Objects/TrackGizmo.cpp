@@ -27,9 +27,11 @@
 //////////////////////////////////////////////////////////////////////////
 #define AXIS_SIZE 0.1f
 
+#if 0
 namespace {
     int s_highlightAxis = 0;
 }
+#endif
 
 //////////////////////////////////////////////////////////////////////////
 CTrackGizmo::CTrackGizmo()
@@ -175,13 +177,15 @@ void CTrackGizmo::DrawAxis(DisplayContext& dc, const Vec3& org)
     y = y * fScreenScale;
     z = z * fScreenScale;
 
+    Vec3 colX(1, 0, 0), colY(0, 1, 0), colZ(0, 0, 1);
+
+    AZ_ErrorOnce(nullptr, false, "CTrackGizmo::DrawAxis needs to be removed/ported to use Atom");
+#if 0
     float col[4] = { 1, 1, 1, 1 };
-    float hcol[4] = { 1, 0, 0, 1 };
     dc.renderer->DrawLabelEx(org + x, 1.2f, col, true, true, "X");
     dc.renderer->DrawLabelEx(org + y, 1.2f, col, true, true, "Y");
     dc.renderer->DrawLabelEx(org + z, 1.2f, col, true, true, "Z");
 
-    Vec3 colX(1, 0, 0), colY(0, 1, 0), colZ(0, 0, 1);
     if (s_highlightAxis)
     {
         float col2[4] = { 1, 0, 0, 1 };
@@ -201,6 +205,7 @@ void CTrackGizmo::DrawAxis(DisplayContext& dc, const Vec3& org)
             dc.renderer->DrawLabelEx(org + z, 1.2f, col2, true, true, "Z");
         }
     }
+#endif
 
     x = x * 0.8f;
     y = y * 0.8f;

@@ -22,7 +22,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 #define MIN_ASPECT 1
 #define MAX_ASPECT 16384
 
-CCustomAspectRatioDlg::CCustomAspectRatioDlg(int x, int y, QWidget* pParent /*=NULL*/)
+CCustomAspectRatioDlg::CCustomAspectRatioDlg(int x, int y, QWidget* pParent /*=nullptr*/)
     : QDialog(pParent)
     , m_xDefault(x)
     , m_yDefault(y)

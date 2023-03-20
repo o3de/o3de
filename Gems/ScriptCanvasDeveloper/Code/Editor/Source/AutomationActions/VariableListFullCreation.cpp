@@ -37,9 +37,7 @@ namespace ScriptCanvasDeveloperEditor
                 m_variableNameFormat += " %i";
             }
 
-            ~VariablePaletteFullCreationInterface()
-            {
-            }
+            virtual ~VariablePaletteFullCreationInterface() = default;
 
             void SetupInterface([[maybe_unused]] const AZ::EntityId& graphCanvasId, const ScriptCanvas::ScriptCanvasId& scriptCanvasId)
             {

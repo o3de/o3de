@@ -45,7 +45,7 @@ namespace UnitTest
         : public RHI::ScopeProducer
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScopeProducer, SystemAllocator);
 
         ScopeProducer(const RHI::ScopeId& scopeId)
             : RHI::ScopeProducer(scopeId)
@@ -92,6 +92,8 @@ namespace UnitTest
             {
                 frameGraph.UseShaderAttachment(usage.m_descriptor, usage.m_access);
             }
+
+            frameGraph.SetEstimatedItemCount(0);
         }
 
         void CompileResources(const RHI::FrameGraphCompileContext& context) override

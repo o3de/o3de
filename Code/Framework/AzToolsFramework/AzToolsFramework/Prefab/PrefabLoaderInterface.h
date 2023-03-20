@@ -8,15 +8,23 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
+
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzToolsFramework/Prefab/PrefabIdTypes.h>
 
 namespace AzToolsFramework
 {
     namespace Prefab
     {
+        enum class SaveAllPrefabsPreference
+        {
+            AskEveryTime,
+            SaveAll,
+            SaveNone
+        };
+
         /*!
          * PrefabLoaderInterface
          * Interface for saving/loading Prefab files.
@@ -84,12 +92,19 @@ namespace AzToolsFramework
             //! The path will always use the '/' separator.
             virtual AZ::IO::Path GenerateRelativePath(AZ::IO::PathView path) = 0;
 
+            virtual SaveAllPrefabsPreference GetSaveAllPrefabsPreference() const = 0;
+            virtual void SetSaveAllPrefabsPreference(SaveAllPrefabsPreference saveAllPrefabsPreference) = 0;
+
         protected:
 
             // Generates a new path
             static AZ::IO::Path GeneratePath();
         };
-
     } // namespace Prefab
 } // namespace AzToolsFramework
+
+namespace AZ
+{
+    AZ_TYPE_INFO_SPECIALIZE(AzToolsFramework::Prefab::SaveAllPrefabsPreference, "{7E61EA82-4DE4-4A3F-945F-C8FEDC1114B5}");
+}
 

@@ -54,7 +54,7 @@ class OutlinerListModel
     Q_OBJECT;
 
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerListModel, AZ::SystemAllocator);
 
     //! Columns of data to display about each Entity.
     enum Column
@@ -255,7 +255,7 @@ protected:
     bool DropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent);
     bool CanDropMimeDataAssets(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) const;
 
-    QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override;
     QVariant dataForAll(const QModelIndex& index, int role) const;
     QVariant dataForName(const QModelIndex& index, int role) const;
     QVariant dataForVisibility(const QModelIndex& index, int role) const;
@@ -324,7 +324,7 @@ class OutlinerItemDelegate
     : public QStyledItemDelegate
 {
 public:
-    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(OutlinerItemDelegate, AZ::SystemAllocator);
 
     OutlinerItemDelegate(QWidget* parent = nullptr);
 
@@ -376,7 +376,6 @@ private:
     mutable CheckboxGroup m_lockCheckBoxes;
 
     const int m_layerDividerLineHeight = 1;
-    const int m_lastEntityInLayerDividerLineHeight = 1;
     const int m_toggleColumnWidth = 16;
 
     // this is a cache, and is hence mutable

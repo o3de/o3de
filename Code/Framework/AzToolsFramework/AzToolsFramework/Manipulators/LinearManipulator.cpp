@@ -52,7 +52,6 @@ namespace AzToolsFramework
         start.m_screenPosition = interaction.m_mousePick.m_screenCoordinates;
         start.m_localPosition = localTransform.GetTranslation();
         start.m_localScale = AZ::Vector3(localTransform.GetUniformScale());
-        ;
         start.m_localAxis = axis;
         // sign to determine which side of the linear axis we pressed
         // (useful to know when the visual axis flips to face the camera)
@@ -155,7 +154,7 @@ namespace AzToolsFramework
     void LinearManipulator::OnLeftMouseDownImpl(
         const ViewportInteraction::MouseInteraction& interaction, const float rayIntersectionDistance)
     {
-        const AZ::Transform worldFromLocalUniformScale = TransformUniformScale(GetSpace());
+        const AZ::Transform worldFromLocalUniformScale = GetSpace();
 
         // note: m_localTransform must not be made uniform as it may contain a local scale we want to snap
         m_starter = CalculateLinearManipulationDataStart(
@@ -179,8 +178,7 @@ namespace AzToolsFramework
 
             // note: m_localTransform must not be made uniform as it may contain a local scale we want to snap
             m_onMouseMoveCallback(CalculateLinearManipulationDataAction(
-                m_fixed, m_starter, TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalTransform(), gridSnapParams,
-                interaction));
+                m_fixed, m_starter, GetSpace(), GetNonUniformScale(), GetLocalTransform(), gridSnapParams, interaction));
         }
     }
 
@@ -192,8 +190,7 @@ namespace AzToolsFramework
 
             // note: m_localTransform must not be made uniform as it may contain a local scale we want to snap
             m_onLeftMouseUpCallback(CalculateLinearManipulationDataAction(
-                m_fixed, m_starter, TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalTransform(), gridSnapParams,
-                interaction));
+                m_fixed, m_starter, GetSpace(), GetNonUniformScale(), GetLocalTransform(), gridSnapParams, interaction));
         }
     }
 
@@ -207,20 +204,19 @@ namespace AzToolsFramework
             ? AZ::Transform::CreateFromQuaternionAndTranslation(m_visualOrientationOverride, GetLocalPosition())
             : GetLocalTransform();
 
-        if (cl_manipulatorDrawDebug)
+        if (ed_manipulatorDrawDebug)
         {
             if (PerformingAction())
             {
                 const GridSnapParameters gridSnapParams = GridSnapSettings(mouseInteraction.m_interactionId.m_viewportId);
 
                 const auto action = CalculateLinearManipulationDataAction(
-                    m_fixed, m_starter, TransformUniformScale(GetSpace()), GetNonUniformScale(), GetLocalTransform(), gridSnapParams,
-                    mouseInteraction);
+                    m_fixed, m_starter, GetSpace(), GetNonUniformScale(), GetLocalTransform(), gridSnapParams, mouseInteraction);
 
                 // display the exact hit (ray intersection) of the mouse pick on the manipulator
                 DrawTransformAxes(
                     debugDisplay,
-                    TransformUniformScale(GetSpace()) *
+                    GetSpace() *
                         AZ::Transform::CreateTranslation(
                             action.m_start.m_localHitPosition + GetNonUniformScale() * action.m_current.m_localPositionOffset));
             }
@@ -235,12 +231,10 @@ namespace AzToolsFramework
 
         for (auto& view : m_manipulatorViews)
         {
-            auto nonUniformScale = GetNonUniformScale();
-
             view->Draw(
                 GetManipulatorManagerId(), managerState, GetManipulatorId(),
-                { ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay, cameraState,
-                mouseInteraction);
+                ManipulatorState{ ApplySpace(localTransform), GetNonUniformScale(), AZ::Vector3::CreateZero(), MouseOver() }, debugDisplay,
+                cameraState, mouseInteraction);
         }
     }
 

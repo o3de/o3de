@@ -23,7 +23,8 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
         &AzToolsFramework::PropertyAssetCtrl::OnAssetIDChanged,
         [ this ]([[maybe_unused]] AZ::Data::AssetId newAssetID)
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, this);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, this);
         });
 
     setAcceptDrops(true);
@@ -45,7 +46,7 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
 
         refreshButton->setFocusPolicy(Qt::StrongFocus);
 
-        refreshButton->setIcon(QIcon("Icons/PropertyEditor/reset_icon.png"));
+        refreshButton->setIcon(QIcon(":/PropertyEditor/Resources/reset_icon.png"));
 
         // The icon size needs to be smaller than the fixed size to make sure it visually aligns properly.
         QSize iconSize = QSize(fixedSize.width() - 2, fixedSize.height() - 2);
@@ -53,7 +54,7 @@ PropertyDirectoryCtrl::PropertyDirectoryCtrl(QWidget* parent)
 
         QObject::connect(refreshButton,
             &QPushButton::clicked,
-            [this]([[maybe_unused]] bool checked)
+            []([[maybe_unused]] bool checked)
         {
             UiEditorRefreshDirectoryNotificationBus::Broadcast(&UiEditorRefreshDirectoryNotificationInterface::OnRefreshDirectory);
         });
@@ -93,7 +94,7 @@ AzToolsFramework::AssetBrowser::AssetSelectionModel PropertyAssetDirectorySelect
 
 void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string& folderPath)
 {
-    string strFolderPath = folderPath.c_str();
+    AZStd::string strFolderPath = folderPath.c_str();
     if (strFolderPath.empty())
     {
         m_folderPath.clear();
@@ -106,12 +107,14 @@ void PropertyAssetDirectorySelectionCtrl::SetFolderSelection(const AZStd::string
         // the project folder, which we need to omit since file IO routines
         // seem to assume this anyways.
         strFolderPath = strFolderPath.substr(strFolderPath.find('/') + 1);
-        m_folderPath = PathUtil::MakeGamePath(strFolderPath).MakeLower();
+        m_folderPath = PathUtil::MakeGamePath(strFolderPath);
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
     // For paths in gems, absolute paths are returned
     else
     {
-        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str()).MakeLower();
+        m_folderPath = Path::FullPathToGamePath(strFolderPath.c_str());
+        AZStd::to_lower(m_folderPath.begin(), m_folderPath.end());
     }
 }
 
@@ -173,7 +176,8 @@ bool PropertyHandlerDirectory::ReadValuesIntoGUI(size_t index, PropertyDirectory
 
 void PropertyHandlerDirectory::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerDirectory());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerDirectory());
 }
 
 #include <moc_PropertyHandlerDirectory.cpp>

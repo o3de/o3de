@@ -37,26 +37,28 @@ namespace PhysX
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
         {
-            provided.push_back(AZ_CRC("PhysicsWorldBodyService", 0x944da0cc));
-            provided.push_back(AZ_CRC("PhysXRagdollService", 0x6d889c70));
+            provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+            provided.push_back(AZ_CRC_CE("PhysicsRagdollService"));
         }
 
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
         {
-            incompatible.push_back(AZ_CRC("PhysXRagdollService", 0x6d889c70));
-            incompatible.push_back(AZ_CRC("LegacyCryPhysicsService", 0xbb370351));
+            incompatible.push_back(AZ_CRC_CE("PhysicsRagdollService"));
             incompatible.push_back(AZ_CRC_CE("NonUniformScaleService"));
+            // Incompatible with static/dynamic rigid bodies, but still compatible
+            // with character controller (which also provides rigid body service).
+            incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
+            incompatible.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
         }
 
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
         {
-            required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+            required.push_back(AZ_CRC_CE("TransformService"));
         }
 
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
         {
-            dependent.push_back(AZ_CRC("PhysXColliderService", 0x4ff43f7c));
-            dependent.push_back(AZ_CRC("CharacterPhysicsDataService", 0x34757927));
+            dependent.push_back(AZ_CRC_CE("CharacterPhysicsDataService"));
         }
 
     protected:
@@ -94,30 +96,32 @@ namespace PhysX
         void EnterRagdoll() override;
         void ExitRagdoll() override;
 
-        // version converters
-        static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
-
     private:
         void CreateRagdoll(const Physics::RagdollConfiguration& ragdollConfiguration);
         void DestroyRagdoll();
         Ragdoll* GetPhysXRagdoll();
         const Ragdoll* GetPhysXRagdollConst() const;
 
-        bool IsJointProjectionVisible();
+        bool IsJointProjectionVisible() const;
+        bool IsMaxMassRatioVisible() const;
 
         AzPhysics::SimulatedBodyHandle m_ragdollHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         /// Minimum number of position iterations to perform in the PhysX solver.
         /// Lower iteration counts are less expensive but may behave less realistically.
-        AZ::u32 m_positionIterations = 16; 
+        AZ::u32 m_positionIterations = 16;
         /// Minimum number of velocity iterations to perform in the PhysX solver.
         AZ::u32 m_velocityIterations = 8;
         /// Whether to use joint projection to preserve joint constraints in demanding
         /// situations at the expense of potentially reducing physical correctness.
-        bool m_enableJointProjection = true; 
+        bool m_enableJointProjection = true;
         /// Linear joint error above which projection will be applied.
         float m_jointProjectionLinearTolerance = 1e-3f;
         /// Angular joint error (in degrees) above which projection will be applied.
         float m_jointProjectionAngularToleranceDegrees = 1.0f;
+        /// Allows ragdoll node mass values to be overridden to avoid unstable mass ratios.
+        bool m_enableMassRatioClamping = false;
+        /// If mass ratio clamping is enabled, masses will be clamped to within this ratio.
+        float m_maxMassRatio = 2.0f;
     };
 } // namespace PhysX

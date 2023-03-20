@@ -22,7 +22,7 @@ namespace AZ
             using Base = RHI::BufferPool;
         public:
             AZ_RTTI(BufferPool, "{BC251841-AADD-4A4A-A4FF-4F94897541D5}", Base);
-            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferPool, AZ::SystemAllocator);
             virtual ~BufferPool() = default;
 
             static RHI::Ptr<BufferPool> Create();
@@ -47,6 +47,7 @@ namespace AZ
             RHI::ResultCode MapBufferInternal(const RHI::BufferMapRequest& mapRequest, RHI::BufferMapResponse& response) override;
             void UnmapBufferInternal(RHI::Buffer& buffer) override;
             RHI::ResultCode StreamBufferInternal(const RHI::BufferStreamRequest& request) override;
+            void ComputeFragmentation() const override;
             //////////////////////////////////////////////////////////////////////////
 
             BufferPoolResolver* GetResolver();

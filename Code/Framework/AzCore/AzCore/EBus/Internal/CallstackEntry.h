@@ -161,7 +161,7 @@ namespace AZ
         template <class C>
         struct EBusCallstackStorage<C, true>
         {
-            AZ_THREAD_LOCAL static C* s_entry;
+            static AZ_THREAD_LOCAL C* s_entry;
 
             EBusCallstackStorage() = default;
             ~EBusCallstackStorage() = default;

@@ -1,6 +1,0 @@
-<download name="C4888315_Material_AddModifyDeleteOnCollider" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="39458" md5="f1ebdc161ca31f7c0f1fe7a2714ec334"/>
- </files>
-</download>

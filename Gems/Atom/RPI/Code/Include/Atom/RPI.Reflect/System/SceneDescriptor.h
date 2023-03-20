@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Asset/AssetCommon.h>
+#include <AzCore/Name/Name.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
 
@@ -25,6 +26,9 @@ namespace AZ
 
             //! List of feature processors which the scene will initially enable.
             AZStd::vector<AZStd::string> m_featureProcessorNames;
+
+            //! A name used as scene id. It can be used to search a registered scene via RPISystemInterface::GetScene()
+            AZ::Name m_nameId;
         };
     } // namespace RPI
 } // namespace AZ

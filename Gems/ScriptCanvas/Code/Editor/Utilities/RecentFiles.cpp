@@ -8,6 +8,7 @@
 
 #include "RecentFiles.h"
 #include "CommonSettingsConfigurations.h"
+#include <AzCore/std/algorithm.h>
 
 #include <QDir>
 #include <QSettings>

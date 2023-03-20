@@ -1,5 +1,5 @@
 {
-    "Source" : "TexturedIcon",
+    "Source" : "TexturedIcon.azsl",
 
     "DepthStencilState" : { 
         "Depth" : { 
@@ -13,7 +13,7 @@
         "CullMode" : "None"
     },
 
-    "BlendState" : {
+    "GlobalTargetBlendState" : {
         "Enable" : true, 
         "BlendSource" : "One",
         "BlendDest" : "AlphaSourceInverse", 

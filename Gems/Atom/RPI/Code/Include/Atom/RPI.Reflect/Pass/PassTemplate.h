@@ -11,7 +11,7 @@
 
 #include <Atom/RPI.Reflect/Pass/PassRequest.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -30,7 +30,7 @@ namespace AZ
             friend class PassAsset;
 
             AZ_RTTI(PassTemplate, "{BF485F6D-02EC-4BAD-94BA-519248F59D14}");
-            AZ_CLASS_ALLOCATOR(PassTemplate, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PassTemplate, SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 
@@ -43,9 +43,6 @@ namespace AZ
             AZStd::unique_ptr<PassTemplate> CloneUnique() const {
                 return AZStd::make_unique<PassTemplate>(*this);
             }
-
-            //! Returns whether the given attachment matches the restrictions for the slot
-            bool AttachmentFitsSlot(const RHI::UnifiedAttachmentDescriptor& attachmentDesc, Name slotName) const;
 
             //! Find a pass request by name in m_passRequests
             const PassRequest* FindPassRequest(const Name& passName) const;

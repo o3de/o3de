@@ -1,6 +1,0 @@
-<download name="C12712453_ScriptCanvas_MultipleNodeRaycast" type="Map">
- <index src="filelist.xml" dest="filelist.xml"/>
- <files>
-  <file src="level.pak" dest="level.pak" size="9902" md5="c2a00a141f90a05a86c02eec79c5ac76"/>
- </files>
-</download>

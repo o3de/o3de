@@ -1,0 +1,101 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
+#include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/RPI/Math.azsli>
+#include "NewDepthOfFieldCommon.azsli"
+#include "DepthOfField.azsli"
+
+#include <viewsrg.srgi>
+
+#define COC_EPSILON 0.0001
+
+ShaderResourceGroup PassSrg : SRG_PerPass
+{
+    Texture2D<float4> m_colorTexture;
+    Texture2D<float4> m_depth;
+
+    // Texture dimensions. XY channels are width and height and ZW channels are 1 / width and 1 / height 
+    // Auto-filled by the pass system when "ShaderImageDimensionsConstant" is specified in the .pass file
+    float4 m_inputDimensions;
+    float4 m_outputDimensions;
+
+    Sampler PointSampler
+    {
+        MinFilter = Point;
+        MagFilter = Point;
+        MipFilter = Point;
+        AddressU = Clamp;
+        AddressV = Clamp;
+        AddressW = Clamp;
+    };
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    // Sampling positions
+    float2 outputPixelPos = IN.m_position.xy;
+    float2 inputPixelPos = outputPixelPos * 2.0f;
+    float2 inputUV = inputPixelPos * PassSrg::m_inputDimensions.zw;
+
+    // Gather Depth
+    float4 depthGather = PassSrg::m_depth.Gather(PassSrg::PointSampler, inputUV);
+    depthGather = InvertDepth(depthGather);
+
+    // Calculate CoC (Circle of Confusion)
+    float far = ViewSrg::m_dof.m_cameraParameters.x;
+    float near = ViewSrg::m_dof.m_cameraParameters.y;
+    float focusDistance = ViewSrg::m_dof.m_cameraParameters.z;
+
+    float4 cocGather;
+    cocGather.x = ConvertDofFactor(depthGather.x, far, near, focusDistance);
+    cocGather.y = ConvertDofFactor(depthGather.y, far, near, focusDistance);
+    cocGather.z = ConvertDofFactor(depthGather.z, far, near, focusDistance);
+    cocGather.w = ConvertDofFactor(depthGather.w, far, near, focusDistance);
+
+    // Clamp CoC
+    cocGather = clamp(cocGather, -1.0f, 1.0f);
+
+    // Weight samples by CoC to avoid in focus pixels bleeding into bokeh effect
+    float4 weights = abs(cocGather) + COC_EPSILON;
+    weights = weights / (weights.x + weights.y + weights.z + weights.w);
+
+    PSOutput OUT;
+
+    // Red
+    float4 redGather = PassSrg::m_colorTexture.GatherRed(PassSrg::PointSampler, inputUV);
+    OUT.m_color.r = dot(redGather, weights);
+
+    // Green
+    float4 greenGather = PassSrg::m_colorTexture.GatherGreen(PassSrg::PointSampler, inputUV);
+    OUT.m_color.g = dot(greenGather, weights);
+
+    // Blue
+    float4 blueGather = PassSrg::m_colorTexture.GatherBlue(PassSrg::PointSampler, inputUV);
+    OUT.m_color.b = dot(blueGather, weights);
+
+    // CoC - Take the CoC with the maximum absolute value (note CoC can be negative) to get the fullest bokeh effect
+    // The above weighting by CoC mitigates bokeh bleeding from taking the max CoC
+    float coc = cocGather.x;
+    coc = abs(coc) < abs(cocGather.y) ? cocGather.y : coc;
+    coc = abs(coc) < abs(cocGather.z) ? cocGather.z : coc;
+    coc = abs(coc) < abs(cocGather.w) ? cocGather.w : coc;
+
+    // CoC weighting #2: we use linear sampling when we compute the CoC blur
+    // This can lead to in focus pixels bleeding into the bokeh blur
+    // Pre-multiply the color values by the CoC to avoid this type of bleeding
+    // Because we then re-multiply by the CoC value after the linear sampling, we want to avoid coc values of 0
+    // See http://advances.realtimerendering.com/s2013/Sousa_Graphics_Gems_CryENGINE3.pptx
+    coc = abs(coc) > COC_EPSILON ? coc : -COC_EPSILON;
+    OUT.m_color.rgb *= abs(coc);
+    OUT.m_color.a = coc;
+
+
+    return OUT;
+}

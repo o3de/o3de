@@ -8,15 +8,10 @@
 
 #include <CoreLights/SimplePointLightFeatureProcessor.h>
 
-#include <AzCore/Debug/EventTrace.h>
-
 #include <AzCore/Math/Vector3.h>
 #include <AzCore/Math/Color.h>
 
-#include <Atom/Feature/CoreLights/CoreLightsConstants.h>
-
 #include <Atom/RHI/Factory.h>
-#include <Atom/RHI/CpuProfiler.h>
 
 #include <Atom/RPI.Public/ColorManagement/TransformColor.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
@@ -48,7 +43,7 @@ namespace AZ
             desc.m_bufferName = "SimplePointLightBuffer";
             desc.m_bufferSrgName = "m_simplePointLights";
             desc.m_elementCountSrgName = "m_simplePointLightCount";
-            desc.m_elementSize = sizeof(SimplePointLightData);
+            desc.m_elementSize = sizeof(ShaderData);
             desc.m_srgLayout = RPI::RPISystemInterface::Get()->GetViewSrgLayout().get();
 
             m_lightBufferHandler = GpuBufferHandler(desc);
@@ -56,15 +51,15 @@ namespace AZ
 
         void SimplePointLightFeatureProcessor::Deactivate()
         {
-            m_pointLightData.Clear();
+            m_lightData.Clear();
             m_lightBufferHandler.Release();
         }
 
         SimplePointLightFeatureProcessor::LightHandle SimplePointLightFeatureProcessor::AcquireLight()
         {
-            uint16_t id = m_pointLightData.GetFreeSlotIndex();
+            uint16_t id = m_lightData.GetFreeSlotIndex();
 
-            if (id == IndexedDataVector<SimplePointLightData>::NoFreeSlot)
+            if (id == LightContainer::NoFreeSlot)
             {
                 return LightHandle::Null;
             }
@@ -79,7 +74,7 @@ namespace AZ
         {
             if (handle.IsValid())
             {
-                m_pointLightData.RemoveIndex(handle.GetIndex());
+                m_lightData.RemoveIndex(handle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
                 handle.Reset();
                 return true;
@@ -94,7 +89,7 @@ namespace AZ
             LightHandle handle = AcquireLight();
             if (handle.IsValid())
             {
-                m_pointLightData.GetData(handle.GetIndex()) = m_pointLightData.GetData(sourceLightHandle.GetIndex());
+                m_lightData.GetData(handle.GetIndex()) = m_lightData.GetData(sourceLightHandle.GetIndex());
                 m_deviceBufferNeedsUpdate = true;
             }
             return handle;
@@ -102,19 +97,19 @@ namespace AZ
 
         void SimplePointLightFeatureProcessor::Simulate(const FeatureProcessor::SimulatePacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimplePointLightFeatureProcessor: Simulate");
+            AZ_PROFILE_SCOPE(RPI, "SimplePointLightFeatureProcessor: Simulate");
             AZ_UNUSED(packet);
 
             if (m_deviceBufferNeedsUpdate)
             {
-                m_lightBufferHandler.UpdateBuffer(m_pointLightData.GetDataVector());
+                m_lightBufferHandler.UpdateBuffer(m_lightData.GetDataVector());
                 m_deviceBufferNeedsUpdate = false;
             }
         }
 
         void SimplePointLightFeatureProcessor::Render(const SimplePointLightFeatureProcessor::RenderPacket& packet)
         {
-            AZ_ATOM_PROFILE_FUNCTION("RPI", "SimplePointLightFeatureProcessor: Render");
+            AZ_PROFILE_SCOPE(RPI, "SimplePointLightFeatureProcessor: Render");
 
             for (const RPI::ViewPtr& view : packet.m_views)
             {
@@ -128,7 +123,7 @@ namespace AZ
 
             auto transformedColor = AZ::RPI::TransformColor(lightRgbIntensity, AZ::RPI::ColorSpaceId::LinearSRGB, AZ::RPI::ColorSpaceId::ACEScg);
 
-            AZStd::array<float, 3>& rgbIntensity = m_pointLightData.GetData(handle.GetIndex()).m_rgbIntensity;
+            AZStd::array<float, 3>& rgbIntensity = m_lightData.GetData(handle.GetIndex()).m_rgbIntensity;
             rgbIntensity[0] = transformedColor.GetR();
             rgbIntensity[1] = transformedColor.GetG();
             rgbIntensity[2] = transformedColor.GetB();
@@ -140,9 +135,8 @@ namespace AZ
         {
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetPosition().");
 
-            AZStd::array<float, 3>& position = m_pointLightData.GetData(handle.GetIndex()).m_position;
+            AZStd::array<float, 3>& position = m_lightData.GetData(handle.GetIndex()).m_position;
             lightPosition.StoreToFloat3(position.data());
-
             m_deviceBufferNeedsUpdate = true;
         }
 
@@ -151,7 +145,23 @@ namespace AZ
             AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetAttenuationRadius().");
 
             attenuationRadius = AZStd::max<float>(attenuationRadius, 0.001f); // prevent divide by zero.
-            m_pointLightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_lightData.GetData(handle.GetIndex()).m_invAttenuationRadiusSquared = 1.0f / (attenuationRadius * attenuationRadius);
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SimplePointLightFeatureProcessor::SetAffectsGI(LightHandle handle, bool affectsGI)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetAffectsGI().");
+
+            m_lightData.GetData(handle.GetIndex()).m_affectsGI = affectsGI;
+            m_deviceBufferNeedsUpdate = true;
+        }
+
+        void SimplePointLightFeatureProcessor::SetAffectsGIFactor(LightHandle handle, float affectsGIFactor)
+        {
+            AZ_Assert(handle.IsValid(), "Invalid LightHandle passed to SimplePointLightFeatureProcessor::SetAffectsGIFactor().");
+
+            m_lightData.GetData(handle.GetIndex()).m_affectsGIFactor = affectsGIFactor;
             m_deviceBufferNeedsUpdate = true;
         }
 

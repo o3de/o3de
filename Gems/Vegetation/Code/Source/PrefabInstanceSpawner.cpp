@@ -9,6 +9,7 @@
 #include <Vegetation/PrefabInstanceSpawner.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Math/Transform.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
@@ -325,7 +326,7 @@ namespace Vegetation
 
         // Create a callback for SpawnAllEntities that will set the transform of the root entity to the correct position / rotation / scale
         // for our spawned instance.
-        auto preSpawnCB = [this, world](
+        auto preSpawnCB = [world](
              [[maybe_unused]] AzFramework::EntitySpawnTicket::Id ticketId, AzFramework::SpawnableEntityContainerView view)
         {
             AZ::Entity* rootEntity = *view.begin();
@@ -341,7 +342,7 @@ namespace Vegetation
         // Create the EntitySpawnTicket here.  This pointer is going to get handed off to the vegetation system as opaque instance data,
         // where it will be tracked and held onto for the lifetime of the vegetation instance.  The vegetation system will pass it back
         // in to DestroyInstance at the end of the lifetime, so that's the one place where we will delete the ticket pointers.
-        AzFramework::EntitySpawnTicket* ticket = new AzFramework::EntitySpawnTicket(m_spawnableAsset);
+        AzFramework::EntitySpawnTicket* ticket = aznew AzFramework::EntitySpawnTicket(m_spawnableAsset);
         if (ticket->IsValid())
         {
             // Track the ticket that we've created.

@@ -9,7 +9,9 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/std/algorithm.h>
 #include <AzCore/std/containers/array.h>
+#include <AzCore/std/containers/span.h>
 #include <AzCore/Math/Obb.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Math/Frustum.h>
@@ -180,7 +182,7 @@ namespace AZ::AtomBridge
         int estimatedNumLineSegments
         )
     {
-        m_points.reserve(estimatedNumLineSegments * 2);
+        m_points.reserve(AZStd::abs(estimatedNumLineSegments) * 2);
     }
 
     void SingleColorDynamicSizeLineHelper::AddLineSegment(
@@ -256,12 +258,11 @@ namespace AZ::AtomBridge
         viewportContextPtr->ConnectSceneChangedHandler(m_sceneChangeHandler);
     }
 
-    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress)
+    AtomDebugDisplayViewportInterface::AtomDebugDisplayViewportInterface(uint32_t defaultInstanceAddress, RPI::Scene* scene)
     {
         ResetRenderState();
         m_viewportId = defaultInstanceAddress;
         m_defaultInstance = true;
-        RPI::Scene* scene = RPI::RPISystemInterface::Get()->GetDefaultScene().get();
         InitInternal(scene, nullptr);
     }
 
@@ -331,32 +332,15 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(float r, float g, float b, float a)
-    {
-        m_rendState.m_color = AZ::Color(r, g, b, a);
-    }
-
     void AtomDebugDisplayViewportInterface::SetColor(const AZ::Color& color)
     {
         m_rendState.m_color = color;
     }
 
-    void AtomDebugDisplayViewportInterface::SetColor(const AZ::Vector4& color)
-    {
-        m_rendState.m_color = AZ::Color(color);
-    }
-
     void AtomDebugDisplayViewportInterface::SetAlpha(float a)
     {
         m_rendState.m_color.SetA(a);
-        if (a < 1.0f)
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
-        }
-        else
-        {
-            m_rendState.m_opacityType = AZ::RPI::AuxGeomDraw::OpacityType::Translucent;
-        }
+        m_rendState.m_opacityType = a < 1.0f ? AZ::RPI::AuxGeomDraw::OpacityType::Translucent : AZ::RPI::AuxGeomDraw::OpacityType::Opaque;
     }
 
     void AtomDebugDisplayViewportInterface::DrawQuad(
@@ -388,7 +372,7 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawQuad(float width, float height)
+    void AtomDebugDisplayViewportInterface::DrawQuad(float width, float height, bool drawShaded)
     {
         if (!m_auxGeomPtr || width <= 0.0f || height <= 0.0f)
         {
@@ -400,7 +384,7 @@ namespace AZ::AtomBridge
             height, 
             GetCurrentTransform(), 
             m_rendState.m_color,
-            AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
+            drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
             m_rendState.m_depthTest,
             m_rendState.m_depthWrite,
             m_rendState.m_faceCullMode,
@@ -476,6 +460,46 @@ namespace AZ::AtomBridge
             drawArgs.m_depthTest = m_rendState.m_depthTest;
             drawArgs.m_depthWrite = m_rendState.m_depthWrite;
             drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
+            m_auxGeomPtr->DrawTriangles(drawArgs);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawQuad2dGradient(
+        const Vector2& p1,
+        const Vector2& p2,
+        const Vector2& p3,
+        const Vector2& p4,
+        float z,
+        const Color& firstColor,
+        const Color& secondColor)
+    {
+        if (m_auxGeomPtr)
+        {
+            Vector3 points[4];
+            points[0] = Vector3(p1.GetX(), p1.GetY(), z);
+            points[1] = Vector3(p2.GetX(), p1.GetY(), z);
+            points[2] = Vector3(p3.GetX(), p3.GetY(), z);
+            points[3] = Vector3(p4.GetX(), p4.GetY(), z);
+
+            Vector3 triangles[6];
+            Color colors[6];
+            triangles[0] = points[0];       colors[0] = firstColor;
+            triangles[1] = points[1];       colors[1] = firstColor;
+            triangles[2] = points[2];       colors[2] = secondColor;
+            triangles[3] = points[2];       colors[3] = secondColor;
+            triangles[4] = points[3];       colors[4] = secondColor;
+            triangles[5] = points[0];       colors[5] = firstColor;
+
+            RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
+            drawArgs.m_verts = triangles;
+            drawArgs.m_vertCount = 6;
+            drawArgs.m_colors = colors;
+            drawArgs.m_colorCount = 6;
+            const bool alphaBlend = firstColor.GetA() < 1.0f || secondColor.GetA() < 1.0f;
+            drawArgs.m_opacityType = alphaBlend ? RPI::AuxGeomDraw::OpacityType::Translucent : RPI::AuxGeomDraw::OpacityType::Opaque;
+            drawArgs.m_depthTest = m_rendState.m_depthTest;
+            drawArgs.m_depthWrite = m_rendState.m_depthWrite;
+            drawArgs.m_viewProjectionOverrideIndex = m_auxGeomPtr->GetOrAdd2DViewProjOverride();
             m_auxGeomPtr->DrawTriangles(drawArgs);
         }
     }
@@ -695,19 +719,19 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
+    void AtomDebugDisplayViewportInterface::DrawPolyLine(AZStd::span<const AZ::Vector3> points, bool cycled)
     {
         if (m_auxGeomPtr)
         {
-            AZStd::vector<AZ::Vector3> wsPoints(static_cast<size_t>(numPoints));
-            for (int index = 0; index < numPoints; ++index)
-            {
-                wsPoints[index] = ToWorldSpacePosition(pnts[index]);
-            }
+            AZStd::vector<AZ::Vector3> wsPoints;
+            wsPoints.resize_no_construct(points.size());
+            AZStd::transform(points.begin(), points.end(), wsPoints.begin(), [&](auto& pnt) {
+                return ToWorldSpacePosition(pnt);
+            });
             AZ::RPI::AuxGeomDraw::PolylineEnd polylineEnd = cycled ? AZ::RPI::AuxGeomDraw::PolylineEnd::Closed : AZ::RPI::AuxGeomDraw::PolylineEnd::Open;
             AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
             drawArgs.m_verts = wsPoints.data();
-            drawArgs.m_vertCount = aznumeric_cast<uint32_t>(numPoints);
+            drawArgs.m_vertCount = aznumeric_cast <uint32_t>(wsPoints.size());
             drawArgs.m_colors = &m_rendState.m_color;
             drawArgs.m_colorCount = 1;
             drawArgs.m_size = m_rendState.m_lineWidth;
@@ -717,6 +741,11 @@ namespace AZ::AtomBridge
             drawArgs.m_viewProjectionOverrideIndex = m_rendState.m_viewProjOverrideIndex;
             m_auxGeomPtr->DrawPolylines(drawArgs, polylineEnd);
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawPolyLine(const AZ::Vector3* pnts, int numPoints, bool cycled)
+    {
+        DrawPolyLine(AZStd::span<const AZ::Vector3>(pnts, numPoints), cycled);
     }
 
     void AtomDebugDisplayViewportInterface::DrawWireQuad2d(const AZ::Vector2& p1, const AZ::Vector2& p2, float z)
@@ -800,7 +829,8 @@ namespace AZ::AtomBridge
             const float startAngle = DegToRad(startAngleDegrees);
             const float stopAngle = DegToRad(sweepAngleDegrees) + startAngle;
             SingleColorDynamicSizeLineHelper lines(1+static_cast<int>(sweepAngleDegrees/angularStepDegrees));
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
+            float aspectRadius = radius / GetAspectRatio();
+            AZ::Vector3 radiusV3 = AZ::Vector3(aspectRadius, radius, radius);
             AZ::Vector3 pos = AZ::Vector3(center.GetX(), center.GetY(), z);
             CreateAxisAlignedArc(
                 lines, 
@@ -1016,6 +1046,55 @@ namespace AZ::AtomBridge
         }
     }
 
+    void AtomDebugDisplayViewportInterface::DrawWireCylinderNoEnds(const AZ::Vector3& center, const AZ::Vector3& axis, float radius, float height)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawSolidCylinderNoEnds(
+        const AZ::Vector3& center, 
+        const AZ::Vector3& axis, 
+        float radius, 
+        float height, 
+        bool drawShaded)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldCenter = ToWorldSpacePosition(center);
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
+            m_auxGeomPtr->DrawCylinderNoEnds(
+                worldCenter, 
+                worldAxis, 
+                scale * radius, 
+                scale * height, 
+                m_rendState.m_color, 
+                drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
+        }
+    }
+
     void AtomDebugDisplayViewportInterface::DrawWireCapsule(
         const AZ::Vector3& center, 
         const AZ::Vector3& axis, 
@@ -1025,83 +1104,23 @@ namespace AZ::AtomBridge
         if (m_auxGeomPtr &&  radius > FLT_EPSILON &&  axis.GetLengthSq() > FLT_EPSILON)
         {
             AZ::Vector3 axisNormalized = axis.GetNormalizedEstimate();
-            SingleColorStaticSizeLineHelper<(16+1) * 5> lines; // 360/22.5 = 16, 5 possible calls to CreateArbitraryAxisArc
-            AZ::Vector3 radiusV3 = AZ::Vector3(radius);
-            float stepAngle = DegToRad(22.5f);
-            float Deg0 = DegToRad(0.0f);
 
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            const AZ::Vector3 worldAxis = ToWorldSpaceVector(axis);
 
-            // Draw cylinder part (or just a circle around the middle)
+            // Draw cylinder part (if cylinder height is too small, ignore cylinder and just draw both hemispheres)
             if (heightStraightSection > FLT_EPSILON)
             {
-                DrawWireCylinder(center, axis, radius, heightStraightSection);
-            }
-            else
-            {
-                float Deg360 = DegToRad(360.0f);
-                CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg360,
-                    center,
-                    radiusV3,
-                    axisNormalized
-                    );
+                DrawWireCylinderNoEnds(center, axis, scale * radius, scale * heightStraightSection);
             }
 
-            float Deg90 = DegToRad(90.0f);
-            float Deg180 = DegToRad(180.0f);
-
-            AZ::Vector3 ortho1Normalized, ortho2Normalized;
-            CalcBasisVectors(axisNormalized, ortho1Normalized, ortho2Normalized);
             AZ::Vector3 centerToTopCircleCenter = axisNormalized * heightStraightSection * 0.5f;
-            AZ::Vector3 topCenter = center + centerToTopCircleCenter;
-            AZ::Vector3 bottomCenter = center - centerToTopCircleCenter;
 
-            // Draw top cap as two criss-crossing 180deg arcs
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg90,
-                    Deg90 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
+            // Top hemisphere
+            DrawWireHemisphere(center + centerToTopCircleCenter, worldAxis, scale * radius);
 
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg180,
-                    Deg180 + Deg180,
-                    topCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            // Draw bottom cap
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    -Deg90,
-                    -Deg90 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho1Normalized
-                    );
-
-            CreateArbitraryAxisArc(
-                    lines,
-                    stepAngle,
-                    Deg0,
-                    Deg0 + Deg180,
-                    bottomCenter,
-                    radiusV3,
-                    ortho2Normalized
-                    );
-
-            lines.Draw(m_auxGeomPtr, m_rendState);
+            // Bottom hemisphere
+            DrawWireHemisphere(center - centerToTopCircleCenter, -worldAxis, scale * radius);
         }
     }
 
@@ -1145,6 +1164,25 @@ namespace AZ::AtomBridge
             axisRadius = AZ::Vector3(radius.GetX(), 0.0f, radius.GetZ());
             CreateAxisAlignedArc(lines, step, 0.0f, maxAngle, pos, axisRadius, CircleAxisY);
             lines.Draw(m_auxGeomPtr, m_rendState);
+        }
+    }
+
+    void AtomDebugDisplayViewportInterface::DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius)
+    {
+        if (m_auxGeomPtr)
+        {
+            const float scale = GetCurrentTransform().RetrieveScale().GetMaxElement();
+            m_auxGeomPtr->DrawHemisphere(
+                ToWorldSpacePosition(pos),
+                axis,
+                scale * radius,
+                m_rendState.m_color,
+                AZ::RPI::AuxGeomDraw::DrawStyle::Line,
+                m_rendState.m_depthTest,
+                m_rendState.m_depthWrite,
+                m_rendState.m_faceCullMode,
+                m_rendState.m_viewProjOverrideIndex
+            );
         }
     }
 
@@ -1199,7 +1237,7 @@ namespace AZ::AtomBridge
         }
     }
 
-    void AtomDebugDisplayViewportInterface::DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius)
+    void AtomDebugDisplayViewportInterface::DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded)
     {
         if (m_auxGeomPtr)
         {
@@ -1211,7 +1249,7 @@ namespace AZ::AtomBridge
                 worldDir, 
                 scale * radius, 
                 m_rendState.m_color,
-                AZ::RPI::AuxGeomDraw::DrawStyle::Shaded,
+                drawShaded ? AZ::RPI::AuxGeomDraw::DrawStyle::Shaded : AZ::RPI::AuxGeomDraw::DrawStyle::Solid,
                 m_rendState.m_depthTest,
                 m_rendState.m_depthWrite,
                 m_rendState.m_faceCullMode,
@@ -1353,8 +1391,9 @@ namespace AZ::AtomBridge
         // if 2d draw need to project pos to screen first
         AzFramework::TextDrawParameters params;
         AZ::RPI::ViewportContextPtr viewportContext = GetViewportContext();
+        const auto dpiScaleFactor = viewportContext->GetDpiScalingFactor();
         params.m_drawViewportId = viewportContext->GetId(); // get the viewport ID so default viewport works
-        params.m_position = AZ::Vector3(x, y, 1.0f);
+        params.m_position = AZ::Vector3(x * dpiScaleFactor, y * dpiScaleFactor, 1.0f);
         params.m_color = m_rendState.m_color;
         params.m_scale = AZ::Vector2(size);
         params.m_hAlign = center ? AzFramework::TextHorizontalAlignment::Center : AzFramework::TextHorizontalAlignment::Left; //! Horizontal text alignment
@@ -1550,6 +1589,26 @@ namespace AZ::AtomBridge
         {
             m_rendState.m_currentTransform--;
         }
+    }
+
+    void AtomDebugDisplayViewportInterface::PushPremultipliedMatrix(const AZ::Matrix3x4& matrix)
+    {
+        AZ_Assert(m_rendState.m_currentTransform < RenderState::TransformStackSize, "Exceeded AtomDebugDisplayViewportInterface matrix stack size");
+        if (m_rendState.m_currentTransform < RenderState::TransformStackSize)
+        {
+            m_rendState.m_currentTransform++;
+            m_rendState.m_transformStack[m_rendState.m_currentTransform] = matrix;
+        }
+    }
+
+    AZ::Matrix3x4 AtomDebugDisplayViewportInterface::PopPremultipliedMatrix()
+    {
+        AZ_Assert(m_rendState.m_currentTransform > 0, "Underflowed AtomDebugDisplayViewportInterface matrix stack");
+        if (m_rendState.m_currentTransform > 0)
+        {
+            m_rendState.m_currentTransform--;
+        }
+        return m_rendState.m_transformStack[m_rendState.m_currentTransform + 1];
     }
 
     const AZ::Matrix3x4& AtomDebugDisplayViewportInterface::GetCurrentTransform() const

@@ -52,7 +52,7 @@ namespace ImageProcessingAtomEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TexturePreviewWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TexturePreviewWidget, AZ::SystemAllocator);
         explicit TexturePreviewWidget(EditorTextureSetting& texureSetting, QWidget* parent = 0);
         ~TexturePreviewWidget();
         bool OnQtEvent(QEvent* event);
@@ -70,7 +70,7 @@ namespace ImageProcessingAtomEditor
     protected:
         ////////////////////////////////////////////////////////////////////////
         //EditorInternalNotificationBus
-        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform);
+        void OnEditorSettingsChanged(bool needRefresh, const AZStd::string& platform) override;
         ////////////////////////////////////////////////////////////////////////
         void resizeEvent(QResizeEvent* event) override;
         bool eventFilter(QObject* obj, QEvent* event) override;

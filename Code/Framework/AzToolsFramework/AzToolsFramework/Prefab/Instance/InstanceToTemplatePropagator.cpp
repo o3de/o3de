@@ -10,7 +10,10 @@
 #include <AzCore/Serialization/Json/JsonSerialization.h>
 #include <AzCore/Component/Entity.h>
 
+#include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
+#include <AzToolsFramework/Prefab/PrefabFocusInterface.h>
+#include <AzToolsFramework/Prefab/PrefabInstanceUtils.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityIdMapper.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceToTemplatePropagator.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -19,9 +22,13 @@ namespace AzToolsFramework
 {
     namespace Prefab
     {
+        AzFramework::EntityContextId InstanceToTemplatePropagator::s_editorEntityContextId = AzFramework::EntityContextId::CreateNull();
+
         void InstanceToTemplatePropagator::RegisterInstanceToTemplateInterface()
         {
             AZ::Interface<InstanceToTemplateInterface>::Register(this);
+
+            EditorEntityContextRequestBus::BroadcastResult(s_editorEntityContextId, &EditorEntityContextRequests::GetEditorEntityContextId);
 
             //get instance id associated with entityId
             m_instanceEntityMapperInterface = AZ::Interface<InstanceEntityMapperInterface>::Get();
@@ -30,23 +37,25 @@ namespace AzToolsFramework
                 "Instance Entity Mapper Interface could not be found. "
                 "Check that it is being correctly initialized.");
 
-
             //use system component to grab template dom
             m_prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
             AZ_Assert(m_prefabSystemComponentInterface,
                 "Prefab - InstanceToTemplateInterface - "
                 "Prefab System Component Interface could not be found. "
                 "Check that it is being correctly initialized.");
+
+            m_instanceDomGenerator.RegisterInstanceDomGeneratorInterface();
         }
 
         void InstanceToTemplatePropagator::UnregisterInstanceToTemplateInterface()
         {
+            m_instanceDomGenerator.UnregisterInstanceDomGeneratorInterface();
+
             AZ::Interface<InstanceToTemplateInterface>::Unregister(this);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity)
+        bool InstanceToTemplatePropagator::GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity)
         {
-            //grab the owning instance so we can use the entityIdMapper in settings
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entity.GetId());
 
             if (!owningInstance)
@@ -54,28 +63,17 @@ namespace AzToolsFramework
                 AZ_Error("Prefab", false, "Entity does not belong to an instance");
                 return false;
             }
-            
-            InstanceEntityIdMapper entityIdMapper;
-            entityIdMapper.SetStoringInstance(owningInstance->get());
 
-            //create settings so that the serialized entity dom undergoes mapping from entity id to entity alias
-            AZ::JsonSerializerSettings settings;
-            settings.m_metadata.Add(static_cast<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>(&entityIdMapper));
-
-            //generate PrefabDom using Json serialization system
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::Store(
-                generatedEntityDom, generatedEntityDom.GetAllocator(), entity, settings);
-
-            return result.GetOutcome() == AZ::JsonSerializationResult::Outcomes::Success;
+            return PrefabDomUtils::StoreEntityInPrefabDomFormat(entity, owningInstance->get(), entityDom);
         }
 
-        bool InstanceToTemplatePropagator::GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance)
+        bool InstanceToTemplatePropagator::GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance)
         {
-            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, generatedInstanceDom);
+            return PrefabDomUtils::StoreInstanceInPrefabDom(instance, instanceDom);
         }
 
-        bool InstanceToTemplatePropagator::GeneratePatch(PrefabDom& generatedPatch, const PrefabDom& initialState,
-            const PrefabDom& modifiedState)
+        bool InstanceToTemplatePropagator::GeneratePatch(
+            PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState)
         {
             //generate patch using json serialization CreatePatch
             AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
@@ -94,11 +92,9 @@ namespace AzToolsFramework
                 AZ_Assert(false, "Link with id %llu couldn't be found. Patch cannot be generated.", linkId);
                 return false;
             }
-            
-            Link& link = findLinkResult->get();
 
-            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(generatedPatch,
-                link.GetLinkDom().GetAllocator(), initialState, modifiedState, AZ::JsonMergeApproach::JsonPatch);
+            AZ::JsonSerializationResult::ResultCode result = AZ::JsonSerialization::CreatePatch(
+                generatedPatch, generatedPatch.GetAllocator(), initialState, modifiedState, AZ::JsonMergeApproach::JsonPatch);
 
             return result.GetProcessing() != AZ::JsonSerializationResult::Processing::Halted;
         }
@@ -121,7 +117,71 @@ namespace AzToolsFramework
             return PatchTemplate(providedPatch, templateId);
         }
 
-        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, const AZ::EntityId& entityId)
+        AZStd::string InstanceToTemplatePropagator::GenerateEntityAliasPath(AZ::EntityId entityId)
+        {
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (!owningInstance.has_value())
+            {
+                AZ_Error("Prefab", false, "Failed to find an owning instance for entity with id %llu.", static_cast<AZ::u64>(entityId));
+                return AZStd::string();
+            }
+
+            // create the prefix for the update - choosing between container and regular entities
+            AZStd::string entityAliasPath = "/";
+            const bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
+            if (isContainerEntity)
+            {
+                entityAliasPath += PrefabDomUtils::ContainerEntityName;
+            }
+            else
+            {
+                EntityAliasOptionalReference entityAliasRef = owningInstance->get().GetEntityAlias(entityId);
+                entityAliasPath += PrefabDomUtils::EntitiesName;
+                entityAliasPath += "/";
+                entityAliasPath += entityAliasRef->get();
+            }
+            return AZStd::move(entityAliasPath);
+        }
+
+        AZ::Dom::Path InstanceToTemplatePropagator::GenerateEntityPathFromFocusedPrefab(AZ::EntityId entityId)
+        {
+            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            if (!owningInstance.has_value())
+            {
+                AZ_Error("Prefab", false, "Failed to find an owning instance for entity with id %llu.", static_cast<AZ::u64>(entityId));
+                return AZ::Dom::Path();
+            }
+
+            auto* prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
+            if (prefabFocusInterface == nullptr)
+            {
+                AZ_Error("Prefab", false, "Cannot find PrefabFocusInterface.");
+                return AZ::Dom::Path();
+            }
+
+            auto focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
+
+            if (!focusedInstance.has_value())
+            {
+                AZ_Error("Prefab", false, "Focused prefab instance is null.");
+                return AZ::Dom::Path();
+            }
+            
+            auto relativePathBetweenInstances =
+                PrefabInstanceUtils::GetRelativePathBetweenInstances(focusedInstance->get(), owningInstance->get());
+
+            AZ::Dom::Path fullPathBetweenInstances(relativePathBetweenInstances);
+            AZStd::string entityPath = GenerateEntityAliasPath(entityId);
+            fullPathBetweenInstances = fullPathBetweenInstances / AZ::Dom::Path(entityPath);
+            return AZStd::move(fullPathBetweenInstances);
+        }
+
+        void InstanceToTemplatePropagator::AppendEntityAliasToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId, const AZStd::string& prefix)
+        {
+            AppendEntityAliasPathToPatchPaths(providedPatch, prefix + GenerateEntityAliasPath(entityId));
+        }
+
+        void InstanceToTemplatePropagator::AppendEntityAliasPathToPatchPaths(PrefabDom& providedPatch, const AZStd::string& entityAliasPath)
         {
             if (!providedPatch.IsArray())
             {
@@ -129,25 +189,9 @@ namespace AzToolsFramework
                 return;
             }
 
-            //create the prefix for the update - choosing between container and regular entities
-            AZStd::string prefix = "/";
-
-            //grab the owning instance so we can use the entityIdMapper in settings
-            InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
-            AZ_Assert(owningInstance != AZStd::nullopt, "Owning Instance is null");
-
-            bool isContainerEntity = entityId == owningInstance->get().GetContainerEntityId();
-
-            if (isContainerEntity)
+            if (entityAliasPath.empty())
             {
-                prefix += PrefabDomUtils::ContainerEntityName;
-            }
-            else
-            {
-                EntityAliasOptionalReference entityAliasRef = owningInstance->get().GetEntityAlias(entityId);
-                prefix += PrefabDomUtils::EntitiesName;
-                prefix += "/";
-                prefix += entityAliasRef->get();
+                return;
             }
 
             //update all entities or just the single container
@@ -162,13 +206,13 @@ namespace AzToolsFramework
                     continue;
                 }
 
-                AZStd::string path = prefix + pathIter->value.GetString();
+                AZStd::string path = entityAliasPath + pathIter->value.GetString();
 
                 pathIter->value.SetString(path.c_str(), static_cast<rapidjson::SizeType>(path.length()), providedPatch.GetAllocator());
             }
         }
 
-        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalReference instanceToExclude)
+        bool InstanceToTemplatePropagator::PatchTemplate(PrefabDomValue& providedPatch, TemplateId templateId, InstanceOptionalConstReference instanceToExclude)
         {
             PrefabDom& templateDomReference = m_prefabSystemComponentInterface->FindTemplateDom(templateId);
 
@@ -184,9 +228,11 @@ namespace AzToolsFramework
             }
             else
             {
-                AZ_Error(
-                    "Prefab", result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip,
-                    "Some of the patches are not successfully applied.");
+                AZ_Warning(
+                    "Prefab",
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Skipped) &&
+                    (result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::PartialSkip),
+                    "Some of the patches were not successfully applied.");
                 m_prefabSystemComponentInterface->SetTemplateDirtyFlag(templateId, true);
                 m_prefabSystemComponentInterface->PropagateTemplateChanges(templateId, instanceToExclude);
                 return true;
@@ -241,10 +287,10 @@ namespace AzToolsFramework
                 PrefabDomValueReference patchPathReference = PrefabDomUtils::FindPrefabDomValue(*patchIterator, "path");
                 AZStd::string patchPathString = patchPathReference->get().GetString();
                 patchPathString.insert(0, patchPrefix);
-                patchPathReference->get().SetString(patchPathString.c_str(), linkToApplyPatches.GetLinkDom().GetAllocator());
+                patchPathReference->get().SetString(patchPathString.c_str(), patches.GetAllocator());
             }
 
-            AddPatchesToLink(patches, linkToApplyPatches);
+            linkToApplyPatches.SetLinkPatches(patches);
             linkToApplyPatches.UpdateTarget();
 
             m_prefabSystemComponentInterface->SetTemplateDirtyFlag(linkToApplyPatches.GetTargetTemplateId(), true);
@@ -267,22 +313,6 @@ namespace AzToolsFramework
             }
 
             return parentInstance;
-        }
-
-        void InstanceToTemplatePropagator::AddPatchesToLink(const PrefabDom& patches, Link& link)
-        {
-            PrefabDom& linkDom = link.GetLinkDom();
-            PrefabDomValueReference linkPatchesReference =
-                PrefabDomUtils::FindPrefabDomValue(linkDom, PrefabDomUtils::PatchesName);
-
-            /*
-            If the original allocator the patches were created with gets destroyed, then the patches would become garbage in the
-            linkDom. Since we cannot guarantee the lifecycle of the patch allocators, we are doing a copy of the patches here to
-            associate them with the linkDom's allocator.
-            */
-            PrefabDom patchesCopy;
-            patchesCopy.CopyFrom(patches, linkDom.GetAllocator());
-            linkDom.AddMember(rapidjson::StringRef(PrefabDomUtils::PatchesName), patchesCopy, linkDom.GetAllocator());
         }
     }
 }

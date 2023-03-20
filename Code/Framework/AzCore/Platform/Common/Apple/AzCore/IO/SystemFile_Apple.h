@@ -70,6 +70,7 @@ namespace AZ
 #else
                 Path         = 0,            // (Not applicable for this platform) Obtain a file descriptor that can be used for two purposes: to indicate a location in the filesystem tree and to perform operations that act purely at the file descriptor level.
 #endif
+                NonBlock     = O_NONBLOCK,   // Opens a pipe in non-blocking mode. If the process tries to perform incompatible access on a file region with an incompatible mandatory lock when this flag is set, then system call fails and returns EAGAIN.
             };
             AZ_DEFINE_ENUM_BITWISE_OPERATORS(OpenFlags);
 
@@ -94,17 +95,18 @@ namespace AZ
 
             inline int Read(int fileDescriptor, void* data, size_t size)
             {
-                return read(fileDescriptor, data, size);
+                return static_cast<int>(read(fileDescriptor, data, size));
             }
 
             inline int Write(int fileDescriptor, const void* data, size_t size)
             {
-                return write(fileDescriptor, data, size);
+                return static_cast<int>(write(fileDescriptor, data, size));
             }
 
             int Dup(int fileDescriptor);
             int Dup2(int fileDescriptorSource, int fileDescriptorDestination);
 
+            int Pipe(int(&pipeFileDescriptors)[2], int pipeSize, OpenFlags flags);
         } // namespace AZ::IO::PosixInternal
     } // namespace AZ::IO
 } // namespace AZ

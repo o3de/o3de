@@ -1,20 +1,26 @@
 {
     "ENV": {
         "NODE_LABEL": "mac-bigsur-2fc3a22",
-        "LY_3RDPARTY_PATH": "/Users/lybuilder/3rdParty",
+        "LY_3RDPARTY_PATH": "/Users/lybuilder/workspace/3rdParty",
         "TIMEOUT": 30,
         "WORKSPACE": "/Users/lybuilder/workspace",
         "MOUNT_VOLUME": false
     },
     "PIPELINE_ENV_OVERRIDE": {
         "daily-pipeline-metrics": {
-            "CLEAN_WORKSPACE": true
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
-        "packaging": {
-            "CLEAN_WORKSPACE": true
+        "periodic-clean-weekly": {
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
         },
-        "nightly-clean": {
-            "CLEAN_WORKSPACE": true
+        "periodic-clean-weekly-internal": {
+            "CLEAN_WORKSPACE": true,
+            "DISCARD_VOLUME": true
+        },
+        "periodic-incremental-daily-internal": {
+            "DISCARD_VOLUME": true
         }
     }
 }

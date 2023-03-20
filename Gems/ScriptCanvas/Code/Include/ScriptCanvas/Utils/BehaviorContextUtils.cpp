@@ -192,6 +192,22 @@ namespace ScriptCanvas
                 }
             }
         }
+        else
+        {
+            // BehaviorClass is null, lookup in global methods
+            AZ::BehaviorContext* behaviorContext(nullptr);
+            AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationRequests::GetBehaviorContext);
+            if (behaviorContext)
+            {
+                for (auto candidate : behaviorContext->m_methods)
+                {
+                    if (&method == candidate.second)
+                    {
+                        return candidate.first;
+                    }
+                }
+            }
+        }
 
         return method.m_name;
     }

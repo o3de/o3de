@@ -7,10 +7,9 @@
  */
 
 #include <AzNetworking/Utilities/NetworkCommon.h>
+#include <AzCore/PlatformIncl.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Console/ILogger.h>
-
-#include <winsock2.h>
 
 namespace AzNetworking
 {

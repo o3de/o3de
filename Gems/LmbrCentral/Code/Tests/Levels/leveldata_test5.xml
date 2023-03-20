@@ -1,4 +1,0 @@
-<SurfaceTypes>
-<SurfaceType Name="Materials/material_terrain_default" SurfaceTypeID="0" DetailTexture="" DetailScaleX="1" DetailScaleY="1" DetailMaterial="Materials/material_terrain_default" ProjectAxis="2" Bumpmap="" ProjAxis="Z"/>
-</SurfaceTypes>
-<CollisionClasses

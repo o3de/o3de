@@ -87,7 +87,7 @@ public:
         : QAbstractListModel(parent)
     {
     }
-    virtual ~MenuActionsModel() {}
+    ~MenuActionsModel() override {}
 
     int rowCount([[maybe_unused]] const QModelIndex& parent = QModelIndex()) const override
     {
@@ -134,7 +134,7 @@ public:
         , m_action(nullptr)
     {
     }
-    virtual ~ActionShortcutsModel() {}
+    ~ActionShortcutsModel() override {}
 
     int rowCount([[maybe_unused]] const QModelIndex& parent = QModelIndex()) const override
     {
@@ -211,9 +211,9 @@ public:
 
     void Reset(QAction& action)
     {
-        emit beginResetModel();
+        beginResetModel();
         m_action = &action;
-        emit endResetModel();
+        endResetModel();
     }
 
 private:
@@ -266,7 +266,7 @@ QStringList CustomizeKeyboardDialog::BuildModels(QWidget* parent)
         categories.append(category);
 
         QMenu* menu = menuAction->menu();
-        m_menuActions[category] = GetAllActionsForMenu(menu, QStringLiteral(""));
+        m_menuActions[category] = GetAllActionsForMenu(menu, QString());
     }
 
     return categories;

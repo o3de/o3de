@@ -29,7 +29,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Framebuffer, AZ::ThreadPoolAllocator);
             AZ_RTTI(Framebuffer, "1EF7EE0F-CB6C-45EB-8D8A-8254F4AC5F67", Base);
 
             struct Descriptor
@@ -72,9 +72,11 @@ namespace AZ
 
             bool AreResourcesReady() const;
             void Invalidate();
+            void SetSizeFromAttachment();
 
             VkFramebuffer m_nativeFramebuffer = VK_NULL_HANDLE;
             AZStd::vector<RHI::ConstPtr<ImageView>> m_attachments;
+            RHI::Size   m_size;
             RHI::ConstPtr<RenderPass> m_renderPass;
         };
     }

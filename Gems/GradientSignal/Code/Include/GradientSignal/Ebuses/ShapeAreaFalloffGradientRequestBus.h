@@ -38,6 +38,9 @@ namespace GradientSignal
 
         virtual FalloffType GetFalloffType() const = 0;
         virtual void SetFalloffType(FalloffType type) = 0;
+
+        virtual bool Get3dFalloff() const = 0;
+        virtual void Set3dFalloff(bool is3dFalloff) = 0;
     };
 
     using ShapeAreaFalloffGradientRequestBus = AZ::EBus<ShapeAreaFalloffGradientRequests>;

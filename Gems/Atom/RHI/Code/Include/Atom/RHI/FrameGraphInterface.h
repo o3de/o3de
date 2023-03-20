@@ -18,7 +18,7 @@
 #include <Atom/RHI.Reflect/ResolveScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/ScopeId.h>
 
-#include <AtomCore/std/containers/array_view.h>
+#include <AzCore/std/containers/span.h>
 
 namespace AZ
 {
@@ -79,7 +79,7 @@ namespace AZ
 
             //! Declares an array of image attachments for use on the current scope.
             ResultCode UseAttachments(
-                AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors,
+                AZStd::span<const ImageScopeAttachmentDescriptor> descriptors,
                 ScopeAttachmentAccess access,
                 ScopeAttachmentUsage usage)
             {
@@ -87,7 +87,7 @@ namespace AZ
             }
             
             //! Declares an array of color attachments for use on the current scope.
-            ResultCode UseColorAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+            ResultCode UseColorAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
             {
                 return m_frameGraph.UseColorAttachments(descriptors);
             }
@@ -100,7 +100,7 @@ namespace AZ
             
             //! Declares an array of subpass input attachments for use on the current scope.
             //! See UseSubpassInputAttachment for a definition about a SubpassInput.
-            ResultCode UseSubpassInputAttachments(AZStd::array_view<ImageScopeAttachmentDescriptor> descriptors)
+            ResultCode UseSubpassInputAttachments(AZStd::span<const ImageScopeAttachmentDescriptor> descriptors)
             {
                 return m_frameGraph.UseSubpassInputAttachments(descriptors);
             }
@@ -215,7 +215,8 @@ namespace AZ
             //! this scope. This value is used to load-balance the scope across command lists. A small
             //! value may result in the scope being merged onto a single command list, whereas a large
             //! one may result in the scope being split across several command lists in order to best
-            //! parallelize submission
+            //! parallelize submission.
+            //! Note: The actual number of submissions in the scope must not exceed this value.
             void SetEstimatedItemCount(uint32_t itemCount)
             {
                 m_frameGraph.SetEstimatedItemCount(itemCount);

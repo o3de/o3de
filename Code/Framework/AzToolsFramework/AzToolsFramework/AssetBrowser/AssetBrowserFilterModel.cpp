@@ -8,6 +8,9 @@
 #include <AzToolsFramework/AssetBrowser/Search/Filter.h>
 #include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+
 #include <AzCore/Console/IConsole.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
@@ -20,7 +23,7 @@ AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option")
 AZ_POP_DISABLE_WARNING
 
 AZ_CVAR(
-    bool, ed_useNewAssetBrowserTableView, false, nullptr, AZ::ConsoleFunctorFlags::Null,
+    bool, ed_useNewAssetBrowserTableView, true, nullptr, AZ::ConsoleFunctorFlags::Null,
     "Use the new AssetBrowser TableView for searching assets.");
 namespace AzToolsFramework
 {
@@ -31,10 +34,10 @@ namespace AzToolsFramework
         AssetBrowserFilterModel::AssetBrowserFilterModel(QObject* parent)
             : QSortFilterProxyModel(parent)
         {
-            m_showColumn.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
+            m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::DisplayName));
             if (ed_useNewAssetBrowserTableView)
             {
-                m_showColumn.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
+                m_shownColumns.insert(aznumeric_cast<int>(AssetBrowserEntry::Column::Path));
             }
             m_collator.setNumericMode(true);
             AssetBrowserComponentNotificationBus::Handler::BusConnect();
@@ -47,6 +50,10 @@ namespace AzToolsFramework
 
         void AssetBrowserFilterModel::SetFilter(FilterConstType filter)
         {
+            if (m_filter.data())
+            {
+                disconnect(m_filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
+            }
             connect(filter.data(), &AssetBrowserEntryFilter::updatedSignal, this, &AssetBrowserFilterModel::filterUpdatedSlot);
             m_filter = filter;
             m_invalidateFilter = true;
@@ -66,6 +73,26 @@ namespace AzToolsFramework
                 invalidateFilter();
                 m_invalidateFilter = false;
             }
+        }
+
+        QSharedPointer<const StringFilter> AssetBrowserFilterModel::GetStringFilter() const
+        {
+            return m_stringFilter;
+        }
+
+        QVariant AssetBrowserFilterModel::data(const QModelIndex& index, int role) const
+        {
+            if (role == static_cast<int>(AzQtComponents::AssetFolderThumbnailView::Role::IsExactMatch))
+            {
+                auto entry = static_cast<AssetBrowserEntry*>(mapToSource(index).internalPointer());
+                if (!m_filter)
+                {
+                    return true;
+                }
+                return m_filter->MatchWithoutPropagation(entry);
+            }
+
+            return QSortFilterProxyModel::data(index, role);
         }
 
         bool AssetBrowserFilterModel::filterAcceptsRow(int source_row, const QModelIndex& source_parent) const
@@ -96,7 +123,7 @@ namespace AzToolsFramework
         bool AssetBrowserFilterModel::filterAcceptsColumn(int source_column, const QModelIndex&) const
         {
             //if the column is in the set we want to show it
-            return m_showColumn.find(source_column) != m_showColumn.end();
+            return m_shownColumns.find(source_column) != m_shownColumns.end();
         }
 
         bool AssetBrowserFilterModel::lessThan(const QModelIndex& source_left, const QModelIndex& source_right) const
@@ -134,7 +161,7 @@ namespace AzToolsFramework
             {
                 const auto& subFilters = compFilter->GetSubFilters();
                 const auto& compFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
-                    [subFilters](FilterConstType filter) -> bool
+                    [](FilterConstType filter) -> bool
                     {
                         const auto assetTypeFilter = qobject_cast<QSharedPointer<const CompositeFilter>>(filter);
                         return !assetTypeFilter.isNull();
@@ -146,7 +173,7 @@ namespace AzToolsFramework
                 }
 
                 const auto& compositeStringFilterIter = AZStd::find_if(subFilters.cbegin(), subFilters.cend(),
-                    [subFilters](FilterConstType filter) -> bool
+                    [](FilterConstType filter) -> bool
                     {
                         // The real StringFilter is really a CompositeFilter with just one StringFilter in its subfilter list
                         // To know if it is actually a StringFilter we have to get that subfilter and check if it is a Stringfilter.

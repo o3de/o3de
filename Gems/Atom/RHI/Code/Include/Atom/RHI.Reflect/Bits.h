@@ -8,6 +8,7 @@
 #pragma once
 
 #include <AzCore/base.h>
+#include <AzCore/Math/MathUtils.h>
 
 #ifndef AZ_BIT
 #define AZ_BIT(x) (1u << x)
@@ -237,6 +238,7 @@ namespace AZ
         }
 
         /**
+        * O3DE_DEPRECATION_NOTICE(GHI-7407)
         * Returns the value divided by alignment, where the result is rounded up if the remainder is non-zero.
         */
         template <typename T> inline T DivideByMultiple(T value, size_t alignment)
@@ -279,28 +281,3 @@ namespace AZ
         };
     }
 }
-
-
-// Emits an error when padding is introduced into a struct.
-#if defined (AZ_COMPILER_MSVC)
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN \
-    __pragma(warning(push)) \
-    __pragma(warning(error : 4820))
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END \
-    __pragma(warning(pop))
-
-#elif defined (AZ_COMPILER_CLANG) || defined (AZ_COMPILER_GCC)
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN \
-    _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic error \"-Wpadded\"")
-
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END \
-    _Pragma("GCC diagnostic pop")
-
-#else
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_BEGIN
-#define AZ_ASSERT_NO_ALIGNMENT_PADDING_END
-#endif

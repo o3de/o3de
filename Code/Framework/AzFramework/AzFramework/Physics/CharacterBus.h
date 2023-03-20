@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/Entity.h>
 
 namespace AZ
 {
@@ -70,12 +71,29 @@ namespace Physics
         /// Gets the observed velocity of the character, which may differ from the desired velocity if the character is obstructed.
         virtual AZ::Vector3 GetVelocity() const = 0;
 
-        /// Queues up a request to apply a velocity to the character.
-        /// All requests received during a tick are accumulated (so for example, the effects of animation and gravity
-        /// can be applied in two separate requests), and a movement with the accumulated velocity is performed once
-        /// per tick, prior to the physics update.
+        // O3DE_DEPRECATION_NOTICE(GHI-10883)
+        // Please use AddVelocityForTick or AddVelocityForPhysicsTimestep as appropriate.
+        virtual void AddVelocity(const AZ::Vector3& velocity)
+        {
+            AddVelocityForTick(velocity);
+        };
+
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the tick.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the tick.
         /// Obstacles may prevent the actual movement from exactly matching the requested movement.
-        virtual void AddVelocity(const AZ::Vector3& velocity) = 0;
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of the tick.
+        virtual void AddVelocityForTick(const AZ::Vector3& velocity) = 0;
+
+        /// Queues up a request to apply a velocity to the character, lasting for the duration of the physics timestep.
+        /// All requests received are accumulated (so for example, the effects of animation and gravity
+        /// can be applied in two separate requests), and the accumulated velocity is used when the character updates.
+        /// Velocities added this way will apply until the end of the physics timestep.
+        /// Obstacles may prevent the actual movement from exactly matching the requested movement.
+        /// @param velocity The velocity to be added to the accumulated requests, lasting for the duration of a physics timestep.
+        virtual void AddVelocityForPhysicsTimestep(const AZ::Vector3& velocity) = 0;
+
 
         /// Check if there is a character physics component present.
         /// Return true in the request handler implementation in order for things like the animation system to work properly.
@@ -86,4 +104,75 @@ namespace Physics
     };
 
     using CharacterRequestBus = AZ::EBus<CharacterRequests>;
-} // namespace Physics
+
+    /// Messages sent by character controllers.
+    class CharacterNotifications : public AZ::ComponentBus
+    {
+    private:
+        template<class Bus>
+        struct CharacterNotificationsConnectionPolicy : public AZ::EBusConnectionPolicy<Bus>
+        {
+            static void Connect(
+                typename Bus::BusPtr& busPtr,
+                typename Bus::Context& context,
+                typename Bus::HandlerNode& handler,
+                typename Bus::Context::ConnectLockGuard& connectLock,
+                const typename Bus::BusIdType& id = 0)
+            {
+                AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+                if (entity)
+                {
+                    // Only immediately dispatch if the entity is already active, otherwise when
+                    // entity will get activated it will send the notifications itself.
+                    const AZ::Entity::State entityState = entity->GetState();
+                    if (entityState == AZ::Entity::State::Active)
+                    {
+                        // Only immediately dispatch if the entity is a CharacterRequests' handler.
+                        CharacterRequestBus::EnumerateHandlersId(
+                            id,
+                            [&handler, id](const CharacterRequests* characterHandler)
+                            {
+                                if (characterHandler->IsPresent())
+                                {
+                                    handler->OnCharacterActivated(id);
+                                }
+                                else
+                                {
+                                    handler->OnCharacterDeactivated(id);
+                                }
+                                return true;
+                            });
+                    }
+                }
+            }
+        };
+
+    public:
+        /// With this connection policy, CharacterNotifications::OnCharacterActivated and
+        /// CharacterNotifications::OnCharacterDeactivated events will be immediately
+        /// dispatched when a handler connects to the bus.
+        template<class Bus>
+        using ConnectionPolicy = CharacterNotificationsConnectionPolicy<Bus>;
+
+        virtual ~CharacterNotifications() = default;
+
+        /// Notifies that the character controller has activated on an entity.
+        /// Other components that depend on the character controller can't simply rely on the component service
+        /// dependencies because the character controller is activated at OnEntityActivated, after the
+        /// components' activation.
+        virtual void OnCharacterActivated([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
+
+        /// Notifies that the character controller has deactivated on an entity.
+        virtual void OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
+    };
+
+    using CharacterNotificationBus = AZ::EBus<CharacterNotifications>;
+
+    } // namespace Physics
