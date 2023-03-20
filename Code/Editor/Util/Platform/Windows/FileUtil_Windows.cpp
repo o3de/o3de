@@ -14,9 +14,14 @@
 
 namespace Platform
 {
-    bool RunCommandWithArguments(const QString& command, const QString& args)
+    bool RunCommandWithArguments(const QString& command, const QStringList& argsList)
     {
         bool success = false;
+        QString args;
+        if (!argsList.isEmpty())
+        {
+            args = argsList.join(" ");
+        }
 
         HINSTANCE hInst = ShellExecuteW( nullptr,
             L"open",
@@ -31,14 +36,14 @@ namespace Platform
 
     bool OpenUri(const QUrl& uri)
     {
-        return RunCommandWithArguments(uri.toString(), "");
+        return RunCommandWithArguments(uri.toString(), {});
     }
 
     bool RunEditorWithArg(const QString& editor, const QString& arg)
     {
         // Use the Win32API calls as they aren't limited to running items in the path.
         QString fullTexturePathFixedForWindows = QString(arg.data()).replace('/', '\\');
-        return RunCommandWithArguments(editor, fullTexturePathFixedForWindows);
+        return RunCommandWithArguments(editor, { fullTexturePathFixedForWindows });
     }
 
     QString GetDefaultEditor(const Common::EditFileType fileType)
