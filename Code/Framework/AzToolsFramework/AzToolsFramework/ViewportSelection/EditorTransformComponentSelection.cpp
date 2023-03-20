@@ -2547,6 +2547,20 @@ namespace AzToolsFramework
             return;
         }
 
+        auto IsInEditorPickMode = []() -> bool
+        {
+            if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+            {
+                auto viewportEditorModes = viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
+                if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        };
+
         // Duplicate
         {
             const AZStd::string_view actionIdentifier = "o3de.action.edit.duplicate";
@@ -2648,19 +2662,14 @@ namespace AzToolsFramework
                 EditorIdentifiers::MainWindowActionContextIdentifier,
                 actionIdentifier,
                 actionProperties,
-                [this]()
+                [this, IsInEditorPickMode]()
                 {
                     AZ_PROFILE_FUNCTION(AzToolsFramework);
 
                     // Don't allow users to delete entities while in Entity Picker mode.
-                    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+                    if (IsInEditorPickMode())
                     {
-                        auto viewportEditorModes =
-                            viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
-                        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
-                        {
-                            return;
-                        }
+                        return;
                     }
 
                     ScopedUndoBatch undoBatch(DeleteUndoRedoDesc);
@@ -2677,17 +2686,12 @@ namespace AzToolsFramework
 
             m_actionManagerInterface->InstallEnabledStateCallback(
                 actionIdentifier,
-                []() -> bool
+                [IsInEditorPickMode]() -> bool
                 {
                     // Disable this action in Entity Picker mode.
-                    if (auto viewportEditorModeTracker = AZ::Interface<AzToolsFramework::ViewportEditorModeTrackerInterface>::Get())
+                    if (IsInEditorPickMode())
                     {
-                        auto viewportEditorModes =
-                            viewportEditorModeTracker->GetViewportEditorModes({ AzToolsFramework::GetEntityContextId() });
-                        if (viewportEditorModes->IsModeActive(AzToolsFramework::ViewportEditorMode::Pick))
-                        {
-                            return false;
-                        }
+                        return false;
                     }
 
                     auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
