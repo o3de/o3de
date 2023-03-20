@@ -1241,7 +1241,7 @@ namespace O3DE::ProjectManager
                 // an error code of 1 indicates an error, error code 2 means the gem was not active to begin with 
                 if (result.cast<int>() == 1)
                 {
-                    throw std::exception("Failed to remove gem");
+                    throw std::runtime_error("Failed to remove gem");
                 }
             });
     }
@@ -1536,7 +1536,7 @@ namespace O3DE::ProjectManager
             [&]
             {
                 using namespace pybind11::literals;
-                auto pythonIncompatibleResult =
+                pybind11::set incompatibleGemSet = 
                     m_projectManagerInterface.attr("get_incompatible_project_gems")(
                         "gem_paths"_a = QStringList_To_Py_List(gemPaths),
                         "gem_names"_a = QStringList_To_Py_List(gemNames),
@@ -1544,7 +1544,7 @@ namespace O3DE::ProjectManager
                     );
 
                 // Returns an exit code so boolify it then invert result
-                for (const auto& incompatibleGem : pythonIncompatibleResult)
+                for (const auto& incompatibleGem : incompatibleGemSet)
                 {
                     incompatibleGems.push_back(Py_To_String(incompatibleGem));
                 }
