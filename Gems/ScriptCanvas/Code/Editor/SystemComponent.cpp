@@ -31,6 +31,7 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QMenu>
+#include <ScriptCanvasContextIdentifiers.h>
 #include <ScriptCanvas/Bus/EditorScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -387,15 +388,14 @@ namespace ScriptCanvasEditor
 
     void SystemComponent::OnActionContextRegistrationHook()
     {
-        static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
-
         if (auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get())
         {
             AzToolsFramework::ActionContextProperties contextProperties;
             contextProperties.m_name = "O3DE Script Canvas";
 
-            // Register a custom action context to allow duplicated shortcut hotkeys to work
-            actionManagerInterface->RegisterActionContext(ScriptCanvasActionContextIdentifier, contextProperties);
+            // Register custom action contexts to allow duplicated shortcut hotkeys to work
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, contextProperties);
+            actionManagerInterface->RegisterActionContext(ScriptCanvasIdentifiers::ScriptCanvasVariablesActionContextIdentifier, contextProperties);
         }
     }
 

@@ -49,6 +49,8 @@ namespace GraphModel
                 ->Field("m_sourceEndpoint", &Connection::m_sourceEndpoint)
                 ->Field("m_targetEndpoint", &Connection::m_targetEndpoint)
                 ;
+
+            serializeContext->RegisterGenericType<ConnectionPtr>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
