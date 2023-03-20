@@ -159,7 +159,7 @@ namespace AssetProcessor
             AZ_Error(
                 "ProductOutputUtil",
                 false,
-                "Product " AZ_STRING_FORMAT " is expected to be prefixed but was not",
+                "Programmer Error - Product " AZ_STRING_FORMAT " is expected to be prefixed but was not",
                 AZ_STRING_ARG(product.m_productFileName));
             return false;
         }
