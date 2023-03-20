@@ -190,16 +190,9 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
         {
             SetName(ThumbnailViewMainViewName);
-
-            bool isAssetBrowserComponentReady = false;
-            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
-            if (isAssetBrowserComponentReady)
-            {
-                  SetAssetTreeView(treeView);
-            }
         }
 
         bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()

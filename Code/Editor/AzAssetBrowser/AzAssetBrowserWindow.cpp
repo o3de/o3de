@@ -262,6 +262,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
+    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
         m_filterModel.data(), &AzAssetBrowser::AssetBrowserFilterModel::filterUpdatedSlot);
@@ -333,9 +335,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
-
-    m_ui->m_thumbnailView->SetIsAssetBrowserMainView(m_ui->m_assetBrowserTreeViewWidget);
-    m_ui->m_expandedTableView->SetIsAssetBrowserMainView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
+    m_ui->m_expandedTableView->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
