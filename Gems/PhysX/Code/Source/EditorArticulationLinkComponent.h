@@ -9,9 +9,8 @@
 #pragma once
 
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
-#include "EditorRigidBodyComponent.h"
-#include "RigidBody.h"
-#include "Editor/EditorJointConfiguration.h"
+#include <Editor/EditorJointConfiguration.h>
+#include <Source/EditorRigidBodyComponent.h>
 
 namespace PhysX
 {

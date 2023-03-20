@@ -10,21 +10,20 @@
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Physics/Common/PhysicsEvents.h>
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
+#include <AzFramework/Physics/Shape.h>
 #include <PhysX/ComponentTypeIds.h>
-#include "AzFramework/Physics/Common/PhysicsEvents.h"
-#include "AzFramework/Physics/Shape.h"
-#include "RigidBody.h"
-#include "PhysX/Joint/Configuration/PhysXJointConfiguration.h"
-#include "PhysX/UserDataTypes.h"
+#include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
+#include <PhysX/UserDataTypes.h>
+#include <Source/RigidBody.h>
 
 namespace physx
 {
     class PxArticulationReducedCoordinate;
     class PxArticulationJointReducedCoordinate;
 }
-
 
 namespace AzPhysics
 {

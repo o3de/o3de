@@ -10,19 +10,19 @@
 #include <Pipeline/PhysicsPrefabProcessor.h>
 
 #include <AzCore/Serialization/Utils.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Components/TransformComponent.h>
 #include <AzFramework/Spawnable/Spawnable.h>
 #include <AzFramework/Spawnable/SpawnableAssetHandler.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <Prefab/Spawnable/SpawnableUtils.h>
-#include <ArticulationLinkComponent.h>
-#include "AzCore/std/smart_ptr/make_shared.h"
-#include "BaseColliderComponent.h"
-#include "SphereColliderComponent.h"
-#include "CapsuleColliderComponent.h"
-#include "BoxColliderComponent.h"
-#include "MeshColliderComponent.h"
+#include <Source/ArticulationLinkComponent.h>
+#include <Source/BaseColliderComponent.h>
+#include <Source/BoxColliderComponent.h>
+#include <Source/CapsuleColliderComponent.h>
+#include <Source/MeshColliderComponent.h>
+#include <Source/SphereColliderComponent.h>
 
 namespace PhysX
 {

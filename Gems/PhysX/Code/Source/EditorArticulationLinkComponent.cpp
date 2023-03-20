@@ -7,11 +7,11 @@
  */
 
 #include <AzCore/Serialization/EditContext.h>
+#include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
-#include "EditorColliderComponent.h"
-#include "ToolsComponents/TransformComponent.h"
+#include <Source/EditorColliderComponent.h>
 
 namespace PhysX
 {

@@ -8,6 +8,7 @@
 
 #include <Source/EditorComponentDescriptors.h>
 
+#include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorBallJointComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorMeshColliderComponent.h>
@@ -25,7 +26,6 @@
 #include <Source/Pipeline/MeshBehavior.h>
 #include <Source/Pipeline/MeshExporter.h>
 #include <Editor/Source/Components/EditorSystemComponent.h>
-#include "EditorArticulationLinkComponent.h"
 
 
 namespace PhysX

@@ -11,6 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
@@ -21,12 +22,11 @@
 #include <PhysX/Material/PhysXMaterial.h>
 #include <PhysX/MathConversion.h>
 #include <PhysX/PhysXLocks.h>
+#include <PhysX/Utils.h>
 #include <Shape.h>
 #include <Source/RigidBodyStatic.h>
 #include <Source/Utils.h>
 #include <System/PhysXSystem.h>
-#include "AzCore/std/smart_ptr/make_shared.h"
-#include "PhysX/Utils.h"
 
 namespace PhysX
 {
