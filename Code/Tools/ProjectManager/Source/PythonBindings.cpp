@@ -1229,15 +1229,21 @@ namespace O3DE::ProjectManager
 
     AZ::Outcome<void, AZStd::string> PythonBindings::RemoveGemFromProject(const QString& gemPath, const QString& projectPath)
     {
-        return ExecuteWithLockErrorHandling([&]
-        {
-            m_disableGemProject.attr("disable_gem_in_project")(
-                pybind11::none(), // gem name not needed as path is provided
-                QString_To_Py_Path(gemPath),
-                pybind11::none(), // project name not needed as path is provided
-                QString_To_Py_Path(projectPath)
-                );
-        });
+        return ExecuteWithLockErrorHandling(
+            [&]
+            {
+                using namespace pybind11::literals;
+                auto result = m_disableGemProject.attr("disable_gem_in_project")(
+                    "gem_path"_a = QString_To_Py_Path(gemPath),
+                    "project_path"_a = QString_To_Py_Path(projectPath)
+                    );
+
+                // an error code of 1 indicates an error, error code 2 means the gem was not active to begin with 
+                if (result.cast<int>() == 1)
+                {
+                    throw std::exception("Failed to remove gem");
+                }
+            });
     }
 
     bool PythonBindings::RemoveInvalidProjects()
