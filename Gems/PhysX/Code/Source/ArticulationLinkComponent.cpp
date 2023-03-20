@@ -106,12 +106,7 @@ namespace PhysX
     {
     }
 
-    void ArticulationLinkComponent::CreateRigidBody()
-    {
-        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-    }
-
-    void ArticulationLinkComponent::DestroyRigidBody()
+    void ArticulationLinkComponent::DestroyArticulation()
     {
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
         physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
@@ -124,8 +119,6 @@ namespace PhysX
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
             m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
-
-        AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     bool ArticulationLinkComponent::IsRootArticulation() const
@@ -150,6 +143,8 @@ namespace PhysX
     {
         if (IsRootArticulation())
         {
+            AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+
             Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
 
             if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
@@ -159,6 +154,25 @@ namespace PhysX
 
             CreateArticulation();
         }
+    }
+
+    void ArticulationLinkComponent::Deactivate()
+    {
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return;
+        }
+
+        if (m_articulation)
+        {
+            DestroyArticulation();
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
+        }
+    }
+
+    void ArticulationLinkComponent::OnTransformChanged(
+        [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
+    {
     }
 
     void ArticulationLinkComponent::CreateArticulation()
@@ -306,21 +320,5 @@ namespace PhysX
                 AZ::TransformBus::Event(linkEntityId, &AZ::TransformBus::Events::SetWorldTM, globalTransform);
             }
         }
-    }
-
-    void ArticulationLinkComponent::Deactivate()
-    {
-        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
-        {
-            return;
-        }
-
-        DestroyRigidBody();
-    }
-
-    void ArticulationLinkComponent::OnTransformChanged(
-        [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
-    {
-
     }
 } // namespace PhysX

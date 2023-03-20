@@ -76,13 +76,11 @@ namespace PhysX
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
 
     private:
-        void CreateRigidBody();
-        void DestroyRigidBody();
-
         bool IsRootArticulation() const;
 
         void CreateArticulation();
         void CreateChildArticulationLinks(physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData);
+        void DestroyArticulation();
 
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
