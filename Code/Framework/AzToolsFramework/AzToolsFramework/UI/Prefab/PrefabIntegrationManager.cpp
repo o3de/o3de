@@ -936,7 +936,6 @@ namespace AzToolsFramework
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.procedural.instantiate", 20400);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.save", 30100);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::ViewportContextMenuIdentifier, "o3de.action.prefabs.revertInstanceOverrides", 30200);
-            
         }
 
         void PrefabIntegrationManager::OnToolBarBindingHook()
@@ -944,6 +943,61 @@ namespace AzToolsFramework
             // Populate Viewport top toolbar with Prefab actions and widgets
             m_toolBarManagerInterface->AddActionToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.action.prefabs.focusUpOneLevel", 100);
             m_toolBarManagerInterface->AddWidgetToToolBar(EditorIdentifiers::ViewportTopToolBarIdentifier, "o3de.widgetAction.prefab.focusPath", 200);
+        }
+
+        void PrefabIntegrationManager::OnPostActionManagerRegistrationHook()
+        {
+            // It should not be possible to Delete the container entity of the focused instance.
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                "o3de.action.edit.delete",
+                []()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // If only one entity is selected, don't show the option if it's the container entity of the focused instance.
+                    if (selectedEntities.size() == 1 &&
+                        s_prefabFocusPublicInterface->GetFocusedPrefabContainerEntityId(s_editorEntityContextId) == selectedEntities.front())
+                    {
+                        return false;
+                    }
+
+                    // If multiple entities are selected, they should all be owned by the same instance.
+                    if (!s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+                    {
+                        return false;
+                    }
+                    
+                    return true;
+                }
+            );
+
+            m_actionManagerInterface->InstallEnabledStateCallback(
+                "o3de.action.edit.duplicate",
+                []()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    if (s_prefabPublicInterface->EntitiesBelongToSameInstance(selectedEntities))
+                    {
+                        AZ::EntityId entityToCheck = selectedEntities[0];
+
+                        // If it is a container entity, then check its parent entity's owning instance instead.
+                        if (s_prefabPublicInterface->IsInstanceContainerEntity(entityToCheck))
+                        {
+                            AZ::TransformBus::EventResult(entityToCheck, entityToCheck, &AZ::TransformBus::Events::GetParentId);
+                        }
+
+                        // Do not show the option when it is not a prefab edit.
+                        return s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(entityToCheck);
+                    }
+
+                    return false;
+                }
+            );
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const
@@ -1457,7 +1511,7 @@ namespace AzToolsFramework
                 return false;
             }
 
-            if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
+            if (s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) ||
                 !s_prefabFocusPublicInterface->IsOwningPrefabBeingFocused(selectedEntityId))
             {
                 // Can't instantiate under prefab that is not in focus.
