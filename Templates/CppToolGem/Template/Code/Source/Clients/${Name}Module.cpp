@@ -8,6 +8,7 @@
  */
 // {END_LICENSE}
 
+#include <${Name}/${Name}TypeIds.h>
 #include <${Name}ModuleInterface.h>
 #include "${Name}SystemComponent.h"
 
@@ -17,8 +18,8 @@ namespace ${SanitizedCppName}
         : public ${SanitizedCppName}ModuleInterface
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Module, "${ModuleClassId}", ${SanitizedCppName}ModuleInterface);
-        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator, 0);
+        AZ_RTTI(${SanitizedCppName}Module, ${SanitizedCppName}ModuleTypeId, ${SanitizedCppName}ModuleInterface);
+        AZ_CLASS_ALLOCATOR(${SanitizedCppName}Module, AZ::SystemAllocator);
     };
 }// namespace ${SanitizedCppName}
 

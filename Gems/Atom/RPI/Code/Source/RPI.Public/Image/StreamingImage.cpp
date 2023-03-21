@@ -10,7 +10,6 @@
 #include <Atom/RPI.Public/Image/StreamingImage.h>
 #include <Atom/RPI.Public/Image/StreamingImagePool.h>
 #include <Atom/RPI.Public/Image/StreamingImageController.h>
-
 #include <Atom/RPI.Reflect/Image/ImageMipChainAssetCreator.h>
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetCreator.h>
 
@@ -199,7 +198,7 @@ namespace AZ
                 }
                         
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().data());
+                AZ_TracePrintf("StreamingImage", "Init image [%s]\n", m_image->GetName().GetCStr());
 #endif
                                 
 #if defined (AZ_RPI_STREAMING_IMAGE_HOT_RELOADING)
@@ -362,7 +361,7 @@ namespace AZ
             if (m_mipChainState.m_streamingTarget < m_mipChainState.m_residencyTarget)
             {
 #ifdef AZ_RPI_STREAMING_IMAGE_DEBUG_LOG
-                AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", GetImage()->GetName().data());
+                AZ_TracePrintf("StreamingImage", "Expand image [%s]\n", m_image->GetName().GetCStr());
 #endif
 
                 // Start by assuming we can expand residency to the full target range.
