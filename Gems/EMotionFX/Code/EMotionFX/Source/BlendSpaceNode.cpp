@@ -15,6 +15,7 @@
 #include <EMotionFX/Source/MotionInstance.h>
 #include <EMotionFX/Source/MotionEventTable.h>
 #include <EMotionFX/Source/EMotionFXManager.h>
+#include <MCore/Source/Config.h>
 
 
 namespace EMotionFX
@@ -198,7 +199,7 @@ namespace EMotionFX
 
     BlendSpaceNode::MotionInfo::MotionInfo()
         : m_motionInstance(nullptr)
-        , m_syncIndex(MCORE_INVALIDINDEX32)
+        , m_syncIndex(MCore::InvalidIndex)
         , m_playSpeed(1.0f)
         , m_currentTime(0.0f)
         , m_preSyncTime(0.0f)
@@ -458,7 +459,7 @@ namespace EMotionFX
             return;
         }
         const bool srcSyncIndexChanged = srcMotion.m_syncIndex != srcIndexA;
-        srcMotion.m_syncIndex = static_cast<uint32>(srcIndexA);
+        srcMotion.m_syncIndex = srcIndexA;
         const float srcDuration = srcTrack->CalcSegmentLength(srcIndexA, srcIndexB);
 
         // calculate the normalized offset inside the segment
@@ -523,7 +524,7 @@ namespace EMotionFX
                 continue;
             }
 
-            targetMotion.m_syncIndex = static_cast<uint32>(targetIndexA);
+            targetMotion.m_syncIndex = targetIndexA;
 
             // calculate the segment lengths
             const float targetDuration = targetTrack->CalcSegmentLength(targetIndexA, targetIndexB);
@@ -596,7 +597,7 @@ namespace EMotionFX
 
             motionInfo.m_currentTime = motionInstance->GetCurrentTime();
             motionInfo.m_preSyncTime = motionInfo.m_currentTime;
-            motionInfo.m_syncIndex = MCORE_INVALIDINDEX32;
+            motionInfo.m_syncIndex = MCore::InvalidIndex;
         }
     }
 

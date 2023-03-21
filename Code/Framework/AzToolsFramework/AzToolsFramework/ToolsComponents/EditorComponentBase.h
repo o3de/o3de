@@ -116,7 +116,6 @@ namespace AzToolsFramework
             virtual void Deactivate() override;
 
             void PrepareComponentForEntityAddition(AZ::Entity* entity) override final;
-            //////////////////////////////////////////////////////////////////////////
 
             //! Sets the provided string as the serialized identifier for the component.
             //! @param serializedIdentifer The unique identifier for this component within the entity it lives in.

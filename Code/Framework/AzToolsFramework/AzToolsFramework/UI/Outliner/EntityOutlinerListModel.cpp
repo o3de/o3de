@@ -983,13 +983,13 @@ namespace AzToolsFramework
             return false;
         }
 
-        ScopedUndoBatch undo("Reparent Entities");
+        ScopedUndoBatch undo("Reparent Entity(s)");
         // The new parent is dirty due to sort change(s)
         undo.MarkEntityDirty(GetEntityIdForSortInfo(newParentId));
 
         EntityIdList processedEntityIds;
         {
-            ScopedUndoBatch undo2("Reparent Entities");
+            ScopedUndoBatch undo2("Reparent Entity(s)");
 
             for (AZ::EntityId entityId : selectedEntityIds)
             {

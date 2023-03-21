@@ -22,7 +22,7 @@ namespace ${SanitizedCppName}
         , public AZ::TickBus::Handler
     {
     public:
-        AZ_COMPONENT(${SanitizedCppName}SystemComponent, "${SysCompClassId}");
+        AZ_COMPONENT_DECL(${SanitizedCppName}SystemComponent);
 
         static void Reflect(AZ::ReflectContext* context);
 

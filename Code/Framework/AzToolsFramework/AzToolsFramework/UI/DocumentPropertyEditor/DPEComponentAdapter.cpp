@@ -35,7 +35,7 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::OnEntityComponentPropertyChanged(AZ::ComponentId componentId)
     {
-        if (m_componentInstance->GetId() == componentId)
+        if (m_componentId == componentId)
         {
             m_queuedRefreshLevel = AzToolsFramework::PropertyModificationRefreshLevel::Refresh_Values;
             QTimer::singleShot(
@@ -77,18 +77,25 @@ namespace AZ::DocumentPropertyEditor
 
     void ComponentAdapter::SetComponent(AZ::Component* componentInstance)
     {
-        m_componentInstance = componentInstance;
-        m_entityId = m_componentInstance->GetEntityId();
+        m_entityId = componentInstance->GetEntityId();
+        m_componentId = componentInstance->GetId();
+        AZ::EntitySystemBus::Handler::BusConnect();
 
         AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler::BusConnect(m_entityId);
         AzToolsFramework::ToolsApplicationEvents::Bus::Handler::BusConnect();
         AzToolsFramework::PropertyEditorGUIMessages::Bus::Handler::BusConnect();
 
-        SetValue(m_componentInstance, azrtti_typeid(m_componentInstance));
+        AZ::Uuid instanceTypeId = azrtti_typeid(componentInstance);
+        SetValue(componentInstance, instanceTypeId);
     }
 
     void ComponentAdapter::DoRefresh()
     {
+        if (!m_entityId.IsValid())
+        {
+            return;
+        }
+
         if (m_queuedRefreshLevel == AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None)
         {
             return;
@@ -104,28 +111,24 @@ namespace AZ::DocumentPropertyEditor
             switch (changeType)
             {
             case Nodes::ValueChangeType::InProgressEdit:
-                if (m_componentInstance)
+                if (m_entityId.IsValid())
                 {
-                    const AZ::EntityId& entityId = m_componentInstance->GetEntityId();
-                    if (entityId.IsValid())
+                    if (m_currentUndoNode)
                     {
-                        if (m_currentUndoNode)
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode,
-                                &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                                m_currentUndoNode,
-                                "Modify Entity Property");
-                        }
-                        else
-                        {
-                            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                                m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
-                        }
-
-                        AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
-                            &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, entityId);
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            m_currentUndoNode,
+                            &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                            m_currentUndoNode,
+                            "Modify Entity Property");
                     }
+                    else
+                    {
+                        AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                            m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+                    }
+
+                    AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                        &AzToolsFramework::ToolsApplicationRequests::AddDirtyEntity, m_entityId);
                 }
                 break;
             case Nodes::ValueChangeType::FinishedEdit:
@@ -149,4 +152,14 @@ namespace AZ::DocumentPropertyEditor
     {
         ReflectionAdapter::CreateLabel(adapterBuilder, labelText, serializedPath);
     }
+
+    void ComponentAdapter::OnEntityDestroyed(const AZ::EntityId& entityId)
+    {
+        if (entityId == m_entityId)
+        {
+            m_entityId.SetInvalid();
+            AZ::EntitySystemBus::Handler::BusDisconnect();
+        }
+    }
+
 } // namespace AZ::DocumentPropertyEditor
