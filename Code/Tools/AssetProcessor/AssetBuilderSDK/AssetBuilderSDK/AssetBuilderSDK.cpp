@@ -1143,11 +1143,12 @@ namespace AssetBuilderSDK
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ProcessJobResponse>()->
-                Version(2)->
+                Version(3)->
                 Field("Output Products", &ProcessJobResponse::m_outputProducts)->
                 Field("Result Code", &ProcessJobResponse::m_resultCode)->
                 Field("Requires SubId Generation", &ProcessJobResponse::m_requiresSubIdGeneration)->
-                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess);
+                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess)->
+                Field("Keep Temp Folder", &ProcessJobResponse::m_keepTempFolder);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -1159,6 +1160,7 @@ namespace AssetBuilderSDK
                 ->Property("resultCode", BehaviorValueProperty(&ProcessJobResponse::m_resultCode))
                 ->Property("requiresSubIdGeneration", BehaviorValueProperty(&ProcessJobResponse::m_requiresSubIdGeneration))
                 ->Property("sourcesToReprocess", BehaviorValueProperty(&ProcessJobResponse::m_sourcesToReprocess))
+                ->Property("keepTempFolder", BehaviorValueProperty(&ProcessJobResponse::m_keepTempFolder))
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Success)>("Success")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Failed)>("Failed")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Crashed)>("Crashed")
