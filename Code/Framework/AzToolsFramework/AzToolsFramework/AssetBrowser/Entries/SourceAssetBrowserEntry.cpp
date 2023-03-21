@@ -68,6 +68,13 @@ namespace AzToolsFramework
             return extension;
         };
 
+        const AZStd::string SourceAssetBrowserEntry::GetFileName() const
+        {
+            AZStd::string stem;
+            AZ::StringFunc::Path::GetFileName(GetFullPath().c_str(), stem);
+            return stem;
+        };
+
         AZ::s64 SourceAssetBrowserEntry::GetFileID() const
         {
             return m_fileId;
