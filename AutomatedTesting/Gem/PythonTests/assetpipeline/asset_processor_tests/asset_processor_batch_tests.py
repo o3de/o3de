@@ -315,6 +315,8 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
     @pytest.mark.test_case_id('C1612448')
     def test_TwoAssetsWithSameProductName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
+        GHI - https://github.com/o3de/o3de/issues/15250
+        
         Tests processing of two assets with the same product name, then verifies that AP will successfully process after
         renaming one of the assets' outputs.
 
