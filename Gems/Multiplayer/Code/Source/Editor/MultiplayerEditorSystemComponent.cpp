@@ -29,8 +29,14 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Process/ProcessUtils.h>
 #include <AzNetworking/Framework/INetworking.h>
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzToolsFramework/ContainerEntity/ContainerEntityInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorActionUpdaterIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorMenuIdentifiers.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
 #include <AzToolsFramework/UI/Prefab/PrefabIntegrationInterface.h>
@@ -163,10 +169,12 @@ namespace Multiplayer
         AZ::Interface<IMultiplayer>::Get()->AddServerAcceptanceReceivedHandler(m_serverAcceptanceReceivedHandler);
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusConnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusConnect();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void MultiplayerEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorContextMenuBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEvents::Bus::Handler::BusDisconnect();
         MultiplayerEditorServerRequestBus::Handler::BusDisconnect();
@@ -662,6 +670,107 @@ namespace Multiplayer
     int MultiplayerEditorSystemComponent::GetMenuPosition() const
     {
         return aznumeric_cast<int>(AzToolsFramework::EditorContextMenuOrdering::TOP);
+    }
+
+    void MultiplayerEditorSystemComponent::OnActionRegistrationHook()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
+        auto readOnlyEntityPublicInterface = AZ::Interface<AzToolsFramework::ReadOnlyEntityPublicInterface>::Get();
+        if (!actionManagerInterface || !hotKeyManagerInterface || !readOnlyEntityPublicInterface)
+        {
+            return;
+        }
+
+        // Create Multiplayer Entity
+        {
+            constexpr AZStd::string_view actionIdentifier = "o3de.action.multiplayer.createMultiplayerEntity";
+            AzToolsFramework::ActionProperties actionProperties;
+            actionProperties.m_name = "Create multiplayer entity";
+            actionProperties.m_description = "Create a multiplayer entity.";
+            actionProperties.m_category = "Entity";
+
+            actionManagerInterface->RegisterAction(
+                EditorIdentifiers::MainWindowActionContextIdentifier,
+                actionIdentifier,
+                actionProperties,
+                [this, readOnlyEntityPublicInterface]
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    // when nothing is selected, entity is created at root level.
+                    if (selectedEntities.empty())
+                    {
+                        ContextMenu_NewMultiplayerEntity(AZ::EntityId(), AZ::Vector3::CreateZero());
+                    }
+                    // when a single entity is selected, entity is created as its child.
+                    else if (selectedEntities.size() == 1)
+                    {
+                        AZ::EntityId selectedEntityId = selectedEntities.front();
+                        bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+                        bool prefabSystemEnabled = false;
+                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+                        if (!prefabSystemEnabled ||
+                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
+                             !selectedEntityIsReadOnly))
+                        {
+                            ContextMenu_NewMultiplayerEntity(selectedEntityId, AZ::Vector3::CreateZero());
+                        }
+                    }
+                }
+            );
+
+            actionManagerInterface->InstallEnabledStateCallback(
+                actionIdentifier,
+                [readOnlyEntityPublicInterface]()
+                {
+                    AzToolsFramework::EntityIdList selectedEntities;
+                    AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                        selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
+
+                    if (selectedEntities.size() == 0)
+                    {
+                        return true;
+                    }
+                    else if (selectedEntities.size() == 1)
+                    {
+                        AZ::EntityId selectedEntityId = selectedEntities.front();
+                        bool selectedEntityIsReadOnly = readOnlyEntityPublicInterface->IsReadOnly(selectedEntityId);
+                        auto containerEntityInterface = AZ::Interface<AzToolsFramework::ContainerEntityInterface>::Get();
+                        bool prefabSystemEnabled = false;
+                        AzFramework::ApplicationRequests::Bus::BroadcastResult(
+                            prefabSystemEnabled, &AzFramework::ApplicationRequests::IsPrefabSystemEnabled);
+
+                        return (
+                            !prefabSystemEnabled ||
+                            (containerEntityInterface && containerEntityInterface->IsContainerOpen(selectedEntityId) &&
+                             !selectedEntityIsReadOnly));
+                    }
+
+                    return false;
+                }
+            );
+
+            actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+
+            hotKeyManagerInterface->SetActionHotKey(actionIdentifier, "Ctrl+Alt+M");
+        }
+    }
+
+    void MultiplayerEditorSystemComponent::OnMenuBindingHook()
+    {
+        auto menuManagerInterface = AZ::Interface<AzToolsFramework::MenuManagerInterface>::Get();
+        if (!menuManagerInterface)
+        {
+            return;
+        }
+
+        menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityCreationMenuIdentifier, "o3de.action.multiplayer.createMultiplayerEntity", 1000);
     }
 
     void MultiplayerEditorSystemComponent::ContextMenu_NewMultiplayerEntity(AZ::EntityId parentEntityId, const AZ::Vector3& worldPosition)
