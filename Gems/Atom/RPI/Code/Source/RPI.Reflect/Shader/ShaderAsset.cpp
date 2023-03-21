@@ -180,6 +180,16 @@ namespace AZ
             return supervariantIndex;
         }
 
+        const AZ::Name& ShaderAsset::GetSupervariantName(SupervariantIndex supervariantIndex) const
+        {
+            const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
+            if (supervariantIndex.GetIndex() >= supervariants.size())
+            {
+                return supervariants[0].m_name;
+            }
+            return supervariants[supervariantIndex.GetIndex()].m_name;
+        }
+
         Data::Asset<ShaderVariantAsset> ShaderAsset::GetVariantAsset(
             const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex)
         {
@@ -262,7 +272,7 @@ namespace AZ
                 }
                 if (variantTreeAssetId.IsValid())
                 {
-                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId, supervariantIndex);
+                    variantFinder->QueueLoadShaderVariantAsset(variantTreeAssetId, shaderVariantStableId, GetSupervariantName(supervariantIndex));
                 }
                 return GetRootVariantAsset(supervariantIndex);
             }
