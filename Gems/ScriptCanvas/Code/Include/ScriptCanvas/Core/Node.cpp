@@ -45,6 +45,9 @@ namespace NodeCpp
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
         AddName = 1,
+        // AddName was a version backward, causing errors when processing assets on versions 12 and 13.
+        // This change is purely to fix the future versioning errors, and is not a functional change besides that.
+        FixedVersioningIssue = 14,
 
         // add your named version above
         Current,
@@ -78,6 +81,15 @@ namespace ScriptCanvas
 
     bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& nodeElementNode)
     {
+        // AddName was mistakenly set to version 1 instead of a higher version than the previous version.
+        // This caused issues with version conversion and nodes, and caused asset processing errors.
+        // This early out check skips conversion that may have previously failed because the version number was mistakenly
+        // set backward and was previously triggering incorrect conversion logic.
+        // This is +1 because the current value is always the latest +1, and when AddName was the most recent, the saved node versions were AddName+1 and not AddName.
+        if (nodeElementNode.GetVersion() == NodeCpp::Version::AddName + 1)
+        {
+            return true;
+        }
         if (nodeElementNode.GetVersion() <= 5)
         {
             auto slotVectorElementNodes = AZ::Utils::FindDescendantElements(context, nodeElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC("Slots", 0xc87435d0), AZ_CRC("m_slots", 0x84838ab4)});
@@ -441,6 +453,11 @@ namespace ScriptCanvas
                     ;
             }
         }
+    }
+
+    int Node::GetNodeVersion()
+    {
+        return NodeCpp::Version::Current;
     }
 
     // Class Definition
