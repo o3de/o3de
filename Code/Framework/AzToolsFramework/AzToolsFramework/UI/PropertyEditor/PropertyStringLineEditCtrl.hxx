@@ -41,18 +41,11 @@ namespace AzToolsFramework
         QWidget* GetLastInTabOrder();
         void UpdateTabOrder();
 
-    signals:
-        void valueChanged(AZStd::string& newValue);
-
     public slots:
         virtual void setValue(AZStd::string& val);
         void setMaxLen(int maxLen);
 
-    protected slots:
-        void onChildLineEditValueChange(const QString& value);
-
     protected:
-        virtual void ConnectWidgets();
         virtual void focusInEvent(QFocusEvent* e);
 
         QLineEdit* m_pLineEdit;
@@ -67,7 +60,7 @@ namespace AzToolsFramework
     public:
         AZ_CLASS_ALLOCATOR(StringPropertyLineEditHandler, AZ::SystemAllocator);
 
-        virtual AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("LineEdit", 0x3f15f4ba); }
+        virtual AZ::u32 GetHandlerName(void) const override  { return AZ::Edit::UIHandlers::LineEdit; }
         virtual bool IsDefaultHandler() const override { return true; }
         virtual QWidget* GetFirstInTabOrder(PropertyStringLineEditCtrl* widget) override { return widget->GetFirstInTabOrder(); }
         virtual QWidget* GetLastInTabOrder(PropertyStringLineEditCtrl* widget) override { return widget->GetLastInTabOrder(); }
