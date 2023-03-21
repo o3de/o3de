@@ -327,8 +327,6 @@ void LevelEditorMenuHandler::ResetToolsMenus()
 
     CreateMenuOptions(&menuMap, m_toolsMenu, LyViewPane::CategoryTools);
 
-    AzToolsFramework::EditorMenuNotificationBus::Broadcast(&AzToolsFramework::EditorMenuNotificationBus::Handler::OnPopulateToolMenuItems);
-
     m_toolsMenu.AddSeparator();
 
     // Other
@@ -734,9 +732,11 @@ QMenu* LevelEditorMenuHandler::CreateViewMenu()
     // MISSING AVIRECORDER
 
     viewportViewsMenuWrapper.AddSeparator();
-    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::Icons);
+    viewportViewsMenuWrapper.AddSeparator();
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::Helpers);
     viewportViewsMenuWrapper.AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction);
+    viewportViewsMenuWrapper.AddAction(AzToolsFramework::HideHelpers);
 
     // Refresh Style
     viewMenu.AddAction(ID_SKINS_REFRESH);

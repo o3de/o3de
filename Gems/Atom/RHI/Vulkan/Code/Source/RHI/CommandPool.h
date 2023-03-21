@@ -28,7 +28,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(CommandPool, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandPool, AZ::SystemAllocator);
             AZ_RTTI(CommandPool, "167326E7-5B9C-48B6-A792-79270C368100", Base);
 
             struct Descriptor

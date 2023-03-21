@@ -137,7 +137,7 @@ namespace AzFramework
     void AssetCatalog::AddExtension(const char* extension)
     {
         AZStd::string extensionFixed = extension;
-        EBUS_EVENT(ApplicationRequests::Bus, NormalizePath, extensionFixed);
+        ApplicationRequests::Bus::Broadcast(&ApplicationRequests::Bus::Events::NormalizePath, extensionFixed);
 
         if (extensionFixed.empty())
         {
@@ -150,7 +150,7 @@ namespace AzFramework
             extensionFixed = extensionFixed.substr(1);
         }
 
-        EBUS_EVENT(ApplicationRequests::Bus, NormalizePath, extensionFixed);
+        ApplicationRequests::Bus::Broadcast(&ApplicationRequests::Bus::Events::NormalizePath, extensionFixed);
 
         if (m_extensions.end() == AZStd::find(m_extensions.begin(), m_extensions.end(), extensionFixed))
         {
@@ -241,7 +241,8 @@ namespace AzFramework
             return AZ::Data::AssetId();
         }
         m_pathBuffer = path;
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, m_pathBuffer);
+        AzFramework::ApplicationRequests::Bus::Broadcast(
+            &AzFramework::ApplicationRequests::Bus::Events::MakePathAssetRootRelative, m_pathBuffer);
         {
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
 
@@ -284,7 +285,7 @@ namespace AzFramework
                 m_registry->RegisterAsset(generatedID, newInfo);
             }
 
-            EBUS_EVENT(AzFramework::AssetCatalogEventBus, OnCatalogAssetAdded, generatedID);
+            AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, generatedID);
 
             return generatedID;
         }
@@ -480,7 +481,7 @@ namespace AzFramework
             return AZ::Data::AssetId();
         }
         AZStd::string relativePath = path;
-        EBUS_EVENT(ApplicationRequests::Bus, MakePathAssetRootRelative, relativePath);
+        ApplicationRequests::Bus::Broadcast(&ApplicationRequests::Bus::Events::MakePathAssetRootRelative, relativePath);
         return AZ::Data::AssetId(AZ::Uuid::CreateName(relativePath.c_str()));
     }
 
@@ -556,7 +557,7 @@ namespace AzFramework
 
             // Reflect registry for serialization.
             AZ::SerializeContext* serializeContext = nullptr;
-            EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
             if (nullptr == serializeContext->FindClassData(AZ::AzTypeInfo<AssetRegistry>::Uuid()))
             {
@@ -680,7 +681,7 @@ namespace AzFramework
             AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
             m_registry->RegisterAsset(id, info);
         }
-        EBUS_EVENT(AzFramework::AssetCatalogEventBus, OnCatalogAssetAdded, id);
+        AzFramework::AssetCatalogEventBus::Broadcast(&AzFramework::AssetCatalogEventBus::Events::OnCatalogAssetAdded, id);
     }
 
     //=========================================================================
@@ -813,7 +814,8 @@ namespace AzFramework
         for (const auto& message : messages)
         {
             AZStd::string relativePath = message.m_data;
-            EBUS_EVENT(AzFramework::ApplicationRequests::Bus, MakePathAssetRootRelative, relativePath);
+            AzFramework::ApplicationRequests::Bus::Broadcast(
+                &AzFramework::ApplicationRequests::Bus::Events::MakePathAssetRootRelative, relativePath);
 
             AZ::Data::AssetId assetId = message.m_assetId;
 
@@ -952,10 +954,7 @@ namespace AzFramework
                 UnregisterAsset(assetId);
                 {
                     AZStd::lock_guard<AZStd::recursive_mutex> lock(m_registryMutex);
-                    for (const auto& mapping : message.m_legacyAssetIds)
-                    {
-                        m_registry->UnregisterLegacyAssetMapping(mapping);
-                    }
+                    m_registry->UnregisterLegacyAssetMappingsForAsset(assetId);
                 }
                 // queue this for later delivery, since we are not on the main thread:
                 AzFramework::LegacyAssetEventBus::QueueEvent(

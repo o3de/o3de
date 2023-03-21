@@ -309,35 +309,39 @@ namespace AZ
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor,
-            const MaterialAssignmentMap& materials)
+            const MeshHandleDescriptor& descriptor, const CustomMaterialMap& materials)
         {
             AZ_PROFILE_SCOPE(AzRender, "MeshFeatureProcessor: AcquireMesh");
 
-            // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during insertion
+            // don't need to check the concurrency during emplace() because the StableDynamicArray won't move the other elements during
+            // insertion
             MeshHandle meshDataHandle = m_modelData.emplace();
 
             meshDataHandle->m_descriptor = descriptor;
             meshDataHandle->m_scene = GetParentScene();
-            meshDataHandle->m_materialAssignments = materials;
+            meshDataHandle->m_customMaterials = materials;
             meshDataHandle->m_objectId = m_transformService->ReserveObjectId();
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
-            meshDataHandle->UpdateMaterialChangeIds();
+            if (descriptor.m_excludeFromReflectionCubeMaps)
+            {
+                meshDataHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
+            }
 
             return meshDataHandle;
         }
 
         MeshFeatureProcessor::MeshHandle MeshFeatureProcessor::AcquireMesh(
-            const MeshHandleDescriptor& descriptor,
-            const Data::Instance<RPI::Material>& material)
+            const MeshHandleDescriptor& descriptor, const Data::Instance<RPI::Material>& material)
         {
-            Render::MaterialAssignmentMap materials;
-            Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
-            defaultMaterial.m_materialInstance = material;
+            Render::CustomMaterialMap materials;
+            if (material)
+            {
+                materials[AZ::Render::DefaultCustomMaterialId] = { material };
+            }
 
             return AcquireMesh(descriptor, materials);
         }
@@ -362,8 +366,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                MeshHandle clone = AcquireMesh(meshHandle->m_descriptor, meshHandle->m_materialAssignments);
-                return clone;
+                return AcquireMesh(meshHandle->m_descriptor, meshHandle->m_customMaterials);
             }
             return MeshFeatureProcessor::MeshHandle();
         }
@@ -402,16 +405,14 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
+        void MeshFeatureProcessor::SetCustomMaterials(const MeshHandle& meshHandle, const Data::Instance<RPI::Material>& material)
         {
-            Render::MaterialAssignmentMap materials;
-            Render::MaterialAssignment& defaultMaterial = materials[AZ::Render::DefaultMaterialAssignmentId];
-            defaultMaterial.m_materialInstance = material;
-
-            return SetMaterialAssignmentMap(meshHandle, materials);
+            Render::CustomMaterialMap materials;
+            materials[AZ::Render::DefaultCustomMaterialId] = { material };
+            return SetCustomMaterials(meshHandle, materials);
         }
 
-        void MeshFeatureProcessor::SetMaterialAssignmentMap(const MeshHandle& meshHandle, const MaterialAssignmentMap& materials)
+        void MeshFeatureProcessor::SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials)
         {
             if (meshHandle.IsValid())
             {
@@ -419,23 +420,21 @@ namespace AZ
                 {
                     Data::Instance<RPI::Model> model = meshHandle->m_model;
                     meshHandle->DeInit(m_rayTracingFeatureProcessor);
-                    meshHandle->m_materialAssignments = materials;
+                    meshHandle->m_customMaterials = materials;
                     meshHandle->QueueInit(model);
                 }
                 else
                 {
-                    meshHandle->m_materialAssignments = materials;
+                    meshHandle->m_customMaterials = materials;
                 }
-
-                meshHandle->UpdateMaterialChangeIds();
 
                 meshHandle->m_objectSrgNeedsUpdate = true;
             }
         }
 
-        const MaterialAssignmentMap& MeshFeatureProcessor::GetMaterialAssignmentMap(const MeshHandle& meshHandle) const
+        const CustomMaterialMap& MeshFeatureProcessor::GetCustomMaterials(const MeshHandle& meshHandle) const
         {
-            return meshHandle.IsValid() ? meshHandle->m_materialAssignments : DefaultMaterialAssignmentMap;
+            return meshHandle.IsValid() ? meshHandle->m_customMaterials : DefaultCustomMaterialMap;
         }
 
         void MeshFeatureProcessor::ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler)
@@ -579,7 +578,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
+                meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps = excludeFromReflectionCubeMaps;
                 if (excludeFromReflectionCubeMaps)
                 {
                     meshHandle->m_cullable.m_cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
@@ -589,6 +588,15 @@ namespace AZ
                     meshHandle->m_cullable.m_cullData.m_hideFlags &= ~RPI::View::UsageReflectiveCubeMap;
                 }
             }
+        }
+
+        bool MeshFeatureProcessor::GetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle) const
+        {
+            if (meshHandle.IsValid())
+            {
+                return meshHandle->m_descriptor.m_excludeFromReflectionCubeMaps;
+            }
+            return false;
         }
 
         void MeshFeatureProcessor::SetRayTracingEnabled(const MeshHandle& meshHandle, bool rayTracingEnabled)
@@ -675,6 +683,14 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::SetRayTracingDirty(const MeshHandle& meshHandle)
+        {
+            if (meshHandle.IsValid())
+            {
+                meshHandle->m_needsSetRayTracingData = true;
+            }
+        }
+
         RHI::Ptr<MeshFeatureProcessor::FlagRegistry> MeshFeatureProcessor::GetShaderOptionFlagRegistry()
         {
             if (m_flagRegistry == nullptr)
@@ -697,12 +713,23 @@ namespace AZ
 
         void MeshFeatureProcessor::UpdateMeshReflectionProbes()
         {
-            // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_modelData)
             {
+                // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
                 if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
+                }
+
+                // update the raytracing reflection probe data if necessary
+                RayTracingFeatureProcessor::Mesh::ReflectionProbe reflectionProbe;
+                bool currentHasRayTracingReflectionProbe = meshInstance.m_hasRayTracingReflectionProbe;
+                meshInstance.SetRayTracingReflectionProbeData(m_transformService, m_reflectionProbeFeatureProcessor, reflectionProbe);
+
+                if (meshInstance.m_hasRayTracingReflectionProbe ||
+                    (currentHasRayTracingReflectionProbe != meshInstance.m_hasRayTracingReflectionProbe))
+                {
+                    m_rayTracingFeatureProcessor->SetMeshReflectionProbe(meshInstance.m_rayTracingUuid, reflectionProbe);
                 }
             }
         }
@@ -924,20 +951,10 @@ namespace AZ
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
 
-            for (const auto& materialAssignment : m_materialAssignments)
-            {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
-                {
-                    MaterialAssignmentNotificationBus::MultiHandler::BusDisconnect(materialInstance->GetAssetId());
-                }
-            }
-
             RemoveRayTracingData(rayTracingFeatureProcessor);
 
             m_drawPacketListsByLod.clear();
-            m_materialAssignments.clear();
-            m_materialChangeIds.clear();
+            m_customMaterials.clear();
             m_objectSrgList = {};
             m_model = {};
         }
@@ -966,15 +983,6 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            for (const auto& materialAssignment : m_materialAssignments)
-            {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
-                {
-                    MaterialAssignmentNotificationBus::MultiHandler::BusConnect(materialInstance->GetAssetId());
-                }
-            }
-
             if (m_visible && m_descriptor.m_isRayTracingEnabled)
             {
                 m_needsSetRayTracingData = true;
@@ -1001,15 +1009,10 @@ namespace AZ
             {
                 const RPI::ModelLod::Mesh& mesh = modelLod.GetMeshes()[meshIndex];
 
-                Data::Instance<RPI::Material> material = mesh.m_material;
-
-                // Determine if there is a material override specified for this sub mesh
-                const MaterialAssignmentId materialAssignmentId(modelLodIndex, mesh.m_materialSlotStableId);
-                const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
-                if (materialAssignment.m_materialInstance.get())
-                {
-                    material = materialAssignment.m_materialInstance;
-                }
+                // Determine if there is a custom material specified for this submission
+                const CustomMaterialId customMaterialId(aznumeric_cast<AZ::u64>(modelLodIndex), mesh.m_materialSlotStableId);
+                const auto& customMaterialInfo = GetCustomMaterialWithFallback(customMaterialId);
+                const auto& material = customMaterialInfo.m_material ? customMaterialInfo.m_material : mesh.m_material;
 
                 if (!material)
                 {
@@ -1050,7 +1053,7 @@ namespace AZ
                 }
 
                 // setup the mesh draw packet
-                RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, materialAssignment.m_matModUvOverrides);
+                RPI::MeshDrawPacket drawPacket(modelLod, meshIndex, material, meshObjectSrg, customMaterialInfo.m_uvMapping);
 
                 // set the shader option to select forward pass IBL specular if necessary
                 if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
@@ -1156,14 +1159,9 @@ namespace AZ
                 const RPI::ModelLod::Mesh& mesh = modelLod->GetMeshes()[meshIndex];
 
                 // retrieve the material
-                Data::Instance<RPI::Material> material = mesh.m_material;
-
-                const MaterialAssignmentId materialAssignmentId(rayTracingLod, mesh.m_materialSlotStableId);
-                const MaterialAssignment& materialAssignment = GetMaterialAssignmentFromMapWithFallback(m_materialAssignments, materialAssignmentId);
-                if (materialAssignment.m_materialInstance.get())
-                {
-                    material = materialAssignment.m_materialInstance;
-                }
+                const CustomMaterialId customMaterialId(rayTracingLod, mesh.m_materialSlotStableId);
+                const auto& customMaterialInfo = GetCustomMaterialWithFallback(customMaterialId);
+                const auto& material = customMaterialInfo.m_material ? customMaterialInfo.m_material : mesh.m_material;
 
                 if (!material)
                 {
@@ -1179,7 +1177,7 @@ namespace AZ
                     nullptr,
                     shaderInputContract,
                     meshIndex,
-                    materialAssignment.m_matModUvOverrides,
+                    customMaterialInfo.m_uvMapping,
                     material->GetAsset()->GetMaterialTypeAsset()->GetUvNameMap());
                 AZ_Assert(result, "Failed to retrieve mesh stream buffer views");
 
@@ -1364,10 +1362,18 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
-            AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+            // setup the RayTracing Mesh
+            RayTracingFeatureProcessor::Mesh rayTracingMesh;
+            rayTracingMesh.m_assetId = m_model->GetModelAsset()->GetId();
+            rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+            rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
-            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
+            // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+            SetRayTracingReflectionProbeData(transformServiceFeatureProcessor, reflectionProbeFeatureProcessor, rayTracingMesh.m_reflectionProbe);
+
+            // add the mesh
+            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, rayTracingMesh, subMeshes);
             m_needsSetRayTracingData = false;
         }
 
@@ -1448,23 +1454,8 @@ namespace AZ
                         // characterisation of the full material.
                         Color avgColor = baseColorStreamingImg->GetAverageColor();
 
-                        // We do a simple 'multiply' blend with the base color for now. Warn
-                        // the user if something else was intended.
-                        propertyIndex = material->FindPropertyIndex(s_baseColor_textureBlendMode_Name);
-                        if (propertyIndex.IsValid())
-                        {
-                            AZ::Name textureBlendMode = material->GetMaterialPropertiesLayout()
-                                     ->GetPropertyDescriptor(propertyIndex)
-                                     ->GetEnumName(material->GetPropertyValue<uint32_t>(propertyIndex));
-                            if (textureBlendMode != s_Multiply_Name)
-                            {
-                                AZ_Warning("MeshFeatureProcessor", false, "textureBlendMode '%s' is not "
-                                        "yet supported when requesting BaseColor irradiance source, "
-                                        "using 'Multiply' for deriving the irradiance color.",
-                                        textureBlendMode.GetCStr());
-                            }
-                        }
-                        // 'Multiply' blend mode:
+                        // We do a simple 'multiply' blend with the base color
+                        // Note: other blend modes are currently not supported
                         subMesh.m_irradianceColor = avgColor * subMesh.m_baseColor;
                     }
                     else
@@ -1514,6 +1505,34 @@ namespace AZ
             }
 
             subMesh.m_irradianceColor.SetA(opacity);
+        }
+
+        void ModelDataInstance::SetRayTracingReflectionProbeData(
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor,
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+            RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe)
+        {
+            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+
+            // retrieve reflection probes
+            Aabb aabbWS = m_aabb;
+            aabbWS.ApplyTransform(transform);
+
+            ReflectionProbeHandleVector reflectionProbeHandles;
+            reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
+
+            m_hasRayTracingReflectionProbe = !reflectionProbeHandles.empty();
+            if (m_hasRayTracingReflectionProbe)
+            {
+                // take the last handle from the list, which will be the smallest (most influential) probe
+                ReflectionProbeHandle handle = reflectionProbeHandles.back();
+                reflectionProbe.m_modelToWorld = reflectionProbeFeatureProcessor->GetTransform(handle);
+                reflectionProbe.m_outerObbHalfLengths = reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_innerObbHalfLengths = reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_useParallaxCorrection = reflectionProbeFeatureProcessor->GetUseParallaxCorrection(handle);
+                reflectionProbe.m_exposure = reflectionProbeFeatureProcessor->GetRenderExposure(handle);
+                reflectionProbe.m_reflectionProbeCubeMap = reflectionProbeFeatureProcessor->GetCubeMap(handle);
+            }
         }
 
         void ModelDataInstance::RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
@@ -1639,7 +1658,7 @@ namespace AZ
             }
 
             cullData.m_hideFlags = RPI::View::UsageNone;
-            if (m_excludeFromReflectionCubeMaps)
+            if (m_descriptor.m_excludeFromReflectionCubeMaps)
             {
                 cullData.m_hideFlags |= RPI::View::UsageReflectiveCubeMap;
             }
@@ -1786,56 +1805,17 @@ namespace AZ
             m_cullable.m_isHidden = !isVisible;
         }
 
-        void ModelDataInstance::UpdateMaterialChangeIds()
+        CustomMaterialInfo ModelDataInstance::GetCustomMaterialWithFallback(const CustomMaterialId& id) const
         {
-            // update the material changeId list with the current material assignments
-            m_materialChangeIds.clear();
-
-            for (const auto& materialAssignment : m_materialAssignments)
+            const CustomMaterialId ignoreLodId(DefaultCustomMaterialLodIndex, id.second);
+            for (const auto& currentId : { id, ignoreLodId, DefaultCustomMaterialId })
             {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-                if (materialInstance.get())
+                if (auto itr = m_customMaterials.find(currentId); itr != m_customMaterials.end() && itr->second.m_material)
                 {
-                    m_materialChangeIds[materialInstance] = materialInstance->GetCurrentChangeId();
+                    return itr->second;
                 }
             }
-        }
-
-        bool ModelDataInstance::CheckForMaterialChanges() const
-        {
-            // check for the same number of materials
-            if (m_materialChangeIds.size() != m_materialAssignments.size())
-            {
-                return true;
-            }
-
-            // check for material changes using the changeId
-            for (const auto& materialAssignment : m_materialAssignments)
-            {
-                const AZ::Data::Instance<RPI::Material>& materialInstance = materialAssignment.second.m_materialInstance;
-
-                MaterialChangeIdMap::const_iterator it = m_materialChangeIds.find(materialInstance);
-                if (it == m_materialChangeIds.end() || it->second != materialInstance->GetCurrentChangeId())
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        void ModelDataInstance::OnRebuildMaterialInstance()
-        {
-            if (m_visible && m_descriptor.m_isRayTracingEnabled)
-            {
-                if (CheckForMaterialChanges())
-                {
-                    m_needsSetRayTracingData = true;
-
-                    // update the material changeId list with the latest materials
-                    UpdateMaterialChangeIds();
-                }
-            }
+            return CustomMaterialInfo{};
         }
     } // namespace Render
 } // namespace AZ

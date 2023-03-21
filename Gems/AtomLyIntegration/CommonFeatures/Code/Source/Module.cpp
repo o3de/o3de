@@ -21,6 +21,7 @@
 #include <Material/MaterialComponent.h>
 #include <Mesh/MeshComponent.h>
 #include <ReflectionProbe/ReflectionProbeComponent.h>
+#include <SpecularReflections/SpecularReflectionsComponent.h>
 #include <OcclusionCullingPlane/OcclusionCullingPlaneComponent.h>
 #include <PostProcess/PostFxLayerComponent.h>
 #include <PostProcess/Bloom/BloomComponent.h>
@@ -57,6 +58,7 @@
 #include <Mesh/EditorMeshComponent.h>
 #include <Mesh/EditorMeshSystemComponent.h>
 #include <ReflectionProbe/EditorReflectionProbeComponent.h>
+#include <SpecularReflections/EditorSpecularReflectionsComponent.h>
 #include <OcclusionCullingPlane/EditorOcclusionCullingPlaneComponent.h>
 #include <PostProcess/EditorPostFxLayerComponent.h>
 #include <PostProcess/Bloom/EditorBloomComponent.h>
@@ -88,7 +90,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AtomLyIntegrationCommonFeaturesModule, "{E6FF4862-9355-4B23-AE00-B936F0C6E6C9}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(AtomLyIntegrationCommonFeaturesModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AtomLyIntegrationCommonFeaturesModule, AZ::SystemAllocator);
 
             AtomLyIntegrationCommonFeaturesModule()
                 : AZ::Module()
@@ -114,6 +116,7 @@ namespace AZ
                         PhysicalSkyComponent::CreateDescriptor(),
                         PostFxLayerComponent::CreateDescriptor(),
                         ReflectionProbeComponent::CreateDescriptor(),
+                        SpecularReflectionsComponent::CreateDescriptor(),
                         RenderDebugComponent::CreateDescriptor(),
                         RadiusWeightModifierComponent::CreateDescriptor(),
                         ShapeWeightModifierComponent::CreateDescriptor(),
@@ -150,6 +153,7 @@ namespace AZ
                         EditorPhysicalSkyComponent::CreateDescriptor(),
                         EditorPostFxLayerComponent::CreateDescriptor(),
                         EditorReflectionProbeComponent::CreateDescriptor(),
+                        EditorSpecularReflectionsComponent::CreateDescriptor(),
                         RenderDebugEditorComponent::CreateDescriptor(),
                         EditorRadiusWeightModifierComponent::CreateDescriptor(),
                         EditorShapeWeightModifierComponent::CreateDescriptor(),

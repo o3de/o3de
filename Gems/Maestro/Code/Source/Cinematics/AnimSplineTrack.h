@@ -6,10 +6,6 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_CRYMOVIE_ANIMSPLINETRACK_H
-#define CRYINCLUDE_CRYMOVIE_ANIMSPLINETRACK_H
-
 #pragma once
 
 #include "IMovieSystem.h"
@@ -25,7 +21,7 @@ class TAnimSplineTrack
     : public IAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(TAnimSplineTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(TAnimSplineTrack, AZ::SystemAllocator);
     AZ_RTTI((TAnimSplineTrack, "{6D72D5F6-61A7-43D4-9104-8F7DCCC19E10}", ValueType), IAnimTrack);
 
     static constexpr void DeprecatedTypeNameVisitor(
@@ -60,9 +56,9 @@ public:
     {
         m_spline.reset();
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
-    // for intrusive_ptr support 
+    // for intrusive_ptr support
     void add_ref() override;
     void release() override;
     //////////////////////////////////////////////////////////////////////////
@@ -372,9 +368,9 @@ public:
         return false;
     }
 
-    unsigned int GetId() const override 
-    { 
-        return m_id; 
+    unsigned int GetId() const override
+    {
+        return m_id;
     }
 
     void SetId(unsigned int id) override
@@ -425,7 +421,6 @@ private:
 
     unsigned int m_id = 0;
 
-    static bool VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement) { return false; };
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -670,8 +665,46 @@ inline bool TAnimSplineTrack<T>::SerializeSelection(XmlNodeRef& xmlNode, bool bL
     return true;
 }
 
-// This is the current main.
-#include "AnimSplineTrack_Vec2Specialization.h"
-typedef TAnimSplineTrack<Vec2>      C2DSplineTrack;
+template <>
+TAnimSplineTrack<Vec2>::TAnimSplineTrack();
+template <>
+void TAnimSplineTrack<Vec2>::GetValue(float time, float& value, bool applyMultiplier);
+template <>
+EAnimCurveType TAnimSplineTrack<Vec2>::GetCurveType();
+template <>
+AnimValueType TAnimSplineTrack<Vec2>::GetValueType();
+template <>
+void TAnimSplineTrack<Vec2>::SetValue(float time, const float& value, bool bDefault, bool applyMultiplier);
+template <>
+void TAnimSplineTrack<Vec2>::GetKey(int index, IKey* key) const;
 
-#endif // CRYINCLUDE_CRYMOVIE_ANIMSPLINETRACK_H
+template <>
+void TAnimSplineTrack<Vec2>::SetKey(int index, IKey* key);
+
+//! Create key at given time, and return its index.
+template <>
+int TAnimSplineTrack<Vec2>::CreateKey(float time);
+
+template <>
+int TAnimSplineTrack<Vec2>::CopyKey(IAnimTrack* pFromTrack, int nFromKey);
+
+/// @deprecated Serialization for Sequence data in Component Entity Sequences now occurs through AZ::SerializeContext and the Sequence Component
+template <>
+bool TAnimSplineTrack<Vec2>::Serialize(XmlNodeRef& xmlNode, bool bLoading, bool bLoadEmptyTracks);
+
+template <>
+bool TAnimSplineTrack<Vec2>::SerializeSelection(XmlNodeRef& xmlNode, bool bLoading, bool bCopySelected, float fTimeOffset);
+
+template<>
+void TAnimSplineTrack<Vec2>::GetKeyInfo(int index, const char*& description, float& duration);
+
+template <>
+void TAnimSplineTrack<Vec2>::add_ref();
+
+template <>
+void TAnimSplineTrack<Vec2>::release();
+
+template <>
+void TAnimSplineTrack<Vec2>::Reflect(AZ::ReflectContext* context);
+
+using C2DSplineTrack = TAnimSplineTrack<Vec2>;

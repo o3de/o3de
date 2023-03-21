@@ -13,6 +13,8 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 
+DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(AzToolsFramework::Components::EditorComponentDescriptor, AZ::ComponentDescriptorBusTraits);
+
 namespace AzToolsFramework
 {
     namespace Components
@@ -47,11 +49,23 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
+        void EditorComponentBase::SetEntity(AZ::Entity* entity)
+        {
+            Component::SetEntity(entity);
+
+            if (entity && m_alias.empty())
+            {
+                AZ_Assert(GetId() != AZ::InvalidComponentId, "ComponentId is invalid.");
+                m_alias = AZStd::string::format("Component_[%llu]", GetId());
+            }
+        }
+
         void EditorComponentBase::SetDirty()
         {
             if (GetEntity())
             {
-                EBUS_EVENT(AzToolsFramework::ToolsApplicationRequests::Bus, AddDirtyEntity, GetEntity()->GetId());
+                AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
+                    &AzToolsFramework::ToolsApplicationRequests::Bus::Events::AddDirtyEntity, GetEntity()->GetId());
             }
             else
             {
@@ -92,6 +106,16 @@ namespace AzToolsFramework
         bool EditorComponentBase::IsSelected() const
         {
             return AzToolsFramework::IsSelected(GetEntityId());
+        }
+
+        void EditorComponentBase::SetSerializedIdentifier(AZStd::string alias)
+        {
+            m_alias = alias;
+        }
+
+        AZStd::string EditorComponentBase::GetSerializedIdentifier() const
+        {
+            return m_alias;
         }
     }
 } // namespace AzToolsFramework

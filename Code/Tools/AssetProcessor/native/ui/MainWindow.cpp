@@ -30,6 +30,7 @@
 #include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleManager.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
 #include <AzQtComponents/Utilities/DesktopUtilities.h>
@@ -239,7 +240,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Logs"));
     ui->buttonList->addTab(QStringLiteral("Connections"));
     ui->buttonList->addTab(QStringLiteral("Builders"));
-    ui->buttonList->addTab(QStringLiteral("Tools"));
+    ui->buttonList->addTab(QStringLiteral("Settings"));
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
@@ -590,19 +591,31 @@ void MainWindow::Activate()
         &BuilderData::OnCreateJobsDurationChanged);
     connect(m_builderData, &BuilderData::DurationChanged, m_builderInfoMetrics, &BuilderInfoMetricsModel::OnDurationChanged);
 
-    // Tools tab:
+    // Settings tab:
     connect(ui->fullScanButton, &QPushButton::clicked, this, &MainWindow::OnRescanButtonClicked);
+
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->modtimeSkippingCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->disableStartupScanCheckBox);
+    AzQtComponents::CheckBox::applyToggleSwitchStyle(ui->debugOutputCheckBox);
+
+    const auto apm = m_guiApplicationManager->GetAssetProcessorManager();
 
     // Note: the settings can't be used in ::MainWindow(), because the application name
     // hasn't been set up and therefore the settings will load from somewhere different than later
     // on.
+    // Read the current settings to give command line options a chance to override the default
     QSettings settings;
     settings.beginGroup("Options");
-    bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool();
-    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool();
+    bool zeroAnalysisModeFromSettings = settings.value("EnableZeroAnalysis", QVariant(true)).toBool() || apm->GetModtimeSkippingFeatureEnabled();
+    bool enableBuilderDebugFlag = settings.value("EnableBuilderDebugFlag", QVariant(false)).toBool() || apm->GetBuilderDebugFlag();
+    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool() || apm->GetInitialScanSkippingFeatureEnabled();
     settings.endGroup();
 
     // zero analysis flag
+    apm->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
+    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
+
+    // Connect after updating settings to avoid saving a command line override
     QObject::connect(ui->modtimeSkippingCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
     {
@@ -614,10 +627,10 @@ void MainWindow::Activate()
         settingsInCallback.endGroup();
     });
 
-    m_guiApplicationManager->GetAssetProcessorManager()->SetEnableModtimeSkippingFeature(zeroAnalysisModeFromSettings);
-    ui->modtimeSkippingCheckBox->setCheckState(zeroAnalysisModeFromSettings ? Qt::Checked : Qt::Unchecked);
-
     // output debug flag
+    apm->SetBuilderDebugFlag(enableBuilderDebugFlag);
+    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+
     QObject::connect(ui->debugOutputCheckBox, &QCheckBox::stateChanged, this,
         [this](int newCheckState)
         {
@@ -629,14 +642,10 @@ void MainWindow::Activate()
             settingsInCallback.endGroup();
         });
 
-    m_guiApplicationManager->GetAssetProcessorManager()->SetBuilderDebugFlag(enableBuilderDebugFlag);
-    ui->debugOutputCheckBox->setCheckState(enableBuilderDebugFlag ? Qt::Checked : Qt::Unchecked);
+    apm->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
+    ui->disableStartupScanCheckBox->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
-    settings.beginGroup("Options");
-    bool initialScanSkippingEnabled = settings.value("SkipInitialScan", QVariant(false)).toBool();
-    settings.endGroup();
-
-    QObject::connect(ui->skipinitialdatabaseCheck, &QCheckBox::stateChanged, this,
+    QObject::connect(ui->disableStartupScanCheckBox, &QCheckBox::stateChanged, this,
         [](int newCheckState)
     {
         bool newOption = newCheckState == Qt::Checked ? true : false;
@@ -647,9 +656,6 @@ void MainWindow::Activate()
         settingsInCallback.setValue("SkipInitialScan", QVariant(newOption));
         settingsInCallback.endGroup();
     });
-
-    m_guiApplicationManager->GetAssetProcessorManager()->SetInitialScanSkippingFeature(initialScanSkippingEnabled);
-    ui->skipinitialdatabaseCheck->setCheckState(initialScanSkippingEnabled ? Qt::Checked : Qt::Unchecked);
 
     // Shared Cache tab:
     SetupAssetServerTab();
@@ -681,7 +687,7 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
         ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
         ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToString<QString>());
+        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToFixedString().c_str());
     }
 }
 

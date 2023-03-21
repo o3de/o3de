@@ -20,7 +20,7 @@ namespace ScriptCanvasEditor
         , public ScriptCanvas::GraphVariableManagerNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorGraphVariableItemModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorGraphVariableItemModel, AZ::SystemAllocator);
         EditorGraphVariableItemModel() = default;
 
         void Activate(const ScriptCanvas::ScriptCanvasId& executionId);

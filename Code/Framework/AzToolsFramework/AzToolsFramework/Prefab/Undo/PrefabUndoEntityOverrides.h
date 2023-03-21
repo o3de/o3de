@@ -22,7 +22,7 @@ namespace AzToolsFramework::Prefab
     {
     public:
         AZ_RTTI(PrefabUndoEntityOverrides, "{97F210B2-86BE-4A16-9B3E-6ADAFD9BCDA3}", UndoSystem::URSequencePoint);
-        AZ_CLASS_ALLOCATOR(PrefabUndoEntityOverrides, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PrefabUndoEntityOverrides, AZ::SystemAllocator);
 
         explicit PrefabUndoEntityOverrides(const AZStd::string& undoOperationName);
 

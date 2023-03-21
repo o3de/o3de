@@ -46,7 +46,7 @@ namespace AZ
                 : public Data::InstanceData
             {
             public:
-                AZ_CLASS_ALLOCATOR(HairDispatchItem, AZ::SystemAllocator, 0);
+                AZ_CLASS_ALLOCATOR(HairDispatchItem, AZ::SystemAllocator);
 
                 HairDispatchItem() = default;
 

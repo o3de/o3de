@@ -29,7 +29,7 @@ namespace ScriptEvents
         {
         public:
             AZ_RTTI(ScriptEventRegistration, "{B8801400-65CD-49D5-B797-58E56D705A0A}");
-            AZ_CLASS_ALLOCATOR(ScriptEventRegistration, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptEventRegistration, AZ::SystemAllocator);
 
             AZ::AttributeArray* m_currentAttributes;
 

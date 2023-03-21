@@ -23,6 +23,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <Document/MaterialGraphCompiler.h>
 #include <GraphModel/Model/DataType.h>
 #include <MaterialCanvasApplication.h>
 #include <Window/MaterialCanvasMainWindow.h>
@@ -113,13 +114,12 @@ namespace MaterialCanvas
     void MaterialCanvasApplication::Destroy()
     {
         // Save all of the graph view configuration settings to the settings registry.
-        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/MaterialCanvas/GraphViewSettings", m_graphViewSettingsPtr);
+        AtomToolsFramework::SetSettingsObject("/O3DE/Atom/GraphView/ViewSettings", m_graphViewSettingsPtr);
 
         m_graphViewSettingsPtr.reset();
         m_window.reset();
         m_viewportSettingsSystem.reset();
         m_graphContext.reset();
-        m_graphCompilerManager.reset();
         m_graphTemplateFileDataCache.reset();
         m_dynamicNodeManager.reset();
 
@@ -225,7 +225,7 @@ namespace MaterialCanvas
     {
         // This configuration data is passed through the main window and graph views to setup translation data, styling, and node palettes
         m_graphViewSettingsPtr = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/MaterialCanvas/GraphViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
+            "/O3DE/Atom/GraphView/ViewSettings", AZStd::make_shared<AtomToolsFramework::GraphViewSettings>());
 
         // Initialize the application specific graph view settings that are not serialized.
         m_graphViewSettingsPtr->m_translationPath = "@products@/materialcanvas/translation/materialcanvas_en_us.qm";
@@ -242,7 +242,7 @@ namespace MaterialCanvas
 
         // Initialize the default group preset names and colors needed by the graph canvas view to create node groups.
         const AZStd::map<AZStd::string, AZ::Color> defaultGroupPresets = AtomToolsFramework::GetSettingsObject(
-            "/O3DE/Atom/MaterialCanvas/GraphViewSettings/DefaultGroupPresets",
+            "/O3DE/Atom/GraphView/DefaultGroupPresets",
             AZStd::map<AZStd::string, AZ::Color>{ { "Logic", AZ::Color(0.188f, 0.972f, 0.243f, 1.0f) },
                                                   { "Function", AZ::Color(0.396f, 0.788f, 0.788f, 1.0f) },
                                                   { "Output", AZ::Color(0.866f, 0.498f, 0.427f, 1.0f) },
@@ -254,7 +254,6 @@ namespace MaterialCanvas
 
     void MaterialCanvasApplication::InitMaterialGraphDocumentType()
     {
-        m_graphCompilerManager.reset(aznew AtomToolsFramework::GraphCompilerManager(m_toolId));
         m_graphTemplateFileDataCache.reset(aznew AtomToolsFramework::GraphTemplateFileDataCache(m_toolId));
 
         // Acquiring default Material Canvas document type info so that it can be customized before registration
@@ -265,17 +264,14 @@ namespace MaterialCanvas
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/MaterialCanvas/DefaultMaterialGraphTemplate",
                 "@gemroot:MaterialCanvas@/Assets/MaterialCanvas/GraphData/blank_graph.materialgraphtemplate")),
-            m_graphContext);
+            m_graphContext,
+            [toolId = m_toolId](){ return AZStd::make_shared<MaterialGraphCompiler>(toolId); });
 
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-
-            // Create and register a material graph compiler for this document with the graph compiler manager. The manager will monitor
-            // document notifications, process queued graph compiler requests, and report status of generated files from the AP.
-            m_graphCompilerManager->RegisterGraphCompiler(documentId, aznew MaterialGraphCompiler(toolId, documentId));
             return true;
         };
 

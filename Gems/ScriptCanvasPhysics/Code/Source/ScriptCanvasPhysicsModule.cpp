@@ -17,7 +17,7 @@ namespace ScriptCanvasPhysics
     {
     public:
         AZ_RTTI(ScriptCanvasPhysicsModule, "{6B4D5464-DAA5-439D-A0D9-22311608C610}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptCanvasPhysicsModule, AZ::SystemAllocator);
 
         ScriptCanvasPhysicsModule()
             : AZ::Module()

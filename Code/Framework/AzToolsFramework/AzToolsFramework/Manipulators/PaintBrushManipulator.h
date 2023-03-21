@@ -13,6 +13,8 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzFramework/PaintBrush/PaintBrush.h>
 #include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <AzToolsFramework/API/ToolsApplicationAPI.h>
+#include <AzToolsFramework/ViewportSelection/EditorPickEntitySelection.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettings.h>
 #include <AzToolsFramework/PaintBrush/GlobalPaintBrushSettingsNotificationBus.h>
 #include <AzToolsFramework/Viewport/ActionBus.h>
@@ -33,6 +35,7 @@ namespace AzToolsFramework
         : public BaseManipulator
         , public ManipulatorSpace
         , protected GlobalPaintBrushSettingsNotificationBus::Handler
+        , private AzToolsFramework::EditorPickModeNotificationBus::Handler
     {
         //! Private constructor.
         PaintBrushManipulator(
@@ -40,7 +43,7 @@ namespace AzToolsFramework
 
     public:
         AZ_RTTI(PaintBrushManipulator, "{0621CB58-21FD-474A-A296-5B1192E714E7}", BaseManipulator);
-        AZ_CLASS_ALLOCATOR(PaintBrushManipulator, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PaintBrushManipulator, AZ::SystemAllocator);
 
         PaintBrushManipulator() = delete;
         PaintBrushManipulator(const PaintBrushManipulator&) = delete;
@@ -80,6 +83,9 @@ namespace AzToolsFramework
         static void AdjustHardnessPercent(float hardnessPercentDelta);
 
     private:
+        void OnEntityPickModeStarted() override;
+        void OnEntityPickModeStopped() override;
+
         void InvalidateImpl() override;
 
         //! Create the manipulator view(s) for the paintbrush.
@@ -106,5 +112,7 @@ namespace AzToolsFramework
         AZ::EntityComponentIdPair m_ownerEntityComponentId;
 
         AzFramework::PaintBrush m_paintBrush;
+
+        AZStd::optional<EditorPickEntitySelectionHelper> m_pickEntitySelectionMode;
     };
 } // namespace AzToolsFramework

@@ -12,6 +12,7 @@
 // AZ
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/std/smart_ptr/make_shared.h>
 
 // Graph Model
 #include <GraphModel/Integration/Helpers.h>
@@ -65,15 +66,17 @@ namespace LandscapeCanvas
     {
         GraphModel::DataTypePtr gradientDataType = GetGraphContext()->GetDataType(LandscapeCanvasDataTypeEnum::Gradient);
 
-        GraphModel::ExtendableSlotConfiguration slotConfig;
-        slotConfig.m_addButtonLabel = "Add Gradient";
-        slotConfig.m_addButtonTooltip = "Add a gradient height provider";
-        RegisterSlot(GraphModel::SlotDefinition::CreateInputData(
+        RegisterSlot(AZStd::make_shared<GraphModel::SlotDefinition>(
+            GraphModel::SlotDirection::Input,
+            GraphModel::SlotType::Data,
             INBOUND_GRADIENT_SLOT_ID,
             INBOUND_GRADIENT_SLOT_LABEL.toUtf8().constData(),
-            { gradientDataType },
-            AZStd::any(AZ::EntityId()),
             INBOUND_GRADIENT_INPUT_SLOT_DESCRIPTION.toUtf8().constData(),
-            &slotConfig));
+            GraphModel::DataTypeList{ gradientDataType },
+            AZStd::any(AZ::EntityId()),
+            1,
+            100,
+            "Add Gradient",
+            "Add a gradient height provider"));
     }
 } // namespace LandscapeCanvas

@@ -12,7 +12,7 @@ namespace AzToolsFramework
 {
     namespace Components
     {
-        AZ_CLASS_ALLOCATOR_IMPL(JsonTransformComponentSerializer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR_IMPL(JsonTransformComponentSerializer, AZ::SystemAllocator);
 
         AZ::JsonSerializationResult::Result JsonTransformComponentSerializer::Load(
             void* outputValue, [[maybe_unused]] const AZ::Uuid& outputValueTypeId, const rapidjson::Value& inputValue, AZ::JsonDeserializerContext& context)

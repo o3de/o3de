@@ -88,7 +88,11 @@ def TestNodePaletteHappyPathCanSelectNode():
     general.close_pane(SCRIPT_CANVAS_UI)
 
 
-if __name__ == "__periodic__":
-    from editor_python_test_tools.utils import Report
+if __name__ == "__main__":
+    import ImportPathHelper as imports
+
+    imports.init()
+    from utils import Report
+
     Report.start_test(TestNodePaletteHappyPathCanSelectNode)
     

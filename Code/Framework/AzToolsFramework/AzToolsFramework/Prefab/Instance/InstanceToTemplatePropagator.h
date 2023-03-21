@@ -23,7 +23,7 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(InstanceToTemplatePropagator, "{526F7B55-84F9-4EA9-8180-19C5DBCD0103}", InstanceToTemplateInterface);
-            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator);
 
             void RegisterInstanceToTemplateInterface();
             void UnregisterInstanceToTemplateInterface();

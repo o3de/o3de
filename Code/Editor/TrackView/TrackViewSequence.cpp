@@ -1569,7 +1569,7 @@ CTrackViewSequence* CTrackViewSequence::LookUpSequenceByEntityId(const AZ::Entit
     CTrackViewSequence* sequence = nullptr;
 
     IEditor* editor = nullptr;
-    EBUS_EVENT_RESULT(editor, AzToolsFramework::EditorRequests::Bus, GetEditor);
+    AzToolsFramework::EditorRequests::Bus::BroadcastResult(editor, &AzToolsFramework::EditorRequests::Bus::Events::GetEditor);
     if (editor)
     {
         ITrackViewSequenceManager* sequenceManager = editor->GetSequenceManager();

@@ -43,10 +43,6 @@
             "Component_[8018146290632383969]": {
                 "$type": "EditorEntityIconComponent",
                 "Id": 8018146290632383969
-            },
-            "Component_[8452360690590857075]": {
-                "$type": "SelectionComponent",
-                "Id": 8452360690590857075
             }
         }
     },
@@ -95,10 +91,6 @@
                 "Component_[3047355939801335922]": {
                     "$type": "EditorEntityIconComponent",
                     "Id": 3047355939801335922
-                },
-                "Component_[3687396159953003426]": {
-                    "$type": "SelectionComponent",
-                    "Id": 3687396159953003426
                 },
                 "Component_[9432950532896492451]": {
                     "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
@@ -160,9 +152,11 @@
                     "ColliderConfiguration": {
                         "Trigger": true,
                         "InSceneQueries": false,
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },
@@ -214,14 +208,14 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 8666893775284351835
                 },
-                "Component_[8942463751737332902]": {
-                    "$type": "SelectionComponent",
-                    "Id": 8942463751737332902
-                },
                 "Component_[9707418614808762591]": {
                     "$type": "EditorBoxShapeComponent",
                     "Id": 9707418614808762591,
                     "GameView": true
+                },
+                "Component_[9963847657929568140]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 9963847657929568140
                 }
             }
         },
@@ -277,10 +271,6 @@
                     "$type": "EditorEntityIconComponent",
                     "Id": 6771629689623098442
                 },
-                "Component_[7685618063763946451]": {
-                    "$type": "SelectionComponent",
-                    "Id": 7685618063763946451
-                },
                 "Component_[8701595253904669652]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 8701595253904669652,
@@ -311,9 +301,11 @@
                             0.0,
                             0.5
                         ],
-                        "MaterialSelection": {
-                            "MaterialIds": [
-                                {}
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
                             ]
                         }
                     },

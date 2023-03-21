@@ -77,7 +77,7 @@ namespace AZ
         class CompiledTaskGraph final
         {
         public:
-            AZ_CLASS_ALLOCATOR(CompiledTaskGraph, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR(CompiledTaskGraph, SystemAllocator);
 
             CompiledTaskGraph(
                 AZStd::vector<Task>&& tasks,
@@ -119,7 +119,7 @@ namespace AZ
     class TaskExecutor final
     {
     public:
-        AZ_CLASS_ALLOCATOR(TaskExecutor, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TaskExecutor, SystemAllocator);
 
         static TaskExecutor& Instance();
 

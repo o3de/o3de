@@ -39,7 +39,7 @@ def Terrain_SupportsPhysics():
      5) Set the Reference Shape to TestEntity1
      6) Set the FastNoise gradient frequency to 0.01
      7) Set the Gradient List to TestEntity2
-     8) Set the PhysX Collider to Sphere mode
+     8) Set the PhysX Primitive Collider to Sphere mode
      9) Set the Rigid Body to start with no gravity enabled, so that it sits in place, intersecting the expected terrain
      10) Enter game mode and test if the ball detects the heightfield intersection within 3 seconds
      11) Verify there are no errors and warnings in the logs
@@ -51,6 +51,7 @@ def Terrain_SupportsPhysics():
     from editor_python_test_tools.wait_utils import PrefabWaiter
     from editor_python_test_tools.utils import TestHelper as helper
     from editor_python_test_tools.utils import Report, Tracer
+    from consts.physics import PHYSX_PRIMITIVE_COLLIDER
     import editor_python_test_tools.hydra_editor_utils as hydra
     import azlmbr.math as azmath
     import azlmbr.legacy.general as general
@@ -72,7 +73,7 @@ def Terrain_SupportsPhysics():
     # 2) Create 2 test entities, one parent at 512.0, 512.0, 50.0 and one child at the default position and add the required components
     entity1_components_to_add = ["Axis Aligned Box Shape", "Terrain Layer Spawner", "Terrain Height Gradient List", "Terrain Physics Heightfield Collider", "PhysX Heightfield Collider"]
     entity2_components_to_add = ["Shape Reference", "Gradient Transform Modifier", "FastNoise Gradient"]
-    ball_components_to_add = ["Sphere Shape", "PhysX Collider", "PhysX Rigid Body"]
+    ball_components_to_add = ["Sphere Shape", PHYSX_PRIMITIVE_COLLIDER, "PhysX Dynamic Rigid Body"]
     terrain_spawner_entity = hydra.Entity("TestEntity1")
     terrain_spawner_entity.create_entity(azmath.Vector3(512.0, 512.0, 50.0), entity1_components_to_add)
     Report.result(Tests.create_terrain_spawner_entity, terrain_spawner_entity.id.IsValid())
@@ -116,7 +117,7 @@ def Terrain_SupportsPhysics():
         editor.EditorComponentAPIBus(bus.Broadcast, 'EnableComponents', [terrain_spawner_entity.components[2]])
         PrefabWaiter.wait_for_propagation()
         
-        # 8) Set the PhysX Collider to Sphere mode
+        # 8) Set the PhysX Primitive Collider to Sphere mode
         shape = 0
         hydra.get_set_test(ball, 1, "Shape Configuration|Shape", shape)
         setShape = hydra.get_component_property_value(ball.components[1], "Shape Configuration|Shape")

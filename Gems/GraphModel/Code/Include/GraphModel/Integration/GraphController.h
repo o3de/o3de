@@ -45,9 +45,9 @@ namespace GraphModelIntegration
 
         GraphController(const GraphController&) = delete;
 
-        GraphModel::GraphPtr GetGraph() { return m_graph; }
-        const GraphModel::GraphPtr GetGraph() const { return m_graph; }
-        const AZ::EntityId GetGraphCanvasSceneId() const { return m_graphCanvasSceneId; }
+        GraphModel::GraphPtr GetGraph();
+        const GraphModel::GraphPtr GetGraph() const;
+        const AZ::EntityId GetGraphCanvasSceneId() const;
 
         ////////////////////////////////////////////////////////////////////////////////////
         // GraphModel::GraphControllerRequestBus, connections
@@ -66,14 +66,22 @@ namespace GraphModelIntegration
         void SetWrapperNodeActionString(GraphModel::NodePtr node, const char* actionString) override;
 
         GraphModel::ConnectionPtr AddConnection(GraphModel::SlotPtr sourceSlot, GraphModel::SlotPtr targetSlot) override;
-        GraphModel::ConnectionPtr AddConnectionBySlotId(GraphModel::NodePtr sourceNode, GraphModel::SlotId sourceSlotId, GraphModel::NodePtr targetNode, GraphModel::SlotId targetSlotId) override;
+
+        GraphModel::ConnectionPtr AddConnectionBySlotId(
+            GraphModel::NodePtr sourceNode,
+            const GraphModel::SlotId& sourceSlotId,
+            GraphModel::NodePtr targetNode,
+            const GraphModel::SlotId& targetSlotId) override;
+
         bool AreSlotsConnected(
             GraphModel::NodePtr sourceNode,
-            GraphModel::SlotId sourceSlotId,
+            const GraphModel::SlotId& sourceSlotId,
             GraphModel::NodePtr targetNode,
-            GraphModel::SlotId targetSlotId) const override;
+            const GraphModel::SlotId& targetSlotId) const override;
+
         bool RemoveConnection(GraphModel::ConnectionPtr connection) override;
-        GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName) override;
+
+        GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, const GraphModel::SlotName& slotName) override;
 
         GraphModel::NodePtr GetNodeById(const GraphCanvas::NodeId& nodeId) override;
         GraphModel::NodePtrList GetNodesFromGraphNodeIds(const AZStd::vector<GraphCanvas::NodeId>& nodeIds) override;
@@ -183,7 +191,10 @@ namespace GraphModelIntegration
         /// Extendable slot handlers
         void RemoveSlot(const GraphCanvas::Endpoint& endpoint) override;
         bool IsSlotRemovable(const GraphCanvas::Endpoint& endpoint) const override;
-        GraphCanvas::SlotId RequestExtension(const GraphCanvas::NodeId& nodeId, const GraphCanvas::ExtenderId& extenderId, GraphModelRequests::ExtensionRequestReason) override;
+        GraphCanvas::SlotId RequestExtension(
+            const GraphCanvas::NodeId& nodeId,
+            const GraphCanvas::ExtenderId& extenderId,
+            GraphModelRequests::ExtensionRequestReason) override;
 
         bool ShouldWrapperAcceptDrop(const GraphCanvas::NodeId& wrapperNode, const QMimeData* mimeData) const override;
         void AddWrapperDropTarget(const GraphCanvas::NodeId& wrapperNode) override;
@@ -193,8 +204,10 @@ namespace GraphModelIntegration
         // GraphCanvas::GraphModelRequestBus, node properties
 
         //! Creates a GraphCanvas::NodePropertyDisplay and a data interface for editing input values
-        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(const AZ::Uuid& dataType, const GraphCanvas::NodeId& nodeId, const GraphCanvas::SlotId& slotId) const override;
-        GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(const AZ::Crc32& propertyId, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
+        GraphCanvas::NodePropertyDisplay* CreateDataSlotPropertyDisplay(
+            const AZ::Uuid& dataType, const GraphCanvas::NodeId& nodeId, const GraphCanvas::SlotId& slotId) const override;
+        GraphCanvas::NodePropertyDisplay* CreatePropertySlotPropertyDisplay(
+            const AZ::Crc32& propertyId, const GraphCanvas::NodeId& nodeUiId, const GraphCanvas::SlotId& slotUiId) const override;
 
         //! Common implementation for CreateDataSlotPropertyDisplay and CreatePropertySlotPropertyDisplay
         GraphCanvas::NodePropertyDisplay* CreateSlotPropertyDisplay(GraphModel::SlotPtr inputSlot) const;

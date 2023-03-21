@@ -33,7 +33,7 @@ namespace AZ
             // Negative sign bit used to indicate if the light emits both directions.
             float m_invAttenuationRadiusSquared = 0.0f;
 
-            AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 0.0f };
+            AZStd::array<float, 3> m_direction = { 0.0f, 0.0f, 1.0f };
 
             float m_padding = 0.0f;
 

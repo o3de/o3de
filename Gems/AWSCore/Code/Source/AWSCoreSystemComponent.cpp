@@ -53,7 +53,6 @@ namespace AWSCore
             {
                 ec->Class<AWSCoreSystemComponent>("AWSCore", "Adds core support for working with AWS")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -137,12 +136,21 @@ namespace AWSCore
 
     void AWSCoreSystemComponent::InitAWSApi()
     {
-        AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        // Multiple different Gems might try to use the AWSNativeSDK, so make sure it only gets initialized / shutdown once
+        // by the first Gem to try using it.
+        m_ownsAwsNativeInitialization = !AWSNativeSDKInit::InitializationManager::IsInitialized();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::InitAwsApi();
+        }
     }
 
     void AWSCoreSystemComponent::ShutdownAWSApi()
     {
-        AWSNativeSDKInit::InitializationManager::Shutdown();
+        if (m_ownsAwsNativeInitialization)
+        {
+            AWSNativeSDKInit::InitializationManager::Shutdown();
+        }
     }
 
     AZ::JobContext* AWSCoreSystemComponent::GetDefaultJobContext()

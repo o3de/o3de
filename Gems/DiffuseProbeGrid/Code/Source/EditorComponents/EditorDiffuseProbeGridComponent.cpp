@@ -45,6 +45,7 @@ namespace AZ
                     ->Field("edgeBlendIbl", &EditorDiffuseProbeGridComponent::m_edgeBlendIbl)
                     ->Field("frameUpdateCount", &EditorDiffuseProbeGridComponent::m_frameUpdateCount)
                     ->Field("transparencyMode", &EditorDiffuseProbeGridComponent::m_transparencyMode)
+                    ->Field("emissiveMultiplier", &EditorDiffuseProbeGridComponent::m_emissiveMultiplier)
                     ->Field("editorMode", &EditorDiffuseProbeGridComponent::m_editorMode)
                     ->Field("runtimeMode", &EditorDiffuseProbeGridComponent::m_runtimeMode)
                     ->Field("showVisualization", &EditorDiffuseProbeGridComponent::m_showVisualization)
@@ -120,6 +121,12 @@ namespace AZ
                                 ->EnumAttribute(DiffuseProbeGridTransparencyMode::ClosestOnly, "Closest Only")
                                 ->EnumAttribute(DiffuseProbeGridTransparencyMode::None, "None")
                                 ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnTransparencyModeChanged)
+                            ->DataElement(AZ::Edit::UIHandlers::Slider, &EditorDiffuseProbeGridComponent::m_emissiveMultiplier, "Emissive Multiplier", "Multiplier for the emissive intensity")
+                                ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorDiffuseProbeGridComponent::OnEmissiveMultiplierChanged)
+                                ->Attribute(Edit::Attributes::Decimals, 1)
+                                ->Attribute(Edit::Attributes::Step, 0.1f)
+                                ->Attribute(Edit::Attributes::Min, 0.0f)
+                                ->Attribute(Edit::Attributes::Max, 10.0f)
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Visualization")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->DataElement(AZ::Edit::UIHandlers::CheckBox, &EditorDiffuseProbeGridComponent::m_showVisualization, "Show Visualization", "Show the probe grid visualization")
@@ -413,6 +420,12 @@ namespace AZ
         AZ::u32 EditorDiffuseProbeGridComponent::OnTransparencyModeChanged()
         {
             m_controller.SetTransparencyMode(m_transparencyMode);
+            return AZ::Edit::PropertyRefreshLevels::None;
+        }
+
+        AZ::u32 EditorDiffuseProbeGridComponent::OnEmissiveMultiplierChanged()
+        {
+            m_controller.SetEmissiveMultiplier(m_emissiveMultiplier);
             return AZ::Edit::PropertyRefreshLevels::None;
         }
 

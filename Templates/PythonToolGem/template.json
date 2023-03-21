@@ -51,6 +51,10 @@
             "isTemplated": true
         },
         {
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
+            "isTemplated": true
+        },
+        {
             "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
@@ -96,6 +100,10 @@
         },
         {
             "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
             "isTemplated": true
         },
         {

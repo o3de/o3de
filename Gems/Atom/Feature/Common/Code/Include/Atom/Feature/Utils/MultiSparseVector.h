@@ -23,9 +23,15 @@ namespace AZ::Render
     class MultiSparseVector
     {
     public:
+        // Elements must be at least as large as size_t because empty slots are used to hold the index of the next
+        // empty slot, which is a size_t. In the future this could be relaxed with an additional template argument
+        // that would control the index type and therefor the maximum size of the MultiSparseVector.
+        static_assert(sizeof(AZStd::tuple_element_t<0, AZStd::tuple<Ts...>>) >= sizeof(size_t),
+            "Data stored in the first element of MultiSparseVector must be at least as large as a size_t.");
 
         MultiSparseVector();
-        
+        ~MultiSparseVector();
+
         //! Reserves elements in the underlying vectors and returns the index to those elements.
         size_t Reserve();
 
@@ -77,7 +83,7 @@ namespace AZ::Render
         template <typename T>
         static void InitializeElement(size_t index, T& container)
         {
-            container.at(index) = {};
+            new (&container.at(index)) (typename T::value_type)();
         }
 
         template <typename T>
@@ -93,11 +99,14 @@ namespace AZ::Render
     template<typename ... Ts>
     MultiSparseVector<Ts...>::MultiSparseVector()
     {
-        static_assert(sizeof(AZStd::tuple_element_t<0, AZStd::tuple<Ts...>>) >= sizeof(size_t),
-            "Data stored in the first element of MultiSparseVector must be at least as large as a size_t.");
-
         // Reserve some initial capacity in the vectors based on InitialReservedCount.
         AZStd::apply(static_cast<Fn>(ReserveCapacityFunction), m_data);
+    }
+
+    template<typename ... Ts>
+    MultiSparseVector<Ts...>::~MultiSparseVector()
+    {
+        Clear();
     }
 
     template<typename ... Ts>
@@ -136,6 +145,59 @@ namespace AZ::Render
     template<typename ... Ts>
     void MultiSparseVector<Ts...>::Clear()
     {
+        // Because the memory in the underlying vector is used to store a linked list of the removed items,
+        // a destructor could be called on bogus memory when the vector is cleared or destroyed. To fix this,
+        // iterate through each free slot and default-construct an object there so it can be safely deleted.
+
+        // First create a tuple which only contains the vectors with non-trivial destructors.
+        auto TuplesToReset = [](auto&... dataVectors)
+        {
+            auto AddVectorToTuple = [](auto& dataVector)
+            {
+                using VectorType = AZStd::remove_cvref_t<decltype(dataVector)>;
+                using ValueType = typename VectorType::value_type;
+                if constexpr (!AZStd::is_trivially_destructible_v<ValueType>)
+                {
+                    return AZStd::tuple<VectorType&>(dataVector);
+                }
+                else
+                {
+                    // Exclude the type if it is trivially destructible from the reset logic
+                    return AZStd::tuple<>{};
+                }
+            };
+            return AZStd::tuple_cat(AddVectorToTuple(dataVectors)...);
+        };
+
+        auto tupleVectorsWithNonTrivialDestructors = AZStd::apply(TuplesToReset, m_data);
+        constexpr bool containsNonTrivialDestructibleVector = AZStd::tuple_size_v<decltype(tupleVectorsWithNonTrivialDestructors)> > 0;
+
+        // If there are any vectors with non-trivial destructors, then go through each one and default-initialize
+        // it so it can be safely deleted when the underlying vector's clear() is called.
+        if constexpr (containsNonTrivialDestructibleVector)
+        {
+            auto ResetAndClear = [this](auto&... vectors)
+            {
+                auto ResetAndClearRow = [](auto&... dataFields)
+                {
+                    auto ResetAndClearEntry = [](auto& dataField)
+                    {
+                        using ValueType = AZStd::remove_cvref_t<decltype(dataField)>;
+                        new (&dataField) ValueType();
+                    };
+                    (ResetAndClearEntry(dataFields), ...);
+                };
+
+                while (m_nextFreeSlot != NoFreeSlot)
+                {
+                    size_t thisSlot = m_nextFreeSlot;
+                    m_nextFreeSlot = reinterpret_cast<size_t&>(AZStd::get<0>(m_data).at(m_nextFreeSlot));
+                    ResetAndClearRow(vectors[thisSlot] ...);
+                }
+            };
+            AZStd::apply(ResetAndClear, tupleVectorsWithNonTrivialDestructors);
+        }
+
         AZStd::apply(static_cast<Fn>(ClearFunction), m_data);
         m_nextFreeSlot = NoFreeSlot;
     }

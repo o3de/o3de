@@ -39,34 +39,7 @@
                 "ShaderAsset": {
                     "FilePath": "Shaders/Shadow/KawaseShadowBlur.shader"
                 }
-            },
-            "ImageAttachments": [
-                {
-                    "Name": "FilteredImage",
-                    "SizeSource": {
-                        "Source": {
-                            "Pass": "This",
-                            "Attachment": "Input"
-                        }
-                    },
-                    "ArraySizeSource": {
-                        "Pass": "This",
-                        "Attachment": "Input"
-                    },
-                    "ImageDescriptor": {
-                        "Format": "R16_FLOAT"
-                    }
-                }
-            ],
-            "Connections": [
-                {
-                    "localSlot": "Output",
-                    "AttachmentRef": {
-                        "Pass": "This",
-                        "Attachment": "FilteredImage"
-                    }
-                }
-            ]
+            }
         }
     }
 }

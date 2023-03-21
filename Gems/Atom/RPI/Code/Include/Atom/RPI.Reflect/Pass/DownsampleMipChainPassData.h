@@ -19,21 +19,12 @@ namespace AZ
             : public PassData
         {
             AZ_RTTI(DownsampleMipChainPassData, "{EB240B6F-91CB-401A-A099-8F06329BDF35}", PassData);
-            AZ_CLASS_ALLOCATOR(DownsampleMipChainPassData, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DownsampleMipChainPassData, SystemAllocator);
 
             DownsampleMipChainPassData() = default;
             virtual ~DownsampleMipChainPassData() = default;
 
-            static void Reflect(ReflectContext* context)
-            {
-                if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
-                {
-                    serializeContext->Class<DownsampleMipChainPassData, PassData>()
-                        ->Version(0)
-                        ->Field("ShaderAsset", &DownsampleMipChainPassData::m_shaderReference)
-                        ;
-                }
-            }
+            static void Reflect(ReflectContext* context);
 
             //! Reference to the Compute Shader that will be used by DownsampleMipeChainPass
             AssetReference m_shaderReference;

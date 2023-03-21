@@ -23,7 +23,7 @@ class CSelectTrack
     : public TAnimTrack<ISelectKey>
 {
 public:
-    AZ_CLASS_ALLOCATOR(CSelectTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(CSelectTrack, AZ::SystemAllocator);
     AZ_RTTI(CSelectTrack, "{D05D53BF-86D1-4D38-A3C6-4EFC09C16431}", IAnimTrack);
 
     AnimValueType GetValueType();

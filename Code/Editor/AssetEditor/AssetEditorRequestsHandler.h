@@ -15,7 +15,7 @@ class AssetEditorRequestsHandler
     , public AzToolsFramework::EditorEvents::Bus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(AssetEditorRequestsHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(AssetEditorRequestsHandler, AZ::SystemAllocator);
 
     AssetEditorRequestsHandler();
     ~AssetEditorRequestsHandler() override;

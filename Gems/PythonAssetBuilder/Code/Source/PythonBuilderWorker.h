@@ -25,7 +25,7 @@ namespace PythonAssetBuilder
     {
     public:
         AZ_TYPE_INFO(PythonBuilderWorker, "{F27E64FB-A7FF-47F2-80DB-7E1371B014DD}");
-        AZ_CLASS_ALLOCATOR(PythonBuilderWorker, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PythonBuilderWorker, AZ::SystemAllocator);
 
         PythonBuilderWorker() = default;
         virtual ~PythonBuilderWorker() = default;

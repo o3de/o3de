@@ -1107,13 +1107,14 @@ namespace Terrain
                 uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
                 AZ::Vector2 xyPosition = AZ::Vector2(raytracingBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
 
-                float floatHeight = 0.0f;
+                float zPosition = 0.0f;
                 if (meshHeightsNormals.at(localIndex).m_height != NoTerrainVertexHeight)
                 {
-                    floatHeight = meshHeightsNormals.at(localIndex).m_height / float(AZStd::numeric_limits<uint16_t>::max()) * zExtent;
+                    float height = meshHeightsNormals.at(localIndex).m_height / aznumeric_cast<float>(AZStd::numeric_limits<uint16_t>::max());
+                    zPosition = aznumeric_cast<float>(m_worldHeightBounds.m_min) + height * zExtent;
                 }
 
-                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), floatHeight };
+                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), zPosition };
 
                 float normalX = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.first) / AZStd::numeric_limits<int16_t>::max();
                 float normalY = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.second) / AZStd::numeric_limits<int16_t>::max();
@@ -1168,7 +1169,12 @@ namespace Terrain
         // add the submesh to the raytracing scene
         // Note: we use the terrain mesh UUID as the AssetId since it is dynamically created and will not have multiple instances
         m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
-        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, AZ::Data::AssetId(m_rayTracingMeshUuid), subMeshVector, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
+        AZ::Render::RayTracingFeatureProcessor::Mesh rayTracingMesh;
+        rayTracingMesh.m_assetId = AZ::Data::AssetId(m_rayTracingMeshUuid);
+        rayTracingMesh.m_transform = AZ::Transform::CreateIdentity();
+        rayTracingMesh.m_nonUniformScale = AZ::Vector3::CreateOne();
+
+        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, rayTracingMesh, subMeshVector);
     }
 
     void TerrainMeshManager::UpdateCandidateSectors()

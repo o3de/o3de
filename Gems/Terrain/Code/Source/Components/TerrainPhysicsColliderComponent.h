@@ -35,13 +35,12 @@ namespace Terrain
     struct TerrainPhysicsSurfaceMaterialMapping final
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainPhysicsSurfaceMaterialMapping, AZ::SystemAllocator);
         AZ_TYPE_INFO(TerrainPhysicsSurfaceMaterialMapping, "{A88B5289-DFCD-4564-8395-E2177DFE5B18}");
         static void Reflect(AZ::ReflectContext* context);
 
         AZStd::vector<AZStd::pair<AZ::u32, AZStd::string>> BuildSelectableTagList() const;
         void SetTagListProvider(const EditorSurfaceTagListProvider* tagListProvider);
-        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         SurfaceData::SurfaceTag m_surfaceTag;
         AZ::Data::Asset<Physics::MaterialAsset> m_materialAsset;
@@ -53,11 +52,9 @@ namespace Terrain
     class TerrainPhysicsColliderConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TerrainPhysicsColliderConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(TerrainPhysicsColliderConfig, "{E9EADB8F-C3A5-4B9C-A62D-2DBC86B4CE59}");
         static void Reflect(AZ::ReflectContext* context);
-
-        AZ::Data::AssetId GetDefaultPhysicsAssetId() const;
 
         AZ::Data::Asset<Physics::MaterialAsset> m_defaultMaterialAsset;
         AZStd::vector<TerrainPhysicsSurfaceMaterialMapping> m_surfaceMaterialMappings;
@@ -87,8 +84,8 @@ namespace Terrain
         // HeightfieldProviderRequestsBus
         AZ::Vector2 GetHeightfieldGridSpacing() const override;
         void GetHeightfieldGridSize(size_t& numColumns, size_t& numRows) const override;
-        size_t GetHeightfieldGridColumns() const override;
-        size_t GetHeightfieldGridRows() const override;
+        AZ::u64 GetHeightfieldGridColumns() const override;
+        AZ::u64 GetHeightfieldGridRows() const override;
         void GetHeightfieldHeightBounds(float& minHeightBounds, float& maxHeightBounds) const override;
         float GetHeightfieldMinHeight() const override;
         float GetHeightfieldMaxHeight() const override;

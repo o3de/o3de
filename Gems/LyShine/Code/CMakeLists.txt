@@ -221,6 +221,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::LyShine.Tests
+        LABELS REQUIRES_tiaf
     )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -247,6 +248,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     AZ::AzTest
                     Legacy::CryCommon
                     AZ::AssetBuilderSDK
+                    AZ::AzToolsFrameworkTestCommon
                     Gem::LyShine.Tools.Static
                     Gem::LyShine.Builders.Static
                     Gem::LmbrCentral.Editor
@@ -257,6 +259,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::LyShine.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 

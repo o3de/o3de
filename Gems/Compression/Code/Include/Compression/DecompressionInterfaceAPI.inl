@@ -8,7 +8,6 @@
 
 #pragma once
 
-
 namespace Compression
 {
     //! Returns a boolean true if decompression has succeeded

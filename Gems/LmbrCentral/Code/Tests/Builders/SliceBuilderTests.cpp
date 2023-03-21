@@ -190,7 +190,7 @@ namespace UnitTest
         AZStd::vector<AssetId> m_mockAssetIds;
 
     public:
-        AZ_CLASS_ALLOCATOR(SliceBuilderTest_MockCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SliceBuilderTest_MockCatalog, AZ::SystemAllocator);
 
         SliceBuilderTest_MockCatalog()
         {

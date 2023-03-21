@@ -74,12 +74,21 @@ bool CTVSequenceProps::OnInitDialog()
     Range timeRange = m_pSequence->GetTimeRange();
     float invFPS = 1.0f / m_FPS;
 
-    m_timeUnit = Seconds;
     ui->START_TIME->setValue(timeRange.start);
     ui->START_TIME->setSingleStep(invFPS);
     ui->END_TIME->setValue(timeRange.end);
     ui->END_TIME->setSingleStep(invFPS);
 
+    if (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds)
+    {
+        m_timeUnit = Frames;
+        ui->TO_FRAMES->setChecked(true);
+    }
+    else
+    {
+        m_timeUnit = Seconds;
+        ui->TO_SECONDS->setChecked(true);
+    }
 
     m_outOfRange = 0;
     if (m_pSequence->GetFlags() & IAnimSequence::eSeqFlags_OutOfRangeConstant)
@@ -223,6 +232,15 @@ void CTVSequenceProps::UpdateSequenceProps(const QString& name)
     else
     {
         seqFlags &= (~IAnimSequence::eSeqFlags_EarlyMovieUpdate);
+    }
+
+    if (ui->TO_FRAMES->isChecked())
+    {
+        seqFlags |= IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds;
+    }
+    else
+    {
+        seqFlags &= (~IAnimSequence::eSeqFlags_DisplayAsFramesOrSeconds);
     }
 
     if (static_cast<IAnimSequence::EAnimSequenceFlags>(seqFlags) != m_pSequence->GetFlags())

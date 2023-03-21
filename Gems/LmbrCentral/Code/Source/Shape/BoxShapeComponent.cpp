@@ -128,8 +128,7 @@ namespace LmbrCentral
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default, &BoxShapeConfig::m_translationOffset, "Translation Offset", "Translation offset of shape relative to its entity")
                     ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &IsShapeComponentTranslationEnabled);
+                    ->Attribute(AZ::Edit::Attributes::Step, 0.05f);
             }
         }
 

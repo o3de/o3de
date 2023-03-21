@@ -151,4 +151,14 @@ class Test_Messages:
         "The expected mesh group was found.",
         "The expected mesh group was not found."
     )
+    
+    scene_settings_has_unsaved_changes = (
+        "The scene has the expected unsaved changes.",
+        "The scene is not registered as having unsaved changes."
+    )
 
+    scene_settings_unsaved_changes_cleared = (
+        "Clearing unsaved changes worked correctly.",
+        "Unsaved changes did not clear correctly as expected, scene appears to still have unsaved changes."
+    )
+    

@@ -39,7 +39,7 @@ namespace AzToolsFramework
         // these settings will be used to preemptively register all windows and then open them.
         struct AssetEditorWindowSettings : AZ::UserSettings
         {
-            AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetEditorWindowSettings, AZ::SystemAllocator);
             AZ_RTTI(AssetEditorWindowSettings, "{981FE4FF-0B56-4115-9F75-79609E3D6337}", AZ::UserSettings);
 
             //! The list of opened assets is used to restore their window state
