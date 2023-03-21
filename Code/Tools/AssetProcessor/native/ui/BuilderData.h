@@ -70,6 +70,6 @@ namespace AssetProcessor
         void DurationChanged(BuilderDataItem* itemChanged);
     public Q_SLOTS:
         void OnProcessJobDurationChanged(JobEntry jobEntry, int value);
-        void OnCreateJobsDurationChanged(QString sourceName);
+        void OnCreateJobsDurationChanged(QString sourceName, AZ::s64 scanFolderID);
     };
 }

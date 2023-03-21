@@ -71,7 +71,7 @@ namespace AssetProcessor
         AzQtComponents::StyleManager::setStyleSheet(m_ui->OutgoingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
         AzQtComponents::StyleManager::setStyleSheet(m_ui->IncomingProductDependenciesTreeView, QStringLiteral("style:AssetProcessor.qss"));
     }
-    
+
     QTreeView* ProductAssetDetailsPanel::GetOutgoingProductDependenciesTreeView() const
     {
         return m_ui->OutgoingProductDependenciesTreeView;
@@ -152,7 +152,7 @@ namespace AssetProcessor
             m_ui->gotoAssetButton->m_ui->goToPushButton->disconnect();
 
             connect(m_ui->gotoAssetButton->m_ui->goToPushButton, &QPushButton::clicked, [=] {
-                GoToSource(sourceEntry.m_sourceName);
+                GoToSource(SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str()).AbsolutePath().c_str());
             });
 
             m_ui->sourceAssetValueLabel->setText(sourceEntry.m_sourceName.c_str());
