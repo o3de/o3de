@@ -5,18 +5,21 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import aws_iam as iam
-from aws_cdk import aws_s3_assets as assets
-from aws_cdk import core
+from aws_cdk import (
+    Stack,
+    aws_iam as iam,
+    aws_s3_assets as assets
+)
+from constructs import Construct
 
 
-class SupportStack(core.Stack):
+class SupportStack(Stack):
     """
     The Build support stack
 
     Defines AWS resources that help to create GameLift builds from local files
     """
-    def __init__(self, scope: core.Construct, id_: str,
+    def __init__(self, scope: Construct, id_: str,
                  stack_name: str, fleet_configurations: dict, **kwargs) -> None:
         super().__init__(scope, id_, **kwargs)
         self._stack_name = stack_name
@@ -45,6 +48,7 @@ class SupportStack(core.Stack):
     def _upload_build_asset(self, build_configuration: dict, identifier: int) -> dict:
         """
         Upload the local build files to S3 for a creating GameLift build.
+
         :param build_configuration: Configuration of the GameLift build.
         :param identifier: Unique identifier of the asset which will be included in the resource id.
         :return: Storage location of the S3 object.
@@ -64,4 +68,3 @@ class SupportStack(core.Stack):
         }
 
         return storage_location
-

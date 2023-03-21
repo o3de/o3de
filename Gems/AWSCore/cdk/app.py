@@ -10,7 +10,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import os
 
 from aws_cdk import (
-    core
+    App, Environment
 )
 
 from constants import Constants
@@ -33,9 +33,9 @@ PROJECT_FEATURE_NAME = f'{PROJECT_NAME}-{FEATURE_NAME}'
 """End of Configuration"""
 
 # Set-up regions to deploy core stack to, or use default if not set
-env = core.Environment(account=ACCOUNT, region=REGION)
+env = Environment(account=ACCOUNT, region=REGION)
 
-app = core.App()
+app = App()
 
 core_construct = AWSCore(
     app,
@@ -48,7 +48,6 @@ core_construct = AWSCore(
 # Below is the Core example stack which is provided for working with AWSCore ScriptCanvas examples.
 # It also provided as an example how to reference resources across stacks via stack outputs.
 # See https://docs.aws.amazon.com/cdk/latest/guide/resources.html#resource_stack
-
 example_stack = ExampleResources(
     app,
     id_=f'{PROJECT_FEATURE_NAME}-Example-{env.region}',

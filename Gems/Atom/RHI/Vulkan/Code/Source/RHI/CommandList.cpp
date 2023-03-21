@@ -441,23 +441,58 @@ namespace AZ
             AZStd::vector<VkDescriptorSet> descriptorSets;
             descriptorSets.reserve(dispatchRaysItem.m_shaderResourceGroupCount);
 
+            AZStd::array<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> srgByAzslBindingSlot = { {} };
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
             {
                 const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
-                descriptorSets.emplace_back(srg->GetCompiledData().GetNativeDescriptorSet());
+                srgByAzslBindingSlot[srg->GetBindingSlot()] = srg;
             }
 
-            // add the bindless DescriptorSet if required by the shader
             const PipelineState& globalPipelineState = static_cast<const PipelineState&>(*dispatchRaysItem.m_globalPipelineState);
             const PipelineLayout& globalPipelineLayout = static_cast<const PipelineLayout&>(*globalPipelineState.GetPipelineLayout());
-
             for (uint32_t descriptorSetIndex = 0; descriptorSetIndex < globalPipelineLayout.GetDescriptorSetLayoutCount(); ++descriptorSetIndex)
             {
-                const auto& srgBitSet = globalPipelineLayout.GetAZSLBindingSlotsOfIndex(descriptorSetIndex);
-                if (srgBitSet[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId])
+                RHI::ConstPtr<ShaderResourceGroup> shaderResourceGroup;
+                AZStd::fixed_vector<const ShaderResourceGroup*, RHI::Limits::Pipeline::ShaderResourceGroupCountMax> shaderResourceGroupList;
+                const auto& srgBitset = globalPipelineLayout.GetAZSLBindingSlotsOfIndex(descriptorSetIndex);
+                for (uint32_t bindingSlot = 0; bindingSlot < srgBitset.size(); ++bindingSlot)
                 {
+                    if (srgBitset[bindingSlot])
+                    {
+                        shaderResourceGroupList.push_back(srgByAzslBindingSlot[bindingSlot]);
+                    }
+                }
+
+                // handle merged descriptor set
+                if (globalPipelineLayout.IsMergedDescriptorSetLayout(descriptorSetIndex))
+                {
+                    MergedShaderResourceGroupPool* mergedSRGPool = globalPipelineLayout.GetMergedShaderResourceGroupPool(descriptorSetIndex);
+                    AZ_Assert(mergedSRGPool, "Null MergedShaderResourceGroupPool");
+
+                    RHI::Ptr<MergedShaderResourceGroup> mergedSRG = mergedSRGPool->FindOrCreate(shaderResourceGroupList);
+                    AZ_Assert(mergedSRG, "Null MergedShaderResourceGroup");
+                    if (mergedSRG->NeedsCompile())
+                    {
+                        mergedSRG->Compile();
+                    }
+
+                    shaderResourceGroup = mergedSRG;
+                }
+                else
+                {
+                    shaderResourceGroup = shaderResourceGroupList.front();
+                }
+
+                if (shaderResourceGroup == nullptr)
+                {
+                    AZ_Assert(
+                        srgBitset[RHI::ShaderResourceGroupData::BindlessSRGFrequencyId],
+                        "Bindless SRG slot needs to match the one described in the shader.");
                     descriptorSets.push_back(m_descriptor.m_device->GetBindlessDescriptorPool().GetNativeDescriptorSet());
-                    break;
+                }
+                else
+                {
+                    descriptorSets.push_back(shaderResourceGroup->GetCompiledData().GetNativeDescriptorSet());
                 }
             }
 

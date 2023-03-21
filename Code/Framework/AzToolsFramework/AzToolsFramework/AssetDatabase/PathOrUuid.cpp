@@ -74,6 +74,16 @@ namespace AzToolsFramework::AssetDatabase
 
         return !rhs.IsUuid() && m_path == rhs.m_path;
     }
+
+    PathOrUuid::operator bool() const
+    {
+        if (!m_uuid.IsNull())
+        {
+            return true;
+        }
+
+        return !m_path.empty();
+    }
 }
 
 AZStd::size_t AZStd::hash<AzToolsFramework::AssetDatabase::PathOrUuid>::operator()(

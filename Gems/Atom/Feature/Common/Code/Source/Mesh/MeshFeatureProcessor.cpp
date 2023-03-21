@@ -13,9 +13,12 @@
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/Feature/Mesh/ModelReloaderSystemInterface.h>
 #include <Atom/RPI.Public/Model/ModelLodUtils.h>
+#include <Atom/RPI.Public/Model/ModelTagSystemComponent.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/RPI.Public/Culling.h>
 #include <Atom/RPI.Public/RPIUtils.h>
+#include <Atom/RPI.Public/AssetQuality.h>
+
 #include <Atom/Utils/StableDynamicArray.h>
 #include <ReflectionProbe/ReflectionProbeFeatureProcessor.h>
 
@@ -36,7 +39,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
-
 
 namespace AZ
 {
@@ -550,7 +552,7 @@ namespace AZ
             else
             {
                 AZ_Assert(false, "Invalid mesh handle");
-                return {RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
+                return { RPI::Cullable::LodType::Default, 0, 0.0f, 0.0f };
             }
         }
 
@@ -711,12 +713,23 @@ namespace AZ
 
         void MeshFeatureProcessor::UpdateMeshReflectionProbes()
         {
-            // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
             for (auto& meshInstance : m_modelData)
             {
+                // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
                 if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
                     meshInstance.m_objectSrgNeedsUpdate = true;
+                }
+
+                // update the raytracing reflection probe data if necessary
+                RayTracingFeatureProcessor::Mesh::ReflectionProbe reflectionProbe;
+                bool currentHasRayTracingReflectionProbe = meshInstance.m_hasRayTracingReflectionProbe;
+                meshInstance.SetRayTracingReflectionProbeData(m_transformService, m_reflectionProbeFeatureProcessor, reflectionProbe);
+
+                if (meshInstance.m_hasRayTracingReflectionProbe ||
+                    (currentHasRayTracingReflectionProbe != meshInstance.m_hasRayTracingReflectionProbe))
+                {
+                    m_rayTracingFeatureProcessor->SetMeshReflectionProbe(meshInstance.m_rayTracingUuid, reflectionProbe);
                 }
             }
         }
@@ -816,6 +829,34 @@ namespace AZ
 
             // Assign the fully loaded asset back to the mesh handle to not only hold asset id, but the actual data as well.
             m_parent->m_originalModelAsset = asset;
+
+            if (const auto& modelTags = modelAsset->GetTags(); !modelTags.empty())
+            {
+                RPI::AssetQuality highestLodBias = RPI::AssetQualityLowest;
+                for (const AZ::Name& tag : modelTags)
+                {
+                    RPI::AssetQuality tagQuality = RPI::AssetQualityHighest;
+                    RPI::ModelTagBus::BroadcastResult(tagQuality, &RPI::ModelTagBus::Events::GetQuality, tag);
+
+                    highestLodBias = AZStd::min(highestLodBias, tagQuality);
+                }
+
+                if (highestLodBias >= modelAsset->GetLodCount())
+                {
+                    highestLodBias = aznumeric_caster(modelAsset->GetLodCount() - 1);
+                }
+
+                m_parent->m_lodBias = highestLodBias;
+
+                for (const AZ::Name& tag : modelTags)
+                {
+                    RPI::ModelTagBus::Broadcast(&RPI::ModelTagBus::Events::RegisterAsset, tag, modelAsset->GetId());
+                }
+            }
+            else
+            {
+                m_parent->m_lodBias = 0;
+            }
 
             Data::Instance<RPI::Model> model;
             // Check if a requires cloning callback got set and if so check if cloning the model asset is requested.
@@ -1321,10 +1362,18 @@ namespace AZ
                 subMeshes.push_back(subMesh);
             }
 
-            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
-            AZ::Vector3 nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
+            // setup the RayTracing Mesh
+            RayTracingFeatureProcessor::Mesh rayTracingMesh;
+            rayTracingMesh.m_assetId = m_model->GetModelAsset()->GetId();
+            rayTracingMesh.m_transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+            rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
-            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, m_model->GetModelAsset()->GetId(), subMeshes, transform, nonUniformScale);
+            // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor = m_scene->GetFeatureProcessor<ReflectionProbeFeatureProcessor>();
+            SetRayTracingReflectionProbeData(transformServiceFeatureProcessor, reflectionProbeFeatureProcessor, rayTracingMesh.m_reflectionProbe);
+
+            // add the mesh
+            rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, rayTracingMesh, subMeshes);
             m_needsSetRayTracingData = false;
         }
 
@@ -1458,6 +1507,34 @@ namespace AZ
             subMesh.m_irradianceColor.SetA(opacity);
         }
 
+        void ModelDataInstance::SetRayTracingReflectionProbeData(
+            TransformServiceFeatureProcessor* transformServiceFeatureProcessor,
+            ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+            RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe)
+        {
+            AZ::Transform transform = transformServiceFeatureProcessor->GetTransformForId(m_objectId);
+
+            // retrieve reflection probes
+            Aabb aabbWS = m_aabb;
+            aabbWS.ApplyTransform(transform);
+
+            ReflectionProbeHandleVector reflectionProbeHandles;
+            reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
+
+            m_hasRayTracingReflectionProbe = !reflectionProbeHandles.empty();
+            if (m_hasRayTracingReflectionProbe)
+            {
+                // take the last handle from the list, which will be the smallest (most influential) probe
+                ReflectionProbeHandle handle = reflectionProbeHandles.back();
+                reflectionProbe.m_modelToWorld = reflectionProbeFeatureProcessor->GetTransform(handle);
+                reflectionProbe.m_outerObbHalfLengths = reflectionProbeFeatureProcessor->GetOuterObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_innerObbHalfLengths = reflectionProbeFeatureProcessor->GetInnerObbWs(handle).GetHalfLengths();
+                reflectionProbe.m_useParallaxCorrection = reflectionProbeFeatureProcessor->GetUseParallaxCorrection(handle);
+                reflectionProbe.m_exposure = reflectionProbeFeatureProcessor->GetRenderExposure(handle);
+                reflectionProbe.m_reflectionProbeCubeMap = reflectionProbeFeatureProcessor->GetCubeMap(handle);
+            }
+        }
+
         void ModelDataInstance::RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             // remove from ray tracing
@@ -1522,39 +1599,51 @@ namespace AZ
             const size_t modelLodCount = m_model->GetLodCount();
             const auto& lodAssets = m_model->GetModelAsset()->GetLodAssets();
             AZ_Assert(lodAssets.size() == modelLodCount, "Number of asset lods must match number of model lods");
+            AZ_Assert(m_lodBias <= modelLodCount - 1, "Incorrect lod bias");
 
             lodData.m_lods.resize(modelLodCount);
             cullData.m_drawListMask.reset();
 
             const size_t lodCount = lodAssets.size();
+
             for (size_t lodIndex = 0; lodIndex < lodCount; ++lodIndex)
             {
                 //initialize the lod
                 RPI::Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                if (lodIndex == 0)
+                // non-used lod (except if forced)
+                if (lodIndex < m_lodBias)
                 {
-                    //first lod
-                    lod.m_screenCoverageMax = 1.0f;
+                    // set impossible screen coverage to disable it
+                    lod.m_screenCoverageMax = 0.0f;
+                    lod.m_screenCoverageMin = 1.0f;
                 }
                 else
                 {
-                    //every other lod: use the previous lod's min
-                    lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
-                }
+                    if (lodIndex == m_lodBias)
+                    {
+                        //first lod
+                        lod.m_screenCoverageMax = 1.0f;
+                    }
+                    else
+                    {
+                        //every other lod: use the previous lod's min
+                        lod.m_screenCoverageMax = AZStd::GetMax(lodData.m_lods[lodIndex - 1].m_screenCoverageMin, lodData.m_lodConfiguration.m_minimumScreenCoverage);
+                    }
 
-                if (lodIndex < lodAssets.size() - 1)
-                {
-                    //first and middle lods: compute a stepdown value for the min
-                    lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
-                }
-                else
-                {
-                    //last lod: use MinimumScreenCoverage for the min
-                    lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
+                    if (lodIndex < lodAssets.size() - 1)
+                    {
+                        //first and middle lods: compute a stepdown value for the min
+                        lod.m_screenCoverageMin = AZStd::GetMax(lodData.m_lodConfiguration.m_qualityDecayRate * lod.m_screenCoverageMax, lodData.m_lodConfiguration.m_minimumScreenCoverage);
+                    }
+                    else
+                    {
+                        //last lod: use MinimumScreenCoverage for the min
+                        lod.m_screenCoverageMin = lodData.m_lodConfiguration.m_minimumScreenCoverage;
+                    }
                 }
 
                 lod.m_drawPackets.clear();
-                for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex])
+                for (const RPI::MeshDrawPacket& meshDrawPacket : m_drawPacketListsByLod[lodIndex + m_lodBias])
                 {
                     const RHI::DrawPacket* rhiDrawPacket = meshDrawPacket.GetRHIDrawPacket();
 
