@@ -58,6 +58,9 @@ namespace AssetProcessor
     //! This is intentionally a map (not unordered_map) in order to ensure order is stable, and to eliminate duplicates.
     typedef AZStd::map<AZStd::string, AZStd::string> SourceFilesForFingerprintingContainer;
 
+    //! A shared convenience typedef for tracking a source path and a scan folder ID together.
+    typedef AZStd::pair<AZStd::string, AZ::s64> SourceAndScanID;
+
     enum AssetScanningStatus
     {
         Unknown,

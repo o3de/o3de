@@ -43,7 +43,11 @@ namespace AssetProcessor
     void AssetTreeModel::Reset()
     {
         beginResetModel();
-        m_root.reset(new AssetTreeItem(AZStd::make_shared<AssetTreeItemData>("", "", true, AZ::Uuid::CreateNull()), m_errorIcon, m_folderIcon, m_fileIcon));
+        m_root.reset(new AssetTreeItem(
+            AZStd::make_shared<AssetTreeItemData>("", "", true, AZ::Uuid::CreateNull(), AzToolsFramework::AssetDatabase::InvalidEntryId),
+            m_errorIcon,
+            m_folderIcon,
+            m_fileIcon));
 
         ResetModel();
 

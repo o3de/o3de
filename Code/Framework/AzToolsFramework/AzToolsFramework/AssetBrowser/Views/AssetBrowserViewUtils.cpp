@@ -8,6 +8,7 @@
 //#include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
@@ -49,6 +50,11 @@ namespace AzToolsFramework
                 Path fromPath;
                 if (isFolder)
                 {
+                    // Cannot rename the engine or project folders
+                    if (IsEngineOrProjectFolder(item->GetFullPath()))
+                    {
+                        return false;
+                    }
                     // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
                     // This code is needed until that bug is fixed. GHI 13340
                     if (IsFolderEmpty(item->GetFullPath()))
@@ -197,6 +203,13 @@ namespace AzToolsFramework
             return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).isEmpty();
         }
 
+        bool AssetBrowserViewUtils::IsEngineOrProjectFolder(AZStd::string_view path)
+        {
+            AZ::IO::PathView folderPathView(path);
+
+            return (folderPathView.Compare(AZ::Utils::GetEnginePath()) == 0 || folderPathView.Compare(AZ::Utils::GetProjectPath()) == 0);
+        }
+
         void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.empty())
@@ -206,6 +219,11 @@ namespace AzToolsFramework
 
             bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
+
+            if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
             }
@@ -300,6 +318,11 @@ namespace AzToolsFramework
             }
             bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
+
+            if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
             }
