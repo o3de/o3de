@@ -470,23 +470,23 @@ namespace PhysX::Benchmarks
         // common settings for each rigid body
         const float boxSizeWithSpacing = boxSize + boxSpacing;
         const int boxesPerCol = static_cast<const int>(RigidBodyConstants::TerrainSize / boxSizeWithSpacing) - 1;
-        int spawnColIdx = 0;
-        int spawnRowIdx = 0;
+        int spawnColIndex = 0;
+        int spawnRowIndex = 0;
 
         // function to generate the rigid bodies position / orientation / mass
         Utils::GenerateSpawnPositionFuncPtr posGenerator =
-            [boxSize, boxSizeWithSpacing, boxesPerCol, &spawnColIdx, &spawnRowIdx]([[maybe_unused]] int idx) -> const AZ::Vector3
+            [boxSize, boxSizeWithSpacing, boxesPerCol, &spawnColIndex, &spawnRowIndex]([[maybe_unused]] int idx) -> const AZ::Vector3
         {
-            const float x = boxSizeWithSpacing + (boxSizeWithSpacing * spawnColIdx);
-            const float y = boxSizeWithSpacing + (boxSizeWithSpacing * spawnRowIdx);
+            const float x = boxSizeWithSpacing + (boxSizeWithSpacing * spawnColIndex);
+            const float y = boxSizeWithSpacing + (boxSizeWithSpacing * spawnRowIndex);
             const float z = boxSize / 2.0f;
 
             // advance to the next position to spawn the next rigid body
-            spawnColIdx++;
-            if (spawnColIdx >= boxesPerCol)
+            spawnColIndex++;
+            if (spawnColIndex >= boxesPerCol)
             {
-                spawnColIdx = 0;
-                spawnRowIdx++;
+                spawnColIndex = 0;
+                spawnRowIndex++;
             }
             return AZ::Vector3(x, y, z);
         };
@@ -513,8 +513,8 @@ namespace PhysX::Benchmarks
 
         auto& entityList = AZStd::get<PhysX::EntityList>(rigidBodies);
 
-        // Add mock component that depend on rigid body during activation and
-        // therefore are require to use RigidBodyNotification bus.
+        // Add mock components that depend on rigid body during activation and
+        // therefore are required to use RigidBodyNotification bus.
         for (auto& entity : entityList)
         {
             entity->CreateComponent<Utils::MockRigidBodyDependantComponent>();
