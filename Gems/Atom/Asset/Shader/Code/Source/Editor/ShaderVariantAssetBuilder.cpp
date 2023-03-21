@@ -28,6 +28,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -645,7 +646,6 @@ namespace AZ
                 return;
             }
 
-
             // set the input file for eventual error messages, but the compiler won't be called on it.
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, shaderSourceDescriptor.m_source, azslFullPath);
@@ -705,6 +705,7 @@ namespace AZ
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "Shader Variant Tree Asset [%s] compiled successfully.\n", assetPath.c_str());
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+ 
         }
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
@@ -890,6 +891,11 @@ namespace AZ
                         shaderStemNamePrefix,
                         hlslSourcePath, hlslCode
                     };
+
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto shaderVariantAssetOutcome = CreateShaderVariantAsset(variantInfo, shaderVariantCreationContext, outputByproducts);

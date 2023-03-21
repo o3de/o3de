@@ -16,8 +16,7 @@
 
 ShaderResourceGroup PassSrg : SRG_PerPass
 {
-    RWTexture2D<float4> m_input;
-    RWTexture2D<float4> m_output;
+    Texture2D<float4> m_input;
     uint m_imageWidth;
     uint m_imageHeight;
     float m_outputScale;
@@ -29,9 +28,9 @@ ShaderResourceGroup PassSrg : SRG_PerPass
 PSOutput MainPS(VSOutput IN)
 {
     // horizontal blur uses coordinates from the mip-level render target
-    float3 result = GaussianFilter(IN.m_position.xy, TexelOffsetsH, PassSrg::m_input);
+    float4 result = GaussianFilter(IN.m_position.xy, TexelOffsetsH, PassSrg::m_input);
 
     PSOutput OUT;
-    OUT.m_color = float4(result, 1.0f);
+    OUT.m_color = result;
     return OUT;
 }

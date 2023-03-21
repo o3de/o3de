@@ -46,19 +46,11 @@ namespace GraphModelIntegration
         }
     }
 
-    int FloatDataInterface::GetDecimalPlaces() const
-    {
-        return 7;
-    }
-    int FloatDataInterface::GetDisplayDecimalPlaces() const
-    {
-        return 4;
-    }
-
     double FloatDataInterface::GetMin() const
     {
         return std::numeric_limits<float>::lowest();
     }
+
     double FloatDataInterface::GetMax() const
     {
         return std::numeric_limits<float>::max();

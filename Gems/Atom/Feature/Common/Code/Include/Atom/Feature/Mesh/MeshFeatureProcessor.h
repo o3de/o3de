@@ -87,6 +87,9 @@ namespace AZ
                 RayTracingFeatureProcessor::SubMesh& subMesh,
                 const Data::Instance<RPI::Material> material,
                 const Data::Instance<RPI::Image> baseColorImage);
+            void SetRayTracingReflectionProbeData(
+                MeshFeatureProcessor* meshFeatureProcessor, 
+                RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe);
             void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
@@ -113,6 +116,8 @@ namespace AZ
             // This is used to trigger an update to the cullable to use the new draw packet
             using UpdateDrawPacketHandlerList = AZStd::vector<AZ::Event<>::Handler>;
             AZStd::vector<UpdateDrawPacketHandlerList> m_updateDrawPacketEventHandlersByLod;
+
+            size_t m_lodBias = 0;
 
             RPI::Cullable m_cullable;
             CustomMaterialMap m_customMaterials;
@@ -141,9 +146,8 @@ namespace AZ
             bool m_visible = true;
             bool m_hasForwardPassIblSpecularMaterial = false;
             bool m_needsSetRayTracingData = false;
+            bool m_hasRayTracingReflectionProbe = false;
         };
-
-        static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final : public MeshFeatureProcessorInterface

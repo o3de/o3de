@@ -1169,7 +1169,12 @@ namespace Terrain
         // add the submesh to the raytracing scene
         // Note: we use the terrain mesh UUID as the AssetId since it is dynamically created and will not have multiple instances
         m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
-        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, AZ::Data::AssetId(m_rayTracingMeshUuid), subMeshVector, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
+        AZ::Render::RayTracingFeatureProcessor::Mesh rayTracingMesh;
+        rayTracingMesh.m_assetId = AZ::Data::AssetId(m_rayTracingMeshUuid);
+        rayTracingMesh.m_transform = AZ::Transform::CreateIdentity();
+        rayTracingMesh.m_nonUniformScale = AZ::Vector3::CreateOne();
+
+        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, rayTracingMesh, subMeshVector);
     }
 
     void TerrainMeshManager::UpdateCandidateSectors()

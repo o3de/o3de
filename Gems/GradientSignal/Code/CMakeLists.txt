@@ -175,6 +175,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::GradientSignal.Tests
+        LABELS REQUIRES_tiaf
     )
 
     ly_add_googlebenchmark(

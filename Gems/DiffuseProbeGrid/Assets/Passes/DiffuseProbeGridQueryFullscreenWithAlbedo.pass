@@ -1,0 +1,48 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData":
+    {
+        "PassTemplate": {
+            "Name": "DiffuseProbeGridQueryFullscreenWithAlbedoPassTemplate",
+            "PassClass": "DiffuseProbeGridQueryFullscreenPass",
+            "Slots": [
+                {
+                    "Name": "AlbedoInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_albedo",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "NormalInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_normal",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "PositionInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_queryPositions",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "DirectionInput",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_queryDirections",
+                    "ScopeAttachmentUsage": "Shader"
+                },
+                {
+                    "Name": "Output",
+                    "SlotType": "InputOutput",
+                    "ShaderInputName": "m_output",
+                    "ScopeAttachmentUsage": "Shader"
+                }
+            ],
+            "PassData": {
+                "$type": "DiffuseProbeGridQueryFullscreenPassData",
+                "Use Albedo Texture": true
+            }
+        }
+    }
+}

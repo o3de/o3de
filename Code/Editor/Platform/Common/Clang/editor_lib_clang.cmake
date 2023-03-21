@@ -5,5 +5,8 @@
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 #
 #
-
-set(LY_COMPILE_OPTIONS PRIVATE -fexceptions)
+if(MSVC)
+    set(LY_COMPILE_OPTIONS PRIVATE /EHsc)
+else()
+    set(LY_COMPILE_OPTIONS PRIVATE -fexceptions)
+endif()

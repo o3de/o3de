@@ -51,10 +51,7 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                    {
-                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
-                    }
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
                     emit entryClicked(indexData);
                 });
 
@@ -325,11 +322,6 @@ namespace AzToolsFramework
                 &AssetBrowserThumbnailView::HandleTreeViewSelectionChanged);
         }
 
-        void AssetBrowserThumbnailView::HideProductAssets(bool checked)
-        {
-            m_thumbnailViewWidget->HideProductAssets(checked);
-        }
-
         void AssetBrowserThumbnailView::setSelectionMode(QAbstractItemView::SelectionMode mode)
         {
             m_thumbnailViewWidget->setSelectionMode(mode);
@@ -423,7 +415,8 @@ namespace AzToolsFramework
                     filterCopy->AddFilter(subFilter);
                 }
             }
-            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Up | AssetBrowserEntryFilter::Down);
+            filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
+
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
         }
     } // namespace AssetBrowser

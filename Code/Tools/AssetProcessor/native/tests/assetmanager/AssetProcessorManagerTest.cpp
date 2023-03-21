@@ -24,6 +24,7 @@
 #include <AzCore/Jobs/JobManagerDesc.h>
 #include <AzCore/Utils/Utils.h>
 #include <tests/assetmanager/AssetManagerTestingBase.h>
+#include <utilities/ProductOutputUtil.h>
 
 using namespace AssetProcessor;
 
@@ -312,10 +313,11 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
     AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
     AZStd::string testFilename = "test.in";
     AZ::IO::Path filePath = (scanFolderDir / testFilename).AsPosix();
+    AssetProcessor::SourceAssetReference sourceAsset{ filePath.c_str() };
 
     UnitTestUtils::CreateDummyFileAZ(filePath, "unit test file");
 
-    ProcessFileMultiStage(1, true, filePath.c_str());
+    ProcessFileMultiStage(1, true, sourceAsset);
 
     auto metadataInterface = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
 
@@ -348,7 +350,7 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
         });
 
     // Run the file again
-    ProcessFileMultiStage(1, true, filePath.c_str());
+    ProcessFileMultiStage(1, true, sourceAsset);
 
     // Verify asset removed and asset changed messages were sent
     std::sort(
@@ -367,6 +369,107 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
     EXPECT_EQ(notifications[1].m_data, "test.stage2");
     EXPECT_EQ(notifications[1].m_assetId, AZ::Data::AssetId(uuidEntry.m_uuid, AssetSubId));
     EXPECT_EQ(notifications[1].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
+}
+
+class MetadataOverrides : public UnitTests::AssetManagerTestingBase
+{
+public:
+    void SetUp() override
+    {
+        UnitTests::AssetManagerTestingBase::SetUp();
+
+        using namespace AssetBuilderSDK;
+
+        CreateBuilder("stage1", "*.stage1", "stage2", false, ProductOutputFlags::ProductAsset);
+
+        // Enable metadata for our file type
+        AZ::Interface<IUuidRequests>::Get()->EnableGenerationForTypes({ ".stage1" });
+
+        AZ::IO::Path assetRootDir = m_databaseLocationListener.GetAssetRootDir();
+        m_sourceA = SourceAssetReference{ assetRootDir / "folder" / "subfolder" / "file.stage1" };
+        m_sourceB = SourceAssetReference{ assetRootDir / "folder2" / "subfolder" / "file.stage1" };
+    }
+
+    void SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms)
+    {
+        UnitTests::AssetManagerTestingBase::SetupScanfolders(assetRootDir, platforms);
+
+        m_platformConfig->AddScanFolder(
+            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder2").c_str(), "folder2", "folder2", false, true, platforms });
+    }
+
+    void VerifyProducts()
+    {
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+        EXPECT_TRUE(this->m_stateData->GetProductsByProductName("pc/subfolder/file.stage2", products));
+        EXPECT_EQ(products.size(), 1);
+
+        products = {};
+        EXPECT_TRUE(m_stateData->GetProductsByProductName(
+            AZStd::string::format("pc/subfolder/%sfile.stage2", ProductOutputUtil::GetPrefix(m_sourceB.ScanFolderId()).c_str()).c_str(), products));
+        EXPECT_EQ(products.size(), 1);
+
+        auto io = AZ::IO::FileIOBase::GetInstance();
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+        EXPECT_FALSE(io->Exists(MakePath("subfolder/(2)file.stage2", false).c_str()));
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
+
+        auto fileContentsResult = AZ::Utils::ReadFile(MakePath("subfolder/file.stage2", false).c_str());
+
+        ASSERT_TRUE(fileContentsResult);
+        EXPECT_STREQ(fileContentsResult.GetValue().c_str(), "unit test file A");
+    }
+
+    AssetProcessor::SourceAssetReference m_sourceA;
+    AssetProcessor::SourceAssetReference m_sourceB;
+};
+
+TEST_F(MetadataOverrides, MetadataOverrides_HighestPriorityProcessedFirst_OutputsCorrectly)
+{
+    // Create 2 source files with the same relative name, one in each scanfolder
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+
+    // Process both files
+    ProcessFileMultiStage(1, true, m_sourceA);
+    ProcessFileMultiStage(1, true, m_sourceB);
+
+    VerifyProducts();
+}
+
+TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityProcessedFirst_OutputsCorrectly)
+{
+    // Create 2 source files with the same relative name, one in each scanfolder
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+
+    // Process both files
+    ProcessFileMultiStage(1, false, m_sourceB);
+
+    auto io = AZ::IO::FileIOBase::GetInstance();
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
+
+    ProcessFileMultiStage(1, false, m_sourceA);
+
+    VerifyProducts();
+}
+
+TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityCreatedFirst_OutputsCorrectly)
+{
+    // Create and process the low priority file first
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+    ProcessFileMultiStage(1, false, m_sourceB);
+
+    auto io = AZ::IO::FileIOBase::GetInstance();
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/(3)file.stage2", false).c_str()));
+
+    // Create and process the high priority file second
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    ProcessFileMultiStage(1, false, m_sourceA);
+
+    VerifyProducts();
 }
 
 using AssetProcessorManagerFinishTests = UnitTests::AssetManagerTestingBase;
