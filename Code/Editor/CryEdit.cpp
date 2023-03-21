@@ -163,7 +163,8 @@ static const char O3DEApplicationName[] = "O3DEApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
 
-namespace Platform {
+namespace Platform
+{
     bool OpenUri(const QUrl& uri);
 }
 
