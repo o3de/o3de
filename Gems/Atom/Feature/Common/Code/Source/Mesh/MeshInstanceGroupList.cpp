@@ -8,6 +8,7 @@
 
 #include <Mesh/MeshInstanceGroupList.h>
 #include <AzCore/std/numeric.h>
+#include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 namespace AZ::Render
 {
