@@ -49,6 +49,46 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
+        void EditorComponentBase::PrepareComponentForEntityAddition(AZ::Entity* entity)
+        {
+            if (entity && m_alias.empty())
+            {
+                AZStd::unordered_set<AZStd::string> serializedIdentifiersMatchingType;
+
+                for (const AZ::Component* componentInEntity : entity->GetComponents())
+                {
+                    if (componentInEntity == this)
+                    {
+                        return;
+                    }
+                    if (RTTI_GetType() == componentInEntity->RTTI_GetType())
+                    {
+                        serializedIdentifiersMatchingType.emplace(componentInEntity->GetSerializedIdentifier());
+                    }
+                }
+
+                AZStd::string typeName = GetNameFromComponentClassData(this);
+
+                AZStd::string serializedIdentifier;
+                if (serializedIdentifiersMatchingType.size() == 0)
+                {
+                    serializedIdentifier = typeName;
+                }
+                else
+                {
+                    AZ::u64 suffixOfNewComponent = serializedIdentifiersMatchingType.size() + 1;
+                    serializedIdentifier = AZStd::string::format("%s_%zu", typeName.c_str(), suffixOfNewComponent);
+                    while (serializedIdentifiersMatchingType.find(serializedIdentifier) != serializedIdentifiersMatchingType.end())
+                    {
+                        suffixOfNewComponent++;
+                        serializedIdentifier = AZStd::string::format("%s_%zu", typeName.c_str(), suffixOfNewComponent);
+                    }
+                }
+
+                SetSerializedIdentifier(AZStd::move(serializedIdentifier));
+            }
+        }
+
         void EditorComponentBase::SetDirty()
         {
             if (GetEntity())

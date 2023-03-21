@@ -206,7 +206,13 @@ namespace AZ
         {
             if (component)
             {
-                componentMapOut.emplace(AZStd::string::format("Component_[%llu]", component->GetId()), component);
+                AZStd::string componentAlias = component->GetSerializedIdentifier();
+                if (componentAlias.empty())
+                {
+                    // Component alias can be empty for non-editor components
+                    componentAlias = AZStd::string::format("Component_[%llu]", component->GetId());
+                }
+                componentMapOut.emplace(componentAlias, component);
             }
         }
     }

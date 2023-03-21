@@ -240,6 +240,8 @@ namespace AZ
          */
         void SetEntity(Entity* entity);
 
+        virtual void PrepareComponentForEntityAddition(Entity* entity);
+
         /**
          * Reflects the Component class.
          * This function is called by the entity.

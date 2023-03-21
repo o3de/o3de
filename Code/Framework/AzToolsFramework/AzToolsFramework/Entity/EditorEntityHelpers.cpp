@@ -213,6 +213,18 @@ namespace AzToolsFramework
         return componentClassData;
     }
 
+    AZStd::string GetNameFromComponentClassData(const AZ::Component* component)
+    {
+        const char* className = component->RTTI_GetTypeName();
+        const AZ::SerializeContext::ClassData* classData = GetComponentClassData(component);
+        if (!classData)
+        {
+            return className;
+        }
+
+         return classData->m_name;
+    }
+
     AZStd::string GetFriendlyComponentName(const AZ::Component* component)
     {
         auto className = component->RTTI_GetTypeName();

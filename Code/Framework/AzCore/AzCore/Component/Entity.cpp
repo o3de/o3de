@@ -340,6 +340,8 @@ namespace AZ
             }
         }
         component->SetEntity(this);
+
+        component->PrepareComponentForEntityAddition(this);
         m_components.push_back(component);
 
         if (m_state == State::Init)

@@ -141,6 +141,7 @@ set(FILES
     Prefab/PrefabUpdateInstancesTests.cpp
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
+    Prefab/Serialization/PrefabComponentAliasTests.cpp
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/Spawnable/SpawnableTestFixture.h
     Prefab/Spawnable/SpawnableTestFixture.cpp
