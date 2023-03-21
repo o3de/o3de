@@ -174,6 +174,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     Tests
                     Source
+                    Include
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
@@ -202,10 +203,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         Tests
                         Source
+                        Include
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::${gem_name}.Private.Object
+                        Gem::${gem_name}.Editor.Private.Object
             )
 
             # Add ${gem_name}.Editor.Tests to googletest

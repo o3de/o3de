@@ -36,6 +36,7 @@
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <native/utilities/UuidManager.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace AssetProcessor
 {
@@ -1306,6 +1307,13 @@ namespace AssetProcessor
             //query prior products for this job id
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer priorProducts;
             m_stateData->GetProductsByJobID(job.m_jobID, priorProducts);
+
+            ProductOutputUtil::FinalizeProduct(
+                m_stateData,
+                m_platformConfig,
+                processedAsset.m_entry.m_sourceAssetReference,
+                processedAsset.m_response.m_outputProducts,
+                processedAsset.m_entry.m_platformInfo.m_identifier);
 
             //make new product entries from the job response output products
             ProductInfoList newProducts;
@@ -2778,6 +2786,9 @@ namespace AssetProcessor
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests interface is not available.");
 
+        auto* uuidManagerInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidManagerInterface, "Programmer Error - IUuidRequests interface is not available.");
+
         // During unit tests, it can be the case that cache folders are actually in a temp folder structure
         // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
         // for deletions may report the canonical path (/private/var/...) when the 'cache root' or watched folder
@@ -3004,6 +3015,8 @@ namespace AssetProcessor
                     }
                 }
 
+                const bool isMetadataEnabledType = uuidManagerInterface->IsGenerationEnabledForFile(normalizedPath.toUtf8().constData());
+
                 // is it being overridden by a higher priority file?
                 QString overrider;
                 if (examineFile.m_isDelete)
@@ -3040,7 +3053,7 @@ namespace AssetProcessor
                         }
                     }
                 }
-                else
+                else if(!isMetadataEnabledType)
                 {
                     overrider = m_platformConfig->GetOverridingFile(sourceAssetReference.RelativePath().c_str(), sourceAssetReference.ScanFolderPath().c_str());
                 }

@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include <${Name}/${Name}TypeIds.h>
+
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 
@@ -18,11 +20,11 @@ namespace ${SanitizedCppName}
     class ${SanitizedCppName}Requests
     {
     public:
-        AZ_RTTI(${SanitizedCppName}Requests, "{${Random_Uuid}}");
+        AZ_RTTI(${SanitizedCppName}Requests, ${SanitizedCppName}RequestsTypeId);
         virtual ~${SanitizedCppName}Requests() = default;
         // Put your public methods here
     };
-    
+
     class ${SanitizedCppName}BusTraits
         : public AZ::EBusTraits
     {
