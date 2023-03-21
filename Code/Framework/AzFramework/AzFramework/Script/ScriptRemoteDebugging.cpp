@@ -427,10 +427,15 @@ namespace AzFramework
             // pointer doesn't show up when the user ALT+TAB out of the Editor window.
             // We need to make mouse cursor visible again and it fixes all the Linux
             // problems, and it doesn't hurt Windows either.
+            SystemCursorState systemCursorState; // Remember the state of the cursor.
             AzFramework::InputSystemCursorRequestBus::Event(
                 AzFramework::InputDeviceMouse::Id,
-                &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                AzFramework::SystemCursorState::UnconstrainedAndVisible);
+                [&systemCursorState](AzFramework::InputSystemCursorRequests* requests)
+                {
+                    systemCursorState = requests->GetSystemCursorState();
+                    requests->SetSystemCursorState(AzFramework::SystemCursorState::UnconstrainedAndVisible);
+                }
+            );
 #endif
 
             ScriptDebugAckBreakpoint response;
@@ -462,11 +467,11 @@ namespace AzFramework
             }
 
 #if AZ_TRAIT_AZFRAMEWORK_SHOW_MOUSE_ON_LUA_BREAKPOINT
-            // Hide the mouse pointer again, and the game should continue running as usual.
+            // Restore the state of the mouse cursor, and the game should continue running as usual.
             AzFramework::InputSystemCursorRequestBus::Event(
                 AzFramework::InputDeviceMouse::Id,
                 &AzFramework::InputSystemCursorRequests::SetSystemCursorState,
-                AzFramework::SystemCursorState::ConstrainedAndHidden);
+                systemCursorState);
 #endif
 
         }
