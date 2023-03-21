@@ -427,7 +427,7 @@ namespace AzFramework
             // pointer doesn't show up when the user ALT+TAB out of the Editor window.
             // We need to make mouse cursor visible again and it fixes all the Linux
             // problems, and it doesn't hurt Windows either.
-            SystemCursorState systemCursorState; // Remember the state of the cursor.
+            SystemCursorState systemCursorState{}; // Remember the state of the cursor.
             AzFramework::InputSystemCursorRequestBus::Event(
                 AzFramework::InputDeviceMouse::Id,
                 [&systemCursorState](AzFramework::InputSystemCursorRequests* requests)
