@@ -311,6 +311,42 @@ def delete(file_list, del_files, del_dirs):
             return False
     return True
 
+def rename(src: str | bytes, dst: str | bytes) -> bool:
+    """
+    Given a file or directory path, will rename from src to dst.
+
+    :param src: Full path to file to rename
+    :param dst: Full path to renamed file
+
+    Returns a boolean for success or failure of the operation.
+    """
+
+    logger.info(f"Renaming {src} to {dst}.")
+    def _rename_helper(src: str | bytes, dst: str | bytes) -> bool:
+        """ Helper: Change file permissions and renames the file."""
+        try:
+            os.chmod(src, 0o777)
+            os.rename(src,dst)
+            return True
+        except OSError as e:
+            logger.error(f"Could not rename {e.filename} Error: {e.strerror}.")
+            return False
+
+    if not os.path.exists(src):
+        logger.error(f"No file located at: {src}")
+        return False
+    if os.path.exists(dst):
+        logger.error(f"File already exists at: {dst}")
+        return False
+
+    if os.path.isfile(src) and not os.path.isdir(dst):
+        return _rename_helper(src, dst)
+
+    if os.path.isdir(src) and os.path.isdir(dst):
+        return _rename_helper(src, dst)
+
+    logger.error(f"Rename failed. Please ensure source and destination are both either file or directory paths.")
+    return False
 
 def create_backup(source, backup_dir, backup_name=None):
     """

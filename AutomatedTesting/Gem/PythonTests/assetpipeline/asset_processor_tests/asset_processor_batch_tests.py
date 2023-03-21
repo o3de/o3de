@@ -328,17 +328,26 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         7. Verify that expected product files are in the cache
         """
 
-        def run_ap_skip_atom_output(asset_processor):
-            result, output = asset_processor.batch_process(capture_output=True, skip_atom_output=True)
+        def run_ap_reprocess_and_skip_atom_output(asset_processor):
+            source_folder = asset_processor.project_test_source_folder()
+            reprocess_file_list = [os.path.join(source_folder, "a.fbx"),
+                                   os.path.join(source_folder, "b.fbx")]
+
+            result, output = asset_processor.batch_process(capture_output=True,
+                                                           skip_atom_output=True,
+                                                           extra_params=[f"--reprocessFileList={reprocess_file_list}",
+                                                                         "--regset=\"/Amazon/AssetProcessor/Settings/Jobs/maxJobs=1\""])
+
             # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
-            logger.info(f"Asset Processor Output: {pformat(output)}")
+            if not result:
+                logger.info(f"Asset Processor Output: {pformat(output)}")
             return result, output
 
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
 
         # Launching AP, verify it is failing
-        result, output = run_ap_skip_atom_output(asset_processor)
+        result, output = run_ap_reprocess_and_skip_atom_output(asset_processor)
         assert result == False, \
             'AssetProcessorBatch should have failed because the generated output products should share the same name.'
 
@@ -352,14 +361,11 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
             "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "rename.txt"
         )
 
-        file_system.delete(asset_info_file, True, False)
-        waiter.wait_for(lambda: not os.path.exists(asset_info_file), timeout=CONSTANTS.TIMEOUT_5)
-
-        os.rename(data_for_rename, asset_info_file)
-        waiter.wait_for(lambda: os.path.exists(asset_info_file), timeout=CONSTANTS.TIMEOUT_5)
+        waiter.wait_for(lambda: file_system.delete(asset_info_file, True, False), timeout=CONSTANTS.TIMEOUT_5)
+        waiter.wait_for(lambda: file_system.rename(data_for_rename, asset_info_file), timeout=CONSTANTS.TIMEOUT_5)
 
         # Reprocessing files and making sure there are no failed jobs
-        result, output = run_ap_skip_atom_output(asset_processor)
+        result, output = run_ap_reprocess_and_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
