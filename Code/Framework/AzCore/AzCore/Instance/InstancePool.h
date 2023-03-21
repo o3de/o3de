@@ -181,7 +181,7 @@ namespace AZ
             const char* name = AZ::AzTypeInfo<T>::Name();
             auto moduleId = Environment::GetModuleId();
 
-            // the string length is 2x the pointer size (each byte takes 2 hexadecimal characters + 2 bytes for the "0x"
+            // the string length is 2x the pointer size (each byte takes 2 hexadecimal characters) + 2 bytes for the "0x"
             const auto nameLength = sizeof(moduleId) * 2 + 2 + strlen(name);
 
             AZStd::unique_ptr<char[]> fullname(new char[nameLength]);
