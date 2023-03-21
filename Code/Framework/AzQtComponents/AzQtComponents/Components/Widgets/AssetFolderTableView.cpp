@@ -61,7 +61,6 @@ namespace AzQtComponents
         {
             selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
             emit doubleClicked(idx);
-            return;
         }
     }
 
