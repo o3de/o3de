@@ -8,15 +8,19 @@
 
 #pragma once
 
-#include <ScriptAutomation/ScriptAutomationBus.h>
-
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
+#include <Atom/Component/DebugCamera/CameraControllerBus.h>
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
-#include <Atom/Feature/Utils/FrameCaptureBus.h>
-#include <Atom/Feature/Utils/FrameCaptureTestBus.h>
+
+#include <ScriptAutomation/ScriptAutomationBus.h>
+
+#include <AssetStatusTracker.h>
+#include <ImageComparisonOptions.h>
+#include <ImGui/ImGuiAssetBrowser.h>
+#include <ScriptReporter.h>
 
 namespace AZ
 {
@@ -42,6 +46,7 @@ namespace ScriptAutomation
         , public ScriptAutomationRequestBus::Handler
         , public AZ::Render::ProfilingCaptureNotificationBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
+        , public AZ::Debug::CameraControllerNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ScriptAutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", ScriptAutomationRequests);
@@ -59,11 +64,28 @@ namespace ScriptAutomation
         void SetIdleFrames(int numFrames) override;
         void SetIdleSeconds(float numSeconds) override;
         void SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId) override;
+        void StartFrameCapture(const AZStd::string& imageName) override;
+        void StopFrameCapture() override;
+        void SetImageComparisonToleranceLevel(const AZStd::string& presetName) override;
+
         void StartProfilingCapture() override;
 
         void ActivateScript(const char* scriptPath) override;
         void DeactivateScripts() override;
 
+        void SetCameraEntity(AZ::Entity* cameraEntity) override;
+        const AZ::Entity* GetCameraEntity() const override;
+
+        void StartAssetTracking() override;
+        void StopAssetTracking() override;
+        void ExpectAssets(const AZStd::string& sourceAssetPath, uint32_t expectedCount) override;
+        void WaitForExpectAssetsFinish(float timeout) override;
+
+        void ExecuteScript(const AZStd::string& scriptFilePath) override;
+
+        // show/hide imgui
+        void SetShowImGui(bool show) override;
+        void RestoreShowImGui() override;
     protected:
         // AZ::Component implementation
         void Activate() override;
@@ -87,8 +109,15 @@ namespace ScriptAutomation
         void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override;
         void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override;
 
+        // CameraControllerNotificationBus overrides...
+        void OnCameraMoveEnded(AZ::TypeId controllerTypeId, uint32_t channels) override;
 
-        void ExecuteScript(const char* scriptFilePath);
+        void PrepareAndExecuteScript(const AZStd::string& scriptFilePath);
+        void AbortScripts(const AZStd::string& reason);
+
+        void RenderImGui();
+        void OpenScriptRunnerDialog();
+        void RenderScriptRunnerDialog();
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua
@@ -107,5 +136,36 @@ namespace ScriptAutomation
         bool m_isStarted = false;
         bool m_exitOnFinish = false;
         bool m_doFinalCleanup = false;
+
+        bool m_isCapturePending = false;
+
+    private:
+
+        ImGuiAssetBrowser m_scriptBrowser;
+        ScriptReporter m_scriptReporter;
+        //< Tracks when an executing script just finished so we know when to call ScriptReporter::PopScript().
+        bool m_shouldPopScript = false;
+
+        ImageComparisonOptions m_imageComparisonOptions;
+
+        AZ::Entity* m_cameraEntity = nullptr;
+
+        bool m_waitForAssetTracker = false;
+        float m_assetTrackingTimeout = 0.0f;
+        AssetStatusTracker m_assetStatusTracker;
+
+        //< Tracks which lua scripts are currently being executed. Used to prevent infinite recursion.
+        AZStd::unordered_set<AZ::Data::AssetId> m_executingScripts;
+
+        bool m_prevShowImGui = true;
+        bool m_showImGui = true;
+
+        bool m_showScriptRunnerDialog = false;
+
+        bool m_shouldRestoreViewportSize = false;
+        int m_savedViewportWidth = 0;
+        int m_savedViewportHeight = 0;
+
+        bool m_doFinalScriptCleanup = false;
     };
 } // namespace ScriptAutomation

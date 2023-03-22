@@ -11,7 +11,7 @@
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/string/string_view.h>
-
+#include <AzCore/Component/Entity.h>
 
 namespace AZ
 {
@@ -57,12 +57,29 @@ namespace ScriptAutomation
 
         //! pass the frame capture id to the automation system so it can listen for capture completion
         virtual void SetFrameCaptureId(AZ::Render::FrameCaptureId frameCaptureId) = 0;
+        virtual void StartFrameCapture(const AZStd::string& imageName) = 0;
+        virtual void StopFrameCapture() = 0;
+
+        virtual void SetImageComparisonToleranceLevel(const AZStd::string& presetName) = 0;
 
         //! tell the automation system that a profiling capture has started
         virtual void StartProfilingCapture() = 0;
 
         //! Add an operation into the queue for processing later
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
+
+        virtual void SetCameraEntity(AZ::Entity* cameraEntity) = 0;
+        virtual const AZ::Entity* GetCameraEntity() const = 0;
+
+        virtual void StartAssetTracking() = 0;
+        virtual void StopAssetTracking() = 0;
+        virtual void ExpectAssets(const AZStd::string& sourceAssetPath, uint32_t expectedCount) = 0;
+        virtual void WaitForExpectAssetsFinish(float timeout) = 0;
+
+        virtual void ExecuteScript(const AZStd::string& scriptFilePath) = 0;
+
+        virtual void SetShowImGui(bool show) = 0;
+        virtual void RestoreShowImGui() = 0;
     };
 
     class ScriptAutomationRequestsBusTraits

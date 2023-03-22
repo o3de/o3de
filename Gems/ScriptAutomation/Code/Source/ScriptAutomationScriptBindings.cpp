@@ -6,164 +6,191 @@
  *
  */
 
-#include <ScriptAutomationSystemComponent.h>
-
-#include <ScriptAutomationScriptBindings.h>
-
-#include <AzCore/Console/IConsole.h>
+#include <AzCore/Debug/ProfilerBus.h>
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/StringFunc/StringFunc.h>
-#include <AzCore/Debug/ProfilerBus.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/Settings/SettingsRegistryScriptUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-
-#include <AzCore/std/string/string.h>
-#include <AzCore/std/optional.h>
-#include <AzCore/IO/Path/Path.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
+#include <Atom/Component/DebugCamera/ArcBallControllerComponent.h>
+#include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
+#include <ScriptableImGui.h>
+#include <ScriptAutomationScriptBindings.h>
+#include <ScriptAutomationSystemComponent.h>
+#include <Utils.h>
+
 namespace ScriptAutomation
 {
-    namespace Utils
-    {
-        bool SupportsResizeClientAreaOfDefaultWindow()
-        {
-            return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
-        }
-
-        void ResizeClientArea(uint32_t width, uint32_t height, const AzFramework::WindowPosOptions& options)
-        {
-            AzFramework::NativeWindowHandle windowHandle = nullptr;
-            AzFramework::WindowSystemRequestBus::BroadcastResult(
-                windowHandle,
-                &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
-
-            AzFramework::WindowSize clientAreaSize = {width, height};
-            AzFramework::WindowRequestBus::Event(windowHandle, &AzFramework::WindowRequestBus::Events::ResizeClientArea, clientAreaSize, options);
-            AzFramework::WindowSize newWindowSize;
-            AzFramework::WindowRequestBus::EventResult(newWindowSize, windowHandle, &AzFramework::WindowRequests::GetClientAreaSize);
-            AZ_Error("ResizeClientArea", newWindowSize.m_width == width && newWindowSize.m_height == height,
-                "Requested window resize to %ux%u but got %ux%u. This display resolution is too low or desktop scaling is too high.",
-                width, height, newWindowSize.m_width, newWindowSize.m_height);
-        }
-
-        bool SupportsToggleFullScreenOfDefaultWindow()
-        {
-            return AzFramework::NativeWindow::CanToggleFullScreenStateOfDefaultWindow();
-        }
-
-        void ToggleFullScreenOfDefaultWindow()
-        {
-            AzFramework::NativeWindow::ToggleFullScreenStateOfDefaultWindow();
-        }
-
-        AZ::IO::FixedMaxPath GetProfilingPath(bool resolvePath)
-        {
-            AZ::IO::FixedMaxPath path("@user@");
-            if (resolvePath)
-            {
-                if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
-                {
-                    path.clear();
-                    settingsRegistry->Get(path.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_ProjectUserPath);
-                }
-            }
-            path /= "scriptautomation/profiling";
-
-            return path.LexicallyNormal();
-        }
-
-        AZ::IO::FixedMaxPath ResolvePath(const AZ::IO::PathView path)
-        {
-            AZStd::optional<AZ::IO::FixedMaxPath> resolvedPath = AZ::IO::FileIOBase::GetInstance()->ResolvePath(path);
-            return resolvedPath ? resolvedPath.value() : AZ::IO::FixedMaxPath{};
-        }
-    } // namespace Utils
-
     namespace Bindings
     {
-        void Print(const AZStd::string& message [[maybe_unused]])
+        void Error(const AZStd::string& message)
         {
-#ifndef _RELEASE //AZ_TracePrintf does nothing in release, ignore this call
-            auto func = [message]()
-            {
-                AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
-            };
-
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
-        }
-
-        void Warning(const AZStd::string& message [[maybe_unused]])
-        {
-#ifndef _RELEASE //AZ_Warning does nothing in release, ignore this call
-            auto func = [message]()
-            {
-                AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
-            };
-
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
-        }
-
-        void Error(const AZStd::string& message [[maybe_unused]])
-        {
-#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
-            auto func = [message]()
+            auto operation = [message]()
             {
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void ExecuteConsoleCommand(const AZStd::string& command)
+        void Warning(const AZStd::string& message)
         {
-            auto func = [command]()
+            auto operation = [message]()
             {
-                AzFramework::ConsoleRequestBus::Broadcast(
-                    &AzFramework::ConsoleRequests::ExecuteConsoleCommand, command.c_str());
+                AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void Print(const AZStd::string& message)
+        {
+            auto operation = [message]()
+            {
+                AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        AZStd::string ResolvePath(const AZStd::string& path)
+        {
+            return Utils::ResolvePath(path);
+        }
+
+        AZStd::string NormalizePath(const AZStd::string& path)
+        {
+            AZStd::string normalizedPath = path;
+            AzFramework::StringFunc::Path::Normalize(normalizedPath);
+            return normalizedPath;
+        }
+
+        void RunScript(const AZStd::string& scriptFilePath)
+        {
+            // Unlike other callback functions, we process immediately instead of pushing onto the m_scriptOperations queue.
+            // This function is special because running the script is what adds more commands onto the m_scriptOperations queue.
+            ScriptAutomationInterface::Get()->ExecuteScript(scriptFilePath);
         }
 
         void IdleFrames(int numFrames)
         {
-            auto func = [numFrames]()
+            auto operation = [numFrames]()
             {
                 auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
                 scriptAutomationInterface->SetIdleFrames(numFrames);
             };
 
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
         void IdleSeconds(float numSeconds)
         {
-            auto func = [numSeconds]()
+            auto operation = [numSeconds]()
             {
                 auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
                 scriptAutomationInterface->SetIdleSeconds(numSeconds);
             };
 
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void SetImguiValue(AZ::ScriptDataContext& dc)
+        {
+            if (dc.GetNumArguments() != 2)
+            {
+                AZ_Error("ScriptAutomation", false, "Wrong number of arguments for SetImguiValue.");
+                return;
+            }
+
+            if (!dc.IsString(0))
+            {
+                AZ_Error("ScriptAutomation", false, "SetImguiValue first argument must be a string");
+                return;
+            }
+
+            const char* fieldName = nullptr;
+            dc.ReadArg(0, fieldName);
+
+            AZStd::string fieldNameString = fieldName; // Because the lambda will need to capture a copy of something, not a pointer
+
+            if (dc.IsBoolean(1))
+            {
+                bool value = false;
+                dc.ReadArg(1, value);
+
+                auto func = [fieldNameString, value]()
+                {
+                    ScriptableImGui::SetBool(fieldNameString, value);
+                };
+
+                ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            }
+            else if (dc.IsNumber(1))
+            {
+                float value = 0.0f;
+                dc.ReadArg(1, value);
+
+                auto func = [fieldNameString, value]()
+                {
+                    ScriptableImGui::SetNumber(fieldNameString, value);
+                };
+
+                ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            }
+            else if (dc.IsString(1))
+            {
+                const char* value = nullptr;
+                dc.ReadArg(1, value);
+
+                AZStd::string valueString = value; // Because the lambda will need to capture a copy of something, not a pointer
+
+                auto func = [fieldNameString, valueString]()
+                {
+                    ScriptableImGui::SetString(fieldNameString, valueString);
+                };
+
+                ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            }
+            else if (dc.IsClass<AZ::Vector3>(1))
+            {
+                AZ::Vector3 value = AZ::Vector3::CreateZero();
+                dc.ReadArg(1, value);
+
+                auto func = [fieldNameString, value]()
+                {
+                    ScriptableImGui::SetVector(fieldNameString, value);
+                };
+
+                ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            }
+            else if (dc.IsClass<AZ::Vector2>(1))
+            {
+                AZ::Vector2 value = AZ::Vector2::CreateZero();
+                dc.ReadArg(1, value);
+
+                auto func = [fieldNameString, value]()
+                {
+                    ScriptableImGui::SetVector(fieldNameString, value);
+                };
+
+                ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
+            }
         }
 
         void ResizeViewport(int width, int height)
         {
-            auto operation = [width,height]()
+            auto operation = [width, height]()
             {
                 if (Utils::SupportsResizeClientAreaOfDefaultWindow())
                 {
@@ -180,126 +207,55 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CapturePassTimestamp(const AZStd::string& outputFilePath)
+        void ExecuteConsoleCommand(const AZStd::string& command)
         {
-            auto operation = [outputFilePath]()
+            auto operation = [command]()
             {
-                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-
-                scriptAutomationInterface->StartProfilingCapture();
-                scriptAutomationInterface->PauseAutomation();
-
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassTimestamp, outputFilePath);
-            };
-
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
-        }
-        void CaptureCpuFrameTime(const AZStd::string& outputFilePath)
-        {
-            auto operation = [outputFilePath]()
-            {
-                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-
-                scriptAutomationInterface->StartProfilingCapture();
-                scriptAutomationInterface->PauseAutomation();
-
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime, outputFilePath);
+                AzFramework::ConsoleRequestBus::Broadcast(&AzFramework::ConsoleRequests::ExecuteConsoleCommand, command.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CapturePassPipelineStatistics(const AZStd::string& outputFilePath)
+        void SetShowImGui(bool show)
         {
-            auto operation = [outputFilePath]()
+            auto operation = [show]()
             {
-                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-
-                scriptAutomationInterface->StartProfilingCapture();
-                scriptAutomationInterface->PauseAutomation();
-
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics, outputFilePath);
+                ScriptAutomationInterface::Get()->SetShowImGui(show);
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CaptureCpuProfilingStatistics(const AZStd::string& outputFilePath)
-        {
-            auto operation = [outputFilePath]()
-            {
-
-                if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
-                {
-                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-
-                    scriptAutomationInterface->StartProfilingCapture();
-                    scriptAutomationInterface->PauseAutomation();
-                    
-                    profilerSystem->CaptureFrame(outputFilePath);
-                }
-            };
-
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
-        }
-
-        void CaptureBenchmarkMetadata(const AZStd::string& benchmarkName, const AZStd::string& outputFilePath)
-        {
-            auto operation = [benchmarkName, outputFilePath]()
-            {
-                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-
-                scriptAutomationInterface->StartProfilingCapture();
-                scriptAutomationInterface->PauseAutomation();
-
-                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata, benchmarkName, outputFilePath);
-            };
-
-            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
-        }
-
-        AZStd::string ResolvePath(const AZStd::string& path)
-        {
-            return Utils::ResolvePath(AZ::IO::PathView(path)).String();
-        }
-
-        AZStd::string GetRenderApiName()
-        {
-            AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get();
-            return rpiSystem->GetRenderApiName().GetCStr();
-        }
-
-        AZStd::string GetProfilingOutputPath(bool normalized)
-        {
-            return Utils::GetProfilingPath(normalized).String();
-        }
-
-        bool PrepareForScreenCapture(const AZStd::string& imageName)
+        bool PrepareForScreenCapture(const AZStd::string& imageName, AZStd::string& fullFilePath)
         {
             AZ::Render::FrameCapturePathOutcome pathOutcome;
+
             AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+                pathOutcome,
+                &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath,
+                imageName, true);
 
             if (!pathOutcome.IsSuccess())
             {
+                AZ_Error("ScriptAutomation", false, "%s", pathOutcome.GetError().m_errorMessage.c_str());
                 return false;
             }
 
-            AZStd::string fullFilePath = pathOutcome.GetValue();
+            fullFilePath = pathOutcome.GetValue();
 
-            if (!AZ::IO::PathView(fullFilePath).IsRelativeTo(Utils::ResolvePath("@user@")))
+            if (!AZ::IO::PathView(fullFilePath).IsRelativeTo(AZ::IO::PathView(ResolvePath("@user@"))))
             {
                 // The main reason we require screenshots to be in a specific folder is to ensure we don't delete or replace some other important file.
                 AZ_Error("ScriptAutomation", false, "Screenshots must be captured under the '%s' folder. Attempted to save screenshot to '%s'.",
-                    Utils::ResolvePath("@user@").c_str(),
+                    ResolvePath("@user@").c_str(),
                     fullFilePath.c_str());
 
                 return false;
             }
 
-            // Delete the file if it already exists
-            if (AZ::IO::LocalFileIO::GetInstance()->Exists(fullFilePath.c_str()) &&
-                !AZ::IO::LocalFileIO::GetInstance()->Remove(fullFilePath.c_str()))
+            // Delete the file if it already exists because if the screen capture fails, we don't want to do a screenshot comparison test using an old screenshot.
+            if (AZ::IO::LocalFileIO::GetInstance()->Exists(fullFilePath.c_str()) && !AZ::IO::LocalFileIO::GetInstance()->Remove(fullFilePath.c_str()))
             {
                 AZ_Error("ScriptAutomation", false, "Failed to delete existing screenshot file '%s'.", fullFilePath.c_str());
                 return false;
@@ -307,6 +263,7 @@ namespace ScriptAutomation
 
             auto scriptAutomationInterface = ScriptAutomationInterface::Get();
 
+            scriptAutomationInterface->StartFrameCapture(imageName);
             scriptAutomationInterface->PauseAutomation();
 
             return true;
@@ -327,7 +284,8 @@ namespace ScriptAutomation
         {
             auto operation = [envPath]()
             {
-                AZ::Render::FrameCaptureTestRequestBus::Broadcast(&AZ::Render::FrameCaptureTestRequestBus::Events::SetTestEnvPath, envPath);
+                AZ::Render::FrameCaptureTestRequestBus::Broadcast(
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::SetTestEnvPath, envPath);
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
@@ -355,39 +313,88 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
+        void SelectImageComparisonToleranceLevel(const AZStd::string& presetName)
+        {
+            auto operation = [presetName]()
+            {
+                ScriptAutomationInterface::Get()->SetImageComparisonToleranceLevel(presetName);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
         void CaptureScreenshot(const AZStd::string& imageName)
         {
+            SetShowImGui(false);
+
             auto operation = [imageName]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(imageName))
+                AZStd::string screenshotFilePath;
+                if (PrepareForScreenCapture(imageName, screenshotFilePath))
                 {
-                    AZ::Render::FrameCapturePathOutcome pathOutcome;
-                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
-
-                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
-                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                        captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureOutcome captureOutcome;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
-
-                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
-                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
-                    if (captureOutcome.IsSuccess())
+                    if (!captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
-                    }
-                    else
-                    {
-                        AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture");
+                        AZ_Error("ScriptAutomation", false, "Failed to initiate frame capture for '%s'.", screenshotFilePath.c_str());
+                        scriptAutomationInterface->StopFrameCapture();
                         scriptAutomationInterface->ResumeAutomation();
+                        return;
                     }
+
+                    scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
                 }
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+
+            // restore imgui show/hide
+            ScriptAutomationInterface::Get()->QueueScriptOperation(
+                []()
+                {
+                    ScriptAutomationInterface::Get()->RestoreShowImGui();
+                });
+        }
+
+        void CaptureScreenshotWithImGui(const AZStd::string& imageName)
+        {
+            SetShowImGui(true);
+
+            auto operation = [imageName]()
+            {
+                // Note this will pause the script until the capture is complete
+                AZStd::string screenshotFilePath;
+                if (PrepareForScreenCapture(imageName, screenshotFilePath))
+                {
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                        captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshot, screenshotFilePath);
+
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                    if (!captureOutcome.IsSuccess())
+                    {
+                        AZ_Error("ScriptAutomation", false, "Failed to initiate frame capture for '%s'.", screenshotFilePath.c_str());
+                        scriptAutomationInterface->StopFrameCapture();
+                        scriptAutomationInterface->ResumeAutomation();
+                        return;
+                    }
+
+                    scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
+                }
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+
+            // restore imgui show/hide
+            ScriptAutomationInterface::Get()->QueueScriptOperation(
+                []()
+                {
+                    ScriptAutomationInterface::Get()->RestoreShowImGui();
+                });
         }
 
         void CaptureScreenshotWithPreview(const AZStd::string& imageName)
@@ -395,30 +402,23 @@ namespace ScriptAutomation
             auto operation = [imageName]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(imageName))
+                AZStd::string screenshotFilePath;
+                if (PrepareForScreenCapture(imageName, screenshotFilePath))
                 {
-                    AZ::Render::FrameCapturePathOutcome pathOutcome;
-                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
-
-                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
-                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(
+                        captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureOutcome captureOutcome;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CaptureScreenshotWithPreview, screenshotFilePath);
-
-                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
-                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
-                    if (captureOutcome.IsSuccess())
+                    if (!captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
-                    }
-                    else
-                    {
-                        AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture with preview");
+                        AZ_Error("ScriptAutomation", false, "Failed to initiate frame capture for '%s'.", screenshotFilePath.c_str());
+                        scriptAutomationInterface->StopFrameCapture();
                         scriptAutomationInterface->ResumeAutomation();
+                        return;
                     }
+
+                    scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
                 }
             };
 
@@ -427,28 +427,27 @@ namespace ScriptAutomation
 
         void CapturePassAttachment(AZ::ScriptDataContext& dc)
         {
-            // manually parse args as this takes a lua table as an arg
             if (dc.GetNumArguments() != 3 && dc.GetNumArguments() != 4)
             {
-                 AZ_Error("ScriptAutomation", false, "Script: CapturePassAttachment needs three or four arguments");
+                AZ_Error("ScriptAutomation", false, "CapturePassAttachment needs three or four arguments.");
                 return;
             }
 
             if (!dc.IsTable(0))
             {
-                AZ_Error("ScriptAutomation", false, "Script: CapturePassAttachment's first argument must be a table of strings");
+                AZ_Error("ScriptAutomation", false, "CapturePassAttachment's first argument must be a table of strings");
                 return;
             }
 
             if (!dc.IsString(1) || !dc.IsString(2))
             {
-                AZ_Error("ScriptAutomation", false, "Script: CapturePassAttachment's second and third argument must be strings");
+                AZ_Error("ScriptAutomation", false, "CapturePassAttachment's second and third argument must be strings");
                 return;
             }
 
             if (dc.GetNumArguments() == 4 && !dc.IsString(3))
             {
-                AZ_Error("ScriptAutomation", false, "Script: CapturePassAttachment's forth argument must be a string 'Input' or 'Output'");
+                AZ_Error("ScriptAutomation", false, "CapturePassAttachment's forth argument must be a string 'Input' or 'Output'");
                 return;
             }
 
@@ -489,7 +488,7 @@ namespace ScriptAutomation
                 {
                     if (!stringtable.IsString(elementIndex))
                     {
-                        AZ_Error("ScriptAutomation", false, "Script: CapturePassAttachment's first argument must contain only strings");
+                        AZ_Error("ScriptAutomation", false, "CapturePassAttachment's first argument must contain only strings.");
                         return;
                     }
 
@@ -504,36 +503,23 @@ namespace ScriptAutomation
             auto operation = [passHierarchy, slot, imageName, readbackOption]()
             {
                 // Note this will pause the script until the capture is complete
-                if (PrepareForScreenCapture(imageName))
+                AZStd::string screenshotFilePath;
+                if (PrepareForScreenCapture(imageName, screenshotFilePath))
                 {
-                    AZ::Render::FrameCapturePathOutcome pathOutcome;
-                    AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
-                        pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
-
-                    AZ_Assert(pathOutcome.IsSuccess(), "Path check should already be done in PrepareForScreenCapture().");
-                    AZStd::string screenshotFilePath = pathOutcome.GetValue();
+                    AZ::Render::FrameCaptureOutcome captureOutcome;
+                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(captureOutcome, &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment, screenshotFilePath, passHierarchy, slot, readbackOption);
 
                     auto scriptAutomationInterface = ScriptAutomationInterface::Get();
-                    AZ::Render::FrameCaptureOutcome captureOutcome;
-                    AZ::Render::FrameCaptureRequestBus::BroadcastResult(
-                        captureOutcome,
-                        &AZ::Render::FrameCaptureRequestBus::Events::CapturePassAttachment,
-                        screenshotFilePath,
-                        passHierarchy,
-                        slot,
-                        readbackOption);
-
-                    AZ_Error("ScriptAutomation", captureOutcome.IsSuccess(),
-                        "Frame capture initialization failed. %s", captureOutcome.GetError().m_errorMessage.c_str());
-                    if (captureOutcome.IsSuccess())
+                    if (!captureOutcome.IsSuccess())
                     {
-                        scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
-                    }
-                    else
-                    {
-                        AZ_Error("ScriptAutomation", false, "Script: failed to trigger screenshot capture of pass");
+                        AZ_Error("ScriptAutomation", false, "Failed to initiate frame capture for '%s'", screenshotFilePath.c_str());
+                        scriptAutomationInterface->StopFrameCapture();
                         scriptAutomationInterface->ResumeAutomation();
+                        return;
                     }
+
+                    scriptAutomationInterface->SetFrameCaptureId(captureOutcome.GetValue());
+
                 }
             };
 
@@ -576,6 +562,359 @@ namespace ScriptAutomation
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
+
+        bool ValidateProfilingCaptureScripContexts(AZ::ScriptDataContext& dc, AZStd::string& outputFilePath)
+        {
+            if (dc.GetNumArguments() != 1)
+            {
+                AZ_Error("ScriptAutomation", false, "ProfilingCaptureScriptDataContext needs one argument.");
+                return false;
+            }
+
+            if (!dc.IsString(0))
+            {
+                AZ_Error(
+                    "ScriptAutomation", false, "ProfilingCaptureScriptDataContext's first (and only) argument must be of type string.");
+                return false;
+            }
+
+            // Read slot name and output file path
+            const char* stringValue = nullptr;
+            dc.ReadArg(0, stringValue);
+            if (stringValue == nullptr)
+            {
+                AZ_Error("ScriptAutomation", false, "ProfilingCaptureScriptDataContext failed to read the string value.");
+                return false;
+            }
+
+            outputFilePath = AZStd::string(stringValue);
+            return true;
+        }
+
+        void CapturePassTimestamp(AZ::ScriptDataContext& dc)
+        {
+            AZStd::string outputFilePath;
+            const bool readScriptDataContext = ValidateProfilingCaptureScripContexts(dc, outputFilePath);
+            if (!readScriptDataContext)
+            {
+                return;
+            }
+
+            auto operation = [outputFilePath]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
+
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassTimestamp, outputFilePath);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CaptureCpuFrameTime(AZ::ScriptDataContext& dc)
+        {
+            AZStd::string outputFilePath;
+            const bool readScriptDataContext = ValidateProfilingCaptureScripContexts(dc, outputFilePath);
+            if (!readScriptDataContext)
+            {
+                return;
+            }
+
+            auto operation = [outputFilePath]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
+
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureCpuFrameTime, outputFilePath);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        float DegToRad(float degrees)
+        {
+            return AZ::DegToRad(degrees);
+        }
+
+        AZStd::string GetRenderApiName()
+        {
+            AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get();
+            return rpiSystem->GetRenderApiName().GetCStr();
+        }
+
+        AZStd::string GetProfilingOutputPath(bool resolvePath)
+        {
+            return Utils::GetProfilingPath(resolvePath).String();
+        }
+
+        void CapturePassPipelineStatistics(AZ::ScriptDataContext& dc)
+        {
+            AZStd::string outputFilePath;
+            const bool readScriptDataContext = ValidateProfilingCaptureScripContexts(dc, outputFilePath);
+            if (!readScriptDataContext)
+            {
+                return;
+            }
+
+            auto operation = [outputFilePath]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
+
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CapturePassPipelineStatistics, outputFilePath);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CaptureCpuProfilingStatistics(AZ::ScriptDataContext& dc)
+        {
+            AZStd::string outputFilePath;
+            const bool readScriptDataContext = ValidateProfilingCaptureScripContexts(dc, outputFilePath);
+            if (!readScriptDataContext)
+            {
+                return;
+            }
+
+            auto operation = [outputFilePath]()
+            {
+                if (auto profilerSystem = AZ::Debug::ProfilerSystemInterface::Get(); profilerSystem)
+                {
+                    auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                    scriptAutomationInterface->StartProfilingCapture();
+                    scriptAutomationInterface->PauseAutomation();
+                    
+                    profilerSystem->CaptureFrame(outputFilePath);
+                }
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CaptureBenchmarkMetadata(AZ::ScriptDataContext& dc)
+        {
+            if (dc.GetNumArguments() != 2)
+            {
+                AZ_Error("ScriptAutomation", false, "CaptureBenchmarkMetadata needs two arguments, benchmarkName and outputFilePath.");
+                return;
+            }
+
+            if (!dc.IsString(0) || !dc.IsString(1))
+            {
+                AZ_Error("ScriptAutomation", false, "CaptureBenchmarkMetadata's arguments benchmarkName and outputFilePath must both be of type string.");
+                return;
+            }
+
+            const char* stringValue = nullptr;
+            AZStd::string benchmarkName;
+            AZStd::string outputFilePath;
+
+            dc.ReadArg(0, stringValue);
+            benchmarkName = AZStd::string(stringValue);
+            dc.ReadArg(1, stringValue);
+            outputFilePath = AZStd::string(stringValue);
+
+            auto operation = [benchmarkName, outputFilePath]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->StartProfilingCapture();
+                scriptAutomationInterface->PauseAutomation();
+
+                AZ::Render::ProfilingCaptureRequestBus::Broadcast(&AZ::Render::ProfilingCaptureRequestBus::Events::CaptureBenchmarkMetadata, benchmarkName, outputFilePath);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void CheckArcBallControllerHandler()
+        {
+            auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+            if (0 == AZ::Debug::ArcBallControllerRequestBus::GetNumOfEventHandlers(scriptAutomationInterface->GetCameraEntity()->GetId()))
+            {
+                AZ_Error("ScriptAutomation", false, "There is no handler for ArcBallControllerRequestBus for the camera entity.");
+            }
+        }
+
+        void CheckNoClipControllerHandler()
+        {
+            auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+            if (0 == AZ::Debug::NoClipControllerRequestBus::GetNumOfEventHandlers(scriptAutomationInterface->GetCameraEntity()->GetId()))
+            {
+                AZ_Error("ScriptAutomation", false, "There is no handler for NoClipControllerRequestBus for the camera entity.");
+            }
+        }
+
+        void ArcBallCameraController_SetCenter(AZ::Vector3 center)
+        {
+            auto operation = [center]()
+            {
+                CheckArcBallControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::ArcBallControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::ArcBallControllerRequestBus::Events::SetCenter, center);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void ArcBallCameraController_SetPan(AZ::Vector3 pan)
+        {
+            auto operation = [pan]()
+            {
+                CheckArcBallControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::ArcBallControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::ArcBallControllerRequestBus::Events::SetPan, pan);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void ArcBallCameraController_SetDistance(float distance)
+        {
+            auto operation = [distance]()
+            {
+                CheckArcBallControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::ArcBallControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(),
+                    &AZ::Debug::ArcBallControllerRequestBus::Events::SetDistance,
+                    distance);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void ArcBallCameraController_SetHeading(float heading)
+        {
+            auto operation = [heading]()
+            {
+                CheckArcBallControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::ArcBallControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(),
+                    &AZ::Debug::ArcBallControllerRequestBus::Events::SetHeading,
+                    heading);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void ArcBallCameraController_SetPitch(float pitch)
+        {
+            auto operation = [pitch]()
+            {
+                CheckArcBallControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::ArcBallControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::ArcBallControllerRequestBus::Events::SetPitch, pitch);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void NoClipCameraController_SetPosition(AZ::Vector3 position)
+        {
+            auto operation = [position]()
+            {
+                CheckNoClipControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::NoClipControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(),
+                    &AZ::Debug::NoClipControllerRequestBus::Events::SetPosition,
+                    position);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void NoClipCameraController_SetHeading(float heading)
+        {
+            auto operation = [heading]()
+            {
+                CheckNoClipControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::NoClipControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::NoClipControllerRequestBus::Events::SetHeading, heading);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void NoClipCameraController_SetPitch(float pitch)
+        {
+            auto operation = [pitch]()
+            {
+                CheckNoClipControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::NoClipControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::NoClipControllerRequestBus::Events::SetPitch, pitch);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void NoClipCameraController_SetFov(float fov)
+        {
+            auto operation = [fov]()
+            {
+                CheckNoClipControllerHandler();
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+                AZ::Debug::NoClipControllerRequestBus::Event(
+                    scriptAutomationInterface->GetCameraEntity()->GetId(), &AZ::Debug::NoClipControllerRequestBus::Events::SetFov, fov);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void AssetTracking_Start()
+        {
+            auto operation = []()
+            {
+                ScriptAutomationInterface::Get()->StartAssetTracking();
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+
+        void AssetTracking_ExpectAsset(const AZStd::string& sourceAssetPath, uint32_t expectedCount)
+        {
+            auto operation = [sourceAssetPath, expectedCount]()
+            {
+                ScriptAutomationInterface::Get()->ExpectAssets(sourceAssetPath, expectedCount);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void AssetTracking_IdleUntilExpectedAssetsFinish(float timeout)
+        {
+            auto operation = [timeout]()
+            {
+                ScriptAutomationInterface::Get()->WaitForExpectAssetsFinish(timeout);
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        void AssetTracking_Stop()
+        {
+            auto operation = []()
+            {
+                ScriptAutomationInterface::Get()->StopAssetTracking();
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
     } // namespace Bindings
 
     void ReflectScriptBindings(AZ::BehaviorContext* behaviorContext)
@@ -583,31 +922,39 @@ namespace ScriptAutomation
         AZ::MathReflect(behaviorContext);
         AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
 
-        behaviorContext->Method("Print", &Bindings::Print);
-        behaviorContext->Method("Warning", &Bindings::Warning);
+        // Utilities returning data (these special functions do return data because they don't read dynamic state)...
+        behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
+        behaviorContext->Method("NormalizePath", &Bindings::NormalizePath);
+        behaviorContext->Method("DegToRad", &Bindings::DegToRad);
+        behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
+        behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
+
+        // Utilities...
         behaviorContext->Method("Error", &Bindings::Error);
-
-        behaviorContext->Method("ExecuteConsoleCommand", &Bindings::ExecuteConsoleCommand);
-
+        behaviorContext->Method("Warning", &Bindings::Warning);
+        behaviorContext->Method("Print", &Bindings::Print);
         behaviorContext->Method("IdleFrames", &Bindings::IdleFrames);
         behaviorContext->Method("IdleSeconds", &Bindings::IdleSeconds);
         behaviorContext->Method("ResizeViewport", &Bindings::ResizeViewport);
 
-        behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
-        behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
-        behaviorContext->Method("DegToRad", &AZ::DegToRad);
-        behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
-        behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
+        behaviorContext->Method("RunScript", &Bindings::RunScript);
+        behaviorContext->Method("ExecuteConsoleCommand", &Bindings::ExecuteConsoleCommand);
+
+        // ImGui operations...
+        behaviorContext->Method("SetShowImGui", &Bindings::SetShowImGui);
+        behaviorContext->Method("SetImguiValue", &Bindings::SetImguiValue);
 
         // Screenshots...
         behaviorContext->Method("SetScreenshotFolder", &Bindings::SetScreenshotFolder);
         behaviorContext->Method("SetTestEnvPath", &Bindings::SetTestEnvPath);
         behaviorContext->Method("SetOfficialBaselineImageFolder", &Bindings::SetOfficialBaselineImageFolder);
         behaviorContext->Method("SetLocalBaselineImageFolder", &Bindings::SetLocalBaselineImageFolder);
+        behaviorContext->Method("SelectImageComparisonToleranceLevel", &Bindings::SelectImageComparisonToleranceLevel);
+
         behaviorContext->Method("CaptureScreenshot", &Bindings::CaptureScreenshot);
+        behaviorContext->Method("CaptureScreenshotWithImGui", &Bindings::CaptureScreenshotWithImGui);
         behaviorContext->Method("CaptureScreenshotWithPreview", &Bindings::CaptureScreenshotWithPreview);
         behaviorContext->Method("CapturePassAttachment", &Bindings::CapturePassAttachment);
-        behaviorContext->Method("CompareScreenshots", &Bindings::CompareScreenshots);
 
         // Profiling data...
         behaviorContext->Method("CapturePassTimestamp", &Bindings::CapturePassTimestamp);
@@ -615,5 +962,25 @@ namespace ScriptAutomation
         behaviorContext->Method("CapturePassPipelineStatistics", &Bindings::CapturePassPipelineStatistics);
         behaviorContext->Method("CaptureCpuProfilingStatistics", &Bindings::CaptureCpuProfilingStatistics);
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
+
+        // Camera...
+        behaviorContext->Method("ArcBallCameraController_SetCenter", &Bindings::ArcBallCameraController_SetCenter);
+        behaviorContext->Method("ArcBallCameraController_SetPan", &Bindings::ArcBallCameraController_SetPan);
+        behaviorContext->Method("ArcBallCameraController_SetDistance", &Bindings::ArcBallCameraController_SetDistance);
+        behaviorContext->Method("ArcBallCameraController_SetHeading", &Bindings::ArcBallCameraController_SetHeading);
+        behaviorContext->Method("ArcBallCameraController_SetPitch", &Bindings::ArcBallCameraController_SetPitch);
+        behaviorContext->Method("NoClipCameraController_SetPosition", &Bindings::NoClipCameraController_SetPosition);
+        behaviorContext->Method("NoClipCameraController_SetHeading", &Bindings::NoClipCameraController_SetHeading);
+        behaviorContext->Method("NoClipCameraController_SetPitch", &Bindings::NoClipCameraController_SetPitch);
+        behaviorContext->Method("NoClipCameraController_SetFov", &Bindings::NoClipCameraController_SetFov);
+
+        // Asset System...
+        AZ::BehaviorParameterOverrides expectedCountDetails = {"expectedCount", "Expected number of asset jobs; default=1", aznew AZ::BehaviorDefaultValue(1u)};
+        const AZStd::array<AZ::BehaviorParameterOverrides, 2> assetTrackingExpectAssetArgs = {{ AZ::BehaviorParameterOverrides{}, expectedCountDetails }};
+
+        behaviorContext->Method("AssetTracking_Start", &Bindings::AssetTracking_Start);
+        behaviorContext->Method("AssetTracking_ExpectAsset", &Bindings::AssetTracking_ExpectAsset, assetTrackingExpectAssetArgs);
+        behaviorContext->Method("AssetTracking_IdleUntilExpectedAssetsFinish", &Bindings::AssetTracking_IdleUntilExpectedAssetsFinish);
+        behaviorContext->Method("AssetTracking_Stop", &Bindings::AssetTracking_Stop);
     }
 } // namespace ScriptAutomation
