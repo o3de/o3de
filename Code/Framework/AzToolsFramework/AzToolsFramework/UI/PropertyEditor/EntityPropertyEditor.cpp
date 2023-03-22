@@ -5863,7 +5863,7 @@ namespace AzToolsFramework
         AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
     }
 
-    void EntityPropertyEditor::OnContextReset()
+    void EntityPropertyEditor::OnPrepareForContextReset()
     {
         if (IsLockedToSpecificEntities() && !m_isLevelEntityEditor)
         {

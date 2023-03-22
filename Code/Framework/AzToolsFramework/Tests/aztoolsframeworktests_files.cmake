@@ -111,6 +111,7 @@ set(FILES
     Prefab/PrefabDetachPrefabTests.cpp
     Prefab/PrefabDuplicateTests.cpp
     Prefab/PrefabEntityAliasTests.cpp
+    Prefab/PrefabEditorEntityNotificationTests.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.cpp
     Prefab/PrefabInstanceDomGeneratorTestFixture.h
     Prefab/PrefabInstanceDomGeneratorTests.cpp
