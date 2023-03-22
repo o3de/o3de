@@ -103,9 +103,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_StartAsleepWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class RigidBody_COM_ComputingWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_COM_ComputingWorks as test_module
-
     class RigidBody_MassDifferentValuesWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
 
