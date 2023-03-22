@@ -344,6 +344,20 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 private:
     static inline constexpr const char* DefaultLevelTemplateName = "Prefabs/Default_Level.prefab";
 
+    // Optional Uri to start an external lua debugger. If not specified,
+    // then the Editor will open LuaIDE.exe.
+    // For example, if using The Visual Studio Debugger Extension provided by lumbermixalot
+    // The value will be: "vscode://lumbermixalot.o3de-lua-debug/debug?"
+    // The following parameters will be added to the URI at runtime:
+    // "projectPath". Absolute path of the game projec root.
+    // "enginePath". Absolute path of the engine root. if not specified, it will be assume to be one directory above the game project root.
+    // "files[]". A list of files, 
+    // Full example using the Uri shown below:
+    // "vscode://lumbermixalot.o3de-lua-debug/debug?projectPath=D:\mydir\myproject&enginePath=C:\GIT\o3de&files[]=D:\mydir\myproject\scripts\something.lua&files[]=D:\mydir\myproject\scripts\utils\something2.lua"
+    // or
+    // "vscode://lumbermixalot.o3de-lua-debug/debug?projectPath=D:\GIT\o3de\AutomatedTesting&files[]=D:\GIT\o3de\AutomatedTesting\Assets\Scripts\something.lua"
+    static constexpr AZStd::string_view LuaDebuggerUriRegistryKey = "/O3DE/Lua/Debugger/Uri";
+
     struct PythonOutputHandler;
     AZ_PUSH_DISABLE_DLL_EXPORT_MEMBER_WARNING
     AZStd::shared_ptr<PythonOutputHandler> m_pythonOutputHandler;
@@ -374,6 +388,9 @@ private:
     void OnOpenAudioControlsEditor();
     void OnOpenUICanvasEditor();
     void OnOpenQuickAccessBar();
+
+    // @param files: A list of file paths, separated by '|';
+    void OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view enginePath, AZStd::string_view projectPath, const char * files);
 
 public:
     void ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport);
