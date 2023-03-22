@@ -39,9 +39,13 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/physx/rigid-body/")
+                        AZ::Edit::Attributes::HelpPageURL, "")
 
-                    ->DataElement(0, &EditorArticulationLinkComponent::m_config, "Configuration", "Configuration for rigid body physics.")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &EditorArticulationLinkComponent::m_config,
+                        "Configuration",
+                        "Configuration for rigid body physics.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
@@ -84,23 +88,7 @@ namespace PhysX
 
     bool EditorArticulationLinkComponent::IsRootArticulation() const
     {
-        AzToolsFramework::Components::TransformComponent* thisTransform =
-            GetEntity()->FindComponent<AzToolsFramework::Components::TransformComponent>();
-
-        AZ::EntityId parentId = thisTransform->GetParentId();
-        if (parentId.IsValid())
-        {
-            AZ::Entity* parentEntity = nullptr;
-
-            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
-
-            if (parentEntity && parentEntity->FindComponent<EditorArticulationLinkComponent>())
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return IsRootArticulationEntity<EditorArticulationLinkComponent>(GetEntity());
     }
 
     void EditorArticulationLinkComponent::Activate()

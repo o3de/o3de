@@ -99,20 +99,7 @@ namespace PhysX
 
     bool ArticulationLinkComponent::IsRootArticulation() const
     {
-        AZ::EntityId parentId = GetEntity()->GetTransform()->GetParentId();
-        if (parentId.IsValid())
-        {
-            AZ::Entity* parentEntity = nullptr;
-
-            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
-
-            if (parentEntity && parentEntity->FindComponent<ArticulationLinkComponent>())
-            {
-                return false;
-            }
-        }
-
-        return true;
+        return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
     }
 
     void ArticulationLinkComponent::Activate()
@@ -196,7 +183,12 @@ namespace PhysX
                     physicsAssetShapeConfiguration->m_subdivisionLevel,
                     assetShapes);
 
-                physicsShape = assetShapes[0];
+                if (!assetShapes.empty())
+                {
+                    physicsShape = assetShapes[0];
+                    AZ_Warning("PhysX", assetShapes.size() == 1,
+                        "Articulation %s has a link with physics mesh with more than 1 shape", GetEntity()->GetName().c_str());
+                }
             }
             else
             {
@@ -233,7 +225,8 @@ namespace PhysX
 
         if (parentLink)
         {
-            physx::PxArticulationJointReducedCoordinate* inboundJoint = thisLink->getInboundJoint();
+            physx::PxArticulationJointReducedCoordinate* inboundJoint =
+                thisLink->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
             // TODO: Set the values for joints from thisLinkData
             inboundJoint->setJointType(physx::PxArticulationJointType::eFIX);
             inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_relativeTransform));

@@ -25,17 +25,12 @@ namespace physx
     class PxArticulationJointReducedCoordinate;
 }
 
-namespace AzPhysics
-{
-    struct SimulatedBody;
-}
-
 namespace PhysX
 {
+    //! Maximum number of articulation links in a single articulation.
     constexpr size_t MaxArticulationLinks = 16;
 
-    class StaticRigidBody;
-
+    //! Configuration data for an articulation link. Contains references to child links.
     struct ArticulationLinkData
     {
         AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator, 0);
@@ -55,6 +50,7 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<ArticulationLinkData>> m_childLinks;
     };
 
+    //! Component implementing articulation link logic.
     class ArticulationLinkComponent final
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
@@ -102,4 +98,24 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_articulationShapes;
         AZStd::vector<AZStd::shared_ptr<ActorData>> m_linksActorData; // TODO: Move to AzPhysics::ArticulationLink
     };
+
+    //! Utility function for detecting if the current entity is the root of articulation
+    template<typename ArticulationComponentClass>
+    bool IsRootArticulationEntity(AZ::Entity* entity)
+    {
+        AZ::EntityId parentId = entity->GetTransform()->GetParentId();
+        if (parentId.IsValid())
+        {
+            AZ::Entity* parentEntity = nullptr;
+
+            AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
+
+            if (parentEntity && parentEntity->FindComponent<ArticulationComponentClass>())
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
 } // namespace PhysX
