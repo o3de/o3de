@@ -89,9 +89,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_MomentOfInertiaManualSetting(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_MomentOfInertiaManualSetting as test_module
 
-    class RigidBody_COM_ManualSettingWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_COM_ManualSettingWorks as test_module
-
     class ScriptCanvas_TriggerEvents(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
         # needs to be updated to log for unexpected lines
