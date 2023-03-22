@@ -40,12 +40,17 @@ namespace AzToolsFramework::Prefab
         // The function to update link during undo and redo.
         void UpdateLink();
 
-        PrefabOverridePrefixTree m_componentPropertyOverrideSubTree;
-
         // Link that connects the linked instance and the focused instance.
         LinkId m_linkId;
 
-        AZ::Dom::Path m_overriddenPropertyPathFromFocusedPrefab;
+        // Set to true if property value is changed compared to last edit.
+        bool m_changed;
+
+        // SubTree for the overridden property.
+        PrefabOverridePrefixTree m_overriddenPropertySubTree;
+
+        // Path to the property.
+        AZ::Dom::Path m_overriddenPropertyPath;
 
         PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
         InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
