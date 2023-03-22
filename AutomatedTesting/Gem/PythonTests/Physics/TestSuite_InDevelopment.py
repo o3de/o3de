@@ -192,10 +192,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
 
-    @pytest.mark.xfail(reason="GHI #9565: Test periodically fails")
-    class RigidBody_ComputeInertiaWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_ComputeInertiaWorks as test_module
-
     # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
     # The test still runs, but a failure of the test doesn't result in the test run failing
     @pytest.mark.xfail(
