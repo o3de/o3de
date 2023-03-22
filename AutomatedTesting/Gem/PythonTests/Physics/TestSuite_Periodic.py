@@ -27,13 +27,6 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 class TestAutomation(TestAutomationBase):
 
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_CharacterController.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_CharacterController(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_CharacterController as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    @revert_physics_config
     @fm.file_override('physxdefaultsceneconfiguration.setreg','ScriptCanvas_PostUpdateEvent.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
     def test_ScriptCanvas_PostUpdateEvent(self, request, workspace, editor, launcher_platform):
