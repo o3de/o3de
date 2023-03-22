@@ -37,7 +37,9 @@ namespace AzToolsFramework
         void Deactivate() override;
 
         // EditorEvents overrides ...
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
+        //void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
+
+        static void TriggerRegistrationHooks();
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
