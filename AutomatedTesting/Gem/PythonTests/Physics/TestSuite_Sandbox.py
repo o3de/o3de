@@ -106,9 +106,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_InitialAngularVelocity(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_InitialAngularVelocity as test_module
 
-    class RigidBody_COM_NotIncludesTriggerShapes(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_COM_NotIncludesTriggerShapes as test_module
-
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
