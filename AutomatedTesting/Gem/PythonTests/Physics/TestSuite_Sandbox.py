@@ -91,9 +91,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
-    class RigidBody_SetGravityWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_SetGravityWorks as test_module
-
     class Material_EmptyLibraryUsesDefault(EditorBatchedTest):
         from .tests.material import Material_EmptyLibraryUsesDefault as test_module
 
