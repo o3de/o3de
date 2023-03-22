@@ -16,6 +16,12 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
+
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
@@ -197,6 +203,110 @@ namespace AzToolsFramework
                 beginResetModel();
                 endResetModel();
             }
+        }
+
+        Qt::DropActions AssetBrowserThumbnailViewProxyModel::supportedDropActions() const
+        {
+            return Qt::CopyAction | Qt::MoveAction;
+        }
+
+        Qt::ItemFlags AssetBrowserThumbnailViewProxyModel::flags(const QModelIndex& index) const
+        {
+            Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+
+            if (index.isValid())
+            {
+                // We can only drop items onto folders so set flags accordingly
+                const AssetBrowserEntry* item = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                if (item)
+                {
+                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product || item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
+                    {
+                        return Qt::ItemIsDragEnabled | defaultFlags;
+                    }
+                    if (item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder)
+                    {
+                        return Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | defaultFlags;
+                    }
+                }
+            }
+            return defaultFlags;
+        }
+
+        bool AssetBrowserThumbnailViewProxyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent)
+        {
+            if (action == Qt::IgnoreAction)
+            {
+                return true;
+            }
+
+            auto sourceparent = mapToSource(parent).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+
+            // We should only have an item as a folder but will check
+            if (sourceparent && (sourceparent->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
+            {
+                AZStd::vector<const AssetBrowserEntry*> entries;
+
+                if (Utils::FromMimeData(data, entries))
+                {
+                    for (auto entry : entries)
+                    {
+                        using namespace AZ::IO;
+                        Path fromPath;
+                        Path toPath;
+                        bool isFolder{ true };
+
+                        if (entry && (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source))
+                        {
+                            fromPath = entry->GetFullPath();
+                            PathView filename = fromPath.Filename();
+                            toPath = sourceparent->GetFullPath();
+                            toPath /= filename;
+                            isFolder = false;
+                        }
+                        else
+                        {
+                            fromPath = entry->GetFullPath() + "/*";
+                            Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
+                            toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
+                        }
+                        AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
+                    }
+                    return true;
+                }
+            }
+            return QAbstractItemModel::dropMimeData(data, action, row, column, parent);
+        }
+
+        QMimeData* AssetBrowserThumbnailViewProxyModel::mimeData(const QModelIndexList& indexes) const
+        {
+            QMimeData* mimeData = new QMimeData;
+
+            AZStd::vector<const AssetBrowserEntry*> collected;
+            collected.reserve(indexes.size());
+
+            for (const auto& index : indexes)
+            {
+                if (index.isValid())
+                {
+                    auto item = mapToSource(index).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+                    if (item)
+                    {
+                        collected.push_back(item);
+                    }
+                }
+            }
+
+            Utils::ToMimeData(mimeData, collected);
+
+            return mimeData;
+        }
+
+        QStringList AssetBrowserThumbnailViewProxyModel::mimeTypes() const
+        {
+            QStringList list = QAbstractItemModel::mimeTypes();
+            list.append(AssetBrowserEntry::GetMimeType());
+            return list;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
