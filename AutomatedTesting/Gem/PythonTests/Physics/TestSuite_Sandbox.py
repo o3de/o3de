@@ -53,9 +53,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_EnablingGravityWorksUsingNotificationsPoC(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_EnablingGravityWorksUsingNotificationsPoC as test_module
 
-    class Collider_SameCollisionGroupDiffLayersCollide(EditorBatchedTest):
-        from .tests.collider import Collider_SameCollisionGroupDiffLayersCollide as test_module
-
     class CharacterController_SwitchLevels(EditorBatchedTest):
         from .tests.character_controller import CharacterController_SwitchLevels as test_module
 
