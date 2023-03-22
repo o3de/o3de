@@ -11,7 +11,6 @@
 #include <TestImpactFramework/TestImpactRuntimeException.h>
 #include <TestImpactFramework/TestImpactPolicy.h>
 
-#include <AzCore/std/containers/array.h>
 #include <AzCore/std/containers/set.h>
 
 namespace TestImpact

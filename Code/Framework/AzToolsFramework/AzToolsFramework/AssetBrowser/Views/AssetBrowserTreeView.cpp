@@ -8,6 +8,7 @@
 #include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/Asset/AssetManagerBus.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Crc.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/ranges/split_view.h>
@@ -249,7 +250,7 @@ namespace AzToolsFramework
             // Get all entries in the AssetBrowser-relative path-to-product
             AZStd::vector<AZStd::string> entries;
             AssetBrowserEntry* entry = itABEntry->second;
-            do 
+            do
             {
                 entries.push_back(entry->GetName());
                 entry = entry->GetParent();
@@ -276,6 +277,11 @@ namespace AzToolsFramework
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
                 InitializeTreeViewSaving(crc);
                 ApplyTreeViewSnapshot();
+                if (!selectionModel()->hasSelection())
+                {
+                    QModelIndex firstItem = model()->index(0, 0);
+                    selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
+                }
             }
         }
 

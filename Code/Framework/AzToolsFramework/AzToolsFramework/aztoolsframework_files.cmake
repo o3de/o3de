@@ -699,10 +699,14 @@ set(FILES
     AssetBrowser/AssetBrowserEntry.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.h
     AssetBrowser/AssetBrowserEntityInspectorWidget.cpp
+    AssetBrowser/AssetBrowserExpandedFilterModel.cpp
+    AssetBrowser/AssetBrowserExpandedFilterModel.h
     AssetBrowser/AssetBrowserFilterModel.cpp
     AssetBrowser/AssetBrowserFilterModel.h
     AssetBrowser/AssetBrowserTableModel.cpp
     AssetBrowser/AssetBrowserTableModel.h
+    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.cpp
+    AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.cpp
     AssetBrowser/AssetBrowserThumbnailViewProxyModel.h
     AssetBrowser/AssetBrowserModel.cpp
@@ -719,6 +723,8 @@ set(FILES
     AssetBrowser/Views/AssetBrowserTreeViewDialog.h
     AssetBrowser/Views/AssetBrowserTableView.cpp
     AssetBrowser/Views/AssetBrowserTableView.h
+    AssetBrowser/Views/AssetBrowserExpandedTableView.cpp
+    AssetBrowser/Views/AssetBrowserExpandedTableView.h
     AssetBrowser/Views/AssetBrowserThumbnailView.cpp
     AssetBrowser/Views/AssetBrowserThumbnailView.h
     AssetBrowser/Views/AssetBrowserViewUtils.cpp
@@ -909,6 +915,10 @@ set(FILES
     Prefab/Undo/PrefabUndoAddEntity.cpp
     Prefab/Undo/PrefabUndoAddEntityAsOverride.h
     Prefab/Undo/PrefabUndoAddEntityAsOverride.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.h
+    Prefab/Undo/PrefabUndoComponentPropertyEdit.cpp
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.h
+    Prefab/Undo/PrefabUndoComponentPropertyOverride.cpp
     Prefab/Undo/PrefabUndoDelete.h
     Prefab/Undo/PrefabUndoDelete.cpp
     Prefab/Undo/PrefabUndoDeleteAsOverride.h
@@ -933,6 +943,7 @@ set(FILES
     UI/Outliner/EntityOutlinerDragAndDropContext.h
     UI/Outliner/EntityOutlinerListModel.hxx
     UI/Outliner/EntityOutlinerListModel.cpp
+    UI/Outliner/EntityOutlinerRequestBus.h
     UI/Outliner/EntityOutlinerSearchWidget.h
     UI/Outliner/EntityOutlinerSearchWidget.cpp
     UI/Outliner/EntityOutlinerSortFilterProxyModel.hxx
@@ -947,6 +958,7 @@ set(FILES
     UI/EditorEntityUi/EditorEntityUiSystemComponent.cpp
     UI/Layer/LayerUiHandler.h
     UI/Layer/LayerUiHandler.cpp
+    UI/Prefab/ActionManagerIdentifiers/PrefabActionUpdaterIdentifiers.h
     UI/Prefab/LevelRootUiHandler.h
     UI/Prefab/LevelRootUiHandler.cpp
     UI/Prefab/PrefabIntegrationBus.h

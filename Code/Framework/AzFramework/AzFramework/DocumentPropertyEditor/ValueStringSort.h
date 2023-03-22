@@ -16,7 +16,7 @@ namespace AZ::DocumentPropertyEditor
     {
     public:
         ValueStringSort();
-        void SetReversed(bool reverseSort);
+
         void SetSortAttribute(AZStd::string_view attributeName);
         void SetSortColumn(size_t sortColumn);
 

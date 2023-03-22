@@ -402,7 +402,6 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
-        QAction* m_resetToSliceAction = nullptr;
 
         AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 

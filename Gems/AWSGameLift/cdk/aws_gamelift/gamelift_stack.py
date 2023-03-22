@@ -6,21 +6,25 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
 from aws_cdk import (
-    core,
+    CfnOutput,
+    Fn,
+    Stack,
     aws_gamelift as gamelift
 )
+
+from constructs import Construct
 
 from .flexmatch import matchmaking
 from .game_session_queue import game_session_queue
 
 
-class GameLiftStack(core.Stack):
+class GameLiftStack(Stack):
     """
     The AWS GameLift stack
 
     Defines GameLift resources to use in project
     """
-    def __init__(self, scope: core.Construct, id_: str,
+    def __init__(self, scope: Construct, id_: str,
                  stack_name: str, fleet_configurations: dict,
                  create_game_session_queue: bool,
                  flex_match: bool,
@@ -35,7 +39,7 @@ class GameLiftStack(core.Stack):
             fleet_configuration = fleet_configurations[index]
             # Create a new GameLift fleet using the configuration
             fleet_ids.append(self._create_fleet(fleet_configuration, index).attr_fleet_id)
-            destination_arn = core.Fn.sub(
+            destination_arn = Fn.sub(
                 body='arn:${AWS::Partition}:gamelift:${AWS::Region}::fleet/${FleetId}',
                 variables={
                     'FleetId': fleet_ids[index],
@@ -45,7 +49,7 @@ class GameLiftStack(core.Stack):
             if fleet_configuration.get('alias_configuration'):
                 # Create an alias for the fleet if the alias configuration is provided
                 alias = self._create_alias(fleet_configuration['alias_configuration'], fleet_ids[index])
-                destination_arn = core.Fn.sub(
+                destination_arn = Fn.sub(
                     body='arn:${AWS::Partition}:gamelift:${AWS::Region}::alias/${AliasId}',
                     variables={
                         'AliasId': alias.attr_alias_id,
@@ -55,7 +59,7 @@ class GameLiftStack(core.Stack):
             queue_destinations.append(destination_arn)
 
         # Export the GameLift fleet ids as a stack output
-        core.CfnOutput(
+        CfnOutput(
             self,
             id='GameLiftFleets',
             description='List of GameLift fleet ids',
@@ -69,7 +73,7 @@ class GameLiftStack(core.Stack):
             game_session_queue_arns.append(queue.game_session_queue_arn)
 
         if flex_match:
-            matchmaking.MatchmakingResoures(self, game_session_queue_arns)
+            matchmaking.MatchmakingResources(self, game_session_queue_arns)
 
     def _create_fleet(self, fleet_configuration: dict, identifier: int) -> gamelift.CfnFleet:
         """

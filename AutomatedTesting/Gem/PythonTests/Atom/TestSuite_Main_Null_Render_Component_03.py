@@ -40,9 +40,15 @@ class TestAutomation(EditorTestSuite):
     class AtomEditorComponents_ReflectionProbeAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
 
+    class AtomEditorComponents_SkyAtmosphereAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SkyAtmosphereAdded as test_module
+
     @pytest.mark.test_case_id("C36525666")
     class AtomEditorComponents_SSAOAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
+
+    class AtomEditorComponents_StarsAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_StarsAdded as test_module
 
     @pytest.mark.test_case_id("C36529666")
     class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorBatchedTest):

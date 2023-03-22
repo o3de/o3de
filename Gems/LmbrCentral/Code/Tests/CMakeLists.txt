@@ -40,6 +40,7 @@ ly_add_target(
 )
 ly_add_googletest(
     NAME Gem::LmbrCentral.Tests
+    LABELS REQUIRES_tiaf
 )
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)

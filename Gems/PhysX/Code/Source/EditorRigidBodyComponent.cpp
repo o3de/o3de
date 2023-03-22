@@ -78,11 +78,18 @@ namespace PhysX
                     continue;
                 }
 
+                const AZ::Vector3& assetScale = shapeConfigurationProxy.m_physicsAsset.m_configuration.m_assetScale;
+                const bool isAssetScaleUniform =
+                    AZ::IsClose(assetScale.GetX(), assetScale.GetY()) && AZ::IsClose(assetScale.GetX(), assetScale.GetZ());
+
                 const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
                 Utils::CreateShapesFromAsset(
                     shapeConfigurationProxy.m_physicsAsset.m_configuration,
-                    colliderConfigurationUnscaled, hasNonUniformScaleComponent, shapeConfigurationProxy.m_subdivisionLevel, shapes);
+                    colliderConfigurationUnscaled,
+                    hasNonUniformScaleComponent || !isAssetScaleUniform,
+                    shapeConfigurationProxy.m_subdivisionLevel,
+                    shapes);
 
                 for (const auto& shape : shapes)
                 {
@@ -201,7 +208,7 @@ namespace PhysX
                         ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &AzPhysics::RigidBodyConfiguration::GetKinematicTooltip)
                         ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
                         ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Dynamic")
+                        ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
                     ->Attribute(
                         AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
                         ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")

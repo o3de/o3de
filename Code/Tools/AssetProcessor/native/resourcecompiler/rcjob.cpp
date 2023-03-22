@@ -20,6 +20,7 @@
 #include "native/utilities/JobDiagnosticTracker.h"
 
 #include <qstorageinfo.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace
 {
@@ -103,6 +104,11 @@ namespace AssetProcessor
     const JobEntry& RCJob::GetJobEntry() const
     {
         return m_jobDetails.m_jobEntry;
+    }
+
+    bool RCJob::HasMissingSourceDependency() const
+    {
+        return m_jobDetails.m_hasMissingSourceDependency;
     }
 
     QDateTime RCJob::GetTimeCreated() const
@@ -673,7 +679,7 @@ namespace AssetProcessor
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     shouldRemoveTempFolder = false;
                 }
-                shouldRemoveTempFolder = shouldRemoveTempFolder && !s_createRequestFileForSuccessfulJob;
+                shouldRemoveTempFolder = shouldRemoveTempFolder && !result.m_keepTempFolder && !s_createRequestFileForSuccessfulJob;
             }
             break;
 
@@ -803,6 +809,13 @@ namespace AssetProcessor
                 return false;
             }
 
+            const bool isSourceMetadataEnabled = !params.m_sourceUuid.IsNull();
+
+            if (isSourceMetadataEnabled)
+            {
+                ProductOutputUtil::ModifyProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+            }
+
             if(outputToCache)
             {
                 needCacheDirectory = true;
@@ -838,7 +851,7 @@ namespace AssetProcessor
                     // The assumption for the UUID generated below is that the source UUID will not change.  A type which has no metadata
                     // file currently may be updated later to have a metadata file, which would break that assumption.  In that case, stick
                     // with the default path-based UUID.
-                    if (!params.m_sourceUuid.IsNull())
+                    if (isSourceMetadataEnabled)
                     {
                         // Generate a UUID for the intermediate as:
                         // SourceUuid:BuilderUuid:SubId
@@ -923,6 +936,7 @@ namespace AssetProcessor
             const QString& productAbsolutePath = filePair.second;
 
             bool isCopyJob = !(sourceAbsolutePath.startsWith(tempFolder, Qt::CaseInsensitive));
+            isCopyJob |= response.m_keepTempFolder; // Copy instead of Move if the builder wants to keep the Temp Folder. 
 
             if (!MoveCopyFile(sourceAbsolutePath, productAbsolutePath, isCopyJob)) // this has its own traceprintf for failure
             {

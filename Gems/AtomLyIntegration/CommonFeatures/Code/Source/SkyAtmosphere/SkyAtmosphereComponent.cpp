@@ -23,5 +23,11 @@ namespace AZ::Render
         {
             serializeContext->Class<SkyAtmosphereComponent, BaseClass>();
         }
+
+        if (auto* behaviorContext = azrtti_cast<BehaviorContext*>(context))
+        {
+            behaviorContext->Class<SkyAtmosphereComponent>()
+                ->RequestBus("SkyAtmosphereRequestBus");
+        }
     }
 } // namespace AZ::Render

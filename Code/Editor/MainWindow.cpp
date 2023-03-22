@@ -1023,25 +1023,6 @@ void MainWindow::InitActions()
         .SetStatusTip(tr("Cycle 2D Viewport"))
         .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateNonGameMode);
 #endif
-    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers"))
-        .SetShortcut(tr("Shift+Space"))
-        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
-        .SetCheckable(true)
-        .RegisterUpdateCallback(
-            [](QAction* action)
-            {
-                Q_ASSERT(action->isCheckable());
-                action->setChecked(AzToolsFramework::HelpersVisible());
-            })
-        .Connect(
-            &QAction::triggered,
-            []()
-            {
-                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnDrawHelpersChanged,
-                    AzToolsFramework::HelpersVisible());
-            });
     am->AddAction(AzToolsFramework::Icons, tr("Show Icons"))
         .SetShortcut(tr("Ctrl+Space"))
         .SetToolTip(tr("Show/Hide Icons (Ctrl+Space)"))
@@ -1060,9 +1041,30 @@ void MainWindow::InitActions()
                 AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
                     &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnIconsVisibilityChanged,
                     AzToolsFramework::IconsVisible());
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
-    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for Selected Entities Only"))
-        .SetToolTip(tr("Show Helpers for Selected/All Entities"))
+    am->AddAction(AzToolsFramework::Helpers, tr("Show Helpers for all entities"))
+        .SetShortcut(tr("Shift+Space"))
+        .SetToolTip(tr("Show/Hide Helpers (Shift+Space)"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::HelpersVisible());
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::HelpersVisible());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::OnlyShowHelpersForSelectedEntitiesAction, tr("Show Helpers for selected entities"))
         .SetCheckable(true)
         .RegisterUpdateCallback(
             [](QAction* action)
@@ -1075,9 +1077,28 @@ void MainWindow::InitActions()
             []()
             {
                 AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
-                AzToolsFramework::ViewportInteraction::ViewportSettingsNotificationBus::Broadcast(
-                    &AzToolsFramework::ViewportInteraction::ViewportSettingNotifications::OnOnlyShowHelpersForSelectedEntitiesChanged,
-                    AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+                AzToolsFramework::SetHelpersVisible(!AzToolsFramework::OnlyShowHelpersForSelectedEntities());
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
+            });
+    am->AddAction(AzToolsFramework::HideHelpers, tr("Hide Helpers"))
+        .SetCheckable(true)
+        .RegisterUpdateCallback(
+            [](QAction* action)
+            {
+                Q_ASSERT(action->isCheckable());
+                action->setChecked(!AzToolsFramework::OnlyShowHelpersForSelectedEntities() && !AzToolsFramework::HelpersVisible());
+            })
+        .Connect(
+            &QAction::triggered,
+            []()
+            {
+                AzToolsFramework::SetOnlyShowHelpersForSelectedEntities(false);
+                AzToolsFramework::SetHelpersVisible(false);
+
+                AzToolsFramework::EditorSettingsAPIBus::Broadcast(
+                    &AzToolsFramework::EditorSettingsAPIBus::Events::SaveSettingsRegistryFile);
             });
 
     // Audio actions

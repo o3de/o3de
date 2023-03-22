@@ -645,7 +645,7 @@ namespace EMotionFX
         data->SetTrajectoryDeltaMirrored(delta);
     }
 
-    bool BlendTreeBlendNNode::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool BlendTreeBlendNNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
@@ -667,7 +667,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<BlendTreeBlendNNode, AnimGraphNode>()
-            ->Version(2, VersionConverter)
+            ->Version(2, &BlendTreeBlendNNodeVersionConverter)
             ->Field("syncMode", &BlendTreeBlendNNode::m_syncMode)
             ->Field("eventMode", &BlendTreeBlendNNode::m_eventMode)
             ->Field("paramWeights", &BlendTreeBlendNNode::m_paramWeights);

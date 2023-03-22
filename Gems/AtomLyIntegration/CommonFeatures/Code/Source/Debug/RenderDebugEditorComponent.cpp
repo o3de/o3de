@@ -23,7 +23,7 @@ namespace AZ::Render
             if (AZ::EditContext* editContext = serializeContext->GetEditContext())
             {
                 editContext->Class<RenderDebugEditorComponent>(
-                    "DebugRendering", "Controls for debugging rendering.")
+                    "Debug Rendering", "Controls for debugging rendering.")
                     ->ClassElement(Edit::ClassElements::EditorData, "")
                         ->Attribute(Edit::Attributes::Category, "Graphics/Debugging")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Component_Placeholder.svg") // [GFX TODO ATOM-2672][PostFX] need to create icons for PostProcessing.
