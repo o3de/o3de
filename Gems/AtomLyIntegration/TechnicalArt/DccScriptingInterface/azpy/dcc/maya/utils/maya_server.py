@@ -54,17 +54,19 @@
 
 
 import sys
+import json
 import logging as _logging
 import importlib.util
 from pathlib import Path
 from importlib import import_module
 from PySide2.QtCore import Signal, Slot
 from azpy.shared.server_base import ServerBase
+from PySide2.QtCore import QDataStream, QByteArray, QIODevice, QObject, Signal, Slot
+from PySide2.QtNetwork import QTcpSocket
 
 from PySide2 import QtWidgets, QtCore
 from shiboken2 import wrapInstance
 from maya import OpenMayaUI as omui
-import os
 
 
 _MODULENAME = 'azpy.dcc.maya.utils.maya_server'
@@ -86,8 +88,14 @@ class MayaServer(ServerBase):
         self.container = QtWidgets.QVBoxLayout(self)
         self.window = QtWidgets.QPlainTextEdit()
         self.container.addWidget(self.window)
-        self.cls = None
-        self.show()
+        self.callback = None
+
+        # LiveLink Socket
+        self.broadcast_socket = QTcpSocket()
+        self.broadcast_socket.readyRead.connect(self.read_broadcast_data)
+        self.broadcast_socket.connected.connect(self.broadcast_connected)
+        self.broadcast_port = 17350
+        self.broadcast_stream = None
 
     def process_cmd(self, cmd, data, reply):
         """! Extends command capabilities for DCC applications. The run script command is likely the most useful
@@ -97,10 +105,10 @@ class MayaServer(ServerBase):
         # _LOGGER.info(f'Process command FIRED: cmd:: {cmd}   data:: {data}   reply:: {reply}')
         if cmd == 'echo':
             self.echo(data, reply)
+        elif cmd == 'verify_connection':
+            self.verify_connection(data, reply)
         elif cmd == 'run_script':
             self.run_script(data, reply)
-        elif cmd == 'set_title':
-            self.set_title(data, reply)
         elif cmd == 'update_event':
             self.update_event(data, reply)
         else:
@@ -108,7 +116,12 @@ class MayaServer(ServerBase):
 
     def echo(self, data, reply):
         """! Tests communication channel """
-        _LOGGER.info(f"EchoTest::::> {data['text']}")
+        reply['result'] = data['text']
+        reply['success'] = True
+        print(f"Maya Server Message:::::> {data['text']}")
+
+    def verify_connection(self, data, reply):
+        """! Confirms connected status """
         reply['result'] = data['text']
         reply['success'] = True
 
@@ -116,7 +129,6 @@ class MayaServer(ServerBase):
         """! Fire commands and/or python scripts to open scenes """
         target_module = self.get_module_path(Path(data['path']))
         module_name = f"{Path(data['path']).parts[-2]}.{Path(data['path']).stem}"
-        processing_data = None
 
         # Import module if it hasn't been done already
         if target_module not in sys.modules:
@@ -136,23 +148,11 @@ class MayaServer(ServerBase):
         reply['result'] = processing_data
         reply['success'] = True
 
-    def update_event(self, data, reply):
-        _LOGGER.info(f'UpdateEventFired:::> {data}')
-
-        reply['result'] = data
-        reply['success'] = True
-
     def handle_script_configuration(self, module_name, data):
         spec = importlib.util.spec_from_file_location(module_name, Path(data['path']).as_posix())
         script = importlib.util.module_from_spec(spec)
         sys.modules[module_name] = script
         spec.loader.exec_module(script)
-
-    def set_title(self, data, reply):
-        """! Tests QT window modifications """
-        self.setWindowTitle(data['title'])
-        reply['result'] = True
-        reply['success'] = True
 
     def get_module_path(self, script_path):
         path_list = list(script_path.parts)
@@ -162,14 +162,41 @@ class MayaServer(ServerBase):
             return '.'.join(path_list[start_index+1:])
         return None
 
-    @Slot(object)
-    def return_scene_data(self, data):
-        _LOGGER.info(f'%%%%%% Return Scene Data Slot Fired %%%%%%\n{data}')
+    # +++++++++++++++++++++++++++--->>
+    # LiveLink Broadcast Client +----->>
+    # +++++++++++++++++++++++++++--->>
 
-    @Slot(dict)
-    def scene_update(self, data):
-        print(f'Maya Scene Update fired::::: {data}')
+    def update_event(self, data):
+        if self.establish_broadcast_connection():
+            self.send_broadcast_data(data)
 
+    def establish_broadcast_connection(self):
+        try:
+            self.broadcast_socket.connectToHost('localhost', self.broadcast_port)
+        except Exception as e:
+            _LOGGER.info(f'CONNECTION EXCEPTION [{type(e)}] :::: {e}')
+            return False
+        return True
+
+    def broadcast_connected(self):
+        _LOGGER.info('BroadcastConnected')
+        self.broadcast_stream = QDataStream(self.broadcast_socket)
+        self.broadcast_stream.setVersion(QDataStream.Qt_5_0)
+
+    def send_broadcast_data(self, cmd):
+        json_cmd = json.dumps(cmd)
+        if self.broadcast_socket.waitForConnected(5000):
+            _LOGGER.info(f'SendingBroadcastData:>>>>>>>>>> {json_cmd}')
+            self.broadcast_stream << json_cmd
+        else:
+            _LOGGER.info('Connection to the server failed')
+        return None
+
+    def read_broadcast_data(self):
+        msg = self.broadcast_socket.readAll()
+        converted = str(msg.data(), encoding='utf-8')
+        message = json.loads(converted)
+        _LOGGER.info(f'ReadData in MayaServer: {message}')
 
 
 def launch():

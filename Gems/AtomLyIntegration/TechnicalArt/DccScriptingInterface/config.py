@@ -76,7 +76,6 @@ except ImportError:
     sys.modules[module_name] = global_project
 
     from o3de import manifest, global_project
-    print(f'Hmmm: {manifest.get_o3de_folder()}')
 
 
 # ++++++++++++++++++++++++++++++++---->>

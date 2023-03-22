@@ -340,6 +340,7 @@ class EditorEntity:
     def __init__(self, id: azlmbr.entity.EntityId):
         self.id: azlmbr.entity.EntityId = id
         self.components: List[EditorComponent] = []
+        print('EditorEntityAdded')
 
     # Creation functions
     @classmethod
@@ -813,3 +814,5 @@ class EditorLevelEntity:
         """
         type_ids = EditorComponent.get_type_ids([component_name], EditorEntityType.LEVEL)
         return editor.EditorLevelComponentAPIBus(bus.Broadcast, "CountComponentsOfType", type_ids[0])
+
+print('ItsImporting')

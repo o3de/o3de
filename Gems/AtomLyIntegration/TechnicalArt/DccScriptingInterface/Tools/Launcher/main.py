@@ -32,7 +32,7 @@ import logging
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.QtCore import Slot
 from Tools.Launcher.navigation import Navigation
-from Tools.Launcher.sections import splash, tools, projects, output, setup, help, database
+from Tools.Launcher.sections import splash, content, tools, tutorials, output, setup, help, database
 from box import Box
 
 
@@ -75,12 +75,13 @@ class ContentContainer(QtWidgets.QWidget):
         loaded into a stacked layout that serves up content based on main navigation clicks
         """
         self.sections['splash'] = [splash.Splash(self.model), 0]
-        self.sections['tools'] = [tools.Tools(self.model), 1]
-        self.sections['projects'] = [projects.Projects(self.model), 2]
-        self.sections['output'] = [output.Output(self.model), 3]
-        self.sections['setup'] = [setup.Setup(self.model), 4]
-        self.sections['help'] = [help.Help(self.model), 5]
-        self.sections['database'] = [database.Database(self.model), 6]
+        self.sections['content'] = [content.Content(self.model), 1]
+        self.sections['tools'] = [tools.Tools(self.model), 2]
+        self.sections['tutorials'] = [tutorials.Tutorials(self.model), 3]
+        self.sections['output'] = [output.Output(self.model), 4]
+        self.sections['setup'] = [setup.Setup(self.model), 5]
+        self.sections['help'] = [help.Help(self.model), 6]
+        self.sections['database'] = [database.Database(self.model), 7]
         for section in self.sections.values():
             self.sections_layout.addWidget(section[0])
 

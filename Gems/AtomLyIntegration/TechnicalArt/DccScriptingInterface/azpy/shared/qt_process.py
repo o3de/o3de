@@ -114,10 +114,9 @@ class QtProcess(QtCore.QObject):
         return env
 
     def handle_stderr(self):
-        pass
         # Keep this disabled unless you need to register all events while debugging
-        # data = str(self.p.readAllStandardError(), 'utf-8')
-        # _LOGGER.info(f'STD_ERROR_FIRED: {data}')
+        data = str(self.p.readAllStandardError(), 'utf-8')
+        _LOGGER.info(f'STD_ERROR_FIRED: {data}')
 
     def handle_stdout(self):
         """
@@ -192,8 +191,12 @@ class QtProcess(QtCore.QObject):
         except Exception as e:
             _LOGGER.info(f'+ QProcess failed: {e}')
 
-    def start_o3de_process(self, command):
+    def start_maya_process(self, command):
         _LOGGER.info(f'Command: {command}')
+        self.p.setArguments(command)
+        self.p.startDetached()
+
+    def start_o3de_process(self, command):
         self.p.setArguments(command)
         self.p.startDetached()
 

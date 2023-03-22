@@ -33,7 +33,6 @@
 
 from PySide2 import QtCore, QtNetwork, QtWidgets
 from PySide2.QtCore import QDataStream, Signal, Slot
-from PySide2.QtNetwork import QTcpServer
 import logging
 import json
 import sys
@@ -51,6 +50,7 @@ class ServerBase(QtWidgets.QWidget):
         self.server = None
         self.socket = None
         self.stream = None
+        self.callback = None
         self.port = port
         self.initialize()
 
@@ -78,10 +78,11 @@ class ServerBase(QtWidgets.QWidget):
             _LOGGER.info('Connection Established')
 
     def on_disconnected(self):
-        self.socket.disconnected.disconnect()
-        self.socket.readyRead.disconnect()
-        self.socket.deleteLater()
-        _LOGGER.info('Connection Disconnected')
+        self.initialize()
+        # self.socket.disconnected.disconnect()
+        # self.socket.readyRead.disconnect()
+        # self.socket.deleteLater()
+        # _LOGGER.info('Connection Disconnected')
 
     def read(self):
         self.stream = QDataStream(self.socket)
@@ -96,7 +97,6 @@ class ServerBase(QtWidgets.QWidget):
     def write(self, reply):
         json_reply = json.dumps(reply)
         if self.socket.state() == QtNetwork.QTcpSocket.ConnectedState:
-            # _LOGGER.info(f'SendingInfo: {json_reply}')
             data = QtCore.QByteArray(json_reply.encode())
             self.socket.write(data)
         else:
@@ -111,26 +111,29 @@ class ServerBase(QtWidgets.QWidget):
         self.write(reply)
 
     def process_data(self, data):
-        reply = {
-            'success': False
-        }
-
-        cmd = data['cmd']
-        if cmd == 'ping':
-            reply['success'] = True
+        if data['cmd'] == 'update_event':
+            self.update_event(data)
         else:
-            self.process_cmd(cmd, data, reply)
+            reply = {
+                'success': False
+            }
 
-            # TODO - What is above showing up false?
+            cmd = data['cmd']
+            if cmd == 'verify_connection':
+                reply = {
+                    'success': True,
+                    'result': 'connected'
+                }
+            else:
+                self.process_cmd(cmd, data, reply)
 
-            if not reply['success']:
-                reply['cmd'] = cmd
-                if not 'msg' in reply.keys():
-                    reply['msg'] = 'Unknown Error'
-        self.write(reply)
+                if not reply['success']:
+                    reply['cmd'] = cmd
+                    if not 'msg' in reply.keys():
+                        reply['msg'] = 'Unknown Error'
+            self.write(reply)
 
     def process_cmd(self, cmd, data, reply):
-        _LOGGER.info('Process command firing in ServerBase')
         reply['msg'] = f'Invalid command: {cmd}'
 
 

@@ -24,20 +24,14 @@ class MayaLiveLink(QtCore.QObject):
         self.header_size = 10
         self.tracked_items = {}
         self.tracked_attributes = [
-            'translateX',
-            'translateY',
-            'translateZ',
-            'rotateX',
-            'rotateY',
-            'rotateZ',
-            'scaleX',
-            'scaleY',
-            'scaleZ'
+            'translate',
+            'rotate',
+            'scale'
         ]
 
         self.socket = QTcpSocket()
         self.socket.connected.connect(self.connected)
-        self.socket.readyRead.connect(self.read_data)
+        self.socket.readyRead.connect(self.read)
         self.stream = None
         self.port = 17344
 
@@ -49,13 +43,22 @@ class MayaLiveLink(QtCore.QObject):
             return False
         return True
 
-    def start_operation(self):
-        self.establish_connection()
-        self.add_callbacks()
-
     def connected(self):
         self.stream = QDataStream(self.socket)
         self.stream.setVersion(QDataStream.Qt_5_0)
+
+    def disconnect(self):
+        try:
+            self.socket.close()
+            _LOGGER.info('Client disconnected.')
+        except ConnectionError:
+            return False
+        return True
+
+    def start_operation(self, arguments=None):
+        self.establish_connection()
+        self.add_callbacks()
+        return {'msg': 'live_link_ready', 'result': 'live_link_ready'}
 
     def filter_scene_data(self, data):
         filtered_dict = {}
@@ -80,7 +83,7 @@ class MayaLiveLink(QtCore.QObject):
     def attribute_changed(self, target):
         attr_value = mc.getAttr(f'{target[0]}.{target[1]}')
         update_values = [target[0], target[1], attr_value]
-        self.send({'cmd': 'update_event', 'text': update_values})
+        self.send({'msg': 'update_event', 'cmd': 'update_event', 'result': update_values})
 
     def send(self, cmd):
         json_cmd = json.dumps(cmd)
@@ -91,7 +94,11 @@ class MayaLiveLink(QtCore.QObject):
             _LOGGER.info('Connection to the server failed')
         return None
 
+    def read(self):
+        pass
+
     def remove_callbacks(self):
         for key, values in self.tracked_items.items():
             for attribute, job_number in values.items():
                 mc.scriptJob(kill=job_number, force=True)
+

@@ -12,23 +12,18 @@
 # File Description:
 # This file is contains OpenImageIO operations for file texture conversions
 # -------------------------------------------------------------------------
-import config
+
 from PySide2.QtCore import QDataStream, QByteArray, QIODevice, QObject, Signal, Slot
 from PySide2.QtNetwork import QTcpSocket
-import socket
-import time
-import traceback
 import json
 import logging
-import socket
+
 
 _MODULENAME = 'azpy.shared.client_base'
 _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class ClientBase(QObject):
-    client_activity_registered = Signal(dict)
-
     def __init__(self, port=17344):
         super().__init__()
         self.socket = QTcpSocket()
@@ -47,6 +42,7 @@ class ClientBase(QObject):
         return True
 
     def connected(self):
+        _LOGGER.info('ClientBase socket connection made')
         self.stream = QDataStream(self.socket)
         self.stream.setVersion(QDataStream.Qt_5_0)
 
@@ -70,25 +66,13 @@ class ClientBase(QObject):
         msg = self.socket.readAll()
         converted = str(msg.data(), encoding='utf-8')
         message = json.loads(converted)
+        _LOGGER.info(f'ClientBase reading data:::> {message}')
 
         if self.is_valid_reply(message):
             self.update_event(message)
 
-    def update_event(self, update):
-        _LOGGER.info(f'UPDATE EVENT FIRED::::: {update}')
-        self.client_activity_registered.emit(update['result'])
-
-    def ping(self):
-        cmd = {'cmd': 'ping'}
-        reply = self.send(cmd)
-        if self.is_valid_reply(reply):
-            return True
-        else:
-            return False
-
     @staticmethod
     def is_valid_reply(reply):
-        _LOGGER.info(f'Is Valid Reply: {reply}')
         if not reply:
             _LOGGER.info('[ERROR] Invalid Reply')
             return False

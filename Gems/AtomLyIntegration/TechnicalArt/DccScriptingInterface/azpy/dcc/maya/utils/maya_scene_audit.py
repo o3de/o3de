@@ -1,4 +1,5 @@
 import maya.cmds as mc
+import maya.mel as mel
 import logging
 from PySide2.QtCore import Signal, Slot
 from importlib import reload
@@ -8,6 +9,12 @@ from azpy.dcc.maya.helpers import maya_cameras
 from azpy.dcc.maya.helpers import maya_lighting
 from azpy.dcc.maya.helpers import maya_meshes
 import json
+import sys
+import os
+
+
+from PySide2.QtCore import QDataStream
+from PySide2.QtNetwork import QTcpSocket
 
 
 _LOGGER = logging.getLogger('DCCsi.azpy.dcc.maya.utils.maya_scene_audit')
@@ -21,10 +28,10 @@ class MayaSceneAuditor(SceneAuditor):
     def __init__(self, **kwargs):
         super(MayaSceneAuditor, self).__init__()
 
-        self.target_application = kwargs['target_application']
-        self.target_files = self.create_file_list(kwargs['target_files'])
-        self.operation = kwargs['operation']
-        self.current_file = mc.file(q=True, sn=True)
+        print(kwargs)
+        # self.target_file = kwargs['target_file']
+        self.up_axis = mc.upAxis(q=True, axis=True)
+        self.scene_units = mc.currentUnit(q=True)
         self.debug_mode = True
         self.audit_data = {}
         self.animation_data = {}
@@ -34,16 +41,39 @@ class MayaSceneAuditor(SceneAuditor):
         self.animation_data = {}
         self.camera_data = {}
 
+        self.socket = QTcpSocket()
+        self.socket.connected.connect(self.connected)
+        self.stream = None
+        self.port = 17344
+
+        self.start_operation()
+
+    def establish_connection(self):
+        try:
+            self.socket.connectToHost('localhost', self.port)
+        except Exception as e:
+            _LOGGER.info(f'CONNECTION EXCEPTION [{type(e)}] :::: {e}')
+            return False
+        return True
+
+    def connected(self):
+        self.stream = QDataStream(self.socket)
+        self.stream.setVersion(QDataStream.Qt_5_0)
+
     def start_operation(self):
         self.reload_imports()
-        for file in self.target_files:
-            target_file = self.get_file_information(file)
-            if target_file:
-                if self.operation == 'audit':
-                    self.get_scene_info()
-                    return self.audit_data
-                elif self.operation == 'track_object':
-                    _LOGGER.info('Track Object')
+        self.get_scene_info()
+
+        return {'msg': 'audit_complete', 'result': self.audit_data}
+
+    def send(self, cmd):
+        json_cmd = json.dumps(cmd)
+        if self.socket.waitForConnected(5000):
+            self.stream << json_cmd
+            self.socket.flush()
+        else:
+            _LOGGER.info('Connection to the server failed')
+        return None
 
     def clear_data(self):
         self.audit_data = {}
@@ -72,18 +102,19 @@ class MayaSceneAuditor(SceneAuditor):
         return file_list
 
     def get_scene_info(self, object_filter=None):
-        temp_dict = {}
+        temp_dict = {'up_axis': self.up_axis, 'scene_units': self.scene_units}
         if object_filter is None:
             object_filter = ['cameras', 'lights', 'meshes', 'materials']
         if 'cameras' in object_filter:
             temp_dict.update({'cameras': self.get_camera_information()})
         if 'lights' in object_filter:
-            temp_dict.update({'lights': self.get_lighting_information()})
+            temp_dict.update({'lights': self.get_lighting_information(self.up_axis)})
         if 'meshes' in object_filter:
             temp_dict.update({'meshes': self.get_mesh_information()})
         if 'materials' in object_filter:
             temp_dict.update({'materials': self.get_material_information(temp_dict['meshes'])})
-        self.audit_data = {'cmd': 'audit', self.current_file: temp_dict}
+        temp_dict.update({'scene_file': mc.file(q=True, sn=True)})
+        self.audit_data = {'cmd': 'audit', 'scene_data': temp_dict}
 
     def track_object(self, target_object):
         pass
@@ -111,7 +142,7 @@ class MayaSceneAuditor(SceneAuditor):
         return maya_lighting.get_lighting_info()
 
     def get_mesh_information(self, target='all'):
-        return maya_meshes.get_scene_objects()
+        return maya_meshes.get_mesh_info()
 
     def get_material_information(self, mesh_list):
         mesh_list = [k for k, v in mesh_list.items()]
@@ -120,3 +151,9 @@ class MayaSceneAuditor(SceneAuditor):
     def get_animation_information(self, target='all'):
         pass
 
+    # ++++++++++++++++--->>>
+    # ERROR HANDLING +---->>>
+    # ++++++++++++++++--->>>
+
+    def handle_conversion_error(self, error):
+        _LOGGER.info(f'Conversion error occurred [{type(error)}] ::::: {error}')

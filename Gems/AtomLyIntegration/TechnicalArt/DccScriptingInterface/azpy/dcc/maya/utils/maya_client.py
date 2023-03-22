@@ -13,7 +13,10 @@
 
 import logging
 from azpy.shared.client_base import ClientBase
-from PySide2.QtCore import Signal
+from PySide2 import QtNetwork
+from PySide2.QtCore import Signal, QDataStream
+import time
+import json
 
 
 _MODULENAME = 'azpy.dcc.maya.utils.maya_client'
@@ -21,6 +24,18 @@ _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class MayaClient(ClientBase):
+    client_activity_registered = Signal(dict)
+
+    def __init__(self, port):
+        super(MayaClient, self).__init__(port)
+
+        # LiveLink Socket
+        self.broadcast_server = None
+        self.broadcast_socket = None
+        self.broadcast_stream = None
+        self.broadcast_port = 17350
+        self.initialize()
+
     def echo(self, text):
         cmd = {
             'cmd': 'echo',
@@ -28,17 +43,21 @@ class MayaClient(ClientBase):
         }
         self.send(cmd)
 
-    def set_title(self, title):
+    def verify_connection(self):
         cmd = {
-            'cmd': 'set_title',
-            'title': title
+            'cmd': 'verify_connection',
         }
-
         reply = self.send(cmd)
         if self.is_valid_reply(reply):
-            return reply['result']
-        else:
-            return None
+            return 'connected'
+
+    def run_command(self, command):
+        cmd = {
+            'cmd': 'run_command',
+            'arguments': command
+        }
+
+        self.send(cmd)
 
     def run_script(self, target_path, script_arguments=None):
         cmd = {
@@ -52,3 +71,47 @@ class MayaClient(ClientBase):
             return reply['result']
         else:
             return None
+
+    def update_event(self, update):
+        self.client_activity_registered.emit(update)
+
+    # +++++++++++++++++++++++++++--->>
+    # LiveLink Broadcast Server +----->>
+    # +++++++++++++++++++++++++++--->>
+
+    def initialize(self):
+        self.broadcast_server = QtNetwork.QTcpServer(self)
+        self.broadcast_server.newConnection.connect(self.establish_broadcast_connection)
+
+        if self.listen():
+            _LOGGER.info(f'Broadcast Server listening on port: {self.broadcast_port}')
+        else:
+            _LOGGER.info(f'Server initialization failed')
+
+    def listen(self):
+        if not self.broadcast_server.isListening():
+            return self.broadcast_server.listen(QtNetwork.QHostAddress.LocalHost, self.broadcast_port)
+        else:
+            _LOGGER.info(f'Confirmation: {self.broadcast_server.isListening()}')
+
+    def establish_broadcast_connection(self):
+        self.broadcast_socket = self.broadcast_server.nextPendingConnection()
+        self.broadcast_socket.nextBlockSize = 0
+        if self.broadcast_socket.state() == QtNetwork.QTcpSocket.ConnectedState:
+            self.broadcast_socket.disconnected.connect(self.on_disconnected)
+            self.broadcast_socket.readyRead.connect(self.read)
+
+    def on_disconnected(self):
+        self.broadcast_socket.disconnected.disconnect()
+        self.broadcast_socket.readyRead.disconnect()
+        self.broadcast_socket.deleteLater()
+
+    def read(self):
+        self.broadcast_stream = QDataStream(self.broadcast_socket)
+        self.broadcast_stream.setVersion(QDataStream.Qt_5_0)
+        while True:
+            if self.broadcast_stream.atEnd():
+                break
+            message = self.broadcast_stream.readQString()
+            data = json.loads(message)
+            self.update_event(data)

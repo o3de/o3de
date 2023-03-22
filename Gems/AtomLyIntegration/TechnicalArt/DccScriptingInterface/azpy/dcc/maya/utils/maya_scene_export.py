@@ -21,17 +21,19 @@ class MayaSceneExporter(SceneAuditor):
 
         self.asset_output_location = kwargs['export_location']
         self.scene_info = kwargs['audit_info']
+        self.scene_info.pop('scene_file')
         self.operation = kwargs['operation']
         self.base_dccsi_location = kwargs['PATH_DCCSIG']
         self.base_repository_location = kwargs['O3DE_DEV']
         self.current_file = mc.file(q=True, sn=True)
         self.objects_directory = None
+        self.export_data = None
 
     def start_operation(self):
         if self.operation == 'sceneExport':
-            _LOGGER.info('Scene Export firing!')
             self.objects_directory = self.create_export_directory()
-            self.export_mesh_files()
+            export_items = self.export_mesh_files()
+            return {'msg': 'asset_export_complete', 'result': export_items}
 
     def create_export_directory(self):
         export_directory = Path(self.current_file).stem
@@ -40,22 +42,52 @@ class MayaSceneExporter(SceneAuditor):
         return objects_directory_path
 
     def export_mesh_files(self):
+        export_data = {}
         for key, values in self.scene_info.items():
-            for object_type, element_listings in values.items():
-                if object_type == 'meshes':
-                    for object_name, object_transforms in element_listings.items():
-                        mesh_export_directory = self.objects_directory / object_name
-                        mesh_export_directory.mkdir(parents=True, exist_ok=True)
-                        fbx_name = f'{object_name}.fbx'
-                        mesh_export_path = mesh_export_directory / fbx_name
-                        if not mesh_export_path.exists():
-                            maya_meshes.export_fbx(object_name, mesh_export_path)
-                            self.export_mesh_materials(object_name, mesh_export_directory, fbx_name)
+            if key == 'meshes':
+                for object_name, object_transforms in values.items():
+                    mesh_export_directory = self.objects_directory / object_name
+                    mesh_export_directory.mkdir(parents=True, exist_ok=True)
+                    fbx_name = f'{object_name}.fbx'
+                    mesh_export_path = mesh_export_directory / fbx_name
+                    maya_meshes.export_fbx(object_name, mesh_export_path)
+                    result = self.export_mesh_materials(object_name, mesh_export_directory, fbx_name)
+                    if result:
+                        export_data[object_name] = {'fbx': mesh_export_path.as_posix(), 'material': result}
+        return export_data
 
-    def export_texture_sets(self, texture_dictionary, export_directory):
+    def export_mesh_materials(self, target_mesh, export_directory, fbx_name):
+        for key, values in self.scene_info.items():
+            if key == 'materials':
+                for mesh_name, material_values in values.items():
+                    if mesh_name == target_mesh:
+                        material_name = None
+                        attached_textures = None
+                        for component_type, component_data in material_values.items():
+                            if component_data:
+                                if component_type == 'material_name':
+                                    material_name = f'{Path(fbx_name).stem}_{component_data}.material'
+                                else:
+                                    attached_textures = self.export_texture_sets(component_data, export_directory)
+                        return self.generate_material_description(material_name, attached_textures, export_directory)
+
+    def generate_material_description(self, material_name, attached_textures, export_directory):
+        if attached_textures:
+            material_definition = material_generator.MaterialGenerator(
+                material_type='StandardPBR',
+                material_textures=attached_textures,
+                material_name=material_name,
+                start_directory=self.asset_output_location,
+                destination_directory=export_directory,
+                dccsi_path=self.base_dccsi_location,
+                repo_path=self.base_repository_location).create_material_definition()
+            return material_definition
+        return None
+
+    @staticmethod
+    def export_texture_sets(texture_dictionary, export_directory):
         attached_textures = {}
         for texture_type, texture_values in texture_dictionary.items():
-            _LOGGER.info(f'TextureType: {texture_type}  TextureValues: {texture_values}')
             if texture_values:
                 for key, value in texture_values.items():
                     if key == 'path':
@@ -64,34 +96,7 @@ class MayaSceneExporter(SceneAuditor):
                         target_export_directory = export_directory / 'textures'
                         target_export_directory.mkdir(parents=True, exist_ok=True)
                         dst = target_export_directory / file_name
-                        attached_textures[texture_type] = dst
+                        attached_textures[texture_type] = dst.as_posix()
                         if not dst.exists():
                             shutil.copy(src, dst)
         return attached_textures
-
-    def export_mesh_materials(self, target_mesh, export_directory, fbx_name):
-        for key, values in self.scene_info.items():
-            for object_type, element_listings in values.items():
-                if object_type == 'materials':
-                    for mesh_name, material_values in element_listings.items():
-                        # _LOGGER.info(f'MeshName: {mesh_name}   MaterialValues: {material_values}')
-                        if mesh_name == target_mesh:
-                            material_name = None
-                            attached_textures = None
-                            for component_type, component_data in material_values.items():
-                                if component_data:
-                                    if component_type == 'material_name':
-                                        material_name = f'{Path(fbx_name).stem}_{component_data}.material'
-                                    else:
-                                        attached_textures = self.export_texture_sets(component_data, export_directory)
-                                self.generate_material_description(material_name, attached_textures, export_directory)
-
-    def generate_material_description(self, material_name, attached_textures, export_directory):
-        _LOGGER.info(f'Generate Material Description: [{material_name}] >>> {attached_textures} >>> {export_directory}')
-        # material_definition = material_generator.MaterialGenerator(
-        #     material_type='StandardPBR',
-        #     material_properties=attached_textures,
-        #     material_name=material_name,
-        #     PATH_DCCSIG=self.base_dccsi_location,
-        #     O3DE_DEV=self.base_repository_location).get_material()
-        # return material_definition

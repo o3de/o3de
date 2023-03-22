@@ -13,6 +13,7 @@
 
 import logging
 from azpy.shared.client_base import ClientBase
+from PySide2.QtCore import Signal
 
 
 _MODULENAME = 'azpy.dcc.o3de.utils.o3de_client'
@@ -20,30 +21,28 @@ _LOGGER = logging.getLogger(_MODULENAME)
 
 
 class O3DEClient(ClientBase):
+    client_activity_registered = Signal(dict)
 
     def echo(self, text):
         cmd = {
             'cmd': 'echo',
             'text': text
         }
+        self.send(cmd)
 
-        reply = self.send(cmd)
-        if self.is_valid_reply(reply):
-            return reply['result']
-        else:
-            return None
-
-    def set_title(self, title):
+    def verify_connection(self):
         cmd = {
-            'cmd': 'set_title',
-            'title': title
+            'cmd': 'verify_connection',
+        }
+        self.send(cmd)
+
+    def run_command(self, command):
+        cmd = {
+            'cmd': 'run_command',
+            'arguments': command
         }
 
-        reply = self.send(cmd)
-        if self.is_valid_reply(reply):
-            return reply['result']
-        else:
-            return None
+        self.send(cmd)
 
     def run_script(self, target_path, script_arguments=None):
         cmd = {
@@ -57,4 +56,7 @@ class O3DEClient(ClientBase):
             return reply['result']
         else:
             return None
+
+    def update_event(self, update):
+        self.client_activity_registered.emit(update)
 

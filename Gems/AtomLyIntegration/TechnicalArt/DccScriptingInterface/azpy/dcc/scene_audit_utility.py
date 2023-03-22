@@ -52,7 +52,7 @@ class SceneAuditor(QObject):
     def get_lighting_information(self):
         pass
 
-    def get_material_information(self):
+    def get_material_information(self, mesh_list):
         pass
 
     def get_animation_information(self):

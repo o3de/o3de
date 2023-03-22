@@ -23,6 +23,7 @@ class Launcher(QtWidgets.QMainWindow):
         self.app = QtWidgets.QApplication.instance()
         self.setWindowFlags(QtCore.Qt.Window)
         self.setGeometry(50, 50, 1280, 720)
+        self.setFixedSize(1280, 720)
         self.setObjectName('DCCsiLauncher')
         self.setWindowTitle(' ')
         self.icon_path = (settings.get('PATH_DCCSI_TOOLS') / 'Launcher/images/o3de_icon.png').as_posix()

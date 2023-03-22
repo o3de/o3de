@@ -8,24 +8,33 @@ import os
 mc.loadPlugin("fbxmaya")
 
 
-def get_scene_objects():
+def get_mesh_info():
     mesh_dict = {}
     mesh_objects = mc.ls(type='mesh')
     for target_mesh in mesh_objects:
         transform_node = mc.listRelatives(target_mesh, parent=True)[0]
+        position = get_mesh_position(transform_node)
         mesh_attributes = get_mesh_attributes(transform_node)
         mesh_dict[transform_node] = {
-            'translation':   mesh_attributes['center'],
-            'rotation':   mesh_attributes['rotate'],
-            'scale': mesh_attributes['scale'],
-            'objectColorRGB': mesh_attributes['objectColorRGB'],
-            'visibility': mesh_attributes['visibility']
+            'position':   position,
+            'rotation':   mesh_attributes['rotate'][0],
+            'scale': mesh_attributes['scale'][0],
+            'attributes': {
+                'objectColorRGB': mesh_attributes['objectColorRGB'],
+                'visibility': mesh_attributes['visibility']
+            }
         }
     return mesh_dict
 
 
+def get_mesh_position(target_mesh):
+    mc.select(target_mesh, r=True)
+    coords = mc.xform(sp=True, q=True, ws=True)
+    return coords
+
+
 def get_mesh_attributes(target_mesh):
-    target_attributes = ['scale', 'center', 'rotate', 'objectColorRGB', 'visibility']
+    target_attributes = ['scale', 'rotate', 'objectColorRGB', 'visibility']
     mesh_attributes = {}
     for attr in mc.listAttr(target_mesh):
         if attr in target_attributes:
@@ -51,8 +60,9 @@ def export_fbx(target_mesh, output_path):
         mesh_attributes = get_mesh_attributes(target_mesh)
         print(f'MeshAttributes: {mesh_attributes}')
         mc.move(0, 0, 0, target_mesh, absolute=True)
-        # mc.select(target_mesh, hierarchy=True) you might need to handle grouped items.. leave this here until sorted
-        mc.select(target_mesh)
+        # mc.select(target_mesh, hierarchy=True) you might need to handle grouped items... leave this here until sorted
+        selected_object = mc.select(target_mesh)
+        mc.currentUnit(linear='meter')
         mc.FBXExport('-file', output_path, '-s')
         mc.move(mesh_attributes['center'][0][0], mesh_attributes['center'][0][1], mesh_attributes['center'][0][2])
         mc.select(clear=True)

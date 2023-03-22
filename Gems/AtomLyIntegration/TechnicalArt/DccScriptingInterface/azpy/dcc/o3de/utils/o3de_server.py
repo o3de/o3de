@@ -41,6 +41,16 @@ from importlib import import_module
 from PySide2 import QtWidgets, QtCore
 from PySide2.QtCore import Signal, Slot
 
+
+# import azlmbr.bus as bus
+# import azlmbr.bus as bus
+# import azlmbr.editor as editor
+# import azlmbr.components as components
+# import azlmbr.legacy.general as general
+# import azlmbr.math as math
+# from azpy.dcc.o3de.utils.o3de_level_builder import O3DELevelBuilder
+
+
 try:
     from azpy.shared.server_base import ServerBase
 except:
@@ -83,10 +93,16 @@ class O3DEServer(ServerBase):
         _LOGGER.info(f'Process command FIRED: cmd:: {cmd}   data:: {data}   reply:: {reply}')
         if cmd == 'echo':
             self.echo(data, reply)
+        elif cmd == 'verify_connection':
+            self.verify_connection(data, reply)
+        elif cmd == 'run_command':
+            self.run_command(data, reply)
         elif cmd == 'run_script':
             self.run_script(data, reply)
         elif cmd == 'set_title':
             self.set_title(data, reply)
+        elif cmd == "scene_update_event":
+            self.update_event(data, reply)
         else:
             super(O3DEServer, self).process_cmd(cmd, data, reply)
 
@@ -94,13 +110,18 @@ class O3DEServer(ServerBase):
         """! Tests communication channel """
         reply['result'] = data['text']
         reply['success'] = True
-        self.server_activity_registered.emit({'server_message': data})
+        self.server_activity_registered.emit(data['text'])
+
+    def verify_connection(self, data, reply):
+        """! Confirms connected status """
+        reply['result'] = data['text']
+        reply['success'] = True
 
     def run_script(self, data, reply):
         """! Fire commands and/or python scripts to open scenes """
-        _LOGGER.info(f'Run Script DATA: {data}')
         target_module = self.get_module_path(Path(data['path']))
         module_name = f"{Path(data['path']).parts[-2]}.{Path(data['path']).stem}"
+        processing_data = None
 
         # Import module if it hasn't been done already
         if target_module not in sys.modules:
@@ -109,6 +130,9 @@ class O3DEServer(ServerBase):
         if 'class' in data['arguments']:
             target_class = getattr(import_module(module_name), data['arguments']['class'])
             cls = target_class(**data['arguments'])
+
+            if 'operation' in data['arguments']:
+                cls.operation = data['arguments']['operation']
             processing_data = cls.start_operation()
         else:
             target_module.run(data['arguments'])
@@ -117,11 +141,20 @@ class O3DEServer(ServerBase):
         reply['result'] = processing_data
         reply['success'] = True
 
+    def run_command(self, data):
+        _LOGGER.info(f'Run command fired: {data}')
+
+    def update_event(self, data, reply):
+        _LOGGER.info(f'UpdateEventFired:::> {data}')
+
+        reply['result'] = data
+        reply['success'] = True
+
     def handle_script_configuration(self, module_name, data):
         spec = importlib.util.spec_from_file_location(module_name, Path(data['path']).as_posix())
-        script = importlib.util.module_from_spec(spec)
-        sys.modules[module_name] = script
-        spec.loader.exec_module(script)
+        target_module = importlib.util.module_from_spec(spec)
+        sys.modules[module_name] = target_module
+        spec.loader.exec_module(target_module)
 
     def set_title(self, data, reply):
         """! Tests QT window modifications """

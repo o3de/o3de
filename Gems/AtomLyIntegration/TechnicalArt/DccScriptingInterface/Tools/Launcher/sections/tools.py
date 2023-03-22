@@ -46,7 +46,19 @@ class Tools(QtWidgets.QWidget):
 
         # Tabs Setup
         self.section_tabs = QtWidgets.QTabBar()
-        self.section_tabs.setShape(QtWidgets.QTabBar.RoundedNorth)
+        # self.section_tabs.setShape(QtWidgets.QTabBar.RoundedNorth)
+
+        self.section_tabs.setStyleSheet(
+            'QTabBar::tab {'
+            'background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, '
+            'stop: 0 #E1E1E1, stop: 0.4 #DDDDDD, stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);'
+            'border: 2px solid #C4C4C3;'
+            'border-bottom-color: #C2C7CB; /* same as the pane color */'
+            'border-top-left-radius: 4px;'
+            'border-top-right-radius: 4px;'
+            'min-width: 8ex;'
+            'padding: 2px;}')
+
         self.section_tabs.currentChanged.connect(self.section_button_clicked)
         self.section_tabs.setStyleSheet(constants.TAB_STYLESHEET)
         self.section_tabs.setFont(constants.BOLD_FONT_LARGE)

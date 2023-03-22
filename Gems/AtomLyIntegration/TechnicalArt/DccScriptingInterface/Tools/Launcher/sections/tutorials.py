@@ -5,11 +5,11 @@ import logging
 _LOGGER = logging.getLogger('Launcher.projects')
 
 
-class Projects(QtWidgets.QWidget):
+class Tutorials(QtWidgets.QWidget):
     info_bar_message = Signal(str)
 
     def __init__(self, model):
-        super(Projects, self).__init__()
+        super(Tutorials, self).__init__()
 
         self.model = model
         self.content_layout = QtWidgets.QVBoxLayout(self)
@@ -23,13 +23,10 @@ class Projects(QtWidgets.QWidget):
         self.get_info()
 
     def get_info(self):
-        info_text = 'Projects Information:\n\nFound projects:\n'
-        for index, value in self.model.projects.items():
-            info_text += f'-- {index}: {value}\n'
-        self.set_info(info_text)
+        pass
 
     def set_info(self, info_text: str):
-        self.info.setText(info_text)
+        pass
 
     def open_section(self):
         pass

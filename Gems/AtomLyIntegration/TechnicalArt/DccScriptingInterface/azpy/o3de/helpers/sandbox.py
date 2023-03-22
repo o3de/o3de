@@ -11,7 +11,8 @@
 # # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # #
 
-"""! @brief MockTool is a collection of template files that can be used to start a new tool within the DCCsi. """
+"""! @brief MockTool is a collection of template files that can be used to start a new tool within the DCCsi. This
+proof of concept tool was build using the MockTool template. """
 
 # Required Imports
 import config
@@ -34,28 +35,41 @@ class Sandbox(QtWidgets.QWidget):
         super(Sandbox, self).__init__()
         _LOGGER.info('Sandbox Added')
 
-        self.o3de_connection = None
+        # ENVIRONMENT INFO --------------------
         self.o3de_envars = config.get_environment_values('o3de')
-        _LOGGER.info(f'O3DE Envars: {self.o3de_envars}')
+        self.maya_envars = config.get_environment_values('maya')
+
+        # SOCKET CONNECTIONS --------------------
+        self.o3de_connection = None
         self.maya_connection = None
+
+        # DCC INTERCHANGE DATA --------------------
+        self.maya_scene_audit = {}
+        self.maya_scene_exports = {}
+        self.scene_assets_transferred = None
+
+        # CRITICAL PATHS --------------------
         self.maya_file_location = None
         self.o3de_asset_directory = None
         self.base_asset_directory = None
-        self.maya_scene_audit = {}
-        self.scene_assets_transferred = None
         self.dccsi_base = settings.get('PATH_DCCSIG')
         self.desktop_location = os.path.join(os.path.expanduser('~'), 'Desktop')
         self.registered_projects = settings.get('REGISTERED_PROJECTS')
         self.current_project = settings.get('CURRENT_PROJECT')
-        self.maya_envars = config.get_environment_values('maya')
-        _LOGGER.info(f'Maya Envars:: {self.maya_envars}')
+        self.o3de_server_script = Path('E:/Depot/o3de-gems/DCCsiLink/Editor/Scripts/dccsilink_dialog.py')
+        self.audit_maya_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_scene_audit.py'
         self.target_maya_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_live_link.py'
         self.target_o3de_script = self.dccsi_base / 'azpy/dcc/o3de/utils/o3de_live_link.py'
-        self.audit_maya_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_scene_audit.py'
+        self.o3de_build_script = self.dccsi_base / 'azpy/dcc/o3de/utils/o3de_level_builder.py'
         self.maya_scene_export_script = self.dccsi_base / 'azpy/dcc/maya/utils/maya_scene_export.py'
+
+        # DISPLAY SETTINGS --------------------
         self.boldFont = QtGui.QFont("Plastique", 8, QtGui.QFont.Bold)
 
+        # -------------------------------------------
         # MAYA SPECIFIC CONTROLS --------------------
+        # -------------------------------------------
+
         self.main_container = QtWidgets.QVBoxLayout(self)
         self.main_container.setAlignment(QtCore.Qt.AlignTop)
         self.maya_sync_label = QtWidgets.QLabel('MAYA CONNECTION')
@@ -84,28 +98,14 @@ class Sandbox(QtWidgets.QWidget):
         self.maya_connected_label.setStyleSheet('color: red')
         self.main_container.addSpacing(5)
 
-        # Maya Connection Buttons
-        self.maya_buttons_container = QtWidgets.QHBoxLayout()
-        self.maya_buttons_container.setAlignment(QtCore.Qt.AlignLeft)
-        self.main_container.addLayout(self.maya_buttons_container)
-        self.start_maya_button = QtWidgets.QPushButton('Start Maya Connection')
-        self.start_maya_button.setFixedSize(150, 25)
-        self.start_maya_button.clicked.connect(self.start_maya_clicked)
-        self.start_maya_button.setObjectName('Primary')
-        self.maya_buttons_container.addWidget(self.start_maya_button)
-        self.test_maya_button = QtWidgets.QPushButton('Test Maya Connection')
-        self.test_maya_button.setFixedSize(150, 25)
-        self.test_maya_button.clicked.connect(self.test_maya_clicked)
-        self.test_maya_button.setEnabled(False)
-        self.test_maya_button.setObjectName('Primary')
-        self.maya_buttons_container.addWidget(self.test_maya_button)
-        self.main_container.addSpacing(10)
-
         # Separator bar
         self.main_container.addLayout(self.get_separator_layout())
         self.main_container.addSpacing(10)
 
+        # -------------------------------------------
         # O3DE SPECIFIC CONTROLS --------------------
+        # -------------------------------------------
+
         self.o3de_sync_label = QtWidgets.QLabel('O3DE CONNECTION')
         self.o3de_sync_label.setFont(self.boldFont)
         self.main_container.addWidget(self.o3de_sync_label)
@@ -170,27 +170,15 @@ class Sandbox(QtWidgets.QWidget):
         self.o3de_connected_label.setStyleSheet('color: red')
         self.main_container.addSpacing(5)
 
-        # O3DE connection buttons
-        self.o3de_buttons_container = QtWidgets.QHBoxLayout()
-        self.o3de_buttons_container.setAlignment(QtCore.Qt.AlignLeft)
-        self.main_container.addLayout(self.o3de_buttons_container)
-        self.start_o3de_button = QtWidgets.QPushButton('Start O3DE Connection')
-        self.start_o3de_button.setFixedSize(150, 25)
-        self.start_o3de_button.clicked.connect(self.start_o3de_clicked)
-        self.start_o3de_button.setObjectName('Primary')
-        self.o3de_buttons_container.addWidget(self.start_o3de_button)
-
-        self.test_o3de_button = QtWidgets.QPushButton('Test O3DE Connection')
-        self.test_o3de_button.setFixedSize(150, 25)
-        self.test_o3de_button.clicked.connect(self.test_o3de_clicked)
-        self.test_o3de_button.setObjectName('Primary')
-        self.test_o3de_button.setEnabled(False)
-        self.o3de_buttons_container.addWidget(self.test_o3de_button)
-        self.main_container.addSpacing(10)
-
         # Separator bar
         self.main_container.addLayout(self.get_separator_layout())
-        self.main_container.addSpacing(10)
+        self.main_container.addSpacing(20)
+
+        self.initiate_session_button = QtWidgets.QPushButton('Initiate Session')
+        self.initiate_session_button.setObjectName('Primary')
+        self.initiate_session_button.setFixedHeight(25)
+        self.initiate_session_button.clicked.connect(self.initiate_live_link_session)
+        self.main_container.addWidget(self.initiate_session_button)
 
         self.main_container.addSpacing(15)
         self.start_live_link_button = QtWidgets.QPushButton('Start Live Link Session')
@@ -198,9 +186,9 @@ class Sandbox(QtWidgets.QWidget):
         self.start_live_link_button.setFixedHeight(25)
         self.start_live_link_button.clicked.connect(self.start_live_link_clicked)
         self.main_container.addWidget(self.start_live_link_button)
-        # self.initialize_connections()
+        self.initialize_connections()
 
-        # For testing... remove this eventually:
+        # For testing
         self.maya_file_location = self.dccsi_base / 'Tools/Python/MockTool/Resources/test_scene.mb'
         self.base_asset_directory = 'E:/Depot/o3de-gems/DCCsiLink/Assets'
         self.maya_file_location_field.setText(self.maya_file_location.as_posix())
@@ -218,47 +206,26 @@ class Sandbox(QtWidgets.QWidget):
         return self.separator_layout
 
     def initialize_connections(self):
-        if self.get_connection('maya'):
-            self.start_maya_button.setEnabled(False)
-            self.test_maya_button.setEnabled(True)
-        if self.get_connection('o3de'):
-            self.start_o3de_button.setEnabled(False)
-            self.test_o3de_button.setEnabled(True)
+        self.get_connection('maya')
+        self.get_connection('o3de')
 
     def get_connection(self, target_application):
         if target_application == 'maya':
             if not self.maya_connection:
                 self.maya_connection = MayaClient(17344)
-                if self.maya_connection.establish_connection():
-                    self.maya_connection.client_activity_registered.connect(self.maya_client_event_fired)
-                    self.set_connection_flag('maya', True)
-                else:
-                    self.maya_connection = None
-                    self.set_connection_flag('maya', False)
-                    _LOGGER.info(f'Maya client failed to connect- click the Start Maya Connection Button to establish '
-                                 f'a connection.')
+                self.maya_connection.client_activity_registered.connect(self.maya_client_event_fired)
             return self.maya_connection
         else:
             if not self.o3de_connection:
                 self.o3de_connection = O3DEClient(17345)
-                if self.o3de_connection.establish_connection():
-                    self.set_connection_flag('o3de', True)
-                else:
-                    self.o3de_connection = None
-                    self.set_connection_flag('o3de', False)
-                    _LOGGER.info(f'O3DE Client failed to connect- click the Start O3DE Connection Button to establish'
-                                 f' a connection.')
+                self.o3de_connection.client_activity_registered.connect(self.o3de_client_event_fired)
             return self.o3de_connection
 
-    def run_socket_script(self, target_application, script_path, arguments):
-        connection = self.get_connection(target_application)
-        if connection:
-            return_data = connection.run_script(script_path, arguments)
-            _LOGGER.info(f'Return data: {return_data}')
-            if return_data:
-                return return_data
-        else:
-            _LOGGER.info('Failed to connect')
+    def set_connection(self, target_application, connected=True):
+        self.set_connection_flag(target_application, connected)
+        if not connected:
+            app = target_application.capitalize()
+            _LOGGER.info(f'{app} failed to connect- click the Start {app} Connection Button to establish a connection.')
 
     def set_connection_flag(self, target_application, activated):
         target_label = self.maya_connected_label if target_application == 'maya' else self.o3de_connected_label
@@ -272,6 +239,17 @@ class Sandbox(QtWidgets.QWidget):
         data.append(f'PATH_DCCSIG={self.dccsi_base.as_posix()}')
         return data
 
+    def run_socket_script(self, target_application, script_path, arguments):
+        _LOGGER.info(f'SOCKET SCRIPT::> {script_path}')
+        connection = self.get_connection(target_application)
+        if connection.establish_connection():
+            return_data = connection.run_script(script_path, arguments)
+            _LOGGER.info(f'Return data: {return_data}')
+            if return_data:
+                return return_data
+        else:
+            _LOGGER.info('Failed to connect')
+
     ###############################
     # Maya Operations  ############
     ###############################
@@ -280,13 +258,9 @@ class Sandbox(QtWidgets.QWidget):
         file = Path(self.maya_file_location_field.text())
         if file.suffix in ['.ma', '.mb', '.fbx'] and file.exists():
             self.maya_file_location = file.as_posix()
-            if not self.maya_connection:
-                self.start_maya_button.setEnabled(True)
-        else:
-            self.maya_file_location = None
-            self.start_maya_button.setEnabled(False)
 
     def audit_maya_file(self):
+        _LOGGER.info('STAGE ONE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         script_path = self.audit_maya_script.as_posix()
         arguments = {
             'class':              'MayaSceneAuditor',
@@ -297,6 +271,7 @@ class Sandbox(QtWidgets.QWidget):
         self.run_socket_script('maya', script_path, arguments)
 
     def start_asset_export(self):
+        _LOGGER.info('STAGE TWO +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
         script_path = self.maya_scene_export_script.as_posix()
         arguments = {
             'class':                'MayaSceneExporter',
@@ -309,16 +284,15 @@ class Sandbox(QtWidgets.QWidget):
         self.run_socket_script('maya', script_path, arguments)
 
     def start_maya_live_link(self):
-        if self.maya_scene_audit:
-            script_path = self.target_maya_script.as_posix()
-            arguments = {
-                'class':              'MayaLiveLink',
-                'target_application': 'maya',
-                'target_files':       'current',
-                'operation':          'live-link'
-            }
-            arguments.update(self.maya_scene_audit)
-            self.run_socket_script('maya', script_path, arguments)
+        _LOGGER.info('STAGE THREE +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++')
+        script_path = self.target_maya_script.as_posix()
+        arguments = {
+            'class':                'MayaLiveLink',
+            'target_application':   'maya',
+            'operation':            'live-link',
+            'audit_info':           self.maya_scene_audit
+        }
+        self.run_socket_script('maya', script_path, arguments)
 
     ###############################
     # O3DE Operations  ############
@@ -337,13 +311,8 @@ class Sandbox(QtWidgets.QWidget):
                 else:
                     project_list.insert(0, project_name)
             self.project_combobox.addItems(project_list)
-            if project_list:
-                if not self.o3de_connection:
-                    self.start_o3de_button.setEnabled(True)
-                    _LOGGER.info('Valid Repository Location has been entered.')
         else:
             self.o3de_repository_location = None
-            self.start_o3de_button.setEnabled(False)
 
     def validate_asset_location(self):
         asset_path = self.asset_location_field.text()
@@ -351,15 +320,39 @@ class Sandbox(QtWidgets.QWidget):
             self.o3de_asset_directory = Path(asset_path).as_posix()
         return False
 
-    def start_o3de_live_link(self, target_files='current'):
+    def start_level_build(self):
+        _LOGGER.info('Starting scene transfer...')
+        script_path = self.o3de_build_script.as_posix()
+        arguments = {
+            'class':                'O3DELevelBuilder',
+            'target_application':   'o3de',
+            'operation':            'level-build',
+            'level_name':           self.level_combobox.currentText(),
+            'audit_info':           self.maya_scene_audit,
+            'export_info':          self.maya_scene_exports,
+            'dccsi_base':           self.dccsi_base.as_posix(),
+            'asset_base':           self.asset_location_field.text()
+        }
+        self.run_socket_script('o3de', script_path, arguments)
+
+    def start_o3de_live_link(self):
         script_path = self.target_o3de_script.as_posix()
         arguments = {
-            'class':              'O3DELiveLink',
-            'target_application': 'o3de',
-            'target_files':       target_files,
-            'operation':          'live-link'
+            'class':                'O3DELiveLink',
+            'target_application':   'o3de',
+            'operation':            'live-link',
+            'audit_info':           self.maya_scene_audit
         }
-        arguments.update(self.maya_scene_audit)
+        self.run_socket_script('o3de', script_path, arguments)
+
+    def o3de_scene_update(self, update_info):
+        script_path = self.target_o3de_script.as_posix()
+        arguments = {
+            'class':                'O3DELiveLink',
+            'target_application':   'o3de',
+            'operation':            'scene-update',
+            'update_info':           update_info
+        }
         self.run_socket_script('o3de', script_path, arguments)
 
     ####################################
@@ -383,78 +376,88 @@ class Sandbox(QtWidgets.QWidget):
             self.o3de_asset_directory = file_path
             self.asset_location_field.setText(self.o3de_asset_directory)
 
-    def start_maya_clicked(self):
-        _LOGGER.info('Start Maya clicked')
+    def start_maya_connection(self):
         connection_info = {
             'exe': settings.get('MAYA_EXE'),
-            'script': self.target_maya_script,
+            'script': self.audit_maya_script,
             'file': self.maya_file_location
         }
         self.maya_envars['O3DE'] = settings.get('O3DE_DEV')
         self.maya_envars['PATH_DCCSIG'] = settings.get('PATH_DCCSIG')
-        env_data = self.format_qprocess_environment(self.maya_envars, f"SCRIPT={connection_info['script']}")
+
+        env_data = self.format_qprocess_environment(self.maya_envars, f'SCRIPT={self.audit_maya_script.as_posix()}')
         app = qt_process.QtProcess(connection_info['exe'], connection_info['file'], env_data)
         app.start_process(socket_connection=True)
+        app.process_info.connect(self.app_process_complete)
         self.set_connection_flag('maya', True)
-        self.start_maya_button.setEnabled(False)
-        self.test_maya_button.setEnabled(True)
 
-    def test_maya_clicked(self):
-        _LOGGER.info('Test Maya clicked')
-        if self.get_connection('maya'):
-            self.maya_connection.echo('Echo test')
-
-    def start_o3de_clicked(self):
-        _LOGGER.info('Start O3DE clicked')
+    def start_o3de_connection(self):
         exe = (Path(settings.get('PATH_O3DE_BIN')) / 'Editor.exe').as_posix()
-        command = ['--runpython', self.target_o3de_script.as_posix(),
+        command = ['--runpython', self.o3de_server_script.as_posix(),
                    '--runpythonargs', 'blacktestparam']
 
         app = qt_process.QtProcess(exe, None, [])
         app.start_o3de_process(command)
         self.set_connection_flag('o3de', True)
-        self.start_o3de_button.setEnabled(False)
-        self.test_o3de_button.setEnabled(True)
 
-    def test_o3de_clicked(self):
-        _LOGGER.info('Test O3DE clicked')
-        if self.get_connection('o3de'):
-            self.o3de_connection.echo('Echo test')
+    def initiate_live_link_session(self):
+        self.start_maya_connection()
+        self.start_o3de_connection()
+        self.start_live_link_button.setEnabled(True)
 
     def start_live_link_clicked(self):
-        _LOGGER.info('LiveLink started')
-        if not self.maya_scene_audit:
-            self.audit_maya_file()
-        elif not self.scene_assets_transferred:
-            self.start_asset_export()
-        else:
-            self.start_maya_live_link()
+        self.audit_maya_file()
+
+    def test_o3de_script_clicked(self):
+        self.run_o3de_script()
 
     @Slot(dict)
     def maya_client_event_fired(self, result):
         _LOGGER.info(f'Maya Client event fired::::: {result}')
-        if result:
-            operation = result['cmd']
-            del result['cmd']
-            if operation == 'audit':
-                self.maya_scene_audit = result
+        if result and isinstance(result, dict):
+            return_data = result['result']
+            if isinstance(return_data, dict):
+                signal = return_data['msg']
+                return_data.pop('msg')
+            else:
+                signal = 'update_event'
+
+            if signal == 'audit_complete':
+                _LOGGER.info('Audit complete.')
+                self.maya_scene_audit = return_data['result']['scene_data']
                 self.start_asset_export()
-            elif operation == 'update_event':
-                _LOGGER.info(f'UpdateEvent::: {result}')
+            elif signal == 'asset_export_complete':
+                _LOGGER.info('Asset export complete.')
+                self.maya_scene_exports = return_data['result']
+                self.start_level_build()
+            elif signal == 'live_link_ready':
+                _LOGGER.info('MAYA... LiveLink ready.')
+                self.start_o3de_live_link()
+            elif signal == 'update_event':
+                _LOGGER.info('MAYA scene update event')
+                self.o3de_scene_update(return_data)
 
     @Slot(dict)
     def o3de_client_event_fired(self, result):
         _LOGGER.info(f'O3DE Client event fired::::: {result}')
-        if result:
-            operation = result['cmd']
-            del result['cmd']
+        if result and isinstance(result, dict):
+            return_data = result['result']
+            if isinstance(return_data, dict):
+                signal = return_data['msg']
+                return_data.pop('msg')
+            else:
+                signal = return_data
 
-            if operation == 'scene_sync_ready':
-                _LOGGER.info('Starting Live Link session...')
-            elif operation == 'scene_build_ready':
-                _LOGGER.info('Scene build ready')
-            elif operation == 'update_event':
-                _LOGGER.info(f'UpdateEvent::: {result}')
+            if signal == 'scene_build_ready':
+                self.start_maya_live_link()
+            elif signal == 'live_link_ready':
+                _LOGGER.info('O3DE... LiveLink ready.')
+            elif signal == 'scene_update_event':
+                _LOGGER.info('O3DE scene update event')
+
+    @Slot(dict)
+    def app_process_complete(self, result):
+        _LOGGER.info(f'Maya is open and this is what it returned: {result}')
 
 
 def get_tool(*args, **kwargs):
