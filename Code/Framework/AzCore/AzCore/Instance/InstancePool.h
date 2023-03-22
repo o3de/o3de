@@ -182,7 +182,7 @@ namespace AZ
             auto moduleId = Environment::GetModuleId();
 
             auto defaultName = AZStd::fixed_string<256>::format("%s%p", name, moduleId);
-            return AZ::Name(fullname.get());
+            return AZ::Name(defaultName);
         }
 
         AZStd::unordered_map<AZ::Name, AZStd::weak_ptr<InstancePoolBase>> m_nameToInstancePool;
