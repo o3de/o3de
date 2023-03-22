@@ -357,7 +357,14 @@ def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     :param include_optional: If false, exclude optional gems
     :return: A set of gem name strings
     """
-    return set([gem['name'] if isinstance(gem, dict) and (include_optional or not gem.get('optional', False)) else gem for gem in gems])
+    def should_include_gem(gem: str or dict) -> bool:
+        if not isinstance(gem, dict) or include_optional:
+            return True
+        else:
+            # only include required gems 
+            return not gem.get('optional', False)
+
+    return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems if should_include_gem(gem)])
 
 
 def contains_object_name(object_name:str, candidates:list) -> bool:

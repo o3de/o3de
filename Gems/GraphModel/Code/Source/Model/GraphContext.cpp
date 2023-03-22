@@ -26,6 +26,8 @@ namespace GraphModel
             serializeContext->Class<GraphContext>()
                 ->Version(0)
                 ;
+
+            serializeContext->RegisterGenericType<GraphContextPtr>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -36,7 +38,7 @@ namespace GraphModel
                 ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
                 ->Method("GetSystemName", &GraphContext::GetSystemName)
                 ->Method("GetModuleFileExtension", &GraphContext::GetModuleFileExtension)
-                ->Method("GetAllDataTypes", &GraphContext::GetAllDataTypes)
+                //->Method("GetAllDataTypes", &GraphContext::GetAllDataTypes) // GHI-15121 Unbinding until asserts with AP behavior context reflection are resolved
                 ->Method("GetDataTypeByEnum", static_cast<DataTypePtr (GraphContext::*)(DataType::Enum) const>(&GraphContext::GetDataType))
                 ->Method("GetDataTypeByName", static_cast<DataTypePtr (GraphContext::*)(const AZStd::string&) const>(&GraphContext::GetDataType))
                 ->Method("GetDataTypeByUuid", static_cast<DataTypePtr (GraphContext::*)(const AZ::Uuid&) const>(&GraphContext::GetDataType))
@@ -75,7 +77,7 @@ namespace GraphModel
         return m_moduleGraphManager;
     }
 
-    const AZStd::vector<DataTypePtr>& GraphContext::GetAllDataTypes() const
+    const DataTypeList& GraphContext::GetAllDataTypes() const
     {
         return m_dataTypes;
     }
