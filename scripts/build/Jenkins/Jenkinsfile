@@ -117,9 +117,9 @@ def PlatformRmDir(path, sudo=false) {
     if (env.IS_UNIX) {
         sh label: "Removing ${path}",
            if (sudo) {
-              script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
-           } else {
               script: "if [ -d ${path} ]; then sudo rm -rf ${path}; fi"
+           } else {
+              script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
            }
     } else {
         def win_path = path.replace('/','\\')
