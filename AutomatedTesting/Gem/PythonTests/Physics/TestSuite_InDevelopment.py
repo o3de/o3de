@@ -182,8 +182,3 @@ class EditorTestAutomation(EditorTestSuite):
     @pytest.mark.skip(reason="GHI #9301: Test Periodically Fails")
     class Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx(EditorBatchedTest):
         from .tests.collider import Collider_PxMeshNotAutoAssignedWhenNoPhysicsFbx as test_module
-
-    @pytest.mark.xfail(
-        reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
-    class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
