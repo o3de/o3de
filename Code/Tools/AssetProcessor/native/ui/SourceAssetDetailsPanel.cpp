@@ -242,14 +242,44 @@ namespace AssetProcessor
                 }
                 else
                 {
-                    assetDatabaseConnection.QuerySourceBySourceName(
-                        sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str(),
-                        [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+                    AZStd::string queryString;
+
+                    if (AZ::IO::PathView(sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str()).IsAbsolute())
+                    {
+                        SourceAssetReference sourceAsset(sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str());
+
+                        AzToolsFramework::AssetDatabase::SourceDatabaseEntry sourceEntry;
+                        if (assetDatabaseConnection.GetSourceBySourceNameScanFolderId(
+                            sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId(), sourceEntry))
                         {
                             dependencyDetails = sourceEntry;
                             displayString = dependencyDetails.m_sourceName;
-                            return false;
-                        });
+                        }
+                    }
+                    else
+                    {
+                        AzToolsFramework::AssetDatabase::SourceDatabaseEntryContainer sources;
+                        if (assetDatabaseConnection.GetSourcesBySourceName(
+                            sourceFileDependencyEntry.m_dependsOnSource.GetPath().c_str(),
+                            sources))
+                        {
+                            // There may be multiple sources with the same relative path
+                            // Pick the one in the lowest ID scanfolder, which should correspond to the highest priority folder
+
+                            AZ::s64 lowestScanfolder = sources[0].m_scanFolderPK;
+
+                            for (const auto& source : sources)
+                            {
+                                if (source.m_scanFolderPK > lowestScanfolder)
+                                {
+                                    lowestScanfolder = source.m_scanFolderPK;
+                                    dependencyDetails = source;
+                                }
+                            }
+
+                            displayString = dependencyDetails.m_sourceName;
+                        }
+                    }
 
                     if (displayString.empty())
                     {
