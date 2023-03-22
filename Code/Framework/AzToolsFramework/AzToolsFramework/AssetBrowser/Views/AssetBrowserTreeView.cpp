@@ -277,6 +277,11 @@ namespace AzToolsFramework
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
                 InitializeTreeViewSaving(crc);
                 ApplyTreeViewSnapshot();
+                if (!selectionModel()->hasSelection())
+                {
+                    QModelIndex firstItem = model()->index(0, 0);
+                    selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
+                }
             }
         }
 

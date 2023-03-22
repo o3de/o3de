@@ -17,11 +17,14 @@
 namespace AssetProcessor
 {
 
-    AssetTreeItemData::AssetTreeItemData(const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid) :
+    AssetTreeItemData::AssetTreeItemData(
+        const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid, const AZ::s64 scanFolderID)
+        :
         m_assetDbName(assetDbName),
         m_name(name),
         m_isFolder(isFolder),
-        m_uuid(uuid)
+        m_uuid(uuid),
+        m_scanFolderID(scanFolderID)
     {
         QFileInfo fileInfo(name);
         m_extension = fileInfo.completeSuffix();

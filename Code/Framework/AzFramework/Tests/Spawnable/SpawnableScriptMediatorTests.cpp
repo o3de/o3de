@@ -50,7 +50,9 @@ namespace UnitTest
 
             m_application = new AzFramework::Application();
             AZ::ComponentApplication::Descriptor descriptor;
-            m_application->Start(descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(descriptor, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

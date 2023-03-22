@@ -23,6 +23,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -423,7 +424,6 @@ namespace AZ
 
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
             // for each supervariant.
-
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
@@ -696,6 +696,10 @@ namespace AZ
                         hlslFullPath,
                         hlslSourceCode};
 
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto rootShaderVariantAssetOutcome = ShaderVariantAssetBuilder::CreateShaderVariantAsset(rootVariantInfo, shaderVariantCreationContext, outputByproducts);
@@ -774,11 +778,11 @@ namespace AZ
                 return;
             }
 
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-
             AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
 
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
+
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
     } // ShaderBuilder

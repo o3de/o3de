@@ -679,7 +679,7 @@ namespace AssetProcessor
                     result.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                     shouldRemoveTempFolder = false;
                 }
-                shouldRemoveTempFolder = shouldRemoveTempFolder && !s_createRequestFileForSuccessfulJob;
+                shouldRemoveTempFolder = shouldRemoveTempFolder && !result.m_keepTempFolder && !s_createRequestFileForSuccessfulJob;
             }
             break;
 
@@ -936,6 +936,7 @@ namespace AssetProcessor
             const QString& productAbsolutePath = filePair.second;
 
             bool isCopyJob = !(sourceAbsolutePath.startsWith(tempFolder, Qt::CaseInsensitive));
+            isCopyJob |= response.m_keepTempFolder; // Copy instead of Move if the builder wants to keep the Temp Folder. 
 
             if (!MoveCopyFile(sourceAbsolutePath, productAbsolutePath, isCopyJob)) // this has its own traceprintf for failure
             {

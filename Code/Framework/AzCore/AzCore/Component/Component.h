@@ -284,6 +284,58 @@ namespace AZ
         return aznew DescriptorType; \
     }
 
+    //! Declares the functions needed to make the component work with the Component Descriptor system
+    //! Does not provide any definitions, nor added AZ_CLASS_ALLOCATOR for the type
+    #define AZ_COMPONENT_BASE_DECL() \
+    template<class Comp, class Void> friend class AZ::HasComponentReflect; \
+    template<class Comp, class Void> friend class AZ::HasComponentProvidedServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentDependentServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentRequiredServices; \
+    template<class Comp, class Void> friend class AZ::HasComponentIncompatibleServices; \
+    static AZ::ComponentDescriptor* CreateDescriptor();
+
+    #define AZ_COMPONENT_BASE_IMPL_0(_ComponentClass, _Inline, _TemplateParamsParen) \
+    AZ_TYPE_INFO_SIMPLE_TEMPLATE_ID _TemplateParamsParen \
+    _Inline AZ::ComponentDescriptor* _ComponentClass AZ_TYPE_INFO_TEMPLATE_ARGUMENT_LIST _TemplateParamsParen ::CreateDescriptor() \
+    { \
+        static const char* s_typeName = _ComponentClass::RTTI_TypeName(); \
+        static const AZ::TypeId s_typeId = _ComponentClass::RTTI_Type(); \
+        AZ::ComponentDescriptor* descriptor = nullptr; \
+        AZ::ComponentDescriptorBus::EventResult(descriptor, s_typeId, &AZ::ComponentDescriptor::GetDescriptor); \
+        if (descriptor) \
+        { \
+            /* Compare strings first, then pointers. */ \
+            if (descriptor->GetName() != AZStd::string_view(s_typeName)) \
+            { \
+                AZ_Error("Component", false, "Two different components have the same UUID (%s), which is not allowed.\n" \
+                    "Change the UUID on one of them.\nComponent A: %s\nComponent B: %s", \
+                    s_typeId.ToFixedString().c_str(), descriptor->GetName(), s_typeName); \
+                return nullptr; \
+            } \
+            return descriptor; \
+        } \
+        return aznew DescriptorType; \
+    }
+
+    //! Implements the CreateDescriptor function
+    //! If the Component Class is a template, the variadic arguments
+    //! are AZ_TYPE_INFO_CLASS, AZ_TYPE_INFO_AUTO placeholder parameters
+    //! that can be used to create an out of line definition
+    #define AZ_COMPONENT_BASE_IMPL(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass,, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
+
+    //! Implements the CreateDescriptor function with the `inline` keyword in front of the function signature
+    //! This is suitable for adding an implementation to an .inl or header file
+    #define AZ_COMPONENT_BASE_IMPL_INLINE(_ComponentClass, ...) \
+        AZ_COMPONENT_BASE_IMPL_0( \
+            _ComponentClass, \
+            inline, \
+            AZ_WRAP(AZ_UNWRAP(__VA_ARGS__)) \
+        )
+
     /**
      * Declares a descriptor class.
      * Unless you are implementing very advanced internal functionality, we recommend using
@@ -294,7 +346,7 @@ namespace AZ
      */
     #define AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)         \
     friend class AZ::ComponentDescriptorDefault<_ComponentClass>;           \
-    typedef AZ::ComponentDescriptorDefault<_ComponentClass> DescriptorType;
+    using DescriptorType = AZ::ComponentDescriptorDefault<_ComponentClass>;
 
     /**
      * Declares a component with the default settings.
@@ -316,6 +368,127 @@ namespace AZ
     AZ_RTTI(_ComponentClass, __VA_ARGS__, AZ::Component)        \
     AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(_ComponentClass)     \
     AZ_COMPONENT_BASE(_ComponentClass, __VA_ARGS__)
+
+    //! Declares the required AzTypeInfo(GetO3deTypeName and GetO3deTypeId),
+    //! RTTI (RTTI_TypeName and RTTI_Type),
+    //! static placement allocator functions(operator new and operator delete)
+    //! and Component Descriptor functions (CreateDescriptor).
+    //! This macro does not provide any definitions for those functions
+    //! and it's primary use is to avoid function definitions and include dependencies
+    //! that are needed in a header to reduce compilation time
+    #define AZ_COMPONENT_DECL(_ComponentClass) \
+    AZ_TYPE_INFO_WITH_NAME_DECL(_ComponentClass) \
+    AZ_RTTI_NO_TYPE_INFO_DECL() \
+    AZ_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClass))) \
+    AZ_COMPONENT_BASE_DECL() \
+    AZ_CLASS_ALLOCATOR_DECL
+
+    // Helper macro for allowing expansion of macro parameters
+    // in the second pass over the AZ_COMPONENT_IMPL when making a call
+    // The reason these macros are needed, is to avoid recursively invoking
+    // the same call helper macro.
+    // During second pass over a macro the preprocessor suppresses expansion of the token it processing
+    // So if there are two macros called
+    // #define FOO() AZ_MACRO_CALL(AZ_JOIN(BAR, _1))
+    // #define BAR_1() "7"
+    // Then using the AZ_MACRO_CALL macro to call the FOO macro
+    // such as `AZ_MACRO_CALL(FOO)` would not expand the inner call to `AZ_MACRO_CALL(AZ_JOIN(BAR, _1))`
+    #define AZ_COMPONENT_MACRO_CALL_II(macro, ...) macro(__VA_ARGS__)
+    #define AZ_COMPONENT_MACRO_CALL_I(macro, ...) AZ_COMPONENT_MACRO_CALL_II(macro, __VA_ARGS__)
+    #define AZ_COMPONENT_MACRO_CALL(macro, ...) AZ_COMPONENT_MACRO_CALL_I(macro, __VA_ARGS__)
+
+    //! Implements the the required definitions
+    //! needed for AzTypeInfo, RTTI, Allocator opt-in and
+    //! Component Descriptor creation
+    //! This macro pairs with the AZ_COMPONENT_DECL macro.
+    //! It is suitable for used in a cpp file within the same namespace
+    //! where the component class was created
+    //! @param _ComponentClassOrTemplate The C++ identifier associated with the component class
+    //! NOTES: The first argument should be either the class name for a regular class or when specifying the arguments for a class template
+    //! the simple-template-name  with no angle brackets(i.e `ComponentTemplate`, not `ComponentTemplate<T>`)
+    //! inside of an inner set of parenthesis, followed by 0 or template placeholder arguments
+    //! ex. class `class EditorInspectorComponent`
+    //!     -> `AZ_COMPONENT_IMPL(EditorInspectorComponent, ...)`
+    //! ex. class template `template<class, class, class> class EditorComponentAdapter`
+    //!    -> `AZ_COMPONENT_IMPL_INLINE((EditorComponentAdapter, AZ_CLASS, AZ_CLASS, AZ_CLASS), ...);
+    //! @param _DisplayName cstring which is used by AzTypeInfo as the TypeName for lookups
+    //! @param _Uuid unique identifier associated with AzTypeInfo and pairs with the _DisplayName
+    //! @param __VA_ARGS__ optional parameters used for specifying the base class of the component
+    //!        This is only used for RTTI to allow conversions from base pointer to derived types
+    //!        using azrtti_typeof and azrtti_cast
+    //!
+    //! The following is examples illustrate how to use the macro for a regular component class
+    //! ```
+    //! class TestToolGemSystemComponent : public BaseSystemComponent {};
+    //!  //... Later in a cpp file
+    //! AZ_COMPONENT_IMPL(TestToolGemSystemComponent, "TestToolGemSystemComponent", TestToolGemSystemComponentTypeId, BaseSystemComponent)
+    //! ```
+    //! Macro call breakdown:
+    //! 1. `AZ_TYPE_INFO_WITH_NAME_IMPL`: The call to `AZ_TYPE_INFO_WITH_NAME_IMPL` expects the template placeholder arguments to be passed as variadic arguments
+    //! while the simple template name is passed as the first parameter.
+    //! So the `_ComponentClassOrTemplate` has the first argument queried from it if it was wrapped in parenthesis
+    //! If `_ComponentClassOrTemplate` isn't wrapped in parenthesis it is returned as is
+    //! Any template arguments are supplied after the `_Uuid` argument via using the `AZ_INTERNAL_SKIP_FIRST` macro
+    //! combined with the AZ_VA_OPT to optionally add a comma after the `_Uuid` argument if there are any template parameters
+    //!
+    //! 2. `AZ_RTTI_NO_TYPE_INFO_IMPL`: The call to `AZ_RTTI_NO_TYPE_INFO_IMPL` expects the template placeholder arguments
+    //! to be wrapped in parenthesis along with the simple template name in the first argument.
+    //! Therefore no special processing needs to be done for it here, as the `AZ_RTTI_NO_TYPE_INFO_IMPL` will split out the
+    //! template placeholder arguments
+    //!
+    //! 3. `AZ_COMPONENT_BASE_IMPL`: The call to `AZ_COMPONENT_BASE_IMPL` requires the template placeholder arguments to be supplied as variadic args,
+    //! with the simple template name as the first parameter.
+    //! It goes through the same transformation as the `AZ_TYPE_INFO_WITH_NAME_IMPL` macro to split out the template name
+    //! from the template placholder parameters via parenthesis unwrapping and using the `AZ_INTERNAL_USE_FIRST_ELEMENT` and `AZ_INTERNAL_SKIP_FIRST`
+    //! macros
+    //!
+    //! 4. `AZ_CLASS_ALLOCATOR_IMPL`: The call to `AZ_CLASS_ALLOCATOR_IMPL` requires template placeholder argument
+    //! to be wrapped in parenthesis with the simple template name as the entire first argument
+    //! This is the same way wrapping that is needed for the `AZ_RTTI_NO_TYPE_INFO_IMPL` macro when supplying a template class
+    //!
+    //! Next is an example of using the macro with a template class
+    //! ```
+    //! template<class T, class U, size_t N>
+    //! class TestTemplateGemSystemComponent : public BaseSystemComponent {};
+    //!  //... Later in a cpp file
+    //! AZ_COMPONENT_IMPL_INLINE((TestTemplateGemSystemComponent, AZ_CLASS, AZ_CLASS, AZ_AUTO),
+    //!     "TestTemplateGemSystemComponent", TestTemplateGemSystemComponentTypeId, BaseSystemComponent)
+    //! ```
+    //! The `AZ_CLASS` is a placeholder macro that is used to substitute `class` template parameters
+    //! For non-type template parameters such as `size_t` or `int` the `AZ_AUTO` placeholder can be used
+    #define AZ_COMPONENT_IMPL(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+    AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
+        _DisplayName, \
+        _Uuid \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL(_ComponentClassOrTemplate, __VA_ARGS__) \
+    AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_CLASS_ALLOCATOR_IMPL(_ComponentClassOrTemplate, AZ::SystemAllocator)
+
+    //! Version of the AZ_COMPONENT_IMPL macro which can be used in a header or inline file
+    //! which is included in multiple translation units
+    #define AZ_COMPONENT_IMPL_INLINE(_ComponentClassOrTemplate, _DisplayName, _Uuid, ...) \
+    AZ_COMPONENT_MACRO_CALL(AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)), \
+        _DisplayName, \
+        _Uuid \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(_ComponentClassOrTemplate, __VA_ARGS__) \
+    AZ_COMPONENT_MACRO_CALL(AZ_COMPONENT_BASE_IMPL_INLINE, \
+        AZ_USE_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+        AZ_VA_OPT(AZ_COMMA_SEPARATOR, AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate))) \
+        AZ_SKIP_FIRST_ARG(AZ_UNWRAP(_ComponentClassOrTemplate)) \
+    ) \
+    AZ_CLASS_ALLOCATOR_IMPL_INLINE(_ComponentClassOrTemplate, AZ::SystemAllocator)
 
     /**
      * Provides an interface through which the system can get the details of a component

@@ -103,6 +103,8 @@ namespace AZ
 
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
 
+            size_t m_lodBias = 0;
+
             RPI::Cullable m_cullable;
             CustomMaterialMap m_customMaterials;
             MeshHandleDescriptor m_descriptor;
@@ -132,8 +134,6 @@ namespace AZ
             bool m_needsSetRayTracingData = false;
             bool m_hasRayTracingReflectionProbe = false;
         };
-
-        static constexpr size_t foo = sizeof(ModelDataInstance);
 
         //! This feature processor handles static and dynamic non-skinned meshes.
         class MeshFeatureProcessor final : public MeshFeatureProcessorInterface
