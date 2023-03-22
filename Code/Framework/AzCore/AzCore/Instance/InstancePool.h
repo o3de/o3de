@@ -7,6 +7,7 @@
  */
 #pragma once
 
+#include <stdio.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/containers/vector.h>
