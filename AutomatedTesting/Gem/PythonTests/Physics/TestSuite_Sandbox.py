@@ -91,9 +91,6 @@ class EditorTestAutomation(EditorTestSuite):
     class RigidBody_StartAsleepWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartAsleepWorks as test_module
 
-    class RigidBody_MassDifferentValuesWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_MassDifferentValuesWorks as test_module
-
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
