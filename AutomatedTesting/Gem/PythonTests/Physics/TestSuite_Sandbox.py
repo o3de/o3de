@@ -74,9 +74,6 @@ class EditorTestAutomation(EditorTestSuite):
     class ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_LargeNumberOfShapeCollidersWontCrashEditor as test_module
 
-    class RigidBody_InitialLinearVelocity(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_InitialLinearVelocity as test_module
-
     class RigidBody_StartGravityEnabledWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartGravityEnabledWorks as test_module
 
