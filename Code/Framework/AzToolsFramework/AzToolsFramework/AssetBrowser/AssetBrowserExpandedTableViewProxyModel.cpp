@@ -92,7 +92,7 @@ namespace AzToolsFramework
             case Qt::UserRole + 1:
                 return assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             }
-            return QVariant();
+            return QAbstractProxyModel::data(index, role);
         }
 
         QVariant AssetBrowserExpandedTableViewProxyModel::headerData(int section, Qt::Orientation orientation, int role) const

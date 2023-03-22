@@ -24,7 +24,6 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QVBoxLayout>
-#include <QTimer>
 #endif
 
 namespace AzToolsFramework
@@ -52,10 +51,7 @@ namespace AzToolsFramework
                 [this](const QModelIndex& index)
                 {
                     auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    if (indexData->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
-                    {
-                        AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
-                    }
+                    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, indexData);
                     emit entryClicked(indexData);
                 });
 
@@ -194,16 +190,9 @@ namespace AzToolsFramework
             return m_name;
         }
 
-        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView(AssetBrowserTreeView* treeView)
+        void AssetBrowserThumbnailView::SetIsAssetBrowserMainView()
         {
             SetName(ThumbnailViewMainViewName);
-
-            bool isAssetBrowserComponentReady = false;
-            AssetBrowserComponentRequestBus::BroadcastResult(isAssetBrowserComponentReady, &AssetBrowserComponentRequests::AreEntriesReady);
-            if (isAssetBrowserComponentReady)
-            {
-                  SetAssetTreeView(treeView);
-            }
         }
 
         bool AssetBrowserThumbnailView::GetIsAssetBrowserMainView()
@@ -381,21 +370,6 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserThumbnailView::EnsureItemIsSelected()
-        {
-            QTimer::singleShot(
-                0,
-                this,
-                [this]
-                {
-                    if (!m_assetTreeView->selectionModel()->hasSelection() && m_assetTreeView->model()->rowCount())
-                    {
-                        QModelIndex firstItem = m_assetTreeView->model()->index(0, 0);
-                        m_assetTreeView->selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
-                    }
-                });
-        }
-
         void AssetBrowserThumbnailView::UpdateFilterInLocalFilterModel()
         {
             if (!m_assetTreeView)
@@ -444,8 +418,6 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
-
-            EnsureItemIsSelected();
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

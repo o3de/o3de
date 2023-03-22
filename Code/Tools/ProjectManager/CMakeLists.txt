@@ -99,6 +99,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     ly_add_googletest(
         NAME AZ::ProjectManager.Tests
         TEST_COMMAND $<TARGET_FILE:AZ::ProjectManager.Tests> --unittest
+        LABELS REQUIRES_tiaf
     )
 
 endif()

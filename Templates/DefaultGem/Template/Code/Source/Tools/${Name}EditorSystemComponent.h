@@ -23,7 +23,8 @@ namespace ${SanitizedCppName}
     {
         using BaseSystemComponent = ${SanitizedCppName}SystemComponent;
     public:
-        AZ_COMPONENT(${SanitizedCppName}EditorSystemComponent, "${EditorSysCompClassId}", BaseSystemComponent);
+        AZ_COMPONENT_DECL(${SanitizedCppName}EditorSystemComponent);
+
         static void Reflect(AZ::ReflectContext* context);
 
         ${SanitizedCppName}EditorSystemComponent();
