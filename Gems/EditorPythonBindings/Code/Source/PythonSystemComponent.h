@@ -57,8 +57,8 @@ namespace EditorPythonBindings
         ////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorPythonRunnerRequestBus::Handler interface implementation
         void ExecuteByString(AZStd::string_view script, bool printResult) override;
-        void ExecuteByFilename(AZStd::string_view filename) override;
-        void ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
+        bool ExecuteByFilename(AZStd::string_view filename) override;
+        bool ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args) override;
         bool ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args) override;
         ////////////////////////////////////////////////////////////////////////
         
