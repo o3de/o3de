@@ -149,6 +149,15 @@ namespace AzFramework
         virtual bool CreatePipesForProcess(AzFramework::ProcessData* processData) = 0;
     };
 
+    //! Platform-specific class, default does nothing, but you can derive from it
+    //! and supply it in your platform-specific implementation.  
+    class StdInOutProcessCommunicatorData
+    {
+        public:
+            StdInOutProcessCommunicatorData() = default;
+            virtual ~StdInOutProcessCommunicatorData() = default;
+    };
+
     /**
     * Communicator to talk to processes via std::in and std::out
     *
@@ -190,6 +199,10 @@ namespace AzFramework
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdInWrite;
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdOutRead;
         AZStd::unique_ptr<CommunicatorHandleImpl> m_stdErrRead;
+
+        //! OPTIONAL - platform-specific classes can plug in additional arbitrary platform
+        //! specific data in here.  or leave it nullptr.
+        AZStd::unique_ptr<StdInOutProcessCommunicatorData> m_communicatorData;
         bool m_initialized = false;
     };
 

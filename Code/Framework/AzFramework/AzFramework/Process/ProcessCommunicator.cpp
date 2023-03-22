@@ -141,6 +141,7 @@ namespace AzFramework
         m_stdInWrite->Close();
         m_stdOutRead->Close();
         m_stdErrRead->Close();
+        m_communicatorData.reset();
         m_initialized = false;
     }
 
