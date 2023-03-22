@@ -622,7 +622,7 @@ namespace AZ
                 meshHandle->m_customMaterials = materials;
                 if (meshHandle->m_model)
                 {
-                    meshHandle->->ReInit(this);
+                    meshHandle->ReInit(this);
                 }
 
                 meshHandle->m_objectSrgNeedsUpdate = true;
@@ -921,7 +921,7 @@ namespace AZ
                 // update the raytracing reflection probe data if necessary
                 RayTracingFeatureProcessor::Mesh::ReflectionProbe reflectionProbe;
                 bool currentHasRayTracingReflectionProbe = meshInstance.m_hasRayTracingReflectionProbe;
-                meshInstance.SetRayTracingReflectionProbeData(m_transformService, m_reflectionProbeFeatureProcessor, reflectionProbe);
+                meshInstance.SetRayTracingReflectionProbeData(this, reflectionProbe);
 
                 if (meshInstance.m_hasRayTracingReflectionProbe ||
                     (currentHasRayTracingReflectionProbe != meshInstance.m_hasRayTracingReflectionProbe))
@@ -1721,7 +1721,7 @@ namespace AZ
             rayTracingMesh.m_nonUniformScale = transformServiceFeatureProcessor->GetNonUniformScaleForId(m_objectId);
 
             // setup the reflection probe data, and track if this mesh is currently affected by a reflection probe
-            SetRayTracingReflectionProbeData(this, rayTracingMesh.m_reflectionProbe);
+            SetRayTracingReflectionProbeData(meshFeatureProcessor, rayTracingMesh.m_reflectionProbe);
 
             // add the mesh
             rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, rayTracingMesh, subMeshes);
