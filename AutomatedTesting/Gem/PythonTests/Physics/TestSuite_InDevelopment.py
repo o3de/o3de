@@ -90,10 +90,6 @@ class TestAutomation(TestAutomationBase):
     def test_Material_LibraryChangesReflectInstantly(self, request, workspace, editor, launcher_platform):
         from .tests.material import Material_LibraryChangesReflectInstantly as test_module
         self._run_test(request, workspace, editor, test_module)
-    
-    def test_RigidBody_LinearDampingAffectsMotion(self, request, workspace, editor, launcher_platform):
-        from .tests.rigid_body import RigidBody_LinearDampingAffectsMotion as test_module
-        self._run_test(request, workspace, editor, test_module)
 
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
