@@ -86,22 +86,25 @@ namespace AzToolsFramework
                 this,
                 [this](const QModelIndex& index)
                 {
+                    AZStd::vector<const AssetBrowserEntry*> entries;
+                    QMenu menu(this);
+
                     if (index.isValid())
                     {
-                        QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries{ entry };
-                        AssetBrowserInteractionNotificationBus::Broadcast(
-                            &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
-
-                        if (!menu.isEmpty())
-                        {
-                            menu.exec(QCursor::pos());
-                        }
+                        entries.push_back(entry);
                     }
                     else if (!index.isValid() && m_assetTreeView)
                     {
-                        m_assetTreeView->OnContextMenu(QCursor::pos());
+                        entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
+                    }
+
+                    AssetBrowserInteractionNotificationBus::Broadcast(
+                        &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
+
+                    if (!menu.isEmpty())
+                    {
+                        menu.exec(QCursor::pos());
                     }
                 });
 
@@ -300,6 +303,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedThumbnailView(this);
 
             if (!m_assetTreeView)
             {

@@ -69,15 +69,13 @@ public:
     void AddCreateMenu(QMenu* menu, const AZStd::string fullFolderPath);
     void CreateSortAction(
         QMenu* menu,
-        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
-        AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
         AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
         QString name,
         AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode);
     void AddSortMenu(QMenu* menu,
-        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
-        AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
-        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView
+        AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+        AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView
         );
 
 protected:

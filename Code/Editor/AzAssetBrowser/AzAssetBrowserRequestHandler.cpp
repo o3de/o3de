@@ -384,41 +384,49 @@ AzAssetBrowserRequestHandler::~AzAssetBrowserRequestHandler()
 
 void AzAssetBrowserRequestHandler::CreateSortAction(
     QMenu* menu,
-    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
-    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
     AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
     QString name,
     AzToolsFramework::AssetBrowser::AssetBrowserFilterModel::AssetBrowserSortMode sortMode)
 {
     QAction* action = menu->addAction(
         name,
-        [treeView, tableView, thumbnailView, sortMode]()
+        [thumbnailView, treeView, sortMode]()
         {
-            if (treeView)
-            {
-                treeView->SetSortMode(sortMode);
-            }
-            else if (tableView)
-            {
-                // tableView->RenameEntry();
-            }
-            else if (thumbnailView)
+            if (thumbnailView)
             {
                 thumbnailView->SetSortMode(sortMode);
             }
+            else if (treeView)
+            {
+                treeView->SetSortMode(sortMode);
+                if (treeView->GetAttachedThumbnailView())
+                {
+                    treeView->GetAttachedThumbnailView()->SetSortMode(sortMode);
+                }
+            }
         });
 
-    if (treeView)
-    {
-        // treeView->RenameEntry();
-    }
-    else if (tableView)
-    {
-        // tableView->RenameEntry();
-    }
-    else if (thumbnailView)
+    action->setCheckable(true);
+
+    if (thumbnailView)
     {
         if (thumbnailView->GetSortMode() == sortMode)
+        {
+            action->setChecked(true);
+        }
+    }
+    else if (treeView)
+    {
+        // If there is a thumbnailView attached, the sorting will be happening in there.
+        if (treeView->GetAttachedThumbnailView())
+        {
+            if (treeView->GetAttachedThumbnailView()->GetSortMode() == sortMode)
+            {
+                action->setChecked(true);
+            }
+        }
+        else if (treeView->GetSortMode() == sortMode)
         {
             action->setChecked(true);
         }
@@ -428,42 +436,37 @@ void AzAssetBrowserRequestHandler::CreateSortAction(
 
 void AzAssetBrowserRequestHandler::AddSortMenu(
     QMenu* menu,
-    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView,
-    AzToolsFramework::AssetBrowser::AssetBrowserTableView* tableView,
-    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView)
+    AzToolsFramework::AssetBrowser::AssetBrowserThumbnailView* thumbnailView,
+    AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView)
 {
     using namespace AzToolsFramework::AssetBrowser;
 
     QMenu* sortMenu = menu->addMenu(QObject::tr("Sort by"));
-
+    
     CreateSortAction(
         sortMenu,
-        treeView,
-        tableView,
         thumbnailView,
+        treeView,
         QObject::tr("Name"),
         AssetBrowserFilterModel::AssetBrowserSortMode::Name);
     
     CreateSortAction(
         sortMenu,
-        treeView,
-        tableView,
         thumbnailView,
+        treeView,
         QObject::tr("Kind"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
 
     CreateSortAction(
         sortMenu,
-        treeView,
-        tableView,
         thumbnailView,
+        treeView,
         QObject::tr("Last Modified"),
         AssetBrowserFilterModel::AssetBrowserSortMode::LastModified);
 
     CreateSortAction(
         sortMenu,
-        treeView,
-        tableView,
         thumbnailView,
+        treeView,
         QObject::tr("Size"), AssetBrowserFilterModel::AssetBrowserSortMode::Size);
 }
 
@@ -529,6 +532,11 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     if (!entry)
     {
         return;
+    }
+
+    if (calledFromAssetBrowser)
+    {
+        AddSortMenu(menu, thumbnailView, treeView);
     }
 
     size_t numOfEntries = entries.size();
@@ -834,12 +842,6 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
     break;
     default:
         break;
-    }
-
-    // Add a sort order option in all cases.
-    if (calledFromAssetBrowser)
-    {
-        AddSortMenu(menu, treeView, tableView, thumbnailView);
     }
 }
 

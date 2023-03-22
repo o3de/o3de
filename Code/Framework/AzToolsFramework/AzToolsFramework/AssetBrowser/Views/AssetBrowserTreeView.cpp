@@ -647,6 +647,16 @@ namespace AzToolsFramework
         {
             return m_assetBrowserSortFilterProxyModel->GetSortMode();
         }
+
+        void AssetBrowserTreeView::SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView)
+        {
+            m_attachedThumbnailView = thumbnailView;
+        }
+
+        AssetBrowserThumbnailView* AssetBrowserTreeView::GetAttachedThumbnailView() const
+        {
+            return m_attachedThumbnailView;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 
