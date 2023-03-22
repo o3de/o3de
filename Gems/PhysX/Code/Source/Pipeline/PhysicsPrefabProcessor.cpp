@@ -155,19 +155,19 @@ namespace PhysX
             }
 
             // Create a graph node for this articulation link.
-            auto articulationLink = AZStd::make_unique<ArticulationNode>();
+            auto articulationNode = AZStd::make_unique<ArticulationNode>();
 
             // Set relevant data to the node.
             const AZ::EntityId entityId = entity->GetId();
-            articulationLink->m_entity = entity.get();
+            articulationNode->m_entity = entity.get();
 
-            articulationLink->m_articulationComponent = articulationComponent;
+            articulationNode->m_articulationComponent = articulationComponent;
 
             auto* transformComponent = entity->FindComponent<AzFramework::TransformComponent>();
-            articulationLink->m_transformComponent = transformComponent;
+            articulationNode->m_transformComponent = transformComponent;
 
-            // Here we detect if the current link is a root one
-            // or we have already processed its parent as an articulation link.
+            // Here we detect if the current node is a root one
+            // or we have already processed its parent as an articulation node.
             // This logic is possible because spawnables have all entities sorted in order from parent to child.
 
             const AZ::EntityId parentId = transformComponent->GetParentId();
@@ -178,10 +178,10 @@ namespace PhysX
             }
             else
             {
-                graph.m_nodes[parentId]->m_children.emplace_back(articulationLink.get());
+                graph.m_nodes[parentId]->m_children.emplace_back(articulationNode.get());
             }
 
-            graph.m_nodes[entityId] = AZStd::move(articulationLink);
+            graph.m_nodes[entityId] = AZStd::move(articulationNode);
         }
 
         // Now we process the entire graph of articulations.
