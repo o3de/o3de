@@ -34,6 +34,10 @@ namespace AzToolsFramework
         PropertyStringLineEditCtrl(QWidget* pParent = NULL);
         virtual ~PropertyStringLineEditCtrl();
 
+        //! This helper method is used to replicate a user input of editing the value
+        //! will call setValue on the QLineEdit but will also emit the editingFinished signal
+        void UpdateValue(const QString& newValue);
+
         AZStd::string value() const;
         QLineEdit* GetLineEdit() const;
 

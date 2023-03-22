@@ -57,6 +57,15 @@ namespace AzToolsFramework
         m_pLineEdit->selectAll();
     }
 
+    void PropertyStringLineEditCtrl::UpdateValue(const QString& newValue)
+    {
+        if (m_pLineEdit->text() != newValue)
+        {
+            m_pLineEdit->setText(newValue);
+            m_pLineEdit->editingFinished();
+        }
+    }
+
     AZStd::string PropertyStringLineEditCtrl::value() const
     {
         return AZStd::string(m_pLineEdit->text().toUtf8().data());
