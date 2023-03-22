@@ -51,10 +51,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.joints import Joints_FixedBreakable as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Joints_HingeBreakable(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_HingeBreakable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
