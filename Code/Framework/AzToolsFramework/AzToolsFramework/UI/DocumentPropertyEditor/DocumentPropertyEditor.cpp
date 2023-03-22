@@ -571,8 +571,8 @@ namespace AzToolsFramework
             {
                 // create and add the row child to m_domOrderedChildren
                 auto newRow = DocumentPropertyEditor::GetRowPool()->GetInstance();
-                AddRowChild(newRow, domIndex);
                 newRow->Init(m_depth + 1, this);
+                AddRowChild(newRow, domIndex);
 
                 // if it's a row, recursively populate the children from the DOM array in the passed value
                 newRow->SetValueFromDom(childValue);
@@ -1109,8 +1109,8 @@ namespace AzToolsFramework
 
     void DPERowWidget::PlaceRowChild(DPERowWidget* rowWidget, size_t domIndex)
     {
+        rowWidget->setParent(this);
         auto dpe = GetDPE();
-        rowWidget->setParent(dpe);
 
         // determine where to put this new row in the main DPE layout
         DPERowWidget* priorRowInLayout = GetPriorRowInLayout(domIndex);
