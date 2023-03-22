@@ -179,15 +179,6 @@ class EditorTestAutomation(EditorTestSuite):
         ]
         base_dir = "AutomatedTesting/Registry"
 
-    @pytest.mark.skip(reason="GHI #9422: Test Periodically Fails")
-    class Collider_DiffCollisionGroupDiffCollidingLayersNotCollide(EditorSingleTest_WithFileOverrides):
-        from .tests.collider import Collider_DiffCollisionGroupDiffCollidingLayersNotCollide as test_module
-        files_to_override = [
-            ('physxsystemconfiguration.setreg',
-             'Collider_DiffCollisionGroupDiffCollidingLayersNotCollide.setreg_override')
-        ]
-        base_dir = "AutomatedTesting/Registry"
-
     #########################################
 
     class Collider_MultipleSurfaceSlots(EditorBatchedTest):
