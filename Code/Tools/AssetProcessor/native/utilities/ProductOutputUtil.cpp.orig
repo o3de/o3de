@@ -96,6 +96,17 @@ namespace AssetProcessor
                         continue;
                     }
 
+<<<<<<< HEAD
+=======
+                    // Remove the prefix and update
+                    QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + prefix.size()));
+                    AZStd::string newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) /
+                                             unprefixedString.toUtf8().constData())
+                                                .AsPosix()
+                                                .c_str();
+
+                    AssetUtilities::ProductPath oldProductPath(product.m_productFileName, platformIdentifier);
+>>>>>>> 481b8505e7 (Changes to get Mac compiling. Add definitions for 3 traits, remove UNUSED_TRAIT as it's not defined. More size_t to int casts.)
                     AssetUtilities::ProductPath newProductPath(newName, platformIdentifier);
                     auto [oldAbsolutePath, newAbsolutePath] = GetPaths(product, platformIdentifier, newProductPath);
 
@@ -168,7 +179,7 @@ namespace AssetProcessor
         }
 
         // Remove the prefix and update
-        QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + currentPrefix.size()));
+        QStringRef unprefixedString = filename.midRef(prefixPos + currentPrefix.size());
         newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) / (newPrefix + unprefixedString.toUtf8().constData()))
                       .StringAsPosix();
 
