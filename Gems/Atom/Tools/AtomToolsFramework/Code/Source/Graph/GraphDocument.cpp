@@ -580,27 +580,40 @@ namespace AtomToolsFramework
     }
 
     DocumentObjectInfoVector GraphDocument::GetObjectInfoForGraphCanvasNodes() const
-{
+    {
         DocumentObjectInfoVector objects;
 
         // Reserve and register reflected objects for all of the selected graph canvas nodes that do not mirror any of the graph model nodes
         // that have been added to the graph. This should cover bookmarks, comments, and groups.
-        AZStd::vector<AZ::EntityId> selections;
-        GraphCanvas::SceneRequestBus::EventResult(selections, m_graphId, &GraphCanvas::SceneRequests::GetSelectedItems);
-        objects.reserve(objects.size() + selections.size());
+        AZStd::vector<AZ::EntityId> selectedItems;
+        GraphCanvas::SceneRequestBus::EventResult(selectedItems, m_graphId, &GraphCanvas::SceneRequests::GetSelectedItems);
+
+        // Optimizing the container to only have nodes with property components before sorting.
+        AZStd::erase_if(
+            selectedItems,
+            [](const auto& selectedItem)
+            {
+                return GraphCanvas::GraphCanvasPropertyBus::FindFirstHandler(selectedItem) == nullptr;
+            });
+
+        objects.reserve(objects.size() + selectedItems.size());
 
         // The order that selected nodes appear in the container is not deterministic. To compensate for this, we sort by position to ensure
         // that nodes always appear in the inspector in a consistent order.
         AZStd::sort(
-            selections.begin(),
-            selections.end(),
-            [](const auto& selection1, const auto& selection2)
+            selectedItems.begin(),
+            selectedItems.end(),
+            [](const auto& selectedItem1, const auto& selectedItem2)
             {
-                AZ::Vector2 selectionPosition1{};
-                GraphCanvas::GeometryRequestBus::EventResult(selectionPosition1, selection1, &GraphCanvas::GeometryRequests::GetPosition);
-                AZ::Vector2 selectionPosition2{};
-                GraphCanvas::GeometryRequestBus::EventResult(selectionPosition2, selection2, &GraphCanvas::GeometryRequests::GetPosition);
-                return selectionPosition1.IsLessThan(selectionPosition2);
+                AZ::Vector2 selectedItemPosition1{};
+                GraphCanvas::GeometryRequestBus::EventResult(
+                    selectedItemPosition1, selectedItem1, &GraphCanvas::GeometryRequests::GetPosition);
+
+                AZ::Vector2 selectedItemPosition2{};
+                GraphCanvas::GeometryRequestBus::EventResult(
+                    selectedItemPosition2, selectedItem2, &GraphCanvas::GeometryRequests::GetPosition);
+
+                return selectedItemPosition1.IsLessThan(selectedItemPosition2);
             });
 
         // Some graph canvas node property components do not have any visible properties, like the bookmark anchor visual component. These
@@ -611,13 +624,13 @@ namespace AtomToolsFramework
 
         // After all of the selected graph canvas nodes have been sorted, search for those with editable property components and add them to
         // the list of reflected objects.
-        for (const auto& selection : selections)
+        for (const auto& selectedItem : selectedItems)
         {
             // Some graph canvas nodes have multiple editable property components, like groups and bookmarks. All of the property components
             // will be added in relative order except for those in the ignore list.
-            DocumentObjectInfoVector selectionObjects;
+            DocumentObjectInfoVector selectedItemObjects;
             GraphCanvas::GraphCanvasPropertyBus::EnumerateHandlersId(
-                selection,
+                selectedItem,
                 [&](GraphCanvas::GraphCanvasPropertyInterface* propertyInterface) -> bool
                 {
                     AZ::Component* component = propertyInterface->GetPropertyComponent();
@@ -629,7 +642,7 @@ namespace AtomToolsFramework
                         objectInfo.m_displayName = objectInfo.m_description = GetDisplayNameFromText(component->RTTI_GetTypeName());
                         objectInfo.m_objectType = component->RTTI_GetType();
                         objectInfo.m_objectPtr = component;
-                        selectionObjects.emplace_back(AZStd::move(objectInfo));
+                        selectedItemObjects.emplace_back(AZStd::move(objectInfo));
                     }
 
                     // Continue enumeration.
@@ -639,14 +652,14 @@ namespace AtomToolsFramework
             // In addition to presorting nodes by position we will sort all of the property components by name to guarantee a consistent
             // order in the inspector.
             AZStd::sort(
-                selectionObjects.begin(),
-                selectionObjects.end(),
+                selectedItemObjects.begin(),
+                selectedItemObjects.end(),
                 [](const auto& objectInfo1, const auto& objectInfo2)
                 {
                     return objectInfo1.m_displayName < objectInfo2.m_displayName;
                 });
 
-            objects.insert(objects.end(), selectionObjects.begin(), selectionObjects.end());
+            objects.insert(objects.end(), selectedItemObjects.begin(), selectedItemObjects.end());
         }
 
         return objects;
