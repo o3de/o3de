@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <stdio.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Module/Environment.h>
 #include <AzCore/std/containers/vector.h>
@@ -186,7 +185,7 @@ namespace AZ
             const auto nameLength = sizeof(moduleId) * 2 + 2 + strlen(name);
 
             AZStd::unique_ptr<char[]> fullname(new char[nameLength]);
-            sprintf_s(fullname.get(), nameLength, "%s%p", name, moduleId);
+            azsnprintf(fullname.get(), nameLength, "%s%p", name, moduleId);
             return AZ::Name(fullname.get());
         }
 
