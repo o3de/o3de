@@ -59,6 +59,7 @@ namespace AzToolsFramework
                 {
                     if (componentInEntity == this)
                     {
+                        // If the alias is not empty and the component is already added to the entity, there's nothing to do here.
                         return;
                     }
                     if (RTTI_GetType() == componentInEntity->RTTI_GetType())
