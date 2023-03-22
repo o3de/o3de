@@ -1475,6 +1475,11 @@ namespace AssetProcessor
             });
     }
 
+    const AZ::s64 PlatformConfiguration::GetIntermediateAssetScanFolderId() const
+    {
+        return m_intermediateAssetScanFolderId;
+    }
+
     void PlatformConfiguration::AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting)
     {
         if (isUnitTesting)
