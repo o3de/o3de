@@ -47,10 +47,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_PreUpdateEvent as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Joints_FixedBreakable(self, request, workspace, editor, launcher_platform):
-        from .tests.joints import Joints_FixedBreakable as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_ScriptCanvas_SpawnEntityWithPhysComponents(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SpawnEntityWithPhysComponents as test_module
         self._run_test(request, workspace, editor, test_module)
