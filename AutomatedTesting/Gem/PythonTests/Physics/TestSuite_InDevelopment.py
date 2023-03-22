@@ -187,10 +187,3 @@ class EditorTestAutomation(EditorTestSuite):
         reason="This test will sometimes fail as the ball will continue to roll before the timeout is reached.")
     class RigidBody_SleepWhenBelowKineticThreshold(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_SleepWhenBelowKineticThreshold as test_module
-
-    # Marking the Test as expected to fail using the xfail decorator due to sporadic failure on Automated Review: SPEC-3146
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @pytest.mark.xfail(
-        reason="Test Sporadically fails with message [ NOT FOUND ] Success: Bar1 : Expected angular velocity")
-    class RigidBody_MaxAngularVelocityWorks(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_MaxAngularVelocityWorks as test_module
