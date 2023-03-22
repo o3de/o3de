@@ -68,7 +68,7 @@ namespace PhysX
         : m_postProcessHandler(
               [this](const AZStd::string& prefabName, AzFramework::Spawnable& spawnable)
               {
-                  this->PostProcessSpawnable(prefabName, spawnable);
+                  PostProcessSpawnable(prefabName, spawnable);
               })
     {
     }
@@ -121,7 +121,10 @@ namespace PhysX
 
     void PhysicsPrefabProcessor::ProcessHierarchy(ArticulationsGraph& graph, AZ::EntityId rootId)
     {
-        ArticulationNode* rootNode = graph.m_nodes[rootId].get();
+        auto rootNodeIter = graph.m_nodes.find(rootId);
+        AZ_Assert(rootNodeIter != graph.m_nodes.end(), "Articulation root not found in the graph");
+
+        ArticulationNode* rootNode = rootNodeIter->second.get();
         ArticulationLinkComponent* articulationComponent = rootNode->m_articulationComponent;
         ArticulationLinkData* articulationLinkData = articulationComponent->m_articulationLinkData.get();
 

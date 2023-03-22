@@ -14,7 +14,7 @@
 
 namespace PhysX
 {
-    //! Class for in-editor PhysX Static Rigid Body Component.
+    //! Class for in-editor PhysX Articulation Link Component.
     class EditorArticulationLinkComponent
         : public AzToolsFramework::Components::EditorComponentBase
     {
@@ -31,7 +31,7 @@ namespace PhysX
         static void GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
-        // EditorComponentBase
+        // EditorComponentBase overrides ...
         void Activate() override;
         void Deactivate() override;
 

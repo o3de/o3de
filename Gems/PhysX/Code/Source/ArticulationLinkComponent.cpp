@@ -13,7 +13,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
-#include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 #include <AzFramework/Physics/SystemBus.h>
@@ -45,10 +44,6 @@ namespace PhysX
         InitPhysicsTickHandler();
     }
 
-    ArticulationLinkData::~ArticulationLinkData()
-    {
-    }
-
     void ArticulationLinkData::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -66,11 +61,6 @@ namespace PhysX
                 ->Field("Motor", &ArticulationLinkData::m_motor)
             ;
         }
-    }
-
-    void ArticulationLinkData::Reset()
-    {
-        *this = ArticulationLinkData();
     }
 
     void ArticulationLinkComponent::Reflect(AZ::ReflectContext* context)
@@ -106,20 +96,6 @@ namespace PhysX
     {
     }
 
-    void ArticulationLinkComponent::DestroyArticulation()
-    {
-        AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
-        physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
-        PHYSX_SCENE_WRITE_LOCK(pxScene);
-
-        m_articulation->release();
-
-        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-        {
-            sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
-            m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
-        }
-    }
 
     bool ArticulationLinkComponent::IsRootArticulation() const
     {
@@ -166,8 +142,9 @@ namespace PhysX
         if (m_articulation)
         {
             DestroyArticulation();
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
         }
+
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
 
     void ArticulationLinkComponent::OnTransformChanged(
@@ -175,18 +152,17 @@ namespace PhysX
     {
     }
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::CreateArticulation()
     {
-        using namespace physx;
-
-        PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
+        physx::PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
         m_articulation = pxPhysics->createArticulationReducedCoordinate();
 
         CreateChildArticulationLinks(nullptr, *m_articulationLinkData.get());
 
         // Add articulation to the scene
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
-        PxScene* pxScene = static_cast<PxScene*>(scene->GetNativePointer());
+        physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         pxScene->addArticulation(*m_articulation);
@@ -195,8 +171,6 @@ namespace PhysX
     void ArticulationLinkComponent::CreateChildArticulationLinks(
         physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData)
     {
-        using namespace physx;
-
         const Physics::ColliderConfiguration& colliderConfiguration = thisLinkData.m_colliderConfiguration;
         const Physics::ShapeConfiguration* shapeConfiguration = thisLinkData.m_shapeConfiguration.get();
 
@@ -233,11 +207,11 @@ namespace PhysX
             m_articulationShapes.emplace_back(physicsShape);
         }
 
-        PxTransform thisLinkTransform;
+        physx::PxTransform thisLinkTransform;
         if (parentLink)
         {
-            PxTransform parentLinkTransform = parentLink->getGlobalPose();
-            PxTransform thisLinkRelativeTransform = PxMathConvert(thisLinkData.m_relativeTransform);
+            physx::PxTransform parentLinkTransform = parentLink->getGlobalPose();
+            physx::PxTransform thisLinkRelativeTransform = PxMathConvert(thisLinkData.m_relativeTransform);
             thisLinkTransform = parentLinkTransform * thisLinkRelativeTransform;
         }
         else
@@ -245,7 +219,7 @@ namespace PhysX
             thisLinkTransform = PxMathConvert(GetEntity()->GetTransform()->GetWorldTM());
         }
 
-        PxArticulationLink* thisLink = m_articulation->createLink(parentLink, thisLinkTransform);
+        physx::PxArticulationLink* thisLink = m_articulation->createLink(parentLink, thisLinkTransform);
         if (!thisLink)
         {
             AZ_Error("PhysX", false, "Failed to create articulation link at root %s", GetEntity()->GetName().c_str());
@@ -259,22 +233,30 @@ namespace PhysX
 
         if (parentLink)
         {
-            PxArticulationJointReducedCoordinate* inboundJoint = thisLink->getInboundJoint();
+            physx::PxArticulationJointReducedCoordinate* inboundJoint = thisLink->getInboundJoint();
             // TODO: Set the values for joints from thisLinkData
-            inboundJoint->setJointType(PxArticulationJointType::eFIX);
+            inboundJoint->setJointType(physx::PxArticulationJointType::eFIX);
             inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_relativeTransform));
-            inboundJoint->setChildPose(PxTransform(PxIdentity));
+            inboundJoint->setChildPose(physx::PxTransform(physx::PxIdentity));
         }
 
         if (physicsShape)
         {
-            thisLink->attachShape(*(PxShape*)physicsShape->GetNativePointer());
+            thisLink->attachShape(*static_cast<physx::PxShape*>(physicsShape->GetNativePointer()));
         }
 
         for (const auto& childLink : thisLinkData.m_childLinks)
         {
             CreateChildArticulationLinks(thisLink, *childLink);
         }
+    }
+
+    void ArticulationLinkComponent::DestroyArticulation()
+    {
+        AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
+        physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+        PHYSX_SCENE_WRITE_LOCK(pxScene);
+        m_articulation->release();
     }
 
     void ArticulationLinkComponent::InitPhysicsTickHandler()
@@ -287,12 +269,10 @@ namespace PhysX
             aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Physics));
     }
     
-    void ArticulationLinkComponent::PostPhysicsTick(float /*fixedDeltaTime*/)
+    void ArticulationLinkComponent::PostPhysicsTick([[maybe_unused]] float fixedDeltaTime)
     {
-        using namespace physx;
-
         AzPhysics::Scene* scene = AZ::Interface<AzPhysics::SceneInterface>::Get()->GetScene(m_attachedSceneHandle);
-        PxScene* pxScene = static_cast<PxScene*>(scene->GetNativePointer());
+        physx::PxScene* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
 
         PHYSX_SCENE_READ_LOCK(pxScene);
 
@@ -301,17 +281,20 @@ namespace PhysX
             return;
         }
 
-        constexpr size_t MaxArticulationLinks = 16;
-
-        PxArticulationLink* links[MaxArticulationLinks] = {0};
+        physx::PxArticulationLink* links[MaxArticulationLinks] = { 0 };
         m_articulation->getLinks(links, MaxArticulationLinks);
 
-        const PxU32 linksNum = m_articulation->getNbLinks();
+        const physx::PxU32 linksNum = m_articulation->getNbLinks();
+        AZ_Assert(
+            linksNum <= MaxArticulationLinks,
+            "Error. Number of articulation links %d is greater than the maximum supported %d",
+            linksNum,
+            MaxArticulationLinks);
 
-        for (PxU32 linkIndex = 0; linkIndex < linksNum; ++linkIndex)
+        for (physx::PxU32 linkIndex = 0; linkIndex < linksNum; ++linkIndex)
         {
-            PxArticulationLink* link = links[linkIndex];
-            PxTransform pxGlobalPose = link->getGlobalPose();
+            physx::PxArticulationLink* link = links[linkIndex];
+            physx::PxTransform pxGlobalPose = link->getGlobalPose();
             AZ::Transform globalTransform = PxMathConvert(pxGlobalPose);
             ActorData* linkActorData = Utils::GetUserData(link);
             if (linkActorData)
@@ -321,4 +304,12 @@ namespace PhysX
             }
         }
     }
+#else
+    void ArticulationLinkComponent::CreateArticulation(){}
+    void ArticulationLinkComponent::CreateChildArticulationLinks(physx::PxArticulationLink*, const ArticulationLinkData&){}
+    void ArticulationLinkComponent::DestroyArticulation(){}
+    void ArticulationLinkComponent::InitPhysicsTickHandler(){}
+    void ArticulationLinkComponent::PostPhysicsTick(float){}
+#endif
+
 } // namespace PhysX

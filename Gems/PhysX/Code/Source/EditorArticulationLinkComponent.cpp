@@ -20,10 +20,10 @@ namespace PhysX
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorArticulationLinkComponent, AzToolsFramework::Components::EditorComponentBase>()
+                ->Version(1)
                 ->Field("Configuration", &EditorArticulationLinkComponent::m_config)
                 ->Field("PhysXSpecificConfiguration", &EditorArticulationLinkComponent::m_physxSpecificConfig)
                 ->Field("JointConfig", &EditorArticulationLinkComponent::m_jointConfig)
-                ->Version(1)
             ;
 
             if (auto* editContext = serializeContext->GetEditContext())
@@ -65,7 +65,6 @@ namespace PhysX
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
-        provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
     void EditorArticulationLinkComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)

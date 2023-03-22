@@ -41,6 +41,7 @@ namespace PhysX
 
         static void Reflect(AZ::ReflectContext* context);
 
+        // PrefabProcessor overrides...
         void Process(AzToolsFramework::Prefab::PrefabConversionUtils::PrefabProcessorContext& context) override;
 
     private:

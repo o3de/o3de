@@ -32,19 +32,19 @@ namespace AzPhysics
 
 namespace PhysX
 {
+    constexpr size_t MaxArticulationLinks = 16;
+
     class StaticRigidBody;
 
     struct ArticulationLinkData
     {
         AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator, 0);
         AZ_TYPE_INFO(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
-        virtual ~ArticulationLinkData();
         static void Reflect(AZ::ReflectContext* context);
-        void Reset();
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         Physics::ColliderConfiguration m_colliderConfiguration;
         AZ::EntityId m_entityId;
-        AZ::Transform m_relativeTransform;
+        AZ::Transform m_relativeTransform = AZ::Transform::CreateIdentity();
         AzPhysics::RigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         RigidBodyConfiguration
             m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
@@ -85,7 +85,7 @@ namespace PhysX
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 
-        // AZ::Component
+        // AZ::Component overrides ...
         void Activate() override;
         void Deactivate() override;
 
@@ -95,7 +95,6 @@ namespace PhysX
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
         bool m_tempClosing = true;
 
-        AzPhysics::SimulatedBodyHandle m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
         AzPhysics::SimulatedBodyEvents::OnSyncTransform::Handler m_activeBodySyncTransformHandler;
