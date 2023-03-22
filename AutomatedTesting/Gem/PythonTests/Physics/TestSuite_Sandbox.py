@@ -120,8 +120,5 @@ class EditorTestAutomation(EditorTestSuite):
         # Note: Test needs to be updated to log for unexpected lines
         # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
 
-    class RigidBody_EnablingGravityWorksPoC(EditorBatchedTest):
-        from .tests.rigid_body import RigidBody_EnablingGravityWorksPoC as test_module
-
     class ForceRegion_PrefabFileInstantiates(EditorBatchedTest):
         from .tests.force_region import ForceRegion_PrefabFileInstantiates as test_module
