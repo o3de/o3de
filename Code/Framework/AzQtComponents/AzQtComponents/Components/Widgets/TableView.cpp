@@ -68,6 +68,13 @@ namespace AzQtComponents
         setItemDelegate(new TableViewItemDelegate(this));
 
         connect(header(), &QHeaderView::sectionResized, this, &TableView::handleResize);
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     void TableView::setExpandOnSelection(bool expand)
@@ -141,6 +148,11 @@ namespace AzQtComponents
         QTreeView::resizeEvent(e);
 
         handleResize();
+    }
+
+    void TableView::mousePressEvent(QMouseEvent* event)
+    {
+        QTreeView::mousePressEvent(event);
     }
 
     bool TableView::drawHeader(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
