@@ -24,7 +24,9 @@ TEST_F(VideoPlaybackFrameworkTest, ComponentsWithComponentApplication)
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
 
     AZ::ComponentApplication app;
-    AZ::Entity* systemEntity = app.Create(appDesc);
+    AZ::ComponentApplication::StartupParameters startupParameters;
+    startupParameters.m_loadSettingsRegistry = false;
+    AZ::Entity* systemEntity = app.Create(appDesc, startupParameters);
     ASSERT_TRUE(systemEntity != nullptr);
     app.RegisterComponentDescriptor(VideoPlaybackFramework::VideoPlaybackFrameworkSystemComponent::CreateDescriptor());
 

@@ -34,7 +34,7 @@
   },
   "profile_ubuntu22_arm64_nounity_pipe": {
     "TAGS": [
-      "periodic-incremental-daily",
+      "periodic-incremental-daily-internal",
       "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV":{

@@ -813,7 +813,11 @@ namespace AssetProcessor
 
             if (isSourceMetadataEnabled)
             {
-                ProductOutputUtil::ModifyProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
+                // For metadata enabled files, the output file needs to be prefixed to handle multiple files with the same relative path.
+                // This phase will just use a temporary prefix which is longer and less likely to result in accidental conflicts.
+                // During AssetProcessed_Impl in APM, the prefixing will be resolved to figure out which file is highest priority and gets renamed
+                // back to the non-prefixed, backwards compatible format and every other file with the same rel path will be re-prefixed to a finalized form.
+                ProductOutputUtil::GetInterimProductPath(outputFilename, params.m_rcJob->GetJobEntry().m_sourceAssetReference.ScanFolderId());
             }
 
             if(outputToCache)

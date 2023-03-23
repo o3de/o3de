@@ -63,6 +63,10 @@ namespace EditorPythonBindings
             const AZStd::string& menuIdentifier, int sortIndex) override;
         AzToolsFramework::MenuManagerOperationResult AddSubMenuToMenu(
             const AZStd::string& menuIdentifier, const AZStd::string& subMenuIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddWidgetToMenu(
+            const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) override;
+        AzToolsFramework::MenuManagerOperationResult AddMenuToMenuBar(
+            const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex) override;
 
         // ToolBarManagerRequestBus overrides ...
         AzToolsFramework::ToolBarManagerOperationResult RegisterToolBar(

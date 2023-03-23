@@ -9,7 +9,7 @@
 #include <native/tests/assetmanager/IntermediateAssetTests.h>
 #include <QCoreApplication>
 #include <native/unittests/UnitTestUtils.h>
-
+#include <native/utilities/ProductOutputUtil.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace UnitTests
@@ -97,7 +97,7 @@ namespace UnitTests
         auto builderUuid = builders[0].m_busId;
         auto sourceUuid = AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(m_testFilePath.c_str()));
         auto actualIntermediateUuid =
-            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("(2)test.stage2", true).c_str()));
+            AssetUtilities::GetSourceUuid(AssetProcessor::SourceAssetReference(MakePath("test.stage2", true).c_str()));
 
         ASSERT_TRUE(sourceUuid);
         ASSERT_TRUE(actualIntermediateUuid);
@@ -110,7 +110,7 @@ namespace UnitTests
 
         auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
 
-        EXPECT_EQ(actualIntermediateUuid.GetValue(), expectedIntermediateUuid);
+        EXPECT_STREQ(actualIntermediateUuid.GetValue().ToFixedString().c_str(), expectedIntermediateUuid.ToFixedString().c_str());
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)

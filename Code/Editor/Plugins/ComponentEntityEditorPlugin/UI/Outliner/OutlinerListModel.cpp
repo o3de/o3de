@@ -2036,7 +2036,7 @@ void OutlinerListModel::OnEntityCompositionChanged(const AzToolsFramework::Entit
     }
 }
 
-void OutlinerListModel::OnContextReset()
+void OutlinerListModel::OnPrepareForContextReset()
 {
     if (m_filterString.size() > 0 || m_componentFilters.size() > 0)
     {

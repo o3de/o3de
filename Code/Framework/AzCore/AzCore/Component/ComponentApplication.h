@@ -145,6 +145,8 @@ namespace AZ
             bool m_createEditContext = false;
             //! Indicates whether the AssetCatalog.xml should be loaded by default in Application::StartCommon
             bool m_loadAssetCatalog = true;
+            //! Used by test fixtures to disable initializing, reading, and writing to the settings registry
+            bool m_loadSettingsRegistry = true;
         };
 
         ComponentApplication();

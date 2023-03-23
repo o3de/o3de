@@ -32,7 +32,9 @@ namespace UnitTest
             appDesc.m_memoryBlocksByteSize = 20 * 1024 * 1024;
             appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_NO_RECORDS;
 
-            m_app.Create(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Create(appDesc, startupParameters);
         }
 
         void TearDown() override
