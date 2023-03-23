@@ -163,11 +163,13 @@ def create_shadervariantlist_for_shader(filename):
         shaderAssetInfo.relativePath
     )
 
+    
+    shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
+    shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
+
     if len(materialAssetIds) == 0:
         # No material is using this shader, so we can't get ShaderOptionDescriptor in the script
         # Return early and handle user assigned system option after shaderAsset is loaded
-        shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
-        shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
         return shaderVariantList
     
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
@@ -221,8 +223,6 @@ def create_shadervariantlist_for_shader(filename):
             systemOptionDict = json.load(systemOptionFile)
 
     # Generate the shader variant list data by collecting shader option name-value pairs.s
-    shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
-    shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
     shaderVariants = []
     systemOptionDescriptor = {} 
     stableId = 1
@@ -266,7 +266,7 @@ def create_shadervariantlist_for_shader(filename):
         totalShaderVariants = []
         
         for index in range(valueMin.GetIndex(), valueMax.GetIndex() + 1):
-            optionValue = optionDescriptor.GetValueNameWithInt(index)
+            optionValue = optionDescriptor.GetValueNameByIndex(index)
             if optionValue != defaultValue:
                 tempShaderVariants, stableId = updateOptionValue(shaderVariants, systemOptionName, optionValue, stableId) 
                 totalShaderVariants.extend(tempShaderVariants)

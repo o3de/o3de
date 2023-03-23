@@ -108,21 +108,32 @@ namespace ShaderManagementConsole
                         }
                     }
 
-                    AZ::RPI::ShaderVariantListSourceData::VariantInfo variantInfo;
-                    variantInfo.m_options = systemOptionSetting;
-                    variantInfo.m_stableId = stableId;
-                    m_shaderVariantListSourceData.m_shaderVariants.push_back(variantInfo);
+                    // Get total number of variants
+                    size_t totalVariantSize = 1;
+                    for (auto& shaderOptionDescriptor : unsetOption)
+                    {
+                        uint32_t minValue = shaderOptionDescriptor.GetMinValue().GetIndex();
+                        uint32_t maxValue = shaderOptionDescriptor.GetMaxValue().GetIndex();
+                        totalVariantSize = totalVariantSize * (maxValue - minValue + 1);
+                    }
+                    m_shaderVariantListSourceData.m_shaderVariants.reserve(totalVariantSize);
+                    m_shaderVariantListSourceData.m_shaderVariants.emplace_back(stableId, systemOptionSetting);
                     stableId++;
 
                     // Expand unset option
                     for (auto& shaderOptionDescriptor : unsetOption)
                     {
                         AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo> shaderVariants;
-                        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo> totalShaderVariants;
+                        AZStd::vector<AZ::RPI::ShaderVariantListSourceData::VariantInfo> expandShaderVariants;
 
-                        for (uint32_t index = shaderOptionDescriptor.GetMinValue().GetIndex();
-                             index <= shaderOptionDescriptor.GetMaxValue().GetIndex();
-                             ++index)
+                        uint32_t minValue = shaderOptionDescriptor.GetMinValue().GetIndex();
+                        uint32_t maxValue = shaderOptionDescriptor.GetMaxValue().GetIndex();
+                        size_t listSize = m_shaderVariantListSourceData.m_shaderVariants.size();
+                        size_t expandSize = listSize * (maxValue - minValue);
+                        shaderVariants.reserve(listSize);
+                        expandShaderVariants.reserve(expandSize);
+
+                        for (uint32_t index = minValue; index <= maxValue; ++index)
                         {
                             AZ::Name optionValue = shaderOptionDescriptor.GetValueName(index);
                             if (optionValue != shaderOptionDescriptor.GetDefaultValue())
@@ -133,12 +144,18 @@ namespace ShaderManagementConsole
                                     shaderOptionDescriptor.GetName(),
                                     optionValue,
                                     stableId);
-                                totalShaderVariants.insert(totalShaderVariants.end(), shaderVariants.begin(), shaderVariants.end());
+
+                                expandShaderVariants.insert(
+                                    expandShaderVariants.end(),
+                                    AZStd::make_move_iterator(shaderVariants.begin()),
+                                    AZStd::make_move_iterator(shaderVariants.end()));
                             }
                         }
 
                         m_shaderVariantListSourceData.m_shaderVariants.insert(
-                            m_shaderVariantListSourceData.m_shaderVariants.end(), totalShaderVariants.begin(), totalShaderVariants.end());
+                            m_shaderVariantListSourceData.m_shaderVariants.end(),
+                            AZStd::make_move_iterator(expandShaderVariants.begin()),
+                            AZStd::make_move_iterator(expandShaderVariants.end()));
                     }
                 }
             }
@@ -373,20 +390,13 @@ namespace ShaderManagementConsole
 
         for (auto& variantInfo : shaderVariantIN)
         {
-            AZ::RPI::ShaderVariantListSourceData::VariantInfo info;
-            for (auto& [optionName, valueName] : variantInfo.m_options)
+            AZ::RPI::ShaderOptionValuesSourceData optionList;
+            optionList = variantInfo.m_options;
+            if (optionList.count(targetOption) > 0)
             {
-                if (targetOption == optionName)
-                {
-                    info.m_options[optionName] = targetValue;
-                }
-                else
-                {
-                    info.m_options[optionName] = valueName;
-                }
+                optionList[targetOption] = targetValue;
             }
-            info.m_stableId = stableId;
-            shaderVariantOUT.push_back(info);
+            shaderVariantOUT.emplace_back(stableId, optionList);
             stableId += 1;
         }
         return stableId;

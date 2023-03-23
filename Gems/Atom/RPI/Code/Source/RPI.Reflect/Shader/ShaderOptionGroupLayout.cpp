@@ -115,7 +115,7 @@ namespace AZ
                     ->Method("GetMaxValue", &ShaderOptionDescriptor::GetMaxValue)
                     ->Method("GetValuesCount", &ShaderOptionDescriptor::GetValuesCount)
                     ->Method("GetType", &ShaderOptionDescriptor::GetType)
-                    ->Method("GetValueNameWithInt", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
+                    ->Method("GetValueNameByIndex", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
                     ;
             }   
         }
