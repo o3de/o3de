@@ -78,7 +78,6 @@ namespace Terrain
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
 
         AZ::RHI::Ptr<AZ::RHI::Device> rhiDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
-
         m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
         m_rayTracingEnabled = rhiDevice->GetFeatures().m_rayTracing && m_rayTracingFeatureProcessor;
 
@@ -154,6 +153,8 @@ namespace Terrain
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
         m_sectorLods.clear();
+        m_xyPositions.clear();
+        m_cachedDrawData.clear();
         RemoveRayTracedMeshes();
 
         m_rebuildSectors = true;
@@ -373,7 +374,9 @@ namespace Terrain
 
         uint32_t totalIndexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
         uint32_t indexElementSize = AZ::RHI::GetIndexFormatSize(indexBufferFormat);
-        
+
+        // Create the ray tracing meshes. Each sector has 5 meshes which all share the same data - one mesh that covers the whole
+        // sector, and 4 meshes that cover each quadrant of the sector.
         auto createMesh = [&](RtSector::MeshGroup& meshGroup, uint32_t indexBufferByteOffset, uint32_t indexBufferByteCount)
         {
             meshGroup.m_submeshVector.clear();
@@ -750,6 +753,7 @@ namespace Terrain
 
         if (m_rayTracingEnabled)
         {
+            // Generate a 32 bit index buffer for ray tracing by copying and transforming the 16 bit index buffer.
             AZStd::vector<uint32_t> rtIndices;
             rtIndices.resize_no_construct(indices.size());
             AZStd::transform(indices.begin(), indices.end(), rtIndices.begin(),
@@ -789,6 +793,10 @@ namespace Terrain
 
         if (sector.m_rtData)
         {
+            // While heightsNormals is in the exact format the terrain shader expects for optimum efficiency, for
+            // ray tracing it needs to be a more conventional layout. So here we generate more traditional R32G32B32
+            // data from the highly compressed HeightNormalVertex.
+
             struct RtVert
             {
                 float x;
@@ -821,6 +829,10 @@ namespace Terrain
 
                 float normalX = heightNormal.m_normal.first / maxNormal;
                 float normalY = heightNormal.m_normal.second / maxNormal;
+
+                // It's a little unfortunate to use a sqrt to decode a normal which used a sqrt to encode in the
+                // first place, but this avoids branching around ray tracing in GatherMeshData(). It also helps ensure
+                // the ray traced normal lines up with the compressed one used in forward pass.
                 float normalZ = sqrt(AZStd::GetMax(0.0f, 1.0f - normalX * normalX - normalY * normalY));
 
                 rtNormals.at(i) = { normalX, normalY, normalZ };
@@ -829,7 +841,7 @@ namespace Terrain
             sector.m_rtData->m_positionsBuffer->UpdateData(rtPositions.data(), rtPositions.size() * sizeof(RtVert));
             sector.m_rtData->m_normalsBuffer->UpdateData(rtNormals.data(), rtNormals.size() * sizeof(RtVert));
 
-            // Remove and re-add mesh. May need to store more data about the currently ray-traced meshes in order to easily re-add them.
+            // If the mesh is currently visible, it must be removed and re-added to update its data.
             for (RtSector::MeshGroup& meshGroup : sector.m_rtData->m_meshGroups)
             {
                 if (meshGroup.m_isVisible)
@@ -1274,20 +1286,6 @@ namespace Terrain
                 }
             );
 
-            auto getOffsetForIndex = [&](uint32_t index, float sectorSize) -> AZ::Vector3
-            {
-                switch (index)
-                {
-                case 2:
-                    return AZ::Vector3(sectorSize / 2.0f, 0.0f, 0.0f);
-                case 3:
-                    return AZ::Vector3(0.0f, sectorSize / 2.0f, 0.0f);
-                case 4:
-                    return AZ::Vector3(sectorSize, sectorSize, 0.0f);
-                }
-                return AZ::Vector3::CreateZero();
-            };
-
             auto prevIt = m_rayTracedItems.begin();
             auto newIt = newRayTraceItems.begin();
 
@@ -1300,14 +1298,24 @@ namespace Terrain
                 m_rayTracingFeatureProcessor->AddMesh(meshGroup.m_id, meshGroup.m_mesh, meshGroup.m_submeshVector);
             };
 
+            auto removeMesh = [&](RtSector::MeshGroup& meshGroup)
+            {
+                meshGroup.m_isVisible = false;
+                m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            };
+
+            // Since the two lists are sorted, we can easily compare them and figure out which items need
+            // to be removed or added. If a uuid shows up in the old list first, then it must not be in the new
+            // list, so it needs to be removed, then only the old list iterator is incremented. Similarly if a
+            // uuid shows up in the new list first then it must not be in the old list, so it needs to be added.
+            // Finally if the uuids match, they're in both lists, and therefore both iterators can be incremented.
             while (prevIt < m_rayTracedItems.end() && newIt < newRayTraceItems.end())
             {
                 RtSector::MeshGroup& prevMeshGroup = getMeshGroup(*prevIt);
                 RtSector::MeshGroup& newMeshGroup = getMeshGroup(*newIt);
                 if (prevMeshGroup.m_id < newMeshGroup.m_id)
                 {
-                    prevMeshGroup.m_isVisible = false;
-                    m_rayTracingFeatureProcessor->RemoveMesh(prevMeshGroup.m_id);
+                    removeMesh(prevMeshGroup);
                     ++prevIt;
                 }
                 else if (prevMeshGroup.m_id > newMeshGroup.m_id)
@@ -1321,17 +1329,16 @@ namespace Terrain
                     ++newIt;
                 }
             }
+
+            // Since the above loop stops when either iterator is done, remaining items in the other iterator need to be handled here.
             while (prevIt < m_rayTracedItems.end())
             {
-                RtSector::MeshGroup& prevMeshGroup = getMeshGroup(*prevIt);
-                prevMeshGroup.m_isVisible = false;
-                m_rayTracingFeatureProcessor->RemoveMesh(prevMeshGroup.m_id);
+                removeMesh(getMeshGroup(*prevIt));
                 ++prevIt;
             }
             while (newIt < newRayTraceItems.end())
             {
-                RtSector::MeshGroup& meshGroup = getMeshGroup(*newIt);
-                addMesh(*newIt, meshGroup);
+                addMesh(*newIt, getMeshGroup(*newIt));
                 ++newIt;
             }
 

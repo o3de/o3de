@@ -133,7 +133,8 @@ namespace Terrain
 
         struct RtSector
         {
-            // Ray tracing structures - Currently no data is shared due to ray tracing's format requirements, but it would be nice to not have to duplicate this.
+            // Ray tracing structures - Currently no data is shared due to ray tracing's format requirements, in the future this could
+            // be de-duplicated with custom ray tracing shaders.
             AZ::Data::Instance<AZ::RPI::Buffer> m_positionsBuffer;
             AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
 
@@ -311,7 +312,7 @@ namespace Terrain
         AZStd::vector<Sector*> m_sectorsThatNeedSrgCompiled;
         uint32_t m_1dSectorCount = 0;
 
-        // hang on to x/y positions to make it easier to calculate x/y positions for ray tracing meshes. This is particularly
+        // Sector x/y positions used to make it easier to calculate x/y positions for ray tracing meshes. This is particularly
         // relevant because the positions may have been reordered for vertex cache efficiency.
         AZStd::vector<XYPosition> m_xyPositions;
 
@@ -323,6 +324,8 @@ namespace Terrain
         AZ::RPI::Material::ChangeId m_lastMaterialChangeId;
 
         AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
+
+        // Tracks which sectors are currently in the ray tracing system so they can be easily compared and updated each frame.
         AZStd::vector<RayTracedItem> m_rayTracedItems;
 
         uint8_t m_gridSize = 0; // number of quads in a single row of a sector
