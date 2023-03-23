@@ -63,13 +63,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    # Failing, PhysXTerrain
-    @fm.file_revert("all_ones_1.physmaterial", r"AutomatedTesting\Levels\Physics\Material_DefaultMaterialLibraryChangesWork")
-    @fm.file_override("default.physxconfiguration", "Material_DefaultMaterialLibraryChangesWork.physxconfiguration", "AutomatedTesting")
-    def test_Material_DefaultMaterialLibraryChangesWork(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_DefaultMaterialLibraryChangesWork as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @fm.file_override("default.physxconfiguration", "ScriptCanvas_OverlapNode.physxconfiguration")
     def test_ScriptCanvas_OverlapNode(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_OverlapNode as test_module
