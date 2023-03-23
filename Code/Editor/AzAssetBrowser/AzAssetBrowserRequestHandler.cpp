@@ -455,13 +455,13 @@ void AzAssetBrowserRequestHandler::AddSortMenu(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Kind"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
+        QObject::tr("Type"), AssetBrowserFilterModel::AssetBrowserSortMode::FileType);
 
     CreateSortAction(
         sortMenu,
         thumbnailView,
         treeView,
-        QObject::tr("Last Modified"),
+        QObject::tr("Date"),
         AssetBrowserFilterModel::AssetBrowserSortMode::LastModified);
 
     CreateSortAction(
