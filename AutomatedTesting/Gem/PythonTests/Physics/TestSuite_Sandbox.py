@@ -50,9 +50,6 @@ class EditorTestAutomation(EditorTestSuite):
     def get_number_parallel_editors():
         return 16
 
-    class CharacterController_SwitchLevels(EditorBatchedTest):
-        from .tests.character_controller import CharacterController_SwitchLevels as test_module
-
     class ShapeCollider_CylinderShapeCollides(EditorBatchedTest):
         from .tests.shape_collider import ShapeCollider_CylinderShapeCollides as test_module
 
