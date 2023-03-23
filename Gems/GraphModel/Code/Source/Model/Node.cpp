@@ -36,6 +36,9 @@ namespace GraphModel
                 ->Field("m_inputDataSlots", &Node::m_inputDataSlots)
                 ->Field("m_extendableSlots", &Node::m_extendableSlots)
                 ;
+
+            serializeContext->RegisterGenericType<NodePtr>();
+            serializeContext->RegisterGenericType<NodePtrList>();
         }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))

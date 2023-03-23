@@ -245,6 +245,16 @@ namespace AssetProcessor
             return AZ::Failure(AZStd::string("Programmer Error - IFileStateRequests interface is not available"));
         }
 
+        if (!fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str()))
+        {
+            AZ_Error(
+                "UuidManager",
+                false,
+                "Programmer Error - cannot request UUID for file which does not exist - %s",
+                sourceAsset.AbsolutePath().c_str());
+            return AZ::Failure(AZStd::string("Programmer Error - cannot request UUID for file which does not exist"));
+        }
+
         const AZ::IO::Path metadataFilePath = AzToolsFramework::MetadataManager::ToMetadataPath(sourceAsset.AbsolutePath().c_str());
         AssetProcessor::FileStateInfo metadataFileInfo;
         bool metadataFileExists = fileStateInterface->GetFileInfo(metadataFilePath.c_str(), &metadataFileInfo);
@@ -328,16 +338,6 @@ namespace AssetProcessor
                     return AZ::Failure(outcome.GetError());
                 }
             }
-        }
-
-        if (!fileStateInterface->Exists(sourceAsset.AbsolutePath().c_str()))
-        {
-            AZ_Error(
-                "UuidManager",
-                false,
-                "Programmer Error - cannot request UUID for file which does not exist - %s",
-                sourceAsset.AbsolutePath().c_str());
-            return AZ::Failure(AZStd::string("Programmer Error - cannot request UUID for file which does not exist"));
         }
 
         // Last resort - generate a new UUID and save it to the metadata file
