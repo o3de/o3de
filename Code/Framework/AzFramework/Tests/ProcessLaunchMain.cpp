@@ -56,9 +56,8 @@ int main(int argc, char** argv)
             size_t endLength = strlen(s_endToken);
             auto spamABunchOfLines = [&](FILE *fileDescriptor)
             {
-                int currentBytesOutput = 0;
                 fwrite(s_beginToken, beginLength, 1, fileDescriptor);
-                currentBytesOutput += beginLength;
+                size_t currentBytesOutput = beginLength;
                 while (currentBytesOutput < s_numOutputBytesInPlentyMode - endLength)
                 {
                     fwrite(s_midToken, midLength, 1, fileDescriptor);

@@ -287,7 +287,7 @@ namespace AzFramework
         return true;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status) const
+    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status)
     {
         using namespace ProcessCommunicatorLinuxInternal;
 

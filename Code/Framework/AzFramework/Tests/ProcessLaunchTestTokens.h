@@ -15,8 +15,8 @@ namespace ProcessLaunchTestInternal
     // the default buffer size for stdout/stdin on some platforms is 4k.  This number
     // should just be higher than a couple multiples of buffer sizes to ensure that it overwhelms
     // any buffer and reveals any deadlock caused by not reading from stdout/stderr when its full.
-    const int s_numOutputBytesInPlentyMode = 16 * 1024 ; 
-    const char* s_beginToken = "BEGIN\n";
-    const char* s_endToken = "END\n";
+    const size_t s_numOutputBytesInPlentyMode = 16 * 1024 ; 
+    const char* s_beginToken = "BEGIN";
+    const char* s_endToken = "END";
     const char* s_midToken = "x";
 }
