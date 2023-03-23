@@ -546,7 +546,7 @@ namespace EMotionFX
         EMotionFX::MotionSet* motionSet = EMotionFX::MotionSet::LoadFromBuffer(memoryStart, lengthInBytes, context);
         if (motionSet)
         {
-	    if (settings)
+            if (settings)
             {
                 motionSet->SetIsOwnedByRuntime(settings->m_isOwnedByRuntime);
             }
