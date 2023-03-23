@@ -90,6 +90,8 @@ namespace AzQtComponents
 
         void resizeEvent(QResizeEvent* e) override;
 
+        void mousePressEvent(QMouseEvent* event) override;
+
     private:
         static bool drawHeader(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config);
         static bool drawFrameFocusRect(const Style* style, const QStyleOption* option, QPainter* painter, const Config& config);
