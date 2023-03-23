@@ -60,8 +60,7 @@ namespace PhysX
         };
 
         void ProcessArticulationHierarchies(ArticulationsGraph& graph);
-        void ProcessHierarchy(ArticulationsGraph& graph, AZ::EntityId rootId);
-        void BuildArticulationLinksData(ArticulationsGraph& graph, AZStd::vector<AZStd::shared_ptr<ArticulationLinkData>>& links, ArticulationNode* current);
+        void BuildArticulationLinksData(ArticulationNode* currentNode, AZStd::shared_ptr<ArticulationLinkData> parentLinkData = nullptr);
 
         void PostProcessSpawnable(const AZStd::string& prefabName, AzFramework::Spawnable& spawnable);
 

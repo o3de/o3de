@@ -174,7 +174,8 @@ namespace PhysX
                     const_cast<Physics::PhysicsAssetShapeConfiguration*>(physicsAssetShapeConfiguration)->m_asset.BlockUntilLoadComplete();
                 }
 
-                const bool hasNonUniformScale = (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+                const bool hasNonUniformScale = !Physics::Utils::HasUniformScale(physicsAssetShapeConfiguration->m_assetScale) ||
+                    (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> assetShapes;
                 Utils::CreateShapesFromAsset(
                     *physicsAssetShapeConfiguration,

@@ -33,9 +33,10 @@ namespace PhysX
     //! Configuration data for an articulation link. Contains references to child links.
     struct ArticulationLinkData
     {
-        AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ArticulationLinkData, AZ::SystemAllocator);
         AZ_TYPE_INFO(ArticulationLinkData, "{C9862FF7-FFAC-4A49-A51D-A555C4303F74}");
         static void Reflect(AZ::ReflectContext* context);
+
         AZStd::shared_ptr<Physics::ShapeConfiguration> m_shapeConfiguration;
         Physics::ColliderConfiguration m_colliderConfiguration;
         AZ::EntityId m_entityId;
