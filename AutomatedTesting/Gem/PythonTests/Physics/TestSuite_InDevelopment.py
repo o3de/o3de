@@ -162,9 +162,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Collider_MultipleSurfaceSlots(EditorBatchedTest):
         from .tests.collider import Collider_MultipleSurfaceSlots as test_module
 
-    class Physics_UndoRedoWorksOnEntityWithPhysComponents(EditorBatchedTest):
-        from .tests import Physics_UndoRedoWorksOnEntityWithPhysComponents as test_module
-
     @pytest.mark.GROUP_tick
     @pytest.mark.xfail(reason="Test still under development.")
     class Tick_InterpolatedRigidBodyMotionIsSmooth(EditorBatchedTest):
