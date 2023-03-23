@@ -26,6 +26,8 @@
 #include <Atom/Component/DebugCamera/ArcBallControllerComponent.h>
 #include <Atom/Feature/ImGui/SystemBus.h>
 
+#include <ImGui/ImGuiSaveFilePath.h>
+#include <ImGui/ImGuiSidebar.h>
 #include <ScriptableImGui.h>
 #include <ScriptAutomationScriptBindings.h>
 #include <ScriptAutomationSystemComponent.h>
@@ -105,6 +107,11 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ImGuiAssetBrowser::Reflect(context);
+        ImGuiSidebar::Reflect(context);
+        ImGuiSaveFilePath::Reflect(context);
+        ImageComparisonConfig::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ScriptAutomationSystemComponent, AZ::Component>()
@@ -468,10 +475,6 @@ namespace ScriptAutomation
         {
             m_scriptReporter.SetInvalidationMessage("Results are invalid because the tolerance level has been adjusted.");
         }
-        else if (!m_imageComparisonOptions.IsScriptControlled())
-        {
-            m_scriptReporter.SetInvalidationMessage("Results are invalid because the tolerance level has been overridden.");
-        }
         else
         {
             m_scriptReporter.SetInvalidationMessage("");
@@ -509,11 +512,8 @@ namespace ScriptAutomation
             return;
         }
 
-        if (m_imageComparisonOptions.IsScriptControlled())
-        {
-            // Clear the preset before each script to make sure the script is selecting it.
-            m_imageComparisonOptions.SelectToleranceLevel(nullptr);
-        }
+        // Clear the preset before each script to make sure the script is selecting it.
+        m_imageComparisonOptions.SelectToleranceLevel(nullptr);
 
         // Execute(script) will add commands to the m_scriptOperations. These should be considered part of their own test script, for
         // reporting purposes.

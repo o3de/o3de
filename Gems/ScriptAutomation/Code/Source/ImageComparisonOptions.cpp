@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
 
@@ -18,19 +19,18 @@ namespace ScriptAutomation
 {
     void ImageComparisonOptions::Activate()
     {
-        m_configAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>("config/ImageComparisonConfig.azasset", AZ::RPI::AssetUtils::TraceLevel::Assert);
-        if (m_configAsset)
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        static const AZStd::string setregPath = "/O3DE/ScriptAutomation/ImageComparisonConfig";
+
+        if (settingsRegistry)
         {
-            AZ::Data::AssetBus::Handler::BusConnect(m_configAsset.GetId());
-            OnAssetReloaded(m_configAsset);
+            settingsRegistry->GetObject(&m_config, azrtti_typeid(m_config), setregPath.c_str());
         }
     }
 
     void ImageComparisonOptions::Deactivate()
     {
-        m_configAsset.Release();
         ResetImGuiSettings();
-        AZ::Data::AssetBus::Handler::BusDisconnect();
     }
 
     ImageComparisonToleranceLevel* ImageComparisonOptions::FindToleranceLevel(const AZStd::string& name, bool allowLevelAdjustment)
@@ -69,18 +69,15 @@ namespace ScriptAutomation
 
     void ImageComparisonOptions::SelectToleranceLevel(const AZStd::string& name, bool allowLevelAdjustment)
     {
-        if (m_selectedOverrideSetting == OverrideSetting_ScriptControlled)
-        {
-            ImageComparisonToleranceLevel* level = FindToleranceLevel(name, allowLevelAdjustment);
+        ImageComparisonToleranceLevel* level = FindToleranceLevel(name, allowLevelAdjustment);
 
-            if (level)
-            {
-                m_currentToleranceLevel = level;
-            }
-            else
-            {
-                AZ_Error("ScriptAutomation", false, "ImageComparisonToleranceLevel '%s' not found.", name.c_str());
-            }
+        if (level)
+        {
+            m_currentToleranceLevel = level;
+        }
+        else
+        {
+            AZ_Error("ScriptAutomation", false, "ImageComparisonToleranceLevel '%s' not found.", name.c_str());
         }
     }
 
@@ -103,11 +100,6 @@ namespace ScriptAutomation
         return m_currentToleranceLevel;
     }
 
-    bool ImageComparisonOptions::IsScriptControlled() const
-    {
-        return m_selectedOverrideSetting == OverrideSetting_ScriptControlled;
-    }
-
     bool ImageComparisonOptions::IsLevelAdjusted() const
     {
         return m_toleranceAdjustment != 0;
@@ -118,25 +110,7 @@ namespace ScriptAutomation
         ImGui::Text("Tolerance");
         ImGui::Indent();
 
-        if (ImGui::Combo("Level",
-            &m_selectedOverrideSetting,
-            m_overrideSettings.data(),
-            aznumeric_cast<int>(m_overrideSettings.size())))
-        {
-            if (m_selectedOverrideSetting == OverrideSetting_ScriptControlled)
-            {
-                m_currentToleranceLevel = nullptr;
-            }
-            else
-            {
-                m_currentToleranceLevel = &m_config.m_toleranceLevels[m_selectedOverrideSetting - 1];
-            }
-        }
-
-        if (IsScriptControlled())
-        {
-            ImGui::InputInt("Level Adjustment", &m_toleranceAdjustment);
-        }
+        ImGui::InputInt("Level Adjustment", &m_toleranceAdjustment);
 
         ImGui::Unindent();
     }
@@ -144,23 +118,6 @@ namespace ScriptAutomation
     void ImageComparisonOptions::ResetImGuiSettings()
     {
         m_currentToleranceLevel = nullptr;
-        m_selectedOverrideSetting = OverrideSetting_ScriptControlled;
         m_toleranceAdjustment = 0;
     }
-
-    void ImageComparisonOptions::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        m_configAsset = asset;
-        m_config = *m_configAsset->GetDataAs<ImageComparisonConfig>();
-
-        m_overrideSettings.clear();
-        m_overrideSettings.push_back("[Script-controlled]");
-        for (size_t i = 0; i < m_config.m_toleranceLevels.size(); ++i)
-        {
-            AZ_Assert(i == 0 || m_config.m_toleranceLevels[i].m_threshold > m_config.m_toleranceLevels[i - 1].m_threshold, "Threshold values are not sequential");
-
-            m_overrideSettings.push_back(m_config.m_toleranceLevels[i].m_name.c_str());
-        }
-    }
-
 } // namespace ScriptAutomation

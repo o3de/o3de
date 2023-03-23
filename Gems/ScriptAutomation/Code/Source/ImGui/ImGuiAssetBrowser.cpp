@@ -6,11 +6,11 @@
  *
  */
 
-#include "ImGuiAssetBrowser.h"
+#include <ImGui/ImGuiAssetBrowser.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/Serialization/Utils.h>
-#include "ScriptableImGui.h"
+#include <ScriptableImGui.h>
 
 namespace ScriptAutomation
 {

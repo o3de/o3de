@@ -8,14 +8,12 @@
 
 #pragma once
 
-#include <Atom/RPI.Reflect/System/AnyAsset.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
 #include <ImageComparisonConfig.h>
 
 namespace ScriptAutomation
 {
     // Manages the available ImageComparisonToleranceLevels and override options
-    class ImageComparisonOptions : public AZ::Data::AssetBus::Handler
+    class ImageComparisonOptions
     {
     public:
         void Activate();
@@ -43,10 +41,6 @@ namespace ScriptAutomation
         //! Returns the active tolerance level.
         ImageComparisonToleranceLevel* GetCurrentToleranceLevel();
 
-        //! Returns whether the user has configured the script to control tolerance
-        //! level selection, otherwise they have selected a specific override level.
-        bool IsScriptControlled() const;
-
         //! Returns true if the user has applied a level up/down adjustment in ImGui.
         bool IsLevelAdjusted() const;
 
@@ -54,15 +48,8 @@ namespace ScriptAutomation
         void ResetImGuiSettings();
 
     private:
-        // AssetBus overrides...
-        void OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset) override;
-
-        AZ::Data::Asset<AZ::RPI::AnyAsset> m_configAsset;
         ImageComparisonConfig m_config;
         ImageComparisonToleranceLevel* m_currentToleranceLevel = nullptr;
-        static constexpr int OverrideSetting_ScriptControlled = 0;
-        AZStd::vector<const char*> m_overrideSettings;
-        int m_selectedOverrideSetting = 0;
         int m_toleranceAdjustment = 0;
     };
 
