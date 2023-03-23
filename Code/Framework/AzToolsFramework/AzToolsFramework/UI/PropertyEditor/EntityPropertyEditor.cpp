@@ -506,7 +506,22 @@ namespace AzToolsFramework
         , m_autoScrollQueued(false)
         , m_isSystemEntityEditor(false)
         , m_isLevelEntityEditor(isLevelEntityEditor)
+        , m_commandInvokedHandler(
+              [this](AZStd::string_view command, const AZ::ConsoleCommandContainer&, AZ::ConsoleFunctorFlags, AZ::ConsoleInvokedFrom)
+              {
+                  if (command == AzToolsFramework::DocumentPropertyEditor::GetEnableDPECVarName())
+                  {
+                      ClearInstances();
+                      for (auto componentEditor : m_componentEditors)
+                      {
+                          componentEditor->deleteLater();
+                      }
+                      m_componentEditors.clear();
+                      UpdateContents();
+                  }
+              })
     {
+        m_commandInvokedHandler.Connect(AZ::Interface<AZ::IConsole>::Get()->GetConsoleCommandInvokedEvent());
         initEntityPropertyEditorResources();
 
         if (Prefab::IsInspectorOverrideManagementEnabled())
@@ -5863,7 +5878,7 @@ namespace AzToolsFramework
         AzToolsFramework::EditorRequestBus::Broadcast(&AzToolsFramework::EditorRequests::OpenPinnedInspector, pinnedEntities);
     }
 
-    void EntityPropertyEditor::OnContextReset()
+    void EntityPropertyEditor::OnPrepareForContextReset()
     {
         if (IsLockedToSpecificEntities() && !m_isLevelEntityEditor)
         {

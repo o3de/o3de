@@ -34,11 +34,11 @@ namespace AzToolsFramework
             void Capture(const PrefabDom& linkedInstancePatch, LinkId linkId);
 
         protected:
-            void SetLink(LinkId linkId);
-            void UpdateLink(const PrefabDom& linkDom,
-                InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
+            // The function to update link during undo and redo.
+            void UpdateLink(const PrefabDom& linkDom, InstanceOptionalConstReference instanceToExclude = AZStd::nullopt);
 
-            LinkReference m_link = AZStd::nullopt;
+            // Link that connects the linked instance and the focused instance.
+            LinkId m_linkId = InvalidLinkId;
         };
     }
 }

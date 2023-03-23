@@ -191,7 +191,8 @@ namespace AtomToolsFramework
         AzToolsFramework::SourceControlConnectionRequestBus::Broadcast(
             &AzToolsFramework::SourceControlConnectionRequests::EnableSourceControl, enableSourceControl);
 
-        if (!AZ::RPI::RPISystemInterface::Get()->IsInitialized())
+        auto rpiInterface = AZ::RPI::RPISystemInterface::Get();
+        if (rpiInterface && !rpiInterface->IsInitialized())
         {
             AZ::RPI::RPISystemInterface::Get()->InitializeSystemAssets();
         }

@@ -1870,7 +1870,7 @@ namespace AzToolsFramework
         }
     }
 
-    void EntityOutlinerListModel::OnContextReset()
+    void EntityOutlinerListModel::OnPrepareForContextReset()
     {
         if (m_filterString.size() > 0 || m_componentFilters.size() > 0)
         {

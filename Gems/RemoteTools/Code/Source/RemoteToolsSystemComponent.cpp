@@ -138,7 +138,7 @@ namespace RemoteTools
             netInterface->SetTimeoutMs(AZ::TimeMs(0));
         }
 
-        if (!m_joinThread->IsRunning())
+        if (m_joinThread && !m_joinThread->IsRunning())
         {
             m_joinThread->Join();
             m_joinThread->Start();
@@ -563,7 +563,6 @@ namespace RemoteTools
             m_joinThread->Join();
             m_joinThread->Start();
         }
-
     }
 
 } // namespace RemoteTools

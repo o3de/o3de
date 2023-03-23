@@ -1200,7 +1200,7 @@ AZ::ConsoleCommandInvokedEvent::Handler ConsoleVariableEditor::m_commandInvokedH
                 }
             }
 
-            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceRPE())
+            if (!AzToolsFramework::DocumentPropertyEditor::ShouldReplaceCVarEditor())
             {
                 OnVariableUpdated(changedCVar);
             }
