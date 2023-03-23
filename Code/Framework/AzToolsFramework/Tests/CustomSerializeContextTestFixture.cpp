@@ -14,105 +14,15 @@ namespace UnitTest
     {
         LeakDetectionFixture::SetUp();
         m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
-        AZ::ComponentApplicationBus::Handler::BusConnect();
+        m_componentApplicationMock = AZStd::make_unique<testing::NiceMock<MockComponentApplication>>();
+        ON_CALL(*m_componentApplicationMock.get(), GetSerializeContext()).WillByDefault(::testing::Return(m_serializeContext.get()));
+        ON_CALL(*m_componentApplicationMock.get(), AddEntity(::testing::_)).WillByDefault(::testing::Return(true));
     }
 
     void CustomSerializeContextTestFixture::TearDown()
     {
-        AZ::ComponentApplicationBus::Handler::BusDisconnect();
+        m_componentApplicationMock.reset();
         m_serializeContext.reset();
         LeakDetectionFixture::TearDown();
     }
-
-    // ComponentApplicationBuss
-    AZ::SerializeContext* CustomSerializeContextTestFixture::GetSerializeContext()
-    {
-        return m_serializeContext.get();
-    }
-
-    AZ::ComponentApplication* CustomSerializeContextTestFixture::GetApplication()
-    {
-        return nullptr;
-    }
-
-    void CustomSerializeContextTestFixture::RegisterComponentDescriptor(const AZ::ComponentDescriptor*)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::UnregisterComponentDescriptor(const AZ::ComponentDescriptor*)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::RegisterEntityAddedEventHandler(AZ::EntityAddedEvent::Handler&)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::RegisterEntityRemovedEventHandler(AZ::EntityRemovedEvent::Handler&)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::RegisterEntityActivatedEventHandler(AZ::EntityActivatedEvent::Handler&)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::RegisterEntityDeactivatedEventHandler(AZ::EntityDeactivatedEvent::Handler&)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::SignalEntityActivated(AZ::Entity*)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::SignalEntityDeactivated(AZ::Entity*)
-    {
-    }
-
-    bool CustomSerializeContextTestFixture::AddEntity(AZ::Entity*)
-    {
-        return true;
-    }
-
-    bool CustomSerializeContextTestFixture::RemoveEntity(AZ::Entity*)
-    {
-        return true;
-    }
-
-    bool CustomSerializeContextTestFixture::DeleteEntity(const AZ::EntityId&)
-    {
-        return true;
-    }
-
-    AZ::Entity* CustomSerializeContextTestFixture::FindEntity(const AZ::EntityId&)
-    {
-        return nullptr;
-    }
-
-    AZ::BehaviorContext* CustomSerializeContextTestFixture::GetBehaviorContext()
-    {
-        return nullptr;
-    }
-
-    AZ::JsonRegistrationContext* CustomSerializeContextTestFixture::GetJsonRegistrationContext()
-    {
-        return nullptr;
-    }
-
-    const char* CustomSerializeContextTestFixture::GetEngineRoot() const
-    {
-        return nullptr;
-    }
-
-    const char* CustomSerializeContextTestFixture::GetExecutableFolder() const
-    {
-        return nullptr;
-    }
-
-    void CustomSerializeContextTestFixture::EnumerateEntities(const EntityCallback& /*callback*/)
-    {
-    }
-
-    void CustomSerializeContextTestFixture::QueryApplicationType(AZ::ApplicationTypeQuery& /*appType*/) const
-    {
-    }
-    ////
 } // namespace UnitTest
