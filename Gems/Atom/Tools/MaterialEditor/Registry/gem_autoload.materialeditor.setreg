@@ -170,13 +170,6 @@
                     }
                 }
             },
-            "AWSGameLift": {
-                "Targets": {
-                    "AWSGameLift.Editor": {
-                        "AutoLoad": false
-                    }
-                }
-            },
             "ImGui": {
                 "Targets": {
                     "ImGui.Editor": {
@@ -329,6 +322,24 @@
                     },
                     "AWSCore.Editor": {
                         "AutoLoad": false
+                    },
+                    "AWSCore.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Tests": {
+                        "AutoLoad": false
                     }
                 }
             },
@@ -339,6 +350,49 @@
                     },
                     "AWSClientAuth.Editor": {
                         "AutoLoad": false
+                    },
+                    "AWSClientAuth.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Tests": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AWSGameLift": {
+                "Targets": {
+                    "AWSGameLift": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Editor": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Builders": {
+                        "AutoLoad": false
                     }
                 }
             },
@@ -348,6 +402,24 @@
                         "AutoLoad": false
                     },
                     "AWSMetrics.Editor": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Tests": {
                         "AutoLoad": false
                     }
                 }
