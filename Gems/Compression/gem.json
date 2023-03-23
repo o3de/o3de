@@ -18,5 +18,8 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [],
-    "restricted": "Compression"
+    "restricted": "Compression",
+    "external_subdirectories": [
+        "CompressionLZ4"
+    ]
 }
