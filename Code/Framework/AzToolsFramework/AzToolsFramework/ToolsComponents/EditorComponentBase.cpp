@@ -78,11 +78,11 @@ namespace AzToolsFramework
                 else
                 {
                     AZ::u64 suffixOfNewComponent = serializedIdentifiersMatchingType.size() + 1;
-                    serializedIdentifier = AZStd::string::format("%s_%zu", typeName.c_str(), suffixOfNewComponent);
+                    serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
                     while (serializedIdentifiersMatchingType.find(serializedIdentifier) != serializedIdentifiersMatchingType.end())
                     {
                         suffixOfNewComponent++;
-                        serializedIdentifier = AZStd::string::format("%s_%zu", typeName.c_str(), suffixOfNewComponent);
+                        serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
                     }
                 }
 

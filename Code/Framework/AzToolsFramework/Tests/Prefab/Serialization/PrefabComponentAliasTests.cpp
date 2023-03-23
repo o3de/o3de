@@ -49,7 +49,7 @@ namespace UnitTest
     TEST_F(PrefabComponentAliasTest, NumberedAliasesCreatedForMultipleComponentsWithSameType)
     {
         AZStd::string entityAlias = "EntityAlias";
-        AZStd::string secondComponentAlias = AZStd::string::format("%s_%zu", PrefabTestComponent::RTTI_TypeName(), 2);
+        AZStd::string secondComponentAlias = AZStd::string::format("%s_%u", PrefabTestComponent::RTTI_TypeName(), 2);
         AZ::Dom::Path pathToSecondComponent = AZ::Dom::Path(PrefabDomUtils::EntitiesName) / entityAlias.c_str() /
             PrefabDomUtils::ComponentsName / secondComponentAlias.c_str();
 
