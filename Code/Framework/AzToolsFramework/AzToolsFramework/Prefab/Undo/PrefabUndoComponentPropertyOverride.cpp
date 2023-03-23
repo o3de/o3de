@@ -113,11 +113,11 @@ namespace AzToolsFramework
                 PrefabDom overridePatches(rapidjson::kArrayType);
 
                 // Generate override patches for the property.
-                PrefabUndoUtils::PatchOperationType patchType = PrefabUndoUtils::PatchOperationType::Replace;
+                PatchType patchType = PatchType::Edit;
                 if (!defaultPropertyDomValue)
                 {
                     // If the default property DOM value is not present in template, we create a new 'add' patch for the new value.
-                    patchType = PrefabUndoUtils::PatchOperationType::Add;
+                    patchType = PatchType::Add;
                 }
 
                 PrefabUndoUtils::AppendUpdateValuePatch(

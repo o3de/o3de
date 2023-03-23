@@ -23,14 +23,14 @@ namespace AzToolsFramework
             {
                 AZ_Assert(patches.IsArray(), "AppendAddEntityPatch - Provided patches should be an array object DOM value.");
 
-                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchOperationType::Add);
+                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchType::Add);
             }
 
             void AppendUpdateValuePatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValue,
                 const AZStd::string& pathToUpdate,
-                const PatchOperationType operationType)
+                const PatchType patchType)
             {
                 AZ_Assert(patches.IsArray(), "AppendUpdateValuePatch - Provided patches should be an array object DOM value.");
 
@@ -39,11 +39,11 @@ namespace AzToolsFramework
                     pathToUpdate.data(), aznumeric_caster(pathToUpdate.length()), patches.GetAllocator());
                 rapidjson::Value value;
                 value.CopyFrom(domValue, patches.GetAllocator(), true);
-                if (operationType == PatchOperationType::Add)
+                if (patchType == PatchType::Add)
                 {
                     patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), patches.GetAllocator());
                 }
-                else if (operationType == PatchOperationType::Replace)
+                else if (patchType == PatchType::Edit)
                 {
                     patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("replace"), patches.GetAllocator());
                 }

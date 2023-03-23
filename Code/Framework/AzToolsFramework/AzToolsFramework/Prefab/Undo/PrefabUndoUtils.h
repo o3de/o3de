@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 namespace AzToolsFramework
@@ -17,12 +18,6 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoUtils
         {
-            enum class PatchOperationType
-            {
-                Add,
-                Replace
-            };
-
             //! Create an add-entity patch for new entity with alias path, and append it to patch array.
             //! @param patches An array object of DOM values which stores undo or redo patches.
             //! @param newEntityDom The entity DOM generated from the new entity.
@@ -37,12 +32,12 @@ namespace AzToolsFramework
             //! @param patches An array object of DOM values which stores undo or redo patches.
             //! @param domValue The DOM value to add or replace.
             //! @param pathToUpdate The given path for the new value.
-            //! @param operationType The operation type for the patch (supported value: Add and Replace).
+            //! @param patchType The patch type for the patch (supported value: Add and Edit).
             void AppendUpdateValuePatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValue,
                 const AZStd::string& pathToUpdate,
-                const PatchOperationType operationType);
+                const PatchType patchType);
 
             //! Create a 'remove' patch with alias path, and append it to patch array.
             //! @param patches An array object of DOM values which stores undo or redo patches.
