@@ -75,18 +75,18 @@ namespace AzToolsFramework
             }
 
             // Configure paths from focused and top templates. The top template is the source template of the link.
-            AZ::Dom::Path pathToPropertyFromTop =
+            AZ::Dom::Path pathToPropertyFromTopPrefab =
                 AZ::Dom::Path(PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true)) /
                 relativePathFromOwningPrefab;
-            AZ::Dom::Path pathToPropertyFromFocused(PrefabDomUtils::InstancesName);
-            pathToPropertyFromFocused /= climbUpResult.m_climbedInstances.back()->GetInstanceAlias(); // top instance alias
-            pathToPropertyFromFocused /= pathToPropertyFromTop;
+            AZ::Dom::Path pathToPropertyFromFocusedPrefab(PrefabDomUtils::InstancesName);
+            pathToPropertyFromFocusedPrefab /= climbUpResult.m_climbedInstances.back()->GetInstanceAlias(); // top instance alias
+            pathToPropertyFromFocusedPrefab /= pathToPropertyFromTopPrefab;
 
             // Get the current state of property value from focused template.
             const TemplateId focusedTemplateId = link->get().GetTargetTemplateId();
             const PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedTemplateId);
-            PrefabDomPath domPathToPropertyFromFocused(pathToPropertyFromFocused.ToString().c_str());
-            const PrefabDomValue* currentPropertyDomValue = domPathToPropertyFromFocused.Get(focusedTemplateDom);
+            PrefabDomPath domPathToPropertyFromFocusedPrefab(pathToPropertyFromFocusedPrefab.ToString().c_str());
+            const PrefabDomValue* currentPropertyDomValue = domPathToPropertyFromFocusedPrefab.Get(focusedTemplateDom);
 
             if (currentPropertyDomValue)
             {
@@ -103,12 +103,12 @@ namespace AzToolsFramework
             if (m_changed)
             {
                 // Get the default state of property value from top template (direct child prefab of focused template).
-                // Note: We can't get the default state from the owning template because top template might have stored overrides
-                // on the owning instance. Those overrides should be treated as default/base values from the focused template.
+                // Note: There could be the case where top prefab instance is not the owning prefab instance,
+                // so we fetch data from the top prefab template for default values.
                 const TemplateId topTemplateId = link->get().GetSourceTemplateId();
                 const PrefabDom& topTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(topTemplateId);
-                PrefabDomPath domPathToPropertyFromTop(pathToPropertyFromTop.ToString().c_str());
-                const PrefabDomValue* defaultPropertyDomValue = domPathToPropertyFromTop.Get(topTemplateDom);
+                PrefabDomPath domPathToPropertyFromTopPrefab(pathToPropertyFromTopPrefab.ToString().c_str());
+                const PrefabDomValue* defaultPropertyDomValue = domPathToPropertyFromTopPrefab.Get(topTemplateDom);
 
                 PrefabDom overridePatches(rapidjson::kArrayType);
 
@@ -121,13 +121,13 @@ namespace AzToolsFramework
                 }
 
                 PrefabUndoUtils::AppendUpdateValuePatch(
-                    overridePatches, afterStateOfComponentProperty, pathToPropertyFromTop.ToString(), patchType);
+                    overridePatches, afterStateOfComponentProperty, pathToPropertyFromTopPrefab.ToString(), patchType);
 
                 // Remove the subtree and cache the subtree for undo.
                 // Note: Depending on the path, this would remove all existing patches to individual values (e.g. vector).
-                m_overriddenPropertySubTree = AZStd::move(link->get().RemoveOverrides(pathToPropertyFromTop));
+                m_overriddenPropertySubTree = AZStd::move(link->get().RemoveOverrides(pathToPropertyFromTopPrefab));
 
-                m_overriddenPropertyPath = pathToPropertyFromTop;
+                m_overriddenPropertyPath = pathToPropertyFromTopPrefab;
 
                 // Redo - Add the override patches to the tree.
                 link->get().AddOverrides(overridePatches);
@@ -138,7 +138,7 @@ namespace AzToolsFramework
                 if (cachedFocusedInstanceDom.has_value())
                 {
                     PrefabUndoUtils::UpdateEntityInInstanceDom(
-                        cachedFocusedInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocused.ToString());
+                        cachedFocusedInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocusedPrefab.ToString());
                 }
 
                 // Redo - Update target template of the link.
