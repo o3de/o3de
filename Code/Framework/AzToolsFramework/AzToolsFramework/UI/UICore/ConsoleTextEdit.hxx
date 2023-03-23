@@ -15,8 +15,6 @@
 
 #endif
 
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
-
 class QMenu;
 
 namespace AzToolsFramework
