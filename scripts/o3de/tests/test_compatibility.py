@@ -181,3 +181,55 @@ def test_resolve_gem_dependencies(gem_names, all_gem_json_data, expected_result)
     else:
         assert not expected_result
         assert errors
+
+@pytest.mark.parametrize(
+    "num_root_gems, num_dependencies_per_gem, num_optional_gems, tree_depth", [
+        # Given:
+        # R num_root_gems
+        # N num_dependencies_per_gem
+        # D tree_depth
+        # Total gems = R * (pow(N, D) - 1) / (N - 1)
+
+        # Single gem with no dependencies, 1 gem
+        pytest.param(1, 0, 0, 1),
+        # 100 root gems with no dependencies, 100 gems
+        pytest.param(100, 0, 0, 1),
+        # 1 root gem with 3 dependencies, 2 levels, 4 gems
+        pytest.param(1, 3, 0, 2),
+        # 10 root gems with 3 dependencies, 2 levels, 40 gems
+        pytest.param(10, 3, 0, 2),
+        # 1 root gem with 3 dependencies, 3 levels, 13 gems
+        pytest.param(1, 3, 0, 3),
+        # 10 root gems with 2 dependencies, 5 levels, 310 gems, 4 optional
+        pytest.param(10, 2, 4, 5),
+        # 1 root gem with 3 dependencies, 3 levels, 13 gems, 3 optional
+        pytest.param(1, 3, 3, 3),
+    ]
+)
+def test_resolve_gem_dependencies_depth(num_root_gems, num_dependencies_per_gem, num_optional_gems, tree_depth):
+    engine_json_data = {
+        'engine_name':'o3de',
+        'version':'1.0.0'
+    }
+    # require the root gems
+    gem_names = [f"Gem_0_{index}" for index in range(num_root_gems)]
+
+    # build the dependency tree to the requested depth
+    all_gem_json_data = {} 
+    for depth in range(tree_depth):
+        for index in range(num_root_gems * pow(num_dependencies_per_gem, depth)):
+            gem_name = f'Gem_{depth}_{index}'
+            if depth > 0 and num_optional_gems > 0:
+                gem_json_data = {'gem_name':{'name':gem_name, 'optional':True}}
+                num_optional_gems = num_optional_gems - 1
+            else:
+                gem_json_data = {'gem_name':gem_name}
+            if num_dependencies_per_gem and depth < tree_depth - 1:
+                gem_json_data['dependencies'] = [
+                    f'Gem_{depth + 1}_{index * num_dependencies_per_gem + dep_index}' 
+                    for dep_index in range(num_dependencies_per_gem)]
+            
+            all_gem_json_data[gem_name] = [gem_json_data]
+
+    result, errors = compatibility.resolve_gem_dependencies(gem_names, all_gem_json_data, engine_json_data)
+    assert result and not errors

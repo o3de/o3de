@@ -90,6 +90,7 @@ namespace AzToolsFramework
             void OnWidgetActionRegistrationHook() override;
             void OnMenuBindingHook() override;
             void OnToolBarBindingHook() override;
+            void OnPostActionManagerRegistrationHook() override;
 
         private:
             // PrefabPublicNotificationBus overrides ...
