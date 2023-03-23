@@ -227,10 +227,10 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        /// AzToolsFramework::EditorEntityContextNotificationBus implementation
+        /// AzToolsFramework::EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
         // PropertyEditorEntityChangeNotificationBus overrides ...
