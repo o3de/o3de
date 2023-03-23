@@ -58,12 +58,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_RagdollBones as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @fm.file_revert("c15308221_material_componentsinsyncwithlibrary.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\Material_ComponentsInSyncWithLibrary")
-    def test_Material_ComponentsInSyncWithLibrary(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_ComponentsInSyncWithLibrary as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     # BUG: LY-107723")
     def test_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
