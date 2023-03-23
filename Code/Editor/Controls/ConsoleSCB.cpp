@@ -375,12 +375,6 @@ CConsoleSCB::CConsoleSCB(QWidget* parent)
 
     connect(ui->lineEdit, &ConsoleLineEdit::variableEditorRequested, this, &CConsoleSCB::showVariableEditor);
 
-    if (GetIEditor()->IsInConsolewMode())
-    {
-        // Attach / register edit box
-        //CLogFile::AttachEditBox(m_edit.GetSafeHwnd()); // FIXME
-    }
-
     AzToolsFramework::EditorPreferencesNotificationBus::Handler::BusConnect();
 }
 
