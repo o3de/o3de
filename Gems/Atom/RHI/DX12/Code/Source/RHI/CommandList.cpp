@@ -5,9 +5,6 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Atom/RHI/DispatchRaysItem.h>
-#include <Atom/RHI/Factory.h>
-#include <Atom/RHI/IndirectArguments.h>
 #include <RHI/CommandList.h>
 #include <RHI/Conversions.h>
 #include <RHI/Buffer.h>
@@ -27,6 +24,9 @@
 #include <RHI/RayTracingPipelineState.h>
 #include <RHI/RayTracingShaderTable.h>
 #include <RHI/BufferPool.h>
+#include <Atom/RHI/DispatchRaysItem.h>
+#include <Atom/RHI/Factory.h>
+#include <Atom/RHI/IndirectArguments.h>
 
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL

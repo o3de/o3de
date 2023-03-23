@@ -27,7 +27,7 @@
 #define DX12_GPU_PROFILE_MODE_BASIC     1       // Profiles command list lifetime
 #define DX12_GPU_PROFILE_MODE_DETAIL    2       // Profiles draw call state changes
 #define DX12_GPU_PROFILE_MODE DX12_GPU_PROFILE_MODE_BASIC
-#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
+#define PIX_MARKER_CMDLIST_COL 0xFF00FF00
 
 namespace AZ
 {
