@@ -619,7 +619,7 @@ namespace AtomToolsFramework
         // Some graph canvas node property components do not have any visible properties, like the bookmark anchor visual component. These
         // will not be added to the graph document inspector.
         const AZStd::unordered_set<AZ::Uuid> ignoredTypeIds{
-            AZ::Uuid::CreateString("{AD921E77-962B-417F-88FB-500FA679DFDF}") // BookmarkAnchorVisualComponent
+            AZ::Uuid("{AD921E77-962B-417F-88FB-500FA679DFDF}") // BookmarkAnchorVisualComponent
         };
 
         // After all of the selected graph canvas nodes have been sorted, search for those with editable property components and add them to
