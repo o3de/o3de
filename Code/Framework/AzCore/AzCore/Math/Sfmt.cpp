@@ -10,7 +10,7 @@
 
 #include <AzCore/Math/Random.h>
 #include <AzCore/Module/Environment.h>
-#include <AzCore/std/parallel/lock.h>
+#include <AzCore/std/parallel/scoped_lock.h>
 
 #include <string.h> // for memset
 
@@ -347,7 +347,7 @@ namespace AZ
     // Seed
     // [4/10/2012]
     //=========================================================================
-    Sfmt::Sfmt(AZ::u32* keys, int numKeys)
+    Sfmt::Sfmt(const AZ::u32* keys, int numKeys)
     {
         m_psfmt32 = &m_sfmt[0].u[0];
         m_psfmt64 = reinterpret_cast<AZ::u64*>(m_psfmt32);
@@ -390,8 +390,10 @@ namespace AZ
     // Seed
     // [4/10/2012]
     //=========================================================================
-    void Sfmt::Seed(AZ::u32* keys, int numKeys)
+    void Sfmt::Seed(const AZ::u32* keys, int numKeys)
     {
+        AZStd::scoped_lock lock(m_sfmtMutex);
+
         using SfmtInternal::N;
         using SfmtInternal::N32;
         int i, j, count;
@@ -515,21 +517,16 @@ namespace AZ
     //=========================================================================
     AZ::u32 Sfmt::Rand32()
     {
-        int index = m_index.fetch_add(1);
-        if (index >= SfmtInternal::N32)
+        AZStd::scoped_lock lock(m_sfmtMutex);
+
+        m_index++;
+        if (m_index >= SfmtInternal::N32)
         {
-            AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
-            // if this thread is the one that sets m_index to 0, then this thread
-            // does the generation
-            index += 1; // compare against the result of fetch_add(1) above
-            if (m_index.compare_exchange_strong(index, 0))
-            {
-                SfmtInternal::gen_rand_all(*this);
-            }
-            // try again, with the new table
-            return Rand32();
+            SfmtInternal::gen_rand_all(*this);
+            m_index = 0;
         }
-        return m_psfmt32[index];
+
+        return m_psfmt32[m_index];
     }
 
     //=========================================================================
@@ -538,24 +535,16 @@ namespace AZ
     //=========================================================================
     AZ::u64 Sfmt::Rand64()
     {
-        int index = m_index.fetch_add(2);
-        if (index >= (SfmtInternal::N32 - 1))
+        AZStd::scoped_lock lock(m_sfmtMutex);
+
+        m_index += 2;
+        if (m_index >= (SfmtInternal::N32 - 1))
         {
-            AZStd::lock_guard<decltype(m_generationMutex)> lock(m_generationMutex);
-            // if this thread is the one that sets m_index to 0, then this thread
-            // does the generation
-            index += 2; // compare against the result of fetch_add(2) above
-            if (m_index.compare_exchange_strong(index, 0))
-            {
-                SfmtInternal::gen_rand_all(*this);
-            }
-            // try again, with the new table
-            return Rand64();
+            SfmtInternal::gen_rand_all(*this);
+            m_index = 0;
         }
 
-        AZ::u64 r;
-        r = m_psfmt64[index / 2];
-        return r;
+        return m_psfmt64[m_index / 2];
     }
 
     //=========================================================================
@@ -564,6 +553,8 @@ namespace AZ
     //=========================================================================
     void Sfmt::FillArray32(AZ::u32* array, int size)
     {
+        AZStd::scoped_lock lock(m_sfmtMutex);
+
         AZ_MATH_ASSERT(m_index == SfmtInternal::N32, "Invalid m_index! Reinitialize!");
         AZ_MATH_ASSERT(size % 4 == 0, "Size must be multiple of 4!");
         AZ_MATH_ASSERT(size >= SfmtInternal::N32, "Size must be bigger than %d GetMinArray32Size()!", SfmtInternal::N32);
@@ -578,6 +569,8 @@ namespace AZ
     //=========================================================================
     void Sfmt::FillArray64(AZ::u64* array, int size)
     {
+        AZStd::scoped_lock lock(m_sfmtMutex);
+
         AZ_MATH_ASSERT(m_index == SfmtInternal::N32, "Invalid m_index! Reinitialize!");
         AZ_MATH_ASSERT(size % 4 == 0, "Size must be multiple of 4!");
         AZ_MATH_ASSERT(size >= SfmtInternal::N64, "Size must be bigger than %d GetMinArray64Size()!", SfmtInternal::N64);
