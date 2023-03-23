@@ -49,7 +49,7 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
-        void EditorComponentBase::PrepareComponentForEntityAddition(AZ::Entity* entity)
+        void EditorComponentBase::OnPrepareForAdditionToEntity(AZ::Entity* entity)
         {
             if (entity && m_alias.empty())
             {

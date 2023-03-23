@@ -163,7 +163,7 @@ namespace AZ
         }
     }
 
-    void Component::PrepareComponentForEntityAddition(Entity*)
+    void Component::OnPrepareForAdditionToEntity(Entity*)
     {
     }
 
