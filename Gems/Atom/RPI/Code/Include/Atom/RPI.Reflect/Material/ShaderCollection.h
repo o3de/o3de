@@ -92,6 +92,15 @@ namespace AZ
                 //! Returns the shader tag used to identify this item
                 const AZ::Name& GetShaderTag() const;
 
+                //! Id the AssetId of @newShaderAsset matches the AssetId of @m_shaderAsset,
+                //! then @m_shaderAsset will be updated to @newShaderAsset, AND m_shaderOptionGroup
+                //! will be updated too.
+                void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+                // Returns true if was able to initialized the non-serialized @m_shaderOptionGroup.
+                // Only returns false if @m_shaderAsset is not ready.
+                bool InitializeShaderOptionGroup();
+
             private:
                 Data::Asset<ShaderAsset> m_shaderAsset;
                 ShaderVariantId m_shaderVariantId;       //!< Temporarily holds the ShaderVariantId, used for serialization. This will be copied to/from m_shaderOptionGroup.

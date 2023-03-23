@@ -76,6 +76,34 @@ namespace AZ
             AssetInitBus::Handler::BusDisconnect();
         }
 
+        bool MaterialTypeAsset::InitializeNonSerializedData()
+        {
+            if (m_isNonSerializedDataInitialized)
+            {
+                return true;
+            }
+            for (auto& shaderItem : m_generalShaderCollection)
+            {
+                if (!shaderItem.InitializeShaderOptionGroup())
+                {
+                    return false;
+                }
+            }
+
+            for (auto& materialPipelinePair : m_materialPipelinePayloads)
+            {
+                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
+                {
+                    if (!shaderItem.InitializeShaderOptionGroup())
+                    {
+                        return false;
+                    }
+                }
+            }
+            m_isNonSerializedDataInitialized = true;
+            return true;
+        }
+
         const ShaderCollection& MaterialTypeAsset::GetGeneralShaderCollection() const
         {
             return m_generalShaderCollection;
@@ -210,6 +238,9 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
+            [[maybe_unused]] bool success = InitializeNonSerializedData();
+            AZ_Assert(success, "Failed to InitializeNonSerializedData");
+
             for (const auto& shaderItem : m_generalShaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
@@ -227,15 +258,6 @@ namespace AZ
 
             return true;
         }
-
-        template<typename AssetDataT>
-        void TryReplaceAsset(Data::Asset<AssetDataT>& assetToReplace, const Data::Asset<Data::AssetData>& newAsset)
-        {
-            if (assetToReplace.GetId() == newAsset.GetId())
-            {
-                assetToReplace = newAsset;
-            }
-        }
         
         void MaterialTypeAsset::ReinitializeAsset(Data::Asset<Data::AssetData> asset)
         {
@@ -245,14 +267,14 @@ namespace AZ
 
             for (auto& shaderItem : m_generalShaderCollection)
             {
-                TryReplaceAsset(shaderItem.m_shaderAsset, asset);
+                shaderItem.TryReplaceShaderAsset(asset);
             }
 
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
                 for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
                 {
-                    TryReplaceAsset(shaderItem.m_shaderAsset, asset);
+                    shaderItem.TryReplaceShaderAsset(asset);
                 }
             }
         }
