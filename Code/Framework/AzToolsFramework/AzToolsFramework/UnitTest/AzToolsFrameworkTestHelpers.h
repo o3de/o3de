@@ -328,8 +328,7 @@ namespace UnitTest
 
                 hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
 
-                //AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, m_defaultMainWindow);
-                AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationHooks();
+                AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
             }
 
             SetUpEditorFixtureImpl();

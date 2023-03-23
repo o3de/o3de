@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
@@ -135,20 +136,11 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::Activate()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            AzToolsFramework::EditorEventsBus::Handler::BusConnect();
-        }
     }
 
     void ActionManagerSystemComponent::Deactivate()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
-        }
     }
-
     void ActionManagerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         MenuManager::Reflect(context);
@@ -196,8 +188,7 @@ namespace AzToolsFramework
     {
     }
 
-    //void ActionManagerSystemComponent::NotifyMainWindowInitialized(QMainWindow* /* mainWindow */)
-    void ActionManagerSystemComponent::TriggerRegistrationHooks()
+    void ActionManagerSystemComponent::TriggerRegistrationNotifications()
     {
         // Broadcast synchronization hooks.
         // Order is important since latter elements may have depencencies on earlier ones.

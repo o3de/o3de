@@ -1809,11 +1809,8 @@ bool CCryEditApp::InitInstance()
         QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
     }
 
-    // TEST
-
-    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationHooks();
-
-    // TEST END
+    // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
+    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
     CloseSplashScreen();
 
