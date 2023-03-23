@@ -122,6 +122,7 @@ namespace Physics
             AzPhysics::SimulatedBodyConfiguration::Reflect(context);
             AzPhysics::RigidBodyConfiguration::Reflect(context);
             AzPhysics::JointConfiguration::Reflect(context);
+
             RagdollNodeConfiguration::Reflect(context);
             RagdollConfiguration::Reflect(context);
             CharacterColliderNodeConfiguration::Reflect(context);

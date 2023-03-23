@@ -11,9 +11,25 @@
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/EditorJointConfiguration.h>
 #include <Source/EditorRigidBodyComponent.h>
+#include <Source/Articulation/ArticulationLinkConfiguration.h>
 
 namespace PhysX
 {
+
+    //! Configuration data for EditorRigidBodyComponent.
+     struct EditorArticulationLinkConfiguration
+         : public ArticulationLinkConfiguration
+    {
+        AZ_CLASS_ALLOCATOR(EditorArticulationLinkConfiguration, AZ::SystemAllocator);
+        AZ_RTTI(
+            EditorArticulationLinkConfiguration,
+            "{8FFA0EC2-E850-4562-AB3D-08D157E07B81}",
+            ArticulationLinkConfiguration);
+
+        //bool isLead;
+        static void Reflect(AZ::ReflectContext* context);
+    };
+
     //! Class for in-editor PhysX Articulation Link Component.
     class EditorArticulationLinkComponent
         : public AzToolsFramework::Components::EditorComponentBase
@@ -39,8 +55,9 @@ namespace PhysX
 
         bool IsRootArticulation() const;
 
-        EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
-        RigidBodyConfiguration m_physxSpecificConfig; //!< Properties specific to PhysX which might not have exact equivalents in other physics engines.
-        EditorJointConfig m_jointConfig;
+        //EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
+        //RigidBodyConfiguration m_physxSpecificConfig; //!ko< Properties specific to PhysX which might not have exact equivalents in other physics engines.
+        //EditorJointConfig m_jointConfig;
+        EditorArticulationLinkConfiguration m_aConfig;
     };
 } // namespace PhysX
