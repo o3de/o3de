@@ -48,7 +48,9 @@ namespace UnitTest
         ToolsApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
 
-        Entity* systemEntity = app.Create(desc, {});
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        Entity* systemEntity = app.Create(desc, startupParameters);
 
         // Need to reflect the components so that edit attribute used for sorting, such as FixedComponentListIndex, get set.
         app.RegisterComponentDescriptor(AzToolsFramework::Components::TransformComponent::CreateDescriptor());

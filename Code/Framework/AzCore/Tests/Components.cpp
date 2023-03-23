@@ -57,7 +57,9 @@ namespace UnitTest
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
         appDesc.m_recordingMode = AllocationRecords::RECORD_FULL;
-        Entity* systemEntity = app.Create(appDesc);
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        Entity* systemEntity = app.Create(appDesc, startupParameters);
 
         systemEntity->CreateComponent<StreamerComponent>();
         systemEntity->CreateComponent(AZ::Uuid("{CAE3A025-FAC9-4537-B39E-0A800A2326DF}")); // JobManager component
@@ -173,7 +175,9 @@ namespace UnitTest
         ComponentApplication componentApp;
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        Entity* systemEntity = componentApp.Create(desc, {});
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        Entity* systemEntity = componentApp.Create(desc, startupParameters);
         AZ_TEST_ASSERT(systemEntity);
         systemEntity->Init();
 
@@ -1105,7 +1109,9 @@ namespace UnitTest
         // Create application environment code driven
         ComponentApplication::Descriptor appDesc;
         appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
-        Entity* systemEntity = app.Create(appDesc);
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        Entity* systemEntity = app.Create(appDesc, startupParameters);
         app.UserSettingsFileLocatorBus::Handler::BusConnect();
 
         MyUserSettings::Reflect(app.GetSerializeContext());
@@ -2009,8 +2015,9 @@ namespace Benchmark
 
         ComponentApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-
-        Entity* systemEntity = componentApp.Create(desc, {});
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        Entity* systemEntity = componentApp.Create(desc, startupParameters);
         systemEntity->Init();
 
         while(state.KeepRunning())

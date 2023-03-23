@@ -20,6 +20,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -677,6 +678,8 @@ namespace AzToolsFramework
 
         //! Stores a component id to be focused on next time the UI updates.
         AZStd::optional<AZ::ComponentId> m_newComponentId;
+
+        AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
 
     private slots:
         void OnPropertyRefreshRequired(); // refresh is needed for a property.
