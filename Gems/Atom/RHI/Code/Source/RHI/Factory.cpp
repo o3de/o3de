@@ -148,6 +148,19 @@ namespace AZ
             {
                 AZ::SystemTickBus::QueueFunction(logFunc);
             }
+
+            if (Validation::IsEnabled())
+            {
+                bool enableGpuMargerMergeGroups = false;
+                if (auto* console = AZ::Interface<AZ::IConsole>::Get(); console != nullptr)
+                {
+                    console->GetCvarValue("r_gpuMarkersMergeGroups", enableGpuMargerMergeGroups);
+
+                    // push the cvar value so Dx12/Vk/Metal back-end dlls can access it directly.
+                    console->PerformCommand(
+                        AZStd::string::format("r_gpuMarkersMergeGroups %s", enableGpuMargerMergeGroups ? "true" : "false").c_str());
+                }
+            }
         }
 
         void Factory::Unregister(Factory* instance)
