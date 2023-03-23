@@ -797,7 +797,8 @@ namespace AZ
 
             if (!diffuseProbeGridUpdatePass)
             {
-                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridPreparePassRequest.azasset", "DepthPrePass");
+                AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridUpdatePassRequest.azasset", "DiffuseProbeGridPreparePass");
                 AddPassRequest(renderPipeline, "Passes/DiffuseProbeGridRenderPassRequest.azasset", "ForwardSubsurface");
 
                 // add the fullscreen query pass for SSR raytracing fallback color

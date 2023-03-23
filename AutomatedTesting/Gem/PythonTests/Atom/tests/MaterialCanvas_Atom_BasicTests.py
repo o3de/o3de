@@ -152,7 +152,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         world_position_node = material_canvas_utils.create_node_by_name(material_graph, "World Position")
         Report.result(
             Tests.world_position_node_created,
-            world_position_node.typename == "AZStd::shared_ptr<Node const>")
+            world_position_node.typename == "AZStd::shared_ptr<Node>")
 
         # 10. Add the world_position_node to the material_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.
@@ -162,7 +162,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         standard_pbr_node = material_canvas_utils.create_node_by_name(material_graph, "Standard PBR")
         Report.result(
             Tests.standard_pbr_node_created,
-            standard_pbr_node.typename == "AZStd::shared_ptr<Node const>")
+            standard_pbr_node.typename == "AZStd::shared_ptr<Node>")
 
         # 12. Add the standard_pbr_node to the material_graph.
         # This test will be verified when the nodes are connected as if it doesn't exist the connection won't be made.

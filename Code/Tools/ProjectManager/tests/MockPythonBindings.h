@@ -40,7 +40,8 @@ namespace O3DE::ProjectManager
         MOCK_METHOD1(AddProject, DetailedOutcome(const QString&));
         MOCK_METHOD1(RemoveProject, DetailedOutcome(const QString&));
         MOCK_METHOD1(UpdateProject, AZ::Outcome<void, AZStd::string>(const ProjectInfo&));
-        MOCK_METHOD2(AddGemToProject, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
+        MOCK_METHOD3(GetIncompatibleProjectGems, AZ::Outcome<QStringList, AZStd::string>(const QStringList&, const QStringList&, const QString&));
+        MOCK_METHOD4(AddGemsToProject, DetailedOutcome(const QStringList&, const QStringList&, const QString&, bool));
         MOCK_METHOD2(RemoveGemFromProject, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
         MOCK_METHOD0(RemoveInvalidProjects, bool());
 
