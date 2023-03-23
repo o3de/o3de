@@ -194,7 +194,8 @@ namespace AZ
                 for (; it != end; ++it)
                 {
                     ValueType* valuePtr = &*it;
-                    if (!cb(valuePtr, m_classElement.m_typeId, m_classElement.m_genericClassInfo ? m_classElement.m_genericClassInfo->GetClassData() : nullptr, &m_classElement))
+                    if (!valuePtr || !cb(valuePtr, m_classElement.m_typeId, m_classElement.m_genericClassInfo ?
+                            m_classElement.m_genericClassInfo->GetClassData() : nullptr, &m_classElement))
                     {
                         break;
                     }
