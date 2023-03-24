@@ -88,7 +88,10 @@ namespace AZ
             }
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
-                materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups();
+                if (!materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups())
+                {
+                    return false;
+                }
             }
             m_isNonSerializedDataInitialized = true;
             return true;
