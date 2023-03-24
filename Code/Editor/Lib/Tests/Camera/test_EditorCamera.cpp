@@ -960,4 +960,42 @@ namespace UnitTest
         EXPECT_THAT(SandboxEditor::CameraOrbitPanChannelId(), Eq(initialCameraOrbitPanChannelId));
         EXPECT_THAT(SandboxEditor::CameraFocusChannelId(), Eq(initialCameraFocusChannelId));
     }
+
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesNormalCaseLookingForward)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, -5.0f, 0.5f)), AZ::DegToRad(60.0f), AZ::Vector3::CreateAxisZ(0.5f), 0.866f);
+
+        EXPECT_THAT(
+            *nextCameraTransform,
+            IsClose(
+                AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateIdentity(), AZ::Vector3(0.0f, -1.87499f, 0.5f))));
+    }
+
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesDegenerateCaseLookingDown)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 0.0f, 3.0f)), AZ::DegToRad(60.0f), AZ::Vector3::CreateAxisZ(0.5f), 0.866f);
+
+        EXPECT_THAT(
+            *nextCameraTransform,
+            IsClose(AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion(-0.675590217f, 0.0f, 0.0f, 0.737277329f), AZ::Vector3(0.0f, -0.163416f, 2.367864f))));
+    }
+
+    TEST(EditorViewportCamera, CalculateGoToEntityTransformHandlesDegenerateCaseLookingUp)
+    {
+        const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+            AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateRotationZ(AZ::DegToRad(-90.0f)) * AZ::Quaternion::CreateRotationX(AZ::DegToRad(90.0f)),
+                AZ::Vector3(0.0f, 0.0f, 5.0f)),
+            AZ::DegToRad(60.0f),
+            AZ::Vector3::CreateAxisZ(10.0f),
+            0.866f);
+
+        EXPECT_THAT(
+            *nextCameraTransform,
+            IsClose(AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion(-0.477643281f, 0.477785647f, 0.521411479f, -0.521256149f), AZ::Vector3(-0.163416952f, 0.0f, 8.13213539f))));
+    }
 } // namespace UnitTest
