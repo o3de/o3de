@@ -127,12 +127,6 @@ namespace O3DE::ProjectManager
             });
     }
 
-    GemCartWidget::~GemCartWidget()
-    {
-        // disconnect from all download controller signals
-        disconnect(m_downloadController, nullptr, this, nullptr);
-    }
-
     void GemCartWidget::CreateGemSection(const QString& singularTitle, const QString& pluralTitle, GetTagIndicesCallback getTagIndices)
     {
         QWidget* widget = new QWidget();
