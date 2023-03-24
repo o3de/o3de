@@ -6,7 +6,7 @@
  *
  */
 #include <iostream>
-
+#include <AzCore/std/utility/charconv.h>
 #include <AzFramework/CommandLine/CommandLine.h>
 
 // this is an intentional relative local include so that it can be shared between two unrelated projects
@@ -43,6 +43,8 @@ int main(int argc, char** argv)
         if (commandLine.GetNumSwitchValues("exitCode") > 0)
         {
             exitCode = atoi(commandLine.GetSwitchValue("exitCode").c_str());
+            const AZStd::string& exitCodeStr = commandLine.GetSwitchValue("exitCode");
+            AZStd::from_chars(exitCodeStr.begin(), exitCodeStr.end(), exitCode);
         }
 
         if (commandLine.HasSwitch("plentyOfOutput"))

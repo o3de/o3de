@@ -21,7 +21,7 @@ namespace ProcessCommunicatorLinuxInternal
 
     class CommunicatorDataImpl : public AzFramework::StdInOutProcessCommunicatorData
     {
-        public:
+    public:
         AZ_CLASS_ALLOCATOR(CommunicatorDataImpl, AZ::SystemAllocator);
         CommunicatorDataImpl() = default;
         virtual ~CommunicatorDataImpl()
@@ -80,7 +80,7 @@ namespace AzFramework
     {
         m_handle = handle;
         // also create an epoll handle
-        if ((handle != -1)&&(createEPollHandle))
+        if ( (handle != -1) && (createEPollHandle) )
         {
             int m_epollHandle = epoll_create1(0);
 
