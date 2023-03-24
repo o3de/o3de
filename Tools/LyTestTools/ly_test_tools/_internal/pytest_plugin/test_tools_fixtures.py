@@ -355,12 +355,19 @@ def _workspace(request,  # type: _pytest.fixtures.SubRequest
         workspace.artifact_manager.set_dest_path()  # Reset log name for this test
         helpers.teardown_builtin_workspace(workspace)
 
-    request.addfinalizer(teardown)
 
     artifact_folder_count = request.session.testscollected  # Amount of folders to create for test_name.
+    # Skip workspace logging if batch or parallel test by checking the list of test names
+    if hasattr(request.node.cls, '_runners'):
+        for runner in request.node.cls._runners:
+            for func in runner.result_pytestfuncs:
+                if test_method == func.originalname:
+                    return workspace
+    request.addfinalizer(teardown)
+
     helpers.setup_builtin_workspace(workspace, test_name, artifact_folder_count)
 
-    # Must be called after helpers.setup_builtin_workspace() above:
+        # Must be called after helpers.setup_builtin_workspace() above:
     info_log_path = workspace.artifact_manager.generate_artifact_file_name(TOOLS_INFO_LOG_NAME)
     debug_log_path = workspace.artifact_manager.generate_artifact_file_name(TOOLS_DEBUG_LOG_NAME)
     py_logging_util.initialize_logging(info_log_path, debug_log_path)
