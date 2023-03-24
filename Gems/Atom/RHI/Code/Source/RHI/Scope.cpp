@@ -145,7 +145,7 @@ namespace AZ
                 return m_id.GetStringView();
             }
 
-            if (RHI::RHISystemInterface::Get()->GetNumActivePipelines() > 1)
+            if (RHI::RHISystemInterface::Get()->GetNumActiveRenderPipelines() > 1)
             {
                 return m_markerWithPipelineName;
             }

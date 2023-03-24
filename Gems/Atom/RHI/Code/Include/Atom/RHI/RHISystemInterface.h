@@ -58,7 +58,7 @@ namespace AZ
 
             virtual double GetCpuFrameTime() const = 0;
 
-            virtual uint16_t GetNumActivePipelines() const = 0;
+            virtual uint16_t GetNumActiveRenderPipelines() const = 0;
 
             virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
 

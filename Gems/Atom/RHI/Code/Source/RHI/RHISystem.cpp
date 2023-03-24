@@ -294,14 +294,14 @@ namespace AZ
             return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
 
-        void RHISystem::SetNumActivePipelines(uint16_t numActivePipelines)
+        void RHISystem::SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines)
         {
-            m_numActivePipelines = numActivePipelines;
+            m_numActiveRenderPipelines = numActiveRenderPipelines;
         }
 
-        uint16_t RHISystem::GetNumActivePipelines() const
+        uint16_t RHISystem::GetNumActiveRenderPipelines() const
         {
-            return m_numActivePipelines;
+            return m_numActiveRenderPipelines;
         }
 
         ConstPtr<PlatformLimitsDescriptor> RHISystem::GetPlatformLimitsDescriptor(int deviceIndex) const

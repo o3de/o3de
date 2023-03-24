@@ -46,8 +46,8 @@ namespace AZ
             void UnregisterXRSystem();
 
             //! Get/Set functions for the number of active pipelines in use in a frame 
-            void SetNumActivePipelines(uint16_t numActivePipelines);
-            uint16_t GetNumActivePipelines() const;
+            void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
+            uint16_t GetNumActiveRenderPipelines() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
@@ -78,7 +78,7 @@ namespace AZ
             XRRenderingInterface* m_xrSystem = nullptr;
 
             //Used for better verbosity related to gpu markers
-            uint16_t m_numActivePipelines = 0;
+            uint16_t m_numActiveRenderPipelines = 0;
         };
     } // namespace RPI
 } // namespace AZ

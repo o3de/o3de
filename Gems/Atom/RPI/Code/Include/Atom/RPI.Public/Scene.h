@@ -191,9 +191,9 @@ namespace AZ
                 return m_drawFilterTagRegistry;
             }
 
-            uint16_t GetActivePipelines() const
+            uint16_t GetActiveRenderPipelines() const
             {
-                return m_numActivePipelines;
+                return m_numActiveRenderPipelines;
             }
 
         protected:
@@ -304,7 +304,7 @@ namespace AZ
             float m_simulationTime = 0.0;
             RHI::ShaderInputNameIndex m_prevTimeInputIndex = "m_prevTime";
             float m_prevSimulationTime = 0.0;
-            uint16_t m_numActivePipelines = 0;
+            uint16_t m_numActiveRenderPipelines = 0;
         };
 
         // --- Template functions ---

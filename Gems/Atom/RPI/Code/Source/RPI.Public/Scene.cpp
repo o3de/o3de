@@ -744,7 +744,7 @@ namespace AZ
                 }
             }
 
-            m_numActivePipelines = aznumeric_cast<uint16_t>(activePipelines.size());
+            m_numActiveRenderPipelines = aznumeric_cast<uint16_t>(activePipelines.size());
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
             if (m_pipelineStatesLookupNeedsRebuild)
