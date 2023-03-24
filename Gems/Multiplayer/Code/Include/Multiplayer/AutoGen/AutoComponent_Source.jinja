@@ -888,9 +888,9 @@ enum class NetworkProperties
 {%    endif %}
     })
 {%  if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' %}
-    ->Method("Set{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, int32_t index, const {{ Property.attrib['Type'] }}& value) -> void
+    ->Method("Set{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, int32_t index, [[maybe_unused]] const {{ Property.attrib['Type'] }}& value) -> void
 {%   else %}
-    ->Method("Set{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, const {{ Property.attrib['Type'] }}& {{ LowerFirst(Property.attrib['Name']) }}) -> void
+    ->Method("Set{{ UpperFirst(Property.attrib['Name']) }}", [](AZ::EntityId id, [[maybe_unused]] const {{ Property.attrib['Type'] }}& {{ LowerFirst(Property.attrib['Name']) }}) -> void
 {%  endif %}
     {
         AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
@@ -914,10 +914,16 @@ enum class NetworkProperties
             return;
         }
 
+{%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
+#if AZ_TRAIT_SERVER
+{%      endif %}
 {%      if Property.attrib['Container'] == 'Vector' or Property.attrib['Container'] == 'Array' -%}
         controller->Set{{ UpperFirst(Property.attrib['Name']) }}(index, value);
 {%      else %}
         controller->Set{{ UpperFirst(Property.attrib['Name']) }}({{ LowerFirst(Property.attrib['Name']) }});
+{%      endif %}
+{%     if (ReplicateFrom == 'Authority' and ReplicateTo == 'Server') or (ReplicateTo == 'Client' and Property.attrib['IsPredictable'] | booleanTrue == false) %}
+#endif
 {%      endif %}
     })
 {% if Property.attrib['GenerateEventBindings']|booleanTrue %}
