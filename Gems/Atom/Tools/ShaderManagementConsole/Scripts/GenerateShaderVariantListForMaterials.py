@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import sys
 import GenerateShaderVariantListUtil
 
-
 def main():
     print("==== Begin shader variant script ==========================================================")
 
@@ -23,13 +22,13 @@ def main():
         print("The input argument for the script is not a valid .shader file")
         return
 
-    shaderVariantList, defaultShaderVariantListFilePath = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
-    
+    shaderVariantList = GenerateShaderVariantListUtil.create_shadervariantlist_for_shader(filename)
+
     # Create shader variant list document
     documentId = azlmbr.atomtools.AtomToolsDocumentSystemRequestBus(
-       azlmbr.bus.Broadcast,
-       'CreateDocumentFromTypeName',
-       'Shader Variant List'
+        azlmbr.bus.Broadcast,
+        'CreateDocumentFromTypeName',
+        'Shader Variant List'
     )
     # Update shader variant list
     azlmbr.shadermanagementconsole.ShaderManagementConsoleDocumentRequestBus(
