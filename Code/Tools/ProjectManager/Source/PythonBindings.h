@@ -67,7 +67,7 @@ namespace O3DE::ProjectManager
             const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) override;
         DetailedOutcome AddGemsToProject(
             const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) override;
-        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemName, const QString& projectPath) override;
         bool RemoveInvalidProjects() override;
 
         // Gem Repos

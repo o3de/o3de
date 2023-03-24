@@ -257,11 +257,11 @@ namespace O3DE::ProjectManager
 
         /**
          * Remove gem to a project
-         * @param gemPath the absolute path to the gem 
+         * @param gemName the name of the gem 
          * @param projectPath the absolute path to the project
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemName, const QString& projectPath) = 0;
 
         /**
          * Removes invalid projects from the manifest

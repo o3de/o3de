@@ -130,8 +130,7 @@ namespace O3DE::ProjectManager
 
         for (const QModelIndex& modelIndex : toBeRemoved)
         {
-            const QString gemPath = GemModel::GetPath(modelIndex);
-            const auto result = pythonBindings->RemoveGemFromProject(gemPath, projectPath);
+            const auto result = pythonBindings->RemoveGemFromProject(GemModel::GetName(modelIndex), projectPath);
             if (!result.IsSuccess())
             {
                 QMessageBox::critical(
