@@ -52,7 +52,7 @@ namespace AZ
         //! It uses a union to be able to store all possible arguments.
         struct DispatchRaysArguments
         {
-            AZ_TYPE_INFO(DispatchArguments, "F8BE4C19-F35D-4545-B17F-3C2B4D7EF4FF");
+            AZ_TYPE_INFO(DispatchRaysArguments, "F8BE4C19-F35D-4545-B17F-3C2B4D7EF4FF");
 
             DispatchRaysArguments()
                 : DispatchRaysArguments(DispatchRaysDirect{})
