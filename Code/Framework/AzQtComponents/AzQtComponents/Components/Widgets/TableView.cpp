@@ -150,11 +150,6 @@ namespace AzQtComponents
         handleResize();
     }
 
-    void TableView::mousePressEvent(QMouseEvent* event)
-    {
-        QTreeView::mousePressEvent(event);
-    }
-
     bool TableView::drawHeader(const Style* style, const QStyleOption* option, QPainter* painter, const QWidget* widget, const Config& config)
     {
         const auto headerViewOption = qstyleoption_cast<const QStyleOptionHeader*>(option);
