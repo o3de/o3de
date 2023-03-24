@@ -48,6 +48,9 @@ namespace AZ::Render
 
         if (!m_splashScreenImage)
         {
+            // Could not find an image based on the setreg path provided
+            AZ_Error("SplashScreen", false, "Image path '%s' not found. Please update the /O3DE/Atom/Feature/SplashScreen/ImagePath setreg to a valid asset cache image file.", m_settings.m_imagePath.c_str());
+            SetEnabled(false);
             return;
         }
 
