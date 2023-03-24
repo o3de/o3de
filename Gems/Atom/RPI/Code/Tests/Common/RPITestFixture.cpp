@@ -140,11 +140,6 @@ namespace UnitTest
         AssetManagerTestFixture::TearDown();
     }
 
-    AZ::RHI::Device* RPITestFixture::GetDevice()
-    {
-        return AZ::RHI::RHISystemInterface::Get()->GetDevice();
-    }
-
     void RPITestFixture::ProcessQueuedSrgCompilations(Data::Asset<ShaderAsset> shaderAsset, const AZ::Name& srgName)
     {
         Data::Instance<ShaderResourceGroupPool> srgPool = ShaderResourceGroupPool::FindOrCreate(shaderAsset, RPI::DefaultSupervariantIndex, srgName);

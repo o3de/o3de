@@ -58,6 +58,9 @@ namespace AssetProcessor
     //! This is intentionally a map (not unordered_map) in order to ensure order is stable, and to eliminate duplicates.
     typedef AZStd::map<AZStd::string, AZStd::string> SourceFilesForFingerprintingContainer;
 
+    //! A shared convenience typedef for tracking a source path and a scan folder ID together.
+    typedef AZStd::pair<AZStd::string, AZ::s64> SourceAndScanID;
+
     enum AssetScanningStatus
     {
         Unknown,
@@ -234,6 +237,15 @@ namespace AssetProcessor
         // has already succeeded in actually making the asset data.
         // if you set a job to "auto fail" it will check the m_jobParam map for a AZ_CRC(AutoFailReasonKey) and use that, if present, for fail information
         bool m_autoFail = false;
+
+        // If true, this job declared a source dependency that could not be resolved.
+        // There's a chance that the dependency might be fulfilled as part of processing other assets, if
+        // an intermediate asset matches the missing dependency. If this is true, this job is treated as
+        // lower priority than other jobs, so that there's a chance the dependency is resolved before this job runs.
+        // If that dependency is resolved, then this job will be removed from the queue and re-added.
+        // If the dependency is not resolved, then the job will run at the end of the queue still, in case the
+        // builder is able to process the asset with the dependency gap, if the dependency was optional.
+        bool m_hasMissingSourceDependency = false;
 
         AZStd::string ToString() const
         {

@@ -31,23 +31,6 @@ namespace LmbrCentral
         ShapeChange ///< The cache is invalid because the shape configuration/properties changed.
     };
 
-    /// Feature flag for work in progress on shape component translation offsets (see https://github.com/o3de/sig-simulation/issues/26).
-    constexpr AZStd::string_view ShapeComponentTranslationOffsetEnabled = "/Amazon/Preferences/EnableShapeComponentTranslationOffset";
-
-    /// Helper function for checking whether feature flag for in progress shape component translation offsets is enabled.
-    /// See https://github.com/o3de/sig-simulation/issues/26 for more details.
-    inline bool IsShapeComponentTranslationEnabled()
-    {
-        bool isShapeComponentTranslationEnabled = true;
-
-        if (auto* registry = AZ::SettingsRegistry::Get())
-        {
-            registry->Get(isShapeComponentTranslationEnabled, ShapeComponentTranslationOffsetEnabled);
-        }
-
-        return isShapeComponentTranslationEnabled;
-    }
-
     /// Wrapper for cache of data used for intersection tests
     template <typename ShapeConfiguration>
     class IntersectionTestDataCache
@@ -194,14 +177,13 @@ namespace LmbrCentral
         /// Get the translation offset for the shape relative to its entity.
         virtual AZ::Vector3 GetTranslationOffset() const
         {
-            AZ_WarningOnce("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "GetTranslationOffset not implemented");
             return AZ::Vector3::CreateZero();
         }
 
         /// Set the translation offset for the shape relative to its entity.
         virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
         {
-            AZ_WarningOnce("ShapeComponentRequests", !IsShapeComponentTranslationEnabled(), "SetTranslationOffset not implemented");
+            AZ_WarningOnce("ShapeComponentRequests", false, "SetTranslationOffset not implemented");
         }
 
         virtual ~ShapeComponentRequests() = default;

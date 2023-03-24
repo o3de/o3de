@@ -262,9 +262,8 @@ namespace AzToolsFramework
                 // Helper function to create a link between a nested instance and the newly created instance
                 auto createLinkForNestedInstance = [&](Instance& nestedInstance)
                 {
-                    EntityOptionalReference nestedInstanceContainerEntity = nestedInstance.GetContainerEntity();
                     AZ_Assert(
-                        nestedInstanceContainerEntity, "Invalid container entity found for the nested instance used in prefab creation.");
+                        nestedInstance.GetContainerEntity(), "Invalid container entity found for the nested instance used in prefab creation.");
 
                     PrefabDom previousPatch;
 
@@ -1908,11 +1907,6 @@ namespace AzToolsFramework
 
                 if (!owningInstance.has_value())
                 {
-                    AZ_Assert(
-                        false,
-                        "An error occurred in function EntitiesBelongToSameInstance: "
-                        "Owning instance of entity with id '%llu' couldn't be found",
-                        entityId);
                     return false;
                 }
 

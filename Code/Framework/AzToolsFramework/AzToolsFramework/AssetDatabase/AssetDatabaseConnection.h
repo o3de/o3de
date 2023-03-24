@@ -243,7 +243,15 @@ namespace AzToolsFramework
                 AZ::Data::AssetType assetType, AZ::Uuid legacyGuid = AZ::Uuid::CreateNull(), AZ::u64 hash = 0, AZStd::bitset<64> flags = 0);
             AZ_DEFAULT_COPY_MOVE(ProductDatabaseEntry);
 
+            // Literal, all-fields equality operator.
+            // This includes the hash of the file and its flags.  Use IsSameLogicalProductAs instead, if you need to
+            //  compare whether its represents the same product as the other rather than identical in every way (including file data).
             bool operator==(const ProductDatabaseEntry& other) const;
+
+            //! Logical equality compare.
+            //! It will return true if the fields that establish the identify of a product are identical, regardless
+            //! of the equality of things like its flags and hash.
+            bool IsSameLogicalProductAs(const ProductDatabaseEntry& other) const;
 
             AZStd::string ToString() const;
             auto GetColumns();
@@ -613,7 +621,9 @@ namespace AzToolsFramework
 
 
             //SourceDependency
-            /// direct query - look up table row by row ID
+            //! Query all source dependencies
+            bool QuerySourceDependencies(sourceFileDependencyHandler handler);
+            //! direct query - look up table row by row ID
             bool QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler);
 
             //! Query sources which depend on 'dependsOnSource'

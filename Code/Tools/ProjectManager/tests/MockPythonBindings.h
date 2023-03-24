@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
         MOCK_METHOD2(GetGemInfo, AZ::Outcome<GemInfo>(const QString&, const QString&));
         MOCK_METHOD0(GetEngineGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>());
         MOCK_METHOD1(GetAllGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
-        MOCK_CONST_METHOD1(GetEnabledGemNames, AZ::Outcome<QVector<AZStd::string>, AZStd::string>(const QString&));
+        MOCK_CONST_METHOD2(GetEnabledGems, AZ::Outcome<QHash<QString, QString>, AZStd::string>(const QString&, bool includeDependencies));
         MOCK_METHOD2(RegisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
         MOCK_METHOD2(UnregisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
 
@@ -37,10 +37,11 @@ namespace O3DE::ProjectManager
         MOCK_METHOD3(CreateProject, AZ::Outcome<ProjectInfo>(const QString&, const ProjectInfo&, bool));
         MOCK_METHOD1(GetProject, AZ::Outcome<ProjectInfo>(const QString&));
         MOCK_METHOD0(GetProjects, AZ::Outcome<QVector<ProjectInfo>>());
-        MOCK_METHOD1(AddProject, bool(const QString&));
-        MOCK_METHOD1(RemoveProject, bool(const QString&));
+        MOCK_METHOD1(AddProject, DetailedOutcome(const QString&));
+        MOCK_METHOD1(RemoveProject, DetailedOutcome(const QString&));
         MOCK_METHOD1(UpdateProject, AZ::Outcome<void, AZStd::string>(const ProjectInfo&));
-        MOCK_METHOD2(AddGemToProject, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
+        MOCK_METHOD3(GetIncompatibleProjectGems, AZ::Outcome<QStringList, AZStd::string>(const QStringList&, const QStringList&, const QString&));
+        MOCK_METHOD4(AddGemsToProject, DetailedOutcome(const QStringList&, const QStringList&, const QString&, bool));
         MOCK_METHOD2(RemoveGemFromProject, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
         MOCK_METHOD0(RemoveInvalidProjects, bool());
 

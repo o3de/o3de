@@ -42,36 +42,45 @@ namespace GraphModel
 
     void Connection::Reflect(AZ::ReflectContext* context)
     {
-        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-        if (serializeContext)
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<Connection>()
+            serializeContext->Class<Connection, GraphElement>()
                 ->Version(0)
                 ->Field("m_sourceEndpoint", &Connection::m_sourceEndpoint)
                 ->Field("m_targetEndpoint", &Connection::m_targetEndpoint)
                 ;
+
+            serializeContext->RegisterGenericType<ConnectionPtr>();
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<Connection>("ConnectionModelConnection")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("GetSourceNode", &Connection::GetSourceNode)
+                ->Method("GetTargetNode", &Connection::GetTargetNode)
+                ->Method("GetSourceSlot", &Connection::GetSourceSlot)
+                ->Method("GetTargetSlot", &Connection::GetTargetSlot)
+                ->Method("GetSourceEndpoint", &Connection::GetSourceEndpoint)
+                ->Method("GetTargetEndpoint", &Connection::GetTargetEndpoint)
+            ;
         }
     }
 
     NodePtr Connection::GetSourceNode() const
     {
-        if (GetSourceSlot())
-        {
-            return GetSourceSlot()->GetParentNode();
-        }
-
-        return nullptr;
+        auto sourceSlot = GetSourceSlot();
+        return sourceSlot ? sourceSlot->GetParentNode() : nullptr;
     }
 
     NodePtr Connection::GetTargetNode() const
     {
-        if (GetTargetSlot())
-        {
-            return GetTargetSlot()->GetParentNode();
-        }
-
-        return nullptr;
+        auto targetSlot = GetTargetSlot();
+        return targetSlot ? targetSlot->GetParentNode() : nullptr;
     }
+
 
     SlotPtr Connection::GetSourceSlot() const
     {

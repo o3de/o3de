@@ -139,6 +139,10 @@ endforeach()
 
 if(O3DE_MOST_COMPATIBLE_ENGINE_PATH)
     message(STATUS "Selecting engine '${O3DE_MOST_COMPATIBLE_ENGINE_PATH}'")
+    # Make sure PACKAGE_VERSION_COMPATIBLE is set so Findo3de.cmake knows
+    # compatibility was checked
+    set(PACKAGE_VERSION_COMPATIBLE True)
+    set(PACKAGE_VERSION O3DE_MOST_COMPATIBLE_ENGINE_VERSION)
     list(APPEND CMAKE_MODULE_PATH "${O3DE_MOST_COMPATIBLE_ENGINE_PATH}/cmake")
     return()
 endif()

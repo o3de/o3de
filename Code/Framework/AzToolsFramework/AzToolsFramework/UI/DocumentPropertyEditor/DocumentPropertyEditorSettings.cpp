@@ -32,6 +32,16 @@ namespace AzToolsFramework
         SaveAndCleanExpanderStates();
     }
 
+    void DocumentPropertyEditorSettings::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
+                "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
+        }
+    }
+
     void DocumentPropertyEditorSettings::SaveExpanderStates()
     {
         m_settingsRegistrar.StoreObjectSettings(m_fullSettingsRegistryPath, this);
@@ -93,7 +103,7 @@ namespace AzToolsFramework
     }
 
     void DocumentPropertyEditorSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
-    {      
+    {
         m_expandedElementStates[rowPath.ToString()] = isExpanded;
     }
 

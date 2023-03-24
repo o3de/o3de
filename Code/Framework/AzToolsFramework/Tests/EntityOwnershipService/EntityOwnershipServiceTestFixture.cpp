@@ -20,7 +20,9 @@ namespace UnitTest
         AZ::ComponentApplication::Descriptor componentApplicationDescriptor;
         componentApplicationDescriptor.m_useExistingAllocator = true;
         m_app = AZStd::make_unique<EntityOwnershipServiceApplication>();
-        m_app->Start(componentApplicationDescriptor);
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_app->Start(componentApplicationDescriptor, startupParameters);
 
         // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
         // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

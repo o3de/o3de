@@ -25,6 +25,8 @@
 namespace AZ
 {
     //////////////////////////////////////////////////////////////////////////
+    AZ_TYPE_INFO_WITH_NAME_IMPL(SystemAllocator, "SystemAllocator", "{607C9CDF-B81F-4C5F-B493-2AD9C49023B7}");
+    AZ_RTTI_NO_TYPE_INFO_IMPL(SystemAllocator, AllocatorBase);
 
     SystemAllocator::SystemAllocator()
     {

@@ -32,6 +32,7 @@ set(FILES
     Include/Static/Process/JobRunner/TestImpactProcessJobMeta.h
     Include/Static/Process/JobRunner/TestImpactProcessJobRunner.h
     Include/Static/Process/Scheduler/TestImpactProcessScheduler.h
+    Include/Static/Process/Scheduler/TestImpactProcessSchedulerBus.h
     Include/Static/Dependency/TestImpactChangeDependencyList.h
     Include/Static/Dependency/TestImpactDependencyException.h
     Include/Static/Dependency/TestImpactDynamicDependencyMap.h
@@ -63,11 +64,11 @@ set(FILES
     Include/Static/TestRunner/Common/Run/TestImpactTestRunSerializer.h
     Include/Static/TestEngine/Common/TestImpactTestEngineException.h
     Include/Static/TestEngine/Common/TestImpactTestEngine.h
+    Include/Static/TestEngine/Common/TestImpactTestEngineBus.h
     Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
     Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
-    Include/Static/TestImpactRuntime.h
     Include/Static/TestImpactRuntimeUtils.cpp
     Include/Static/TestImpactRuntimeUtils.h
     Include/Static/TestImpactTestTargetExclusionList.h
@@ -80,6 +81,7 @@ set(FILES
     Source/Process/TestImpactProcessInfo.cpp
     Source/Process/JobRunner/TestImpactProcessJobMeta.cpp
     Source/Process/Scheduler/TestImpactProcessScheduler.cpp
+    Source/Process/Scheduler/TestImpactProcessSchedulerBus.cpp
     Source/Dependency/TestImpactSourceCoveringTestsList.cpp
     Source/Dependency/TestImpactSourceCoveringTestsSerializer.cpp
     Source/Target/Common/TestImpactTarget.cpp

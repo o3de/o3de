@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -76,6 +77,9 @@ namespace AZ
                 const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
                 float& distanceNormalized, AZ::Vector3& normal) const;
 
+            //! Returns the model tags
+            const AZStd::vector<AZ::Name>& GetTags() const;
+
         private:
             // AssetData overrides...
             bool HandleAutoReload() override
@@ -118,6 +122,8 @@ namespace AZ
             ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
+
+            AZStd::vector<AZ::Name> m_tags;
         };
 
         class ModelAssetHandler

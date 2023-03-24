@@ -31,6 +31,7 @@
 #include "Objects/BaseObject.h"
 #include "Commands/CommandManager.h"
 
+AZ_CVAR_EXTERNED(bool, ed_previewGameInFullscreen_once);
 
 namespace
 {
@@ -164,6 +165,12 @@ namespace
         {
             GetIEditor()->GetGameEngine()->RequestSetGameMode(true);
         }
+    }
+
+    void PyEnterGameModeFullscreen()
+    {
+        ed_previewGameInFullscreen_once = true;
+        PyEnterGameMode();
     }
 
     void PyExitGameMode()
@@ -1091,6 +1098,7 @@ namespace AzToolsFramework
             addLegacyGeneral(behaviorContext->Method("run_console", PyRunConsole, nullptr, "Runs a console command."));
 
             addLegacyGeneral(behaviorContext->Method("enter_game_mode", PyEnterGameMode, nullptr, "Enters the editor game mode."));
+            addLegacyGeneral(behaviorContext->Method("enter_game_mode_fullscreen", PyEnterGameModeFullscreen, nullptr, "Enters the editor game mode in fullscreen."));
             addLegacyGeneral(behaviorContext->Method("is_in_game_mode", PyIsInGameMode, nullptr, "Queries if it's in the game mode or not."));
             addLegacyGeneral(behaviorContext->Method("exit_game_mode", PyExitGameMode, nullptr, "Exits the editor game mode."));
 

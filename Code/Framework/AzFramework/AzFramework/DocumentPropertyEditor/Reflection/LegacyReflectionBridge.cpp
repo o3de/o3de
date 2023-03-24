@@ -173,13 +173,24 @@ namespace AZ::Reflection
             using HandlerCallback = AZStd::function<bool()>;
             AZStd::unordered_map<AZ::TypeId, HandlerCallback> m_handlers;
 
+            // Specify whether the visit starts from the root of the instance.
+            bool m_visitFromRoot = true;
+
             virtual ~InstanceVisitor() = default;
 
-            InstanceVisitor(IReadWrite* visitor, void* instance, const AZ::TypeId& typeId, SerializeContext* serializeContext)
+            InstanceVisitor(
+                IReadWrite* visitor, void* instance,
+                const AZ::TypeId& typeId,
+                SerializeContext* serializeContext,
+                bool visitFromRoot = true)
                 : m_visitor(visitor)
                 , m_serializeContext(serializeContext)
             {
+                // Push a dummy node into stack, which serves as the parent node for the first node.
                 m_stack.push_back({ instance, nullptr, typeId });
+
+                m_visitFromRoot = visitFromRoot;
+
                 RegisterPrimitiveHandlers<bool, char, AZ::u8, AZ::u16, AZ::u32, AZ::u64, AZ::s8, AZ::s16, AZ::s32, AZ::s64, float, double>();
             }
 
@@ -227,6 +238,7 @@ namespace AZ::Reflection
                     SerializeContext::EnumerationAccessFlags::ENUM_ACCESS_FOR_WRITE,
                     nullptr);
 
+                // Note that this is the dummy parent node for the root node. It contains null classData and classElement.
                 const StackEntry& nodeData = m_stack.back();
                 m_serializeContext->EnumerateInstance(&context, nodeData.m_instance, nodeData.m_typeId, nullptr, nullptr);
             }
@@ -323,6 +335,8 @@ namespace AZ::Reflection
                         }
                     }
                 }
+                
+                // Push the current node into the stack
                 m_stack.push_back(
                     { instance, parentData.m_instance, classData ? classData->m_typeId : Uuid::CreateNull(), classData, classElement });
                 StackEntry* nodeData = &m_stack.back();
@@ -411,25 +425,26 @@ namespace AZ::Reflection
                     }
                 }
 
+                // Cache attributes for the current node. Attribute data will be used in ReflectionAdapter.
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
                 const Name changeNotify = Name("ChangeNotify");
-                Dom::Value changeNotifyValue = Find(changeNotify);
-                if (changeNotifyValue.IsNull())
+                if (auto changeNotifyValue = Find(changeNotify); !changeNotifyValue || changeNotifyValue->IsNull())
                 {
                     changeNotifyValue = Find(Name(), changeNotify, parentData);
-                    if (!changeNotifyValue.IsNull())
+                    if (changeNotifyValue && !changeNotifyValue->IsNull())
                     {
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, changeNotifyValue });
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, *changeNotifyValue });
                     }
                 }
 
-                // If this node has no edit data and is not the child of a container, only show its children
-
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
-                Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
-                auto enumTypeId = EnumTypeAttribute.DomToValue(enumTypeValue);
+                AZStd::optional<AZ::TypeId> enumTypeId = {};
+                if (auto enumTypeValue = Find(EnumTypeAttribute.GetName()); enumTypeValue)
+                {
+                    enumTypeId = EnumTypeAttribute.DomToValue(*enumTypeValue);
+                }
 
                 const AZ::TypeId* typeIdForHandler = &nodeData->m_typeId;
                 if (enumTypeId.has_value())
@@ -556,7 +571,16 @@ namespace AZ::Reflection
 
                 using DocumentPropertyEditor::Nodes::PropertyEditor;
                 using DocumentPropertyEditor::Nodes::PropertyVisibility;
+
+                // DPE defaults to show everything, and picks what to hide.
                 PropertyVisibility visibility = PropertyVisibility::Show;
+
+                // If the stack contains 2 nodes, it means we are now processing the root node. The first node is a dummy parent node.
+                // Hide the root node itself if the visitor is visiting from the instance's root.
+                if (m_stack.size() == 2 && m_visitFromRoot)
+                {
+                    visibility = PropertyVisibility::ShowChildrenOnly;
+                }
 
                 Name handlerName;
 
@@ -838,44 +862,47 @@ namespace AZ::Reflection
                         break;
                     }
                 }
+
+                // If this node has no edit data and is not the child of a container, only show its children
                 auto parentData = m_stack.end() - 2;
                 if (nodeData.m_classElement && !nodeData.m_classElement->m_editData && !parentData->m_classData->m_container)
                 {
                     visibility = DocumentPropertyEditor::Nodes::PropertyVisibility::ShowChildrenOnly;
                 }
+
                 nodeData.m_computedVisibility = visibility;
                 nodeData.m_cachedAttributes.push_back(
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
             }
 
-            AttributeDataType Find(Name name) const override
+            const AttributeDataType* Find(Name name) const override
             {
                 return Find(Name(), AZStd::move(name));
             }
 
-            AttributeDataType Find(Name group, Name name) const override
+            const AttributeDataType* Find(Name group, Name name) const override
             {
                 const StackEntry& nodeData = m_stack.back();
                 for (auto it = nodeData.m_cachedAttributes.begin(); it != nodeData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
-            AttributeDataType Find(Name group, Name name, StackEntry& parentData) const
+            const AttributeDataType* Find(Name group, Name name, StackEntry& parentData) const
             {
                 for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
             void ListAttributes(const IterationCallback& callback) const override

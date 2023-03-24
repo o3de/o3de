@@ -29,9 +29,6 @@ namespace GraphModelIntegration
         double GetNumber() const override;
         void SetNumber(double value) override;
 
-        int GetDecimalPlaces() const override;
-        int GetDisplayDecimalPlaces() const override;
-
         double GetMin() const override;
         double GetMax() const override;
 

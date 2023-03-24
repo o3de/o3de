@@ -55,7 +55,7 @@
 
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli>
 
-    Surface EvaluateSurface(PixelGeometryData geoData)
+    Surface EvaluateSurface(VsOutput IN, PixelGeometryData geoData)
     {
         Surface surface;
         surface.position = geoData.positionWS;

@@ -55,7 +55,9 @@
 namespace Platform
 {
     // Forward declare platform specific functions
-    bool RunEditorWithArg(const QString editor, const QString arg);
+    bool RunCommandWithArguments(const QString& command, const QStringList& argsList);
+    bool RunEditorWithArg(const QString& editor, const QString& arg);
+    bool OpenUri(const QUrl& uri);
     QString GetDefaultEditor(const Common::EditFileType fileType);
     QString MakePlatformFileEditString(QString pathToEdit, int lineToEdit);
     bool CreatePath(const QString& strPath);

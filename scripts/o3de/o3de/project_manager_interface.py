@@ -11,7 +11,7 @@ Contains functions for the project manager to call that gather data from o3de sc
 
 import logging
 
-from o3de import manifest, utils
+from o3de import manifest, utils, compatibility, enable_gem
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -105,7 +105,7 @@ def create_project(project_info: dict, template_path: str):
     pass
 
 
-def get_enabled_gem_names(project_path: str) -> list:
+def get_enabled_gems(project_path: str, include_dependencies: bool = True) -> list:
     """
         Call get_enabled_gem_cmake_file for project_path
 
@@ -115,7 +115,7 @@ def get_enabled_gem_names(project_path: str) -> list:
 
         :return list of strs of enable gems for project.
     """
-    return list()
+    return manifest.get_project_enabled_gems(project_path=project_path, include_dependencies=include_dependencies)
 
 
 def get_project_info(project_path: str) -> dict or None:
@@ -171,14 +171,57 @@ def set_project_info(project_info: dict):
     pass
 
 
-def add_gem_to_project(gem_path: str, project_path: str):
+def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set():
+    """
+        Checks for compatibility issues between the provided gems and project
+
+        :param gem_paths: Gem paths for the gems to check
+        :param gem_names: Gem names with optional version specifiers
+        :param project_path: Project path 
+        :return a set of all incompatible gems
+    """
+    # we need to know the engine to check compatibility 
+    engine_path = manifest.get_project_engine_path(project_path)
+    if not engine_path:
+        return set()
+
+    # check compatibility for all gems at once for speeeeeeeeed
+    incompatible_objects = compatibility.get_gems_project_incompatible_objects(
+        gem_paths=gem_paths, gem_names=gem_names, project_path=project_path)
+    if incompatible_objects:
+        logger.error(f"The following dependency issues were found:\n"
+            "\n  ".join(incompatible_objects))
+    return incompatible_objects
+
+def add_gems_to_project(gem_paths:list, gem_names: list, project_path: str, force: bool = False) -> int:
     """
         Activates gem_path in project_path
 
-        :param gem_path: Gem path to activate
-        :param project_path: Project path to activate
+        :param gem_names: Gem names to activate
+        :param project_path: Project path 
+        :return 0 on success, non-zero on error
     """
-    pass
+    if not force:
+        # we need to know the engine to check compatibility 
+        engine_path = manifest.get_project_engine_path(project_path)
+        if engine_path:
+            # check compatibility for all gems at once for speeeeeeeeed
+            incompatible_objects = compatibility.get_gems_project_incompatible_objects(
+                gem_paths=gem_paths, gem_names=gem_names, project_path=project_path)
+            if incompatible_objects:
+                logger.error(f"The following dependency issues were found:\n"
+                    "\n  ".join(incompatible_objects))
+                return 1
+
+    # compatibility passed, force add gems to avoid additional compatibility checks
+    result = 0
+    for index in range(len(gem_paths)):
+       result = enable_gem.enable_gem_in_project(gem_name=gem_names[index], 
+                                                 gem_path=gem_paths[index], 
+                                                 project_path=project_path, 
+                                                 force=True) or result
+
+    return result
 
 def remove_gem_from_project(gem_path: str, project_path: str):
     """

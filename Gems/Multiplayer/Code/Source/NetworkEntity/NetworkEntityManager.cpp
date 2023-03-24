@@ -117,6 +117,11 @@ namespace Multiplayer
         return NetworkEntityHandle(entity, &m_networkEntityTracker);
     }
 
+    void NetworkEntityManager::RemoveEntityFromEntityMap(NetEntityId netEntityId)
+    {
+        m_networkEntityTracker.erase(netEntityId);
+    }
+
     void NetworkEntityManager::MarkForRemoval(const ConstNetworkEntityHandle& entityHandle)
     {
         if (entityHandle.Exists())
@@ -406,17 +411,12 @@ namespace Multiplayer
 
             if (removeEntity != nullptr)
             {
-                // We need to notify out that our entity is about to deactivate so that other entities can read state before we clean up
-                NetBindComponent* netBindComponent = removeEntity.GetNetBindComponent();
-                AZ_Assert(netBindComponent != nullptr, "NetBindComponent not found on networked entity");
-                netBindComponent->StopEntity();
-
-                // At the moment, we spawn one entity at a time and avoid Prefab API calls and never get a spawn ticket,
-                // so this is the right way for now. Once we support prefabs we can use AzFramework::SpawnableEntitiesContainer
-                // Additionally, prefabs spawning is async! Whereas we currently create entities immediately, see:
-                // @NetworkEntityManager::CreateEntitiesImmediate
+                // If we've spawned entities through @NetworkEntityManager::CreateEntitiesImmediate
+                // then we destroy those entities here by processing the removal list.
+                // Note that if we've spawned entities through @NetworkPrefabSpawnerComponent::SpawnPrefab
+                // we should instead use the SpawnableEntitiesManager to destroy them.
                 AzFramework::GameEntityContextRequestBus::Broadcast(
-                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, netBindComponent->GetEntityId());
+                    &AzFramework::GameEntityContextRequestBus::Events::DestroyGameEntity, removeEntity.GetEntity()->GetId());
 
                 m_networkEntityTracker.erase(entityId);
             }

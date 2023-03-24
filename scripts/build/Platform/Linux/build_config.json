@@ -34,7 +34,7 @@
   },
   "profile_ubuntu22_arm64_nounity_pipe": {
     "TAGS": [
-      "periodic-incremental-daily",
+      "periodic-incremental-daily-internal",
       "periodic-clean-weekly-internal"
     ],
     "PIPELINE_ENV":{
@@ -426,7 +426,7 @@
     "COMMAND": "deploy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.183.0",
+      "CDK_VERSION": "2.68.0",
       "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
     }
   },
@@ -438,7 +438,7 @@
     "COMMAND": "destroy_cdk_applications.sh",
     "PARAMETERS": {
       "NVM_VERSION": "v0.39.1",
-      "CDK_VERSION": "1.183.0",
+      "CDK_VERSION": "2.68.0",
       "PYTHON_RUNTIME": "python-3.10.5-rev2-linux"
     }
   }

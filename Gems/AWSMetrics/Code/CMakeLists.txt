@@ -105,7 +105,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             AZ::AzCore
             AZ::AzFramework
             AZ::AzToolsFramework
-            Gem::AWSMetrics.Static
+            Gem::AWSCore
+            3rdParty::AWSNativeSDK::Core
     RUNTIME_DEPENDENCIES
             Gem::AWSMetrics
 )
@@ -136,5 +137,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::AWSMetrics.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

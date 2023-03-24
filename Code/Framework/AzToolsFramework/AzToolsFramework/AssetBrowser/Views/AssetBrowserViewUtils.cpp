@@ -8,14 +8,13 @@
 //#include <API/EditorAssetSystemAPI.h>
 
 #include <AzCore/StringFunc/StringFunc.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
-
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTableView.h>
-#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
@@ -31,11 +30,11 @@ namespace AzToolsFramework
 {
     namespace AssetBrowser
     {
-        void AssetBrowserViewUtils::RenameEntry(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        bool AssetBrowserViewUtils::RenameEntry(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.size() != 1)
             {
-                return;
+                return false;
             }
             using namespace AzFramework::AssetSystem;
             bool connectedToAssetProcessor = false;
@@ -45,19 +44,22 @@ namespace AzToolsFramework
             if (connectedToAssetProcessor)
             {
                 using namespace AZ::IO;
-                AssetBrowserEntry* item = entries[0];
+                const AssetBrowserEntry* item = entries[0];
                 bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
                 Path toPath;
                 Path fromPath;
                 if (isFolder)
                 {
+                    // Cannot rename the engine or project folders
+                    if (IsEngineOrProjectFolder(item->GetFullPath()))
+                    {
+                        return false;
+                    }
                     // There is currently a bug in AssetProcessorBatch that doesn't handle empty folders
                     // This code is needed until that bug is fixed. GHI 13340
                     if (IsFolderEmpty(item->GetFullPath()))
-                    {
-                        EditName(callingWidget);
-                                                
-                        return;
+                    {                           
+                        return true;
                     }
                     fromPath = item->GetFullPath() + "/*";
                     toPath = item->GetFullPath() + "TempFolderTestName/*";
@@ -93,25 +95,26 @@ namespace AzToolsFramework
 
                         if (msgBox.clickedButton() == static_cast<QAbstractButton*>(renameButton))
                         {
-                            EditName(callingWidget);
+                            return true;
                         }
                     }
                     else
                     {
-                        EditName(callingWidget);
+                        return true;
                     }
                 }
             }
+            return false;
         }
 
-        void AssetBrowserViewUtils::AfterRename(QString newVal, AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::AfterRename(QString newVal, const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.size() != 1)
             {
                 return;
             }
             using namespace AZ::IO;
-            AssetBrowserEntry* item = entries[0];
+            const AssetBrowserEntry* item = entries[0];
             bool isFolder = item->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             bool isEmptyFolder = isFolder && IsFolderEmpty(item->GetFullPath());
             Path toPath;
@@ -200,22 +203,14 @@ namespace AzToolsFramework
             return QDir(path.data()).entryList(QDir::NoDotAndDotDot | QDir::AllEntries).isEmpty();
         }
 
-        void AssetBrowserViewUtils::EditName(QWidget* callingWidget)
+        bool AssetBrowserViewUtils::IsEngineOrProjectFolder(AZStd::string_view path)
         {
-            AssetBrowserTreeView* treeView = qobject_cast<AssetBrowserTreeView*>(callingWidget);
-            AssetBrowserTableView* tableView = qobject_cast<AssetBrowserTableView*>(callingWidget);
+            AZ::IO::PathView folderPathView(path);
 
-            if (treeView)
-            {
-                treeView->edit(treeView->currentIndex());
-            }
-            else if (tableView)
-            {
-                tableView->edit(tableView->currentIndex());
-            }
+            return (folderPathView.Compare(AZ::Utils::GetEnginePath()) == 0 || folderPathView.Compare(AZ::Utils::GetProjectPath()) == 0);
         }
 
-        void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::DeleteEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.empty())
             {
@@ -224,6 +219,11 @@ namespace AzToolsFramework
 
             bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
+
+            if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
             }
@@ -276,6 +276,27 @@ namespace AzToolsFramework
                                 canDelete = false;
                             }
                         }
+                        else
+                        {
+                            QMessageBox warningBox;
+                            warningBox.setWindowTitle(QObject::tr(isFolder ? "Folder Deletion - Warning" : "Asset Deletion - Warning"));
+                            warningBox.setText(
+                                QObject::tr("O3DE is unable to detect if this file is being used inside a level, prefab, or asset."
+                                            "By deleting these asset(s), you understand this might break a connection if it's still in use."));
+                            warningBox.setInformativeText(
+                                QObject::tr("Currently, delete is a permanent action and cannot be undone.\n"
+                                    "Do you wish to proceed with this deletion?"));
+                            warningBox.setIcon(QMessageBox::Warning);
+                            warningBox.addButton(QMessageBox::Cancel);
+                            warningBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
+                            warningBox.setDefaultButton(QMessageBox::Yes);
+                            warningBox.setFixedWidth(600);
+                            if (warningBox.exec() == QMessageBox::Cancel)
+                            {
+                                canDelete = false;
+                            }
+                        }
+
                         if (canDelete)
                         {
                             AssetChangeReportRequest deleteRequest(
@@ -310,7 +331,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::MoveEntries(const AZStd::vector<AssetBrowserEntry*>& entries, QWidget* callingWidget)
+        void AssetBrowserViewUtils::MoveEntries(const AZStd::vector<const AssetBrowserEntry*>& entries, QWidget* callingWidget)
         {
             if (entries.empty())
             {
@@ -318,6 +339,11 @@ namespace AzToolsFramework
             }
             bool isFolder = entries[0]->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
             if (isFolder && entries.size() != 1)
+            {
+                return;
+            }
+
+            if (isFolder && IsEngineOrProjectFolder(entries[0]->GetFullPath()))
             {
                 return;
             }
@@ -384,7 +410,7 @@ namespace AzToolsFramework
             }
         }
 
-        void AssetBrowserViewUtils::DuplicateEntries(const AZStd::vector<AssetBrowserEntry*>& entries)
+        void AssetBrowserViewUtils::DuplicateEntries(const AZStd::vector<const AssetBrowserEntry*>& entries)
         {
             for (auto entry : entries)
             {

@@ -363,6 +363,12 @@ namespace AtomToolsFramework
         dialog.setMinimumSize(0, 0);
         dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         dialog.exec();
+
+        OnSettingsDialogClosed();
+    }
+
+    void AtomToolsMainWindow::OnSettingsDialogClosed()
+    {
     }
 
     AZStd::string AtomToolsMainWindow::GetHelpDialogText() const
@@ -595,16 +601,14 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::UpdateWindowTitle()
     {
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
+        if (AZ::RHI::Factory::IsReady())
         {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
+            const AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            setWindowTitle(tr("%1 (%2)").arg(QApplication::applicationName()).arg(apiName.GetCStr()));
+            AZ_Error("AtomToolsMainWindow", !apiName.IsEmpty(), "Render API name not found");
+            return;
         }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
+
+        setWindowTitle(QApplication::applicationName());
     }
 } // namespace AtomToolsFramework

@@ -7,6 +7,8 @@
  */
 
 // AZ
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/StringFunc/StringFunc.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
 
@@ -17,6 +19,34 @@
 
 namespace GraphModel
 {
+    void GraphContext::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GraphContext>()
+                ->Version(0)
+                ;
+
+            serializeContext->RegisterGenericType<GraphContextPtr>();
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<GraphContext>("GraphModelGraphContext")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("GetSystemName", &GraphContext::GetSystemName)
+                ->Method("GetModuleFileExtension", &GraphContext::GetModuleFileExtension)
+                //->Method("GetAllDataTypes", &GraphContext::GetAllDataTypes) // GHI-15121 Unbinding until asserts with AP behavior context reflection are resolved
+                ->Method("GetDataTypeByEnum", static_cast<DataTypePtr (GraphContext::*)(DataType::Enum) const>(&GraphContext::GetDataType))
+                ->Method("GetDataTypeByName", static_cast<DataTypePtr (GraphContext::*)(const AZStd::string&) const>(&GraphContext::GetDataType))
+                ->Method("GetDataTypeByUuid", static_cast<DataTypePtr (GraphContext::*)(const AZ::Uuid&) const>(&GraphContext::GetDataType))
+                ->Method("GetDataTypeForValue", &GraphContext::GetDataTypeForValue)
+                ;
+        }
+    }
+
     GraphContext::GraphContext(const AZStd::string& systemName, const AZStd::string& moduleExtension, const DataTypeList& dataTypes)
         : m_systemName(systemName)
         , m_moduleExtension(moduleExtension)
@@ -47,7 +77,7 @@ namespace GraphModel
         return m_moduleGraphManager;
     }
 
-    const AZStd::vector<DataTypePtr>& GraphContext::GetAllDataTypes() const
+    const DataTypeList& GraphContext::GetAllDataTypes() const
     {
         return m_dataTypes;
     }

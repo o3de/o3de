@@ -7,6 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
+#include <AzCore/Dependency/Dependency.h>
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
@@ -600,24 +601,39 @@ namespace O3DE::ProjectManager
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
-            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
+            constexpr bool includeDependencies = false;
+            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies);
             if (enabledGemNamesResult.IsSuccess())
             {
-                const QVector<AZStd::string>& enabledGemNames = enabledGemNamesResult.GetValue();
-                for (const AZStd::string& enabledGemName : enabledGemNames)
+                const auto& enabledGemNames = enabledGemNamesResult.GetValue();
+                for (auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
                 {
-                    const QModelIndex modelIndex = m_gemModel->FindIndexByNameString(enabledGemName.c_str());
+                    const QString& gemNameWithSpecifier = itr.key();
+                    const QString& gemPath = itr.value(); 
+
+                    AZ::Dependency<AZ::SemanticVersion::parts_count> dependency;
+                    auto parseOutcome = dependency.ParseVersions({ gemNameWithSpecifier.toUtf8().constData() });
+                    const QString& gemName = parseOutcome ? dependency.GetName().c_str() : gemNameWithSpecifier; 
+
+                    // First, try to find the gem by path
+                    QModelIndex modelIndex = m_gemModel->FindIndexByPath(gemPath);
+                    if (!modelIndex.isValid())
+                    {
+                        // Fall back to lookup by name 
+                        modelIndex = m_gemModel->FindIndexByNameString(gemName);
+                    }
+
                     if (modelIndex.isValid())
                     {
                         GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
                         GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
                     }
                     // ${Name} is a special name used in templates and is not really an error
-                    else if (enabledGemName != "${Name}")
+                    else if (gemName != "${Name}")
                     {
                         AZ_Warning("ProjectManager::GemCatalog", false,
                             "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
-                            enabledGemName.c_str());
+                            gemName.toUtf8().constData());
                     }
                 }
             }

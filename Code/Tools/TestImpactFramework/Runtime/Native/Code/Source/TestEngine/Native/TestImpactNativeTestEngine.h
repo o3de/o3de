@@ -78,7 +78,6 @@ namespace TestImpact
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
         //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
-        //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results for the test targets that were run.
         [[nodiscard]] TestEngineRegularRunResult<NativeTestTarget>
         RegularRun(
@@ -87,8 +86,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -98,7 +96,6 @@ namespace TestImpact
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
         //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
         //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
-        //! @param callback The client callback function to handle completed test target runs.
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
         [[nodiscard]] TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>
         InstrumentedRun(
@@ -108,8 +105,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.

@@ -72,7 +72,6 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzFramework
                 AZ::AzToolsFramework
                 Gem::AWSCore
-                Gem::AWSGameLift.Client.Static
                 Gem::Multiplayer.Unified.Static
                 3rdParty::AWSNativeSDK::GameLiftClient
         RUNTIME_DEPENDENCIES
@@ -125,5 +124,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add AWSGameLift.Client.Tests to googletest
     ly_add_googletest(
         NAME Gem::AWSGameLift.Client.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

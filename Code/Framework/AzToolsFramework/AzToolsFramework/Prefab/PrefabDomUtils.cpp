@@ -544,7 +544,6 @@ namespace AzToolsFramework
 
                 return prefabBuffer.GetString();
             }
-
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework
