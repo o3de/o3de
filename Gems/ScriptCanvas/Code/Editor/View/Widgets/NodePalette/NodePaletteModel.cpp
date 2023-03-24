@@ -541,7 +541,7 @@ namespace
 
                 if (categoryPath.empty())
                 {
-                    if (classNamePretty.empty())
+                    if (!classNamePretty.empty())
                     {
                         categoryPath = classNamePretty;
                     }
@@ -975,7 +975,7 @@ namespace
         // Populates the VariablePalette with type registered with the ScriptCanvas DataRegistry
         PopulateVariablePalette();
 
-        // Populates the NodePalette with Behavior Class method nodes 
+        // Populates the NodePalette with Behavior Class method nodes
         PopulateBehaviorContextClassMethods(nodePaletteModel, *behaviorContext);
 
         // Populates the NodePalette with BehaviorContext methods overloaded on the same name
@@ -1232,7 +1232,7 @@ namespace ScriptCanvasEditor
         auto registerIter = m_registeredNodes.find(nodeIdentifier);
 
         if (registerIter == m_registeredNodes.end())
-        {            
+        {
             MethodNodeModelInformation* methodModelInformation = aznew MethodNodeModelInformation();
             methodModelInformation->m_isOverload = isOverload;
             methodModelInformation->m_nodeIdentifier = nodeIdentifier;
@@ -1271,7 +1271,7 @@ namespace ScriptCanvasEditor
             }
 
             m_registeredNodes.emplace(AZStd::make_pair(nodeIdentifier, methodModelInformation));
-        }        
+        }
     }
 
     void NodePaletteModel::RegisterGlobalConstant(const AZ::BehaviorContext&, const AZ::BehaviorProperty* behaviorProperty, const AZ::BehaviorMethod& behaviorMethod)
@@ -1364,7 +1364,7 @@ namespace ScriptCanvasEditor
         if (nodeIter == m_registeredNodes.end())
         {
             EBusHandlerNodeModelInformation* handlerInformation = aznew EBusHandlerNodeModelInformation();
-            
+
             handlerInformation->m_titlePaletteOverride = "HandlerNodeTitlePalette";
             handlerInformation->m_categoryPath = categoryPath;
             handlerInformation->m_nodeIdentifier = nodeIdentifier;
@@ -1439,7 +1439,7 @@ namespace ScriptCanvasEditor
         ScriptCanvas::EBusBusId busId = scriptEventAsset->GetBusId();
 
         AZStd::string category = scriptEvent.GetCategory();
-        
+
         auto methods = scriptEvent.GetMethods();
 
         AZStd::vector<ScriptCanvas::NodeTypeIdentifier> identifiers;
@@ -1469,7 +1469,7 @@ namespace ScriptCanvasEditor
             m_registeredNodes.emplace(AZStd::make_pair(receiverIdentifier, handlerInformation));
 
             ScriptEventSenderNodeModelInformation* senderInformation = aznew ScriptEventSenderNodeModelInformation();
-            
+
             senderInformation->m_titlePaletteOverride = "MethodNodeTitlePalette";
             senderInformation->m_busName = scriptEvent.GetName();
             senderInformation->m_eventName = method.GetName();
@@ -1709,7 +1709,7 @@ namespace ScriptCanvasEditor
                 if (productEntry->GetAssetType() == azrtti_typeid<ScriptEvents::ScriptEventsAsset>())
                 {
                     const AZ::Data::AssetId& assetId = productEntry->GetAssetId();
-                    
+
                     auto busAsset = AZ::Data::AssetManager::Instance().GetAsset(assetId, azrtti_typeid<ScriptEvents::ScriptEventsAsset>(), AZ::Data::AssetLoadBehavior::PreLoad);
                     busAsset.BlockUntilLoadComplete();
 

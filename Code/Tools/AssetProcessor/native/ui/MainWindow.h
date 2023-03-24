@@ -112,7 +112,7 @@ public:
 
     explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
     void Activate();
-    ~MainWindow();
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void ShowWindow();
@@ -254,7 +254,8 @@ private:
 
     AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
 
-    AZStd::string m_cachedSourceAssetSelection;
+    AssetProcessor::SourceAndScanID m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
+    QMetaObject::Connection m_connectionForResettingAssetsView;
 };
 

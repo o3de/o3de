@@ -15,6 +15,9 @@
 #include <AzCore/Serialization/Json/BaseJsonSerializer.h>
 #include <AzCore/Serialization/Json/RegistrationContext.h>
 #include <AzCore/std/parallel/shared_mutex.h>
+#include <AzFramework/PaintBrush/PaintBrush.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
+#include <GradientSignal/Components/ImageGradientModification.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
 #include <GradientSignal/Ebuses/GradientTransformRequestBus.h>
 #include <GradientSignal/Ebuses/ImageGradientRequestBus.h>
@@ -69,7 +72,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ImageGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ImageGradientConfig, "{1BDB5DA4-A4A8-452B-BE6D-6BD451D4E7CD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -100,8 +103,8 @@ namespace GradientSignal
 
         // Non-serialized properties used by the Editor for display purposes.
 
-        //! True if we're currently modifying the image, false if not.
-        bool m_imageModificationActive = false;
+        //! The number of active image modification sessions.
+        int m_numImageModificationsActive = 0;
 
         //! Label to use for the image asset. This gets modified to show current asset loading/processing state.
         AZStd::string m_imageAssetPropertyLabel = "Image Asset";
@@ -118,6 +121,7 @@ namespace GradientSignal
         , private GradientRequestBus::Handler
         , private ImageGradientRequestBus::Handler
         , private ImageGradientModificationBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
         , private GradientTransformNotificationBus::Handler
     {
     public:
@@ -160,20 +164,25 @@ namespace GradientSignal
         void StartImageModification() override;
         void EndImageModification() override;
         void GetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<float> outValues) const override;
-        void SetPixelValueByPosition(const AZ::Vector3& position, float value) override;
         void SetPixelValuesByPosition(AZStd::span<const AZ::Vector3> positions, AZStd::span<const float> values) override;
 
         void GetPixelIndicesForPositions(AZStd::span<const AZ::Vector3> positions, AZStd::span<PixelIndex> outIndices) const override;
         void GetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<float> outValues) const override;
-        void SetPixelValueByPixelIndex(const PixelIndex& position, float value) override;
         void SetPixelValuesByPixelIndex(AZStd::span<const PixelIndex> positions, AZStd::span<const float> values) override;
 
-        AZStd::vector<float>* GetImageModificationBuffer();
+        bool ImageIsModified() const;
 
+    protected:
         AZ::Data::Asset<AZ::RPI::StreamingImageAsset> GetImageAsset() const;
         void SetImageAsset(const AZ::Data::Asset<AZ::RPI::StreamingImageAsset>& asset);
 
-    protected:
+        AZStd::vector<float>* GetImageModificationBuffer();
+
+        // PaintBrushNotificationBus overrides...
+        void OnPaintModeBegin() override;
+        void OnPaintModeEnd() override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
+
         // GradientTransformNotificationBus overrides...
         void OnGradientTransformChanged(const GradientTransform& newTransform) override;
 
@@ -251,5 +260,12 @@ namespace GradientSignal
 
         //! Temporary buffer for runtime modifications of the image data.
         AZStd::vector<float> m_modifiedImageData;
+
+        //! Track whether or not any data has been modified.
+        bool m_imageIsModified = false;
+
+        //! Logic for handling image modification requests from PaintBrush instances.
+        //! This is only created and active between StartPaintSession / EndPaintSession calls.
+        AZStd::unique_ptr<ImageGradientModifier> m_imageModifier;
     };
 }

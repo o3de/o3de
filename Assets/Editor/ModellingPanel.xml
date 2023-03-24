@@ -1,6 +1,0 @@
-<ToolBox>
-	<item name="Polygon" tool="EditTool.PolygonTool" icon="editor/icons/Select.bmp" />
-	<item name="Sub-Object" tool="EditTool.SubObjMode" icon="editor/icons/Select.bmp" />
-	<item name="Clip" tool="EditTool.ClipBrush" icon="editor/icons/TerrainModify.bmp" />
-	<item name="Texture" tool="EditTool.TextureBrush" icon="editor/icons/TerrainModify.bmp" />
-</ToolBox>

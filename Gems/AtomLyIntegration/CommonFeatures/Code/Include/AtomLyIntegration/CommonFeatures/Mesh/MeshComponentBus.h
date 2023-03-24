@@ -47,6 +47,11 @@ namespace AZ
             //! Returns the sort key for the component.
             virtual RHI::DrawItemSortKey GetSortKey() const = 0;
 
+            //! Sets if this model should be considered to be always moving, even when the transform doesn't change. Useful for things like vertex shader animation.
+            virtual void SetIsAlwaysDynamic(bool isAlwaysDynamic) = 0;
+            //! Returns if this model is considered to always be moving.
+            virtual bool GetIsAlwaysDynamic() const = 0;
+
             //! Sets the LodType, which determines how Lods will be selected during rendering.
             virtual void SetLodType(RPI::Cullable::LodType lodType) = 0;
             //! Returns the LodType.
@@ -80,6 +85,11 @@ namespace AZ
             virtual void SetRayTracingEnabled(bool enabled) = 0;
             //! Returns whether ray tracing is enabled (true) or disabled (false) for this model.
             virtual bool GetRayTracingEnabled() const = 0;
+
+            //! Sets the option to exclude this mesh from baked reflection probe cubemaps
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
+            //! Returns whether this mesh is excluded from baked reflection probe cubemaps
+            virtual bool GetExcludeFromReflectionCubeMaps() const = 0;
 
             //! Returns the axis-aligned bounding box for the model at its world position.
             virtual AZ::Aabb GetWorldBounds() = 0;

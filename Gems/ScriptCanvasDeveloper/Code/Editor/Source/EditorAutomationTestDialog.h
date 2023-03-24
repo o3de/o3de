@@ -46,7 +46,7 @@ namespace ScriptCanvas::Developer
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(TestListModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestListModel, AZ::SystemAllocator);
 
         enum ColumnIndex
         {

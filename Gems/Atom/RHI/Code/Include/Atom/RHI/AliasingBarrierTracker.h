@@ -38,7 +38,7 @@ namespace AZ
         class AliasingBarrierTracker
         {
         public:
-            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AliasingBarrierTracker, AZ::SystemAllocator);
             AZ_RTTI(AliasingBarrierTracker, "{2060FE50-65CB-4CC5-9FA8-0BFC9E8AF225}");
             
             virtual ~AliasingBarrierTracker() = default;

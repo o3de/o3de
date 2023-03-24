@@ -24,7 +24,7 @@ namespace AZ
             AZ_RPI_PASS(DiffuseProbeGridVisualizationRayTracingPass);
 
             AZ_RTTI(DiffuseProbeGridVisualizationRayTracingPass, "{CDFB5C03-08D1-4FCA-8B63-2F8326E0DF1D}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationRayTracingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridVisualizationRayTracingPass, SystemAllocator);
 
             //! Creates a DiffuseProbeGridVisualizationRayTracingPass
             static RPI::Ptr<DiffuseProbeGridVisualizationRayTracingPass> Create(const RPI::PassDescriptor& descriptor);

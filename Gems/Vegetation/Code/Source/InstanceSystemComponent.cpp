@@ -91,7 +91,6 @@ namespace Vegetation
                 editContext->Class<InstanceSystemComponent>("Vegetation Instance System", "Manages and processes requests to create and destroy vegetation instance render nodes")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Vegetation")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/")
                     ->DataElement(0, &InstanceSystemComponent::m_configuration, "Configuration", "")
@@ -166,7 +165,7 @@ namespace Vegetation
 
     DescriptorPtr InstanceSystemComponent::RegisterUniqueDescriptor(const Descriptor& descriptor)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -214,7 +213,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ReleaseUniqueDescriptor(DescriptorPtr descriptorPtr)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_uniqueDescriptorsMutex)> lock(m_uniqueDescriptorsMutex);
 
@@ -264,7 +263,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstance(InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (!IsDescriptorValid(instanceData.m_descriptorPtr))
         {
@@ -296,7 +295,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::DestroyInstance(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         if (instanceId == InvalidInstanceId)
         {
@@ -436,7 +435,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::IsInstanceSkippable(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         //if the instance was queued for deletion before its creation task executed then skip it
         AZStd::lock_guard<decltype(m_instanceDeletionSetMutex)> instanceDeletionSet(m_instanceDeletionSetMutex);
@@ -445,7 +444,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::CreateInstanceNode(const InstanceData& instanceData)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         if (IsInstanceSkippable(instanceData))
         {
@@ -486,7 +485,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ReleaseInstanceNode(InstanceId instanceId)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         DescriptorPtr descriptor = nullptr;
         InstancePtr opaqueInstanceData = nullptr;
@@ -518,7 +517,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::AddTask(const Task& task)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (m_mainThreadTaskQueue.empty() || m_mainThreadTaskQueue.back().size() >= m_configuration.m_maxInstanceTaskBatchSize)
@@ -530,7 +529,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ClearTasks()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> mainThreadTaskInProgressLock(m_mainThreadTaskInProgressMutex);
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
@@ -542,7 +541,7 @@ namespace Vegetation
 
     bool InstanceSystemComponent::GetTasks(TaskList& removedTasks)
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskMutex)> mainThreadTaskLock(m_mainThreadTaskMutex);
         if (!m_mainThreadTaskQueue.empty())
@@ -555,7 +554,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ExecuteTasks()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         AZStd::lock_guard<decltype(m_mainThreadTaskInProgressMutex)> scopedLock(m_mainThreadTaskInProgressMutex);
 
@@ -584,7 +583,7 @@ namespace Vegetation
 
     void InstanceSystemComponent::ProcessMainThreadTasks()
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        AZ_PROFILE_FUNCTION(Vegetation);
 
         ExecuteTasks();
     }

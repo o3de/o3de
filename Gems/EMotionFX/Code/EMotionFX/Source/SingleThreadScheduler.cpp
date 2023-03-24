@@ -17,7 +17,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SingleThreadScheduler, ActorUpdateAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(SingleThreadScheduler, ActorUpdateAllocator)
 
     // constructor
     SingleThreadScheduler::SingleThreadScheduler()

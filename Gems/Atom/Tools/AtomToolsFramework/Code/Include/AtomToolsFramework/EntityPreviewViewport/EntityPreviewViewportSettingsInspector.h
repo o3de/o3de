@@ -29,7 +29,7 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsInspector, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityPreviewViewportSettingsInspector, AZ::SystemAllocator);
 
         EntityPreviewViewportSettingsInspector(const AZ::Crc32& toolId, QWidget* parent = nullptr);
         ~EntityPreviewViewportSettingsInspector() override;
@@ -81,5 +81,7 @@ namespace AtomToolsFramework
         AZStd::unique_ptr<AssetSelectionGrid> m_lightingPresetDialog;
 
         EntityPreviewViewportSettings m_viewportSettings;
+
+        bool m_wasPropertyEdit = false;
     };
 } // namespace AtomToolsFramework

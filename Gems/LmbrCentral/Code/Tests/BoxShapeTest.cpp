@@ -24,7 +24,6 @@ namespace UnitTest
 {
     class BoxShapeTest
         : public LeakDetectionFixture
-        , public RegistryTestHelper
     {
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
@@ -36,7 +35,6 @@ namespace UnitTest
         void SetUp() override
         {
             LeakDetectionFixture::SetUp();
-            RegistryTestHelper::SetUp(LmbrCentral::ShapeComponentTranslationOffsetEnabled, true);
             m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_transformComponentDescriptor = AZStd::unique_ptr<AZ::ComponentDescriptor>(AzFramework::TransformComponent::CreateDescriptor());
@@ -58,7 +56,6 @@ namespace UnitTest
             m_boxShapeDebugDisplayComponentDescriptor.reset();
             m_nonUniformScaleComponentDescriptor.reset();
             m_serializeContext.reset();
-            RegistryTestHelper::TearDown();
             LeakDetectionFixture::TearDown();
         }
     };
@@ -726,11 +723,6 @@ namespace UnitTest
         ShapeThreadsafeTest::TestShapeGetSetCallsAreThreadsafe(entity, numIterations, setDimensionFn);
     }
 
-    TEST_F(BoxShapeTest, TranslationOffsetEnabled)
-    {
-        EXPECT_TRUE(LmbrCentral::IsShapeComponentTranslationEnabled());
-    }
-
     TEST_F(BoxShapeTest, UniformRealDistributionRandomPointsAreInAABBWithTranslationOffset)
     {
         AZ::Entity entity;
@@ -984,5 +976,17 @@ namespace UnitTest
 
         EXPECT_THAT(debugDrawAabb.GetMin(), IsClose(AZ::Vector3(10.36f, -11.4f, 19.848f)));
         EXPECT_THAT(debugDrawAabb.GetMax(), IsClose(AZ::Vector3(15.352f, -0.6f, 29.736f)));
+    }
+
+    TEST_F(BoxShapeTest, IsTypeAxisAlignedReturnsFalse)
+    {
+        AZ::Entity entity;
+        CreateDefaultBox(AZ::Transform::CreateIdentity(), entity);
+
+        bool isTypeAxisAligned = true;
+        LmbrCentral::BoxShapeComponentRequestsBus::EventResult(
+            isTypeAxisAligned, entity.GetId(), &LmbrCentral::BoxShapeComponentRequests::IsTypeAxisAligned);
+
+        EXPECT_FALSE(isTypeAxisAligned);
     }
 }

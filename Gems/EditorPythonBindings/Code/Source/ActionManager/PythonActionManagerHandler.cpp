@@ -85,6 +85,13 @@ namespace EditorPythonBindings
                 ->Event("UpdateAction", &ActionManagerRequestBus::Handler::UpdateAction)
                 ;
 
+            behaviorContext->Class<AzToolsFramework::MenuProperties>("MenuProperties")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Property("name", BehaviorValueProperty(&AzToolsFramework::MenuProperties::m_name))
+                ;
+
             behaviorContext
                 ->EBus<MenuManagerRequestBus>("MenuManagerPythonRequestBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
@@ -94,6 +101,15 @@ namespace EditorPythonBindings
                 ->Event("AddActionToMenu", &MenuManagerRequestBus::Handler::AddActionToMenu)
                 ->Event("AddSeparatorToMenu", &MenuManagerRequestBus::Handler::AddSeparatorToMenu)
                 ->Event("AddSubMenuToMenu", &MenuManagerRequestBus::Handler::AddSubMenuToMenu)
+                ->Event("AddWidgetToMenu", &MenuManagerRequestBus::Handler::AddWidgetToMenu)
+                ->Event("AddMenuToMenuBar", &MenuManagerRequestBus::Handler::AddMenuToMenuBar)
+                ;
+
+            behaviorContext->Class<AzToolsFramework::ToolBarProperties>("ToolBarProperties")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Property("name", BehaviorValueProperty(&AzToolsFramework::ToolBarProperties::m_name))
                 ;
 
             behaviorContext
@@ -208,6 +224,18 @@ namespace EditorPythonBindings
         return m_menuManagerInterface->AddSubMenuToMenu(menuIdentifier, subMenuIdentifier, sortIndex);
     }
 
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::AddWidgetToMenu(
+        const AZStd::string& menuIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex)
+    {
+        return m_menuManagerInterface->AddWidgetToMenu(menuIdentifier, widgetActionIdentifier, sortIndex);
+    }
+
+    AzToolsFramework::MenuManagerOperationResult PythonActionManagerHandler::AddMenuToMenuBar(
+        const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier, int sortIndex)
+    {
+        return m_menuManagerInterface->AddMenuToMenuBar(menuBarIdentifier, menuIdentifier, sortIndex);
+    }
+
     AzToolsFramework::ToolBarManagerOperationResult PythonActionManagerHandler::RegisterToolBar(
         const AZStd::string& toolBarIdentifier, const AzToolsFramework::ToolBarProperties& properties)
     {
@@ -271,9 +299,9 @@ namespace EditorPythonBindings
         return m_toolBarManagerInterface->AddToolBarToToolBarArea(toolBarAreaIdentifier, toolBarIdentifier, sortIndex);
     }
 
-    QToolBar* PythonActionManagerHandler::GetToolBar(const AZStd::string& toolBarIdentifier)
+    QToolBar* PythonActionManagerHandler::GenerateToolBar(const AZStd::string& toolBarIdentifier)
     {
-        return m_toolBarManagerInterface->GetToolBar(toolBarIdentifier);
+        return m_toolBarManagerInterface->GenerateToolBar(toolBarIdentifier);
     }
 
     AzToolsFramework::ToolBarManagerIntegerResult PythonActionManagerHandler::GetSortKeyOfActionInToolBar(

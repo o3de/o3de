@@ -6,6 +6,20 @@
 #
 #
 
+# The DebugDraw.API target declares the common interface that users of this gem should depend on in their targets to avoid linking.
+ly_add_target(
+    NAME DebugDraw.API INTERFACE
+    NAMESPACE Gem
+    FILES_CMAKE
+        debugdraw_api_files.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            Include
+    BUILD_DEPENDENCIES
+        INTERFACE
+           AZ::AzCore
+)
+
 ly_add_target(
     NAME DebugDraw.Static STATIC
     NAMESPACE Gem
@@ -41,6 +55,7 @@ ly_add_target(
 
 # servers do not need debug draw components, only clients
 ly_create_alias(NAME DebugDraw.Clients NAMESPACE Gem TARGETS DebugDraw)
+ly_create_alias(NAME DebugDraw.Unified NAMESPACE Gem TARGETS DebugDraw)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -59,7 +74,10 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 DEBUGDRAW_GEM_EDITOR=1
         BUILD_DEPENDENCIES
             PRIVATE
-                Gem::DebugDraw.Static
+                AZ::AtomCore
+                Gem::Atom_RPI.Public
+                Gem::Atom_Bootstrap.Headers
+                Legacy::CryCommon
                 AZ::AzToolsFramework
     )
 

@@ -19,7 +19,7 @@ namespace AZ::Vulkan
     {
         using Base = RHI::XRInstanceDescriptor;
     public:
-        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRInstanceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRInstanceDescriptor, "{93DF070E-1423-4BBF-A9F3-136F9E543594}", Base);
 
         XRInstanceDescriptor() = default;
@@ -35,6 +35,7 @@ namespace AZ::Vulkan
         struct 
         {
             VkInstance m_xrVkInstance = VK_NULL_HANDLE;
+            GladVulkanContext m_context;
         } m_outputData;
 
     };
@@ -47,7 +48,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRPhysicalDeviceDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRPhysicalDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRPhysicalDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRPhysicalDeviceDescriptor, "{D1567011-ACA7-430D-9C5D-E639E6E99A85}", Base);
 
         XRPhysicalDeviceDescriptor() = default;
@@ -68,7 +69,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRDeviceDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRDeviceDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRDeviceDescriptor, "{D1567011-ACA7-430D-9C5D-E639E6E99A85}", Base);
 
         XRDeviceDescriptor() = default;
@@ -94,7 +95,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRSessionDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSessionDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSessionDescriptor, "{2859EB21-D013-496B-B922-7C903BC377CF}", Base);
 
         XRSessionDescriptor() = default;
@@ -120,7 +121,7 @@ namespace AZ::Vulkan
         using Base = RHI::XRSwapChainDescriptor;
 
     public:
-        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(XRSwapChainDescriptor, AZ::SystemAllocator);
         AZ_RTTI(XRSwapChainDescriptor, "{358AA524-8EAF-40A9-A2B3-5D6916B72DA1}", Base);
 
         XRSwapChainDescriptor() = default;

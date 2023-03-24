@@ -12,7 +12,7 @@
 // used in your shader. Simply #define EvaluateLighting to your custom definition before including this file
 //
 #ifndef EvaluateLighting
-#define EvaluateLighting(surface, screenPosition)       EvaluateLighting_BasePBR(surface, screenPosition)
+#define EvaluateLighting EvaluateLighting_BasePBR
 #endif
 
 #include <Atom/Features/PBR/Lights/Lights.azsli>

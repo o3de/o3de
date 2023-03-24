@@ -21,7 +21,7 @@ namespace GraphModelIntegration
         : public GraphCanvas::ReadOnlyDataInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReadOnlyDataInterface, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReadOnlyDataInterface, AZ::SystemAllocator);
 
         ReadOnlyDataInterface(GraphModel::SlotPtr slot);
         ~ReadOnlyDataInterface() = default;

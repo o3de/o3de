@@ -23,13 +23,13 @@ namespace AzToolsFramework
         {
         public:
             AZ_RTTI(InstanceToTemplatePropagator, "{526F7B55-84F9-4EA9-8180-19C5DBCD0103}", InstanceToTemplateInterface);
-            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(InstanceToTemplatePropagator, AZ::SystemAllocator);
 
             void RegisterInstanceToTemplateInterface();
             void UnregisterInstanceToTemplateInterface();
 
-            bool GenerateDomForEntity(PrefabDom& generatedEntityDom, const AZ::Entity& entity) override;
-            bool GenerateDomForInstance(PrefabDom& generatedInstanceDom, const Prefab::Instance& instance) override;
+            bool GenerateEntityDomBySerializing(PrefabDom& entityDom, const AZ::Entity& entity) override;
+            bool GenerateInstanceDomBySerializing(PrefabDom& instanceDom, const Instance& instance) override;
             bool GeneratePatch(PrefabDom& generatedPatch, const PrefabDomValue& initialState, const PrefabDomValue& modifiedState) override;
             bool GeneratePatchForLink(PrefabDom& generatedPatch, const PrefabDom& initialState,
                 const PrefabDom& modifiedState, LinkId linkId) override;

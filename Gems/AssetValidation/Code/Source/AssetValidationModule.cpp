@@ -22,7 +22,7 @@ namespace AssetValidation
     {
     public:
         AZ_RTTI(AssetValidationModule, "{66A6C65D-7814-4CFF-AF54-B73925FD1188}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AssetValidationModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetValidationModule, AZ::SystemAllocator);
 
         AssetValidationModule()
             : AZ::Module()

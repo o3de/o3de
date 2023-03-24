@@ -33,7 +33,8 @@ QWidget* PropertyHandlerEntityIdComboBox::CreateGUI(QWidget* pParent)
     PropertyEntityIdComboBoxCtrl* newCtrl = aznew PropertyEntityIdComboBoxCtrl(pParent);
     QObject::connect(newCtrl, &PropertyEntityIdComboBoxCtrl::valueChanged, this, [newCtrl]()
         {
-            EBUS_EVENT(AzToolsFramework::PropertyEditorGUIMessages::Bus, RequestWrite, newCtrl);
+            AzToolsFramework::PropertyEditorGUIMessages::Bus::Broadcast(
+                &AzToolsFramework::PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
         });
     return newCtrl;
 }
@@ -108,7 +109,7 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
                 if (attrValue->Read<AZStd::vector<AZStd::pair<AZ::EntityId, const char*> > >(attempt2))
                 {
                     for (auto it = attempt2.begin(); it != attempt2.end(); ++it)
-                        guiEnumValues.push_back(AZStd::make_pair<AZ::EntityId, AZStd::string>(it->first, it->second));
+                        guiEnumValues.push_back(AZStd::pair<AZ::EntityId, AZStd::string>(it->first, it->second));
                     GUI->addEnumValues(guiEnumValues);
                 }
                 else
@@ -122,7 +123,8 @@ void PropertyHandlerEntityIdComboBox::ConsumeAttribute(PropertyEntityIdComboBoxC
 }
 void PropertyHandlerEntityIdComboBox::Register()
 {
-    EBUS_EVENT(AzToolsFramework::PropertyTypeRegistrationMessages::Bus, RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
+    AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Broadcast(
+        &AzToolsFramework::PropertyTypeRegistrationMessages::Bus::Events::RegisterPropertyType, aznew PropertyHandlerEntityIdComboBox());
 }
 
 PropertyEntityIdComboBoxCtrl::PropertyEntityIdComboBoxCtrl(QWidget* pParent)

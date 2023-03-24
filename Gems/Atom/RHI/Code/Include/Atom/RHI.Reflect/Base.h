@@ -25,6 +25,18 @@
 //#define AZ_FORCE_CPU_GPU_INSYNC
 
 AZ_DECLARE_BUDGET(RHI);
+
+//#define ENABLE_RHI_PROFILE_VERBOSE
+#ifdef ENABLE_RHI_PROFILE_VERBOSE
+// Add verbose profile markers
+#define RHI_PROFILE_SCOPE_VERBOSE(...) AZ_PROFILE_SCOPE(RHI, __VA_ARGS__);
+#define RHI_PROFILE_FUNCTION_VERBOSE AZ_PROFILE_FUNCTION(RHI);
+#else
+// Define ENABLE_RHI_PROFILE_VERBOSE to get verbose profile markers
+#define RHI_PROFILE_SCOPE_VERBOSE(...)
+#define RHI_PROFILE_FUNCTION_VERBOSE
+#endif
+
 inline static constexpr AZ::Crc32 rhiMetricsId = AZ_CRC_CE("RHI");
 
 namespace UnitTest

@@ -14,6 +14,7 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Math/Aabb.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -37,7 +38,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ModelAsset, "{2C7477B6-69C5-45BE-8163-BCD6A275B6D8}", AZ::Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -75,6 +76,9 @@ namespace AZ
             virtual bool LocalRayIntersectionAgainstModel(
                 const AZ::Vector3& rayStart, const AZ::Vector3& rayDir, bool allowBruteForce,
                 float& distanceNormalized, AZ::Vector3& normal) const;
+
+            //! Returns the model tags
+            const AZStd::vector<AZ::Name>& GetTags() const;
 
         private:
             // AssetData overrides...
@@ -118,6 +122,8 @@ namespace AZ
             ModelMaterialSlot m_fallbackSlot;
 
             AZStd::size_t CalculateTriangleCount() const;
+
+            AZStd::vector<AZ::Name> m_tags;
         };
 
         class ModelAssetHandler

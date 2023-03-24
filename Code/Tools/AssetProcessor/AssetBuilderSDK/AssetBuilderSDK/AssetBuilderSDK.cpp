@@ -141,7 +141,7 @@ namespace AssetBuilderSDK
     {
         va_list args;
         va_start(args, message);
-        EBUS_EVENT(AssetBuilderSDK::AssetBuilderBus, BuilderLog, builderId, message, args);
+        AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::BuilderLog, builderId, message, args);
         va_end(args);
     }
 
@@ -1143,11 +1143,12 @@ namespace AssetBuilderSDK
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ProcessJobResponse>()->
-                Version(2)->
+                Version(3)->
                 Field("Output Products", &ProcessJobResponse::m_outputProducts)->
                 Field("Result Code", &ProcessJobResponse::m_resultCode)->
                 Field("Requires SubId Generation", &ProcessJobResponse::m_requiresSubIdGeneration)->
-                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess);
+                Field("Source To Reprocess", &ProcessJobResponse::m_sourcesToReprocess)->
+                Field("Keep Temp Folder", &ProcessJobResponse::m_keepTempFolder);
         }
 
         if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
@@ -1159,6 +1160,7 @@ namespace AssetBuilderSDK
                 ->Property("resultCode", BehaviorValueProperty(&ProcessJobResponse::m_resultCode))
                 ->Property("requiresSubIdGeneration", BehaviorValueProperty(&ProcessJobResponse::m_requiresSubIdGeneration))
                 ->Property("sourcesToReprocess", BehaviorValueProperty(&ProcessJobResponse::m_sourcesToReprocess))
+                ->Property("keepTempFolder", BehaviorValueProperty(&ProcessJobResponse::m_keepTempFolder))
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Success)>("Success")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Failed)>("Failed")
                 ->Enum<aznumeric_cast<int>(ProcessJobResultCode::ProcessJobResult_Crashed)>("Crashed")
@@ -1213,7 +1215,7 @@ namespace AssetBuilderSDK
     {
         AZ::SerializeContext* serializeContext = nullptr;
 
-        EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(serializeContext, "Unable to retrieve serialize context.");
 
         InitializeReflectContext(serializeContext);
@@ -1223,7 +1225,7 @@ namespace AssetBuilderSDK
     {
         AZ::BehaviorContext* behaviorContext = nullptr;
 
-        EBUS_EVENT_RESULT(behaviorContext, AZ::ComponentApplicationBus, GetBehaviorContext);
+        AZ::ComponentApplicationBus::BroadcastResult(behaviorContext, &AZ::ComponentApplicationBus::Events::GetBehaviorContext);
         AZ_Error("asset", behaviorContext, "Unable to retrieve behavior context.");
         if (behaviorContext)
         {

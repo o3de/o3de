@@ -20,6 +20,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ConstantsLayout;
+    }
+
     namespace RPI
     {
         class Scene;
@@ -31,6 +36,7 @@ namespace AZ
             struct ShaderData
             {
                 Data::Instance<Shader> m_shader;
+                Name m_materialPipelineName;
                 Name m_shaderTag;
                 ShaderVariantId m_requestedShaderVariantId;
                 ShaderVariantId m_activeShaderVariantId;
@@ -53,6 +59,7 @@ namespace AZ
             bool Update(const Scene& parentScene, bool forceUpdate = false);
 
             const RHI::DrawPacket* GetRHIDrawPacket() const;
+            const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const;
 
             void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
             void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
@@ -67,7 +74,6 @@ namespace AZ
         private:
             bool DoUpdate(const Scene& parentScene);
             void ForValidShaderOptionName(const Name& shaderOptionName, const AZStd::function<bool(const ShaderCollection::Item&, ShaderOptionIndex)>& callback);
-            bool MaterialOwnsShaderOption(const Name& shaderOptionName);
 
             ConstPtr<RHI::DrawPacket> m_drawPacket;
 
@@ -76,6 +82,8 @@ namespace AZ
 
             // Maintains references to the shader instances to keep their PSO caches resident (see Shader::Shutdown())
             ShaderList m_activeShaders;
+
+            RHI::ConstPtr<RHI::ConstantsLayout> m_rootConstantsLayout;
 
             // The model that contains the mesh being represented by the DrawPacket
             Data::Instance<ModelLod> m_modelLod;

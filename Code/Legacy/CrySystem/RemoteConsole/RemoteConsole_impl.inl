@@ -9,6 +9,17 @@
 
 #include <RemoteConsoleCore.h>
 
+AZ_CVAR(AZ::CVarFixedString, log_RemoteConsoleAllowedAddresses, "127.0.0.1",
+    nullptr, AZ::ConsoleFunctorFlags::Null,
+    "COMMA separated list of allowed hosts or IP addresses which can connect");
+
+AZ_CVAR(bool, log_EnableRemoteConsole, true,
+    nullptr, AZ::ConsoleFunctorFlags::Null,
+    "enables/disables the remote console");
+
+AZ_CVAR(uint16_t, log_RemoteConsolePort, static_cast<uint16_t>(defaultRemoteConsolePort),
+    nullptr, AZ::ConsoleFunctorFlags::Null,
+    "Base port (4600 for example) for remote console to listen on.  It will start there and continue upwards until an unused one is found.");
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,11 +28,7 @@ CRemoteConsole::CRemoteConsole()
     : m_listener(1)
     , m_lastPortValue(0)
     , m_running(false)
-
     , m_pServer(nullptr)
-    , m_pLogEnableRemoteConsole(nullptr)
-    , m_remoteConsoleAllowedHostList(nullptr)
-    , m_remoteConsolePort(nullptr)
 {
 }
 
@@ -34,18 +41,12 @@ CRemoteConsole::~CRemoteConsole()
 /////////////////////////////////////////////////////////////////////////////////////////////
 void CRemoteConsole::RegisterConsoleVariables()
 {
-    m_pLogEnableRemoteConsole = REGISTER_INT("log_EnableRemoteConsole", 1, VF_DUMPTODISK, "enables/disables the remote console");
-    m_remoteConsoleAllowedHostList = REGISTER_STRING("log_RemoteConsoleAllowedAddresses", "", VF_DUMPTODISK, "COMMA separated list of allowed hosts or IP addresses which can connect");
-    m_remoteConsolePort = REGISTER_INT("log_RemoteConsolePort", defaultRemoteConsolePort, VF_DUMPTODISK, "Base port (4600 for example) for remote console to listen on.  It will start there and continue upwards until an unused one is found.");
     m_lastPortValue = 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 void CRemoteConsole::UnregisterConsoleVariables()
 {
-    m_pLogEnableRemoteConsole = nullptr;
-    m_remoteConsoleAllowedHostList = nullptr;
-    m_remoteConsolePort = nullptr;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,15 +115,18 @@ void CRemoteConsole::AddLogError(AZStd::string_view log)
 /////////////////////////////////////////////////////////////////////////////////////////////
 void CRemoteConsole::Update()
 {
-    if (m_pLogEnableRemoteConsole)
+    auto console = AZ::Interface<AZ::IConsole>::Get();
+    if (bool enableRemoteConsole; console != nullptr
+        && console->GetCvarValue("log_EnableRemoteConsole", enableRemoteConsole) == AZ::GetValueResult::Success)
     {
         // we disable the remote console in the editor, since there is no reason to remote into it and we don't want it eating up that port
         // number anyway and preventing the game from using it.
         bool isEditor = gEnv && gEnv->IsEditor();
-        bool isEnabled = (!isEditor) && (m_pLogEnableRemoteConsole->GetIVal());
+        bool isEnabled = !isEditor && enableRemoteConsole;
         bool isStarted = IsStarted();
 
-        int newPortValue = m_remoteConsolePort->GetIVal();
+        uint16_t newPortValue = static_cast<uint16_t>(defaultRemoteConsolePort);
+        console->GetCvarValue("log_RemoteConsolePort", newPortValue);
 
         // the editor never allows remote control.
         if ((isEnabled) && (!isStarted))

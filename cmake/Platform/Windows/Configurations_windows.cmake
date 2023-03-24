@@ -6,9 +6,8 @@
 #
 #
 
-ly_set(CMAKE_RC_FLAGS /nologo)
-
 if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    ly_set(CMAKE_RC_FLAGS /nologo)   
     
     include(cmake/Platform/Common/MSVC/Configurations_msvc.cmake)
 
@@ -25,7 +24,11 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
 
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 
-    include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+    if(MSVC)
+        include(cmake/Platform/Common/MSVC/Configurations_clang.cmake)
+    else()
+        include(cmake/Platform/Common/Clang/Configurations_clang.cmake)
+    endif()
 
     ly_append_configurations_options(
         DEFINES

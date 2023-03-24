@@ -25,7 +25,7 @@ namespace SurfaceData
     {
     public:
         AZ_RTTI(EditorSurfaceTagListAsset, "{A471B2A9-85FC-4993-842D-1881CBC03A2B}", AZ::Data::AssetData);
-        AZ_CLASS_ALLOCATOR(EditorSurfaceTagListAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorSurfaceTagListAsset, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
     
         AZStd::vector<AZStd::string> m_surfaceTagNames;

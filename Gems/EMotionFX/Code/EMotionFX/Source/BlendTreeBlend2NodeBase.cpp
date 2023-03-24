@@ -16,8 +16,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2NodeBase::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendTreeBlend2NodeBase::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)

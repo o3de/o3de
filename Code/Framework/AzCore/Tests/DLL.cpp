@@ -13,6 +13,7 @@
 #include <AzCore/Module/Environment.h>
 #include <AzCore/Name/NameDictionary.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <Tests/DLLTestVirtualClass.h>
 
 using namespace AZ;
 
@@ -42,7 +43,7 @@ namespace UnitTest
         {
             m_handle = DynamicModuleHandle::Create("AzCoreTestDLL");
             bool isLoaded = m_handle->Load(true);
-            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename().c_str(); // failed to load the DLL, please check the output paths
+            ASSERT_TRUE(isLoaded) << "Could not load required test module: " << m_handle->GetFilename(); // failed to load the DLL, please check the output paths
 
             auto createModule = m_handle->GetFunction<CreateModuleClassFunction>(CreateModuleClassFunctionName);
             // if this fails, we cannot continue as we will just nullptr exception
@@ -80,7 +81,11 @@ namespace UnitTest
         }
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
+    TEST_F(DLL, DISABLED_CrossModuleBusHandler)
+#else
     TEST_F(DLL, CrossModuleBusHandler)
+#endif // AZ_TRAIT DISABLE_FAILED_DLL_TESTS
     {
         TransformHandler transformHandler;
 
@@ -106,6 +111,7 @@ namespace UnitTest
 
         UnloadModule();
     }
+
 #if AZ_TRAIT_DISABLE_FAILED_DLL_TESTS
     TEST_F(DLL, DISABLED_CreateVariableFromModuleAndMain)
 #else

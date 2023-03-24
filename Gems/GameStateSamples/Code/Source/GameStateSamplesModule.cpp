@@ -25,6 +25,17 @@ namespace GameStateSamples
 {
     using namespace GameState;
 
+    void GameOptions::Reflect(AZ::SerializeContext& sc)
+    {
+        sc.Class<GameOptions>()
+            ->Version(1)
+            ->Field("ambientVolume", &GameOptions::m_ambientVolume)
+            ->Field("effectsVolume", &GameOptions::m_effectsVolume)
+            ->Field("mainVolume", &GameOptions::m_mainVolume)
+            ->Field("musicVolume", &GameOptions::m_musicVolume)
+        ;
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////
     //! This Gem provides a set of sample game states that can be overridden (or replaced entirely)
     //! in order to customize the functionality as needed for your game. To circumvent this default
@@ -61,7 +72,7 @@ namespace GameStateSamples
     {
     public:
         AZ_RTTI(GameStateSamplesModule, "{FC206260-D188-45A5-8B23-1D7A1DA6E82F}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(GameStateSamplesModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GameStateSamplesModule, AZ::SystemAllocator);
 
         GameStateSamplesModule()
             : CryHooksModule()

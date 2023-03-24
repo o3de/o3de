@@ -44,16 +44,17 @@ namespace AtomToolsFramework
         AZStd::vector<AZStd::string> GetDockWidgetNames() const override;
         void QueueUpdateMenus(bool rebuildMenus) override;
 
+        void SetStatusMessage(const AZStd::string& message) override;
+        void SetStatusWarning(const AZStd::string& message) override;
+        void SetStatusError(const AZStd::string& message) override;
+
         // AtomToolsMainMenuRequestBus::Handler overrides...
         void CreateMenus(QMenuBar* menuBar) override;
         void UpdateMenus(QMenuBar* menuBar) override;
 
-        void SetStatusMessage(const QString& message);
-        void SetStatusWarning(const QString& message);
-        void SetStatusError(const QString& message);
-
         virtual void PopulateSettingsInspector(InspectorWidget* inspector) const;
         virtual void OpenSettingsDialog();
+        virtual void OnSettingsDialogClosed();
 
         virtual AZStd::string GetHelpDialogText() const;
         virtual void OpenHelpDialog();

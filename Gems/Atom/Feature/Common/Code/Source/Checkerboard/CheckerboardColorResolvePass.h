@@ -23,7 +23,7 @@ namespace AZ
       
         public:
             AZ_RTTI(CheckerboardColorResolvePass, "{62CA67F2-7957-4951-926B-BACD7069A399}", Base);
-            AZ_CLASS_ALLOCATOR(CheckerboardColorResolvePass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CheckerboardColorResolvePass, SystemAllocator);
 
             ~CheckerboardColorResolvePass() = default;
             static RPI::Ptr<CheckerboardColorResolvePass> Create(const RPI::PassDescriptor& descriptor);

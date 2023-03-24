@@ -306,6 +306,11 @@ namespace MaterialEditor
         return result;
     }
 
+    bool MaterialDocument::CanSaveAsChild() const
+    {
+        return true;
+    }
+
     bool MaterialDocument::BeginEdit()
     {
         // Save the current properties as a momento for undo before any changes are applied
@@ -675,7 +680,7 @@ namespace MaterialEditor
                         // image and formatting.
                         propertyConfig.m_description +=
                             "\n\n<img src=\':/Icons/changed_property.svg\'> An indicator icon will be shown to the left of properties with "
-                            "overridden values that are different from the parent material, or material type if there is no parent.";
+                            "overridden values that are different from the parent material, or material type if there is no parent.\n";
 
                         // The dynamic property uses the group name and display name to forward as attributes to the RPE and property asset
                         // control. The control will then use the attributes to display a context sensitive title when opening the asset
@@ -905,8 +910,8 @@ namespace MaterialEditor
             // which will later get caught in Process() when trying to access a property.
             if (materialPropertyDependencies.none() || functor->NeedsProcess(dirtyFlags))
             {
-                AZ::RPI::MaterialFunctor::EditorContext context = AZ::RPI::MaterialFunctor::EditorContext(
-                    m_materialInstance->GetPropertyValues(), m_materialInstance->GetMaterialPropertiesLayout(), propertyDynamicMetadata,
+                AZ::RPI::MaterialFunctorAPI::EditorContext context = AZ::RPI::MaterialFunctorAPI::EditorContext(
+                    m_materialInstance->GetPropertyCollection(), propertyDynamicMetadata,
                     propertyGroupDynamicMetadata, updatedProperties, updatedPropertyGroups,
                     &materialPropertyDependencies);
                 functor->Process(context);

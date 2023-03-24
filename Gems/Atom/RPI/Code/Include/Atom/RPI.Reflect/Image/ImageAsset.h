@@ -33,7 +33,7 @@ namespace AZ
             static const char* Extension;
 
             AZ_RTTI(ImageAsset, "{C53AB73A-5BC9-462D-805B-43BAFA8C8167}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageAsset, AZ::SystemAllocator);
 
             virtual ~ImageAsset();
 

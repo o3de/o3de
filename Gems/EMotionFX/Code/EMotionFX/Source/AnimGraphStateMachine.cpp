@@ -28,8 +28,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateMachine, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateMachine::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateMachine, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateMachine::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     AZ::u32 AnimGraphStateMachine::s_maxNumPasses = 10;
 
@@ -411,7 +411,7 @@ namespace EMotionFX
             uniqueData->IncreasePoseRefCountForNode(targetNode, animGraphInstance);
             uniqueData->IncreaseDataRefCountForNode(targetNode, animGraphInstance);
 
-            targetNode->PerformUpdate(animGraphInstance, 0.0f);
+            UpdateIncomingNode(animGraphInstance, targetNode, 0.0f);
         }
 
         // Enable the exit state reached flag when are entering an exit state or if the current state is an exit state.
@@ -506,7 +506,7 @@ namespace EMotionFX
             {
                 uniqueData->IncreasePoseRefCountForNode(activeState, animGraphInstance);
                 uniqueData->IncreaseDataRefCountForNode(activeState, animGraphInstance);
-                activeState->PerformUpdate(animGraphInstance, timePassedInSeconds);
+                UpdateIncomingNode(animGraphInstance, activeState, timePassedInSeconds);
             }
         }
 
@@ -638,7 +638,7 @@ namespace EMotionFX
             // Perform post update on all active states (Fill event buffers, spawn events, calculate motion extraction deltas).
             for (AnimGraphNode* activeState : activeStates)
             {
-                activeState->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+                PostUpdateIncomingNode(animGraphInstance, activeState, timePassedInSeconds);
             }
             for (AnimGraphNode* node : uniqueData->GetDataRefIncreasedNodes())
             {

@@ -14,7 +14,7 @@ using namespace ScriptCanvas;
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(RuntimeVariableSerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(RuntimeVariableSerializer, SystemAllocator);
 
     JsonSerializationResult::Result RuntimeVariableSerializer::Load
         ( void* outputValue

@@ -56,10 +56,10 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
+            bufferPool->SetName(AZ::Name{ poolAsset.GetPoolName() });
             RHI::ResultCode resultCode = bufferPool->Init(device, *desc);
             if (resultCode == RHI::ResultCode::Success)
             {
-                bufferPool->SetName(AZ::Name{ poolAsset.GetPoolName() });
                 m_pool = bufferPool;
             }
 

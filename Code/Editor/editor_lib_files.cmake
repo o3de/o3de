@@ -265,6 +265,8 @@ set(FILES
     Core/LevelEditorMenuHandler.h
     Core/Widgets/PrefabEditVisualModeWidget.h
     Core/Widgets/PrefabEditVisualModeWidget.cpp
+    Core/Widgets/ViewportSettingsWidgets.h
+    Core/Widgets/ViewportSettingsWidgets.cpp
     StartupTraceHandler.cpp
     StartupTraceHandler.h
     LevelTreeModel.cpp
@@ -398,8 +400,6 @@ set(FILES
     StartupLogoDialog.h
     StartupLogoDialog.ui
     StartupLogoDialog.qrc
-    StringDlg.cpp
-    StringDlg.h
     ToolbarCustomizationDialog.ui
     ToolbarCustomizationDialog.cpp
     ToolbarCustomizationDialog.h
@@ -535,7 +535,6 @@ set(FILES
     ErrorReport.h
     IconManager.cpp
     IconManager.h
-    ProcessInfo.cpp
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h

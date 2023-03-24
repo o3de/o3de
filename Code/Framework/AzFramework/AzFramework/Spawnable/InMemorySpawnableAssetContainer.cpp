@@ -76,7 +76,7 @@ namespace AzFramework
             {
                 auto spawnable = azrtti_cast<Spawnable*>(assetData);
 
-                spawnables.push_back(AZStd::make_pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
+                spawnables.push_back(AZStd::pair<Spawnable*, const AZStd::string&>(spawnable, assetInfo.m_relativePath));
 
                 if (assetInfo.m_relativePath == rootProductId)
                 {
@@ -198,6 +198,19 @@ namespace AzFramework
                     if (!asset->GetId().IsValid())
                     {
                         // Invalid asset found referenced in scene while entering game mode.
+                        return false;
+                    }
+
+                    if (asset->GetStatus() == AZ::Data::AssetData::AssetStatus::Error)
+                    {
+                        AZ_Error(
+                            "Prefab",
+                            false,
+                            "Asset '%s' (%s) of type '%s' failed to load while entering game mode",
+                            asset->GetHint().c_str(),
+                            asset->GetId().ToFixedString().c_str(),
+                            classData->m_name);
+
                         return false;
                     }
 

@@ -6,24 +6,28 @@
 #
 #
 
+if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
+## AP Python Tests ##
+
 add_subdirectory(asset_processor_tests)
 add_subdirectory(fbx_tests)
 add_subdirectory(scene_settings_tests)
+add_subdirectory(scene_tests)
+add_subdirectory(asset_bundler_tests)
+add_subdirectory(metadata_relocation_tests)
 
     ly_add_pytest(
         NAME AssetPipelineTests.Periodic
         PATH ${CMAKE_CURRENT_LIST_DIR}/TestSuite_Periodic.py
         TEST_SUITE periodic
         RUNTIME_DEPENDENCIES
-            AssetProcessor
+            AZ::AssetProcessor
             AutomatedTesting.Assets
-            Editor
+            Legacy::Editor
         COMPONENT
             Atom
     )
 
-if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
-## AP Python Tests ##
     ly_add_pytest(
         NAME AssetPipelineTests.BankInfoParser
         PATH ${CMAKE_CURRENT_LIST_DIR}/wwise_bank_dependency_tests/bank_info_parser_tests.py
@@ -34,3 +38,4 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
    
 endif()
+

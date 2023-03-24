@@ -113,6 +113,6 @@ namespace UnitTest
         const float radius = 2.0f;
         const AZ::Capsule capsuleFromLineSegment(lineSegment, radius);
         const AZ::Capsule capsule(start, end, radius);
-        EXPECT_TRUE(capsuleFromLineSegment.IsClose(capsule));
+        EXPECT_THAT(capsuleFromLineSegment, IsClose(capsule));
     }
 } // namespace UnitTest

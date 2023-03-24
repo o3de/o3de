@@ -21,6 +21,7 @@ namespace AZ::Render
         : public SkyAtmosphereFeatureProcessorInterface
     {
     public:
+        AZ_CLASS_ALLOCATOR(SkyAtmosphereFeatureProcessor, AZ::SystemAllocator)
 
         AZ_RTTI(AZ::Render::SkyAtmosphereFeatureProcessor, "{FB3155E9-BA3C-487B-B251-EB4BF3465E02}", AZ::Render::SkyAtmosphereFeatureProcessorInterface);
 
@@ -39,6 +40,8 @@ namespace AZ::Render
         AtmosphereId CreateAtmosphere() override;
         void ReleaseAtmosphere(AtmosphereId id) override;
         void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) override;
+        void SetAtmosphereEnabled(AtmosphereId id, bool enabled) override;
+        bool GetAtmosphereEnabled(AtmosphereId id) override;
 
     private:
 
@@ -51,8 +54,6 @@ namespace AZ::Render
             
         struct SkyAtmosphere
         {
-            ~SkyAtmosphere();
-
             AtmosphereId m_id;
             SkyAtmosphereParams m_params;
             bool m_passNeedsUpdate = false;

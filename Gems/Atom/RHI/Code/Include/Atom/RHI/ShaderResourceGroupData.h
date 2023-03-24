@@ -212,6 +212,7 @@ namespace AZ
                 ReadWriteTexture,
                 ReadBuffer,
                 ReadWriteBuffer,
+                ReadTextureCube,
                 Count
             };
 
@@ -260,8 +261,8 @@ namespace AZ
             //! Get the size of the bindless view map
             const uint32_t GetBindlessViewsSize() const;
             
-            //! Return all the view data stored within bindless view map
-            const AZStd::vector<BindlessResourceViews> GetAllBindlessViews() const;
+            //! Return all the bindless views referenced indirectly  via SetBindlessViews api
+            const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, BindlessResourceViews>& GetBindlessResourceViews() const;
             
         private:
             static const ConstPtr<ImageView> s_nullImageView;
@@ -355,6 +356,15 @@ namespace AZ
             }
 
             const TShaderInputDescriptor& shaderInputImage = GetLayout()->GetShaderInput(inputIndex);
+
+            if (!imageView)
+            {
+                AZ_Error("ShaderResourceGroupData", false,
+                    "Image Array Input '%s[%d]' is null.",
+                    shaderInputImage.m_name.GetCStr(), arrayIndex);
+                return false;
+            }
+
             const ImageViewDescriptor& imageViewDescriptor = imageView->GetDescriptor();
             const Image& image = imageView->GetImage();
             const ImageDescriptor& imageDescriptor = image.GetDescriptor();

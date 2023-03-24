@@ -105,8 +105,7 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         DeleteXmlArtifacts();
 
@@ -123,9 +122,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
         }
         else
         {
@@ -138,9 +135,7 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt);
+                globalTimeout);
         }
     }
 
@@ -149,20 +144,17 @@ namespace TestImpact
         InstrumentedRun(
         const AZStd::vector<const PythonTestTarget*>& testTargets,
         Policy::ExecutionFailure executionFailurePolicy,
-        Policy::IntegrityFailure integrityFailurePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<PythonTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
         const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
 
         if (m_testRunnerPolicy == Policy::TestRunner::UseNullTestRunner)
         {
             // We don't delete the artifacts as they have been left by another test runner (e.g. ctest)
-            return GenerateInstrumentedRunResult(
-            RunTests(
+            return RunTests(
                 m_instrumentedNullTestRunner.get(),
                 jobInfos,
                 testTargets,
@@ -171,16 +163,11 @@ namespace TestImpact
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                std::nullopt),
-            integrityFailurePolicy);
+                globalTimeout);
         }
         else
         {
-            DeleteXmlArtifacts();
-            return GenerateInstrumentedRunResult(
-                RunTests(
+            return RunTests(
                     m_instrumentedTestRunner.get(),
                     jobInfos,
                     testTargets,
@@ -189,10 +176,7 @@ namespace TestImpact
                     testFailurePolicy,
                     targetOutputCapture,
                     testTargetTimeout,
-                    globalTimeout,
-                    callback,
-                    std::nullopt),
-                integrityFailurePolicy);
+                    globalTimeout);
         }
     }
 } // namespace TestImpact

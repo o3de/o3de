@@ -10,6 +10,7 @@
 #include <RHI/Image.h>
 #include <RHI/ImageView.h>
 #include <RHI/ReleaseContainer.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -58,7 +59,7 @@ namespace AZ
             DeviceObject::Init(deviceBase);
             auto& device = static_cast<Device&>(deviceBase);
             const auto& image = static_cast<const Image&>(resourceBase);
-            const RHI::ImageViewDescriptor& descriptor = GetDescriptor();
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
 
             // this can happen when image has been invalidated/released right before re-compiling the image
             if (image.GetNativeImage() == VK_NULL_HANDLE)
@@ -66,7 +67,7 @@ namespace AZ
                 return RHI::ResultCode::Fail;
             }
 
-            RHI::Format viewFormat = descriptor.m_overrideFormat;
+            RHI::Format viewFormat = viewDescriptor.m_overrideFormat;
             // If an image is not owner of native image, it is a swapchain image.
             // Swapchain images are not mutable, so we can not change the format for the view.
             if (viewFormat == RHI::Format::Unknown || !image.IsOwnerOfNativeImage())
@@ -75,8 +76,15 @@ namespace AZ
             }
             m_format = viewFormat;
 
-            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(descriptor.m_aspectFlags, image.GetAspectFlags()));
-            
+            VkImageAspectFlags aspectFlags = ConvertImageAspectFlags(RHI::FilterBits(viewDescriptor.m_aspectFlags, image.GetAspectFlags()));
+            VkImageViewCreateFlags createFlags = 0;
+            if (RHI::CheckBitsAll(image.GetUsageFlags(), static_cast<VkImageUsageFlags>(VK_IMAGE_USAGE_FRAGMENT_DENSITY_MAP_BIT_EXT)) &&
+                device.GetFeatures().m_dynamicShadingRateImage)
+            {
+                createFlags = RHI::SetBits(
+                    createFlags, static_cast<VkImageViewCreateFlags>(VK_IMAGE_VIEW_CREATE_FRAGMENT_DENSITY_MAP_DYNAMIC_BIT_EXT));
+            }
+
             const VkImageViewType imageViewType = GetImageViewType(image);
             BuildImageSubresourceRange(imageViewType, aspectFlags);
             const RHI::ImageSubresourceRange& range = GetImageSubresourceRange();
@@ -89,30 +97,47 @@ namespace AZ
             VkImageViewCreateInfo createInfo{};
             createInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
             createInfo.pNext = nullptr;
-            createInfo.flags = 0;
+            createInfo.flags = createFlags;
             createInfo.image = image.GetNativeImage();
             createInfo.viewType = imageViewType;
             createInfo.format = ConvertFormat(m_format);
             createInfo.components = VkComponentMapping{}; // identity mapping
             createInfo.subresourceRange = vkRange;
 
-            const VkResult result = device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, nullptr, &m_vkImageView);
+            const VkResult result =
+                device.GetContext().CreateImageView(device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &m_vkImageView);
             AssertSuccess(result);
             RETURN_RESULT_IF_UNSUCCESSFUL(ConvertResult(result));
 
             m_hash = TypeHash64(m_imageSubresourceRange.GetHash(), m_hash);
             m_hash = TypeHash64(m_format, m_hash);
 
-            if (!descriptor.m_isArray && !descriptor.m_isCubemap)
-            {
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
-                {
-                    m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
-                }
+            // If a depth stencil image does not have depth or aspect flag set it is probably going to be used as
+            // a render target and do not need to be added to the bindless heap
+            bool isDSRendertarget = RHI::CheckBitsAny(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::DepthStencil) &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Depth &&
+                                    viewDescriptor.m_aspectFlags != RHI::ImageAspectFlags::Stencil;
 
-                if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+            if (!viewDescriptor.m_isArray && !isDSRendertarget)
+            {
+                if (!viewDescriptor.m_isCubemap)
                 {
-                    m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadImage(this);
+                    }
+
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderWrite))
+                    {
+                        m_readWriteIndex = device.GetBindlessDescriptorPool().AttachReadWriteImage(this);
+                    }
+                }
+                else
+                {
+                    if (RHI::CheckBitsAll(image.GetDescriptor().m_bindFlags, RHI::ImageBindFlags::ShaderRead))
+                    {
+                        m_readIndex = device.GetBindlessDescriptorPool().AttachReadCubeMapImage(this);
+                    }
                 }
             }
 
@@ -122,29 +147,56 @@ namespace AZ
 
         RHI::ResultCode ImageView::InvalidateInternal()
         {
-            ShutdownInternal();
-            return InitInternal(GetDevice(), GetResource());
+            ReleaseView();
+            RHI::ResultCode initResult = InitInternal(GetDevice(), GetResource());
+            if (initResult != RHI::ResultCode::Success)
+            {
+                ReleaseBindlessIndices();
+            }
+            return initResult;
         }
 
-        void ImageView::ShutdownInternal()
-        {            
+        void ImageView::ReleaseView()
+        {
             if (m_vkImageView != VK_NULL_HANDLE)
             {
                 auto& device = static_cast<Device&>(GetDevice());
                 device.QueueForRelease(
                     new ReleaseContainer<VkImageView>(device.GetNativeDevice(), m_vkImageView, device.GetContext().DestroyImageView));
                 m_vkImageView = VK_NULL_HANDLE;
+            }
+        }
 
-                if (m_readIndex != ~0u)
+        void ImageView::ReleaseBindlessIndices()
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            const RHI::ImageViewDescriptor& viewDescriptor = GetDescriptor();
+
+            if (m_readIndex != InvalidBindlessIndex)
+            {
+                if (!viewDescriptor.m_isCubemap)
                 {
                     device.GetBindlessDescriptorPool().DetachReadImage(m_readIndex);
                 }
-
-                if (m_readWriteIndex != ~0u)
+                else
                 {
-                    device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
+                    device.GetBindlessDescriptorPool().DetachReadCubeMapImage(m_readIndex);
                 }
+
+                m_readIndex = InvalidBindlessIndex;
             }
+
+            if (m_readWriteIndex != InvalidBindlessIndex)
+            {
+                device.GetBindlessDescriptorPool().DetachReadWriteImage(m_readWriteIndex);
+                m_readWriteIndex = InvalidBindlessIndex;
+            }
+        }
+
+        void ImageView::ShutdownInternal()
+        {
+            ReleaseView();
+            ReleaseBindlessIndices();
         }
 
         VkImageViewType ImageView::GetImageViewType(const Image& image) const

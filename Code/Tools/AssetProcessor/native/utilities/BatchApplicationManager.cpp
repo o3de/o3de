@@ -72,6 +72,7 @@ void BatchApplicationManager::OnErrorMessage([[maybe_unused]] const char* error)
 
 void BatchApplicationManager::Reflect()
 {
+    ApplicationManagerBase::Reflect();
 }
 
 const char* BatchApplicationManager::GetLogBaseName()
@@ -106,13 +107,12 @@ void BatchApplicationManager::InitSourceControl()
     }
 }
 
-void BatchApplicationManager::InitFileStateCache()
+void BatchApplicationManager::InitUuidManager()
 {
-    // File state cache is disabled for batch mode because it relies on the file monitor to function properly.
-    // Since the file monitor is disabled, the cache must be disabled as well.
-    // Note the main reason this is disabled is because intermediate assets can be created during processing which would
-    // need to be recorded in the cache.
-    m_fileStateCache = AZStd::make_unique<AssetProcessor::FileStatePassthrough>();
+    m_uuidManager = AZStd::make_unique<AssetProcessor::UuidManager>();
+    m_assetProcessorManager->SetMetaCreationDelay(0);
+
+    // Note that batch does not set any enabled types and has 0 delay because batch mode is not expected to generate metadata files or handle moving/renaming while running.
 }
 
 void BatchApplicationManager::MakeActivationConnections()
@@ -121,6 +121,10 @@ void BatchApplicationManager::MakeActivationConnections()
         m_assetProcessorManager, [this](AssetProcessor::JobEntry entry, AssetBuilderSDK::ProcessJobResponse /*response*/)
         {
             m_processedAssetCount++;
+
+            // If a file fails and later succeeds, don't count it as a failure.
+            // This avoids marking the entire run as a failure (returning non-zero) when everything compiled successfully *eventually*
+            m_failedAssets.erase(entry.GetAbsoluteSourcePath().toUtf8().constData());
 
             AssetProcessor::JobDiagnosticInfo info{};
             AssetProcessor::JobDiagnosticRequestBus::BroadcastResult(info, &AssetProcessor::JobDiagnosticRequestBus::Events::GetDiagnosticInfo, entry.m_jobRunKey);

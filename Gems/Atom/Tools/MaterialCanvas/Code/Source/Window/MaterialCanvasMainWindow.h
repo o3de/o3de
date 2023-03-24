@@ -14,7 +14,7 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsInspector.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportToolBar.h>
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportWidget.h>
-#include <AtomToolsFramework/GraphView/GraphViewSettings.h>
+#include <AtomToolsFramework/Graph/GraphViewSettings.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <GraphCanvas/Styling/StyleManager.h>
 #include <GraphCanvas/Widgets/Bookmarks/BookmarkDockWidget.h>
@@ -27,12 +27,12 @@
 
 namespace MaterialCanvas
 {
-    //! MaterialCanvasMainWindow
+    //! MaterialCanvasMainWindow creates and manages all of the graph canvas and viewport related docked windows for Material Canvas. 
     class MaterialCanvasMainWindow : public AtomToolsFramework::AtomToolsDocumentMainWindow
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MaterialCanvasMainWindow, AZ::SystemAllocator);
 
         using Base = AtomToolsFramework::AtomToolsDocumentMainWindow;
 
@@ -51,6 +51,7 @@ namespace MaterialCanvas
 
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         void PopulateSettingsInspector(AtomToolsFramework::InspectorWidget* inspector) const override;
+        void OnSettingsDialogClosed() override;
         AZStd::string GetHelpDialogText() const override;
 
     private:

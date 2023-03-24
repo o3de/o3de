@@ -137,9 +137,9 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
-    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> AZStd::vector<AZStd::pair<pageIterator, pageIterator>>
+    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> ParallelRanges
     {
-        AZStd::vector<AZStd::pair<pageIterator, pageIterator>> pageIterators;
+        ParallelRanges pageIterators;
         Page* page = m_firstPage;
         while (page)
         {
@@ -614,6 +614,50 @@ namespace AZ
         m_remainingBitsInBitGroup &= (m_remainingBitsInBitGroup - 1);
     }
 
+
+    // StableDynamicArray::WeakHandle
+    template<typename ValueType>
+    StableDynamicArrayWeakHandle<ValueType>::StableDynamicArrayWeakHandle(ValueType* data)
+        : m_data(data)
+    {
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::IsValid() const
+    {
+        return m_data != nullptr;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::IsNull() const
+    {
+        return m_data == nullptr;
+    }
+
+    template<typename ValueType>
+    ValueType& StableDynamicArrayWeakHandle<ValueType>::operator*() const
+    {
+        return *m_data;
+    }
+
+    template<typename ValueType>
+    ValueType* StableDynamicArrayWeakHandle<ValueType>::operator->() const
+    {
+        return m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data == rhs.m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return !operator==(rhs);
+    }
+
     // StableDynamicArray::Handle
 
 
@@ -734,6 +778,12 @@ namespace AZ
         m_data = nullptr;
         m_destructorCallback = nullptr;
         m_page = nullptr;
+    }
+
+    template<typename ValueType>
+    StableDynamicArrayWeakHandle<ValueType> StableDynamicArrayHandle<ValueType>::GetWeakHandle() const
+    {
+        return StableDynamicArrayWeakHandle<ValueType>(m_data);
     }
 
 } // end namespace AZ

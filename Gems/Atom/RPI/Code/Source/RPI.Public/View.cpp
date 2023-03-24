@@ -125,6 +125,33 @@ namespace AZ
             m_drawListContext.AddDrawItem(drawListTag, drawItemProperties);
         }
 
+        void View::ApplyFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_and(&m_andFlags, flags);
+            AZStd::atomic_fetch_or(&m_orFlags, flags);
+        }
+
+        void View::ClearFlags(uint32_t flags)
+        {
+            AZStd::atomic_fetch_or(&m_andFlags, flags);
+            AZStd::atomic_fetch_and(&m_orFlags, ~flags);
+        }
+
+        void View::ClearAllFlags()
+        {
+            ClearFlags(0xFFFFFFFF);
+        }
+
+        uint32_t View::GetAndFlags()
+        {
+            return m_andFlags;
+        }
+
+        uint32_t View::GetOrFlags()
+        {
+            return m_orFlags;
+        }
+
         void View::SetWorldToViewMatrix(const AZ::Matrix4x4& worldToView)
         {
             m_viewToWorldMatrix = worldToView.GetInverseFast();
@@ -406,8 +433,14 @@ namespace AZ
 
         void View::SortDrawList(RHI::DrawList& drawList, RHI::DrawListTag tag)
         {
-            const Pass* passWithDrawListTag = (*m_passesByDrawList)[tag];
-            passWithDrawListTag->SortDrawList(drawList);
+            // Note: it's possible that the m_passesByDrawList doesn't have a pass for the input tag.
+            // This is because a View can be used for multiple render pipelines.
+            // So it may contains draw list tag which exists in one render pipeline but not others. 
+            auto itr = m_passesByDrawList->find(tag);
+            if (itr != m_passesByDrawList->end())
+            {
+                itr->second->SortDrawList(drawList);
+            }
         }
 
         void View::ConnectWorldToViewMatrixChangedHandler(MatrixChangedEvent::Handler& handler)

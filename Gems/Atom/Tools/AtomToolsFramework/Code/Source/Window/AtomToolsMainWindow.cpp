@@ -188,6 +188,21 @@ namespace AtomToolsFramework
         return names;
     }
 
+    void AtomToolsMainWindow::SetStatusMessage(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusWarning(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message.c_str()));
+    }
+
+    void AtomToolsMainWindow::SetStatusError(const AZStd::string& message)
+    {
+        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message.c_str()));
+    }
+
     void AtomToolsMainWindow::QueueUpdateMenus(bool rebuildMenus)
     {
         m_rebuildMenus = m_rebuildMenus || rebuildMenus;
@@ -268,21 +283,6 @@ namespace AtomToolsFramework
     {
     }
 
-    void AtomToolsMainWindow::SetStatusMessage(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"White\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusWarning(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Yellow\">%1</font>").arg(message));
-    }
-
-    void AtomToolsMainWindow::SetStatusError(const QString& message)
-    {
-        m_statusMessage->setText(QString("<font color=\"Red\">%1</font>").arg(message));
-    }
-
     void AtomToolsMainWindow::PopulateSettingsInspector(InspectorWidget* inspector) const
     {
         m_applicationSettingsGroup = CreateSettingsPropertyGroup(
@@ -302,12 +302,16 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenActive",
                   "Update Interval When Active",
                   "Minimum delay between ticks (in milliseconds) when the application has focus",
-                  aznumeric_cast<AZ::s64>(1)),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/UpdateIntervalWhenNotActive",
                   "Update Interval When Not Active",
                   "Minimum delay between ticks (in milliseconds) when the application does not have focus",
-                  aznumeric_cast<AZ::s64>(250)),
+                  aznumeric_cast<AZ::s64>(250),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(1000)),
               CreateSettingsPropertyValue(
                   "/O3DE/AtomToolsFramework/Application/AllowMultipleInstances",
                   "Allow Multiple Instances",
@@ -333,7 +337,9 @@ namespace AtomToolsFramework
                   "/O3DE/AtomToolsFramework/AssetBrowser/PromptToOpenMultipleFilesThreshold",
                   "Prompt To Open Multiple Files Threshold",
                   "Maximum number of files that can be selected before prompting for confirmation",
-                  aznumeric_cast<AZ::s64>(10)) });
+                  aznumeric_cast<AZ::s64>(10),
+                  aznumeric_cast<AZ::s64>(1),
+                  aznumeric_cast<AZ::s64>(100)) });
 
         inspector->AddGroup(
             m_assetBrowserSettingsGroup->m_name,
@@ -357,6 +363,12 @@ namespace AtomToolsFramework
         dialog.setMinimumSize(0, 0);
         dialog.setMaximumSize(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
         dialog.exec();
+
+        OnSettingsDialogClosed();
+    }
+
+    void AtomToolsMainWindow::OnSettingsDialogClosed()
+    {
     }
 
     AZStd::string AtomToolsMainWindow::GetHelpDialogText() const
@@ -589,16 +601,14 @@ namespace AtomToolsFramework
 
     void AtomToolsMainWindow::UpdateWindowTitle()
     {
-        AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
-        if (!apiName.IsEmpty())
+        if (AZ::RHI::Factory::IsReady())
         {
-            QString title = QString{ "%1 (%2)" }.arg(QApplication::applicationName()).arg(apiName.GetCStr());
-            setWindowTitle(title);
+            const AZ::Name apiName = AZ::RHI::Factory::Get().GetName();
+            setWindowTitle(tr("%1 (%2)").arg(QApplication::applicationName()).arg(apiName.GetCStr()));
+            AZ_Error("AtomToolsMainWindow", !apiName.IsEmpty(), "Render API name not found");
+            return;
         }
-        else
-        {
-            AZ_Assert(false, "Render API name not found");
-            setWindowTitle(QApplication::applicationName());
-        }
+
+        setWindowTitle(QApplication::applicationName());
     }
 } // namespace AtomToolsFramework

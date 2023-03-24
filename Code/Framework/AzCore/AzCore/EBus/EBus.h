@@ -632,21 +632,21 @@ namespace AZ
          * @return True if there are any handlers connected to the
          * EBus. Otherwise, false.
          */
-        static inline bool HasHandlers();
+        static bool HasHandlers();
 
         /**
          * Returns whether handlers are connected to this specific address.
          * @return True if there are any handlers connected at the address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusIdType& id);
+        static bool HasHandlers(const BusIdType& id);
 
         /**
          * Returns whether handlers are connected to the specific cached address.
          * @return True if there are any handlers connected at the cached address.
          * Otherwise, false.
          */
-        static inline bool HasHandlers(const BusPtr& ptr);
+        static bool HasHandlers(const BusPtr& ptr);
 
         /**
          * Gets the ID of the address that is currently receiving an event.
@@ -1998,4 +1998,43 @@ AZ_POP_DISABLE_WARNING
             EBusRouterForwarderHelper<EBus, TargetEBus>::ForwardEventResult(result, event, args...);
         }
     } // namespace Internal
+}
+
+// The following allow heavily-used busses to be declared extern, in order to speed up compile time where the same header
+// with the same bus is included in many different source files.
+// to use it, declare the EBus extern using DECLARE_EBUS_EXTERN or DECLARE_EBUS_EXTERN_WITH_TRAITS in the header file
+// and then use DECLARE_EBUS_INSTANTIATION or DECLARE_EBUS_INSTANTIATION_WITH_TRAITS in a file that everything that includes the header
+// will link to (for example, in a static library, dynamic library with export library, or .inl that everyone must include in a compile unit).
+
+// The following must be declared AT GLOBAL SCOPE and the namespace AZ is assumed due to the rule that extern template declarations must occur
+// in their enclosing scope.
+
+//! Externs an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_EXTERN_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   extern template class EBus<a, b>; \
+}
+
+//! Externs an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+#define DECLARE_EBUS_EXTERN(a) \
+namespace AZ \
+{ \
+   extern template class EBus<a, a>; \
+}
+
+//! Instantiates an EBus class template with both the interface and bus traits arguments
+#define DECLARE_EBUS_INSTANTIATION_WITH_TRAITS(a,b) \
+namespace AZ \
+{ \
+   template class EBus<a, b>; \
+}
+//! Instantiates an EBus class template using only the interface argument
+//! for both the EBus Interface and BusTraits template parameters
+
+#define DECLARE_EBUS_INSTANTIATION(a) \
+namespace AZ \
+{ \
+   template class EBus<a, a>; \
 }

@@ -118,7 +118,7 @@ namespace AZ
 
                 // Copy all of the properties from the material asset to the source data that will be exported
                 bool result = true;
-                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialTypeSourceData::PropertyDefinition* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
+                editData.m_materialTypeSourceData.EnumerateProperties([&](const AZ::RPI::MaterialPropertySourceData* propertyDefinition, const AZ::RPI::MaterialNameContext& nameContext)
                     {
                         AZ::Name propertyId{propertyDefinition->GetName()};
                         nameContext.ContextualizeProperty(propertyId);

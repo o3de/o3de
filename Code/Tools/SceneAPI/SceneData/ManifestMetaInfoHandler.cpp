@@ -21,12 +21,14 @@
 #include <SceneAPI/SceneData/Rules/CommentRule.h>
 #include <SceneAPI/SceneData/Rules/LodRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/TagRule.h>
 
 namespace AZ
 {
@@ -34,7 +36,7 @@ namespace AZ
     {
         namespace SceneData
         {
-            AZ_CLASS_ALLOCATOR_IMPL(ManifestMetaInfoHandler, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(ManifestMetaInfoHandler, SystemAllocator);
 
             ManifestMetaInfoHandler::ManifestMetaInfoHandler()
             {
@@ -51,6 +53,7 @@ namespace AZ
             {
                 AZ_TraceContext("Object Type", target.RTTI_GetTypeName());
                 modifiers.push_back(SceneData::CommentRule::TYPEINFO_Uuid());
+                modifiers.push_back(SceneData::UnmodifiableRule::TYPEINFO_Uuid());
 
                 if (target.RTTI_IsTypeOf(DataTypes::IMeshGroup::TYPEINFO_Uuid()))
                 {
@@ -86,6 +89,10 @@ namespace AZ
                     if (existingRules.find(SceneData::TangentsRule::TYPEINFO_Uuid()) == existingRules.end())
                     {
                         modifiers.push_back(SceneData::TangentsRule::TYPEINFO_Uuid());
+                    }
+                    if (existingRules.find(SceneData::TagRule::TYPEINFO_Uuid()) == existingRules.end())
+                    {
+                        modifiers.push_back(SceneData::TagRule::TYPEINFO_Uuid());
                     }
                 }
                 else if (target.RTTI_IsTypeOf(DataTypes::ISkinGroup::TYPEINFO_Uuid()))

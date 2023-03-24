@@ -25,7 +25,7 @@ namespace JsonSerializationTests
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator);
         AZ_RTTI(TestAssetData, "{90BCCF83-D453-4A70-973D-57C2ACD04661}", AZ::Data::AssetData);
 
         TestAssetData() = default;
@@ -72,9 +72,6 @@ namespace JsonSerializationTests
         {
             BaseJsonSerializerFixture::SetUp();
 
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Set up the Job Manager with 1 thread so that the Asset Manager is able to load assets.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -103,9 +100,6 @@ namespace JsonSerializationTests
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
 
             BaseJsonSerializerFixture::TearDown();
         }
@@ -157,9 +151,6 @@ namespace JsonSerializationTests
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             // Set up the Job Manager with 1 thread so that the Asset Manager is able to load assets.
             AZ::JobManagerDesc jobDesc;
             AZ::JobManagerThreadDesc threadDesc;
@@ -181,9 +172,6 @@ namespace JsonSerializationTests
             AZ::JobContext::SetGlobalContext(nullptr);
             delete m_jobContext;
             delete m_jobManager;
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         using JsonSerializerConformityTestDescriptor<AZ::Data::Asset<TestAssetData>>::Reflect;

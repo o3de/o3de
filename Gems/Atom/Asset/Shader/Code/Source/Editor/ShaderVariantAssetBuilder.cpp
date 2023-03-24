@@ -28,6 +28,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -81,7 +82,7 @@ namespace AZ
 
             bool found = false;
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
+            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
                 AssetBuilderSDK::SourceFileDependency sourceFileDependency;
@@ -102,40 +103,6 @@ namespace AZ
             }
 
             return found;
-        }
-
-
-        //! Returns true if @sourceFileFullPath starts with a valid asset processor scan folder, false otherwise.
-        //! In case of true, it splits @sourceFileFullPath into @scanFolderFullPath and @filePathFromScanFolder.
-        //! @sourceFileFullPath The full path to a source asset file.
-        //! @scanFolderFullPath [out] Gets the full path of the scan folder where the source file is located.
-        //! @filePathFromScanFolder [out] Get the file path relative to  @scanFolderFullPath.
-        static bool SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(const AZStd::string& sourceFileFullPath, AZStd::string& scanFolderFullPath, AZStd::string& filePathFromScanFolder)
-        {
-            AZStd::vector<AZStd::string> scanFolders;
-            bool success = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-            if (!success)
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folders");
-                return false;
-            }
-
-            for (AZStd::string scanFolder : scanFolders)
-            {
-                AZ::StringFunc::Path::Normalize(scanFolder);
-                if (!AZ::StringFunc::StartsWith(sourceFileFullPath, scanFolder))
-                {
-                    continue;
-                }
-                const size_t scanFolderSize = scanFolder.size();
-                const size_t sourcePathSize = sourceFileFullPath.size();
-                scanFolderFullPath = scanFolder;
-                filePathFromScanFolder = sourceFileFullPath.substr(scanFolderSize + 1, sourcePathSize - scanFolderSize - 1);
-                return true;
-            }
-
-            return false;
         }
 
         //! Validates if a given .shadervariantlist file is located at the correct path for a given .shader full path.
@@ -161,7 +128,11 @@ namespace AZ
         {
             AZStd::string scanFolderFullPath;
             AZStd::string shaderProductFileRelativePath;
-            if (!SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(shaderFileFullPath, scanFolderFullPath, shaderProductFileRelativePath))
+            bool success = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success
+                , &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath
+                , shaderFileFullPath, shaderProductFileRelativePath, scanFolderFullPath);
+            if (!success)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folder for shader [%s]", shaderFileFullPath.c_str());
                 return false;
@@ -299,7 +270,10 @@ namespace AZ
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
-            
+
+            // Even if the shader file doesn't exist yet, when calling LocateReferencedSourceFile() the source
+            // asset dependency list will be populated. This will cause to re-run this builder
+            // when the source *.shader file comes into existence.
             AZStd::string foundShaderFile;
             LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
 
@@ -312,7 +286,11 @@ namespace AZ
 
                     jobDescriptor.m_priority = -5000;
                     jobDescriptor.m_critical = false;
-                    jobDescriptor.m_jobKey = ShaderVariantAssetBuilderJobKey;
+                    // We are going to create a fake job that we know will fail.
+                    // We need to use a job key of a real product (In this case we are using the job key for the ShaderVariantTreeAsset).
+                    // Using a real product job key will guarantee to clear old errors in the future, because a successful product build will
+                    // replace the lingering error thanks to matching job keys.
+                    jobDescriptor.m_jobKey = GetShaderVariantTreeAssetJobKey();
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
                     
                     if (!foundShaderFile.empty())
@@ -668,7 +646,6 @@ namespace AZ
                 return;
             }
 
-
             // set the input file for eventual error messages, but the compiler won't be called on it.
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, shaderSourceDescriptor.m_source, azslFullPath);
@@ -728,6 +705,7 @@ namespace AZ
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "Shader Variant Tree Asset [%s] compiled successfully.\n", assetPath.c_str());
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+ 
         }
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
@@ -913,6 +891,11 @@ namespace AZ
                         shaderStemNamePrefix,
                         hlslSourcePath, hlslCode
                     };
+
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto shaderVariantAssetOutcome = CreateShaderVariantAsset(variantInfo, shaderVariantCreationContext, outputByproducts);

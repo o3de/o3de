@@ -13,7 +13,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphNodeGroup, AnimGraphAllocator)
 
     AnimGraphNodeGroup::AnimGraphNodeGroup()
         : m_color(AZ::Color::CreateU32(255, 255, 255, 255))
@@ -212,6 +212,7 @@ namespace EMotionFX
             ->Field("name", &AnimGraphNodeGroup::m_name)
             ->Field("color", &AnimGraphNodeGroup::m_color)
             ->Field("isVisible", &AnimGraphNodeGroup::m_isVisible)
-            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing);
+            ->Field("isNameEditOngoing", &AnimGraphNodeGroup::m_nameEditOngoing)
+            ->Field("parentNodeId", &AnimGraphNodeGroup::m_parentNodeId);
     }
 } // namespace EMotionFX

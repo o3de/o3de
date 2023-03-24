@@ -29,7 +29,7 @@ namespace UnitTest
     class ShaderStageFunction : public RHI::ShaderStageFunction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator);
 
         ShaderStageFunction(uint64_t hash, RHI::ShaderStage shaderStage)
             : RHI::ShaderStageFunction(shaderStage)
@@ -199,8 +199,7 @@ namespace UnitTest
                 subpassLayout.m_rendertargetCount = 1;
                 subpassLayout.m_subpassInputCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0] = RHI::RenderAttachmentDescriptor{ 0, 1, RHI::AttachmentLoadStoreAction() };
-                subpassLayout.m_subpassInputIndices[0] = 2;
-                subpassLayout.m_subpassInputIndices[0] = 3;
+                subpassLayout.m_subpassInputDescriptors[0].m_attachmentIndex = 3;
             }
         }
 

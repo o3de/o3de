@@ -14,6 +14,7 @@
 #include <Atom/RPI.Reflect/System/SceneDescriptor.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 #include <AzTest/AzTest.h>
+#include <AZTestShared/Utils/Utils.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
 
@@ -27,9 +28,7 @@
 
 namespace UnitTest
 {
-    class EditorAreaLightComponentFixture : public ::testing::Test
-    {
-    };
+    using EditorAreaLightComponentFixture = ::testing::Test;
 
     AZ::Render::AreaLightComponentConfig CreateAreaLightComponentConfig(
         const AZ::Render::AreaLightComponentConfig::LightType lightType,
@@ -50,7 +49,8 @@ namespace UnitTest
 
     static AZStd::unique_ptr<AZ::Entity> CreateEditorAreaLightEntity(
         const AZ::Render::AreaLightComponentConfig& areaLightComponentConfig,
-        const AZStd::optional<AZ::TypeId>& shapeTypeId = AZStd::nullopt)
+        const AZStd::optional<AZ::TypeId>& shapeTypeId = AZStd::nullopt,
+        const AZ::Vector3& shapeOffset = AZ::Vector3::CreateZero())
     {
         auto entity = AZStd::make_unique<AZ::Entity>();
         entity->Init();
@@ -62,6 +62,9 @@ namespace UnitTest
         }
         entity->AddComponent(aznew AZ::Render::EditorAreaLightComponent(areaLightComponentConfig));
         entity->Activate();
+
+        LmbrCentral::ShapeComponentRequestsBus::Event(
+            entity->GetId(), &LmbrCentral::ShapeComponentRequests::SetTranslationOffset, shapeOffset);
 
         return entity;
     }
@@ -149,6 +152,64 @@ namespace UnitTest
 
             const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
             EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-25.0f), AZ::Vector3(25.0f))));
+        }
+    }
+
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaCapsuleLightWithShapeTranslationOffsetBounds)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::CapsuleLightFeatureProcessorInterface on the scene.");
+
+        // capsule shape contained within attenuation radius (effectively a sphere)
+        {
+            const AZ::Vector3 shapeTranslationOffset(4.0f, 7.0f, 2.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Capsule, 15.0f),
+                LmbrCentral::EditorCapsuleShapeComponentTypeId, shapeTranslationOffset);
+
+            SetCapsuleShapeHeightAndRadius(entity->GetId(), 12.0f, 1.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-11.0f, -8.0f, -13.0f), AZ::Vector3(19.0f, 22.0f, 17.0f))));
+        }
+
+        // capsule shape contained within attenuation radius with capsule height contributing to overall height
+        {
+            const AZ::Vector3 shapeTranslationOffset(6.0f, -11.0f, 13.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Capsule, 5.0f),
+                LmbrCentral::EditorCapsuleShapeComponentTypeId, shapeTranslationOffset);
+
+            SetCapsuleShapeHeightAndRadius(entity->GetId(), 30.0f, 4.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(1.0f, -16.0f, -2.0f), AZ::Vector3(11.0f, -6.0f, 28.0f))));
+        }
+
+        // attenuation radius contained within capsule shape
+        {
+            const AZ::Vector3 shapeTranslationOffset(-7.0f, -7.0f, 4.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Capsule, 5.0f),
+                LmbrCentral::EditorCapsuleShapeComponentTypeId, shapeTranslationOffset);
+
+            SetCapsuleShapeHeightAndRadius(entity->GetId(), 50.0f, 12.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-19.0f, -19.0f, -21.0f), AZ::Vector3(5.0f, 5.0f, 29.0f))));
+        }
+
+        // attenuation radius contained within capsule shape (now effectively a sphere)
+        {
+            const AZ::Vector3 shapeTranslationOffset(8.0f, -13.0f, 9.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Capsule, 8.0f),
+                LmbrCentral::EditorCapsuleShapeComponentTypeId, shapeTranslationOffset);
+
+            SetCapsuleShapeHeightAndRadius(entity->GetId(), 30.0f, 20.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-12.0f, -33.0f, -11.0f), AZ::Vector3(28.0f, 7.0f, 29.0f))));
         }
     }
 
@@ -357,6 +418,38 @@ namespace UnitTest
 
             const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
             EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-30.0f), AZ::Vector3(30.0f))));
+        }
+    }
+
+    TEST_F(EditorAreaLightComponentFixture, CheckEditorAreaPointSphereLightWithShapeTranslationOffsetBounds)
+    {
+        // suppress warning when feature process is not created in test environment
+        UnitTest::ErrorHandler featureProcessorNotFound("Unable to find a AZ::Render::PointLightFeatureProcessorInterface on the scene.");
+
+        // sphere shape contained within attenuation sphere
+        {
+            const AZ::Vector3 shapeTranslationOffset(5.0f, 8.0f, -7.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Sphere, 20.0f),
+                LmbrCentral::EditorSphereShapeComponentTypeId, shapeTranslationOffset);
+
+            SetSphereShapeRadius(entity->GetId(), 8.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-15.0f, -12.0f, -27.0f), AZ::Vector3(25.0f, 28.0f, 13.0f))));
+        }
+
+        // sphere shape contained within attenuation sphere
+        {
+            const AZ::Vector3 shapeTranslationOffset(-7.0f, -2.0f, 6.0f);
+            auto entity = CreateEditorAreaLightEntity(
+                CreateAreaLightComponentConfig(AZ::Render::AreaLightComponentConfig::LightType::Sphere, 12.0f),
+                LmbrCentral::EditorSphereShapeComponentTypeId, shapeTranslationOffset);
+
+            SetSphereShapeRadius(entity->GetId(), 25.0f);
+
+            const AZ::Aabb aabb = AzFramework::CalculateEntityLocalBoundsUnion(entity.get());
+            EXPECT_THAT(aabb, IsClose(AZ::Aabb::CreateFromMinMax(AZ::Vector3(-32.0f, -27.0f, -19.0f), AZ::Vector3(18.0f, 23.0f, 31.0f))));
         }
     }
 

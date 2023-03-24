@@ -404,7 +404,7 @@ namespace UnitTest
         : public AZ::RPI::ModelAsset
     {
         AZ_RTTI(MockMeshAsset, "{C314B960-9B54-468D-B37C-065738E7487C}", AZ::RPI::ModelAsset);
-        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModelAsset, AZ::SystemAllocator);
 
         MockMeshAsset()
         {
@@ -469,6 +469,15 @@ namespace UnitTest
             return false;
         }
 
+        void SetExcludeFromReflectionCubeMaps([[maybe_unused]] bool excludeFromReflectionCubeMaps) override
+        {
+        }
+
+        bool GetExcludeFromReflectionCubeMaps() const override
+        {
+            return false;
+        }
+
         AZ::Data::AssetId m_assetIdOutput;
         void SetModelAssetId(AZ::Data::AssetId modelAssetId) override
         {
@@ -502,6 +511,16 @@ namespace UnitTest
         AZ::RHI::DrawItemSortKey GetSortKey() const override
         {
             return m_drawItemSortKeyOutput;
+        }
+
+        bool m_isAlwaysDynamic = false;
+        void SetIsAlwaysDynamic(bool isAlwaysDynamic) override
+        {
+            m_isAlwaysDynamic = isAlwaysDynamic;
+        }
+        bool GetIsAlwaysDynamic() const override
+        {
+            return m_isAlwaysDynamic;
         }
 
         AZ::RPI::Cullable::LodType m_lodTypeOutput;

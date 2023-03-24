@@ -15,7 +15,7 @@ namespace AZ::Render
 {
     CapsuleLightDelegate::CapsuleLightDelegate(LmbrCentral::CapsuleShapeComponentRequests* shapeBus, EntityId entityId, bool isVisible)
         : LightDelegateBase<CapsuleLightFeatureProcessorInterface>(entityId, isVisible)
-        , m_shapeBus(shapeBus)
+        , m_capsuleShapeBus(shapeBus)
     {
         InitBase(entityId);
     }
@@ -45,11 +45,11 @@ namespace AZ::Render
     {
         if (GetLightHandle().IsValid())
         {
-            const auto endpoints = m_shapeBus->GetCapsulePoints();
+            const auto endpoints = m_capsuleShapeBus->GetCapsulePoints();
             GetFeatureProcessor()->SetCapsuleLineSegment(GetLightHandle(), endpoints.m_begin, endpoints.m_end);
 
             float scale = GetTransform().GetUniformScale();
-            float radius = m_shapeBus->GetRadius();
+            float radius = m_capsuleShapeBus->GetRadius();
             GetFeatureProcessor()->SetCapsuleRadius(GetLightHandle(), scale * radius);
         }
     }
@@ -57,7 +57,7 @@ namespace AZ::Render
     float CapsuleLightDelegate::GetSurfaceArea() const
     {
         float scale = GetTransform().GetUniformScale();
-        float radius = m_shapeBus->GetRadius();
+        float radius = m_capsuleShapeBus->GetRadius();
         float capsArea = 4.0f * Constants::Pi * radius * radius; // both caps make a sphere
         float sideArea = 2.0f * Constants::Pi * radius * GetInteriorHeight(); // cylindrical area of capsule
         return (capsArea + sideArea) * scale * scale;
@@ -77,7 +77,7 @@ namespace AZ::Render
 
     float CapsuleLightDelegate::GetInteriorHeight() const
     {
-        return m_shapeBus->GetHeight() - m_shapeBus->GetRadius() * 2.0f;
+        return m_capsuleShapeBus->GetHeight() - m_capsuleShapeBus->GetRadius() * 2.0f;
     }
 
     void CapsuleLightDelegate::SetAffectsGI(bool affectsGI)
@@ -99,9 +99,10 @@ namespace AZ::Render
     Aabb CapsuleLightDelegate::GetLocalVisualizationBounds() const
     {
         const auto [radius, height] = CalculateCapsuleVisualizationDimensions();
+        const AZ::Vector3 translationOffset = m_shapeBus ? m_shapeBus->GetTranslationOffset() : AZ::Vector3::CreateZero();
         return Aabb::CreateFromMinMax(
-            AZ::Vector3(-radius, -radius, AZ::GetMin(-radius, -height * 0.5f)),
-            AZ::Vector3(radius, radius, AZ::GetMax(radius, height * 0.5f)));
+            AZ::Vector3(-radius, -radius, AZ::GetMin(-radius, -height * 0.5f)) + translationOffset,
+            AZ::Vector3(radius, radius, AZ::GetMax(radius, height * 0.5f)) + translationOffset);
     }
 
     float CapsuleLightDelegate::GetEffectiveSolidAngle() const
@@ -114,7 +115,7 @@ namespace AZ::Render
         // Attenuation radius shape is just a capsule with the same internal height, but a radius of the attenuation radius.
         const float radius = GetConfig()->m_attenuationRadius;
         const float scale = GetTransform().GetUniformScale();
-        const float height = m_shapeBus->GetHeight() * scale;
+        const float height = m_capsuleShapeBus->GetHeight() * scale;
         return CapsuleLightDelegate::CapsuleVisualizationDimensions{ radius, height };
     }
 } // namespace AZ::Render

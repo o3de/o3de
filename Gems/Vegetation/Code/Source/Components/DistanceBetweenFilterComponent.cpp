@@ -187,7 +187,7 @@ namespace Vegetation
 
     bool DistanceBetweenFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         bool intersects = false;
 

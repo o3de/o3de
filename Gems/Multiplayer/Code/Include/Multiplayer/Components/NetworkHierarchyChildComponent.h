@@ -66,6 +66,8 @@ namespace Multiplayer
 
         void OnChildChanged(AZ::ChildChangeType type, AZ::EntityId child);
 
+        void TrySetControllerRoot(const NetEntityId rootNetId);
+
         //! Points to the top level root.
         AZ::Entity* m_rootEntity = nullptr;
 

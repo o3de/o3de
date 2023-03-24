@@ -156,7 +156,7 @@ namespace AZ
                 // Add the subpass inputs.
                 for (uint32_t i = 0; i < builder.m_subpassInputAttachments.size(); ++i)
                 {
-                    auto& subpassInputAttachmentName = builder.m_subpassInputAttachments[i];
+                    auto& subpassInputAttachmentName = builder.m_subpassInputAttachments[i].m_name;
                     uint32_t attachmentIndex = 0;
                     auto findIter = renderAttachmentsMap.find(subpassInputAttachmentName);
                     if (findIter == renderAttachmentsMap.end())
@@ -166,11 +166,39 @@ namespace AZ
                     }
 
                     attachmentIndex += findIter->second;
-                    subpassLayout.m_subpassInputIndices[i] = attachmentIndex;
+                    subpassLayout.m_subpassInputDescriptors[i] =
+                        SubpassInputDescriptor{ attachmentIndex, builder.m_subpassInputAttachments[i].m_imageAspects };
+                }
+
+                // Add the shading rate attachment.
+                if (!builder.m_shadingRateAttachment.m_name.IsEmpty())
+                {
+                    uint32_t attachmentIndex = 0;
+                    auto findIter = renderAttachmentsMap.find(builder.m_shadingRateAttachment.m_name);
+                    if (findIter == renderAttachmentsMap.end())
+                    {
+                        if (builder.m_shadingRateAttachment.m_format == Format::Unknown)
+                        {
+                            AZ_Assert(false, "Invalid shading rate format %s", ToString(builder.m_shadingRateAttachment.m_format));
+                            return ResultCode::InvalidArgument;
+                        }
+
+                        attachmentIndex = builtRenderAttachmentLayout.m_attachmentCount++;
+                        renderAttachmentsMap[builder.m_shadingRateAttachment.m_name] = attachmentIndex;
+                        renderAttachmentFormats[attachmentIndex] = builder.m_shadingRateAttachment.m_format;
+                    }
+                    else
+                    {
+                        attachmentIndex = findIter->second;
+                    }
+
+                    subpassLayout.m_shadingRateDescriptor = RenderAttachmentDescriptor{ attachmentIndex,
+                                                                                        InvalidRenderAttachmentIndex,
+                                                                                        builder.m_shadingRateAttachment.m_loadStoreAction };
                 }
             }
 
-             return ResultCode::Success;
+            return ResultCode::Success;
         }
 
         void RenderAttachmentLayoutBuilder::Reset()
@@ -282,9 +310,28 @@ namespace AZ
         }
 
         RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::SubpassInputAttachment(
-            const AZ::Name& name)
+            const AZ::Name& name,
+            RHI::ImageAspectFlags aspectFlags)
         {
-            m_subpassInputAttachments.push_back(name);
+            m_subpassInputAttachments.push_back(SubpassAttachmentEntry{ name, aspectFlags });
+            return this;
+        }
+
+        RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder* RenderAttachmentLayoutBuilder::SubpassAttachmentLayoutBuilder::ShadingRateAttachment(
+            Format format,
+            const AZ::Name& name /*= {}*/)
+        {
+            AZ_Assert(
+                m_shadingRateAttachment.m_format == Format::Unknown || format == m_shadingRateAttachment.m_format,
+                "Shading Rate format has already been set");
+            // Assign a temp name if it's empty.
+            m_shadingRateAttachment = RenderAttachmentEntry{
+                name.IsEmpty() ? AZ::Name(AZStd::string::format("ShadingRate_Subpass%d", m_subpassIndex)) : name,
+                format,
+                AttachmentLoadStoreAction(),
+                {}
+            };
+            m_shadingRateAttachment.m_loadStoreAction.m_storeAction = AttachmentStoreAction::DontCare;
             return this;
         }
     } // namespace RHI

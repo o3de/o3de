@@ -11,6 +11,7 @@ set(FILES
     AzFrameworkModule.h
     AzFrameworkModule.cpp
     API/ApplicationAPI.h
+    API/ApplicationAPI.cpp
     Application/Application.cpp
     Application/Application.h
     Archive/Archive.cpp
@@ -224,6 +225,9 @@ set(FILES
     PaintBrush/PaintBrush.cpp
     PaintBrush/PaintBrush.h
     PaintBrush/PaintBrushNotificationBus.h
+    PaintBrush/PaintBrushSessionBus.h
+    PaintBrush/PaintBrushSystemComponent.cpp
+    PaintBrush/PaintBrushSystemComponent.h
     PaintBrush/PaintBrushSettings.cpp
     PaintBrush/PaintBrushSettings.h
     Physics/Collision/CollisionEvents.h
@@ -275,8 +279,6 @@ set(FILES
     Physics/Material/PhysicsMaterialManager.cpp
     Physics/Material/PhysicsMaterialSystemComponent.h
     Physics/Material/PhysicsMaterialSystemComponent.cpp
-    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.h
-    Physics/Material/Legacy/LegacyPhysicsMaterialSelection.cpp
     Physics/HeightfieldProviderBus.h
     Physics/HeightfieldProviderBus.cpp
     Physics/SimulatedBodies/RigidBody.h
@@ -315,12 +317,11 @@ set(FILES
     Process/ProcessCommunicator.cpp
     Process/ProcessCommunicator.h
     Process/ProcessCommon_fwd.h
-    Process/ProcessCommunicator.h
     Process/ProcessWatcher.cpp
     Process/ProcessWatcher.h
-    Process/ProcessCommon_fwd.h
     Process/ProcessCommunicatorTracePrinter.cpp
     Process/ProcessCommunicatorTracePrinter.h
+    Process/ProcessUtils.h
     ProjectManager/ProjectManager.h
     ProjectManager/ProjectManager.cpp
     Render/GameIntersectorComponent.h
@@ -373,7 +374,9 @@ set(FILES
     Input/Buses/Notifications/InputSystemNotificationBus.h
     Input/Buses/Notifications/InputTextNotificationBus.h
     Input/Buses/Requests/InputChannelRequestBus.h
+    Input/Buses/Requests/InputChannelRequestBus.cpp
     Input/Buses/Requests/InputDeviceRequestBus.h
+    Input/Buses/Requests/InputDeviceRequestBus.cpp
     Input/Buses/Requests/InputHapticFeedbackRequestBus.h
     Input/Buses/Requests/InputLightBarRequestBus.h
     Input/Buses/Requests/InputMotionSensorRequestBus.h
@@ -473,7 +476,4 @@ set(FILES
     Visibility/EntityVisibilityBoundsUnionSystem.cpp
     Visibility/EntityVisibilityQuery.h
     Visibility/EntityVisibilityQuery.cpp
-    Dependency/Dependency.h
-    Dependency/Dependency.inl
-    Dependency/Version.h
 )

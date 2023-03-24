@@ -8,14 +8,24 @@
 
 #include <Atom/RPI/Math.azsli>
 
-float4 ReconstructWorldPositionFromDepth(float2 screenCoords, uint sampleIndex)
+enum class ReflectionScreenSpaceRayTracingResult
 {
-    float depth = PassSrg::m_depth.Load(screenCoords, sampleIndex).r;
+    NoRayTracing,
+    Hit,
+    Miss
+};
 
-    uint2 dimensions;
-    uint samples;
-    PassSrg::m_depth.GetDimensions(dimensions.x, dimensions.y, samples);
-    float2 UV = saturate(screenCoords / dimensions.xy);
+enum class ReflectionScreenSpaceRayTracingHitResult
+{
+    None,
+    OnScreen,
+    OffScreen,
+    Obstructed
+};
+
+float4 ReconstructWorldPositionFromDepth(float2 screenCoords, float depth, uint2 dimensions, uint sampleIndex)
+{
+    float2 UV = saturate(screenCoords / dimensions);
 
     float x = UV.x * 2.0f - 1.0f;
     float y = (1.0f - UV.y) * 2.0f - 1.0f;

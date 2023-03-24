@@ -17,6 +17,7 @@ import configparser
 from pathlib import Path
 
 # Import LyTestTools
+import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -92,6 +93,7 @@ class TestsAssetProcessorGUI(object):
         assert output_message == "pong", "Failed to receive response on control channel socket"
         asset_processor.stop()
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14930")
     @pytest.mark.test_case_id("C1564070")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
@@ -100,7 +102,6 @@ class TestsAssetProcessorGUI(object):
         Deleting assets from Cache will make them re-processed in the already running AP
         """
 
-        START_UP_SECONDS = 3
         asset_processor.create_temp_asset_root()
         asset_processor.add_source_folder_assets(os.path.join(workspace.project, 'Fonts'))
         font_path = os.path.join(asset_processor.temp_project_cache(), "fonts")
@@ -109,7 +110,7 @@ class TestsAssetProcessorGUI(object):
         result, _ = asset_processor.gui_process()
         assert result, "AP GUI failed"
 
-        # check that files exist in the cache: dev\Cache\AutomatedTesting\pc\automatedtesting\fonts
+        # check that files exist in the cache: \tempAssetRoot\AutomatedTesting\Cache\pc\fonts
         assert os.path.exists(font_path), "Fonts folder was not found initially."
 
         # delete the cached files
@@ -127,10 +128,10 @@ class TestsAssetProcessorGUI(object):
     @pytest.mark.test_case_id("C1564065")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
+
     def test_RemoveProjectAssets_ProcessedAssetsDeleted(self, asset_processor, ap_setup_fixture,
                                                                          ):
-        # fmt:on
+
         """
         Asset Processor Deletes processed assets when source is removed from project folder (while running)
 
@@ -176,10 +177,10 @@ class TestsAssetProcessorGUI(object):
     @pytest.mark.test_case_id("C1591563")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
-    # fmt:off
+
     def test_ModifyAsset_UpdatedAssetProcessed(self, asset_processor, ap_setup_fixture,
                                                                 ):
-        # fmt:on
+
         """
         Processing changed files (while running)
 
@@ -317,27 +318,27 @@ class TestsAssetProcessorGUI(object):
         # Verify level and test assets in project folder
         level_assets_list = utils.get_relative_file_paths(project_level_dir)
         test_assets_list = utils.get_relative_file_paths(test_project_asset_dir)
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_project_level_assets), \
             "One or more assets is missing between the level in the project and its expected source assets"
         assert utils.compare_lists(test_assets_list, exp_project_test_assets), \
             "One or more assets is missing between the test assets in the project and the expected source assets"
-        # fmt:on
+
 
         # Verify level and test assets in cache folder
         level_assets_list = utils.get_relative_file_paths(cache_level_dir)
         test_assets_list = utils.get_relative_file_paths(os.path.join(asset_processor.temp_project_cache(),
                                                                       env["test_asset_dir_name"]))
-        # fmt:off
+
         assert utils.compare_lists(level_assets_list, exp_cache_level_assets), \
             "One or more assets is missing between the level in the cache and its expected product assets"
         assert utils.compare_lists(test_assets_list, exp_cache_test_assets), \
             "One or more assets is missing between the test assets in the cache and the expected product assets"
-        # fmt:on
+
         asset_processor.stop()
 
     @pytest.mark.assetpipeline
-    def test_APStop_TimesOut(self, ap_setup_fixture, asset_processor):
+    def test_APStop_TimesOut(self, asset_processor):
         """
         Tests whether or not Asset Processor will Time Out
 
@@ -347,8 +348,9 @@ class TestsAssetProcessorGUI(object):
         3. Verify that Asset Processor times out and returns the expected StopReason
         """
 
+        asset_processor.create_temp_asset_root()
         asset_processor.start()
-        stop = asset_processor.stop(timeout=0)
+        stop = asset_processor.stop(timeout=-1)
         assert stop == StopReason.TIMEOUT, f"AP did not time out as expected, Expected: {StopReason.TIMEOUT} Actual: {stop}"
 
     @pytest.mark.assetpipeline

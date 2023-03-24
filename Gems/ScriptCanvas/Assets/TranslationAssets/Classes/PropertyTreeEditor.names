@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "ResetContainer",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ResetContainer"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "CompareProperty",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke CompareProperty"
@@ -92,7 +90,6 @@
                 },
                 {
                     "base": "IsContainer",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsContainer"
@@ -130,7 +127,6 @@
                 },
                 {
                     "base": "GetContainerCount",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetContainerCount"
@@ -168,7 +164,6 @@
                 },
                 {
                     "base": "SetProperty",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetProperty"
@@ -212,7 +207,6 @@
                 },
                 {
                     "base": "AppendContainerItem",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AppendContainerItem"
@@ -256,7 +250,6 @@
                 },
                 {
                     "base": "GetProperty",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetProperty"
@@ -294,7 +287,6 @@
                 },
                 {
                     "base": "AddContainerItem",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke AddContainerItem"
@@ -344,7 +336,6 @@
                 },
                 {
                     "base": "RemoveContainerItem",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke RemoveContainerItem"
@@ -388,7 +379,6 @@
                 },
                 {
                     "base": "BuildPathsListWithTypes",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke BuildPathsListWithTypes"
@@ -420,7 +410,6 @@
                 },
                 {
                     "base": "HasAttribute",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke HasAttribute"
@@ -464,7 +453,6 @@
                 },
                 {
                     "base": "BuildPathsList",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke BuildPathsList"
@@ -496,7 +484,6 @@
                 },
                 {
                     "base": "SetVisibleEnforcement",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke SetVisibleEnforcement"
@@ -526,7 +513,6 @@
                 },
                 {
                     "base": "UpdateContainerItem",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke UpdateContainerItem"
@@ -576,7 +562,6 @@
                 },
                 {
                     "base": "GetContainerItem",
-                    "context": "PropertyTreeEditor",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetContainerItem"

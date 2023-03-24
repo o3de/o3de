@@ -60,7 +60,7 @@ namespace UnitTest
         , AssetCatalog
         , AssetCatalogRequestBus::Handler
     {
-        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataDrivenHandlerAndCatalog, AZ::SystemAllocator);
 
         DataDrivenHandlerAndCatalog();
         ~DataDrivenHandlerAndCatalog() override;
@@ -83,7 +83,7 @@ namespace UnitTest
         AssetInfo GetAssetInfoById(const AssetId& assetId) override;
 
         const char* GetStreamName(const AssetId& id);
-        
+
         const AssetDefinition* FindByType(const Uuid& type);
         const AssetDefinition* FindById(const AssetId& id);
         void AddDependenciesHelper(const AZStd::vector<ProductDependency>& list, AZStd::vector<ProductDependency>& listOutput);
@@ -103,6 +103,8 @@ namespace UnitTest
             return &m_assetDefinitions.back();
         }
 
+        void AddLegacyAssetId(const Uuid& legacyAssetId, const Uuid& canonicalAssetId);
+
         AZStd::atomic_int m_numCreations = 0;
         AZStd::atomic_int m_numDestructions = 0;
         AZStd::atomic_int m_numLoads = 0;
@@ -116,5 +118,6 @@ namespace UnitTest
         AZ::IO::IStreamerTypes::Priority m_defaultPriority = AZ::IO::IStreamerTypes::s_priorityMedium;
 
         AZStd::vector<AssetDefinition> m_assetDefinitions;
+        AZStd::unordered_map<AZ::Data::AssetId, AZ::Data::AssetId> m_legacyAssetIds;
     };
 }

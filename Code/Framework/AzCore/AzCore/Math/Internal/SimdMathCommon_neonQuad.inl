@@ -26,12 +26,13 @@ namespace AZ
 
             AZ_MATH_INLINE float32x4_t FromVec1(float32x2_t value)
             {
-                return vcombine_f32(value, vmov_n_f32(0.0f));
+                value = NeonDouble::SplatFirst(value);
+                return vcombine_f32(value, value); // {value.x, value.x, value.x, value.x}
             }
 
             AZ_MATH_INLINE float32x4_t FromVec2(float32x2_t value)
             {
-                return vcombine_f32(value, vmov_n_f32(0.0f));
+                return vcombine_f32(value, vmov_n_f32(0.0f)); // {value.x, value.y, 0.0f, 0.0f}
             }
 
             AZ_MATH_INLINE float32x4_t LoadAligned(const float* __restrict addr)
@@ -402,6 +403,31 @@ namespace AZ
                 return Neon::AreAllLanesTrue(vcgeq_f32(arg1, arg2));
             }
 
+            AZ_MATH_INLINE bool CmpFirstThreeEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vceqq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeLt(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcltq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeLtEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcleq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeGt(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcgtq_f32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeGtEq(float32x4_t arg1, float32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vcgeq_f32(arg1, arg2));
+            }
+
             AZ_MATH_INLINE int32x4_t CmpEq(int32x4_t arg1, int32x4_t arg2)
             {
                 return vceqq_s32(arg1, arg2);
@@ -435,6 +461,11 @@ namespace AZ
             AZ_MATH_INLINE bool CmpAllEq(int32x4_t arg1, int32x4_t arg2)
             {
                 return Neon::AreAllLanesTrue(vceqq_s32(arg1, arg2));
+            }
+
+            AZ_MATH_INLINE bool CmpFirstThreeEq(int32x4_t arg1, int32x4_t arg2)
+            {
+                return Neon::AreFirstThreeLanesTrue(vceqq_s32(arg1, arg2));
             }
 
             AZ_MATH_INLINE float32x4_t Select(float32x4_t arg1, float32x4_t arg2, float32x4_t mask)

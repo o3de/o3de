@@ -54,7 +54,7 @@ namespace ScriptCanvasEditor
 
         static const char* GetMimeType() { return "o3de/x-scriptcanvas-varpanel"; }
 
-        AZ_CLASS_ALLOCATOR(GraphVariablesModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphVariablesModel, AZ::SystemAllocator);
         GraphVariablesModel(QObject* parent = nullptr);
         ~GraphVariablesModel();
 
@@ -115,7 +115,7 @@ namespace ScriptCanvasEditor
     {
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(GraphVariablesModelSortFilterProxyModel, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(GraphVariablesModelSortFilterProxyModel, AZ::SystemAllocator);
         GraphVariablesModelSortFilterProxyModel(QObject* parent);
 
         bool filterAcceptsRow(int sourceRow, const QModelIndex& sourceParent) const override;
@@ -140,8 +140,9 @@ namespace ScriptCanvasEditor
         static void CopyVariableToClipboard(const ScriptCanvas::ScriptCanvasId& scriptCanvasId, const ScriptCanvas::VariableId& variableId);
         static bool HandleVariablePaste(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
 
-        AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator, 0);
-        GraphVariablesTableView(QWidget* parent);
+        AZ_CLASS_ALLOCATOR(GraphVariablesTableView, AZ::SystemAllocator);
+        explicit GraphVariablesTableView(QWidget* parent);
+        ~GraphVariablesTableView();
 
         void SetActiveScene(const ScriptCanvas::ScriptCanvasId& scriptCanvasId);
         void SetFilter(const QString& filterString);

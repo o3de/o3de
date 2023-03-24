@@ -26,7 +26,7 @@ namespace AZ
             friend class JsonMaterialPropertyValueSourceDataSerializer;
         public:
             AZ_RTTI(AZ::RPI::MaterialPropertyValueSourceData, "{BC6D3B5A-F562-42F2-B806-A356C4FE4BDB}");
-            AZ_CLASS_ALLOCATOR(MaterialPropertyValueSourceData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MaterialPropertyValueSourceData, AZ::SystemAllocator);
 
             static void Reflect(ReflectContext* context);
 

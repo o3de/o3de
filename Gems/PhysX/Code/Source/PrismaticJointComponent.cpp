@@ -11,11 +11,13 @@
 #include <PhysX/PhysXLocks.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/SimulatedBodies/RigidBody.h>
 #include <AzFramework/Physics/PhysicsScene.h>
 
 #include <PxPhysicsAPI.h>
+#include <PhysX/NativeTypeIdentifiers.h>
 
 namespace PhysX
 {
@@ -32,8 +34,9 @@ namespace PhysX
     PrismaticJointComponent::PrismaticJointComponent(
         const JointComponentConfiguration& configuration,
         const JointGenericProperties& genericProperties,
-        const JointLimitProperties& limitProperties)
-        : JointComponent(configuration, genericProperties, limitProperties)
+        const JointLimitProperties& limitProperties,
+        const JointMotorProperties& motorProperties)
+        : JointComponent(configuration, genericProperties, limitProperties, motorProperties)
     {
     }
 
@@ -73,6 +76,7 @@ namespace PhysX
 
         configuration.m_genericProperties = m_genericProperties;
         configuration.m_limitProperties = m_limits;
+        configuration.m_motorProperties = m_motor;
 
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
@@ -83,5 +87,74 @@ namespace PhysX
                 leadFollowerInfo.m_followerBody->m_bodyHandle);
             m_jointSceneOwner = leadFollowerInfo.m_followerBody->m_sceneOwner;
         }
+
+        // Only connect to the JointRequest bus when it's using a PhysX D6 joint,
+        // which only happens when the "Use Motor" option is enabled.
+        // Otherwise it will use internally a PhysX prismatic joint.
+        if (TryCachePhysXD6Joint())
+        {
+            JointRequestBus::Handler::BusConnect(AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        }
     }
+
+    void PrismaticJointComponent::DeinitNativeJoint()
+    {
+        JointRequestBus::Handler::BusDisconnect();
+        m_nativeD6Joint = nullptr;
+    }
+
+    bool PrismaticJointComponent::TryCachePhysXD6Joint()
+    {
+        if (m_nativeD6Joint)
+        {
+            return true;
+        }
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        AZ_Assert(sceneInterface, "No sceneInterface");
+        const auto* joint = sceneInterface->GetJointFromHandle(m_jointSceneOwner, m_jointHandle);
+        AZ_Assert(joint->GetNativeType() == NativeTypeIdentifiers::PrismaticJoint, "It is not PhysXPrismaticJoint");
+        physx::PxJoint* native = static_cast<physx::PxJoint*>(joint->GetNativePointer());
+        m_nativeD6Joint = native->is<physx::PxD6Joint>();
+        return m_nativeD6Joint != nullptr;
+    }
+
+    float PrismaticJointComponent::GetPosition() const
+    {
+        // Underlying PhysX joint is D6, but it simulates PhysXPrismatic joint.
+        // The D6 joint has only X-axis unlocked, so report only X travel.
+        return m_nativeD6Joint->getRelativeTransform().p.x;
+    };
+
+    float PrismaticJointComponent::GetVelocity() const
+    {
+        // Undelying PhysX joint is D6, but it simulates PhysXPrismatic joint.
+        // The D6 joint has only X-axis unlocked, so report only X velocity.
+        return m_nativeD6Joint->getRelativeLinearVelocity().x;
+    };
+
+    AZStd::pair<float, float> PrismaticJointComponent::GetLimits() const
+    {
+        auto limits = m_nativeD6Joint->getLinearLimit(physx::PxD6Axis::eX);
+        return AZStd::pair<float, float>(limits.lower, limits.upper);
+    }
+
+    AZ::Transform PrismaticJointComponent::GetTransform() const
+    {
+        const auto worldFromLocal = m_nativeD6Joint->getRelativeTransform();
+        return AZ::Transform(
+            AZ::Vector3{ worldFromLocal.p.x, worldFromLocal.p.y, worldFromLocal.p.z },
+            AZ::Quaternion{ worldFromLocal.q.x, worldFromLocal.q.y, worldFromLocal.q.z, worldFromLocal.q.w },
+            1.f);
+    };
+
+    void PrismaticJointComponent::SetVelocity(float velocity)
+    {
+        m_nativeD6Joint->setDriveVelocity({ velocity, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
+    };
+
+    void PrismaticJointComponent::SetMaximumForce(float force)
+    {
+        const physx::PxD6JointDrive drive(0.f , PX_MAX_F32, force, true);
+        m_nativeD6Joint->setDrive(physx::PxD6Drive::eX, drive);
+    };
 } // namespace PhysX

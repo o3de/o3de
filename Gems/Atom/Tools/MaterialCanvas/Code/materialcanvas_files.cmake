@@ -13,14 +13,10 @@ set(FILES
     Source/MaterialCanvasTestData.cpp
     Source/MaterialCanvasTestData.h
 
-    Source/Document/MaterialCanvasDocument.cpp
-    Source/Document/MaterialCanvasDocument.h
-    Source/Document/MaterialCanvasDocumentNotificationBus.h
-    Source/Document/MaterialCanvasDocumentRequestBus.h
+    Source/Document/MaterialGraphCompiler.cpp
+    Source/Document/MaterialGraphCompiler.h
 
     Source/Window/MaterialCanvas.qrc
-    Source/Window/MaterialCanvasGraphView.cpp
-    Source/Window/MaterialCanvasGraphView.h
     Source/Window/MaterialCanvasMainWindow.cpp
     Source/Window/MaterialCanvasMainWindow.h
     Source/Window/MaterialCanvasViewportContent.cpp

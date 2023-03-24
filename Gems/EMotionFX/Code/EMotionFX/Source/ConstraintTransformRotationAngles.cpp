@@ -15,7 +15,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ConstraintTransformRotationAngles, Integration::EMotionFXAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(ConstraintTransformRotationAngles, Integration::EMotionFXAllocator)
 
     // Constructor, which inits on default values
     ConstraintTransformRotationAngles::ConstraintTransformRotationAngles()

@@ -34,7 +34,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(BufferMemory, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferMemory, AZ::ThreadPoolAllocator);
             AZ_RTTI(BufferMemory, "{39053FBD-CE0E-44E8-A9BF-29C4014C3958}", Base);
 
             using Descriptor = RHI::BufferDescriptor;

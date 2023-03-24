@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Math/Random.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
@@ -30,6 +31,19 @@ namespace LmbrCentral
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
+            auto GenerateRandomPointInsideWrapper = [](ShapeComponentRequests* shapeComponentRequests)
+            {
+                if (shapeComponentRequests)
+                {
+                    return shapeComponentRequests->GenerateRandomPointInside(AZ::RandomDistributionType::UniformReal);
+                }
+                else
+                {
+                    AZ_Error("Shape Component", false, "Invalid ShapeComponentRequests interface");
+                    return AZ::Vector3::CreateZero();
+                }
+            };
+
             behaviorContext->EBus<ShapeComponentRequestsBus>("ShapeComponentRequestsBus")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common)
                 ->Attribute(AZ::Script::Attributes::Module, "shape")
@@ -38,6 +52,7 @@ namespace LmbrCentral
                 ->Event("DistanceFromPoint", &ShapeComponentRequestsBus::Events::DistanceFromPoint)
                 ->Event("DistanceSquaredFromPoint", &ShapeComponentRequestsBus::Events::DistanceSquaredFromPoint)
                 ->Event("GetEncompassingAabb", &ShapeComponentRequestsBus::Events::GetEncompassingAabb)
+                ->Event("GenerateRandomPointInside", GenerateRandomPointInsideWrapper)
                 ;
 
             behaviorContext->Enum<(int)ShapeComponentNotifications::ShapeChangeReasons::TransformChanged>("ShapeChangeReasons_TransformChanged")

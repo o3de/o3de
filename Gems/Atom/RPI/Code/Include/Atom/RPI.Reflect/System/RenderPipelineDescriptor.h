@@ -38,6 +38,9 @@ namespace AZ
             //! Render pipelines in the same scene won't have same name.
             AZStd::string m_name;
 
+            //! This will be used in the render pipeline's DrawFilterMask for draw item filtering.
+            AZStd::string m_materialPipelineTag = "MainPipeline";
+
             //! Render settings that can be queried by passes to set things like MSAA on attachments
             PipelineRenderSettings m_renderSettings;
 

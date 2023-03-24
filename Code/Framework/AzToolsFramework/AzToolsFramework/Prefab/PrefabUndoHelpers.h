@@ -38,12 +38,22 @@ namespace AzToolsFramework
                 Instance& owningInstance,
                 Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
+            
+            //! Helper function for adding entity DOMs to prefab template with undo-redo support.
+            //! Note: It does not include updating relevant parent entities.
+            //! @param entityList The list of entities that will be added to template.
+            //! @param templateId The id of the prefab template under which the entity DOMs will live.
+            //! @param undoBatch The undo batch node to register the add-entitiy-doms undo node to.
+            void AddEntityDoms(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                TemplateId templateId,
+                UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for removing entity DOMs to prefab template with undo-redo support.
             //! Note: It does not include updating relevant parent entities.
             //! @param entityDomAndPathList The list of pairs of entity DOM before removal and its alias path in template.
             //! @param templateId The id of the prefab template under which the removed entity DOMs will live.
-            //! @param undoBatch The undo batch node to register the remove-entities undo node to.
+            //! @param undoBatch The undo batch node to register the remove-entity-doms undo node to.
             void RemoveEntityDoms(
                 const AZStd::vector<AZStd::pair<const PrefabDomValue*, AZStd::string>>& entityDomAndPathList,
                 TemplateId templateId,
@@ -54,10 +64,23 @@ namespace AzToolsFramework
             //! @param entityDomAfterUpdatingEntity The DOM of the entity after updating.
             //! @param entityId The id of the entity.
             //! @param undoBatch The undo batch node to register the update-entity undo node to.
+            //! @param updateCache Flag that determines if the cached instance DOM is updated to avoid reloading in next tick.
             void UpdateEntity(
                 const PrefabDomValue& entityDomBeforeUpdatingEntity,
                 const PrefabDomValue& entityDomAfterUpdatingEntity,
                 AZ::EntityId entityId,
+                UndoSystem::URSequencePoint* undoBatch,
+                bool updateCache = true);
+
+            //! Helper function for updating entities as overrides to focused template with undo-redo support.
+            //! @param entityList Entity list for entities to be updated in focused template.
+            //! @param owningInstance The common owning prefab instance of all inputs.
+            //! @param focusedInstance The current focused prefab instance.
+            //! @param undoBatch The undo batch node to register the update-entity undo node to.
+            void UpdateEntitiesAsOverrides(
+                const AZStd::vector<const AZ::Entity*>& entityList,
+                Instance& owningInstance,
+                const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
 
             //! Helper function for deleting entities and update parents to prefab template with undo-redo support.
@@ -84,7 +107,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZStd::string>& instanceAliasPathList,
                 const AZStd::vector<const AZ::Entity*> parentEntityList,
                 Instance& owningInstance,
-                Instance& focusedInstance,
+                const Instance& focusedInstance,
                 UndoSystem::URSequencePoint* undoBatch);
         }
     } // namespace Prefab

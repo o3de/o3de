@@ -101,7 +101,6 @@ ly_add_target(
 
 # The Atom_Asset_Shader is a required gem for Builders in order to process the assets that come WITHOUT
 # the Atom_Feature_Common required gem
-ly_enable_gems(GEMS Atom_Asset_Shader)
 
 ################################################################################
 # Tests

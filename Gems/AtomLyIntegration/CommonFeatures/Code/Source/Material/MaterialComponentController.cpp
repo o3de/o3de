@@ -116,7 +116,8 @@ namespace AZ
         void MaterialComponentController::Activate(EntityId entityId)
         {
             m_entityId = entityId;
-            m_queuedMaterialUpdateNotification = false;
+            m_queuedMaterialsCreatedNotification = false;
+            m_queuedMaterialsUpdatedNotification = false;
 
             MaterialComponentRequestBus::Handler::BusConnect(m_entityId);
             MaterialConsumerNotificationBus::Handler::BusConnect(m_entityId);
@@ -158,6 +159,18 @@ namespace AZ
             InitializeMaterialInstance(asset);
         }
 
+        void MaterialComponentController::OnAssetError(Data::Asset<Data::AssetData> asset)
+        {
+            DisplayMissingAssetWarning(asset);
+            InitializeMaterialInstance(asset);
+        }
+
+        void MaterialComponentController::OnAssetReloadError(Data::Asset<Data::AssetData> asset)
+        {
+            DisplayMissingAssetWarning(asset);
+            InitializeMaterialInstance(asset);
+        }
+
         void MaterialComponentController::OnSystemTick()
         {
             if (m_queuedLoadMaterials)
@@ -166,6 +179,14 @@ namespace AZ
                 m_queuedLoadMaterials = false;
             }
 
+            if (m_queuedMaterialsCreatedNotification)
+            {
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialsCreated, m_configuration.m_materials);
+                m_queuedMaterialsCreatedNotification = false;
+            }
+
+            bool propertiesChanged = false;
             AZStd::unordered_set<MaterialAssignmentId> materialsWithDirtyProperties;
             AZStd::swap(m_materialsWithDirtyProperties, materialsWithDirtyProperties);
 
@@ -175,7 +196,11 @@ namespace AZ
                 const auto materialIt = m_configuration.m_materials.find(materialAssignmentId);
                 if (materialIt != m_configuration.m_materials.end())
                 {
-                    if (!materialIt->second.ApplyProperties())
+                    if (materialIt->second.ApplyProperties())
+                    {
+                        propertiesChanged = true;
+                    }
+                    else
                     {
                         // If the material had properties to apply and it could not be compiled then queue it again
                         m_materialsWithDirtyProperties.emplace(materialAssignmentId);
@@ -183,14 +208,21 @@ namespace AZ
                 }
             }
 
+            if (propertiesChanged)
+            {
+                MaterialComponentNotificationBus::Event(
+                    m_entityId, &MaterialComponentNotifications::OnMaterialPropertiesUpdated, m_configuration.m_materials);
+            }
+
             // Only disconnect from tick bus and send notification after all pending properties have been applied
             if (m_materialsWithDirtyProperties.empty())
             {
-                if (m_queuedMaterialUpdateNotification)
+                if (m_queuedMaterialsUpdatedNotification)
                 {
                     // Materials have been edited and instances have changed but the notification will only be sent once per tick
-                    m_queuedMaterialUpdateNotification = false;
-                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
+                    MaterialComponentNotificationBus::Event(
+                        m_entityId, &MaterialComponentNotifications::OnMaterialsUpdated, m_configuration.m_materials);
+                    m_queuedMaterialsUpdatedNotification = false;
                 }
 
                 SystemTickBus::Handler::BusDisconnect();
@@ -230,15 +262,21 @@ namespace AZ
             {
                 if (uniqueMaterial.GetId().IsValid())
                 {
-                    anyQueued = true;
-                    uniqueMaterial.QueueLoad();
                     AZ::Data::AssetBus::MultiHandler::BusConnect(uniqueMaterial.GetId());
+                    if (uniqueMaterial.QueueLoad())
+                    {
+                        anyQueued = true;
+                    }
+                    else
+                    {
+                        DisplayMissingAssetWarning(uniqueMaterial);
+                    }
                 }
             }
 
             if (!anyQueued)
             {
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -252,7 +290,7 @@ namespace AZ
                     materialAsset = asset;
                 }
 
-                if (materialAsset.GetId().IsValid() && !materialAsset.IsReady())
+                if (materialAsset.GetId().IsValid() && !materialAsset.IsReady() && !materialAsset.IsError())
                 {
                     allReady = false;
                 }
@@ -283,10 +321,10 @@ namespace AZ
                 for (auto& materialPair : m_configuration.m_materials)
                 {
                     materialPair.second.RebuildInstance();
-                    MaterialComponentNotificationBus::Event(m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialPair.second);
                     QueuePropertyChanges(materialPair.first);
                 }
-                QueueMaterialUpdateNotification();
+                QueueMaterialsCreatedNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -298,7 +336,8 @@ namespace AZ
             m_defaultMaterialMap.clear();
             m_uniqueMaterialMap.clear();
             m_materialsWithDirtyProperties.clear();
-            m_queuedMaterialUpdateNotification = false;
+            m_queuedMaterialsCreatedNotification = false;
+            m_queuedMaterialsUpdatedNotification = false;
             for (auto& materialPair : m_configuration.m_materials)
             {
                 materialPair.second.Release();
@@ -351,7 +390,7 @@ namespace AZ
             if (!m_configuration.m_materials.empty())
             {
                 m_configuration.m_materials.clear();
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -362,7 +401,7 @@ namespace AZ
             });
             if (numErased > 0)
             {
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -373,7 +412,7 @@ namespace AZ
             });
             if (numErased > 0)
             {
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -384,7 +423,7 @@ namespace AZ
             });
             if (numErased > 0)
             {
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -403,7 +442,7 @@ namespace AZ
             });
             if (numErased > 0)
             {
-                QueueMaterialUpdateNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -420,7 +459,7 @@ namespace AZ
                     if (!assetInfo.m_assetId.IsValid())
                     {
                         materialPair.second.m_materialAsset = {};
-                        QueueMaterialUpdateNotification();
+                        QueueMaterialsUpdatedNotification();
                     }
                 }
             }
@@ -455,7 +494,7 @@ namespace AZ
                 QueuePropertyChanges(materialAssignmentPair.first);
             }
 
-            QueueMaterialUpdateNotification();
+            QueueMaterialsUpdatedNotification();
             return propertiesUpdated;
         }
 
@@ -486,7 +525,7 @@ namespace AZ
                     materialIt->second.m_matModUvOverrides.empty())
                 {
                     m_configuration.m_materials.erase(materialAssignmentId);
-                    QueueMaterialUpdateNotification();
+                    QueueMaterialsUpdatedNotification();
                     return;
                 }
 
@@ -544,9 +583,8 @@ namespace AZ
             if (wasEmpty != materialAssignment.m_propertyOverrides.empty())
             {
                 materialAssignment.RebuildInstance();
-                MaterialComponentNotificationBus::Event(
-                    m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialAssignment);
-                QueueMaterialUpdateNotification();
+                QueueMaterialsCreatedNotification();
+                QueueMaterialsUpdatedNotification();
             }
 
             QueuePropertyChanges(materialAssignmentId);
@@ -620,9 +658,8 @@ namespace AZ
             if (materialIt->second.m_propertyOverrides.empty())
             {
                 materialIt->second.RebuildInstance();
-                MaterialComponentNotificationBus::Event(
-                    m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialIt->second);
-                QueueMaterialUpdateNotification();
+                QueueMaterialsCreatedNotification();
+                QueueMaterialsUpdatedNotification();
             }
 
             QueuePropertyChanges(materialAssignmentId);
@@ -640,9 +677,8 @@ namespace AZ
             {
                 materialIt->second.m_propertyOverrides = {};
                 materialIt->second.RebuildInstance();
-                MaterialComponentNotificationBus::Event(
-                    m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialIt->second);
-                QueueMaterialUpdateNotification();
+                QueueMaterialsCreatedNotification();
+                QueueMaterialsUpdatedNotification();
             }
         }
 
@@ -654,9 +690,8 @@ namespace AZ
                 {
                     materialPair.second.m_propertyOverrides = {};
                     materialPair.second.RebuildInstance();
-                    MaterialComponentNotificationBus::Event(
-                        m_entityId, &MaterialComponentNotifications::OnMaterialInstanceCreated, materialPair.second);
-                    QueueMaterialUpdateNotification();
+                    QueueMaterialsCreatedNotification();
+                    QueueMaterialsUpdatedNotification();
                 }
             }
         }
@@ -678,7 +713,8 @@ namespace AZ
             if (wasEmpty != materialAssignment.m_propertyOverrides.empty())
             {
                 materialAssignment.RebuildInstance();
-                QueueMaterialUpdateNotification();
+                QueueMaterialsCreatedNotification();
+                QueueMaterialsUpdatedNotification();
             }
 
             QueuePropertyChanges(materialAssignmentId);
@@ -744,7 +780,7 @@ namespace AZ
             // Unlike material properties which are applied to the material itself, UV overrides are applied outside the material
             // by the MeshFeatureProcessor. So all we have to do is notify the mesh component that the materials were updated and it
             // will pass the updated data to the MeshFeatureProcessor.
-            QueueMaterialUpdateNotification();
+            QueueMaterialsUpdatedNotification();
         }
 
         AZ::RPI::MaterialModelUvOverrideMap MaterialComponentController::GetModelUvOverrides(
@@ -764,28 +800,25 @@ namespace AZ
         void MaterialComponentController::QueuePropertyChanges(const MaterialAssignmentId& materialAssignmentId)
         {
             m_materialsWithDirtyProperties.emplace(materialAssignmentId);
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
-        void MaterialComponentController::QueueMaterialUpdateNotification()
+        void MaterialComponentController::QueueMaterialsCreatedNotification()
         {
-            m_queuedMaterialUpdateNotification = true;
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            m_queuedMaterialsCreatedNotification = true;
+            SystemTickBus::Handler::BusConnect();
+        }
+
+        void MaterialComponentController::QueueMaterialsUpdatedNotification()
+        {
+            m_queuedMaterialsUpdatedNotification = true;
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::QueueLoadMaterials()
         {
             m_queuedLoadMaterials = true;
-            if (!SystemTickBus::Handler::BusIsConnected())
-            {
-                SystemTickBus::Handler::BusConnect();
-            }
+            SystemTickBus::Handler::BusConnect();
         }
 
         void MaterialComponentController::ConvertAssetsForSerialization()
@@ -827,6 +860,18 @@ namespace AZ
                 return AZStd::any(AZStd::any_cast<AZ::Data::Instance<AZ::RPI::Image>>(value)->GetAssetId());
             }
             return value;
+        }
+
+        void MaterialComponentController::DisplayMissingAssetWarning([[maybe_unused]] Data::Asset<Data::AssetData> asset) const
+        {
+            AZ_Warning(
+                "MaterialComponent",
+                false,
+                "Material component on entity %s failed to load asset %s. The material component might contain additional material and "
+                "property data if the component was copied or the associated model changed. This data can be cleared using the material "
+                "component request bus or from the editor material component context menu.",
+                m_entityId.ToString().c_str(),
+                asset.ToString<AZStd::string>().c_str());
         }
     } // namespace Render
 } // namespace AZ

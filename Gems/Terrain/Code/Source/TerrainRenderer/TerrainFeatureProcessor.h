@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzFramework/Terrain/TerrainDataRequestBus.h>
 
-#include <TerrainRenderer/BindlessImageArrayHandler.h>
 #include <TerrainRenderer/Passes/TerrainClipmapComputePass.h>
 #include <TerrainRenderer/TerrainDetailMaterialManager.h>
 #include <TerrainRenderer/TerrainMacroMaterialManager.h>
@@ -39,6 +38,7 @@ namespace Terrain
         , private AzFramework::Terrain::TerrainDataNotificationBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(TerrainFeatureProcessor, AZ::SystemAllocator)
         AZ_RTTI(TerrainFeatureProcessor, "{D7DAC1F9-4A9F-4D3C-80AE-99579BF8AB1C}", AZ::RPI::FeatureProcessor);
         AZ_DISABLE_COPY_MOVE(TerrainFeatureProcessor);
         AZ_FEATURE_PROCESSOR(TerrainFeatureProcessor);
@@ -62,7 +62,6 @@ namespace Terrain
         const TerrainClipmapManager& GetClipmapManager() const;
     private:
 
-        static constexpr auto InvalidImageIndex = AZ::Render::BindlessImageArrayHandler::InvalidImageIndex;
         using MaterialInstance = AZ::Data::Instance<AZ::RPI::Material>;
         
         struct WorldShaderData
@@ -99,8 +98,6 @@ namespace Terrain
         TerrainMacroMaterialManager m_macroMaterialManager;
         TerrainDetailMaterialManager m_detailMaterialManager;
         TerrainClipmapManager m_clipmapManager;
-
-        AZStd::shared_ptr<AZ::Render::BindlessImageArrayHandler> m_imageArrayHandler;
 
         AZ::Data::Asset<AZ::RPI::MaterialAsset> m_materialAsset;
         MaterialInstance m_materialInstance;

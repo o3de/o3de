@@ -20,17 +20,17 @@ namespace Camera
 {
     namespace Internal
     {
-        // Each item in the list holds the camera's entityId and name
+        //! Each item in the list holds the camera's entityId and name.
         struct CameraListItem
             : public AZ::EntityBus::Handler
         {
         public:
-            CameraListItem(const AZ::EntityId& cameraId);
+            explicit CameraListItem(AZ::EntityId cameraId);
             ~CameraListItem();
 
             void OnEntityNameChanged(const AZStd::string& name) override { m_cameraName = name; }
 
-            bool operator<(const CameraListItem& rhs);
+            bool operator<(const CameraListItem& rhs) const;
 
             AZ::EntityId m_cameraId;
             AZStd::string m_cameraName;
@@ -53,16 +53,17 @@ namespace Camera
             void OnCameraAdded(const AZ::EntityId& cameraId) override;
             void OnCameraRemoved(const AZ::EntityId& cameraId) override;
 
+            void ConnectCameraNotificationBus();
+            void DisconnecCameraNotificationBus();
+
             QModelIndex GetIndexForEntityId(const AZ::EntityId entityId);
+
+            void Reset();
 
         private:
             AZStd::vector<CameraListItem> m_cameraItems;
             AZ::EntityId m_sequenceCameraEntityId;
             AZ::EntityId m_lastActiveCamera;
-
-            //Value to check that is the first time that we remove a camera before adding a new one.
-            //So we can update m_lastActiveCamera properly
-            bool m_firstEntry = true;
         };
 
         struct ViewportCameraSelectorWindow
@@ -76,35 +77,35 @@ namespace Camera
 
             void currentChanged(const QModelIndex& current, const QModelIndex& previous) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            /// EditorCameraNotificationBus::Handler
+            // EditorCameraNotificationBus overrides ...
             void OnViewportViewEntityChanged(const AZ::EntityId& newViewId) override;
 
-            //////////////////////////////////////////////////////////////////////////
-            /// AzToolsFramework::EditorEntityContextRequestBus::Handler
-            // make sure we can only use this window while in Edit mode
-            void OnStartPlayInEditor() override;
+            // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
+            void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
+            void OnPrepareForContextReset() override;
+            void OnContextReset() override;
 
-            void mouseMoveEvent(QMouseEvent*) override;
+            // QListView overrides ...
             void mouseDoubleClickEvent(QMouseEvent* event) override;
             QModelIndex moveCursor(CursorAction cursorAction, Qt::KeyboardModifiers modifiers) override;
+
             QModelIndex GetPreviousIndex() const;
             QModelIndex GetNextIndex() const;
 
         private:
-            CameraListModel* m_cameraList;
-            bool m_ignoreViewportViewEntityChanged;
+            CameraListModel* m_cameraList = nullptr;
+            bool m_ignoreViewportViewEntityChanged = false;
         };
 
-        // wrapper for the ViewportCameraSelectorWindow so that we can add some descriptive helpful text
+        //! Wrapper for the ViewportCameraSelectorWindow so that we can add some descriptive helpful text.
         struct ViewportSelectorHolder
             : public QWidget
         {
             explicit ViewportSelectorHolder(QWidget* parent = nullptr);
         };
 
-        // simple factory method
+        //! Factory method for ViewportSelectorHolder.
         ViewportSelectorHolder* CreateNewSelectionWindow(QWidget* parent = nullptr);
     } // namespace Camera::Internal
 } // namespace Camera

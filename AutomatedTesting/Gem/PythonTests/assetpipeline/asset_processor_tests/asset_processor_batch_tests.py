@@ -13,10 +13,12 @@ from os import listdir
 import pytest
 import logging
 import os
+from pprint import pformat
 import stat
 import shutil
 
 # Import LyTestTools
+import ly_test_tools
 from ly_test_tools.o3de import asset_processor as asset_processor_utils
 
 # Import fixtures
@@ -308,17 +310,12 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         missing_assets, _ = asset_processor.compare_assets_with_cache()
         assert not missing_assets, 'Following assets are missing in cache: {}'.format(missing_assets)
 
-
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     @pytest.mark.test_case_id('C1612448')
-    @pytest.mark.SUITE_sandbox
     def test_TwoAssetsWithSameProductName_ShouldProcessAfterRename(self, asset_processor, ap_setup_fixture):
         """
-        Sandboxed: Race condition on AP batch shutdown can cause the failure to not yet be registered even though it's
-        recognized as failing in the logs.  There appears to be a window where the AutoFailJob doesn't complete
-        before the shutdown completes and the failure doesn't end up counting
-
         Tests processing of two assets with the same product name, then verifies that AP will successfully process after
         renaming one of the assets' outputs.
 
@@ -332,11 +329,19 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         7. Verify that expected product files are in the cache
         """
 
+        def run_ap_debug_skip_atom_output(asset_processor):
+            result, output = asset_processor.batch_process(capture_output=True, extra_params=["--debugOutput",
+                                                                                              "--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\""])
+            # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
+            logger.info(f"Asset Processor Output: {pformat(output)}")
+            return result, output
+
         # Copying test assets to project folder
         asset_processor.prepare_test_environment(ap_setup_fixture["tests_dir"], "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename")
-        # Launching AP, making sure it is failing
-        result, output = asset_processor.batch_process(capture_output=True)
-        assert result == False, f'AssetProcessorBatch should have failed because the generated output products should share the same name, instead output was {output}'
+        # Launching AP, verify it is failing
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
+        assert result == False, \
+            'AssetProcessorBatch should have failed because the generated output products should share the same name.'
 
         # Renaming output files so they won't collide in cache after second processing
         file_to_rename = os.path.join(asset_processor.temp_asset_root(), "AutomatedTesting", "test_TwoAssetsWithSameProductName_ShouldProcessAfterRename", "a.fbx.assetinfo")
@@ -348,7 +353,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         shutil.copyfile(data_for_rename, file_to_rename)
 
         # Reprocessing files and making sure there are no failed jobs
-        result, output = asset_processor.batch_process(capture_output=True)
+        result, output = run_ap_debug_skip_atom_output(asset_processor)
         assert result, "AssetProcessorBatch failed when it should have succeeded after renaming output."
 
         num_failed_assets = asset_processor_utils.get_num_failed_processed_assets(output)
@@ -359,7 +364,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
         assert num_processed_assets >= expected_asset_count, f'Wrong number of successfully processed assets found in output: '\
                                           f'expected at least {expected_asset_count}, but only {num_processed_assets} were processed'
 
-
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_InvalidServerAddress_Warning_Logs(self, asset_processor):
@@ -645,6 +650,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
 
         assert error_line_found, "The error could not be found in the newest run of the AP Batch log."
 
+    @pytest.mark.skipif(ly_test_tools.WINDOWS, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.BAT
     @pytest.mark.assetpipeline
     def test_validateDirectPreloadDependency_Found(self, asset_processor, ap_setup_fixture, workspace):

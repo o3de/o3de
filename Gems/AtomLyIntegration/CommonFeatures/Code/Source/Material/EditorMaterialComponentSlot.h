@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <Atom/Feature/Material/MaterialAssignment.h>
 #include <Atom/RPI.Reflect/Material/MaterialAsset.h>
 #include <AtomLyIntegration/CommonFeatures/Material/EditorMaterialSystemComponentNotificationBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
@@ -30,7 +30,7 @@ namespace AZ
             , public EditorMaterialSystemComponentNotificationBus::Handler
         {
             AZ_RTTI(EditorMaterialComponentSlot, "{344066EB-7C3D-4E92-B53D-3C9EBD546488}");
-            AZ_CLASS_ALLOCATOR(EditorMaterialComponentSlot, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EditorMaterialComponentSlot, SystemAllocator);
 
             static bool ConvertVersion(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement);
             static void Reflect(ReflectContext* context);

@@ -48,6 +48,7 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME MotionMatching.Clients NAMESPACE Gem TARGETS Gem::MotionMatching)
 ly_create_alias(NAME MotionMatching.Servers NAMESPACE Gem TARGETS Gem::MotionMatching)
+ly_create_alias(NAME MotionMatching.Unified NAMESPACE Gem TARGETS Gem::MotionMatching)
 
 # If we are on a host platform, we want to add the host tools targets like the MotionMatching.Editor target which
 # will also depend on MotionMatching.Static
@@ -103,7 +104,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         NAME MotionMatching.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
         NAMESPACE Gem
         FILES_CMAKE
-            motionmatching_files.cmake
             motionmatching_tests_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
@@ -120,6 +120,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add MotionMatching.Tests to googletest
     ly_add_googletest(
         NAME Gem::MotionMatching.Tests
+        LABELS REQUIRES_tiaf
     )
 
     # If we are a host platform we want to add tools test like editor tests here

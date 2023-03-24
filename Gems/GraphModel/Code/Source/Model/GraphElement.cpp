@@ -6,14 +6,42 @@
  *
  */
 
+// AZ
+#include <AzCore/RTTI/BehaviorContext.h>
+#include <AzCore/Serialization/SerializeContext.h>
+
 // Graph Model
 #include <GraphModel/Model/Graph.h>
+#include <GraphModel/Model/GraphContext.h>
 #include <GraphModel/Model/GraphElement.h>
 
 namespace GraphModel
 {
+    void GraphElement::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<GraphElement>()
+                ->Version(0)
+                ;
 
-    GraphElement::GraphElement(GraphPtr graph) : m_graph(graph)
+            serializeContext->RegisterGenericType<GraphElementPtr>();
+        }
+
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->Class<GraphElement>("GraphModelGraphElement")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Editor")
+                ->Attribute(AZ::Script::Attributes::Module, "editor.graph")
+                ->Method("GetGraph", &GraphElement::GetGraph)
+                ->Method("GetGraphContext", &GraphElement::GetGraphContext)
+                ;
+        }
+    }
+
+    GraphElement::GraphElement(GraphPtr graph)
+        : m_graph(graph)
     {
     }
 

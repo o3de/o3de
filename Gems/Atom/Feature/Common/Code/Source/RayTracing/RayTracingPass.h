@@ -29,16 +29,19 @@ namespace AZ
 
         public:
             AZ_RTTI(RayTracingPass, "{7A68A36E-956A-4258-93FE-38686042C4D9}", RPI::RenderPass);
-            AZ_CLASS_ALLOCATOR(RayTracingPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(RayTracingPass, SystemAllocator);
             virtual ~RayTracingPass();
 
             //! Creates a RayTracingPass
             static RPI::Ptr<RayTracingPass> Create(const RPI::PassDescriptor& descriptor);
 
+            void SetMaxRayLength(float maxRayLength) { m_maxRayLength = maxRayLength; }
+
         protected:
             RayTracingPass(const RPI::PassDescriptor& descriptor);
 
             // Pass overrides
+            bool IsEnabled() const override;
             void FrameBeginInternal(FramePrepareParams params) override;
 
             // Scope producer functions
@@ -74,6 +77,8 @@ namespace AZ
             bool m_requiresViewSrg = false;
             bool m_requiresSceneSrg = false;
             bool m_requiresRayTracingMaterialSrg = false;
+            bool m_requiresRayTracingSceneSrg = false;
+            float m_maxRayLength = 1e27f;
         };
     }   // namespace RPI
 }   // namespace AZ

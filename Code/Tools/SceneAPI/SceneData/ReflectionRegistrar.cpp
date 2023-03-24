@@ -17,10 +17,12 @@
 #include <SceneAPI/SceneData/Rules/StaticMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/SkinMeshAdvancedRule.h>
 #include <SceneAPI/SceneData/Rules/MaterialRule.h>
+#include <SceneAPI/SceneData/Rules/UnmodifiableRule.h>
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
+#include <SceneAPI/SceneData/Rules/TagRule.h>
 
 #include <SceneAPI/SceneData/ManifestBase/SceneNodeSelectionList.h>
 
@@ -68,11 +70,13 @@ namespace AZ
             SceneData::LodRule::Reflect(context);
             SceneData::StaticMeshAdvancedRule::Reflect(context);
             SceneData::MaterialRule::Reflect(context);
+            SceneData::UnmodifiableRule::Reflect(context);
             SceneData::ScriptProcessorRule::Reflect(context);
             SceneData::SkeletonProxyRule::Reflect(context);
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
+            SceneData::TagRule::Reflect(context);
 
             // Utility
             SceneData::SceneNodeSelectionList::Reflect(context);

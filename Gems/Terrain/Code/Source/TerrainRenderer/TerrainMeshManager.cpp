@@ -28,6 +28,7 @@
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
 
 #include <Atom/Feature/RenderCommon.h>
+#include <Atom/Feature/Mesh/MeshCommon.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace Terrain
@@ -83,12 +84,15 @@ namespace Terrain
 
     void TerrainMeshManager::SetConfiguration(const MeshConfiguration& config)
     {
-        if (m_config.CheckWouldRequireRebuild(config))
+        bool requireRebuild = m_config.CheckWouldRequireRebuild(config);
+
+        m_config = config;
+
+        if (requireRebuild)
         {
             m_rebuildSectors = true;
             OnTerrainDataChanged(AZ::Aabb::CreateNull(), TerrainDataChangedMask::HeightData);
         }
-        m_config = config;
 
         // This will trigger a draw packet rebuild later.
         AZ::RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(AZ::Name{ "o_useTerrainClod" }, AZ::RPI::ShaderOptionValue{ m_config.m_clodEnabled });
@@ -124,7 +128,7 @@ namespace Terrain
             m_materialInstance = materialInstance;
 
             // Queue the load of the material's shaders now since they'll be needed later.
-            for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+            for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
             {
                 AZ::Data::Asset<AZ::RPI::ShaderAsset> shaderAsset = shaderItem.GetShaderAsset();
                 if (!shaderAsset.IsReady())
@@ -195,6 +199,7 @@ namespace Terrain
     {
         // lods of sectors that need updating, separated by LOD level.
         AZStd::vector<AZStd::vector<Sector*>> sectorsToUpdate(m_sectorLods.size());
+        bool anySectorsUpdated = false;
 
         for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
@@ -247,13 +252,14 @@ namespace Terrain
                         {
                             sector.m_worldCoord = worldCoord;
                             sectorsToUpdate.at(lodLevel).push_back(&sector);
+                            anySectorsUpdated = true;
                         }
                     }
                 }
             }
         }
 
-        if (!sectorsToUpdate.empty())
+        if (anySectorsUpdated)
         {
             ProcessSectorUpdates(sectorsToUpdate);
             return;
@@ -407,8 +413,9 @@ namespace Terrain
         m_sectorsThatNeedSrgCompiled.clear();
 
         // Only update candidate sectors if the camera has moved. This could probably be relaxed further, but is a good starting point.
-        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing; 
-        if (m_candidateSectors.empty() || m_cameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
+        const float minMovedDistanceSq = m_sampleSpacing * m_sampleSpacing;
+        bool terrainChanged = m_candidateSectors.empty(); // candidate sectors need to be recalculated any time the terrain changes
+        if (terrainChanged || m_cameraPosition.GetDistanceSq(mainCameraPosition) > minMovedDistanceSq)
         {
             m_cameraPosition = mainCameraPosition;
             UpdateCandidateSectors();
@@ -418,9 +425,16 @@ namespace Terrain
             AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_parentScene) :
             nullptr;
 
+        auto meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
+
         // Compare view frustums against the list of candidate sectors and submit those sectors to draw.
         for (auto& view : process.m_views)
         {
+            if (terrainChanged)
+            {
+                view->ApplyFlags(meshMovedFlag.GetIndex());
+            }
+
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
             for (CandidateSector& candidateSector : m_candidateSectors)
             {
@@ -444,7 +458,7 @@ namespace Terrain
         m_candidateSectors.clear();
 
         // Rebuild common draw packet data
-        for (auto& shaderItem : m_materialInstance->GetShaderCollection())
+        for (auto& shaderItem : m_materialInstance->GetGeneralShaderCollection())
         {
             if (!shaderItem.IsEnabled())
             {
@@ -537,7 +551,7 @@ namespace Terrain
 
     void TerrainMeshManager::OnTerrainDataChanged([[maybe_unused]] const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != 0)
+        if ((dataChangedMask & (TerrainDataChangedMask::HeightData | TerrainDataChangedMask::Settings)) != TerrainDataChangedMask::None)
         {
             AzFramework::Terrain::FloatRange heightBounds = AzFramework::Terrain::FloatRange::CreateNull();
             AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
@@ -1093,13 +1107,14 @@ namespace Terrain
                 uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
                 AZ::Vector2 xyPosition = AZ::Vector2(raytracingBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
 
-                float floatHeight = 0.0f;
+                float zPosition = 0.0f;
                 if (meshHeightsNormals.at(localIndex).m_height != NoTerrainVertexHeight)
                 {
-                    floatHeight = meshHeightsNormals.at(localIndex).m_height / float(AZStd::numeric_limits<uint16_t>::max()) * zExtent;
+                    float height = meshHeightsNormals.at(localIndex).m_height / aznumeric_cast<float>(AZStd::numeric_limits<uint16_t>::max());
+                    zPosition = aznumeric_cast<float>(m_worldHeightBounds.m_min) + height * zExtent;
                 }
 
-                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), floatHeight };
+                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), zPosition };
 
                 float normalX = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.first) / AZStd::numeric_limits<int16_t>::max();
                 float normalY = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.second) / AZStd::numeric_limits<int16_t>::max();
@@ -1154,7 +1169,12 @@ namespace Terrain
         // add the submesh to the raytracing scene
         // Note: we use the terrain mesh UUID as the AssetId since it is dynamically created and will not have multiple instances
         m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
-        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, AZ::Data::AssetId(m_rayTracingMeshUuid), subMeshVector, AZ::Transform::CreateIdentity(), AZ::Vector3::CreateOne());
+        AZ::Render::RayTracingFeatureProcessor::Mesh rayTracingMesh;
+        rayTracingMesh.m_assetId = AZ::Data::AssetId(m_rayTracingMeshUuid);
+        rayTracingMesh.m_transform = AZ::Transform::CreateIdentity();
+        rayTracingMesh.m_nonUniformScale = AZ::Vector3::CreateOne();
+
+        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, rayTracingMesh, subMeshVector);
     }
 
     void TerrainMeshManager::UpdateCandidateSectors()

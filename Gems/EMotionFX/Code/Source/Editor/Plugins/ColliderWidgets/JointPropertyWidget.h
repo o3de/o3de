@@ -29,6 +29,7 @@ namespace EMStudio
 
 namespace EMotionFX
 {
+    class SimulatedObjectColliderWidget;
     class AddCollidersButton;
 
     //! A Widget in the Inspector Pane displaying Attributes of selected Nodes in a Skeleton
@@ -56,6 +57,7 @@ namespace EMotionFX
         ClothJointWidget* m_clothJointWidget = nullptr;
         HitDetectionJointWidget* m_hitDetectionJointWidget = nullptr;
         RagdollNodeWidget* m_ragdollJointWidget = nullptr;
+        SimulatedObjectColliderWidget* m_simulatedJointWidget = nullptr;
 
         AZStd::unique_ptr<EMStudio::ActorInfo> m_actorInfo;
         AZStd::unique_ptr<EMStudio::NodeInfo> m_nodeInfo;

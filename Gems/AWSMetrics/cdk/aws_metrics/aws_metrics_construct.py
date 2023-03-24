@@ -5,23 +5,25 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-from aws_cdk import core
+from constructs import Construct
+from aws_cdk import Environment
+
 from .aws_metrics_stack import AWSMetricsStack
 from .auth import AuthPolicy
 from .aws_utils import resource_name_sanitizer
 
 
-class AWSMetrics(core.Construct):
+class AWSMetrics(Construct):
     """
     Orchestrates setting up the AWS Metrics Stack(s)
     """
 
     def __init__(self,
-                 scope: core.Construct,
+                 scope: Construct,
                  id_: str,
                  project_name: str,
                  feature_name: str,
-                 env: core.Environment) -> None:
+                 env: Environment) -> None:
         super().__init__(scope, id_)
         # Set-up any stack name(s) to be unique in account
         stack_name = resource_name_sanitizer.sanitize_resource_name(

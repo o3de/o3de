@@ -36,10 +36,10 @@ def VariableManager_ExposeVarsToComponent():
     """
 
     # Preconditions
-    from editor_python_test_tools.QtPyO3DEEditor import QtPyO3DEEditor
+    from editor_python_test_tools.QtPy.QtPyO3DEEditor import QtPyO3DEEditor
     from editor_python_test_tools.editor_component.editor_script_canvas import ScriptCanvasComponent, VariableState
     import editor_python_test_tools.editor_component.editor_component_validation as Validators
-    from editor_python_test_tools.QtPyCommon import CheckBoxStates
+    from editor_python_test_tools.QtPy.QtPyCommon import CheckBoxStates
     import azlmbr.legacy.general as general
     from consts.scripting import (SCRIPT_CANVAS_TEST_FILE_PATH)
     from editor_python_test_tools.editor_entity_utils import EditorEntity
@@ -89,12 +89,10 @@ def VariableManager_ExposeVarsToComponent():
                                                        VARIABLE_NAME, VariableState.UNUSEDVARIABLE, new_variable_value)
 
 
-
 if __name__ == "__main__":
-
     import ImportPathHelper as imports
 
     imports.init()
-    from editor_python_test_tools.utils import Report
+    from utils import Report
 
     Report.start_test(VariableManager_ExposeVarsToComponent)

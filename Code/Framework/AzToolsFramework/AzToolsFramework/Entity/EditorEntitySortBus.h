@@ -34,6 +34,10 @@ namespace AzToolsFramework
         virtual bool AddChildEntityAtPosition(const AZ::EntityId& entityId, const AZ::EntityId& beforeEntity) = 0;
         virtual bool RemoveChildEntity(const AZ::EntityId& entityId) = 0;
         virtual AZ::u64 GetChildEntityIndex(const AZ::EntityId& entityId) = 0;
+        virtual bool CanMoveChildEntityUp(const AZ::EntityId& entityId) = 0;
+        virtual void MoveChildEntityUp(const AZ::EntityId& entityId) = 0;
+        virtual bool CanMoveChildEntityDown(const AZ::EntityId& entityId) = 0;
+        virtual void MoveChildEntityDown(const AZ::EntityId& entityId) = 0;
     };
     using EditorEntitySortRequestBus = AZ::EBus<EditorEntitySortRequests>;
 

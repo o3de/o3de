@@ -34,6 +34,11 @@ namespace AZStd
     {
         typedef T               argument_type;
         typedef AZStd::size_t   result_type;
+        // You do not need to implement this for your custom type.  Since this function calls
+        // static_cast<result_type>(value); (and result type is usually size_t) you can also, instead of making an
+        // explicit instantiation of hash<T>, supply a
+        // [[nodiscard]] explicit constexpr operator size_t() const
+        // function on your type, which will then get called by this default implementation.
         constexpr result_type operator()(const argument_type& value) const { return static_cast<result_type>(value); }
         static bool OnlyUnspecializedTypesShouldHaveThis() { return true; }
     };

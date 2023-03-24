@@ -102,7 +102,7 @@ namespace AZ::Render
             }
 
             // Editor state passes
-            auto previousOutput = AZStd::make_pair<Name, Name>(Name("Parent"), Name("ColorInputOutput"));
+            auto previousOutput = AZStd::make_pair(Name("Parent"), Name("ColorInputOutput"));
             for (const auto& state : m_editorStates)
             {
                 CreateAndAddStateParentPassTemplate(*state);
@@ -195,7 +195,7 @@ namespace AZ::Render
             {
                 const auto entityIds = state->GetMaskedEntities();
                 auto& mask = entityMaskMap[state->GetEntityMaskDrawList()];
-                for (const auto entityId : entityIds)
+                for (const auto& entityId : entityIds)
                 {
                     mask.insert(entityId);
                 }
@@ -211,6 +211,11 @@ namespace AZ::Render
         {
             state->UpdatePassDataForPipelines();
         }
+    }
+    
+    const char* EditorStatePassSystem::GetParentPassTemplateName() const
+    {
+        return MainPassParentTemplateName;
     }
 
     void EditorStatePassSystem::ConfigureStatePassesForPipeline([[maybe_unused]]RPI::RenderPipeline* renderPipeline)

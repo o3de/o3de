@@ -49,16 +49,16 @@ namespace EMStudio
         // If there is none, we won't show the "assign" action on the context menu.
         int validGroupCount = 0;
 
-        auto* activeGraph = GetActiveGraph();
-        auto currentLevelParentIndex = activeGraph->GetAnimGraphModel().GetFocus();
-        auto currentLevelParentId = currentLevelParentIndex.isValid()
-            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>()
-            : EMotionFX::AnimGraphNodeId{};
+        NodeGraph* activeGraph = GetActiveGraph();
+        QModelIndex currentLevelParentIndex = activeGraph->GetAnimGraphModel().GetFocus();
+        EMotionFX::AnimGraphNodeId currentLevelParentId = currentLevelParentIndex.isValid()
+            ? currentLevelParentIndex.data(AnimGraphModel::ROLE_ID).value<EMotionFX::AnimGraphNodeId>() : EMotionFX::AnimGraphNodeId{};
 
         for (size_t i = 0; i < numNodeGroups; ++i)
         {
             EMotionFX::AnimGraphNodeGroup* nodeGroup = animGraph->GetNodeGroup(i);
             auto nodeGroupParentId = nodeGroup->GetParentNodeId();
+            AZ_Assert(nodeGroupParentId.IsValid(), "Invalid nodeGroupParentId");
 
             // Check if the node group being iterated belongs to the same level currently being shown on the animation graph.
             // We only want to add it to the assignable node groups list if the levels match.

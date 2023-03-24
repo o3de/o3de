@@ -258,7 +258,7 @@ namespace ScriptCanvas
         class SettingsCache
         {
         public:
-            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SettingsCache, AZ::SystemAllocator);
 
             SettingsCache();
             ~SettingsCache();
@@ -294,7 +294,7 @@ namespace ScriptCanvas
         struct Source
         {
             AZ_TYPE_INFO(Source, "{116D1E9E-11F5-4610-95AD-42BF2C32E530}");
-            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(Source, AZ::SystemAllocator);
 
             static AZ::Outcome<Source, AZStd::string> Construct(const Request& reqeust);
 

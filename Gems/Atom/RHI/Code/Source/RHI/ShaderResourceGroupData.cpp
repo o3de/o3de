@@ -484,21 +484,14 @@ namespace AZ
             SetBufferView(indirectResourceBufferIndex, indirectResourceBuffer);
         }
 
-        const AZStd::vector<ShaderResourceGroupData::BindlessResourceViews> ShaderResourceGroupData::GetAllBindlessViews() const
-        {
-            AZStd::vector<BindlessResourceViews> bindlessResourceViews;
-            //Iterate over all the bindless views referenced by this SRGdata
-            for (const auto& it : m_bindlessResourceViews)
-            {
-                bindlessResourceViews.push_back(it.second);
-            }
-            return bindlessResourceViews;
-        }
-    
         const uint32_t ShaderResourceGroupData::GetBindlessViewsSize() const
         {
             return aznumeric_cast<uint32_t>(m_bindlessResourceViews.size());
         }
  
+        const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, ShaderResourceGroupData::BindlessResourceViews>& ShaderResourceGroupData::GetBindlessResourceViews() const
+        {
+            return m_bindlessResourceViews;
+        }
     } // namespace RHI
 } // namespace AZ

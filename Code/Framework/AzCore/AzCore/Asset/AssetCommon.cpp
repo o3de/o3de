@@ -14,6 +14,8 @@
 #include <AzCore/std/parallel/lock.h>
 #include <AzCore/std/string/conversions.h>
 
+DECLARE_EBUS_INSTANTIATION(Data::AssetEvents);
+
 namespace AZ::Data
 {
     AssetFilterInfo::AssetFilterInfo(const AssetId& id, const AssetType& assetType, AssetLoadBehavior loadBehavior)
@@ -77,6 +79,7 @@ namespace AZ::Data
                 ->Method("ToString", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                     ->Attribute(AZ::Script::Attributes::Alias, "to_string")
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::ToString)
+                ->Method("__repr__", [](const Data::AssetId* self) { return self->ToString<AZStd::string>(); })
                 ->Method("IsEqual", [](const Data::AssetId& self, const Data::AssetId& other) { return self == other; })
                     ->Attribute(AZ::Script::Attributes::Alias, "is_equal")
                     ->Attribute(AZ::Script::Attributes::Operator, AZ::Script::Attributes::OperatorType::Equal)

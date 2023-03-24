@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/IO/FileIO.h>
 #include <AzCore/IO/SystemFile.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Utils.h>
 #include <SceneAPI/SceneCore/DataTypes/IGraphObject.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -38,7 +39,7 @@
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
-#include <rapidjson/pointer.h>
+#include <AzCore/JSON/pointer.h>
 #include <SceneBuilder/SceneBuilderWorker.h>
 #include <SceneBuilder/TraceMessageHook.h>
 
@@ -102,8 +103,8 @@ namespace SceneBuilder
             {
                 m_cachedFingerprint.append(element);
             }
-            // A general catch all version fingerprint. Update this to force all FBX files to recompile.
-            m_cachedFingerprint.append("Version 4");
+            // A general catch all version fingerprint. Update this to force all source scene (FBX, GLTF, STL) files to recompile.
+            m_cachedFingerprint.append("Version 5");
         }
 
         return m_cachedFingerprint.c_str();
@@ -435,6 +436,34 @@ namespace SceneBuilder
         AZ_TracePrintf(Utilities::LogWindow, "Finalizing export process.\n");
         result += Process<PostExportEventContext>(productList, outputFolder, platformIdentifier);
 
+        if (scene->HasDimension())
+        {
+            AZStd::string folder;
+            AZStd::string jsonName;
+            AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
+            folder = AZStd::string::format("%s/%s.metadata.json", outputFolder.c_str(), jsonName.c_str());
+            rapidjson::StringBuffer s;
+            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+            writer.StartObject();
+            writer.Key("metadata");
+            writer.StartObject();
+            writer.Key("dimension");
+            writer.StartArray();
+            AZ::Vector3& dimension = scene->GetSceneDimension();
+            writer.Double(dimension.GetX());
+            writer.Double(dimension.GetY());
+            writer.Double(dimension.GetZ());
+            writer.EndArray();
+            writer.Key("vertices");
+            writer.Uint(scene->GetSceneVertices());
+            writer.EndObject();
+            writer.EndObject();
+            rapidjson::Document doc;
+            doc.Parse(s.GetString());
+            AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+            AssetBuilderSDK::JobProduct jsonProduct(folder);
+            response.m_outputProducts.emplace_back(jsonProduct);
+        }
         if (isDebug)
         {
             AZStd::string productName;

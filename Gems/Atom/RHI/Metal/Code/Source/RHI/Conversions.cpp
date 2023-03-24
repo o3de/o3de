@@ -1394,7 +1394,7 @@ namespace AZ
     
         MTLResourceUsage GetImageResourceUsage(RHI::ShaderInputImageAccess imageAccess)
         {
-            MTLResourceUsage mtlResourceUsage = MTLResourceUsageSample | MTLResourceUsageRead;
+            MTLResourceUsage mtlResourceUsage = MTLResourceUsageRead;
             if(imageAccess == RHI::ShaderInputImageAccess::ReadWrite)
             {
                 mtlResourceUsage |= MTLResourceUsageWrite;

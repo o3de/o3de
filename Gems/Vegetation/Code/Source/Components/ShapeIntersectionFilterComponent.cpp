@@ -147,7 +147,7 @@ namespace Vegetation
 
     bool ShapeIntersectionFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         bool inside = false;
         LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, m_configuration.m_shapeEntityId, &LmbrCentral::ShapeComponentRequestsBus::Events::IsPointInside, instanceData.m_position);

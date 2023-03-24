@@ -58,8 +58,8 @@ namespace TestImpact
         //! by the test engine itself.
         //! @param testTargets The test targets to enumerate.
         //! @param executionFailurePolicy The policy for how enumeration execution failures should be handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @param callback The client callback function to handle completed test target enumerations.
         //! @ returns The sequence result and the enumerations for the target that were enumerated.
         //AZStd::pair<TestSequenceResult, AZStd::vector<TestEngineEnumeration>> UpdateEnumerationCache(
@@ -76,9 +76,8 @@ namespace TestImpact
         //! @param executionFailurePolicy Policy for how test execution failures should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
-        //! @param callback The client callback function to handle completed test target runs.
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @ returns The sequence result and the test run results for the test targets that were run.
         [[nodiscard]] TestEngineRegularRunResult<NativeTestTarget>
         RegularRun(
@@ -87,8 +86,7 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
         //! Performs a test run with instrumentation and, for each test target, returns the test run results, coverage data and metrics about the run.
         //! @param testTargets The test targets to run.
@@ -96,9 +94,8 @@ namespace TestImpact
         //! @param integrityFailurePolicy Policy for how integrity failures of the test impact data and source tree model should be handled.
         //! @param testFailurePolicy Policy for how test targets with failing tests should be handled.
         //! @param targetOutputCapture Policy for how test target standard output should be captured and handled.
-        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty). 
-        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty). 
-        //! @param callback The client callback function to handle completed test target runs.
+        //! @param testTargetTimeout The maximum duration a test target may be in-flight for before being forcefully terminated (infinite if empty).
+        //! @param globalTimeout The maximum duration the enumeration sequence may run before being forcefully terminated (infinite if empty).
         //! @ returns The sequence result and the test run results and test coverages for the test targets that were run.
         [[nodiscard]] TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>
         InstrumentedRun(
@@ -108,14 +105,12 @@ namespace TestImpact
             Policy::TestFailure testFailurePolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-            AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const;
+            AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const;
 
     private:
         //! Cleans up the artifacts directory of any artifacts from previous runs.
         void DeleteXmlArtifacts() const;
 
-        size_t m_maxConcurrentRuns = 0;
         AZStd::unique_ptr<NativeRegularTestRunJobInfoGenerator> m_regularTestJobInfoGenerator;
         AZStd::unique_ptr<NativeInstrumentedTestRunJobInfoGenerator> m_instrumentedTestJobInfoGenerator;
         AZStd::unique_ptr<NativeTestEnumerator> m_testEnumerator;

@@ -23,7 +23,7 @@ namespace AZ
         struct BufferViewDescriptor
         {
             AZ_TYPE_INFO(BufferViewDescriptor, "{AC5C4601-1824-434F-B070-B4A48DBDB437}");
-            AZ_CLASS_ALLOCATOR(BufferViewDescriptor, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferViewDescriptor, SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 

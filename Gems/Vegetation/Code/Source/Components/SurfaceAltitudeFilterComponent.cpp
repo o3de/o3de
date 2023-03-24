@@ -175,7 +175,7 @@ namespace Vegetation
 
     bool SurfaceAltitudeFilterComponent::Evaluate(const InstanceData& instanceData) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         const bool useOverrides = m_configuration.m_allowOverrides && instanceData.m_descriptorPtr && instanceData.m_descriptorPtr->m_altitudeFilterOverrideEnabled;
         const float min = useOverrides ? instanceData.m_descriptorPtr->m_altitudeFilterMin : m_configuration.m_altitudeMin;

@@ -14,9 +14,9 @@ namespace AzToolsFramework
 {
     namespace ComponentModeFramework
     {
-        AZ_CLASS_ALLOCATOR_IMPL(PlaceHolderComponentMode, AZ::SystemAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(AnotherPlaceHolderComponentMode, AZ::SystemAllocator, 0)
-        AZ_CLASS_ALLOCATOR_IMPL(OverrideMouseInteractionComponentMode, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(PlaceHolderComponentMode, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(AnotherPlaceHolderComponentMode, AZ::SystemAllocator)
+        AZ_CLASS_ALLOCATOR_IMPL(OverrideMouseInteractionComponentMode, AZ::SystemAllocator)
 
         void PlaceholderEditorComponent::Reflect(AZ::ReflectContext* context)
         {

@@ -17,7 +17,7 @@ namespace UnitTest
         : public AZ::RHI::PhysicalDevice
     {
     public:
-        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PhysicalDevice, AZ::SystemAllocator);
 
         static AZ::RHI::PhysicalDeviceList Enumerate();
 
@@ -29,7 +29,7 @@ namespace UnitTest
         : public AZ::RHI::Device
     {
     public:
-        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Device, AZ::SystemAllocator);
 
         Device();
 
@@ -65,6 +65,11 @@ namespace UnitTest
         AZ::RHI::ResourceMemoryRequirements GetResourceMemoryRequirements([[maybe_unused]] const AZ::RHI::BufferDescriptor& descriptor) { return AZ::RHI::ResourceMemoryRequirements{}; };
 
         void ObjectCollectionNotify(AZ::RHI::ObjectCollectorNotifyFunction notifyFunction) override {}
+
+        AZ::RHI::ShadingRateImageValue ConvertShadingRate([[maybe_unused]] AZ::RHI::ShadingRate rate) const override
+        {
+            return AZ::RHI::ShadingRateImageValue{};
+        }
     };
 
     AZ::RHI::Ptr<AZ::RHI::Device> MakeTestDevice();

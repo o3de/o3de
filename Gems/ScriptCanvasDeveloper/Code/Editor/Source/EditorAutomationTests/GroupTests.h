@@ -56,6 +56,7 @@ namespace ScriptCanvas::Developer
             : public CustomActionState
         {
         public:
+            AZ_CLASS_ALLOCATOR(OffsetPositionByNodeDimension, AZ::SystemAllocator)
             // -1 to 1 will decide how much and which direction we manipulate the specified value by our width/height.
             OffsetPositionByNodeDimension(float horizontalDimension, float verticalDimension, AutomationStateModelId nodeId, AutomationStateModelId position);
             ~OffsetPositionByNodeDimension() override = default;
