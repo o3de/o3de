@@ -363,6 +363,29 @@ def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
     return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems if should_include_gem(gem)])
 
 
+def add_or_replace_object_names(object_names:set, new_object_names:list) -> list:
+    """
+    Returns a list of object names with optional version specifiers, where all objects in
+    the object_names list are replaced with objects in the new_object_names list.  Any object_names, that 
+    don't exist in object_names are added to the new list
+    NOTE: this function only accepts lists of strings, it does not work with lists that contain dicts
+    :param object_names: The set of object names with optional version specifiers
+    :param new_object_names: The object names with optional version specifiers to add or replace in object_names 
+    :return: the combined list of object_names modified with new_object_names 
+    """
+    object_name_map = {}
+    for object_name_with_specifier in object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+    
+    # overwrite or add objects from new_object_names
+    for object_name_with_specifier in new_object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+
+    return object_name_map.values()
+
+
 def contains_object_name(object_name:str, candidates:list) -> bool:
     """
     Returns True if any item in the list of candidates contains object_name with or
