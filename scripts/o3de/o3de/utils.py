@@ -227,14 +227,10 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                     resume_position = os.path.getsize(download_path)
                     current_request.add_header("If-Range", "bytes=%d-" % resume_position)
             with urllib.request.urlopen(current_request) as s:
-                download_file_size = 0
-                try:
-                    download_file_size = s.headers['content-length']
-                except KeyError:
-                    pass
+                download_file_size = int(s.headers.get('content-length',0))
 
                 # if the server does not return a content length we also have to assume we would be replacing a complete file
-                if file_exists and (resume_position == int(download_file_size) or int(download_file_size) == 0) and not force_overwrite:
+                if file_exists and (resume_position == download_file_size or download_file_size == 0) and not force_overwrite:
                     logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
                     return 1
 
@@ -260,7 +256,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
                 def download_progress(downloaded_bytes):
                     if download_progress_callback:
-                        return download_progress_callback(int(downloaded_bytes), int(download_file_size))
+                        return download_progress_callback(int(downloaded_bytes), download_file_size)
                     return False
 
                 with download_path.open(file_mode) as f:
