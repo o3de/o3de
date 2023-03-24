@@ -551,49 +551,19 @@ class TestRename(unittest.TestCase):
     def setUp(self):
         self.file1 = 'file1'
         self.file2 = 'file2'
-        self.dir1 = 'dir1'
-        self.dir2 = 'dir2'
 
     def tearDown(self):
         self.file1 = None
         self.file2 = None
-        self.dir1 = None
-        self.dir2 = None
 
     @mock.patch('os.path')
     @mock.patch('os.chmod')
     @mock.patch('os.rename')
     def test_Rename_TwoFiles_SuccessfulRename(self, mock_rename, mock_chmod, mock_path):
         mock_path.exists.side_effect = [True, False]
-        mock_path.isdir.return_value = False
-        mock_path.isfile.return_value = True
 
         self.assertTrue(file_system.rename(self.file1, self.file2))
-        self.assertEqual(True, mock_path.isfile.called)
-        self.assertEqual(True, mock_rename.called)
-
-    @mock.patch('os.path')
-    @mock.patch('os.chmod')
-    @mock.patch('os.rename')
-    def test_Rename_TwoDirectories_SuccessfulRename(self, mock_rename, mock_chmod, mock_path):
-        mock_path.exists.side_effect = [True, False]
-        mock_path.isdir.return_value = True
-        mock_path.isfile.return_value = False
-
-        self.assertTrue(file_system.rename(self.dir1, self.dir2))
-        self.assertEqual(True, mock_path.isdir.called)
-        self.assertEqual(True, mock_rename.called)
-
-    @mock.patch('os.rename')
-    def test_Rename_OneDirectoryOneFile_ErrorReported(self, mock_rename):
-        with self.assertLogs('ly_test_tools.environment.file_system', 'ERROR') as captured_logs:
-            with mock.patch('os.path') as mock_path:
-                mock_path.exists.side_effect = [True, False]
-                mock_path.isfile.return_value = True
-                mock_path.isdir.side_effect = [True, False, True]
-                self.assertFalse(file_system.rename(self.file1, self.dir1))
-        self.assertIn("Rename failed.", captured_logs.records[0].getMessage())
-        self.assertFalse(mock_rename.called)
+        self.assertTrue(mock_rename.called)
 
     @mock.patch('os.rename')
     def test_Rename_SourceDoesNotExist_ErrorReported(self, mock_rename):

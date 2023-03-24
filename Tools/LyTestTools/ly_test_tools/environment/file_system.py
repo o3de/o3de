@@ -339,14 +339,7 @@ def rename(src: str | bytes, dst: str | bytes) -> bool:
         logger.error(f"File already exists at: {dst}")
         return False
 
-    if os.path.isfile(src) and not os.path.isdir(dst):
-        return _rename_helper(src, dst)
-
-    if os.path.isdir(src) and os.path.isdir(dst):
-        return _rename_helper(src, dst)
-
-    logger.error(f"Rename failed. Please ensure source and destination are both either file or directory paths.")
-    return False
+    return _rename_helper(src, dst)
 
 def create_backup(source, backup_dir, backup_name=None):
     """
