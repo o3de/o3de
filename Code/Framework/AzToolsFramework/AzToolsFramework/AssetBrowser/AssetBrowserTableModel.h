@@ -43,9 +43,7 @@ namespace AzToolsFramework
             QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
-            //////////////////////////////////////////////////////////////////////////
-            // QAbstractTableModel
-            //////////////////////////////////////////////////////////////////////////
+            // QAbstractTableModel overrides ...
             Qt::DropActions supportedDropActions() const override;
             Qt::ItemFlags flags(const QModelIndex& index) const override;
             bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
