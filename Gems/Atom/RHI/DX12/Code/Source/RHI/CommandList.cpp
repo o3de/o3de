@@ -340,10 +340,27 @@ namespace AZ
 
             // set the global root signature
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
+            if (!rayTracingPipelineState)
+            {
+                AZ_Assert(false, "Pipeline state not provided");
+                return;
+            }
+
             commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
 
             const PipelineState* globalPipelineState = static_cast<const PipelineState*>(dispatchRaysItem.m_globalPipelineState);
+            if (!globalPipelineState)
+            {
+                AZ_Assert(false, "Global Pipeline state not provided");
+                return;
+            }
+
             const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            if (!globalPipelineLayout)
+            {
+                AZ_Assert(false, "Pipeline layout is null.");
+                return;
+            }
 
             // bind ShaderResourceGroups
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)

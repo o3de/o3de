@@ -84,7 +84,7 @@ namespace AZ
             uint32_t contextIndex)
         {
             AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
-           
+
             const Scope* scope = m_scopes[contextIndex];
             m_commandList->SetName(m_mergedCommandListName);
             m_commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
