@@ -56,7 +56,7 @@ namespace AZ
             {
                 return true;
             }
-            if (!m_materialTypeAsset || !m_materialTypeAsset.IsReady())
+            if (!m_materialTypeAsset.IsReady())
             {
                 return false;
             }

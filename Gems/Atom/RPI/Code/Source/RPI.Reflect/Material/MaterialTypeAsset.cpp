@@ -82,23 +82,13 @@ namespace AZ
             {
                 return true;
             }
-            for (auto& shaderItem : m_generalShaderCollection)
+            if (!m_generalShaderCollection.InitializeShaderOptionGroups())
             {
-                if (!shaderItem.InitializeShaderOptionGroup())
-                {
-                    return false;
-                }
+                return false;
             }
-
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
-                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
-                {
-                    if (!shaderItem.InitializeShaderOptionGroup())
-                    {
-                        return false;
-                    }
-                }
+                materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups();
             }
             m_isNonSerializedDataInitialized = true;
             return true;
@@ -264,18 +254,11 @@ namespace AZ
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
-
-            for (auto& shaderItem : m_generalShaderCollection)
-            {
-                shaderItem.TryReplaceShaderAsset(asset);
-            }
+            m_generalShaderCollection.TryReplaceShaderAsset(asset);
 
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
-                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
-                {
-                    shaderItem.TryReplaceShaderAsset(asset);
-                }
+                materialPipelinePair.second.m_shaderCollection.TryReplaceShaderAsset(asset);
             }
         }
 

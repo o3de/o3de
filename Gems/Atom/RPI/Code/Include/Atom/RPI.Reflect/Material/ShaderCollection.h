@@ -92,7 +92,7 @@ namespace AZ
                 //! Returns the shader tag used to identify this item
                 const AZ::Name& GetShaderTag() const;
 
-                //! Id the AssetId of @newShaderAsset matches the AssetId of @m_shaderAsset,
+                //! If the AssetId of @newShaderAsset matches the AssetId of @m_shaderAsset,
                 //! then @m_shaderAsset will be updated to @newShaderAsset, AND m_shaderOptionGroup
                 //! will be updated too.
                 void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
@@ -127,6 +127,16 @@ namespace AZ
             bool HasShaderTag(const AZ::Name& shaderTag) const;
             Item& operator[](const AZ::Name& shaderTag);
             const Item& operator[](const AZ::Name& shaderTag) const;
+
+            //! Convenience function that loops through all @m_shaderItems
+            //! and calls TryReplaceShaderAsset on all of them.
+            void TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset);
+
+            //! Loops through all items in the collection and calls Item::InitializeShaderOptionGroup().
+            //! Returns true if all Item::InitializeShaderOptionGroup() return true,
+            //! otherwise returns false.
+            bool InitializeShaderOptionGroups();
+
         private:
             using NameReflectionMapForIndex = RHI::NameIdReflectionMap<RHI::Handle<uint32_t>>;
 

@@ -67,7 +67,6 @@ namespace AZ
             m_materialPipelineData = {};
             m_materialAsset = { &materialAsset, AZ::Data::AssetLoadBehavior::PreLoad };
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
-            Data::AssetBus::Handler::BusDisconnect();
             if (!m_materialAsset.IsReady())
             {
                 // We will call this function again later when the asset is ready.
@@ -144,6 +143,7 @@ namespace AZ
 
         Material::~Material()
         {
+            Data::AssetBus::Handler::BusDisconnect();
             ShaderReloadNotificationBus::MultiHandler::BusDisconnect();
         }
 

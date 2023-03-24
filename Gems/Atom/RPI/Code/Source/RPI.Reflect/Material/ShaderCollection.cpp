@@ -47,7 +47,7 @@ namespace AZ
                     // calling InitializeShaderOptionGroup() and @m_shaderOptionGroup
                     // will get proper data.
                     shaderVariantReference->m_shaderOptionGroup = {};
-                    shaderVariantReference->m_shaderAsset.QueueLoad(); // Not necessaru to call QueueLoad, but doesn't hurt either.
+                    shaderVariantReference->m_shaderAsset.QueueLoad(); // Not necessary to call QueueLoad, but doesn't hurt either.
                 }
 
             }
@@ -150,6 +150,26 @@ namespace AZ
         bool ShaderCollection::HasShaderTag(const AZ::Name& shaderTag) const
         {
             return (m_shaderTagIndexMap.Find(shaderTag).IsValid());
+        }
+
+        void ShaderCollection::TryReplaceShaderAsset(const Data::Asset<ShaderAsset>& newShaderAsset)
+        {
+            for (auto& shaderItem : m_shaderItems)
+            {
+                shaderItem.TryReplaceShaderAsset(newShaderAsset);
+            }
+        }
+
+        bool ShaderCollection::InitializeShaderOptionGroups()
+        {
+            for (auto& shaderItem : m_shaderItems)
+            {
+                if (!shaderItem.InitializeShaderOptionGroup())
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         ShaderCollection::Item::Item(const Data::Asset<ShaderAsset>& shaderAsset, const AZ::Name& shaderTag, ShaderVariantId variantId)
@@ -285,7 +305,7 @@ namespace AZ
             m_shaderAsset = newShaderAsset;
             [[maybe_unused]] bool success = InitializeShaderOptionGroup();
             AZ_Assert(success, "Failed to InitializeShaderOptionGroup using shaderAsset with uuid=%s and hint=%s"
-                , newShaderAsset.GetId().ToString<AZStd::string>().c_str(), newShaderAsset.GetHint().c_str());
+                , newShaderAsset.GetId().ToFixedString().c_str(), newShaderAsset.GetHint().c_str());
         }
 
     } // namespace RPI
