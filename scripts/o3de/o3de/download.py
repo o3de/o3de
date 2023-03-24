@@ -21,6 +21,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from datetime import datetime
+from tempfile import TemporaryDirectory
 
 from o3de import manifest, repo, utils, validation, register
 
@@ -155,8 +156,25 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         with zipfile.ZipFile(download_zip_path, 'r') as zip_file_ref:
             try:
                 zip_file_ref.extractall(dest_path)
-            except Exception:
+
+                # Some services like GitHub put repository archive code
+                # in an inner folder.  If no object.json exists in the extracted 
+                # path but there is a single folder move it up a level.  
+                paths = [path for path in pathlib.Path(dest_path).iterdir()]
+                if len(paths) == 1 and paths[0].is_dir():
+                    subdir = paths[0]
+                    with TemporaryDirectory() as tmp_dir:
+                        logger.info(f'Moving {subdir} -> {tmp_dir}/gem -> {dest_path}.')
+                        # We need to put the gem in a subdir so we don't move the tmp_dir 
+                        shutil.move(subdir, pathlib.Path(tmp_dir) / "gem")
+                        # Remove the dest_path or when we try to replace it, move() will
+                        # just put the subdir inside dest_path instead of replacing it
+                        shutil.rmtree(dest_path)
+                        shutil.move(pathlib.Path(tmp_dir) / "gem", dest_path)
+                    
+            except Exception as e:
                 logger.error(f'Error unzipping {download_zip_path} to {dest_path}. Deleting {dest_path}.')
+                logger.error(f'{e}')
                 shutil.rmtree(dest_path)
                 return 1
 
