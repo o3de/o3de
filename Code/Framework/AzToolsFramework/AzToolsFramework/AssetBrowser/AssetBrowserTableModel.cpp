@@ -241,10 +241,10 @@ namespace AzToolsFramework
                 return true;
             }
 
-            auto sourceparent = mapToSource(parent).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
+            auto sourceParent = mapToSource(parent).data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
             // We should only have an item as a folder but will check
-            if (sourceparent && (sourceparent->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
+            if (sourceParent && (sourceParent->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder))
             {
                 AZStd::vector<const AssetBrowserEntry*> entries;
 
@@ -261,7 +261,7 @@ namespace AzToolsFramework
                         {
                             fromPath = entry->GetFullPath();
                             PathView filename = fromPath.Filename();
-                            toPath = sourceparent->GetFullPath();
+                            toPath = sourceParent->GetFullPath();
                             toPath /= filename;
                             isFolder = false;
                         }
@@ -269,7 +269,7 @@ namespace AzToolsFramework
                         {
                             fromPath = entry->GetFullPath() + "/*";
                             Path filename = static_cast<Path>(entry->GetFullPath()).Filename();
-                            toPath = AZ::IO::Path(sourceparent->GetFullPath()) / filename.c_str() / "*";
+                            toPath = AZ::IO::Path(sourceParent->GetFullPath()) / filename.c_str() / "*";
                         }
                         AssetBrowserViewUtils::MoveEntry(fromPath.c_str(), toPath.c_str(), isFolder);
                     }
