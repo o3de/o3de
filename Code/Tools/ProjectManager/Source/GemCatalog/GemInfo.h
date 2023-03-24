@@ -69,7 +69,8 @@ namespace O3DE::ProjectManager
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
-
+        bool IsEngineGem() const;
+        QString GetNameWithVersionSpecifier(const QString& comparitor = "==") const;
         bool IsValid() const;
 
         bool operator<(const GemInfo& gemInfo) const;
@@ -102,6 +103,9 @@ namespace O3DE::ProjectManager
     };
 } // namespace O3DE::ProjectManager
 
-Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Platforms)
-Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Types)
-Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::GemOrigins)
+Q_DECLARE_METATYPE(O3DE::ProjectManager::GemInfo);
+
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Platforms);
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::Types);
+Q_DECLARE_OPERATORS_FOR_FLAGS(O3DE::ProjectManager::GemInfo::GemOrigins);
+

@@ -7,6 +7,8 @@
  */
 
 #include "GemInfo.h"
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
 
 #include <QObject>
 
@@ -94,6 +96,26 @@ namespace O3DE::ProjectManager
     bool GemInfo::IsPlatformSupported(Platform platform) const
     {
         return (m_platforms & platform);
+    }
+
+    bool GemInfo::IsEngineGem() const
+    {
+        const AZ::IO::PathView enginePath { AZ::Utils::GetEnginePath() };
+        return AZ::IO::PathView(m_path.toUtf8().constData()).IsRelativeTo(enginePath);
+    }
+
+    QString GemInfo::GetNameWithVersionSpecifier(const QString& comparitor) const
+    {
+        if (IsEngineGem() || m_version.isEmpty() || m_version.contains("unknown", Qt::CaseInsensitive))
+        {
+            // the gem should not use a version specifier because it is an engine gem
+            // or the version is invalid
+            return m_name;
+        }
+        else
+        {
+            return QString("%1%2%3").arg(m_name, comparitor, m_version);
+        }
     }
 
     bool GemInfo::operator<(const GemInfo& gemInfo) const
