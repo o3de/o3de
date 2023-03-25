@@ -100,6 +100,9 @@ namespace PhysX
         }
     } // namespace Internal
 
+    const float ArticulationLinkConfiguration::s_breakageMax = 10000000.0f;
+    const float ArticulationLinkConfiguration::s_breakageMin = 0.01f;
+
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationLinkConfiguration, AZ::SystemAllocator);
 
     void ArticulationLinkConfiguration::Reflect(AZ::ReflectContext* context)
@@ -135,7 +138,6 @@ namespace PhysX
                 ->Field("CCD Min Advance", &ArticulationLinkConfiguration::m_ccdMinAdvanceCoefficient)
                 ->Field("CCD Friction", &ArticulationLinkConfiguration::m_ccdFrictionEnabled)
                 ->Field("Open PhysX Configuration", &ArticulationLinkConfiguration::m_configButton)
-
                 ->Field("Local Position", &ArticulationLinkConfiguration::m_localPosition)
                 ->Field("Local Rotation", &ArticulationLinkConfiguration::m_localRotation)
                 ->Field("Parent Entity", &ArticulationLinkConfiguration::m_leadEntity)
@@ -146,17 +148,19 @@ namespace PhysX
                 ->Field("Display Debug", &ArticulationLinkConfiguration::m_displayJointSetup)
                 ->Field("Select Lead on Snap", &ArticulationLinkConfiguration::m_selectLeadOnSnap)
                 ->Field("Self Collide", &ArticulationLinkConfiguration::m_selfCollide)
-
                 ->Field("SolverPositionIterations", &ArticulationLinkConfiguration::m_solverPositionIterations)
-                ->Field("SolverVelocityIterations", &ArticulationLinkConfiguration::m_solverVelocityIterations);
+                ->Field("SolverVelocityIterations", &ArticulationLinkConfiguration::m_solverVelocityIterations)
+                ->Field("ArticulationJointType", &ArticulationLinkConfiguration::m_articulationJointType)
+                ->Field("Root Articulation", &ArticulationLinkConfiguration::m_isRootArticulation);
         }
 
-        //if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        // if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         //{
 
         //    if (auto* editContext = serializeContext->GetEditContext())
         //    {
-        //        editContext->Enum<ArticulationLinkConfiguration::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")
+        //        editContext->Enum<ArticulationLinkConfiguration::DisplaySetupState>("Joint Display Setup State", "Options for displaying
+        //        joint setup.")
         //            ->Value("Never", ArticulationLinkConfiguration::DisplaySetupState::Never)
         //            ->Value("Selected", ArticulationLinkConfiguration::DisplaySetupState::Selected)
         //            ->Value("Always", ArticulationLinkConfiguration::DisplaySetupState::Always);
@@ -166,12 +170,15 @@ namespace PhysX
         //            ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
         //            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
         //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_localPosition, "Local Position", "Local Position of joint, relative to its entity.")
+        //                0, &PhysX::ArticulationLinkConfiguration::m_localPosition, "Local Position", "Local Position of joint, relative to
+        //                its entity.")
         //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_localRotation, "Local Rotation", "Local Rotation of joint, relative to its entity.")
+        //                0, &PhysX::ArticulationLinkConfiguration::m_localRotation, "Local Rotation", "Local Rotation of joint, relative to
+        //                its entity.")
         //            ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
         //            ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
-        //            ->DataElement(0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with joint.")
+        //            ->DataElement(0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with
+        //            joint.")
         //            //->Attribute(AZ::Edit::Attributes::ChangeNotify, &ArticulationLinkConfiguration::ValidateLeadEntityId)
         //            ->DataElement(
         //                0,
@@ -192,11 +199,13 @@ namespace PhysX
         //                "Select Lead on Snap",
         //                "Select lead entity on snap to position in component mode.")
         //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_breakable, "Breakable", "Joint is breakable when force or torque exceeds limit.")
+        //                0, &PhysX::ArticulationLinkConfiguration::m_breakable, "Breakable", "Joint is breakable when force or torque
+        //                exceeds limit.")
         //            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
         //            ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
         //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_forceMax, "Maximum Force", "Amount of force joint can withstand before breakage.")
+        //                0, &PhysX::ArticulationLinkConfiguration::m_forceMax, "Maximum Force", "Amount of force joint can withstand before
+        //                breakage.")
         //            ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_breakable)
         //            ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
         //            ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
@@ -211,29 +220,29 @@ namespace PhysX
         //    }
         //}
 
-        //if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        // if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         //{
-        //    if (auto* editContext = serializeContext->GetEditContext())
-        //    {
-        //        editContext
-        //            ->Class<PhysX::ArticulationLinkConfiguration>(
-        //                "PhysX-specific Rigid Body Configuration", "Additional Rigid Body settings specific to PhysX.")
-        //            ->DataElement(
-        //                AZ::Edit::UIHandlers::Default,
-        //                &PhysX::ArticulationLinkConfiguration::m_solverPositionIterations,
-        //                "Solver Position Iterations",
-        //                "Higher values can improve stability at the cost of performance.")
-        //            ->Attribute(AZ::Edit::Attributes::Min, 1)
-        //            ->Attribute(AZ::Edit::Attributes::Max, 255)
-        //            ->DataElement(
-        //                AZ::Edit::UIHandlers::Default,
-        //                &PhysX::ArticulationLinkConfiguration::m_solverVelocityIterations,
-        //                "Solver Velocity Iterations",
-        //                "Higher values can improve stability at the cost of performance.")
-        //            ->Attribute(AZ::Edit::Attributes::Min, 1)
-        //            ->Attribute(AZ::Edit::Attributes::Max, 255);
-        //    }
-        //}
+        //     if (auto* editContext = serializeContext->GetEditContext())
+        //     {
+        //         editContext
+        //             ->Class<PhysX::ArticulationLinkConfiguration>(
+        //                 "PhysX-specific Rigid Body Configuration", "Additional Rigid Body settings specific to PhysX.")
+        //             ->DataElement(
+        //                 AZ::Edit::UIHandlers::Default,
+        //                 &PhysX::ArticulationLinkConfiguration::m_solverPositionIterations,
+        //                 "Solver Position Iterations",
+        //                 "Higher values can improve stability at the cost of performance.")
+        //             ->Attribute(AZ::Edit::Attributes::Min, 1)
+        //             ->Attribute(AZ::Edit::Attributes::Max, 255)
+        //             ->DataElement(
+        //                 AZ::Edit::UIHandlers::Default,
+        //                 &PhysX::ArticulationLinkConfiguration::m_solverVelocityIterations,
+        //                 "Solver Velocity Iterations",
+        //                 "Higher values can improve stability at the cost of performance.")
+        //             ->Attribute(AZ::Edit::Attributes::Min, 1)
+        //             ->Attribute(AZ::Edit::Attributes::Max, 255);
+        //     }
+        // }
     }
 
     AzPhysics::MassComputeFlags ArticulationLinkConfiguration::GetMassComputeFlags() const
@@ -268,7 +277,8 @@ namespace PhysX
         m_computeCenterOfMass = AzPhysics::MassComputeFlags::COMPUTE_COM == (flags & AzPhysics::MassComputeFlags::COMPUTE_COM);
         m_computeInertiaTensor = AzPhysics::MassComputeFlags::COMPUTE_INERTIA == (flags & AzPhysics::MassComputeFlags::COMPUTE_INERTIA);
         m_computeMass = AzPhysics::MassComputeFlags::COMPUTE_MASS == (flags & AzPhysics::MassComputeFlags::COMPUTE_MASS);
-        m_includeAllShapesInMassCalculation = AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
+        m_includeAllShapesInMassCalculation =
+            AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & AzPhysics::MassComputeFlags::INCLUDE_ALL_SHAPES);
     }
 
     bool ArticulationLinkConfiguration::IsCcdEnabled() const
@@ -287,31 +297,34 @@ namespace PhysX
 
     AZ::Crc32 ArticulationLinkConfiguration::GetInitialVelocitiesVisibility() const
     {
-        return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, ArticulationLinkConfiguration::PropertyVisibility::InitialVelocities);
+        return Internal::GetPropertyVisibility(
+            m_propertyVisibilityFlags, ArticulationLinkConfiguration::PropertyVisibility::InitialVelocities);
     }
 
     AZ::Crc32 ArticulationLinkConfiguration::GetInertiaSettingsVisibility() const
     {
-        return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties);
+        return Internal::GetPropertyVisibility(
+            m_propertyVisibilityFlags, ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties);
     }
 
     AZ::Crc32 ArticulationLinkConfiguration::GetInertiaVisibility() const
     {
-        bool visible =
-            ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) && !m_computeInertiaTensor;
+        bool visible = ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) &&
+            !m_computeInertiaTensor;
         return visible ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     AZ::Crc32 ArticulationLinkConfiguration::GetCoMVisibility() const
     {
-        bool visible =
-            ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) && !m_computeCenterOfMass;
+        bool visible = ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) &&
+            !m_computeCenterOfMass;
         return visible ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
     AZ::Crc32 ArticulationLinkConfiguration::GetMassVisibility() const
     {
-        bool visible = ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) && !m_computeMass;
+        bool visible =
+            ((m_propertyVisibilityFlags & ArticulationLinkConfiguration::PropertyVisibility::InertiaProperties) != 0) && !m_computeMass;
         return visible ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
     }
 
@@ -351,15 +364,6 @@ namespace PhysX
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, ArticulationLinkConfiguration::PropertyVisibility::MaxVelocities);
     }
 
-    /*void ArticulationLinkConfiguration::SetLeadEntityId(AZ::EntityId leadEntityId)
-    {
-        m_leadEntity = leadEntityId;
-        ValidateLeadEntityId();
-
-        AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
-            &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
-    }*/
-
     JointGenericProperties ArticulationLinkConfiguration::ToGenericProperties() const
     {
         JointGenericProperties::GenericJointFlag flags = JointGenericProperties::GenericJointFlag::None;
@@ -389,6 +393,12 @@ namespace PhysX
             m_leadEntity,
             m_followerEntity);
     }
+
+    void ArticulationLinkConfiguration::SetIsRootArticulation(bool value)
+    {
+        m_isRootArticulation = value;
+    }
+} // namespace PhysX
 
 //    void ArticulationLinkConfiguration::ValidateLeadEntityId()
 //    {

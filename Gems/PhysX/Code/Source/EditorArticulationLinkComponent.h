@@ -26,7 +26,6 @@ namespace PhysX
             "{8FFA0EC2-E850-4562-AB3D-08D157E07B81}",
             ArticulationLinkConfiguration);
 
-        //bool isLead;
         static void Reflect(AZ::ReflectContext* context);
     };
 
@@ -40,6 +39,7 @@ namespace PhysX
         static void Reflect(AZ::ReflectContext* context);
 
         EditorArticulationLinkComponent() = default;
+        explicit EditorArticulationLinkComponent(const EditorArticulationLinkConfiguration& configuration);
         ~EditorArticulationLinkComponent() = default;
 
         static void GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided);
@@ -54,10 +54,11 @@ namespace PhysX
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         bool IsRootArticulation() const;
+        void SetIsRootArticulation();
 
         //EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
         //RigidBodyConfiguration m_physxSpecificConfig; //!ko< Properties specific to PhysX which might not have exact equivalents in other physics engines.
         //EditorJointConfig m_jointConfig;
-        EditorArticulationLinkConfiguration m_aConfig;
+        ArticulationLinkConfiguration m_config;
     };
 } // namespace PhysX

@@ -22,15 +22,13 @@ namespace PhysX
         {
             serializeContext->Class<EditorArticulationLinkConfiguration, ArticulationLinkConfiguration>()->Version(1);
 
-
             AZ::EditContext* editContext = serializeContext->GetEditContext();
             if (editContext)
             {
-
-                editContext->Class<ArticulationLinkConfiguration>("PhysX Rigid Body Configuration", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                editContext->Class<ArticulationLinkConfiguration>("PhysX Articulation Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Articulation")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_initialLinearVelocity,
@@ -93,7 +91,7 @@ namespace PhysX
                         "Determines how the movement/position of the rigid body is controlled.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetKinematicVisibility)
                     ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::m_ccdEnabled)
-                    ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ArticulationLinkConfiguration::GetKinematicTooltip)
+                    //->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ArticulationLinkConfiguration::GetKinematicTooltip)
                     ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
                     ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
                     ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
@@ -138,47 +136,6 @@ namespace PhysX
                         &ArticulationLinkConfiguration::m_lockAngularZ,
                         "Lock Z",
                         "When active, forces won't create rotation on the Z axis of the rigid body.")
-
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Continuous Collision Detection")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetCcdVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_ccdEnabled,
-                        "CCD enabled",
-                        "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
-                        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
-                        "configuration.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetCcdVisibility)
-                    ->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ArticulationLinkConfiguration::GetCcdTooltip)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::CcdReadOnly)
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_ccdMinAdvanceCoefficient,
-                        "Min advance coefficient",
-                        "Lower values reduce clipping but can affect simulation smoothness.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::Step, 0.01f)
-                    ->Attribute(AZ::Edit::Attributes::Max, 0.99f)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsCcdEnabled)
-                    //->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_ccdFrictionEnabled,
-                        "CCD friction",
-                        "When active, friction is applied when continuous collision detection (CCD) collisions are resolved.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsCcdEnabled)
-                    //->Attribute(AZ::Edit::Attributes::ReadOnly, &IsSceneCcdDisabled)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Button,
-                        &ArticulationLinkConfiguration::m_configButton,
-                        "",
-                        "Click here to open the PhysX Configuration window. Enable global CCD to enable component CCD editing.")
-                    ->Attribute(AZ::Edit::Attributes::ButtonText, "Open PhysX Configuration to Enable CCD")
-                    //->Attribute(AZ::Edit::Attributes::Visibility, &IsSceneCcdDisabled)
-                    //->Attribute(AZ::Edit::Attributes::ChangeNotify, &OpenPhysXConfigurationPane)
-                    ->EndGroup()
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
@@ -241,22 +198,24 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetInertiaSettingsVisibility)
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree);
 
-                editContext->Enum<ArticulationLinkConfiguration::DisplaySetupState>("Joint Display Setup State", "Options for displaying joint setup.")
-                    ->Value("Never", ArticulationLinkConfiguration::DisplaySetupState::Never)
-                    ->Value("Selected", ArticulationLinkConfiguration::DisplaySetupState::Selected)
-                    ->Value("Always", ArticulationLinkConfiguration::DisplaySetupState::Always);
-
-                editContext->Class<PhysX::ArticulationLinkConfiguration>("PhysX Joint Configuration", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    editContext->Class<ArticulationLinkConfiguration>("PhysX Articulation Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Joint Configuration")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
-                        0, &PhysX::ArticulationLinkConfiguration::m_localPosition, "Local Position", "Local Position of joint, relative to its entity.")
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_localPosition,
+                        "Local Position",
+                        "Local Position of joint, relative to its entity.")
                     ->DataElement(
-                        0, &PhysX::ArticulationLinkConfiguration::m_localRotation, "Local Rotation", "Local Rotation of joint, relative to its entity.")
- /*                   ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
-                    ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)*/
-                    ->DataElement(0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with joint.")
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_localRotation,
+                        "Local Rotation",
+                        "Local Rotation of joint, relative to its entity.")
+                    /*                   ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
+                                       ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)*/
+                    ->DataElement(
+                        0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with joint.")
                     //->Attribute(AZ::Edit::Attributes::ChangeNotify, &ArticulationLinkConfiguration::ValidateLeadEntityId)
                     ->DataElement(
                         0,
@@ -270,18 +229,27 @@ namespace PhysX
                         "Never = Not shown."
                         "Select = Show setup display when entity is selected."
                         "Always = Always show setup display.")
-                    //->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Selected, "Selected")
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Never, "Never")
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Always, "Always")
+                    //->Att(ribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
                     ->DataElement(
                         0,
                         &PhysX::ArticulationLinkConfiguration::m_selectLeadOnSnap,
                         "Select Lead on Snap",
                         "Select lead entity on snap to position in component mode.")
                     ->DataElement(
-                        0, &PhysX::ArticulationLinkConfiguration::m_breakable, "Breakable", "Joint is breakable when force or torque exceeds limit.")
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_breakable,
+                        "Breakable",
+                        "Joint is breakable when force or torque exceeds limit.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
                     //->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
                     ->DataElement(
-                        0, &PhysX::ArticulationLinkConfiguration::m_forceMax, "Maximum Force", "Amount of force joint can withstand before breakage.")
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_forceMax,
+                        "Maximum Force",
+                        "Amount of force joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
                     ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
@@ -292,29 +260,46 @@ namespace PhysX
                         "Amount of torque joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_breakable)
                     ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin);
+                    ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
 
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_solverPositionIterations,
+                        "Solver Position Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_solverVelocityIterations,
+                        "Solver Velocity Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
 
-                    editContext->Class<ArticulationLinkConfiguration>(
-                            "PhysX-specific Rigid Body Configuration", "Additional Rigid Body settings specific to PhysX.")
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &ArticulationLinkConfiguration::m_solverPositionIterations,
-                            "Solver Position Iterations",
-                            "Higher values can improve stability at the cost of performance.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 1)
-                        ->Attribute(AZ::Edit::Attributes::Max, 255)
-                        ->DataElement(
-                            AZ::Edit::UIHandlers::Default,
-                            &ArticulationLinkConfiguration::m_solverVelocityIterations,
-                            "Solver Velocity Iterations",
-                            "Higher values can improve stability at the cost of performance.")
-                        ->Attribute(AZ::Edit::Attributes::Min, 1)
-                        ->Attribute(AZ::Edit::Attributes::Max, 255);
-                    
-                
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &ArticulationLinkConfiguration::m_articulationJointType,
+                        "Articulation LinkJoint Type",
+                        "Set the type of joint for this link")
+                    ->EnumAttribute(physx::PxArticulationJointType::Enum::eFIX, "Fix")
+                    ->EnumAttribute(physx::PxArticulationJointType::Enum::ePRISMATIC, "Prismatic")
+                    ->EnumAttribute(physx::PxArticulationJointType::Enum::eSPHERICAL, "Spherical")
+                    ->EnumAttribute(physx::PxArticulationJointType::Enum::eREVOLUTE, "Revolute")
+                    ->EnumAttribute(physx::PxArticulationJointType::Enum::eREVOLUTE_UNWRAPPED, "Revolute Unrwrapped")
+
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_isRootArticulation,
+                        "Root articulation",
+                        "Higher values can improve stability at the cost of performance.");
             }
         }
+    }
+    EditorArticulationLinkComponent::EditorArticulationLinkComponent(const EditorArticulationLinkConfiguration& configuration)
+        : m_config(configuration)
+    {
+        SetIsRootArticulation();
     }
 
     void EditorArticulationLinkComponent::Reflect(AZ::ReflectContext* context)
@@ -324,8 +309,7 @@ namespace PhysX
         {
             serializeContext->Class<EditorArticulationLinkComponent, AzToolsFramework::Components::EditorComponentBase>()
                 ->Version(1)
-                ->Field("ArticulationConfiguration", &EditorArticulationLinkComponent::m_aConfig)
-            ;
+                ->Field("ArticulationConfiguration", &EditorArticulationLinkComponent::m_config);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -337,27 +321,15 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                    ->Attribute(
-                        AZ::Edit::Attributes::HelpPageURL, "")
+                    //->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::HelpPageURL, "")
 
-
-                    /*->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &EditorArticulationLinkComponent::m_config,
-                        "Configuration",
-                        "Configuration for rigid body physics.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
-                        &EditorArticulationLinkComponent::m_physxSpecificConfig,*/
-
-                    ->DataElement(AZ::Edit::UIHandlers::Default,
-                        &EditorArticulationLinkComponent::m_aConfig,
-                        "PhysX-Specific Configuration",
-                        "Settings which are specific to PhysX, rather than generic.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                ;
+                        &EditorArticulationLinkComponent::m_config,
+                        "Articulation Configuration",
+                        "Configuration for the Articulation Link Component.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }
     }
@@ -388,6 +360,11 @@ namespace PhysX
         return IsRootArticulationEntity<EditorArticulationLinkComponent>(GetEntity());
     }
 
+    void EditorArticulationLinkComponent::SetIsRootArticulation()
+    {
+        m_config.SetIsRootArticulation(IsRootArticulation());
+    }
+
     void EditorArticulationLinkComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
@@ -400,6 +377,6 @@ namespace PhysX
 
     void EditorArticulationLinkComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<ArticulationLinkComponent>();
+        gameEntity->CreateComponent<ArticulationLinkComponent>(m_config, AzPhysics::InvalidSceneHandle);
     }
 } // namespace PhysX

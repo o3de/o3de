@@ -28,19 +28,17 @@ namespace PhysX
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(ArticulationLinkConfiguration, "{E2AA1F6B-25A1-423C-87FD-3BBE29742BD9}");
+        AZ_RTTI(ArticulationLinkConfiguration, "{56268154-037A-4BB2-A7EE-E1E76B7D2F8E}");
         static void Reflect(AZ::ReflectContext* context);
 
         ArticulationLinkConfiguration() = default;
-        ~ArticulationLinkConfiguration() = default;
+        virtual ~ArticulationLinkConfiguration() = default;
 
         AzPhysics::MassComputeFlags GetMassComputeFlags() const;
         void SetMassComputeFlags(AzPhysics::MassComputeFlags flags);
 
         bool IsCcdEnabled() const;
         bool CcdReadOnly() const;
-        AZStd::string_view GetCcdTooltip() const;
-        AZStd::string_view GetKinematicTooltip() const;
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();
@@ -115,12 +113,8 @@ namespace PhysX
 
         AZ::u16 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u16>::max)();
 
-        public:
         static const float s_breakageMax;
         static const float s_breakageMin;
-
-
-        //static void Reflect(AZ::ReflectContext* context);
 
         enum class DisplaySetupState : AZ::u8
         {
@@ -129,11 +123,9 @@ namespace PhysX
             Always
         };
 
-        //void SetLeadEntityId(AZ::EntityId leadEntityId);
+        void SetLeadEntityId(AZ::EntityId leadEntityId);
         JointGenericProperties ToGenericProperties() const;
         JointComponentConfiguration ToGameTimeConfig() const;
-
-        //bool ShowSetupDisplay() const;
 
         bool m_breakable = false;
         DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
@@ -154,9 +146,11 @@ namespace PhysX
         AZ::u8 m_solverPositionIterations = 4; //!< Higher values can improve stability at the cost of performance.
         AZ::u8 m_solverVelocityIterations = 1; //!< Higher values can improve stability at the cost of performance.
 
-        physx::PxArticulationJointType::Enum m_articulationJointType;
+        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
 
-        bool m_isLeadEntity;
+        bool m_isRootArticulation = false;
+
+        void SetIsRootArticulation(bool value);
 
     private:
         bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context.
@@ -164,6 +158,6 @@ namespace PhysX
 
         //void ValidateLeadEntityId(); ///< Issues warning if lead entity does not contain required components for a joint to function
         //                             ///< correctly.
-    }
+    };
 
 } // namespace AzPhysics

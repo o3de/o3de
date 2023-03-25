@@ -38,8 +38,9 @@ namespace PhysX
 
     ArticulationLinkComponent::~ArticulationLinkComponent() = default;
 
-    ArticulationLinkComponent::ArticulationLinkComponent(AzPhysics::SceneHandle sceneHandle)
-        : m_attachedSceneHandle(sceneHandle)
+    ArticulationLinkComponent::ArticulationLinkComponent(ArticulationLinkConfiguration& config, AzPhysics::SceneHandle sceneHandle)
+        : m_config(config)
+        , m_attachedSceneHandle(sceneHandle)
     {
         InitPhysicsTickHandler();
     }
@@ -72,7 +73,7 @@ namespace PhysX
             serializeContext->Class<ArticulationLinkComponent, AZ::Component>()
                 ->Version(1)
                 ->Field("ArticulationLinkData", &ArticulationLinkComponent::m_articulationLinkData)
-                ;
+                ->Field("ArticulationLinkConfiguration", &ArticulationLinkComponent::m_config);
         }
     }
 
