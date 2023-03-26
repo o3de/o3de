@@ -13,12 +13,8 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/PhysicsSystem.h>
 #include <AzFramework/Physics/Shape.h>
-
-namespace
-{
-    const float LocalRotationMax = 360.0f;
-    const float LocalRotationMin = -360.0f;
-} // namespace
+#include <Source/EditorRigidBodyComponent.h>
+#include <Source/EditorStaticRigidBodyComponent.h>
 
 namespace PhysX
 {
@@ -153,96 +149,6 @@ namespace PhysX
                 ->Field("ArticulationJointType", &ArticulationLinkConfiguration::m_articulationJointType)
                 ->Field("Root Articulation", &ArticulationLinkConfiguration::m_isRootArticulation);
         }
-
-        // if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        //{
-
-        //    if (auto* editContext = serializeContext->GetEditContext())
-        //    {
-        //        editContext->Enum<ArticulationLinkConfiguration::DisplaySetupState>("Joint Display Setup State", "Options for displaying
-        //        joint setup.")
-        //            ->Value("Never", ArticulationLinkConfiguration::DisplaySetupState::Never)
-        //            ->Value("Selected", ArticulationLinkConfiguration::DisplaySetupState::Selected)
-        //            ->Value("Always", ArticulationLinkConfiguration::DisplaySetupState::Always);
-
-        //        editContext->Class<PhysX::ArticulationLinkConfiguration>("PhysX Joint Configuration", "")
-        //            ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-        //            ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-        //            ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-        //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_localPosition, "Local Position", "Local Position of joint, relative to
-        //                its entity.")
-        //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_localRotation, "Local Rotation", "Local Rotation of joint, relative to
-        //                its entity.")
-        //            ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
-        //            ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
-        //            ->DataElement(0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with
-        //            joint.")
-        //            //->Attribute(AZ::Edit::Attributes::ChangeNotify, &ArticulationLinkConfiguration::ValidateLeadEntityId)
-        //            ->DataElement(
-        //                0,
-        //                &PhysX::ArticulationLinkConfiguration::m_selfCollide,
-        //                "Lead-Follower Collide",
-        //                "When active, the lead and follower pair will collide with each other.")
-        //            ->DataElement(
-        //                AZ::Edit::UIHandlers::ComboBox,
-        //                &PhysX::ArticulationLinkConfiguration::m_displayJointSetup,
-        //                "Display Setup in Viewport",
-        //                "Never = Not shown."
-        //                "Select = Show setup display when entity is selected."
-        //                "Always = Always show setup display.")
-        //            ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
-        //            ->DataElement(
-        //                0,
-        //                &PhysX::ArticulationLinkConfiguration::m_selectLeadOnSnap,
-        //                "Select Lead on Snap",
-        //                "Select lead entity on snap to position in component mode.")
-        //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_breakable, "Breakable", "Joint is breakable when force or torque
-        //                exceeds limit.")
-        //            ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-        //            ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
-        //            ->DataElement(
-        //                0, &PhysX::ArticulationLinkConfiguration::m_forceMax, "Maximum Force", "Amount of force joint can withstand before
-        //                breakage.")
-        //            ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_breakable)
-        //            ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
-        //            ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
-        //            ->DataElement(
-        //                0,
-        //                &PhysX::ArticulationLinkConfiguration::m_torqueMax,
-        //                "Maximum Torque",
-        //                "Amount of torque joint can withstand before breakage.")
-        //            ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_breakable)
-        //            ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
-        //            ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin);
-        //    }
-        //}
-
-        // if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        //{
-        //     if (auto* editContext = serializeContext->GetEditContext())
-        //     {
-        //         editContext
-        //             ->Class<PhysX::ArticulationLinkConfiguration>(
-        //                 "PhysX-specific Rigid Body Configuration", "Additional Rigid Body settings specific to PhysX.")
-        //             ->DataElement(
-        //                 AZ::Edit::UIHandlers::Default,
-        //                 &PhysX::ArticulationLinkConfiguration::m_solverPositionIterations,
-        //                 "Solver Position Iterations",
-        //                 "Higher values can improve stability at the cost of performance.")
-        //             ->Attribute(AZ::Edit::Attributes::Min, 1)
-        //             ->Attribute(AZ::Edit::Attributes::Max, 255)
-        //             ->DataElement(
-        //                 AZ::Edit::UIHandlers::Default,
-        //                 &PhysX::ArticulationLinkConfiguration::m_solverVelocityIterations,
-        //                 "Solver Velocity Iterations",
-        //                 "Higher values can improve stability at the cost of performance.")
-        //             ->Attribute(AZ::Edit::Attributes::Min, 1)
-        //             ->Attribute(AZ::Edit::Attributes::Max, 255);
-        //     }
-        // }
     }
 
     AzPhysics::MassComputeFlags ArticulationLinkConfiguration::GetMassComputeFlags() const
@@ -379,11 +285,6 @@ namespace PhysX
         return JointGenericProperties(flags, m_forceMax, m_torqueMax);
     }
 
-    bool ArticulationLinkConfiguration::IsInComponentMode() const
-    {
-        return m_inComponentMode;
-    }
-
     JointComponentConfiguration ArticulationLinkConfiguration::ToGameTimeConfig() const
     {
         AZ::Vector3 localRotation(m_localRotation);
@@ -399,43 +300,3 @@ namespace PhysX
         m_isRootArticulation = value;
     }
 } // namespace PhysX
-
-//    void ArticulationLinkConfiguration::ValidateLeadEntityId()
-//    {
-//        if (!m_leadEntity.IsValid())
-//        {
-//            return;
-//        }
-//
-//        AZ::Entity* entity = nullptr;
-//        AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationRequests::FindEntity, m_leadEntity);
-//        if (entity)
-//        {
-//            [[maybe_unused]] const bool leadEntityHasRigidActor =
-//                (entity->FindComponent<PhysX::EditorRigidBodyComponent>() ||
-//                 entity->FindComponent<PhysX::EditorStaticRigidBodyComponent>());
-//
-//            AZ_Warning(
-//                "EditorJointComponent",
-//                leadEntityHasRigidActor,
-//                "Joints require either a dynamic or static rigid body on the lead entity. "
-//                "Please add either a static or a dynamic rigid body component to entity %s",
-//                entity->GetName().c_str());
-//        }
-//        else
-//        {
-//            AZStd::string followerEntityName;
-//            if (m_followerEntity.IsValid())
-//            {
-//                AZ::ComponentApplicationBus::BroadcastResult(
-//                    followerEntityName, &AZ::ComponentApplicationRequests::GetEntityName, m_followerEntity);
-//            }
-//
-//            AZ_Warning(
-//                "EditorJointComponent",
-//                false,
-//                "Cannot find instance of lead entity given its entity ID. Please check that joint in entity %s has valid lead entity.",
-//                followerEntityName.c_str());
-//        }
-//    //}
-//} // namespace AzPhysics

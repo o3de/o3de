@@ -12,6 +12,13 @@
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorColliderComponent.h>
+#include <AzFramework/Physics/NameConstants.h>
+
+namespace
+{
+    const float LocalRotationMax = 360.0f;
+    const float LocalRotationMin = -360.0f;
+}
 
 namespace PhysX
 {
@@ -28,21 +35,21 @@ namespace PhysX
                 editContext->Class<ArticulationLinkConfiguration>("PhysX Articulation Configuration", "")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Articulation")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    //->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_initialLinearVelocity,
                         "Initial linear velocity",
                         "Linear velocity applied when the rigid body is activated.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetInitialVelocitiesVisibility)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSpeedUnit())
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_initialAngularVelocity,
                         "Initial angular velocity",
                         "Angular velocity applied when the rigid body is activated (limited by maximum angular velocity).")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetInitialVelocitiesVisibility)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
@@ -65,7 +72,7 @@ namespace PhysX
                         "The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetSleepOptionsVisibility)
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_startAsleep,
@@ -84,20 +91,6 @@ namespace PhysX
                         "Gravity enabled",
                         "When active, global gravity affects this rigid body.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetGravityVisibility)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::ComboBox,
-                        &ArticulationLinkConfiguration::m_kinematic,
-                        "Type",
-                        "Determines how the movement/position of the rigid body is controlled.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetKinematicVisibility)
-                    ->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::m_ccdEnabled)
-                    //->Attribute(AZ::Edit::Attributes::DescriptionTextOverride, &ArticulationLinkConfiguration::GetKinematicTooltip)
-                    ->Attribute(AZ_CRC_CE("EditButtonVisible"), true)
-                    ->Attribute(AZ_CRC_CE("SetTrueLabel"), "Kinematic")
-                    ->Attribute(AZ_CRC_CE("SetFalseLabel"), "Simulated")
-                    //->Attribute(AZ_CRC_CE("EditButtonCallback"), AzToolsFramework::GenericEditButtonCallback<bool>(&OnEditButtonClicked))
-                    ->Attribute(AZ_CRC_CE("EditButtonToolTip"), "Open Type dialog for a detailed description on the motion types")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::AttributesAndValues)
 
                     // Linear axis locking properties
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Linear Axis Locking")
@@ -145,7 +138,7 @@ namespace PhysX
                         "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetMaxVelocitiesVisibility)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
 
                     // Mass properties
                     ->DataElement(
@@ -162,7 +155,7 @@ namespace PhysX
                         "COM offset",
                         "Local space offset for the center of mass (COM).")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetCoMVisibility)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetLengthUnit())
 
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
@@ -179,7 +172,7 @@ namespace PhysX
                         "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
                         "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
-                    //->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
+                    ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::GetMassVisibility)
 
                     ->DataElement(
@@ -212,11 +205,9 @@ namespace PhysX
                         &PhysX::ArticulationLinkConfiguration::m_localRotation,
                         "Local Rotation",
                         "Local Rotation of joint, relative to its entity.")
-                    /*                   ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
-                                       ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)*/
-                    ->DataElement(
-                        0, &PhysX::ArticulationLinkConfiguration::m_leadEntity, "Lead Entity", "Parent entity associated with joint.")
-                    //->Attribute(AZ::Edit::Attributes::ChangeNotify, &ArticulationLinkConfiguration::ValidateLeadEntityId)
+                    ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
+
                     ->DataElement(
                         0,
                         &PhysX::ArticulationLinkConfiguration::m_selfCollide,
@@ -232,7 +223,7 @@ namespace PhysX
                     ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Selected, "Selected")
                     ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Never, "Never")
                     ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Always, "Always")
-                    //->Att(ribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
+
                     ->DataElement(
                         0,
                         &PhysX::ArticulationLinkConfiguration::m_selectLeadOnSnap,
@@ -244,7 +235,7 @@ namespace PhysX
                         "Breakable",
                         "Joint is breakable when force or torque exceeds limit.")
                     ->Attribute(AZ::Edit::Attributes::ChangeNotify, AZ::Edit::PropertyRefreshLevels::EntireTree)
-                    //->Attribute(AZ::Edit::Attributes::ReadOnly, &ArticulationLinkConfiguration::IsInComponentMode)
+
                     ->DataElement(
                         0,
                         &PhysX::ArticulationLinkConfiguration::m_forceMax,
@@ -299,7 +290,6 @@ namespace PhysX
     EditorArticulationLinkComponent::EditorArticulationLinkComponent(const EditorArticulationLinkConfiguration& configuration)
         : m_config(configuration)
     {
-        SetIsRootArticulation();
     }
 
     void EditorArticulationLinkComponent::Reflect(AZ::ReflectContext* context)
@@ -321,7 +311,6 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
                     ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
-                    //->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "")
 
                     ->DataElement(
@@ -329,6 +318,7 @@ namespace PhysX
                         &EditorArticulationLinkComponent::m_config,
                         "Articulation Configuration",
                         "Configuration for the Articulation Link Component.")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly);
             }
         }

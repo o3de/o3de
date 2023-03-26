@@ -56,9 +56,6 @@ namespace PhysX
         bool IsRootArticulation() const;
         void SetIsRootArticulation();
 
-        //EditorRigidBodyConfiguration m_config; //!< Generic properties from AzPhysics.
-        //RigidBodyConfiguration m_physxSpecificConfig; //!ko< Properties specific to PhysX which might not have exact equivalents in other physics engines.
-        //EditorJointConfig m_jointConfig;
         ArticulationLinkConfiguration m_config;
     };
 } // namespace PhysX

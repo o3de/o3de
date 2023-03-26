@@ -34,11 +34,12 @@ namespace PhysX
         ArticulationLinkConfiguration() = default;
         virtual ~ArticulationLinkConfiguration() = default;
 
-        AzPhysics::MassComputeFlags GetMassComputeFlags() const;
-        void SetMassComputeFlags(AzPhysics::MassComputeFlags flags);
+        // Articulation specific configuration
 
-        bool IsCcdEnabled() const;
-        bool CcdReadOnly() const;
+        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
+        bool m_isRootArticulation = false;
+
+        // Rigid Body configuration
 
         // Basic initial settings.
         AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();
@@ -111,7 +112,18 @@ namespace PhysX
         AZ::Crc32 GetCcdVisibility() const;
         AZ::Crc32 GetMaxVelocitiesVisibility() const;
 
-        AZ::u16 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u16>::max)();
+        AzPhysics::MassComputeFlags GetMassComputeFlags() const;
+        void SetMassComputeFlags(AzPhysics::MassComputeFlags flags);
+
+        bool IsCcdEnabled() const;
+        bool CcdReadOnly() const;
+
+        // PhysX specific Rigid Body configuration
+
+        AZ::u8 m_solverPositionIterations = 4; //!< Higher values can improve stability at the cost of performance.
+        AZ::u8 m_solverVelocityIterations = 1; //!< Higher values can improve stability at the cost of performance.
+
+        // Joints configuration
 
         static const float s_breakageMax;
         static const float s_breakageMin;
@@ -122,10 +134,6 @@ namespace PhysX
             Selected,
             Always
         };
-
-        void SetLeadEntityId(AZ::EntityId leadEntityId);
-        JointGenericProperties ToGenericProperties() const;
-        JointComponentConfiguration ToGameTimeConfig() const;
 
         bool m_breakable = false;
         DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
@@ -139,25 +147,14 @@ namespace PhysX
         float m_forceMax = 1.0f;
         float m_torqueMax = 1.0f;
 
-        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_localRotation =
-        AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+         AZ::u16 m_propertyVisibilityFlags = (std::numeric_limits<AZ::u16>::max)();
 
-        AZ::u8 m_solverPositionIterations = 4; //!< Higher values can improve stability at the cost of performance.
-        AZ::u8 m_solverVelocityIterations = 1; //!< Higher values can improve stability at the cost of performance.
+         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
+         AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
 
-        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
-
-        bool m_isRootArticulation = false;
+        JointGenericProperties ToGenericProperties() const;
+        JointComponentConfiguration ToGameTimeConfig() const;
 
         void SetIsRootArticulation(bool value);
-
-    private:
-        bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context.
-                                        ///< Using the variable directly instead of this function will result in the variable being saved.
-
-        //void ValidateLeadEntityId(); ///< Issues warning if lead entity does not contain required components for a joint to function
-        //                             ///< correctly.
     };
-
-} // namespace AzPhysics
+} // namespace PhysX
