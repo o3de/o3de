@@ -8,6 +8,7 @@
 
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Serialization/EditContext.h>
+#include <AzFramework/Physics/Utils.h>
 #include <AzFramework/Physics/NameConstants.h>
 #include <AzFramework/Physics/Common/PhysicsSimulatedBody.h>
 #include <Source/EditorRigidBodyComponent.h>
@@ -79,15 +80,13 @@ namespace PhysX
                 }
 
                 const AZ::Vector3& assetScale = shapeConfigurationProxy.m_physicsAsset.m_configuration.m_assetScale;
-                const bool isAssetScaleUniform =
-                    AZ::IsClose(assetScale.GetX(), assetScale.GetY()) && AZ::IsClose(assetScale.GetX(), assetScale.GetZ());
 
                 const Physics::ColliderConfiguration colliderConfigurationUnscaled = collider->GetColliderConfiguration();
                 AZStd::vector<AZStd::shared_ptr<Physics::Shape>> shapes;
                 Utils::CreateShapesFromAsset(
                     shapeConfigurationProxy.m_physicsAsset.m_configuration,
                     colliderConfigurationUnscaled,
-                    hasNonUniformScaleComponent || !isAssetScaleUniform,
+                    hasNonUniformScaleComponent || !Physics::Utils::HasUniformScale(assetScale),
                     shapeConfigurationProxy.m_subdivisionLevel,
                     shapes);
 

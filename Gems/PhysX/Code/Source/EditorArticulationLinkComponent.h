@@ -56,6 +56,6 @@ namespace PhysX
         bool IsRootArticulation() const;
         void SetIsRootArticulation();
 
-        ArticulationLinkConfiguration m_config;
+    private: ArticulationLinkConfiguration m_config;
     };
 } // namespace PhysX
