@@ -35,10 +35,6 @@ class TestAutomation(TestAutomationBase):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Collider_PxMeshErrorIfNoMesh(self, request, workspace, editor, launcher_platform):
-        from .tests.collider import Collider_PxMeshErrorIfNoMesh as test_module
-        self._run_test(request, workspace, editor, test_module)
-
 
 # Custom test spec, it provides functionality to override files
 class EditorSingleTest_WithFileOverrides(EditorSingleTest):
