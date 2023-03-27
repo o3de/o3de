@@ -333,8 +333,11 @@ namespace Multiplayer
                 }
  #endif
 
-                // Send correction
-                SendClientInputCorrection(m_lastClientInputId, correction);
+                // Send correction. Include the current host frame id as well as the last client input id processed so that
+                // the client can ensure that it doesn't try to process out-of-order corrections. The client input id by itself
+                // can roll over its value too quickly to be useful for detecting out-of-order conditions.
+                auto networkTime = GetNetworkTime();
+                SendClientInputCorrection(networkTime->GetHostFrameId(), m_lastClientInputId, correction);
             }
         }
     }
@@ -418,6 +421,7 @@ namespace Multiplayer
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
         AzNetworking::IConnection* invokingConnection,
+        const Multiplayer::HostFrameId& hostFrameId,
         const Multiplayer::ClientInputId& inputId,
         const AzNetworking::PacketEncodingBuffer& correction
     )
@@ -431,12 +435,22 @@ namespace Multiplayer
             return;
         }
 
-        if (!AzNetworking::SequenceMoreRecent(inputId, m_lastCorrectionInputId))
+        // Make sure we don't process corrections out of order by verifying that this is either the first correction that we're
+        // handling (last id == invalid), or that the new host frame id >= the last correction AND the client input id is more recent.
+        // We need to check both the host frame id and the client input id. Just checking the client input id will fail if our
+        // corrections are sent with at least a 10 minute gap since this will cause our check to rollover and make the id look less
+        // recent instead of more recent. Just checking the host frame id could also fail if we generate multiple corrections in the
+        // same frame on the server but receive them out of order on the client. Checking both together gives us a successful result.
+        if (m_lastCorrectionHostFrameId != InvalidHostFrameId)
         {
-            AZLOG(NET_Prediction, "Discarding old correction for client frame %u", aznumeric_cast<uint32_t>(inputId));
-            return;
+            if ((hostFrameId < m_lastCorrectionHostFrameId) || !AzNetworking::SequenceMoreRecent(inputId, m_lastCorrectionInputId))
+            {
+                AZLOG(NET_Prediction, "Discarding old correction for client frame %u", aznumeric_cast<uint32_t>(inputId));
+                return;
+            }
         }
 
+        m_lastCorrectionHostFrameId = hostFrameId;
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
