@@ -31,17 +31,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_RestitutionCombine as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_Restitution as test_module
-        self._run_test(request, workspace, editor, test_module)
-
-    def test_Material_RagdollBones(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_RagdollBones as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     # BUG: LY-107723")
     def test_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor, launcher_platform):
         from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
