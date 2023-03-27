@@ -95,6 +95,10 @@ namespace SerializeContextTools
         AZ_Printf("Help", "\n");
         AZ_Printf("Help", "  'createuuid': Create a UUID using a SHA1 hash from a string and output the contents to stdout or a file.\n");
         AZ_Printf("Help", "    [arg] --values=<string...>: One or more strings to convert to UUID.\n");
+        AZ_Printf("Help", "        Multiple strings can be specified by either using multiple `--values` option or with a single `--values` option by separating them by a comma without any quotes.\n");
+        AZ_Printf("Help", R"(        Ex. --values "engine.json" --values "project.json")" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json)" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json --values gem.json)" "\n");
         AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed uuids.\n");
         AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
         AZ_Printf("Help", "    [opt] --with-curly-braces=<true|false> Outputs the Uuid with curly braces. Defaults to true\n");
