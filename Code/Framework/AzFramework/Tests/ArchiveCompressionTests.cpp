@@ -35,6 +35,14 @@ namespace UnitTest
             : m_application { AZStd::make_unique<AzFramework::Application>() }
         {}
 
+        // Creates a unique filename for the archive to make the tests atomic and prevent file race conditions when
+		// tests are run concurrently
+        static AZStd::string CreateUniqueArchiveName()
+        {
+            auto uuid = AZ::Uuid::Create();
+            return AZStd::string::format("@usercache@/archivetest.%s.pak", uuid.ToFixedString(false).c_str());
+        }
+
     private:
         AZStd::unique_ptr<AzFramework::Application> m_application;
     };
@@ -59,7 +67,7 @@ namespace UnitTest
     TEST_P(ArchiveCompressionTestFixture, TestArchivePacking_CompressionEmptyArchiveTest_PackIsValid)
     {
         // this also coincidentally tests to make sure packs inside aliases work.
-        AZStd::string testArchivePath = "@usercache@/archivetest.pak";
+        AZStd::string testArchivePath = CreateUniqueArchiveName();
 
         AZ::IO::FileIOBase* fileIo = AZ::IO::FileIOBase::GetInstance();
         ASSERT_NE(nullptr, fileIo);
@@ -82,7 +90,7 @@ namespace UnitTest
     TEST_P(ArchiveCompressionTestFixture, TestArchivePacking_CompressionFullArchive_PackIsValid)
     {
         // ------------ BASIC TEST:  Create archive full of standard sizes (including 0)   ----------------
-        AZStd::string testArchivePath = "@usercache@/archivetest.pak";
+        AZStd::string testArchivePath = CreateUniqueArchiveName();
         AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
 
         auto openFlags = AZStd::get<0>(GetParam());
@@ -148,7 +156,7 @@ namespace UnitTest
     TEST_P(ArchiveCompressionTestFixture, TestArchivePacking_CompressionWithOverridenArchiveData_PackIsValid)
     {
         // ---------------- MORE COMPLICATED TEST which involves overwriting elements ----------------
-        AZStd::string testArchivePath = "@usercache@/archivetest.pak";
+        AZStd::string testArchivePath = CreateUniqueArchiveName();
         AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
 
         auto openFlags = AZStd::get<0>(GetParam());
@@ -258,7 +266,7 @@ namespace UnitTest
         // we want to make at least one element shrink and one element grow, adjacent to other files
         // this will include files that become zero size, and also includes new files that were not there before
 
-        AZStd::string testArchivePath = "@usercache@/archivetest.pak";
+        AZStd::string testArchivePath = CreateUniqueArchiveName();
         AZ::IO::IArchive* archive = AZ::Interface<AZ::IO::IArchive>::Get();
 
         auto openFlags = AZStd::get<0>(GetParam());
