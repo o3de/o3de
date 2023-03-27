@@ -67,13 +67,17 @@ namespace AzFramework
 
     void CommunicatorHandleImpl::Close()
     {
-        close(m_handle);
+        if (m_handle != -1)
+        {
+            close(m_handle);
+            m_handle = -1;
+        }
+
         if (m_epollHandle != -1)
         {
             close(m_epollHandle);
             m_epollHandle = -1;
         }
-        m_handle = -1;
     }
 
     bool CommunicatorHandleImpl::SetHandle(int handle, bool createEPollHandle)
@@ -84,7 +88,7 @@ namespace AzFramework
         {
             int m_epollHandle = epoll_create1(0);
 
-            AZ_Assert(m_epollHandle -1, "Failed to create epoll handle");
+            AZ_Assert(m_epollHandle -1, "Failed to create epoll handle. errno: %d", errno);
             if (m_epollHandle == -1) 
             {
                 return false;
@@ -95,7 +99,7 @@ namespace AzFramework
             event.data.fd = GetHandle();
             if(epoll_ctl(m_epollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
             {
-                AZ_Assert(false, "Unable to add a file descriptor to epoll");
+                AZ_Assert(false, "Unable to add a file descriptor to epoll. errno: %d", errno);
                 close(m_epollHandle);
                 m_epollHandle = -1;
                 return false;
@@ -145,7 +149,7 @@ namespace AzFramework
         bytesRead = read(handle->GetHandle(), readBuffer, bufferSize);
         if (bytesRead < 0)
         {
-            AZ_Assert(errno != EIO, "ReadFile performed unexpected async io");
+            AZ_Assert(errno != EIO, "ReadFile performed unexpected async io. errno: %d", errno);
             if (errno == EBADF || errno == EINVAL)
             {
                 // Child process exited, we may have read something, so return amount
@@ -176,7 +180,7 @@ namespace AzFramework
         const ssize_t bytesWritten = write(handle->GetHandle(), writeBuffer, bytesToWrite);
         if (bytesWritten < 0)
         {
-            AZ_Assert(errno != EIO, "Parent performed unexpected async io when trying to write to child process.");
+            AZ_Assert(errno != EIO, "Parent performed unexpected async io when trying to write to child process (errno=%d EIO).", errno);
             if (errno == EPIPE)
             {
                 // Child process exited, may have written something, so return amount
@@ -254,7 +258,7 @@ namespace AzFramework
         CommunicatorDataImpl* platformImpl = static_cast<CommunicatorDataImpl*>(m_communicatorData.get());
         platformImpl->m_stdInAndOutPollHandle = epoll_create1(0);
 
-        AZ_Assert(platformImpl->m_stdInAndOutPollHandle != -1, "Failed to create epoll handle to monitor output process");
+        AZ_Assert(platformImpl->m_stdInAndOutPollHandle != -1, "Failed to create epoll handle to monitor output process, errno = %d", errno);
         if (platformImpl->m_stdInAndOutPollHandle == -1) 
         {
             processData->m_startupInfo.CloseAllHandles();
@@ -267,7 +271,7 @@ namespace AzFramework
         event.data.fd = m_stdOutRead->GetHandle();
         if(epoll_ctl(platformImpl->m_stdInAndOutPollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
         {
-            AZ_Assert(false, "Unable to add a file descriptor for stdOut to epoll");
+            AZ_Assert(false, "Unable to add a file descriptor for stdOut to epoll, errno = %d", errno);
             processData->m_startupInfo.CloseAllHandles();
             CloseAllHandles();
             return false;
@@ -277,7 +281,7 @@ namespace AzFramework
         event.data.fd = m_stdErrRead->GetHandle();
         if(epoll_ctl(platformImpl->m_stdInAndOutPollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
         {
-            AZ_Assert(false, "Unable to add a file descriptor for stdErr to epoll");
+            AZ_Assert(false, "Unable to add a file descriptor for stdErr to epoll, errno = %d", errno);
             processData->m_startupInfo.CloseAllHandles();
             CloseAllHandles();
             return false;
