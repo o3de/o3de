@@ -181,6 +181,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::AWSCore.Tests
+        LABELS REQUIRES_tiaf;TIAF_sharding
     )
 
     ly_add_target_files(
