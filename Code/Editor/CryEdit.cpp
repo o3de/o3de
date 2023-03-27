@@ -61,6 +61,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
@@ -1813,6 +1814,9 @@ bool CCryEditApp::InitInstance()
         bool restoreDefaults = !mainWindowWrapper->restoreGeometryFromSettings();
         QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
     }
+
+    // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
+    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
 
     CloseSplashScreen();
 
