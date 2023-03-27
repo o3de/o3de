@@ -17,6 +17,37 @@ QPushButton:focus {
     border:1px solid #1e70eb;
 }
 
+QPushButton[secondary="true"],
+QPushButton[class="Secondary"] {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #888888, stop: 1.0 #555555);
+}
+QPushButton[secondary="true"]:hover,
+QPushButton[class="Secondary"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #999999, stop: 1.0 #666666);
+}
+QPushButton[secondary="true"]:pressed,
+QPushButton[class="Secondary"]:pressed {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #555555, stop: 1.0 #777777);
+}
+
+QPushButton[class="Danger"] {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+QPushButton[class="Danger"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+QPushButton[class="Danger"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
+}
+
 QTabBar {
     background-color: transparent;
 }
@@ -298,8 +329,6 @@ QTabBar::tab:focus {
     height: 40px;
 }
 
-
-
 #formErrorLabel {
     color: #ec3030;
     font-size: 14px;
@@ -445,18 +474,35 @@ QTabBar::tab:focus {
                             stop: 0 #0085e2, stop: 1.0 #0e60db);
 }
 
+#footer > QPushButton[class="Secondary"],
 #footer > QPushButton[secondary="true"] {
     margin-right: 10px;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #888888, stop: 1.0 #555555);
 }
-#footer > QPushButton[secondary="true"]:hover {
+#footer > QPushButton[secondary="true"]:hover,
+#footer > QPushButton[class="Secondary"]:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #999999, stop: 1.0 #666666);
 }
+
+#footer > QPushButton[class="Secondary"]:pressed,
 #footer > QPushButton[secondary="true"]:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
+}
+
+#footer > QPushButton[class="Danger"] {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #E32C27, stop: 1.0 #951D21);
+}
+#footer > QPushButton[class="Danger"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #FD3129, stop: 1.0 #AF2221);
+}
+#footer > QPushButton[class="Danger"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #951D1F, stop: 1.0 #C92724);
 }
 
 #dialogSubTitle {
@@ -844,6 +890,15 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
+#GemCatalogRequirements {
+   margin:0 0 10px 0; 
+   padding-left:34px;
+   min-height: 34px;
+   font-size:10px;
+   color:#ddd;
+   background:transparent url(:/Warning.svg) no-repeat left center;
+}
+
 #GemCatalogCartOverlayGemDownloadHeader {
     margin:0;
     padding: 0px;
@@ -883,7 +938,7 @@ QProgressBar::chunk {
     margin-top:5px;
 }
 
-#gemCatalogUpdateGemButton,
+#GemCatalogInspector QPushButton,
 #gemCatalogUninstallGemButton 
 {
     qproperty-flat: true;
@@ -895,34 +950,6 @@ QProgressBar::chunk {
     font-weight:600;
 }
 
-#gemCatalogUpdateGemButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-}
-#gemCatalogUpdateGemButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#gemCatalogUpdateGemButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#footer > #gemCatalogUninstallGemButton,
-#gemCatalogUninstallGemButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#footer > #gemCatalogUninstallGemButton:hover,
-#gemCatalogUninstallGemButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#footer > #gemCatalogUninstallGemButton:pressed,
-#gemCatalogUninstallGemButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
-}
 
 /************** Filter Tag widget **************/
 
@@ -956,6 +983,26 @@ QProgressBar::chunk {
 #GemCatalogInspector {
     background-color: #444444;
 }
+
+#GemCatalogInspector QLabel[class="title"] {
+    font-size: 16px;
+    margin:0;
+}
+
+#GemCatalogInspector QLabel[class="label"] {
+    min-width:50px;
+    max-width:50px;
+    margin:0;
+}
+
+#GemCatalogInspector QLabel[class="value"] {
+    margin:0;
+}
+
+#GemCatalogVersion QPushButton {
+    margin:5px 0 5px 0;
+}
+
 
 /************** Gem Catalog (Filter/left pane) **************/
 

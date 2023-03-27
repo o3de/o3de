@@ -347,7 +347,31 @@ namespace O3DE::ProjectManager
         tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+            if(GemModel::IsEngineGem(modelIndex))
+            {
+                // don't show engine gem versions
+                tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+            }
+            else
+            {
+                // show non-engine gem versions if available
+                QString version =  GemModel::GetNewVersion(modelIndex);
+                if (version.isEmpty())
+                {
+                    version =  GemModel::GetVersion(modelIndex);
+                }
+
+                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive))
+                {
+                    tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+                }
+                else
+                {
+                    const QString& title = QString("%1 %2").arg(GemModel::GetDisplayName(modelIndex), version);
+                    tags.push_back({ title, GemModel::GetName(modelIndex) });
+                }
+            }
+
         }
         return tags;
     }

@@ -7,10 +7,15 @@
  */
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Dependency/Dependency.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
 #include <AzCore/Casting/numeric_cast.h>
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
+#include <ProjectUtils.h>
+
+#include <QList>
 
 namespace O3DE::ProjectManager
 {
@@ -27,53 +32,207 @@ namespace O3DE::ProjectManager
         return m_selectionModel;
     }
 
+    void SetItemDataFromGemInfo(QStandardItem* item, const GemInfo& gemInfo, bool metaDataOnly = false)
+    {
+        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
+        item->setData(gemInfo.m_name, GemModel::RoleName);
+        item->setData(gemInfo.m_displayName, GemModel::RoleDisplayName);
+        item->setData(gemInfo.m_origin, GemModel::RoleCreator);
+        item->setData(gemInfo.m_gemOrigin, GemModel::RoleGemOrigin);
+        item->setData(aznumeric_cast<int>(gemInfo.m_platforms), GemModel::RolePlatforms);
+        item->setData(aznumeric_cast<int>(gemInfo.m_types), GemModel::RoleTypes);
+        item->setData(gemInfo.m_summary, GemModel::RoleSummary);
+        item->setData(gemInfo.m_directoryLink, GemModel::RoleDirectoryLink);
+        item->setData(gemInfo.m_documentationLink, GemModel::RoleDocLink);
+        item->setData(gemInfo.m_dependencies, GemModel::RoleDependingGems);
+        item->setData(gemInfo.m_version, GemModel::RoleVersion);
+        item->setData(gemInfo.m_lastUpdatedDate, GemModel::RoleLastUpdated);
+        item->setData(gemInfo.m_binarySizeInKB, GemModel::RoleBinarySize);
+        item->setData(gemInfo.m_features, GemModel::RoleFeatures);
+        item->setData(gemInfo.m_path, GemModel::RolePath);
+        item->setData(gemInfo.m_requirement, GemModel::RoleRequirement);
+        item->setData(gemInfo.m_downloadStatus, GemModel::RoleDownloadStatus);
+        item->setData(gemInfo.m_licenseText, GemModel::RoleLicenseText);
+        item->setData(gemInfo.m_licenseLink, GemModel::RoleLicenseLink);
+        item->setData(gemInfo.m_repoUri, GemModel::RoleRepoUri);
+        item->setData(gemInfo.IsEngineGem(), GemModel::RoleIsEngineGem);
+
+        if (!metaDataOnly)
+        {
+            item->setData(false, GemModel::RoleWasPreviouslyAdded);
+            item->setData(gemInfo.m_isAdded, GemModel::RoleIsAdded);
+            item->setData("", GemModel::RoleNewVersion);
+        }
+    }
+
+    void AddGemInfoVersion(QStandardItem* item, const GemInfo& gemInfo)
+    {
+        QList<QVariant> versionList;
+        auto variant = item->data(GemModel::RoleGemInfoVersions);
+        if (variant.isValid())
+        {
+            versionList = variant.value<QList<QVariant>>();
+        }
+        QVariant gemVariant;
+        gemVariant.setValue(gemInfo);
+        versionList.append(gemVariant);
+        item->setData(versionList, GemModel::RoleGemInfoVersions);
+    }
+
+    QVector<QModelIndex> GemModel::AddGems(const QVector<GemInfo>& gemInfos)
+    {
+        QVector<QModelIndex> indexesChanged;
+        const int initialNumRows = rowCount();
+
+        // block dataChanged signal if we are adding a bunch of stuff
+        // to avoid sending a ton of signals that might cause large UI updates 
+        // and slows us down till we are done
+        blockSignals(true);
+
+        for (const auto& gemInfo : gemInfos)
+        {
+            // ${Name} is a special name used in templates and should not be shown 
+            // Though potentially it should be swapped out with the name of the Project being created
+            if (gemInfo.m_name == "${Name}")
+            {
+                continue;
+            }
+
+            auto modelIndex = FindIndexByNameString(gemInfo.m_name);
+            if (modelIndex.isValid())
+            {
+                auto gemItem = item(modelIndex.row(), modelIndex.column());
+                AZ_Assert(gemItem, "Failed to retrieve existing gem item from model index");
+
+                // if this is a greater version than the existing version, show it
+                if (ProjectUtils::VersionCompare(gemInfo.m_version, gemItem->data(RoleVersion).toString()) > 0)
+                {
+                    SetItemDataFromGemInfo(gemItem, gemInfo, /*metaDataOnly=*/ true);
+                }
+
+                AddGemInfoVersion(gemItem, gemInfo);
+
+                indexesChanged.append(modelIndex);
+            }
+            else
+            {
+                auto gemItem = new QStandardItem();
+                SetItemDataFromGemInfo(gemItem, gemInfo);
+                AddGemInfoVersion(gemItem, gemInfo);
+                appendRow(gemItem); 
+
+                modelIndex = index(rowCount() - 1, 0);
+                indexesChanged.append(modelIndex);
+
+                m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+            }
+
+            if (modelIndex.isValid() && !!gemInfo.m_path.isEmpty())
+            {
+                m_pathToIndexMap[gemInfo.m_path] = modelIndex;
+            }
+        }
+
+        blockSignals(false);
+
+        // send a single dataChanged signal now that we've added everything
+        // this does not include rows that were changed and not added
+        const int startRow = AZStd::max(0, initialNumRows - 1);
+        const int endRow = AZStd::max(0, rowCount() - 1);
+        emit dataChanged(index(startRow, 0), index(endRow, 0));
+
+        return indexesChanged;
+    }
+
+    void GemModel::ActivateGems(const QHash<QString, QString>& enabledGemNames)
+    {
+        // block dataChanged signal if we are modifying a bunch of data 
+        // to avoid sending a many signals that might cause large UI updates 
+        // and slows us down till we are done
+        blockSignals(true);
+
+        for (auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
+        {
+            const QString& gemPath = itr.value();
+            const QString& gemNameWithSpecifier = itr.key();
+            AZ::Dependency<AZ::SemanticVersion::parts_count> dependency;
+            auto parseOutcome = dependency.ParseVersions({ gemNameWithSpecifier.toUtf8().constData() });
+            const QString& gemName = parseOutcome ? dependency.GetName().c_str() : gemNameWithSpecifier; 
+            if (gemName == "${Name}")
+            {
+                // ${Name} is a special name used in templates and is replaced with a real gem name later 
+                // in theory we could replace the name here with the project gem's name
+                continue;
+            }
+
+            if (auto nameFoundIter = m_nameToIndexMap.find(gemName); nameFoundIter != m_nameToIndexMap.end())
+            {
+                const QModelIndex modelIndex = nameFoundIter.value();
+                auto versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
+
+                if (versionList.count() > 1 && !gemPath.isEmpty())
+                {
+                    // make sure the gem item delegate displays the correct version info 
+                    for (auto versionVariant : versionList)
+                    {
+                        if (auto gemInfo = versionVariant.value<GemInfo>(); gemPath == gemInfo.m_path)
+                        {
+                            QStandardItem* gemItem = item(modelIndex.row(), modelIndex.column());
+                            AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
+                            SetItemDataFromGemInfo(gemItem, gemInfo);
+                            break;
+                        }
+                    }
+                }
+
+                // Set Added/PreviouslyAdded after potentially updating data above which might remove
+                // those settings
+                GemModel::SetWasPreviouslyAdded(*this, modelIndex, true);
+                GemModel::SetIsAdded(*this, modelIndex, true);
+
+                continue;
+            }
+
+            // This gem info is missing, but the project uses it so show it to the user
+            // so they can remove it if they want to
+            // In the future we want to let the user browse to this gem's location on disk, or
+            // let them download it
+            GemInfo gemInfo;
+            gemInfo.m_name = gemName;
+            gemInfo.m_displayName = gemName;
+            gemInfo.m_version = parseOutcome ? dependency.GetBounds().at(0).ToString().c_str() : "";
+            gemInfo.m_summary = QString("This project uses %1 but a compatible gem was not found, or has not been registered yet.").arg(gemNameWithSpecifier);
+            gemInfo.m_isAdded = true;
+
+            QStandardItem* gemItem = new QStandardItem();
+            SetItemDataFromGemInfo(gemItem, gemInfo);
+            appendRow(gemItem); 
+
+            const auto modelIndex = index(rowCount() - 1, 0);
+            GemModel::SetWasPreviouslyAdded(*this, modelIndex, true);
+            GemModel::SetIsAdded(*this, modelIndex, true);
+
+            m_nameToIndexMap[gemInfo.m_name] = modelIndex;
+
+            AZ_Warning("ProjectManager::GemCatalog", false,
+                "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
+                gemName.toUtf8().constData());
+        }
+
+        blockSignals(false);
+
+        // send a single dataChanged signal now that we've added everything
+        emit dataChanged(index(0, 0), index(AZStd::max(0, rowCount() - 1), 0));
+    }
+
     QModelIndex GemModel::AddGem(const GemInfo& gemInfo)
     {
-        if (FindIndexByNameString(gemInfo.m_name).isValid())
+        if (const auto& indexes = AddGems({gemInfo}); !indexes.isEmpty())
         {
-            // do not add gems with duplicate names
-            // this can happen by mistake or when a gem repo has a gem with the same name as a local gem
-            AZ_TracePrintf("GemModel", "Ignoring duplicate gem: %s\n", gemInfo.m_name.toUtf8().constData());
-            return QModelIndex();
+            return indexes.at(0);
         }
 
-        QStandardItem* item = new QStandardItem();
-
-        item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
-
-        item->setData(gemInfo.m_name, RoleName);
-        item->setData(gemInfo.m_displayName, RoleDisplayName);
-        item->setData(gemInfo.m_origin, RoleCreator);
-        item->setData(gemInfo.m_gemOrigin, RoleGemOrigin);
-        item->setData(aznumeric_cast<int>(gemInfo.m_platforms), RolePlatforms);
-        item->setData(aznumeric_cast<int>(gemInfo.m_types), RoleTypes);
-        item->setData(gemInfo.m_summary, RoleSummary);
-        item->setData(false, RoleWasPreviouslyAdded);
-        item->setData(gemInfo.m_isAdded, RoleIsAdded);
-        item->setData(gemInfo.m_directoryLink, RoleDirectoryLink);
-        item->setData(gemInfo.m_documentationLink, RoleDocLink);
-        item->setData(gemInfo.m_dependencies, RoleDependingGems);
-        item->setData(gemInfo.m_version, RoleVersion);
-        item->setData(gemInfo.m_lastUpdatedDate, RoleLastUpdated);
-        item->setData(gemInfo.m_binarySizeInKB, RoleBinarySize);
-        item->setData(gemInfo.m_features, RoleFeatures);
-        item->setData(gemInfo.m_path, RolePath);
-        item->setData(gemInfo.m_requirement, RoleRequirement);
-        item->setData(gemInfo.m_downloadStatus, RoleDownloadStatus);
-        item->setData(gemInfo.m_licenseText, RoleLicenseText);
-        item->setData(gemInfo.m_licenseLink, RoleLicenseLink);
-        item->setData(gemInfo.m_repoUri, RoleRepoUri);
-
-        appendRow(item);
-
-        const QModelIndex modelIndex = index(rowCount()-1, 0);
-        m_nameToIndexMap[gemInfo.m_name] = modelIndex;
-        if (!gemInfo.m_path.isEmpty())
-        {
-            m_pathToIndexMap[gemInfo.m_path] = modelIndex;
-        }
-
-        return modelIndex;
+        return index(rowCount()-1, 0);
     }
 
     void GemModel::RemoveGem(const QModelIndex& modelIndex)
@@ -129,32 +288,46 @@ namespace O3DE::ProjectManager
         }
     }
 
-    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex)
+    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex, const QString& version)
     {
-        GemInfo gemInfo;
-        gemInfo.m_name = modelIndex.data(RoleName).toString();
-        gemInfo.m_displayName = modelIndex.data(RoleDisplayName).toString();
-        gemInfo.m_origin = modelIndex.data(RoleCreator).toString();
-        gemInfo.m_gemOrigin = static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
-        gemInfo.m_platforms = static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
-        gemInfo.m_types = static_cast<GemInfo::Type>(modelIndex.data(RoleTypes).toInt());
-        gemInfo.m_summary = modelIndex.data(RoleSummary).toString();
-        gemInfo.m_isAdded = modelIndex.data(RoleIsAdded).toBool();
-        gemInfo.m_directoryLink = modelIndex.data(RoleDirectoryLink).toString();
-        gemInfo.m_documentationLink = modelIndex.data(RoleDocLink).toString();
-        gemInfo.m_dependencies = modelIndex.data(RoleDependingGems).toStringList();
-        gemInfo.m_version = modelIndex.data(RoleVersion).toString();
-        gemInfo.m_lastUpdatedDate = modelIndex.data(RoleLastUpdated).toString();
-        gemInfo.m_binarySizeInKB = modelIndex.data(RoleBinarySize).toInt();
-        gemInfo.m_features = modelIndex.data(RoleFeatures).toStringList();
-        gemInfo.m_path = modelIndex.data(RolePath).toString();
-        gemInfo.m_requirement = modelIndex.data(RoleRequirement).toString();
-        gemInfo.m_downloadStatus = static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
-        gemInfo.m_licenseText = modelIndex.data(RoleLicenseText).toString();
-        gemInfo.m_licenseLink = modelIndex.data(RoleLicenseLink).toString();
-        gemInfo.m_repoUri = modelIndex.data(RoleRepoUri).toString();
+        const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
+        const QString& gemVersion = modelIndex.data(RoleVersion).toString();
+        if (versionList.isEmpty())
+        {
+            return {};
+        }
+        else if (gemVersion.isEmpty() && version.isEmpty())
+        {
+            // no version to look for so return the first GemInfo
+            return versionList.at(0).value<GemInfo>();
+        }
 
-        return gemInfo;
+        for (const auto& versionVariant : versionList)
+        {
+            const QString& variantVersion = versionVariant.value<GemInfo>().m_version;
+
+            // if a version is provided try to find an exact match
+            // if no version is provided, try to find the one that matches the current version
+            if (version == variantVersion || (version.isEmpty() && gemVersion == variantVersion))
+            {
+                // NOTE this gem info does not include any updates to m_isAdded or m_version
+                return versionVariant.value<GemInfo>();
+            }
+        }
+
+        // no gem info found for this version
+        return {};
+    }
+
+    const QStringList GemModel::GetGemVersions(const QModelIndex& modelIndex)
+    {
+        QStringList versionList;
+        const auto& versions = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
+        for (const auto& version : versions)
+        {
+            versionList.append(version.value<GemInfo>().m_version);
+        }
+        return versionList;
     }
 
     QString GemModel::GetName(const QModelIndex& modelIndex)
@@ -199,6 +372,11 @@ namespace O3DE::ProjectManager
     GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
+    }
+
+    bool GemModel::IsEngineGem(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleIsEngineGem).toBool();
     }
 
     QString GemModel::GetSummary(const QModelIndex& modelIndex)
@@ -291,6 +469,11 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleVersion).toString();
     }
 
+    QString GemModel::GetNewVersion(const QModelIndex& modelIndex)
+    {
+        return modelIndex.data(RoleNewVersion).toString();
+    }
+
     QString GemModel::GetLastUpdated(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleLastUpdated).toString();
@@ -367,13 +550,24 @@ namespace O3DE::ProjectManager
         return modelIndex.data(RoleIsAddedDependency).toBool();
     }
 
-    void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded)
+    void GemModel::SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded, const QString& version)
     {
         // get the gemName first, because the modelIndex data change after adding because of filters
         QString gemName = modelIndex.data(RoleName).toString();
         model.setData(modelIndex, isAdded, RoleIsAdded);
 
+        if (!version.isEmpty())
+        {
+            QString gemVersion = modelIndex.data(RoleVersion).toString();
+            model.setData(modelIndex, version == gemVersion ? "" : version, RoleNewVersion);
+        }
+
         UpdateDependencies(model, gemName, isAdded);
+    }
+
+    void GemModel::SetNewVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version)
+    {
+        model.setData(modelIndex, version, RoleNewVersion);
     }
 
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
@@ -447,6 +641,15 @@ namespace O3DE::ProjectManager
         gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
+    void GemModel::UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version)
+    {
+        GemModel* gemModel = GetSourceModel(&model);
+        AZ_Assert(gemModel, "Failed to obtain GemModel");
+        auto gemItem = gemModel->item(modelIndex.row(), modelIndex.column());
+        AZ_Assert(gemItem, "Failed to obtain gem model item");
+        SetItemDataFromGemInfo(gemItem, GetGemInfo(modelIndex, version), /*metaDataOnly*/ true);
+    }
+
     void GemModel::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
     {
         bool selectedRowRemoved = false;
@@ -517,12 +720,13 @@ namespace O3DE::ProjectManager
     {
         bool previouslyAdded = modelIndex.data(RoleWasPreviouslyAdded).toBool();
         bool added = modelIndex.data(RoleIsAdded).toBool();
+        QString newVersion = modelIndex.data(RoleNewVersion).toString();
         if (includeDependencies)
         {
             previouslyAdded |= modelIndex.data(RoleWasPreviouslyAddedDependency).toBool();
             added |= modelIndex.data(RoleIsAddedDependency).toBool();
         }
-        return !previouslyAdded && added;
+        return (!previouslyAdded && added) || (added && !newVersion.isEmpty());
     }
 
     bool GemModel::NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies)

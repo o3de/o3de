@@ -52,7 +52,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* uninstallButton = dialogButtons->addButton(tr("Uninstall Gem"), QDialogButtonBox::ApplyRole);
-        uninstallButton->setObjectName("gemCatalogUninstallGemButton");
+        uninstallButton->setProperty("class", "Danger");
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(uninstallButton, &QPushButton::clicked, this, &QDialog::accept);

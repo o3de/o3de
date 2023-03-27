@@ -14,15 +14,18 @@
 #include <QFrame>
 #include <QLabel>
 #include <QSpacerItem>
+#include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QIcon>
 #include <QPushButton>
+#include <QComboBox>
 
 namespace O3DE::ProjectManager
 {
-    GemInspector::GemInspector(GemModel* model, QWidget* parent)
+    GemInspector::GemInspector(GemModel* model, QWidget* parent, bool readOnly)
         : QScrollArea(parent)
         , m_model(model)
+        , m_readOnly(readOnly)
     {
         setObjectName("GemCatalogInspector");
         setWidgetResizable(true);
@@ -59,7 +62,7 @@ namespace O3DE::ProjectManager
         Update(selectedIndices[0]);
     }
 
-    void SetLabelElidedText(QLabel* label, QString text, int labelWidth = 0)
+    void SetLabelElidedText(QLabel* label, const QString& text, int labelWidth = 0)
     {
         QFontMetrics nameFontMetrics(label->font());
         if (!labelWidth)
@@ -78,7 +81,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemInspector::Update(const QModelIndex& modelIndex)
+    void GemInspector::Update(const QModelIndex& modelIndex, [[maybe_unused]] const QString& version)
     {
         m_curModelIndex = modelIndex;
 
@@ -87,36 +90,38 @@ namespace O3DE::ProjectManager
             m_mainWidget->hide();
         }
 
-        SetLabelElidedText(m_nameLabel, m_model->GetDisplayName(modelIndex));
-        SetLabelElidedText(m_creatorLabel, m_model->GetCreator(modelIndex));
+        // use the provided version if available
+        QString displayVersion = version;
+        QString activeVersion = m_model->GetNewVersion(modelIndex);
+        if (activeVersion.isEmpty())
+        {
+            // fallback to the current version
+            activeVersion = m_model->GetVersion(modelIndex);
+        }
 
-        m_summaryLabel->setText(m_model->GetSummary(modelIndex));
+        if (displayVersion.isEmpty())
+        {
+            displayVersion = activeVersion;
+        }
+
+        const GemInfo& gemInfo = m_model->GetGemInfo(modelIndex, displayVersion);
+
+        // The gem display name should stay the same
+        SetLabelElidedText(m_nameLabel, m_model->GetDisplayName(modelIndex));
+        SetLabelElidedText(m_creatorLabel, gemInfo.m_origin);
+
+        m_summaryLabel->setText(gemInfo.m_summary);
         m_summaryLabel->adjustSize();
 
         // Manually define remaining space to elide text because spacer would like to take all of the space
-        SetLabelElidedText(m_licenseLinkLabel, m_model->GetLicenseText(modelIndex), width() - m_licenseLabel->width() - 35);
-        m_licenseLinkLabel->SetUrl(m_model->GetLicenseLink(modelIndex));
+        SetLabelElidedText(m_licenseLinkLabel, gemInfo.m_licenseText, width() - m_licenseLabel->width() - 35);
+        m_licenseLinkLabel->SetUrl(gemInfo.m_licenseLink);
 
-        m_directoryLinkLabel->SetUrl(m_model->GetDirectoryLink(modelIndex));
-        m_documentationLinkLabel->SetUrl(m_model->GetDocLink(modelIndex));
+        m_directoryLinkLabel->SetUrl(gemInfo.m_directoryLink);
+        m_documentationLinkLabel->SetUrl(gemInfo.m_documentationLink);
 
-        if (m_model->HasRequirement(modelIndex))
-        {
-            m_requirementsIconLabel->show();
-            m_requirementsTitleLabel->show();
-            m_requirementsTextLabel->show();
-            m_requirementsMainSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-            m_requirementsTitleLabel->setText(tr("Requirement"));
-            m_requirementsTextLabel->setText(m_model->GetRequirement(modelIndex));
-        }
-        else
-        {
-            m_requirementsIconLabel->hide();
-            m_requirementsTitleLabel->hide();
-            m_requirementsTextLabel->hide();
-            m_requirementsMainSpacer->changeSize(0, 0, QSizePolicy::Fixed, QSizePolicy::Fixed);
-        }
+        m_requirementsTextLabel->setVisible(!gemInfo.m_requirement.isEmpty());
+        m_requirementsTextLabel->setText(gemInfo.m_requirement);
 
         // Depending gems
         const QVector<Tag>& dependingGemTags = m_model->GetDependingGemTags(modelIndex);
@@ -133,24 +138,66 @@ namespace O3DE::ProjectManager
         }
 
         // Additional information
-        m_versionLabel->setText(tr("Gem Version: %1").arg(m_model->GetVersion(modelIndex)));
-        m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(m_model->GetLastUpdated(modelIndex)));
-        const int binarySize = m_model->GetBinarySizeInKB(modelIndex);
-        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(binarySize ? tr("%1 KB").arg(binarySize) : tr("Unknown")));
+        m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(gemInfo.m_lastUpdatedDate));
+        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(gemInfo.m_binarySizeInKB ? tr("%1 KB").arg(gemInfo.m_binarySizeInKB) : tr("Unknown")));
 
-        // Update and Uninstall buttons
-        if (m_model->GetGemOrigin(modelIndex) == GemInfo::Remote &&
-            (m_model->GetDownloadStatus(modelIndex) == GemInfo::Downloaded ||
-             m_model->GetDownloadStatus(modelIndex) == GemInfo::DownloadSuccessful))
+        // Versions
+        disconnect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
+        m_versionComboBox->clear();
+        const bool isEngineGem = gemInfo.IsEngineGem();
+        auto gemVersions = m_model->GetGemVersions(modelIndex);
+        if (isEngineGem || gemVersions.count() < 2)
         {
-            m_updateGemButton->show();
-            m_uninstallGemButton->show();
+            m_versionComboBox->setVisible(false);
+            m_versionLabel->setText(gemInfo.m_version);
+            m_versionLabel->setVisible(true);
+            m_updateVersionButton->setVisible(false);
         }
         else
         {
-            m_updateGemButton->hide();
-            m_uninstallGemButton->hide();
+            m_versionLabel->setVisible(false);
+            m_versionComboBox->setVisible(true);
+            m_versionComboBox->addItems(gemVersions);
+            if (m_versionComboBox->count() == 0)
+            {
+                m_versionComboBox->insertItem(0, "Unknown");
+            }
+
+            auto foundIndex = m_versionComboBox->findText(displayVersion);
+            m_versionComboBox->setCurrentIndex(foundIndex > -1 ? foundIndex : 0);
+
+            bool versionChanged = displayVersion != activeVersion && !m_readOnly && m_model->IsAdded(modelIndex);
+            m_updateVersionButton->setVisible(versionChanged);
+            if (versionChanged)
+            {
+                m_updateVersionButton->setText(tr("Use Version %1").arg(m_versionComboBox->currentText()));
+            }
+            connect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
+
         }
+
+        // Compatible engines
+        m_enginesTitleLabel->setVisible(!isEngineGem);
+        m_enginesLabel->setVisible(!isEngineGem);
+        if (!isEngineGem)
+        {
+            if (gemInfo.m_compatibleEngines.isEmpty())
+            {
+                m_enginesLabel->setText("All");
+            }
+            else
+            {
+                m_enginesLabel->setText(gemInfo.m_compatibleEngines.join("\n"));
+            }
+        }
+
+        const bool isRemote = gemInfo.m_gemOrigin == GemInfo::Remote;
+        const bool isDownloaded = gemInfo.m_downloadStatus == GemInfo::Downloaded ||
+                                  gemInfo.m_downloadStatus == GemInfo::DownloadSuccessful;
+
+        m_updateGemButton->setVisible(isRemote && isDownloaded);
+        m_uninstallGemButton->setVisible(isRemote && isDownloaded);
+        m_editGemButton->setVisible(!isRemote || (isRemote && isDownloaded));
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -164,11 +211,63 @@ namespace O3DE::ProjectManager
         return result;
     }
 
+    void GemInspector::OnVersionChanged([[maybe_unused]] int index)
+    {
+        Update(m_curModelIndex, m_versionComboBox->currentText());
+        if (!GemModel::IsAdded(m_curModelIndex))
+        {
+            GemModel::UpdateWithVersion(*m_model, m_curModelIndex, m_versionComboBox->currentText());
+        }
+    }
+
     void GemInspector::InitMainWidget()
     {
         // Gem name, creator and summary
         m_nameLabel = CreateStyledLabel(m_mainLayout, 18, s_headerColor);
         m_creatorLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_headerColor);
+
+        // Version
+        {
+            m_versionWidget = new QWidget();
+            m_versionWidget->setObjectName("GemCatalogVersion");
+            auto versionVLayout = new QVBoxLayout();
+            versionVLayout->setMargin(0);
+            auto versionHLayout = new QHBoxLayout();
+            versionHLayout->setMargin(0);
+            versionVLayout->addLayout(versionHLayout);
+            m_versionWidget->setLayout(versionVLayout);
+            m_mainLayout->addWidget(m_versionWidget);
+
+            auto versionLabelTitle = new QLabel(tr("Version: "));
+            versionLabelTitle->setProperty("class", "label");
+            versionHLayout->addWidget(versionLabelTitle);
+            m_versionLabel = new QLabel();
+            m_versionLabel->setProperty("class", "value");
+            versionHLayout->addWidget(m_versionLabel);
+
+            m_versionComboBox = new QComboBox();
+            versionHLayout->addWidget(m_versionComboBox);
+
+            m_updateVersionButton = new QPushButton(tr("Use Version"));
+            m_updateVersionButton->setProperty("class", "Secondary");
+            versionVLayout->addWidget(m_updateVersionButton);
+            connect(m_updateVersionButton, &QPushButton::clicked, this , [this]{
+                GemModel::SetIsAdded(*m_model, m_curModelIndex, true, m_versionComboBox->currentText());
+                GemModel::UpdateWithVersion(*m_model, m_curModelIndex, m_versionComboBox->currentText());
+                m_updateVersionButton->setVisible(false);
+            });
+
+            auto enginesHLayout = new QHBoxLayout();
+            enginesHLayout->setMargin(0);
+            versionVLayout->addLayout(enginesHLayout);
+            m_enginesTitleLabel = new QLabel(tr("Engines: "));
+            m_enginesTitleLabel->setProperty("class", "label");
+            enginesHLayout->addWidget(m_enginesTitleLabel);
+            m_enginesLabel = new QLabel();
+            m_enginesLabel->setProperty("class", "value");
+            enginesHLayout->addWidget(m_enginesLabel);
+        }
+
         m_mainLayout->addSpacing(5);
 
         // TODO: QLabel seems to have issues determining the right sizeHint() for our font with the given font size.
@@ -226,29 +325,23 @@ namespace O3DE::ProjectManager
         m_mainLayout->addSpacing(10);
 
         // Requirements
-        m_requirementsTitleLabel = GemInspector::CreateStyledLabel(m_mainLayout, 16, s_headerColor);
-
-        QHBoxLayout* requirementsLayout = new QHBoxLayout();
-        requirementsLayout->setAlignment(Qt::AlignTop);
-        requirementsLayout->setMargin(0);
-        requirementsLayout->setSpacing(0);
-
-        m_requirementsIconLabel = new QLabel();
-        m_requirementsIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(24, 24));
-        requirementsLayout->addWidget(m_requirementsIconLabel);
-
-        m_requirementsTextLabel = GemInspector::CreateStyledLabel(requirementsLayout, 10, s_textColor);
+        m_requirementsTextLabel = new QLabel();
+        m_requirementsTextLabel->setObjectName("GemCatalogRequirements");
         m_requirementsTextLabel->setWordWrap(true);
         m_requirementsTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
         m_requirementsTextLabel->setOpenExternalLinks(true);
 
-        QSpacerItem* requirementsSpacer = new QSpacerItem(0, 0, QSizePolicy::MinimumExpanding);
-        requirementsLayout->addSpacerItem(requirementsSpacer);
+        m_mainLayout->addWidget(m_requirementsTextLabel);
 
-        m_mainLayout->addLayout(requirementsLayout);
+        // Additional information
+        auto additionalInfoLabel = new QLabel(tr("Additional Information"));
+        additionalInfoLabel->setProperty("class", "title");
+        m_mainLayout->addWidget(additionalInfoLabel);
 
-        m_requirementsMainSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
-        m_mainLayout->addSpacerItem(m_requirementsMainSpacer);
+        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+
+        m_mainLayout->addSpacing(20);
 
         // Depending gems
         m_dependingGems = new GemsSubWidget();
@@ -257,33 +350,24 @@ namespace O3DE::ProjectManager
         m_dependingGemsSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
         m_mainLayout->addSpacerItem(m_dependingGemsSpacer);
 
-        // Additional information
-        QLabel* additionalInfoLabel = CreateStyledLabel(m_mainLayout, 14, s_headerColor);
-        additionalInfoLabel->setText(tr("Additional Information"));
-
-        m_versionLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
-        m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
-        m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
-
-        m_mainLayout->addSpacing(20);
 
         // Update and Uninstall buttons
         m_updateGemButton = new QPushButton(tr("Update Gem"));
-        m_updateGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_updateGemButton->setProperty("class", "Secondary");
         m_mainLayout->addWidget(m_updateGemButton);
         connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
 
         m_mainLayout->addSpacing(10);
 
         m_editGemButton = new QPushButton(tr("Edit Gem"));
-        m_editGemButton->setObjectName("gemCatalogUpdateGemButton");
+        m_editGemButton->setProperty("class", "Secondary");
         m_mainLayout->addWidget(m_editGemButton);
         connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex); });
 
         m_mainLayout->addSpacing(10);
 
         m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
-        m_uninstallGemButton->setObjectName("gemCatalogUninstallGemButton");
+        m_uninstallGemButton->setProperty("class", "Danger");
         m_mainLayout->addWidget(m_uninstallGemButton);
         connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex); });
     }

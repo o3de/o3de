@@ -91,8 +91,6 @@ namespace O3DE::ProjectManager
         QRect fullRect, itemRect, contentRect;
         CalcRects(options, fullRect, itemRect, contentRect);
 
-        QRect buttonRect = CalcButtonRect(contentRect);
-
         QFont standardFont(options.font);
         standardFont.setPixelSize(static_cast<int>(s_fontSize));
         QFontMetrics standardFontMetrics(standardFont);
@@ -163,6 +161,19 @@ namespace O3DE::ProjectManager
         const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
         DrawText(summary, painter, summaryRect, standardFont);
 
+        // Gem Version
+        // include the version in the name if it isn't unknown
+        QString gemVersion = GemModel::GetVersion(modelIndex);
+        if (!gemVersion.isEmpty() && !gemVersion.contains("unknown", Qt::CaseInsensitive))
+        {
+            QPair<int, int> versionXBounds = CalcColumnXBounds(HeaderOrder::Version);
+            QRect gemVersionRect{ versionXBounds.first, contentRect.top(), versionXBounds.second - versionXBounds.first, contentRect.height() };
+            painter->setFont(standardFont);
+            gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemVersion);
+            painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemVersion);
+        }
+
+        QRect buttonRect = CalcButtonRect(contentRect);
         DrawDownloadStatusIcon(painter, contentRect, buttonRect, modelIndex);
         if (!m_readOnly)
         {

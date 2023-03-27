@@ -82,7 +82,15 @@ namespace O3DE::ProjectManager
                 }
 
                 gemPaths.append(GemModel::GetPath(modelIndex));
-                gemNames.append(GemModel::GetName(modelIndex));
+
+                // use the version that was selected if available
+                auto gemInfo = GemModel::GetGemInfo(modelIndex);
+                if (auto gemVersion = GemModel::GetNewVersion(modelIndex); !gemVersion.isEmpty())
+                {
+                    gemInfo.m_version = gemVersion;
+                }
+
+                gemNames.append(gemInfo.GetNameWithVersionSpecifier());
             }
 
             // check compatibility of all gems
@@ -117,6 +125,14 @@ namespace O3DE::ProjectManager
                 for (const QModelIndex& modelIndex : toBeAdded)
                 {
                     GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
+
+                    // if the user selected a new version then make sure to show that version
+                    const QString& newVersion = GemModel::GetNewVersion(modelIndex);
+                    if (!newVersion.isEmpty())
+                    {
+                        GemModel::UpdateWithVersion(*m_gemModel, modelIndex, newVersion);
+                        GemModel::SetNewVersion(*m_gemModel, modelIndex, "");
+                    }
                     const auto& gemPath = GemModel::GetPath(modelIndex);
 
                     // register external gems that were added with relative paths

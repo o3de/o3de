@@ -55,8 +55,8 @@ namespace O3DE::ProjectManager
         m_gemModel = new GemModel(this);
         m_proxyModel = new GemSortFilterProxyModel(m_gemModel, this);
 
-        // default to sort by gem name
-        m_proxyModel->setSortRole(GemModel::RoleName);
+        // default to sort by gem display name 
+        m_proxyModel->setSortRole(GemModel::RoleDisplayName);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -85,7 +85,7 @@ namespace O3DE::ProjectManager
         m_rightPanelStack = new QStackedWidget(this);
         m_rightPanelStack->setFixedWidth(sidePanelWidth);
 
-        m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
+        m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack, m_readOnly);
 
         connect(
             m_gemInspector,
@@ -108,18 +108,26 @@ namespace O3DE::ProjectManager
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
         connect(catalogHeaderWidget, &GemListHeaderWidget::OnRefresh, this, &GemCatalogScreen::Refresh);
 
-        constexpr int minHeaderSectionWidth = 100;
+        constexpr int GemImageHeaderWidth = GemItemDelegate::s_itemMargins.left() + GemPreviewImageWidth +
+                                            AdjustableHeaderWidget::s_headerTextIndent;
+        constexpr int GemVersionHeaderWidth = GemItemDelegate::s_versionSize + GemItemDelegate::s_versionSizeSpacing;
+        constexpr int GemStatusHeaderWidth = GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing +
+                                             GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right();
+        constexpr int minHeaderSectionWidth = AZStd::min(GemImageHeaderWidth, AZStd::min(GemVersionHeaderWidth, GemStatusHeaderWidth));
+
+        //constexpr int itemLeftMargin = k
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Status") },
-            QVector<int>{ GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
-                          -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
+            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Version"), tr("Status") },
+            QVector<int>{ GemImageHeaderWidth,
+                          GemItemDelegate::s_defaultSummaryStartX - GemImageHeaderWidth,
                           0, // Section is set to stretch to fit
-                          GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth +
-                              GemItemDelegate::s_contentMargins.right() },
+                          GemVersionHeaderWidth,
+                          GemStatusHeaderWidth},
             minHeaderSectionWidth,
             QVector<QHeaderView::ResizeMode>{ QHeaderView::ResizeMode::Fixed,
                                               QHeaderView::ResizeMode::Interactive,
                                               QHeaderView::ResizeMode::Stretch,
+                                              QHeaderView::ResizeMode::Fixed,
                                               QHeaderView::ResizeMode::Fixed },
             this);
 
@@ -368,7 +376,16 @@ namespace O3DE::ProjectManager
             QString notification;
             if (gemStateChanged)
             {
-                notification = GemModel::GetDisplayName(modelIndex);
+                QString version = GemModel::GetNewVersion(modelIndex);
+                if (version.isEmpty())
+                {
+                    notification = GemModel::GetDisplayName(modelIndex);
+                } 
+                else
+                {
+                    notification = QString("%1 %2").arg(GemModel::GetDisplayName(modelIndex), version);
+                }
+
                 if (numChangedDependencies > 0)
                 {
                     notification += tr(" and ");
@@ -562,87 +579,37 @@ namespace O3DE::ProjectManager
         const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult = PythonBindingsInterface::Get()->GetAllGemInfos(projectPath);
         if (allGemInfosResult.IsSuccess())
         {
-            // Add all available gems to the model.
-            const QVector<GemInfo>& allGemInfos = allGemInfosResult.GetValue();
-            for (const GemInfo& gemInfo : allGemInfos)
-            {
-                if (gemInfo.m_name != "${Name}")
-                {
-                    m_gemModel->AddGem(gemInfo);
-                }
-            }
+            m_gemModel->AddGems(allGemInfosResult.GetValue());
 
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
+            const auto& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
             if (allRepoGemInfosResult.IsSuccess())
             {
-                const QVector<GemInfo>& allRepoGemInfos = allRepoGemInfosResult.GetValue();
-                for (const GemInfo& gemInfo : allRepoGemInfos)
-                {
-                    // do not add gems that have already been downloaded
-                    if (!m_gemModel->FindIndexByNameString(gemInfo.m_name).isValid())
-                    {
-                        m_gemModel->AddGem(gemInfo);
-                    }
-                }
+                m_gemModel->AddGems(allRepoGemInfosResult.GetValue());
             }
             else
             {
                 QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve gems from repos.<br><br>Error:<br>%1").arg(allRepoGemInfosResult.GetError().c_str()));
             }
 
+            // we need to update all gem dependencies before activating all the gems for this project
             m_gemModel->UpdateGemDependencies();
 
-            // if we don't have a project path early out
-            if (m_projectPath.isEmpty())
+            if (!m_projectPath.isEmpty())
             {
-                return;
-            }
-
-            m_notificationsEnabled = false;
-
-            // Gather enabled gems for the given project.
-            constexpr bool includeDependencies = false;
-            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies);
-            if (enabledGemNamesResult.IsSuccess())
-            {
-                const auto& enabledGemNames = enabledGemNamesResult.GetValue();
-                for (auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
+                constexpr bool includeDependencies = false;
+                const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies);
+                if (enabledGemNamesResult.IsSuccess())
                 {
-                    const QString& gemNameWithSpecifier = itr.key();
-                    const QString& gemPath = itr.value(); 
-
-                    AZ::Dependency<AZ::SemanticVersion::parts_count> dependency;
-                    auto parseOutcome = dependency.ParseVersions({ gemNameWithSpecifier.toUtf8().constData() });
-                    const QString& gemName = parseOutcome ? dependency.GetName().c_str() : gemNameWithSpecifier; 
-
-                    // First, try to find the gem by path
-                    QModelIndex modelIndex = m_gemModel->FindIndexByPath(gemPath);
-                    if (!modelIndex.isValid())
-                    {
-                        // Fall back to lookup by name 
-                        modelIndex = m_gemModel->FindIndexByNameString(gemName);
-                    }
-
-                    if (modelIndex.isValid())
-                    {
-                        GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
-                        GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
-                    }
-                    // ${Name} is a special name used in templates and is not really an error
-                    else if (gemName != "${Name}")
-                    {
-                        AZ_Warning("ProjectManager::GemCatalog", false,
-                            "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
-                            gemName.toUtf8().constData());
-                    }
+                    m_gemModel->ActivateGems(enabledGemNamesResult.GetValue());
                 }
-            }
-            else
-            {
-                QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.<br><br>Error:<br>%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
-            }
+                else
+                {
+                    QMessageBox::critical(nullptr, tr("Operation failed"), QString("Cannot retrieve enabled gems for project %1.<br><br>Error:<br>%2").arg(projectPath, enabledGemNamesResult.GetError().c_str()));
+                }
 
-            m_notificationsEnabled = true;
+                // sort after activating gems in case the display name for a gem is different for the active version 
+                m_proxyModel->sort(/*column=*/0);
+            }
         }
         else
         {
