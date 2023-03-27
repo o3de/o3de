@@ -154,21 +154,21 @@ You can run this config.py from the command line, this allows:
 
 This command provides basic access to O3DE and DCCsi, this is the default config you will want if you are operating another DCC tool (for interop):
 
--  `.\python config.py`
+- `.\python config.py`
 
 < stub an image here >
 
 This command will extend the environment with O3DE Python, this config state will allow you to use O3DEs python and packages to run utils, scripts and automation:
 
--  `.\python config.py -py=True`
+- `.\python config.py -py=True`
 
 This command will further extend the environment in a Qt specific way, it will give you access to the Python, Qt.dll's, and PySide2 (aka Qt For Python) that ship with O3DE, this is the configuration state you would use to launch a standalone GUI tool.
 
--  `.\python config.py -py=True -qt=True`
+- `.\python config.py -py=True -qt=True`
 
 Yes, you can author a Qt app that runs external from the o3de editor.exe, you can validate this by running with this additional flag:
 
--  `.\python config.py -py=True -qt=True --test-pyside2=True`
+- `.\python config.py -py=True -qt=True --test-pyside2=True`
 
 That will execute the config to stand up access, then start a PySide2 test, you'll see a standalone panel with a button pop-up.
 
@@ -195,7 +195,7 @@ The ENVARS and settings can be managed via a few mechanisms:
 
 - the cli flags are `-cls` or `--cache-local-settings`
 
--  `.\python config.py -cls=False`  # this would disable 
+- `.\python config.py -cls=False`  # this would disable 
 
 Additional, the settings can be written to and stored in any user specified location, by using the following cli flag:
 

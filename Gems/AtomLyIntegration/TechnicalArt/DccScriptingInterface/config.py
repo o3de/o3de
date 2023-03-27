@@ -108,6 +108,10 @@ except ImportError as e:
     _LOGGER.warning(f'Most likely the application loading this module does not have DCCsi pkg dependancies installed. Use foundation.py to install pkgs for ')
     _LOGGER.exception(f'{e} , traceback =', exc_info=True)
     raise e
+
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json','.secrets.json'])
 #-------------------------------------------------------------------------
 
 

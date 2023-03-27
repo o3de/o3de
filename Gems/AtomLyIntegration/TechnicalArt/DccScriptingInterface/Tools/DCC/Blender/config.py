@@ -39,11 +39,18 @@ _LOGGER.debug('Initializing: {0}.'.format({_MODULENAME}))
 _MODULE_PATH = Path(__file__)
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH.as_posix()}')
 
+# init/load the Blender settings files
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+settings.setenv() # ensure these settings are in the env
+
 # ensure dccsi and o3de core access
 # in a future iteration it is suggested that the core config
 # be rewritten from ConfigClass, then BlenderConfig inherits core
 import DccScriptingInterface.config as dccsi_core_config
-
+#
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=False,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
@@ -178,9 +185,13 @@ from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_URL_DCCSI_BL
 from DccScriptingInterface.Tools.DCC.Blender.constants import URL_DCCSI_BLENDER_WIKI
 blender_config.add_setting(ENVAR_URL_DCCSI_BLENDER_WIKI,
                            str(URL_DCCSI_BLENDER_WIKI))
-# --- END -----------------------------------------------------------------
 
-settings = blender_config.get_config_settings()
+# init/load the Blender settings files
+from dynaconf import Dynaconf
+settings = Dynaconf(envar_prefix='DYNACONF',
+                    # the following will also load settings.local.json
+                    settings_files=['settings.json', '.secrets.json'])
+settings.setenv() # ensure these settings are in the env
 
 _MODULE_END = timeit.default_timer() - _MODULE_START
 _LOGGER.debug(f'{_MODULENAME} took: {_MODULE_END} sec')
