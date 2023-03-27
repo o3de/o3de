@@ -41,10 +41,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.script_canvas import ScriptCanvas_OverlapNode as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    def test_Material_StaticFriction(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_StaticFriction as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
