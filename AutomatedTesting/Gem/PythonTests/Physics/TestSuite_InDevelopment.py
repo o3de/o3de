@@ -24,15 +24,6 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(TestAutomationBase):
-    # Marking the test as an expected failure due to sporadic failure on Automated Review: LYN-2580
-    # The test still runs, but a failure of the test doesn't result in the test run failing
-    @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg', 'Material_PerFaceMaterialGetsCorrectMaterial.setreg_override',
-                      'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_PerFaceMaterialGetsCorrectMaterial(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_PerFaceMaterialGetsCorrectMaterial as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     @revert_physics_config
     @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombine.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
