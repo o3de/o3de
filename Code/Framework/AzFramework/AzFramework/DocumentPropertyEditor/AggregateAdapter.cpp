@@ -384,11 +384,11 @@ namespace AZ::DocumentPropertyEditor
 
     bool LabeledRowAggregateAdapter::ValuesMatch(const Dom::Value& left, const Dom::Value& right)
     {
-        auto getLastHandlerValue = [](const Dom::Value& rowValue)
+        auto getComparisonValue = [](const Dom::Value& rowValue)
         {
             if (!rowValue.IsArrayEmpty())
             {
-                for (auto arrayIter = rowValue.ArrayEnd() - 1, endIter = rowValue.ArrayBegin(); arrayIter != endIter; --arrayIter)
+                for (auto arrayIter = rowValue.ArrayBegin() + 1, endIter = rowValue.ArrayEnd(); arrayIter != endIter; ++arrayIter)
                 {
                     auto& currChild = *arrayIter;
                     if (arrayIter->GetNodeName() == AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>())
@@ -401,13 +401,10 @@ namespace AZ::DocumentPropertyEditor
             return Dom::Value(AZ::Dom::Type::Null);
         };
 
-        auto leftValue = getLastHandlerValue(left);
-        auto rightValue = getLastHandlerValue(right);
+        auto leftValue = getComparisonValue(left);
+        auto rightValue = getComparisonValue(right);
 
-        /* TODO: use actually compare these values. Currently this doesn't work because values aren't serialized into the DOM, so
-                 the below comparison doesn't work for pointer types, opaque types, container rows, etc
-        return (leftValue.GetType() != AZ::Dom::Type::Null && leftValue == rightValue); */
-        return true;
+        return (leftValue.GetType() != AZ::Dom::Type::Null && leftValue == rightValue);
     }
 
 
@@ -416,7 +413,7 @@ namespace AZ::DocumentPropertyEditor
     - A node is only considered matching if its number of Values equals the number of adapters
     - If all the nodes in a given set have all column children value matching, the full row is passed through,
       otherwise, the column children are replaced with a label saying, "Values differ", and a button saying "Edit anyway"
-      if Edit anyyway is pressed, the first value in the set is passed through, but its editor is set to change the values of all nodes
+      if Edit anyway is pressed, the first value in the set is passed through, but its editor is set to change the values of all nodes
     - the types of all nodes must match to be considered to be editable together
 
     TBD:

@@ -406,7 +406,7 @@ int main(int argc, char** argv)
 
     AZStd::map<int, float> secondVector = {
         { 2, 2. },
-        { 3, 3. },
+        { 3, 3.5 },
         { 4, 4. },
         { 5, 5. },
     };
