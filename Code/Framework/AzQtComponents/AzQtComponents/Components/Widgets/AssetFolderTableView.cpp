@@ -24,6 +24,7 @@ namespace AzQtComponents
         : TableView(parent)
     {
         setSortingEnabled(true);
+        setContextMenuPolicy(Qt::CustomContextMenu);
     }
 
     void AssetFolderTableView::setRootIndex(const QModelIndex& index)
@@ -31,14 +32,36 @@ namespace AzQtComponents
         if (index != rootIndex())
         {
             QAbstractItemView::setRootIndex(index);
-            emit rootIndexChanged(index);
+            emit tableRootIndexChanged(index);
         }
     }
-
 
     void AssetFolderTableView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
+    }
+
+    void AssetFolderTableView::mousePressEvent(QMouseEvent* event)
+    {
+        const auto p = event->pos();
+        if (auto idx = indexAt(p); !idx.isValid())
+        {
+            selectionModel()->clear();
+        }
+        else
+        {
+            TableView::mousePressEvent(event);
+        }
+    }
+
+    void AssetFolderTableView::mouseDoubleClickEvent(QMouseEvent* event)
+    {
+        const auto p = event->pos();
+        if (auto idx = indexAt(p); idx.isValid())
+        {
+            selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
+            emit doubleClicked(idx);
+        }
     }
 
 } // namespace AzQtComponents

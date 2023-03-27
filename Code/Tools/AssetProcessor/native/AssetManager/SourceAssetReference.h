@@ -13,6 +13,7 @@
 #include <AzCore/IO/Path/Path.h>
 #include <utilities/IPathConversion.h>
 #include <native/AssetManager/assetScanFolderInfo.h>
+#include <AssetDatabase/AssetDatabaseConnection.h>
 
 namespace AssetProcessor
 {
@@ -35,6 +36,11 @@ namespace AssetProcessor
         explicit SourceAssetReference(AZ::IO::PathView absolutePath);
 
         SourceAssetReference(AZ::s64 scanFolderId, AZ::IO::PathView pathRelativeToScanFolder);
+
+        SourceAssetReference(const AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
+            : SourceAssetReference(sourceEntry.m_scanFolderPK, sourceEntry.m_sourceName.c_str())
+        {
+        }
 
         SourceAssetReference(QString scanFolderPath, QString pathRelativeToScanFolder)
             : SourceAssetReference(

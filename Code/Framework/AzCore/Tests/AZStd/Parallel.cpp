@@ -259,11 +259,7 @@ namespace UnitTest
         };
     };
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadSanityTest)
-#else
     TEST_F(Parallel_Thread, ThreadSanityTest)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
 
@@ -295,11 +291,7 @@ namespace UnitTest
         EXPECT_GE(sleepTime.count(), 50000);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadCreation_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadCreation_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         m_data = 0;
@@ -313,11 +305,7 @@ namespace UnitTest
         EXPECT_EQ(999, m_data);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadCreationThroughRefWrapper_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadCreationThroughRefWrapper_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         non_copyable_functor f;
@@ -327,11 +315,7 @@ namespace UnitTest
         EXPECT_EQ(999, f.value);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadCreation_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadIdIsComparable_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         m_data = 0;
@@ -345,11 +329,7 @@ namespace UnitTest
         EXPECT_EQ(999, m_data);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_TestSwapThread_Succeeds)
-#else
     TEST_F(Parallel_Thread, TestSwapThread_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
@@ -370,21 +350,13 @@ namespace UnitTest
         t2.join();
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadIdIsDefaultConstructForThread_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadIdIsDefaultConstructForThread_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         AZStd::thread t;
         EXPECT_EQ(AZStd::thread::id(), t.get_id());
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadIdForCurrentThread_IsNotDefaultConstructed_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadIdForCurrentThread_IsNottDefaultConstructed_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc = m_numThreadDesc ? m_desc[0] : thread_desc{};
         AZStd::thread t(desc, [](){});
@@ -392,11 +364,7 @@ namespace UnitTest
         t.join();
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_DifferentThreadsHaveDifferentThreadIds_Succeeds)
-#else
     TEST_F(Parallel_Thread, DifferentThreadsHaveDifferentThreadIds_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
@@ -407,11 +375,7 @@ namespace UnitTest
         t2.join();
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadIdsAreTotallyOrdered_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadIdsAreTotallyOrdered_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         const thread_desc desc2 = m_numThreadDesc ? m_desc[1] : thread_desc{};
@@ -505,11 +469,7 @@ namespace UnitTest
         t3.join();
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadIdOfCurrentThreadReturnedByThisThreadId_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadIdOfCurrentThreadReturnedByThisThreadId_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
 
@@ -520,11 +480,7 @@ namespace UnitTest
         EXPECT_EQ(t_id, id);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadInvokesMemberFunction_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadInvokesMemberFunction_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         MfTest x;
@@ -561,11 +517,7 @@ namespace UnitTest
         EXPECT_EQ(1366, x.m_hash);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadCanBeMovedAssigned_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadCanBeMovedAssigned_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         const thread_desc desc1 = m_numThreadDesc ? m_desc[0] : thread_desc{};
         AZStd::thread::id the_id;
@@ -576,11 +528,7 @@ namespace UnitTest
         EXPECT_EQ(x_id, the_id);
     }
 
-#if AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
-    TEST_F(Parallel_Thread, DISABLED_ThreadMoveConstructorIsInvokedOnReturn_Succeeds)
-#else
     TEST_F(Parallel_Thread, ThreadMoveConstructorIsInvokedOnReturn_Succeeds)
-#endif // AZ_TRAIT_DISABLE_ASSET_JOB_PARALLEL_TESTS
     {
         AZStd::thread::id the_id;
         AZStd::thread x;

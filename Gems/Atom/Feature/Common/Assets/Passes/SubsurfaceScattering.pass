@@ -45,7 +45,7 @@
                         "Attachment": "InputDiffuse"
                     },
                     "ImageDescriptor": {
-                        "SharedQueueMask": "Copy"
+                        "SharedQueueMask": "Graphics"
                     }
                 }
             ],

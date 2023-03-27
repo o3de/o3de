@@ -103,6 +103,7 @@ namespace AZ
             m_enabledDeviceFeatures.sparseResidencyImage2D = deviceFeatures.sparseResidencyImage2D;
             m_enabledDeviceFeatures.sparseResidencyImage3D = deviceFeatures.sparseResidencyImage3D;
             m_enabledDeviceFeatures.sparseResidencyAliased = deviceFeatures.sparseResidencyAliased;
+            m_enabledDeviceFeatures.independentBlend = deviceFeatures.independentBlend;
 
             if (deviceFeatures.geometryShader)
             {

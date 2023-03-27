@@ -694,8 +694,9 @@ namespace AzToolsFramework
         }
     }
 
-    void EditorEntityModel::OnContextReset()
+    void EditorEntityModel::OnPrepareForContextReset()
     {
+        m_preparingForContextReset = true;
         Reset();
     }
 

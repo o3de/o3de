@@ -106,8 +106,7 @@ namespace WhiteBox
         bool m_visible = true;
 
         //! Default white box mesh material.
-        static constexpr AZStd::string_view TexturedMaterialPath = "materials/defaultpbr.azmaterial";
-        static constexpr AZStd::string_view SolidMaterialPath = "materials/defaultpbr.azmaterial";
+        static constexpr AZStd::string_view TexturedMaterialPath = "materials/whiteboxdefault.azmaterial";
         static constexpr AZ::RPI::ModelMaterialSlot::StableId OneMaterialSlotId = 0;
 
         //! White box model name.

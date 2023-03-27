@@ -199,6 +199,7 @@ namespace AssetProcessor
         //! Retrieve the scan folder found by a boolean predicate function, when the predicate returns true, the current scan folder info is returned.
         const AssetProcessor::ScanFolderInfo* FindScanFolder(AZStd::function<bool(const AssetProcessor::ScanFolderInfo&)> predicate) const;
         const AssetProcessor::ScanFolderInfo* GetScanFolderById(AZ::s64 id) const override;
+        const AZ::s64 GetIntermediateAssetScanFolderId() const;
 
         //!  Manually add a scan folder.  Also used for testing.
         void AddScanFolder(const AssetProcessor::ScanFolderInfo& source, bool isUnitTesting = false);

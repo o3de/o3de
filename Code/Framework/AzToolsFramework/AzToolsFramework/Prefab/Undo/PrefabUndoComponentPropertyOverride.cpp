@@ -132,13 +132,13 @@ namespace AzToolsFramework
                 // Redo - Add the override patches to the tree.
                 link->get().AddOverrides(overridePatches);
 
-                PrefabDomReference cachedFocusedInstanceDom = focusedInstance->get().GetCachedInstanceDom();
+                PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
 
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
-                if (cachedFocusedInstanceDom.has_value())
+                if (cachedOwningInstanceDom.has_value())
                 {
                     PrefabUndoUtils::UpdateEntityInInstanceDom(
-                        cachedFocusedInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocusedPrefab.ToString());
+                        cachedOwningInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocusedPrefab.ToString());
                 }
 
                 // Redo - Update target template of the link.

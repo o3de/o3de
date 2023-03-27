@@ -28,6 +28,7 @@ namespace AzToolsFramework
             static void MoveEntry(AZStd::string_view fromPath, AZStd::string_view toPath, bool isFolder, QWidget* parent = nullptr);
         private:
             static bool IsFolderEmpty(AZStd::string_view path);
+            static bool IsEngineOrProjectFolder(AZStd::string_view path);
         };
     } // namespace AssetBrowser
 

@@ -13,6 +13,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 #include <Atom/RPI.Reflect/Image/StreamingImagePoolAsset.h>
 #include <Atom/RPI.Reflect/Image/ImageMipChainAsset.h>
+#include <AzCore/std/containers/vector.h>
 
 namespace AZ
 {
@@ -105,6 +106,13 @@ namespace AZ
             //! Whether the image has all referenced ImageMipChainAssets loaded
             bool HasFullMipChainAssets() const;
 
+            //! Returns the image tags
+            const AZStd::vector<AZ::Name>& GetTags() const;
+
+            //! Removes up to `mipChainLevel` mipchains, reducing quality (used by the image tag system).
+            //! The last mipchain won't be removed
+            void RemoveFrontMipchains(size_t mipChainLevel);
+
         private:
             struct MipChain
             {
@@ -144,6 +152,8 @@ namespace AZ
             //! mip chain index, not the level. And will fail for any level
             //! that resides in the tail mip chain.
             const ImageMipChainAsset* GetImageMipChainAsset(AZ::u32 mipLevel) const;
+
+            AZStd::vector<AZ::Name> m_tags;
         };
     }
 }
