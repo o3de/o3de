@@ -74,13 +74,13 @@ os.environ['SETTINGS_MODULE_FOR_DYNACONF'] = PATH_DCCSIG_SETTINGS.as_posix()
 # this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
 from DccScriptingInterface.globals import *
 
-# temproary force enable these during development, as bootstrap is a entrypoint
-#DCCSI_GDEBUG = True
-#DCCSI_DEV_MODE = True
+# temporary force enable these during development, as bootstrap is a entrypoint
+DCCSI_GDEBUG = True
+DCCSI_DEV_MODE = True
 
 # enable this if you are having difficulty with debugging
 # the subprocess booting start.py (note: will block editor)
-DCCSI_LOCAL_DEBUG = False # <-- for code branch in this module only
+DCCSI_LOCAL_DEBUG = True # <-- for code branch in this module only
 
 # auto-attach ide debugging at the earliest possible point in module
 from DccScriptingInterface.azpy.config_utils import attach_debugger
@@ -93,7 +93,7 @@ import DccScriptingInterface.config as dccsi_core_config
 # because of the .bat file env chain that includes active apps
 
 # note: initializing the config PySide2 access here may not be ideal
-# it will set envars that may propogate, and have have the side effect
+# it will set envars that may propagate, and have have the side effect
 # of interfering with apps like Wing because it is a Qt5 app and the
 # envars set cause a boot failure
 
@@ -132,6 +132,7 @@ _LOGGER.debug(f'The sys.executable is: {O3DE_EDITOR}')
 import azlmbr
 import azlmbr.bus
 import azlmbr.paths
+import azlmbr.action
 
 # path devs might be interested in retreiving
 _LOGGER.debug(f'engroot: {azlmbr.paths.engroot}')
@@ -169,8 +170,8 @@ import az_qt_helpers
 
 # additional DCCsi imports that utilize PySide2
 from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
-from DccScriptingInterface.Editor.Scripts.ui import add_action
-from DccScriptingInterface.Editor.Scripts.ui import create_menu
+from DccScriptingInterface.Editor.Scripts.ui import add_action_OLD
+from DccScriptingInterface.Editor.Scripts.ui import create_menu_OLD
 from DccScriptingInterface.Editor.Scripts.ui import start_service
 from DccScriptingInterface.Editor.Scripts.ui import click_action_sampleui
 # -------------------------------------------------------------------------
@@ -264,72 +265,147 @@ def click_action_about():
 def bootstrap_Editor():
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
 
+    _LOGGER.debug('DCCsi:Bootstrap_Editor')
+
     START_SLUG = 'Start'
     HELP_SLUG = 'Help ...'
 
+    # NEW
+
+    # slug is a string path.to.object.name
+    editor_mainwindow_slug = 'o3de.menubar.editor.mainwindow'
+
+    # actions are similar path.to.action.name
+    dccsi_action_context = 'o3de.action.dccsi'
+
+    # dccsi action context, do I need this?
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterActionContext',
+                                              dccsi_action_context)
+
+    # name to display for DCCsi Menu
+    dccsi_menu_name = 'StudioTools'
+
+    # add to slug.path.to.object.name
+    dccsi_menu_slug = 'o3de.menu.' + dccsi_menu_name
+
+    # Create DCCsi StudioTools Menu
+    dccsi_menu_properties = azlmbr.action.MenuProperties()
+    dccsi_menu_properties.name = dccsi_menu_name
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              dccsi_menu_slug,
+                                              dccsi_menu_properties)
+
+    # Editor MenuBar, StudioTools > DCC
+    # nest a menu with hooks to start python DCC apps like Blender
+    dccsi_menu_dcc_name = 'DCC'
+    dccsi_actions_dcc = dccsi_action_context + '.' + dccsi_menu_dcc_name
+    dccsi_menu_dcc_slug = dccsi_menu_slug + '.' + dccsi_menu_dcc_name
+
+    dccsi_menu_dcc_properties = azlmbr.action.MenuProperties()
+    dccsi_menu_dcc_properties.name = dccsi_menu_dcc_name
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'RegisterMenu',
+                                              dccsi_menu_dcc_slug,
+                                              dccsi_menu_dcc_properties)
+
+    # Create Blender Action
+    dccsi_menu_dcc_blender_name = 'Blender'
+    dccsi_actions_dcc_blender = dccsi_actions_dcc + '.' + dccsi_menu_dcc_blender_name
+    dccsi_menu_dcc_blender_slug = dccsi_menu_dcc_slug + '.' + dccsi_menu_dcc_blender_name
+
+    action_blender_properties = azlmbr.action.ActionProperties()
+    action_blender_properties.name = dccsi_menu_dcc_blender_name
+    action_blender_properties.description = "A custom action defined via Python"
+    action_blender_properties.category = "Python"
+
+    azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                                'RegisterAction',
+                                                editor_mainwindow_slug,
+                                                dccsi_actions_dcc_blender,
+                                                action_blender_properties,
+                                                click_action_blender_start)
+
+    # Add blender action to studiotools.dcc submenu
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              "AddActionToMenu",
+                                              dccsi_menu_dcc_blender_slug,
+                                              dccsi_actions_dcc_blender, 100)
+
+    # Add StudioTools > DCC subMenu
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddSubMenuToMenu',
+                                              dccsi_menu_slug,
+                                              dccsi_menu_dcc_slug, 100)
+
+    # Add StudioTools Menu to Editor Menu Bar
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddMenuToMenuBar',
+                                              editor_mainwindow_slug,
+                                              dccsi_menu_slug, 1000)
+
+    # OLD
     # Editor main window (should work with any standalone o3de editor exe)
     EDITOR_MAIN_WINDOW = az_qt_helpers.get_editor_main_window()
-
     menubar = EDITOR_MAIN_WINDOW.menuBar()
+    dccsi_menu = create_menu_OLD(parent=menubar, title ='StudioTools')
 
-    dccsi_menu = create_menu(parent=menubar, title ='StudioTools')
+    dccsi_dcc_menu = create_menu_OLD(parent=dccsi_menu, title="DCC")
 
-    # Editor MenuBar, Studio Tools > DCC
-    # nest a menu with hooks to start python DCC apps like Blender
-    dccsi_dcc_menu = create_menu(parent=dccsi_menu, title="DCC")
-
-    dccsi_dcc_menu_blender = create_menu(parent=dccsi_dcc_menu, title="Blender")
+    dccsi_dcc_menu_blender = create_menu_OLD(parent=dccsi_dcc_menu, title="Blender")
 
     # Editor MenuBar, Studio Tools > DCC > Blender
     # Action manager should make it easier for each tool to
     # inject themselves, instead of this module manually
     # bootstrapping each. Suggestion for a follow up PR.
-    action_start_blender = add_action(parent=dccsi_dcc_menu_blender,
+    action_start_blender = add_action_OLD(parent=dccsi_dcc_menu_blender,
                                       title=START_SLUG,
                                       action_slot = click_action_blender_start)
 
-    action_docs_blender = add_action(parent=dccsi_dcc_menu_blender,
+    action_docs_blender = add_action_OLD(parent=dccsi_dcc_menu_blender,
                                       title=HELP_SLUG,
                                       action_slot = click_action_blender_docs)
 
     # Editor MenuBar, Studio Tools > DCC > Maya
-    dccsi_dcc_menu_maya = create_menu(parent=dccsi_dcc_menu, title="Maya")
+    dccsi_dcc_menu_maya = create_menu_OLD(parent=dccsi_dcc_menu, title="Maya")
 
-    action_start_maya = add_action(parent=dccsi_dcc_menu_maya,
+    action_start_maya = add_action_OLD(parent=dccsi_dcc_menu_maya,
                                    title=START_SLUG,
                                    action_slot = click_action_maya_start)
 
-    action_docs_maya = add_action(parent=dccsi_dcc_menu_maya,
+    action_docs_maya = add_action_OLD(parent=dccsi_dcc_menu_maya,
                                   title=HELP_SLUG,
                                   action_slot = click_action_maya_docs)
 
     # Editor MenuBar, Studio Tools > IDE
     # nest a menu with hooks to start python IDE tools like Wing
-    dccsi_ide_menu = create_menu(parent=dccsi_menu, title="IDE")
+    dccsi_ide_menu = create_menu_OLD(parent=dccsi_menu, title="IDE")
 
     # MEditor MenuBar, Studio Tools > IDE > Wing
-    dccsi_ide_menu_wing = create_menu(parent=dccsi_ide_menu, title="Wing")
+    dccsi_ide_menu_wing = create_menu_OLD(parent=dccsi_ide_menu, title="Wing")
 
-    action_start_wingide = add_action(parent=dccsi_ide_menu_wing,
+    action_start_wingide = add_action_OLD(parent=dccsi_ide_menu_wing,
                                        title=START_SLUG,
                                        action_slot = click_action_wing_start)
 
-    action_start_blender = add_action(parent=dccsi_ide_menu_wing,
+    action_start_blender = add_action_OLD(parent=dccsi_ide_menu_wing,
                                       title=HELP_SLUG,
                                       action_slot = click_action_wing_docs)
 
     # Editor MenuBar, Studio Tools > Examples
     # nest a menu with samples (promote extensibility)
-    dccsi_examples_menu = create_menu(parent=dccsi_menu,
+    dccsi_examples_menu = create_menu_OLD(parent=dccsi_menu,
                                             title="Examples")
 
     # MEditor MenuBar, Studio Tools > Examples > SampleUI
-    action_start_sampleui = add_action(parent=dccsi_examples_menu,
+    action_start_sampleui = add_action_OLD(parent=dccsi_examples_menu,
                                        title="SampleUI",
                                        action_slot = click_action_sampleui)
 
     # MEditor MenuBar, Studio Tools > About
-    action_start_sampleui = add_action(parent=dccsi_menu,
+    action_start_sampleui = add_action_OLD(parent=dccsi_menu,
                                        title="About",
                                        action_slot = click_action_about)
 

@@ -40,6 +40,11 @@ import DccScriptingInterface.config as dccsi_core_config
 _settings_core = dccsi_core_config.get_config_settings(enable_o3de_python=True,
                                                        enable_o3de_pyside2=False,
                                                        set_env=True)
+
+import DccScriptingInterface.azpy.shared.ui.samples
+from DccScriptingInterface.azpy.shared.ui.samples import SampleUI
+
+import az_qt_helpers
 # -------------------------------------------------------------------------
 
 
@@ -63,7 +68,7 @@ def click_action_sampleui():
 
 
 # -------------------------------------------------------------------------
-def add_action(parent: QMenu,
+def add_action_OLD(parent: QMenu,
                title: str = "SampleUI",
                action_slot = click_action_sampleui) -> QAction:
     """! adds an action to the parent QMenu
@@ -92,7 +97,7 @@ def add_action(parent: QMenu,
 
 
 # -------------------------------------------------------------------------
-def create_menu(parent: QMenu, title: str = 'StudioTools') -> QMenu:
+def create_menu_OLD(parent: QMenu, title: str = 'StudioTools') -> QMenu:
     """! Creates a 'Studio Tools' menu for the DCCsi functionality
     :param parent: The parent QMenu (or QMenuBar)
     :param : The UI text str for the submenu
