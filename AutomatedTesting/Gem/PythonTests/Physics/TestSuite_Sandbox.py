@@ -15,30 +15,7 @@ from ly_test_tools.o3de.editor_test import EditorSingleTest, EditorBatchedTest, 
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + '/../automatedtesting_shared')
 
-from base import TestAutomationBase
-
 revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', 'physxdefaultsceneconfiguration.setreg', 'physxsystemconfiguration.setreg'], 'AutomatedTesting/Registry')
-
-@pytest.mark.SUITE_sandbox
-@pytest.mark.parametrize("launcher_platform", ['windows_editor'])
-@pytest.mark.parametrize("project", ["AutomatedTesting"])
-class TestAutomation(TestAutomationBase):
-
-    ## Seems to be flaky, need to investigate
-    def test_ScriptCanvas_GetCollisionNameReturnsName(self, request, workspace, editor, launcher_platform):
-        from .tests.script_canvas import ScriptCanvas_GetCollisionNameReturnsName as test_module
-        # Fixme: expected_lines=["Layer Name: Right"]
-        self._run_test(request, workspace, editor, test_module)
-
-    ## Seems to be flaky, need to investigate
-    def test_ScriptCanvas_GetCollisionNameReturnsNothingWhenHasToggledLayer(self, request, workspace, editor, launcher_platform):
-        from .tests.script_canvas import ScriptCanvas_GetCollisionNameReturnsNothingWhenHasToggledLayer as test_module
-        # All groups present in the PhysX Collider that could show up in test
-        # Fixme: collision_groups = ["All", "None", "All_NoTouchBend", "All_3", "None_1", "All_NoTouchBend_1", "All_2", "None_1_1", "All_NoTouchBend_1_1", "All_1", "None_1_1_1", "All_NoTouchBend_1_1_1", "All_4", "None_1_1_1_1", "All_NoTouchBend_1_1_1_1", "GroupLeft", "GroupRight"]
-        # Fixme: for group in collision_groups:
-        # Fixme:    unexpected_lines.append(f"GroupName: {group}")
-        # Fixme: expected_lines=["GroupName: "]
-        self._run_test(request, workspace, editor, test_module)
 
 @pytest.mark.SUITE_main
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
