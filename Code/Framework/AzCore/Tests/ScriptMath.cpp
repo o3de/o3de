@@ -278,7 +278,11 @@ namespace UnitTest
         script->Execute("AZTestAssert( not Vector2(math.huge, math.huge):IsFinite())");
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptMathTest, DISABLED_LuaVector3Test)
+#else
     TEST_F(ScriptMathTest, LuaVector3Test)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // Not all Vector3 C++ functions are reflected into Lua:
         // Compound assignment operators are not supported in Lua (+=, -=, /=, *=)
