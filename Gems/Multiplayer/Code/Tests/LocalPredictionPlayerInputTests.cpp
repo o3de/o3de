@@ -45,6 +45,7 @@ namespace Multiplayer
 
             m_console.reset(aznew AZ::Console());
             AZ::Interface<AZ::IConsole>::Register(m_console.get());
+            m_console->LinkDeferredFunctors(AZ::ConsoleFunctorBase::GetDeferredHead());
 
             m_timeSystem.reset();
             m_timeSystem = AZStd::make_unique<::testing::NiceMock<AZ::MockTimeSystem>>();
@@ -229,7 +230,7 @@ namespace Multiplayer
         LocalPredictionPlayerInputComponentController* controller =
             dynamic_cast<LocalPredictionPlayerInputComponentController*>(m_localPredictionComponent->GetController());
         AZ_TEST_START_TRACE_SUPPRESSION;
-        controller->HandleSendClientInputCorrection(nullptr, ClientInputId(1), buffer);
+        controller->HandleSendClientInputCorrection(nullptr, HostFrameId(1), ClientInputId(1), buffer);
         AZ_TEST_STOP_TRACE_SUPPRESSION(2);
 
         ::testing::NiceMock<IMultiplayerConnectionMock> connection(
@@ -241,8 +242,8 @@ namespace Multiplayer
         controller->ForceEnableAutonomousUpdate();
         m_mockElapsedTime = AZ::TimeMs(1000);
         m_eventScheduler->OnTick(100, AZ::ScriptTimePoint());
-        controller->HandleSendClientInputCorrection(&connection, ClientInputId(0), buffer);
-        controller->HandleSendClientInputCorrection(&connection, ClientInputId(1), buffer);
+        controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(0), buffer);
+        controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(1), buffer);
     }
 
     TEST_F(LocalPredictionPlayerInputTests, TestHandleSendMigrateClientInput)
@@ -280,6 +281,11 @@ namespace Multiplayer
         // There was a bug with HandleSendClientInput where it would stop processing inputs correctly once the ClientInputId
         // reached the max uint16_t value and wrapped around to 0. This unit test verifies that there are no regressions
         // and the processing happens correctly during the wraparound.
+        //
+        // This also verifies a secondary regression in which ProcessInput would get called multiple times on the very
+        // first input handled if the latest ClientInputId received was anything other than 0, even if the other entries
+        // in the array were all identical. The correct behavior is that it should only process multiple entries if there
+        // are actually multiple different entries in the array.
 
         // For this test, set the player as authority-only, so that UpdateAutonomous never gets called.
         // Otherwise, we'll get ProcessInput callbacks both from the "client" and the "server", which will make the test logic
@@ -293,6 +299,9 @@ namespace Multiplayer
         ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
         connection.SetUserData(&connectionUserData);
 
+        // Initialize the starting time to an arbitrary value
+        m_mockElapsedTime = AZ::TimeMs(1000);
+
         // Verify that we don't get any calls to CreateInput, since we're running as authority-only.
         auto createInputCallback = [](
                                         [[maybe_unused]] NetEntityId netEntityId,
@@ -302,16 +311,20 @@ namespace Multiplayer
             AZ_Assert(false, "CreateInput should not be called when the player entity is set to authority-only.");
         };
 
-        // On each call to ProcessInput, verify that the ClientInputId is the same one we're trying to process.
-        // Also, track the total number of times called to avoid a "false positive" of appearing successful when it never gets called.
+        // On each call to ProcessInput, verify that the ClientInputId and HostFrameId is the same one we're trying to process.
+        // Also, track the total number of times called to avoid a "false positive" of appearing successful if it never gets called
+        // or if it gets called multiple times in the same frame unexpectedly.
         size_t numProcessedInputs = 0;
         ClientInputId expectedInputId;
-        auto processInputCallback = [&expectedInputId, &numProcessedInputs](
+        HostFrameId hostFrameId = HostFrameId(0);
+        auto processInputCallback =
+            [&expectedInputId, &hostFrameId, &numProcessedInputs](
                                         [[maybe_unused]] NetEntityId netEntityId,
                                         Multiplayer::NetworkInput& input,
                                         [[maybe_unused]] float deltaTime)
         {
-            EXPECT_EQ(input.GetClientInputId(), expectedInputId);
+            EXPECT_EQ(static_cast<uint32_t>(input.GetHostFrameId()), static_cast<uint32_t>(hostFrameId));
+            EXPECT_EQ(static_cast<uint32_t>(input.GetClientInputId()), static_cast<uint32_t>(expectedInputId));
             numProcessedInputs++;
         };
 
@@ -326,13 +339,10 @@ namespace Multiplayer
         // Since we're not doing anything with the inputs, the hash value won't be used for anything.
         constexpr AZ::HashValue32 dummyHash = AZ::HashValue32(0);
 
-        // Initialize the starting time and host frame to some arbitrary values.
-        m_mockElapsedTime = AZ::TimeMs(1000);
-        HostFrameId hostFrameId = HostFrameId(1);
-
         // Pick starting and ending ClientInputId values to process that will wrap around through 0.
-        constexpr ClientInputId StartingLargeInputId = AZStd::numeric_limits<ClientInputId>::max() - ClientInputId{ 5 };
-        constexpr ClientInputId EndingWraparoundInputId = ClientInputId{ 5 };
+        constexpr ClientInputId StartingLargeInputId =
+            ClientInputId{ AZStd::numeric_limits<AZStd::underlying_type<ClientInputId>::type>::max() - 10 };
+        constexpr ClientInputId EndingWraparoundInputId = ClientInputId{ 10 };
 
         Multiplayer::NetworkInputArray netInputArray;
 
@@ -375,10 +385,79 @@ namespace Multiplayer
         EXPECT_EQ(numProcessedInputs, TotalExpectedProcessedInputs);
     }
 
-    /*
     TEST_F(LocalPredictionPlayerInputTests, TestHandleSendClientInputCorrectionWithIdWraparound)
     {
+        // The ClientInputId is defined as uint16_t, so the values in it can wrap around in <20 minutes at 60 fps.
+        // There was a bug with HandleSendClientInputCorrection where it would only process input corrections if the
+        // id was strictly <= the current id. This means that input corrections that wrapped around (ex: a correction of 65530
+        // when we're currently on 10) would never process.
+        // This unit test verifies that there are no regressions and the correction processing happens correctly during the wraparound.
+
+        ActivatePlayerEntity(NetEntityRole::Autonomous);
+        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
+        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
+
+        LocalPredictionPlayerInputComponentController* controller =
+            dynamic_cast<LocalPredictionPlayerInputComponentController*>(m_localPredictionComponent->GetController());
+
+        // Force update to increment client input id
+        controller->ForceEnableAutonomousUpdate();
+
+        // Create a mock connection.
+        ::testing::NiceMock<IMultiplayerConnectionMock> connection(
+            ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
+        ServerToClientConnectionData connectionUserData(&connection, *m_mpComponent);
+        connection.SetUserData(&connectionUserData);
+
+        // Track the number of inputs that we create so that we can verify that we've created our desired starting condition
+        // for the test, where we've got an input history that spans the wraparound.
+        uint64_t numCreatedInputs = 0;
+        auto createInputCallback = [&numCreatedInputs](
+                                        [[maybe_unused]] NetEntityId netEntityId,
+                                        [[maybe_unused]] Multiplayer::NetworkInput& input,
+                                        [[maybe_unused]] float deltaTime)
+        {
+            numCreatedInputs++;
+        };
+        m_playerEntity->FindComponent<MultiplayerTest::TestMultiplayerComponent>()->m_createInputCallback = createInputCallback;
+
+        // We want to generate (65535 + 10) inputs, so that we have a wrapped-around input history with both large and small ids in it.
+        // If we set the elapsed time to (65535 + 10) * (cl_inputRateMs), we should get our desired number of inputs created.
+        
+        // Set the cl_InputRateMs to an arbitrary but nice round number for testing.
+        constexpr int ArbitraryInputRateMs = 10;
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("cl_InputRateMs", { AZStd::string::format("%d", ArbitraryInputRateMs) });
+        // Turn off desync debugging so that generating (65535 + 10) inputs doesn't take obnoxiously long.
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("cl_EnableDesyncDebugging", {"false"});
+
+        constexpr uint64_t desiredInputCount = AZStd::numeric_limits<AZStd::underlying_type<ClientInputId>::type>::max() + 10;
+        m_mockElapsedTime += AZ::TimeMs(desiredInputCount * ArbitraryInputRateMs);
+        m_eventScheduler->OnTick(100, AZ::ScriptTimePoint());
+        EXPECT_EQ(numCreatedInputs, desiredInputCount);
+
+        // We'll request a correction from a little before the wraparound, so that HandleSendClientInputCorrection will replay through
+        // the wraparound to the last input we created above.
+        constexpr ClientInputId LargeCorrectionInputId =
+            ClientInputId{ AZStd::numeric_limits<AZStd::underlying_type<ClientInputId>::type>::max() - 10 };
+
+        uint64_t numInputCorrectionsProcessed = 0;
+        // The first processed input id is one past the the correction
+        ClientInputId expectedCorrectionId = LargeCorrectionInputId + ClientInputId(1);
+        auto processInputCallback = [&numInputCorrectionsProcessed, &expectedCorrectionId](
+                                       [[maybe_unused]] NetEntityId netEntityId,
+                                       Multiplayer::NetworkInput& input,
+                                       [[maybe_unused]] float deltaTime)
+        {
+            EXPECT_EQ(static_cast<uint32_t>(input.GetClientInputId()), static_cast<uint32_t>(expectedCorrectionId));
+            numInputCorrectionsProcessed++;
+            expectedCorrectionId++;
+        };
+        m_playerEntity->FindComponent<MultiplayerTest::TestMultiplayerComponent>()->m_processInputCallback = processInputCallback;
+
+        AzNetworking::PacketEncodingBuffer buffer;
+        controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(LargeCorrectionInputId), buffer);
+
+        EXPECT_EQ(numInputCorrectionsProcessed, desiredInputCount - static_cast<uint64_t>(LargeCorrectionInputId));
     }
-    */
 
 } // namespace Multiplayer
