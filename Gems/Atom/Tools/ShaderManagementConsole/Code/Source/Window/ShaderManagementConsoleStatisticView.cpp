@@ -117,7 +117,7 @@ namespace ShaderManagementConsole
 
         QProgressDialog progressDialog(AzToolsFramework::GetActiveWindow());
         progressDialog.setWindowModality(Qt::WindowModal);
-        progressDialog.setMaximum(materialAssetIdList.size());
+        progressDialog.setMaximum(static_cast<int>(materialAssetIdList.size()));
         progressDialog.setMaximumWidth(400);
         progressDialog.setMaximumHeight(100);
         progressDialog.setWindowTitle(tr("Gather information from material assets"));
