@@ -56,7 +56,3 @@ class EditorTestAutomation(EditorTestSuite):
         # needs to be updated to log for unexpected lines
         # expected_lines = test_module.LogLines.expected_lines
 
-    class ScriptCanvas_PostPhysicsUpdate(EditorBatchedTest):
-        from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
-        # Note: Test needs to be updated to log for unexpected lines
-        # unexpected_lines = ["Assert"] + test_module.Lines.unexpected
