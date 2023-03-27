@@ -310,6 +310,26 @@ namespace AZ
                     return false;
                 }
 
+                if(!m_rootConstantsLayout)
+                {
+                    const RHI::ConstantsLayout* rootConstantsLayout = pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
+                    if (rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0)
+                    {
+                        m_rootConstantsLayout = rootConstantsLayout;
+                        AZStd::vector<uint8_t> constants(m_rootConstantsLayout->GetDataSize());
+                        drawPacketBuilder.SetRootConstants(constants);
+                    }
+                }
+                else
+                {
+                    AZ_Error(
+                        "MeshDrawPacket",
+                        m_rootConstantsLayout->GetHash() ==
+                            pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash(),
+                        "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
+                        "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.");
+                }
+
                 RHI::DrawPacketBuilder::DrawRequest drawRequest;
                 drawRequest.m_listTag = drawListTag;
                 drawRequest.m_pipelineState = pipelineState;
@@ -319,6 +339,7 @@ namespace AZ
                 if (drawSrg)
                 {
                     drawRequest.m_uniqueShaderResourceGroup = drawSrg->GetRHIShaderResourceGroup();
+                    // Hold on to a reference to the drawSrg so the refcount doesn't drop to zero
                     m_perDrawSrgs.push_back(drawSrg);
                 }
 
@@ -380,6 +401,11 @@ namespace AZ
         const RHI::DrawPacket* MeshDrawPacket::GetRHIDrawPacket() const
         {
             return m_drawPacket.get();
+        }
+
+        const RHI::ConstPtr<RHI::ConstantsLayout> MeshDrawPacket::GetRootConstantsLayout() const
+        {
+            return m_rootConstantsLayout;
         }
     } // namespace RPI
 } // namespace AZ
