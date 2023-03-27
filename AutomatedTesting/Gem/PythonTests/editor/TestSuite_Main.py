@@ -114,9 +114,11 @@ class TestAutomation(EditorTestSuite):
     class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenTogglingBeThisCamera as test_module
 
-    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/11238")
     class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingGameMode as test_module
+
+    class test_EditorWorkflow_EditorCameraInBeThisCameraReturnsToOriginalPositionWhenLeavingGameMode(EditorSingleTest):
+        from .EditorScripts import EditorWorkflow_EditorCameraInBeThisCameraReturnsToOriginalPositionWhenLeavingGameMode as test_module
 
     class test_EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingFullscreenGameMode(EditorSingleTest):
         from .EditorScripts import EditorWorkflow_EditorCameraReturnsToOriginalPositionWhenLeavingFullscreenGameMode as test_module

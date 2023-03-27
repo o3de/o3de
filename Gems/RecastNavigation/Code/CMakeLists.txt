@@ -124,7 +124,7 @@ ly_add_target(
             RecastNavigation::Detour
             RecastNavigation::Recast
             Gem::LmbrCentral.Static
-            Gem::DebugDraw.Static
+            Gem::DebugDraw.API
 )
 
 # Here add RecastNavigation target, it depends on the Private Object library and Public API interface
@@ -194,7 +194,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
                 AZ::AzToolsFramework
                 Gem::RecastNavigation.Private.Object
                 Gem::LmbrCentral.Static
-                Gem::DebugDraw.Static
+                Gem::DebugDraw.API
     )
 
     ly_add_target(

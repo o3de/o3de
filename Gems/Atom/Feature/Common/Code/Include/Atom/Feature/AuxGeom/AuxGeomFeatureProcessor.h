@@ -38,7 +38,8 @@ namespace AZ
             // RPI::FeatureProcessor
             void Activate() override;
             void Deactivate() override;
-            void Render(const FeatureProcessor::RenderPacket& fpPacket) override;
+            void Render(const FeatureProcessor::RenderPacket& fpPacket) override;            
+            void OnRenderEnd() override;
 
             // RPI::AuxGeomFeatureProcessorInterface
             RPI::AuxGeomDrawPtr GetDrawQueue() override; // returns the scene DrawQueue

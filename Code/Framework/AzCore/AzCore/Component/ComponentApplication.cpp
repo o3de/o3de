@@ -580,12 +580,10 @@ namespace AZ
         // 1. The 'project_path' key changes
         // 2. The project specialization when the 'project-name' key changes
         // 3. The ComponentApplication command line when the command line is stored to the registry
-        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{
-            *m_settingsRegistry });
-        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{
-            *m_settingsRegistry });
-        m_commandLineUpdatedHandler = m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{
-            *m_settingsRegistry, m_commandLine });
+        m_projectPathChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectPathChangedEventHandler{ *m_settingsRegistry });
+        m_projectNameChangedHandler = m_settingsRegistry->RegisterNotifier(ProjectNameChangedEventHandler{ *m_settingsRegistry });
+        m_commandLineUpdatedHandler =
+            m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
 
         // Merge Command Line arguments
         constexpr bool executeRegDumpCommands = false;
@@ -594,7 +592,8 @@ namespace AZ
             AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
             // Only merge the Global User Registry (~/.o3de/Registry) if that override type is allowed by our compile settings.
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(*m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
+                *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         }
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
@@ -765,7 +764,8 @@ namespace AZ
         AZ_Assert(!m_isStarted, "Component application already started!");
 
         using Type = AZ::SettingsRegistryInterface::Type;
-        if (m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
+        if (m_startupParameters.m_loadSettingsRegistry &&
+            m_settingsRegistry->GetType(SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder) == Type::NoType)
         {
             ReportBadEngineRoot();
             return nullptr;
@@ -841,9 +841,12 @@ namespace AZ
         ComponentApplicationLifecycle::SignalEvent(*m_settingsRegistry, "GemsLoaded", R"({})");
 
         // Execute user.cfg after modules have been loaded but before processing any command-line overrides
-        AZ::IO::FixedMaxPath platformCachePath;
-        m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-        m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            AZ::IO::FixedMaxPath platformCachePath;
+            m_settingsRegistry->Get(platformCachePath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
+            m_console->ExecuteConfigFile((platformCachePath / "user.cfg").Native());
+        }
 
         // Parse the command line parameters for console commands after modules have loaded
         m_console->ExecuteCommandLine(m_commandLine);
@@ -1048,26 +1051,32 @@ namespace AZ
 
     void ComponentApplication::MergeSettingsToRegistry(SettingsRegistryInterface& registry)
     {
-        SettingsRegistryInterface::Specializations specializations;
-        SetSettingsRegistrySpecializations(specializations);
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
+            SettingsRegistryInterface::Specializations specializations;
+            SetSettingsRegistrySpecializations(specializations);
 
-        AZStd::vector<char> scratchBuffer;
+            AZStd::vector<char> scratchBuffer;
 
-        MergeSharedSettings(registry, specializations, scratchBuffer);
-        MergeUserSettings(registry, specializations, scratchBuffer);
+            MergeSharedSettings(registry, specializations, scratchBuffer);
+            MergeUserSettings(registry, specializations, scratchBuffer);
+        }
     }
 
     void ComponentApplication::SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations)
     {
+        if (m_startupParameters.m_loadSettingsRegistry)
+        {
 #if defined(AZ_DEBUG_BUILD)
-        specializations.Append("debug");
+            specializations.Append("debug");
 #elif defined(AZ_PROFILE_BUILD)
-        specializations.Append("profile");
+            specializations.Append("profile");
 #else
-        specializations.Append("release");
+            specializations.Append("release");
 #endif
 
-        SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+            SettingsRegistryMergeUtils::QuerySpecializationsFromRegistry(*m_settingsRegistry, specializations);
+        }
     }
 
     //=========================================================================

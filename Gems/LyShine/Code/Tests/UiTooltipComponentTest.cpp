@@ -96,7 +96,9 @@ namespace UnitTest
             appDescriptor.m_useExistingAllocator = true;
 
             m_application = aznew UiTooltipTestApplication();
-            m_application->Start(appDescriptor, AZ::ComponentApplication::StartupParameters());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(appDescriptor, startupParameters);
         }
 
         void TearDown() override

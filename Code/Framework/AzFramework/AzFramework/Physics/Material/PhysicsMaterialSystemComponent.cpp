@@ -27,7 +27,6 @@ namespace Physics
         {
             serialize->Class<Physics::MaterialSystemComponent, AZ::Component>()
                 ->Version(1)
-                ->Attribute(AZ::Edit::Attributes::SystemComponentTags, AZStd::vector<AZ::Crc32>({ AZ_CRC_CE("AssetBuilder") }))
                 ;
         }
     }

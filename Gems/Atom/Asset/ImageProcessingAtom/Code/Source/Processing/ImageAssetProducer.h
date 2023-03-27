@@ -33,6 +33,7 @@ namespace ImageProcessingAtom
          * @param sourceAssetId is the asset id of this image. It's used to generate full asset id for MipChainAssets which will be referenced in StreamingImageAsset.
          * @param sourceAssetName is the name of source asset file. It doesn't include path.
          * @param subId is the product subId to use for the output product.
+         * @param tags list of tags to save in the image asset.
          */
         ImageAssetProducer(
             const IImageObjectPtr imageObject,
@@ -40,7 +41,8 @@ namespace ImageProcessingAtom
             const Data::AssetId& sourceAssetId,
             AZStd::string_view sourceAssetName,
             uint8_t numResidentMips,
-            uint32_t subId);
+            uint32_t subId,
+            AZStd::set<AZStd::string> tags = AZStd::set<AZStd::string>{});
 
         /// Build image assets for the image object and save them to asset files. It also generates AssetBuilderSDK jobProducts if it success.
         bool BuildImageAssets();
@@ -78,6 +80,7 @@ namespace ImageProcessingAtom
         const AZStd::string m_fileName;
         const uint32_t m_subId = AZ::RPI::StreamingImageAsset::GetImageAssetSubId();
         const uint8_t m_numResidentMips = 0u;
+        AZStd::set<AZStd::string> m_tags;
 
         AZStd::vector<AssetBuilderSDK::JobProduct> m_jobProducts;
 

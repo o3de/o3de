@@ -85,7 +85,7 @@ namespace AZ
             DisableSceneNotification();
         }
 
-        void RayTracingFeatureProcessor::AddMesh(const AZ::Uuid& uuid, const AZ::Data::AssetId& assetId, const SubMeshVector& subMeshes, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
+        void RayTracingFeatureProcessor::AddMesh(const AZ::Uuid& uuid, const Mesh& rayTracingMesh, const SubMeshVector& subMeshes)
         {
             if (!m_rayTracingEnabled)
             {
@@ -106,7 +106,7 @@ namespace AZ
             }
 
             // add the mesh
-            m_meshes.insert(AZStd::make_pair(uuid, Mesh{ assetId }));
+            m_meshes.insert(AZStd::make_pair(uuid, rayTracingMesh));
             Mesh& mesh = m_meshes[uuid];
 
             // add the subMeshes to the end of the global subMesh vector
@@ -132,14 +132,14 @@ namespace AZ
             mesh.m_subMeshIndices = subMeshIndices;
 
             // search for an existing BLAS instance entry for this mesh using the assetId
-            BlasInstanceMap::iterator itMeshBlasInstance = m_blasInstanceMap.find(assetId);
+            BlasInstanceMap::iterator itMeshBlasInstance = m_blasInstanceMap.find(mesh.m_assetId);
             if (itMeshBlasInstance == m_blasInstanceMap.end())
             {
                 // make a new BLAS map entry for this mesh
                 MeshBlasInstance meshBlasInstance;
                 meshBlasInstance.m_count = 1;
                 meshBlasInstance.m_subMeshes.reserve(mesh.m_subMeshIndices.size());
-                itMeshBlasInstance = m_blasInstanceMap.insert({ assetId, meshBlasInstance }).first;
+                itMeshBlasInstance = m_blasInstanceMap.insert({ mesh.m_assetId, meshBlasInstance }).first;
             }
             else
             {
@@ -187,15 +187,13 @@ namespace AZ
                 }
             }
 
-            // set initial transform
-            mesh.m_transform = transform;
-            mesh.m_nonUniformScale = nonUniformScale;
-
             AZ::Transform noScaleTransform = mesh.m_transform;
             noScaleTransform.ExtractUniformScale();
             AZ::Matrix3x3 rotationMatrix = Matrix3x3::CreateFromTransform(noScaleTransform);
             rotationMatrix = rotationMatrix.GetInverseFull().GetTranspose();
             Matrix3x4 worldInvTranspose3x4 = Matrix3x4::CreateFromMatrix3x3(rotationMatrix);
+
+            Matrix3x4 reflectionProbeModelToWorld3x4 = Matrix3x4::CreateFromTransform(mesh.m_reflectionProbe.m_modelToWorld);
 
             // store the mesh buffers and material textures in the resource lists
             for (uint32_t subMeshIndex : mesh.m_subMeshIndices)
@@ -262,6 +260,22 @@ namespace AZ
                     m_materialTextures.AddResource(subMesh.m_emissiveImageView.get())
 #endif
                 });
+
+                // add reflection probe data
+                if (mesh.m_reflectionProbe.m_reflectionProbeCubeMap.get())
+                {
+                    materialInfo.m_reflectionProbeCubeMapIndex = mesh.m_reflectionProbe.m_reflectionProbeCubeMap->GetImageView()->GetBindlessReadIndex();
+                    if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
+                    {                        
+                        reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
+                        reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
+                        mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
+                        mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
+                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
+                        materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
+                        materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
+                    }
+                }
             }
 
             m_revision++;
@@ -402,9 +416,56 @@ namespace AZ
                     MeshInfo& meshInfo = m_meshInfos[subMeshIndex];
                     worldInvTranspose3x4.StoreToRowMajorFloat12(meshInfo.m_worldInvTranspose.data());
                 }
+
+                m_meshInfoBufferNeedsUpdate = true;
+            }
+        }
+
+        void RayTracingFeatureProcessor::SetMeshReflectionProbe(const AZ::Uuid& uuid, const Mesh::ReflectionProbe& reflectionProbe)
+        {
+            if (!m_rayTracingEnabled)
+            {
+                return;
             }
 
-            m_meshInfoBufferNeedsUpdate = true;
+            MeshMap::iterator itMesh = m_meshes.find(uuid);
+            if (itMesh != m_meshes.end())
+            {
+                Mesh& mesh = itMesh->second;
+
+                // update the Mesh reflection probe data
+                mesh.m_reflectionProbe = reflectionProbe;
+
+                // update all of the subMeshes
+                const Data::Instance<RPI::Image>& reflectionProbeCubeMap = reflectionProbe.m_reflectionProbeCubeMap;
+                uint32_t reflectionProbeCubeMapIndex = reflectionProbeCubeMap.get() ? reflectionProbeCubeMap->GetImageView()->GetBindlessReadIndex() : InvalidIndex;
+                Matrix3x4 reflectionProbeModelToWorld3x4 = Matrix3x4::CreateFromTransform(mesh.m_reflectionProbe.m_modelToWorld);
+
+                for (auto& subMeshIndex : mesh.m_subMeshIndices)
+                {
+                    SubMesh& subMesh = m_subMeshes[subMeshIndex];
+                    uint32_t globalIndex = subMesh.m_globalIndex;
+                    MaterialInfo& materialInfo = m_materialInfos[globalIndex];
+
+                    materialInfo.m_reflectionProbeCubeMapIndex = reflectionProbeCubeMapIndex;
+                    if (materialInfo.m_reflectionProbeCubeMapIndex != InvalidIndex)
+                    {
+                        reflectionProbeModelToWorld3x4.StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorld.data());
+                        reflectionProbeModelToWorld3x4.GetInverseFull().StoreToRowMajorFloat12(materialInfo.m_reflectionProbeData.m_modelToWorldInverse.data());
+                        mesh.m_reflectionProbe.m_outerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_outerObbHalfLengths.data());
+                        mesh.m_reflectionProbe.m_innerObbHalfLengths.StoreToFloat3(materialInfo.m_reflectionProbeData.m_innerObbHalfLengths.data());
+                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = true;
+                        materialInfo.m_reflectionProbeData.m_useParallaxCorrection = mesh.m_reflectionProbe.m_useParallaxCorrection;
+                        materialInfo.m_reflectionProbeData.m_exposure = mesh.m_reflectionProbe.m_exposure;
+                    }
+                    else
+                    {
+                        materialInfo.m_reflectionProbeData.m_useReflectionProbe = false;
+                    }
+                }
+
+                m_materialInfoBufferNeedsUpdate = true;
+            }
         }
 
         void RayTracingFeatureProcessor::UpdateRayTracingSrgs()

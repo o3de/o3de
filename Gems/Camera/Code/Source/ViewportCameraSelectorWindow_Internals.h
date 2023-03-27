@@ -83,7 +83,7 @@ namespace Camera
             // AzToolsFramework::EditorEntityContextNotificationBus overrides ...
             void OnStartPlayInEditorBegin() override;
             void OnStopPlayInEditor() override;
-            void PrepareForContextReset() override;
+            void OnPrepareForContextReset() override;
             void OnContextReset() override;
 
             // QListView overrides ...
