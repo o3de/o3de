@@ -135,17 +135,6 @@ class EditorTestAutomation(EditorTestSuite):
     def get_number_parallel_editors():
         return 16
 
-    #########################################
-    # Non-atomic tests: These need to be run in a single editor because they have custom setup and teardown
-    class Material_DynamicFriction(EditorSingleTest_WithFileOverrides):
-        from .tests.material import Material_DynamicFriction as test_module
-        files_to_override = [
-            ('physxsystemconfiguration.setreg', 'Material_DynamicFriction.setreg_override')
-        ]
-        base_dir = "AutomatedTesting/Registry"
-
-    #########################################
-
     class Collider_MultipleSurfaceSlots(EditorBatchedTest):
         from .tests.collider import Collider_MultipleSurfaceSlots as test_module
 
