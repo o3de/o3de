@@ -333,11 +333,10 @@ namespace Multiplayer
                 }
  #endif
 
-                // Send correction. Include the current host frame id as well as the last client input id processed so that
+                // Send correction. Include both the latest client input host frame id and the latest client input id processed so that
                 // the client can ensure that it doesn't try to process out-of-order corrections. The client input id by itself
                 // can roll over its value too quickly to be useful for detecting out-of-order conditions.
-                auto networkTime = GetNetworkTime();
-                SendClientInputCorrection(networkTime->GetHostFrameId(), m_lastClientInputId, correction);
+                SendClientInputCorrection(m_lastInputReceived[0].GetHostFrameId(), m_lastClientInputId, correction);
             }
         }
     }
@@ -421,36 +420,58 @@ namespace Multiplayer
     void LocalPredictionPlayerInputComponentController::HandleSendClientInputCorrection
     (
         AzNetworking::IConnection* invokingConnection,
-        const Multiplayer::HostFrameId& hostFrameId,
+        const Multiplayer::HostFrameId& inputHostFrameId,
         const Multiplayer::ClientInputId& inputId,
         const AzNetworking::PacketEncodingBuffer& correction
     )
     {
         AZ_Assert(invokingConnection != nullptr, "Invalid connection, cannot reprocess corrections.");
-        AZ_Assert(!AzNetworking::SequenceMoreRecent(inputId, m_clientInputId),
-            "Invalid correction frame id, correction is for a move the client has not yet submitted to the server");
-        if (AzNetworking ::SequenceMoreRecent(inputId, m_clientInputId))
+
+        INetworkTime* networkTime = GetNetworkTime();
+
+        // Corrections that have been sent backwards in time from this client's future are disallowed.
+        if (inputHostFrameId > networkTime->GetHostFrameId())
         {
-            AZLOG_ERROR("Discarding correction for non-existent move, correction represents a move we haven't sent to the server yet");
+            AZLOG_ERROR(
+                "Invalid correction frame id, newer than current client frame: current host frame %u, received host frame %u, input id %u",
+                aznumeric_cast<uint32_t>(networkTime->GetHostFrameId()),
+                aznumeric_cast<uint32_t>(inputHostFrameId),
+                aznumeric_cast<uint32_t>(inputId));
             return;
         }
 
-        // Make sure we don't process corrections out of order by verifying that this is either the first correction that we're
-        // handling (last id == invalid), or that the new host frame id >= the last correction AND the client input id is more recent.
-        // We need to check both the host frame id and the client input id. Just checking the client input id will fail if our
-        // corrections are sent with at least a 10 minute gap since this will cause our check to rollover and make the id look less
-        // recent instead of more recent. Just checking the host frame id could also fail if we generate multiple corrections in the
-        // same frame on the server but receive them out of order on the client. Checking both together gives us a successful result.
+        // If this isn't the first correction we've received, verify that we're processing the correction in order.
+        // We'll discard any out-of-order corrections.
         if (m_lastCorrectionHostFrameId != InvalidHostFrameId)
         {
-            if ((hostFrameId < m_lastCorrectionHostFrameId) || !AzNetworking::SequenceMoreRecent(inputId, m_lastCorrectionInputId))
+            // Discard any corrections that arrived out-of-order based on host frame id.
+            if (inputHostFrameId < m_lastCorrectionHostFrameId)
             {
-                AZLOG(NET_Prediction, "Discarding old correction for client frame %u", aznumeric_cast<uint32_t>(inputId));
+                AZLOG(
+                    NET_Prediction,
+                    "Discarding old correction for client host frame %u input id %u, host frame is older than last processed correction.",
+                    aznumeric_cast<uint32_t>(inputHostFrameId),
+                    aznumeric_cast<uint32_t>(inputId));
                 return;
+            }
+            else
+            {
+                // It's possible to receive corrections where the host frame is identical but the client input ids are out of sequence
+                // if we sent multiple inputs in the same frame, the server received and processed them across multiple frames, and
+                // we then received the corrections out-of-order.
+                if (!AzNetworking::SequenceMoreRecent(inputId, m_lastCorrectionInputId))
+                {
+                    AZLOG(
+                        NET_Prediction,
+                        "Discarding old correction for client host frame %u input id %u, input id is older than last processed correction.",
+                        aznumeric_cast<uint32_t>(inputHostFrameId),
+                        aznumeric_cast<uint32_t>(inputId));
+                    return;
+                }
             }
         }
 
-        m_lastCorrectionHostFrameId = hostFrameId;
+        m_lastCorrectionHostFrameId = inputHostFrameId;
         m_lastCorrectionInputId = inputId;
 
         // Apply the correction
@@ -460,9 +481,9 @@ namespace Multiplayer
 
         const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
 
-        // Do not replay the move just corrected, it was already processed by the server.
-        // (The subtraction intentionally wraps around to capture the delta)
-        const ClientInputId historicalDelta = m_clientInputId - inputId; 
+        // Do not replay the move just corrected, it was already processed by the server. Start replaying one past that move.
+        // (The subtraction intentionally wraps around to capture the historical delta even on id rollovers)
+        const ClientInputId historicalDelta = m_clientInputId - inputId;
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
         const uint32_t startReplayIndex = (inputHistorySize > aznumeric_cast<uint32_t>(historicalDelta))

@@ -229,9 +229,11 @@ namespace Multiplayer
 
         LocalPredictionPlayerInputComponentController* controller =
             dynamic_cast<LocalPredictionPlayerInputComponentController*>(m_localPredictionComponent->GetController());
+
+        // Sending an input correction with a host frame id that hasn't been generated yet client-side should produce an error.
         AZ_TEST_START_TRACE_SUPPRESSION;
         controller->HandleSendClientInputCorrection(nullptr, HostFrameId(1), ClientInputId(1), buffer);
-        AZ_TEST_STOP_TRACE_SUPPRESSION(2);
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         ::testing::NiceMock<IMultiplayerConnectionMock> connection(
             ConnectionId{ 1 }, IpAddress("127.0.0.1", DefaultServerPort, ProtocolType::Udp), ConnectionRole::Connector);
@@ -242,6 +244,8 @@ namespace Multiplayer
         controller->ForceEnableAutonomousUpdate();
         m_mockElapsedTime = AZ::TimeMs(1000);
         m_eventScheduler->OnTick(100, AZ::ScriptTimePoint());
+
+        // Input corrections with a host frame id <= current host frame id should both be processed and generate no errors.
         controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(0), buffer);
         controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(1), buffer);
     }
@@ -427,8 +431,9 @@ namespace Multiplayer
         // Set the cl_InputRateMs to an arbitrary but nice round number for testing.
         constexpr int ArbitraryInputRateMs = 10;
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand("cl_InputRateMs", { AZStd::string::format("%d", ArbitraryInputRateMs) });
-        // Turn off desync debugging so that generating (65535 + 10) inputs doesn't take obnoxiously long.
+        // Turn off desync debugging and delta serialization so that generating (65535 + 10) inputs doesn't take obnoxiously long.
         AZ::Interface<AZ::IConsole>::Get()->PerformCommand("cl_EnableDesyncDebugging", {"false"});
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("net_useInputDeltaSerialization", { "false" });
 
         constexpr uint64_t desiredInputCount = AZStd::numeric_limits<AZStd::underlying_type<ClientInputId>::type>::max() + 10;
         m_mockElapsedTime += AZ::TimeMs(desiredInputCount * ArbitraryInputRateMs);
@@ -455,8 +460,9 @@ namespace Multiplayer
         m_playerEntity->FindComponent<MultiplayerTest::TestMultiplayerComponent>()->m_processInputCallback = processInputCallback;
 
         AzNetworking::PacketEncodingBuffer buffer;
-        controller->HandleSendClientInputCorrection(&connection, HostFrameId(1), ClientInputId(LargeCorrectionInputId), buffer);
+        controller->HandleSendClientInputCorrection(&connection, HostFrameId(0), ClientInputId(LargeCorrectionInputId), buffer);
 
+        // The total number of corrections processed should be the number of inputs generated *past* the id we sent in the correction for
         EXPECT_EQ(numInputCorrectionsProcessed, desiredInputCount - static_cast<uint64_t>(LargeCorrectionInputId));
     }
 

@@ -56,7 +56,7 @@ namespace Multiplayer
         void HandleSendClientInputCorrection
         (
             AzNetworking::IConnection* invokingConnection,
-            const Multiplayer::HostFrameId& hostFrameId,
+            const Multiplayer::HostFrameId& inputHostFrameId,
             const Multiplayer::ClientInputId& inputId,
             const AzNetworking::PacketEncodingBuffer& correction
         ) override;
