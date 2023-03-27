@@ -49,14 +49,44 @@ namespace AzToolsFramework
             m_transform = nullptr;
         }
 
-        void EditorComponentBase::SetEntity(AZ::Entity* entity)
+        void EditorComponentBase::OnPrepareForAdditionToEntity(AZ::Entity* entity)
         {
-            Component::SetEntity(entity);
-
             if (entity && m_alias.empty())
             {
-                AZ_Assert(GetId() != AZ::InvalidComponentId, "ComponentId is invalid.");
-                m_alias = AZStd::string::format("Component_[%llu]", GetId());
+                AZStd::unordered_set<AZStd::string> serializedIdentifiersMatchingType;
+
+                for (const AZ::Component* componentInEntity : entity->GetComponents())
+                {
+                    if (componentInEntity == this)
+                    {
+                        // If the alias is not empty and the component is already added to the entity, there's nothing to do here.
+                        return;
+                    }
+                    if (RTTI_GetType() == componentInEntity->RTTI_GetType())
+                    {
+                        serializedIdentifiersMatchingType.emplace(componentInEntity->GetSerializedIdentifier());
+                    }
+                }
+
+                AZStd::string typeName = GetNameFromComponentClassData(this);
+
+                AZStd::string serializedIdentifier;
+                if (serializedIdentifiersMatchingType.size() == 0)
+                {
+                    serializedIdentifier = typeName;
+                }
+                else
+                {
+                    AZ::u64 suffixOfNewComponent = serializedIdentifiersMatchingType.size() + 1;
+                    serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
+                    while (serializedIdentifiersMatchingType.find(serializedIdentifier) != serializedIdentifiersMatchingType.end())
+                    {
+                        suffixOfNewComponent++;
+                        serializedIdentifier = AZStd::string::format("%s_%llu", typeName.c_str(), suffixOfNewComponent);
+                    }
+                }
+
+                SetSerializedIdentifier(AZStd::move(serializedIdentifier));
             }
         }
 

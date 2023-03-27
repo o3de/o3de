@@ -29,6 +29,8 @@ set(FILES
     ComponentModeTestFixture.h
     ComponentModeTests.cpp
     ComponentModeSwitcherTests.cpp
+    CustomSerializeContextTestFixture.cpp
+    CustomSerializeContextTestFixture.h
     EditorTransformComponentSelectionTests.cpp
     EditorVertexSelectionTests.cpp
     EditorViewportIconTests.cpp
@@ -142,6 +144,7 @@ set(FILES
     Prefab/PrefabUpdateInstancesTests.cpp
     Prefab/PrefabUpdateTemplateTests.cpp
     Prefab/PrefabUpdateWithPatchesTests.cpp
+    Prefab/Serialization/PrefabComponentAliasTests.cpp
     Prefab/Spawnable/SpawnableMetaDataTests.cpp
     Prefab/Spawnable/SpawnableTestFixture.h
     Prefab/Spawnable/SpawnableTestFixture.cpp
