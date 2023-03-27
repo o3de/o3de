@@ -61,7 +61,7 @@ namespace AZ::DocumentPropertyEditor
 
     private:
         //! Checks if the component is still valid in the entity.
-        bool IsComponentValid();
+        bool IsComponentValid() const;
 
     protected:
         AZ::EntityId m_entityId;

@@ -90,12 +90,15 @@ namespace AZ::DocumentPropertyEditor
         SetValue(componentInstance, instanceTypeId);
     }
 
-    bool ComponentAdapter::IsComponentValid()
+    bool ComponentAdapter::IsComponentValid() const
     {
         if (m_entityId.IsValid())
         {
             const Entity* entity = AzToolsFramework::GetEntity(m_entityId);
-            return entity->FindComponent(m_componentId) != nullptr;
+            AZ_Assert(entity, "ComponentAdapter::IsComponentValid - Entity is nullptr.");
+
+            bool isEntityActive = entity->GetState() == AZ::Entity::State::Active;
+            return isEntityActive && entity->FindComponent(m_componentId) != nullptr;
         }
 
         return false;
