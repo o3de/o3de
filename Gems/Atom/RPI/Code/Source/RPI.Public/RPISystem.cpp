@@ -313,6 +313,14 @@ namespace AZ
                 scenePtr->PrepareRender(m_prepareRenderJobPolicy, m_currentSimulationTime);
             }
 
+            //Collect all the active pipelines running in this frame.
+            uint16_t numActiveRenderPipelines = 0;
+            for (auto& scenePtr : m_scenes)
+            {
+                numActiveRenderPipelines += scenePtr->GetActiveRenderPipelines();
+            }
+            m_rhiSystem.SetNumActiveRenderPipelines(numActiveRenderPipelines);
+
             m_rhiSystem.FrameUpdate(
                 [this](RHI::FrameGraphBuilder& frameGraphBuilder)
                 {
