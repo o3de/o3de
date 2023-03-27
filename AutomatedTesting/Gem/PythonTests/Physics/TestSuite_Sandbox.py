@@ -85,9 +85,6 @@ class EditorTestAutomation(EditorTestSuite):
     class Material_NoEffectIfNoColliderShape(EditorBatchedTest):
         from .tests.material import Material_NoEffectIfNoColliderShape as test_module
 
-    class Material_EmptyLibraryUsesDefault(EditorBatchedTest):
-        from .tests.material import Material_EmptyLibraryUsesDefault as test_module
-
     class ScriptCanvas_PostPhysicsUpdate(EditorBatchedTest):
         from .tests.script_canvas import ScriptCanvas_PostPhysicsUpdate as test_module
         # Note: Test needs to be updated to log for unexpected lines
