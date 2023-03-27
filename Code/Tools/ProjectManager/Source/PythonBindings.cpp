@@ -629,6 +629,96 @@ namespace O3DE::ProjectManager
         return result && validateResult;
     }
 
+    void GetGemInfoFromPyDict(GemInfo& gemInfo, pybind11::dict data)
+    {
+        // required
+        gemInfo.m_name = Py_To_String(data["gem_name"]);
+
+        // optional
+        gemInfo.m_displayName = Py_To_String_Optional(data, "display_name", gemInfo.m_name);
+        gemInfo.m_summary = Py_To_String_Optional(data, "summary", "");
+        gemInfo.m_version = Py_To_String_Optional(data, "version", gemInfo.m_version);
+        gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
+        gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
+        gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
+        gemInfo.m_origin = Py_To_String_Optional(data, "origin", "");
+        gemInfo.m_originURL = Py_To_String_Optional(data, "origin_url", "");
+        gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
+        gemInfo.m_iconPath = Py_To_String_Optional(data, "icon_path", "preview.png");
+        gemInfo.m_licenseText = Py_To_String_Optional(data, "license", "Unspecified License");
+        gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
+        gemInfo.m_repoUri = Py_To_String_Optional(data, "repo_uri", "");
+        gemInfo.m_path = Py_To_String_Optional(data, "path", gemInfo.m_path);
+        gemInfo.m_directoryLink = QDir::cleanPath(gemInfo.m_path);
+        gemInfo.m_isEngineGem = Py_To_Int_Optional(data, "engine_gem", 0);
+
+        if (gemInfo.m_origin.contains("Open 3D Engine"))
+        {
+            gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
+        }
+        else if (data.contains("origin"))
+        {
+            gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
+        }
+        // If no origin was provided this cannot be remote and would be specified if O3DE so it should be local
+        else
+        {
+            gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
+        }
+
+        // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
+        if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
+        {
+            gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
+        }
+
+        if (data.contains("user_tags"))
+        {
+            for (auto tag : data["user_tags"])
+            {
+                gemInfo.m_features.push_back(Py_To_String(tag));
+            }
+        }
+
+        if (data.contains("platforms"))
+        {
+            for (auto platform : data["platforms"])
+            {
+                gemInfo.m_platforms |= GemInfo::GetPlatformFromString(Py_To_String(platform));
+            }
+        }
+
+        if (data.contains("dependencies"))
+        {
+            for (auto dependency : data["dependencies"])
+            {
+                gemInfo.m_dependencies.push_back(Py_To_String(dependency));
+            }
+        }
+
+        QString gemType = Py_To_String_Optional(data, "type", "");
+        if (gemType == "Asset")
+        {
+            gemInfo.m_types |= GemInfo::Type::Asset;
+        }
+        if (gemType == "Code")
+        {
+            gemInfo.m_types |= GemInfo::Type::Code;
+        }
+        if (gemType == "Tool")
+        {
+            gemInfo.m_types |= GemInfo::Type::Tool;
+        }
+
+        if (data.contains("compatible_engines"))
+        {
+            for (auto compatible_engine : data["compatible_engines"])
+            {
+                gemInfo.m_compatibleEngines.push_back(Py_To_String(compatible_engine));
+            }
+        }
+    }
+
     AZ::Outcome<GemInfo> PythonBindings::GetGemInfo(const QString& path, const QString& projectPath)
     {
         GemInfo gemInfo = GemInfoFromPath(QString_To_Py_String(path), QString_To_Py_Path(projectPath));
@@ -642,26 +732,6 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetEngineGemInfos()
-    {
-        QVector<GemInfo> gems;
-
-        auto result = ExecuteWithLockErrorHandling([&]
-        {
-            for (auto path : m_manifest.attr("get_engine_gems")())
-            {
-                gems.push_back(GemInfoFromPath(path, pybind11::none()));
-            }
-        });
-        if (!result.IsSuccess())
-        {
-            return AZ::Failure(result.GetError().c_str());
-        }
-
-        AZStd::sort(gems.begin(), gems.end());
-        return AZ::Success(AZStd::move(gems));
-    }
-
     AZ::Outcome<QVector<GemInfo>, AZStd::string> PythonBindings::GetAllGemInfos(const QString& projectPath)
     {
         QVector<GemInfo> gems;
@@ -669,9 +739,11 @@ namespace O3DE::ProjectManager
         auto result = ExecuteWithLockErrorHandling([&]
         {
             auto pyProjectPath = QString_To_Py_Path(projectPath);
-            for (auto path : m_manifest.attr("get_all_gems")(pyProjectPath))
+            for (pybind11::handle pyGemJsonData : m_projectManagerInterface.attr("get_all_gem_infos")(pyProjectPath))
             {
-                GemInfo gemInfo = GemInfoFromPath(path, pyProjectPath);
+                GemInfo gemInfo;
+                GetGemInfoFromPyDict(gemInfo, pyGemJsonData.cast<pybind11::dict>());
+
                 // Mark as downloaded because this gem was registered with an existing directory
                 gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
 
@@ -683,6 +755,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure(result.GetError().c_str());
         }
 
+        // This sort will sort by display name and then by version for all gems with matching names
         AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }
@@ -884,8 +957,6 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
-            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
             return AZ::Success(AZStd::move(gemInfoResult));
         }
     }
@@ -929,8 +1000,6 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            //Make sure directory link is a normalized path that can be rendered in "View Directory" dialog
-            gemInfoResult.m_directoryLink = QDir::cleanPath(gemInfoResult.m_directoryLink);
             return AZ::Success(AZStd::move(gemInfoResult));
         }
     }
@@ -952,88 +1021,14 @@ namespace O3DE::ProjectManager
     {
         GemInfo gemInfo;
         gemInfo.m_path = Py_To_String(path);
-        gemInfo.m_directoryLink = gemInfo.m_path;
+        gemInfo.m_directoryLink = QDir::cleanPath(gemInfo.m_path);
 
         auto data = m_manifest.attr("get_gem_json_data")(pybind11::none(), path, pyProjectPath);
         if (pybind11::isinstance<pybind11::dict>(data))
         {
             try
             {
-                // required
-                gemInfo.m_name = Py_To_String(data["gem_name"]);
-
-                // optional
-                gemInfo.m_displayName = Py_To_String_Optional(data, "display_name", gemInfo.m_name);
-                gemInfo.m_summary = Py_To_String_Optional(data, "summary", "");
-                gemInfo.m_version = Py_To_String_Optional(data, "version", gemInfo.m_version);
-                gemInfo.m_lastUpdatedDate = Py_To_String_Optional(data, "last_updated", gemInfo.m_lastUpdatedDate);
-                gemInfo.m_binarySizeInKB = Py_To_Int_Optional(data, "binary_size", gemInfo.m_binarySizeInKB);
-                gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
-                gemInfo.m_origin = Py_To_String_Optional(data, "origin", "");
-                gemInfo.m_originURL = Py_To_String_Optional(data, "origin_url", "");
-                gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
-                gemInfo.m_iconPath = Py_To_String_Optional(data, "icon_path", "preview.png");
-                gemInfo.m_licenseText = Py_To_String_Optional(data, "license", "Unspecified License");
-                gemInfo.m_licenseLink = Py_To_String_Optional(data, "license_url", "");
-                gemInfo.m_repoUri = Py_To_String_Optional(data, "repo_uri", "");
-
-                if (gemInfo.m_origin.contains("Open 3D Engine"))
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
-                }
-                else if (data.contains("origin"))
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
-                }
-                // If no origin was provided this cannot be remote and would be specified if O3DE so it should be local
-                else
-                {
-                    gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
-                }
-
-                // As long Base Open3DEngine gems are installed before first startup non-remote gems will be downloaded
-                if (gemInfo.m_gemOrigin != GemInfo::GemOrigin::Remote)
-                {
-                    gemInfo.m_downloadStatus = GemInfo::DownloadStatus::Downloaded;
-                }
-
-                if (data.contains("user_tags"))
-                {
-                    for (auto tag : data["user_tags"])
-                    {
-                        gemInfo.m_features.push_back(Py_To_String(tag));
-                    }
-                }
-
-                if (data.contains("platforms"))
-                {
-                    for (auto platform : data["platforms"])
-                    {
-                        gemInfo.m_platforms |= GemInfo::GetPlatformFromString(Py_To_String(platform));
-                    }
-                }
-
-                if (data.contains("dependencies"))
-                {
-                    for (auto dependency : data["dependencies"])
-                    {
-                        gemInfo.m_dependencies.push_back(Py_To_String(dependency));
-                    }
-                }
-
-                QString gemType = Py_To_String_Optional(data, "type", "");
-                if (gemType == "Asset")
-                {
-                    gemInfo.m_types |= GemInfo::Type::Asset;
-                }
-                if (gemType == "Code")
-                {
-                    gemInfo.m_types |= GemInfo::Type::Code;
-                }
-                if (gemType == "Tool")
-                {
-                    gemInfo.m_types |= GemInfo::Type::Tool;
-                }
+                GetGemInfoFromPyDict(gemInfo, data);
             }
             catch ([[maybe_unused]] const std::exception& e)
             {
@@ -1234,7 +1229,7 @@ namespace O3DE::ProjectManager
             {
                 using namespace pybind11::literals;
                 auto result = m_disableGemProject.attr("disable_gem_in_project")(
-                    "gem_name"_a = QString_To_Py_Path(gemName),
+                    "gem_name"_a = QString_To_Py_String(gemName),
                     "project_path"_a = QString_To_Py_Path(projectPath)
                     );
 

@@ -733,5 +733,17 @@ namespace O3DE::ProjectManager
                 QMessageBox::critical(parent, title, generalError.c_str());
             }
         }
+
+        int VersionCompare(const QString& a, const QString&b)
+        {
+            auto outcomeA = AZ::SemanticVersion::ParseFromString(a.toUtf8().constData());
+            auto outcomeB = AZ::SemanticVersion::ParseFromString(b.toUtf8().constData());
+
+            auto versionA = outcomeA ? outcomeA.GetValue() : AZ::SemanticVersion(0, 0, 0);
+            auto versionB = outcomeB ? outcomeB.GetValue() : AZ::SemanticVersion(0, 0, 0);
+
+            return AZ::SemanticVersion::Compare(versionA, versionB);
+
+        }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

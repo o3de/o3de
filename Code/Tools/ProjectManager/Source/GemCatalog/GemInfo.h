@@ -69,7 +69,6 @@ namespace O3DE::ProjectManager
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
-        bool IsEngineGem() const;
         QString GetNameWithVersionSpecifier(const QString& comparitor = "==") const;
         bool IsValid() const;
 
@@ -85,6 +84,7 @@ namespace O3DE::ProjectManager
         QString m_originURL;
         QString m_iconPath;
         bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
+        bool m_isEngineGem = false;
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool
@@ -100,6 +100,7 @@ namespace O3DE::ProjectManager
         QString m_lastUpdatedDate = "Unknown Date";
         int m_binarySizeInKB = 0;
         QStringList m_dependencies;
+        QStringList m_compatibleEngines;
     };
 } // namespace O3DE::ProjectManager
 

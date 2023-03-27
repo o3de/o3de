@@ -10,6 +10,7 @@ Contains functions for the project manager to call that gather data from o3de sc
 """
 
 import logging
+import pathlib
 
 from o3de import manifest, utils, compatibility, enable_gem
 
@@ -268,18 +269,31 @@ def get_gem_info(gem_path: str) -> dict or None:
     return dict()
 
 
-def get_all_gem_infos(project_path: str) -> list:
+def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     """
-        Get list of all avaliable gem paths for project at project_path using get_all_gems
-
-        Gather together list of dicts for each gem using get_gem_json_data
+        Get list of all avaliable gem json data for a project. If no project
+        path is provided, the gems for this engine are returned.
 
         :param project_path: Project path to gather avaliable gem infos for
 
-        :return list of dicts containing gem infos.
+        :return list of dicts containing gem json data
     """
-    return list()
+    all_gem_json_data = manifest.get_gems_json_data_by_name(project_path=project_path,
+                                                            include_engine_gems=True,
+                                                            include_manifest_gems=True)
 
+    # flatten into a single list
+    all_gem_json_data = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
+
+    # it's easier to determine which gems are engine gems here rather than in c++
+    # because this gem might belong to a different engine than the one Project Manager is
+    # running out of
+    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    for i, gem_json_data in enumerate(all_gem_json_data):
+        logger.warning(f'{gem_json_data["path"]}')
+        all_gem_json_data[i]['engine_gem'] = engine_path in gem_json_data['path'].parents
+
+    return all_gem_json_data
 
 def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None):
     """

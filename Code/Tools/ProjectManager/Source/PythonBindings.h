@@ -47,7 +47,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) override;
         AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) override;
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QHash<QString /*gem name with specifier*/, QString /* gem path */>, AZStd::string> GetEnabledGems(
             const QString& projectPath, bool includeDependencies) const override;

@@ -16,6 +16,7 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
+#include <AzCore/Dependency/Version.h>
 
 namespace O3DE::ProjectManager
 {
@@ -115,6 +116,16 @@ namespace O3DE::ProjectManager
          * @param parent Optional QWidget parent
          */
         void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent = nullptr);
+
+
+        /**
+         * Compare two version strings.  Invalid version strings will be treated as 0.0.0
+         * If you need to validate version strings, use AZ::Validate::ParseVersion()
+         * @param version1 The first version string
+         * @param version2 The first version string
+         * @return 0 if a == b, <0 if a < b, and >0 if a > b on success, or failure
+         */
+        int VersionCompare(const QString& a, const QString&b);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
