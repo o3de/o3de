@@ -54,3 +54,15 @@ def test_validate_uuid4(value, expected_result):
 def test_remove_gem_duplicates(in_list, out_list):
     result = utils.remove_gem_duplicates(in_list)
     assert result == out_list
+
+@pytest.mark.parametrize(
+    "gems, include_optional, expected_result", [
+        pytest.param(['GemA', {'name':'GemC'}], True, ['GemA', 'GemC']),
+        pytest.param(['GemA', {'name':'GemC','optional':True}], True, ['GemA', 'GemC']),
+        pytest.param(['GemA', {'name':'GemC','optional':True}], False, ['GemA' ]),
+        pytest.param(['GemA', {'name':'GemC','optional':False}], True, ['GemA', 'GemC'])
+    ]
+)
+def test_get_gem_names_set(gems, include_optional, expected_result):
+    result = utils.get_gem_names_set(gems=gems, include_optional=include_optional)
+    assert result == set(expected_result)

@@ -1391,7 +1391,7 @@ AZStd::string SandboxIntegrationManager::GetLevelName()
     return AZStd::string(GetIEditor()->GetGameEngine()->GetLevelName().toUtf8().constData());
 }
 
-void SandboxIntegrationManager::OnContextReset()
+void SandboxIntegrationManager::OnPrepareForContextReset()
 {
     // Deselect everything.
     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(

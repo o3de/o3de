@@ -430,19 +430,21 @@ namespace AZ::Reflection
 
                 // Inherit the change notify attribute from our parent
                 const Name changeNotify = Name("ChangeNotify");
-                Dom::Value changeNotifyValue = Find(changeNotify);
-                if (changeNotifyValue.IsNull())
+                if (auto changeNotifyValue = Find(changeNotify); !changeNotifyValue || changeNotifyValue->IsNull())
                 {
                     changeNotifyValue = Find(Name(), changeNotify, parentData);
-                    if (!changeNotifyValue.IsNull())
+                    if (changeNotifyValue && !changeNotifyValue->IsNull())
                     {
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, changeNotifyValue });
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, *changeNotifyValue });
                     }
                 }
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
-                Dom::Value enumTypeValue = Find(EnumTypeAttribute.GetName());
-                auto enumTypeId = EnumTypeAttribute.DomToValue(enumTypeValue);
+                AZStd::optional<AZ::TypeId> enumTypeId = {};
+                if (auto enumTypeValue = Find(EnumTypeAttribute.GetName()); enumTypeValue)
+                {
+                    enumTypeId = EnumTypeAttribute.DomToValue(*enumTypeValue);
+                }
 
                 const AZ::TypeId* typeIdForHandler = &nodeData->m_typeId;
                 if (enumTypeId.has_value())
@@ -873,34 +875,34 @@ namespace AZ::Reflection
                     { group, PropertyEditor::Visibility.GetName(), Dom::Utils::ValueFromType(visibility) });
             }
 
-            AttributeDataType Find(Name name) const override
+            const AttributeDataType* Find(Name name) const override
             {
                 return Find(Name(), AZStd::move(name));
             }
 
-            AttributeDataType Find(Name group, Name name) const override
+            const AttributeDataType* Find(Name group, Name name) const override
             {
                 const StackEntry& nodeData = m_stack.back();
                 for (auto it = nodeData.m_cachedAttributes.begin(); it != nodeData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
-            AttributeDataType Find(Name group, Name name, StackEntry& parentData) const
+            const AttributeDataType* Find(Name group, Name name, StackEntry& parentData) const
             {
                 for (auto it = parentData.m_cachedAttributes.begin(); it != parentData.m_cachedAttributes.end(); ++it)
                 {
                     if (it->m_group == group && it->m_name == name)
                     {
-                        return it->m_value;
+                        return &(it->m_value);
                     }
                 }
-                return Dom::Value();
+                return nullptr;
             }
 
             void ListAttributes(const IterationCallback& callback) const override

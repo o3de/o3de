@@ -179,52 +179,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             this,
             [this](const AssetBrowserEntry* entry)
             {
-                if (!m_ui->m_assetBrowserTreeViewWidget)
-                {
-                    return;
-                }
-
-                if (!entry)
-                {
-                    return;
-                }
-
-                if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
-                {
-                    return;
-                }
-
-                if (!m_assetBrowserModel)
-                {
-                    return;
-                }
-
-                if (!m_filterModel.data())
-                {
-                    return;
-                }
-
-                QModelIndex indexForEntry;
-                m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry), indexForEntry);
-
-                if (!indexForEntry.isValid())
-                {
-                    return;
-                }
-
-                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
-                auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
-
-                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
-
-                auto targetIndexAncestor = targetIndex.parent();
-                while (targetIndexAncestor.isValid())
-                {
-                    m_ui->m_assetBrowserTreeViewWidget->expand(targetIndexAncestor);
-                    targetIndexAncestor = targetIndexAncestor.parent();
-                }
-
-                m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+                OnDoubleClick(entry);
             });
 
         connect(
@@ -259,6 +214,13 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
                 selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
             });
     }
+
+    connect(m_ui->m_expandedTableView, &AssetBrowserExpandedTableView::entryDoubleClicked,
+        this,
+        [this](const AssetBrowserEntry* entry)
+        {
+            OnDoubleClick(entry);
+        });
 
     if (!ed_useWIPAssetBrowserDesign)
     {
@@ -300,11 +262,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
-    
-    // !!! Need to set the model on the tree widget first
-    m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
-
-    // !!! Need to set the model on the tree widget first
+    m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
     m_ui->m_expandedTableView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
 
     connect(m_ui->m_searchWidget->GetFilter().data(), &AzAssetBrowser::AssetBrowserEntryFilter::updatedSignal,
@@ -366,6 +324,10 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             {
                 m_ui->m_thumbnailView->OpenItemForEditing(index);
             }
+            else if (m_ui->m_expandedTableView->GetExpandedTableViewActive())
+            {
+                m_ui->m_expandedTableView->OpenItemForEditing(index);
+            }
             m_ui->m_assetBrowserTreeViewWidget->OpenItemForEditing(index);
         });
 
@@ -373,8 +335,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
     m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
-
-    m_ui->m_thumbnailView->SetIsAssetBrowserMainView(m_ui->m_assetBrowserTreeViewWidget);
+    m_ui->m_thumbnailView->SetIsAssetBrowserMainView();
+    m_ui->m_expandedTableView->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -694,6 +656,12 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     if (qobject_cast<AssetBrowserThumbnailView*>(viewToShow))
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
+        m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+    }
+    else if (qobject_cast<AssetBrowserExpandedTableView*>(viewToShow))
+    {
+        m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+        m_ui->m_expandedTableView->SetExpandedTableViewActive(true);
     }
 }
 
@@ -702,6 +670,75 @@ void AzAssetBrowserWindow::SetOneColumnMode()
     m_ui->m_middleStackWidget->hide();
     m_ui->m_searchWidget->RemoveFolderFilter();
     m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+}
+
+void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
+{
+    if (!m_ui->m_assetBrowserTreeViewWidget || !entry || !m_assetBrowserModel || !m_filterModel.data())
+    {
+        return;
+    }
+
+    QModelIndex indexForEntry;
+    m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry), indexForEntry);
+
+    if (!indexForEntry.isValid())
+    {
+        return;
+    }
+
+    auto entryType = entry->GetEntryType();
+
+    if (entryType == AssetBrowserEntry::AssetEntryType::Folder)
+    {
+        auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
+        auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
+
+        selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+
+        auto targetIndexAncestor = targetIndex.parent();
+        while (targetIndexAncestor.isValid())
+        {
+            m_ui->m_assetBrowserTreeViewWidget->expand(targetIndexAncestor);
+            targetIndexAncestor = targetIndexAncestor.parent();
+        }
+
+        m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+    }
+    else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
+    {
+        AZ::Data::AssetId assetIdToOpen;
+        AZStd::string fullFilePath;
+
+        if (const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry* productEntry =
+                azrtti_cast<const AzToolsFramework::AssetBrowser::ProductAssetBrowserEntry*>(entry))
+        {
+            assetIdToOpen = productEntry->GetAssetId();
+            fullFilePath = entry->GetFullPath();
+        }
+        else if (const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry* sourceEntry =
+            azrtti_cast<const AzToolsFramework::AssetBrowser::SourceAssetBrowserEntry*>(entry))
+        {
+            // manufacture an empty AssetID with the source's UUID
+            assetIdToOpen = AZ::Data::AssetId(sourceEntry->GetSourceUuid(), 0);
+            fullFilePath = entry->GetFullPath();
+        }
+
+        bool handledBySomeone = false;
+        if (assetIdToOpen.IsValid())
+        {
+            AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotificationBus::Broadcast(
+                &AzToolsFramework::AssetBrowser::AssetBrowserInteractionNotifications::OpenAssetInAssociatedEditor,
+                assetIdToOpen,
+                handledBySomeone);
+        }
+
+        if (!handledBySomeone && !fullFilePath.empty())
+        {
+            AzAssetBrowserRequestHandler::OpenWithOS(fullFilePath);
+        }
+    }
+
 }
 
 static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)
