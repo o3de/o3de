@@ -65,12 +65,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_StaticFriction as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    @fm.file_revert("c4044455_material_librarychangesinstantly.physmaterial",
-                    r"AutomatedTesting\Levels\Physics\C4044455_Material_LibraryChangesInstantly")
-    def test_Material_LibraryChangesReflectInstantly(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_LibraryChangesReflectInstantly as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
