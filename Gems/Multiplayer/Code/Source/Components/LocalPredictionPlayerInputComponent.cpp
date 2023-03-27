@@ -334,8 +334,11 @@ namespace Multiplayer
  #endif
 
                 // Send correction. Include both the latest client input host frame id and the latest client input id processed so that
-                // the client can ensure that it doesn't try to process out-of-order corrections. The client input id by itself
-                // can roll over its value too quickly to be useful for detecting out-of-order conditions.
+                // the client can ensure that it doesn't try to process out-of-order corrections. The client input id is a uint16, which
+                // can roll over in (65536 / 60 fps) which is < 20 minutes. If half that time or more passes between corrections,
+                // so if we only tried to rely on the client input id to detect out-of-order corrections, we wouldn't be able to tell if
+                // the difference is telling us that it's out of order or if a long time had passed. By sending the host frame id too,
+                // we can distinguish between the two cases.
                 SendClientInputCorrection(m_lastInputReceived[0].GetHostFrameId(), m_lastClientInputId, correction);
             }
         }
