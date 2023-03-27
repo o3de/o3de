@@ -237,7 +237,8 @@ def save_failed_asset_joblogs(workspace: ly_test_tools._internal.managers.worksp
             # Only save asset logs that contain errors or warnings
             if _check_log_errors_warnings(full_log_path):
                 try:
-                    workspace.artifact_manager.save_artifact(full_log_path)
+                    workspace.artifact_manager.save_artifact(
+                        full_log_path, os.path.join("assets_logs", os.path.basename(full_log_path)))
                 except Exception as e:  # Purposefully broad
                     logger.warning(f"Error when saving log at path: {full_log_path}\n{e}")
 
