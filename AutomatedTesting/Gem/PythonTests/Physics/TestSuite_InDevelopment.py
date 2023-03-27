@@ -25,10 +25,10 @@ revert_physics_config = fm.file_revert_list(['physxdebugconfiguration.setreg', '
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 class TestAutomation(TestAutomationBase):
     @revert_physics_config
-    @fm.file_override('physxsystemconfiguration.setreg','Material_RestitutionCombine.setreg_override',
+    @fm.file_override('physxsystemconfiguration.setreg','Material_Restitution.setreg_override',
                       'AutomatedTesting/Registry', search_subdirs=True)
-    def test_Material_RestitutionCombine(self, request, workspace, editor, launcher_platform):
-        from .tests.material import Material_RestitutionCombine as test_module
+    def test_Material_Restitution(self, request, workspace, editor, launcher_platform):
+        from .tests.material import Material_Restitution as test_module
         self._run_test(request, workspace, editor, test_module)
 
     # BUG: LY-107723")
