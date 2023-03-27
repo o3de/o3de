@@ -31,11 +31,6 @@ class TestAutomation(TestAutomationBase):
         from .tests.material import Material_Restitution as test_module
         self._run_test(request, workspace, editor, test_module)
 
-    # BUG: LY-107723")
-    def test_ScriptCanvas_SetKinematicTargetTransform(self, request, workspace, editor, launcher_platform):
-        from .tests.script_canvas import ScriptCanvas_SetKinematicTargetTransform as test_module
-        self._run_test(request, workspace, editor, test_module)
-
     def test_Physics_WorldBodyBusWorksOnEditorComponents(self, request, workspace, editor, launcher_platform):
         from .tests import Physics_WorldBodyBusWorksOnEditorComponents as test_module
         self._run_test(request, workspace, editor, test_module)
