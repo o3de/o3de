@@ -146,11 +146,11 @@
 #include <Editor/Include/ScriptCanvas/Components/EditorGraph.h>
 ////
 
+#include <ScriptCanvasContextIdentifiers.h>
 #include <Editor/Assets/ScriptCanvasAssetHelpers.h>
 #include <ScriptCanvas/Asset/AssetDescription.h>
 #include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Components/EditorScriptCanvasComponent.h>
-
 
 #include <Editor/QtMetaTypes.h>
 #include <GraphCanvas/Components/SceneBus.h>
@@ -443,11 +443,9 @@ namespace ScriptCanvasEditor
 
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
-
             if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
             {
-                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasActionContextIdentifier, this);
+                hotKeyManagerInterface->AssignWidgetToActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
             }
         }
 
@@ -688,11 +686,9 @@ namespace ScriptCanvasEditor
 
         if (AzToolsFramework::IsNewActionManagerEnabled())
         {
-            static constexpr AZStd::string_view ScriptCanvasActionContextIdentifier = "o3de.context.editor.scriptcanvas";
-
             if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
             {
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasActionContextIdentifier, this);
+                hotKeyManagerInterface->RemoveWidgetFromActionContext(ScriptCanvasIdentifiers::ScriptCanvasActionContextIdentifier, this);
             }
         }
 

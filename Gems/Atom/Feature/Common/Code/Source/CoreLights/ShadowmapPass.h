@@ -89,6 +89,7 @@ namespace AZ
             uint16_t m_arraySlice = 0;
             bool m_clearEnabled = true;
             bool m_isStatic = false;
+            uint32_t m_lastFrameDrawCount = 0;
             mutable bool m_forceRenderNextFrame = false;
         };
     } // namespace Render

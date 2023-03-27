@@ -67,6 +67,9 @@ namespace AZ
             //! during shader compilation. If true, the appropriate command line arguments will be inserted
             //! to each of the applications used for shader compilation so the expected debug information
             //! is generated at each stage.
+            //! Also when this flag is true, the Temp folder will be preserved, even if the shader compilation
+            //! is successful. This makes it easier to debug shaders with tools like
+            //! RenderDoc or Pix. 
             bool m_generateDebugInfo = false;
 
             //! Command line arguments for the C Pre-Processor.

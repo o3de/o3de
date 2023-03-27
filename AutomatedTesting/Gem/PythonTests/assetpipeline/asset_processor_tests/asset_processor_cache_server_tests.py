@@ -16,7 +16,6 @@ import tempfile
 import hashlib
 
 # Import LyTestTools
-import ly_test_tools
 import ly_test_tools.builtin.helpers as helpers
 import ly_test_tools.environment.waiter as waiter
 import ly_test_tools.environment.file_system as fs
@@ -52,7 +51,7 @@ def ap_idle(workspace, ap_setup_fixture):
 @pytest.mark.parametrize("project", targetProjects)
 @pytest.mark.SUITE_periodic
 @pytest.mark.assetpipeline
-class TestsAssetProcessorGUI_Windows(object):
+class TestsAssetProcessorGUI_AllPlatforms(object):
     """
     Tests for Asset Processor's Asset Cache Server (aka Shared Cache) feature
     """
@@ -101,9 +100,8 @@ class TestsAssetProcessorGUI_Windows(object):
         asset_processor.wait_for_idle()
         asset_processor.terminate()
 
-    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/14514")
     @pytest.mark.assetpipeline
-    def test_AssetCacheServer_LocalWorkUnaffected(self, asset_processor, ap_setup_fixture):
+    def test_AssetCacheServer_LocalWorkUnaffected(self, workspace, asset_processor, ap_setup_fixture):
         """
         Test to make sure that a client working on local changes is not affected by the remote server folder changes.
 
@@ -153,7 +151,10 @@ class TestsAssetProcessorGUI_Windows(object):
         assert os.path.exists(product_asset_b), "{product_asset_b} does not exist"
 
         # make sure the product asset archive was created
-        results, files = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        results, files = self.find_archive_parts(
+            asset_cache_target_folder,
+            f'test_00_Image Compile  PNG_{ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]}_'
+        )
         assert len(results.keys()) == 1, f"{results} should have exactly one entry; found files {files}"
 
         # 5. Make a local change
@@ -175,5 +176,8 @@ class TestsAssetProcessorGUI_Windows(object):
         # Result(s):
         # 1. The client's change is now the definitive edition of the source asset
         # 2. The cache was updated with the local client change
-        results, files = self.find_archive_parts(asset_cache_target_folder, 'test_00_Image Compile  PNG_pc_')
+        results, files = self.find_archive_parts(
+            asset_cache_target_folder,
+            f'test_00_Image Compile  PNG_{ASSET_PROCESSOR_PLATFORM_MAP[workspace.asset_processor_platform]}_'
+        )
         assert len(results.keys()) == 2, f"{results} should have exactly two entries; found files {files}"

@@ -26,7 +26,7 @@ namespace AzNetworking
     //! 
     //! INetworking is also responsible for registering ICompressorFactory implementations. This allows a developer to have
     //! access to multiple ICompressorFactory implementations by name.  The [MultiplayerCompressor
-    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer-compression) is an example of this using the
+    //! Gem](http://o3de.org/docs/user-guide/gems/reference/multiplayer/multiplayer-compression) is an example of this using the
     //! [LZ4](https://wikipedia.org/wiki/LZ4_%28compression_algorithm%29) algorithm.
     //! 
 

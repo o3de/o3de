@@ -33,7 +33,7 @@ def disable_gem_in_project(gem_name: str = None,
     :param project_name: name of the project to add the gem to
     :param project_path: path to the project to add the gem to
     :param enabled_gem_file: File to remove enabled gem from
-    :return: 0 for success or non 0 failure code
+    :return: 0 for success, 2 if gem was not found, 1 on any other error  
     """
 
     # we need either a project name or path
@@ -84,7 +84,7 @@ def disable_gem_in_project(gem_name: str = None,
     ret_val = 0
 
     # Remove the gem from the deprecated enabled_gems.cmake file
-    gem_enabled_in_cmake = False
+    gem_found_in_cmake = False
     if not enabled_gem_file:
         enabled_gem_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gem_file.is_file():
@@ -107,7 +107,7 @@ def disable_gem_in_project(gem_name: str = None,
 
     if not gem_found_in_cmake and not gem_found_in_gem_names:
         # No gems found to remove with this name
-        return 1
+        return 2
 
     ret_val = project_properties.edit_project_props(project_path,
                                                     delete_gem_names=gem_name) or ret_val

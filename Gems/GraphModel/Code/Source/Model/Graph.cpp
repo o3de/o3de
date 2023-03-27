@@ -24,13 +24,6 @@ namespace GraphModel
 
     void Graph::Reflect(AZ::ReflectContext* context)
     {
-        GraphContext::Reflect(context);
-        GraphElement::Reflect(context);
-        Node::Reflect(context);
-        SlotId::Reflect(context);
-        Slot::Reflect(context);
-        Connection::Reflect(context);
-
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<Graph>()

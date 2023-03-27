@@ -366,16 +366,30 @@ namespace AZ
             if (usagesAndAccesses.size() > 1)
             {
                 // The Attachment is used multiple times: If all usages/accesses are the same type, we can determine the
-                // vk image layout from the first usage. If not, use the fallback VK_IMAGE_LAYOUT_GENERAL for now.
+                // vk image layout from the first usage. If not, we check if all usages are depth/stencil read only (because we can use
+                // the VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL for all those cases).
+                // Finally we just use the fallback VK_IMAGE_LAYOUT_GENERAL that can be applied for multiple uses.
                 // [GFX TODO][ATOM-4779] -Multiple Usage/Access can be further optimized.
-
+                bool sameUsageAndAccess = true;
+                bool readOnlyDepthStencil = true;
                 const auto& first = usagesAndAccesses.front();
-                for (int i = 1; i < usagesAndAccesses.size(); ++i)
+                for (int i = 0; i < usagesAndAccesses.size(); ++i)
                 {
                     if (usagesAndAccesses[i].m_access != first.m_access || usagesAndAccesses[i].m_usage != first.m_usage)
                     {
-                        return VK_IMAGE_LAYOUT_GENERAL;
+                        sameUsageAndAccess = false;
                     }
+
+                    if (usagesAndAccesses[i].m_access != RHI::ScopeAttachmentAccess::Read ||
+                        (usagesAndAccesses[i].m_usage != RHI::ScopeAttachmentUsage::DepthStencil && usagesAndAccesses[i].m_usage != RHI::ScopeAttachmentUsage::Shader))
+                    {
+                        readOnlyDepthStencil = false;
+                    }
+                }
+
+                if (!sameUsageAndAccess)
+                {
+                    return readOnlyDepthStencil ? VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_GENERAL;
                 }
             }
 
