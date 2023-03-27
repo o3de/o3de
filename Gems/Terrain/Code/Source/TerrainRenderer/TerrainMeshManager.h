@@ -23,6 +23,8 @@
 #include <Atom/RPI.Public/FeatureProcessor.h>
 #include <Atom/RPI.Public/MeshDrawPacket.h>
 
+#include <RayTracing/RayTracingFeatureProcessor.h>
+
 #include <TerrainRenderer/Vector2i.h>
 
 namespace AZ::RPI
@@ -129,6 +131,25 @@ namespace Terrain
             Count,
         };
 
+        struct RtSector
+        {
+            // Ray tracing structures - Currently no data is shared due to ray tracing's format requirements, in the future this could
+            // be de-duplicated with custom ray tracing shaders.
+            AZ::Data::Instance<AZ::RPI::Buffer> m_positionsBuffer;
+            AZ::Data::Instance<AZ::RPI::Buffer> m_normalsBuffer;
+
+            struct MeshGroup
+            {
+                AZ::Uuid m_id { AZ::Uuid::CreateRandom() };
+                AZ::Render::RayTracingFeatureProcessor::Mesh m_mesh;
+                AZ::Render::RayTracingFeatureProcessor::SubMeshVector m_submeshVector;
+                bool m_isVisible = false;
+            };
+
+            AZStd::array<MeshGroup, 5> m_meshGroups; // 0 is the primary, 1-4 are the quadrants.
+            
+        };
+
         struct Sector
         {
             AZ::Data::Instance<AZ::RPI::ShaderResourceGroup> m_srg;
@@ -146,6 +167,8 @@ namespace Terrain
 
             // Hold reference to the draw srgs so they don't get released.
             AZStd::fixed_vector<AZ::Data::Instance<AZ::RPI::ShaderResourceGroup>, AZ::RHI::DrawPacketBuilder::DrawItemCountMax> m_perDrawSrgs;
+
+            AZStd::unique_ptr<RtSector> m_rtData;
 
             bool m_hasData = false;
             bool m_isQueuedForSrgCompile = false;
@@ -209,6 +232,19 @@ namespace Terrain
             const AZ::RHI::DrawPacket* m_rhiDrawPacket;
         };
 
+        struct XYPosition
+        {
+            uint8_t m_posx;
+            uint8_t m_posy;
+        };
+
+        struct RayTracedItem
+        {
+            Sector* m_sector;
+            uint32_t m_meshGroupIndex;
+            uint32_t m_lodLevel;
+        };
+
         // AZ::RPI::SceneNotificationBus overrides...
         void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType) override;
 
@@ -219,12 +255,13 @@ namespace Terrain
 
         bool UpdateGridSize(float distanceToFirstLod);
         void BuildDrawPacket(Sector& sector);
+        void BuildRtSector(Sector& sector, uint32_t lodLevel);
         void RebuildSectors();
         void RebuildDrawPackets();
+        void RemoveRayTracedMeshes();
         AZ::RHI::StreamBufferView CreateStreamBufferView(AZ::Data::Instance<AZ::RPI::Buffer>& buffer, uint32_t offset = 0);
 
         void CreateCommonBuffers();
-        void InitializeRayTracingData();
         void UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals);
         void UpdateSectorLodBuffers(Sector& sector,
             const AZStd::span<const HeightNormalVertex> originalHeightsNormals,
@@ -233,7 +270,6 @@ namespace Terrain
 
         void CheckLodGridsForUpdate(AZ::Vector3 newPosition);
         void ProcessSectorUpdates(AZStd::vector<AZStd::vector<Sector*>>& sectorUpdates);
-        void UpdateRaytracingData(const AZ::Aabb& bounds);
 
         AZ::Data::Instance<AZ::RPI::Buffer> CreateMeshBufferInstance(
             uint32_t elementSize,
@@ -255,6 +291,7 @@ namespace Terrain
 
         MeshConfiguration m_config;
         AZ::RPI::Scene* m_parentScene;
+        AZ::Render::RayTracingFeatureProcessor* m_rayTracingFeatureProcessor;
 
         MaterialInstance m_materialInstance;
         AZStd::vector<CachedDrawData> m_cachedDrawData; // Holds common parts of draw packets
@@ -266,20 +303,18 @@ namespace Terrain
 
         AZ::Data::Instance<AZ::RPI::Buffer> m_xyPositionsBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_indexBuffer;
+        AZ::Data::Instance<AZ::RPI::Buffer> m_rtIndexBuffer;
         AZ::Data::Instance<AZ::RPI::Buffer> m_dummyLodHeightsNormalsBuffer;
         AZ::RHI::IndexBufferView m_indexBufferView;
-
-        // Currently ray tracing meshes are kept separate from the regular meshes. The intention is to
-        // combine them in the future to support terrain lods in ray tracing.
-        AZ::Uuid m_rayTracingMeshUuid = AZ::Uuid::CreateNull();
-        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingPositionsBuffer;
-        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingNormalsBuffer;
-        AZ::Data::Instance<AZ::RPI::Buffer> m_raytracingIndexBuffer;
 
         AZStd::vector<SectorLodGrid> m_sectorLods;
         AZStd::vector<CandidateSector> m_candidateSectors;
         AZStd::vector<Sector*> m_sectorsThatNeedSrgCompiled;
         uint32_t m_1dSectorCount = 0;
+
+        // Sector x/y positions used to make it easier to calculate x/y positions for ray tracing meshes. This is particularly
+        // relevant because the positions may have been reordered for vertex cache efficiency.
+        AZStd::vector<XYPosition> m_xyPositions;
 
         // Set up the initial camera position impossible to force an update.
         AZ::Vector3 m_cameraPosition = AZ::Vector3::CreateAxisX(AZStd::numeric_limits<float>::max());
@@ -288,6 +323,11 @@ namespace Terrain
         float m_sampleSpacing = 1.0f;
         AZ::RPI::Material::ChangeId m_lastMaterialChangeId;
 
+        AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
+
+        // Tracks which sectors are currently in the ray tracing system so they can be easily compared and updated each frame.
+        AZStd::vector<RayTracedItem> m_rayTracedItems;
+
         uint8_t m_gridSize = 0; // number of quads in a single row of a sector
         uint8_t m_gridVerts1D = 0; // number of vertices along sector edge (m_gridSize + 1)
         uint16_t m_gridVerts2D = 0; // number of vertices in sector
@@ -295,7 +335,7 @@ namespace Terrain
         bool m_isInitialized{ false };
         bool m_rebuildSectors{ true };
         bool m_rebuildDrawPackets{ false };
+        bool m_rayTracingEnabled{ false };
 
-        AZStd::vector<uint16_t> m_vertexOrder; // Maps from regular linear order to actual vertex order positions
     };
 }

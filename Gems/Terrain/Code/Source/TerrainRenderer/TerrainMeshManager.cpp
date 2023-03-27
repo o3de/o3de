@@ -29,7 +29,6 @@
 
 #include <Atom/Feature/RenderCommon.h>
 #include <Atom/Feature/Mesh/MeshCommon.h>
-#include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace Terrain
 {
@@ -69,7 +68,6 @@ namespace Terrain
     void TerrainMeshManager::Initialize(AZ::RPI::Scene& parentScene)
     {
         m_parentScene = &parentScene;
-        InitializeRayTracingData();
 
         AzFramework::Terrain::TerrainDataNotificationBus::Handler::BusConnect();
 
@@ -78,6 +76,10 @@ namespace Terrain
             [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_rebuildDrawPackets = true; }
         };
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
+
+        AZ::RHI::Ptr<AZ::RHI::Device> rhiDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
+        m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
+        m_rayTracingEnabled = rhiDevice->GetFeatures().m_rayTracing && m_rayTracingFeatureProcessor;
 
         m_isInitialized = true;
     }
@@ -151,14 +153,22 @@ namespace Terrain
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
         m_sectorLods.clear();
-
-        AZ::Render::RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
-        if (rayTracingFeatureProcessor)
-        {
-            rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
-        }
+        m_xyPositions.clear();
+        m_cachedDrawData.clear();
+        RemoveRayTracedMeshes();
 
         m_rebuildSectors = true;
+    }
+
+    void TerrainMeshManager::RemoveRayTracedMeshes()
+    {
+        for (RayTracedItem& item : m_rayTracedItems)
+        {
+            RtSector::MeshGroup& meshGroup = item.m_sector->m_rtData->m_meshGroups.at(item.m_meshGroupIndex);
+            meshGroup.m_isVisible = false;
+            m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+        }
+        m_rayTracedItems.clear();
     }
 
     void TerrainMeshManager::OnRenderPipelineChanged([[maybe_unused]] AZ::RPI::RenderPipeline* pipeline, AZ::RPI::SceneNotification::RenderPipelineChangeType changeType)
@@ -335,6 +345,76 @@ namespace Terrain
         }
     }
 
+    void TerrainMeshManager::BuildRtSector(Sector& sector, uint32_t lodLevel)
+    {
+        RtSector& rtSector = *sector.m_rtData;
+
+        AZStd::string positionName = AZStd::string::format("Terrain Positions-  Lod %u, Sector (%u, %u)", lodLevel, sector.m_worldCoord.m_x, sector.m_worldCoord.m_x);
+        AZStd::string normalName = AZStd::string::format("Terrain Normals - Lod %u, Sector (%u, %u)", lodLevel, sector.m_worldCoord.m_x, sector.m_worldCoord.m_x);
+        rtSector.m_positionsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, m_gridVerts2D, nullptr, positionName.c_str());
+        rtSector.m_normalsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, m_gridVerts2D, nullptr, positionName.c_str());
+
+        // setup the stream and shader buffer views
+        AZ::RHI::Buffer& rhiPositionsBuffer = *rtSector.m_positionsBuffer->GetRHIBuffer();
+        uint32_t positionsBufferByteCount = aznumeric_cast<uint32_t>(rhiPositionsBuffer.GetDescriptor().m_byteCount);
+        AZ::RHI::Format positionsBufferFormat = rtSector.m_positionsBuffer->GetBufferViewDescriptor().m_elementFormat;
+        uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
+        AZ::RHI::StreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
+        AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
+
+        AZ::RHI::Buffer& rhiNormalsBuffer = *rtSector.m_normalsBuffer->GetRHIBuffer();
+        uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
+        AZ::RHI::Format normalsBufferFormat = rtSector.m_normalsBuffer->GetBufferViewDescriptor().m_elementFormat;
+        uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
+        AZ::RHI::StreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
+        AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
+
+        AZ::RHI::Buffer& rhiIndexBuffer = *m_rtIndexBuffer->GetRHIBuffer();
+        AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
+
+        uint32_t totalIndexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
+        uint32_t indexElementSize = AZ::RHI::GetIndexFormatSize(indexBufferFormat);
+
+        // Create the ray tracing meshes. Each sector has 5 meshes which all share the same data - one mesh that covers the whole
+        // sector, and 4 meshes that cover each quadrant of the sector.
+        auto createMesh = [&](RtSector::MeshGroup& meshGroup, uint32_t indexBufferByteOffset, uint32_t indexBufferByteCount)
+        {
+            meshGroup.m_submeshVector.clear();
+            AZ::Render::RayTracingFeatureProcessor::SubMesh& subMesh = meshGroup.m_submeshVector.emplace_back();
+
+            subMesh.m_positionFormat = positionsBufferFormat;
+            subMesh.m_positionVertexBufferView = positionsVertexBufferView;
+            subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
+            subMesh.m_normalFormat = normalsBufferFormat;
+            subMesh.m_normalVertexBufferView = normalsVertexBufferView;
+            subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
+            subMesh.m_indexBufferView = AZ::RHI::IndexBufferView(rhiIndexBuffer, indexBufferByteOffset, indexBufferByteCount, indexBufferFormat);
+            subMesh.m_baseColor = AZ::Color::CreateFromVector3(AZ::Vector3(0.18f));
+
+            AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
+            indexBufferDescriptor.m_elementOffset = indexBufferByteOffset / indexElementSize;
+            indexBufferDescriptor.m_elementCount = indexBufferByteCount / indexElementSize;
+            indexBufferDescriptor.m_elementSize = indexElementSize;
+            indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
+
+            subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
+
+            meshGroup.m_mesh.m_assetId = AZ::Data::AssetId(meshGroup.m_id);
+            float xyScale = (m_gridSize * m_sampleSpacing) * (1 << lodLevel);
+            meshGroup.m_mesh.m_transform = AZ::Transform::CreateIdentity();
+            meshGroup.m_mesh.m_nonUniformScale = AZ::Vector3(xyScale, xyScale, m_worldHeightBounds.m_max - m_worldHeightBounds.m_min);
+        };
+
+        createMesh(rtSector.m_meshGroups[0], 0, totalIndexBufferByteCount);
+
+        uint32_t quarterCount = totalIndexBufferByteCount / 4;
+        createMesh(rtSector.m_meshGroups[1], quarterCount * 0, quarterCount);
+        createMesh(rtSector.m_meshGroups[2], quarterCount * 1, quarterCount);
+        createMesh(rtSector.m_meshGroups[3], quarterCount * 2, quarterCount);
+        createMesh(rtSector.m_meshGroups[4], quarterCount * 3, quarterCount);
+
+    }
+
     void TerrainMeshManager::RebuildSectors()
     {
         const float gridMeters = m_gridSize * m_sampleSpacing;
@@ -354,6 +434,7 @@ namespace Terrain
         m_sectorLods.clear();
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
+        RemoveRayTracedMeshes();
 
         const uint8_t lodCount = aznumeric_cast<uint8_t>(AZStd::ceilf(log2f(AZStd::GetMax(1.0f, m_config.m_renderDistance / m_config.m_firstLodDistance)) + 1.0f));
         m_sectorLods.reserve(lodCount);
@@ -396,6 +477,12 @@ namespace Terrain
                 }
 
                 BuildDrawPacket(sector);
+
+                if (m_rayTracingEnabled)
+                {
+                    sector.m_rtData = AZStd::make_unique<RtSector>();
+                    BuildRtSector(sector, lodLevel);
+                }
             }
         }
     }
@@ -546,6 +633,7 @@ namespace Terrain
         m_sectorLods.clear();
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
+        RemoveRayTracedMeshes();
         m_rebuildSectors = true;
     }
 
@@ -586,8 +674,6 @@ namespace Terrain
                         ProcessSectorUpdates(sectorsToUpdate);
                     }
                 }
-
-                UpdateRaytracingData(dirtyRegion);
             }
         }
     }
@@ -613,8 +699,8 @@ namespace Terrain
             zOrderY.at(i) = value << 1;
         }
 
-        AZStd::vector<uint16_t> m_indices;
-        m_indices.resize_no_construct(m_gridSize * m_gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
+        AZStd::vector<uint16_t> indices;
+        indices.resize_no_construct(m_gridSize * m_gridSize * 6); // total number of quads, 2 triangles with 6 indices per quad.
 
         // Create the indices for a mesh patch in z-order for vertex cache optimization.
         for (uint16_t y = 0; y < m_gridSize; ++y)
@@ -629,12 +715,12 @@ namespace Terrain
                 const uint16_t bottomLeft = topLeft + m_gridVerts1D;
                 const uint16_t bottomRight = bottomLeft + 1;
 
-                m_indices.at(quadOrder + 0) = topLeft;
-                m_indices.at(quadOrder + 1) = topRight;
-                m_indices.at(quadOrder + 2) = bottomLeft;
-                m_indices.at(quadOrder + 3) = bottomLeft;
-                m_indices.at(quadOrder + 4) = topRight;
-                m_indices.at(quadOrder + 5) = bottomRight;
+                indices.at(quadOrder + 0) = topLeft;
+                indices.at(quadOrder + 1) = topRight;
+                indices.at(quadOrder + 2) = bottomLeft;
+                indices.at(quadOrder + 3) = bottomLeft;
+                indices.at(quadOrder + 4) = topRight;
+                indices.at(quadOrder + 5) = bottomRight;
             }
         }
 
@@ -644,7 +730,7 @@ namespace Terrain
         constexpr uint16_t VertexNotSet = 0xFFFF;
         m_vertexOrder = AZStd::vector<uint16_t>(m_gridVerts2D, VertexNotSet);
         uint16_t vertex = 0;
-        for (uint16_t& index : m_indices)
+        for (uint16_t& index : indices)
         {
             if (m_vertexOrder.at(index) == VertexNotSet)
             {
@@ -662,18 +748,27 @@ namespace Terrain
 
         m_indexBuffer = CreateMeshBufferInstance(
             AZ::RHI::GetFormatSize(AZ::RHI::Format::R16_UINT),
-            aznumeric_cast<uint32_t>(m_indices.size()),
-            m_indices.data());
+            aznumeric_cast<uint32_t>(indices.size()),
+            indices.data());
+
+        if (m_rayTracingEnabled)
+        {
+            // Generate a 32 bit index buffer for ray tracing by copying and transforming the 16 bit index buffer.
+            AZStd::vector<uint32_t> rtIndices;
+            rtIndices.resize_no_construct(indices.size());
+            AZStd::transform(indices.begin(), indices.end(), rtIndices.begin(),
+                [](uint16_t value)
+                {
+                    return static_cast<uint32_t>(value);
+                }
+            );
+            m_rtIndexBuffer = CreateMeshBufferInstance(
+                AZ::RHI::GetFormatSize(AZ::RHI::Format::R32_UINT),
+                aznumeric_cast<uint32_t>(rtIndices.size()),
+                rtIndices.data());
+        }
 
         // Create x/y positions. These are the same for all sectors since they're in local space.
-
-        struct VertexPosition
-        {
-            uint8_t m_posx;
-            uint8_t m_posy;
-        };
-
-        AZStd::vector<VertexPosition> m_xyPositions;
         m_xyPositions.resize_no_construct(m_gridVerts2D);
         for (uint8_t y = 0; y < m_gridVerts1D; ++y)
         {
@@ -695,6 +790,71 @@ namespace Terrain
     void TerrainMeshManager::UpdateSectorBuffers(Sector& sector, const AZStd::span<const HeightNormalVertex> heightsNormals)
     {
         sector.m_heightsNormalsBuffer->UpdateData(heightsNormals.data(), heightsNormals.size_bytes());
+
+        if (sector.m_rtData)
+        {
+            // While heightsNormals is in the exact format the terrain shader expects for optimum efficiency, for
+            // ray tracing it needs to be a more conventional layout. So here we generate more traditional R32G32B32
+            // data from the highly compressed HeightNormalVertex.
+
+            struct RtVert
+            {
+                float x;
+                float y;
+                float z;
+            };
+
+            AZStd::vector<RtVert> rtPositions(heightsNormals.size());
+            AZStd::vector<RtVert> rtNormals(heightsNormals.size());
+
+            AZ_Assert(heightsNormals.size() == m_gridVerts2D, "Unexpected number of vertices.");
+
+            constexpr float maxHeight = static_cast<float>(AZStd::numeric_limits<HeightDataType>::max());
+            constexpr float maxNormal = static_cast<float>(AZStd::numeric_limits<NormalDataType>::max());
+
+            for (uint32_t i = 0; i < heightsNormals.size(); ++i)
+            {
+                const HeightNormalVertex& heightNormal = heightsNormals[i];
+                XYPosition xyPosition = m_xyPositions.at(i);
+                float xyPositionMax = static_cast<float>(m_gridSize);
+
+                rtPositions.at(i) =
+                {
+                    xyPosition.m_posx / xyPositionMax,
+                    xyPosition.m_posy / xyPositionMax,
+                    heightNormal.m_height == NoTerrainVertexHeight ?
+                        0.0f :
+                        heightNormal.m_height / maxHeight,
+                };
+
+                float normalX = heightNormal.m_normal.first / maxNormal;
+                float normalY = heightNormal.m_normal.second / maxNormal;
+
+                // It's a little unfortunate to use a sqrt to decode a normal which used a sqrt to encode in the
+                // first place, but this avoids branching around ray tracing in GatherMeshData(). It also helps ensure
+                // the ray traced normal lines up with the compressed one used in forward pass.
+                float normalZ = sqrt(AZStd::GetMax(0.0f, 1.0f - normalX * normalX - normalY * normalY));
+
+                rtNormals.at(i) = { normalX, normalY, normalZ };
+            }
+
+            sector.m_rtData->m_positionsBuffer->UpdateData(rtPositions.data(), rtPositions.size() * sizeof(RtVert));
+            sector.m_rtData->m_normalsBuffer->UpdateData(rtNormals.data(), rtNormals.size() * sizeof(RtVert));
+
+            // If the mesh is currently visible, it must be removed and re-added to update its data.
+            for (RtSector::MeshGroup& meshGroup : sector.m_rtData->m_meshGroups)
+            {
+                if (meshGroup.m_isVisible)
+                {
+                    AZ::Vector3 translation = sector.m_aabb.GetMin();
+                    translation.SetZ(m_worldHeightBounds.m_min);
+                    meshGroup.m_mesh.m_transform = AZ::Transform::CreateTranslation(translation);
+                    m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+                    m_rayTracingFeatureProcessor->AddMesh(meshGroup.m_id, meshGroup.m_mesh, meshGroup.m_submeshVector);
+                }
+            }
+            
+        }
     }
 
     void TerrainMeshManager::UpdateSectorLodBuffers(Sector& sector,
@@ -749,38 +909,6 @@ namespace Terrain
         }
 
         sector.m_lodHeightsNormalsBuffer->UpdateData(clodHeightNormals.data(), clodHeightNormals.size() * sizeof(HeightNormalVertex), 0);
-    }
-
-    void TerrainMeshManager::InitializeRayTracingData()
-    {
-        constexpr uint32_t rayTracingVertices1d = RayTracingQuads1D + 1; // need vertex for end cap
-        constexpr uint32_t rayTracingTotalVertices = rayTracingVertices1d * rayTracingVertices1d;
-        m_raytracingPositionsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingPositions");
-        m_raytracingNormalsBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32G32B32_FLOAT, rayTracingTotalVertices, nullptr, "TerrainRaytracingNormals");
-
-        constexpr uint32_t rayTracingIndicesCount = RayTracingQuads1D * RayTracingQuads1D * 2 * 3; // 2 triangles per quad, 3 vertices per triangle
-        AZStd::vector<uint32_t> raytracingIndices;
-        raytracingIndices.reserve(rayTracingIndicesCount);
-
-        for (uint32_t y = 0; y < RayTracingQuads1D; ++y)
-        {
-            for (uint32_t x = 0; x < RayTracingQuads1D; ++x)
-            {
-                const uint32_t topLeft = y * (RayTracingQuads1D + 1) + x;
-                const uint32_t topRight = topLeft + 1;
-                const uint32_t bottomLeft = (y + 1) * (RayTracingQuads1D + 1) + x;
-                const uint32_t bottomRight = bottomLeft + 1;
-
-                raytracingIndices.emplace_back(topLeft);
-                raytracingIndices.emplace_back(topRight);
-                raytracingIndices.emplace_back(bottomLeft);
-                raytracingIndices.emplace_back(bottomLeft);
-                raytracingIndices.emplace_back(topRight);
-                raytracingIndices.emplace_back(bottomRight);
-            }
-        }
-
-        m_raytracingIndexBuffer = CreateRayTracingMeshBufferInstance(AZ::RHI::Format::R32_UINT, rayTracingIndicesCount, raytracingIndices.data(), "TerrainRaytracingIndices");
     }
 
     void TerrainMeshManager::GatherMeshData(SectorDataRequest request, AZStd::vector<HeightNormalVertex>& meshHeightsNormals, AZ::Aabb& meshAabb, bool& terrainExistsAnywhere)
@@ -1026,157 +1154,6 @@ namespace Terrain
         m_candidateSectors.clear(); // Force recalculation of candidate sectors since AABBs could have changed.
     }
 
-    void TerrainMeshManager::UpdateRaytracingData(const AZ::Aabb& bounds)
-    {
-        AZ::Render::RayTracingFeatureProcessor* rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
-        if (!rayTracingFeatureProcessor)
-        {
-            return;
-        }
-
-        // remove existing mesh from the raytracing scene
-        if (!m_rayTracingMeshUuid.IsNull())
-        {
-            rayTracingFeatureProcessor->RemoveMesh(m_rayTracingMeshUuid);
-            m_rayTracingMeshUuid = AZ::Uuid::CreateNull();
-        }
-
-        float queryResolution = 1.0f;
-        AzFramework::Terrain::TerrainDataRequestBus::BroadcastResult(
-            queryResolution, &AzFramework::Terrain::TerrainDataRequests::GetTerrainHeightQueryResolution);
-
-        // For now only create a small patch of terrain data for ray tracing around the origin as a test case.
-        const AZ::Aabb raytracingBounds = AZ::Aabb::CreateCenterHalfExtents(AZ::Vector3::CreateZero(), AZ::Vector3(RayTracingQuads1D * queryResolution * 0.5f));
-        const AZ::Aabb updateBounds = bounds.GetClamped(raytracingBounds);
-        if (updateBounds.GetXExtent() <= 0.0f || updateBounds.GetYExtent() <= 0.0f)
-        {
-            // No raytracing data to update.
-            return;
-        }
-
-        // build the new position and normal buffers
-        SectorDataRequest request;
-
-        request.m_worldStartPosition = AZ::Vector2(updateBounds.GetMin());
-        request.m_vertexSpacing = queryResolution;
-        request.m_samplesX = aznumeric_cast<uint16_t>(updateBounds.GetXExtent() / queryResolution) + 1;
-        request.m_samplesY = aznumeric_cast<uint16_t>(updateBounds.GetYExtent() / queryResolution) + 1;
-        request.m_samplerType = AzFramework::Terrain::TerrainDataRequests::Sampler::CLAMP;
-
-        AZStd::vector<HeightNormalVertex> meshHeightsNormals;
-        AZ::Aabb outAabb;
-        bool terrainExistsAnywhere = false; // ignored by ray tracing for now
-        GatherMeshData(request, meshHeightsNormals, outAabb, terrainExistsAnywhere);
-
-        struct Position
-        {
-            float x;
-            float y;
-            float z;
-        };
-
-        struct Normal
-        {
-            float x;
-            float y;
-            float z;
-        };
-
-        Position* positions = reinterpret_cast<Position*>(m_raytracingPositionsBuffer->Map(m_raytracingPositionsBuffer->GetBufferSize(), 0));
-        Normal* normals = reinterpret_cast<Normal*>(m_raytracingNormalsBuffer->Map(m_raytracingNormalsBuffer->GetBufferSize(), 0));
-
-        if (positions == nullptr || normals == nullptr)
-        {
-            AZ_Error(TerrainMeshManagerName, false, "Enable to map buffers for ray tracing mesh.");
-            return;
-        }
-
-        uint32_t xMin = aznumeric_cast<uint32_t>((updateBounds.GetMin().GetX() - raytracingBounds.GetMin().GetX()) / request.m_vertexSpacing);
-        uint32_t xMax = xMin + request.m_samplesX;
-        uint32_t yMin = aznumeric_cast<uint32_t>((updateBounds.GetMin().GetY() - raytracingBounds.GetMin().GetY()) / request.m_vertexSpacing);
-        uint32_t yMax = yMin + request.m_samplesY;
-
-        constexpr uint32_t RayTracingVertices1D = RayTracingQuads1D + 1;
-        float zExtent = m_worldHeightBounds.m_max - m_worldHeightBounds.m_min;
-
-        for (uint32_t y = yMin; y < yMax; ++y)
-        {
-            for (uint32_t x = xMin; x < xMax; ++x)
-            {
-                uint32_t index = y * RayTracingVertices1D + x;
-                uint32_t localIndex = (y - yMin) * request.m_samplesX + (x - xMin);
-                AZ::Vector2 xyPosition = AZ::Vector2(raytracingBounds.GetMin()) + AZ::Vector2(float(x), float(y)) * request.m_vertexSpacing;
-
-                float zPosition = 0.0f;
-                if (meshHeightsNormals.at(localIndex).m_height != NoTerrainVertexHeight)
-                {
-                    float height = meshHeightsNormals.at(localIndex).m_height / aznumeric_cast<float>(AZStd::numeric_limits<uint16_t>::max());
-                    zPosition = aznumeric_cast<float>(m_worldHeightBounds.m_min) + height * zExtent;
-                }
-
-                positions[index] = { xyPosition.GetX(), xyPosition.GetY(), zPosition };
-
-                float normalX = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.first) / AZStd::numeric_limits<int16_t>::max();
-                float normalY = aznumeric_cast<float>(meshHeightsNormals.at(localIndex).m_normal.second) / AZStd::numeric_limits<int16_t>::max();
-                float normalZ = sqrtf(1.0f - (normalX * normalX) - (normalY * normalY));
-                normals[index] = { normalX, normalY, normalZ };
-            }
-        }
-
-        m_raytracingPositionsBuffer->Unmap();
-        m_raytracingNormalsBuffer->Unmap();
-
-        // setup the stream and shader buffer views
-        AZ::RHI::Buffer& rhiPositionsBuffer = *m_raytracingPositionsBuffer->GetRHIBuffer();
-        uint32_t positionsBufferByteCount = aznumeric_cast<uint32_t>(rhiPositionsBuffer.GetDescriptor().m_byteCount);
-        AZ::RHI::Format positionsBufferFormat = m_raytracingPositionsBuffer->GetBufferViewDescriptor().m_elementFormat;
-        uint32_t positionsBufferElementSize = AZ::RHI::GetFormatSize(positionsBufferFormat);
-        AZ::RHI::StreamBufferView positionsVertexBufferView(rhiPositionsBuffer, 0, positionsBufferByteCount, positionsBufferElementSize);
-        AZ::RHI::BufferViewDescriptor positionsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, positionsBufferByteCount);
-
-        AZ::RHI::Buffer& rhiNormalsBuffer = *m_raytracingNormalsBuffer->GetRHIBuffer();
-        uint32_t normalsBufferByteCount = aznumeric_cast<uint32_t>(rhiNormalsBuffer.GetDescriptor().m_byteCount);
-        AZ::RHI::Format normalsBufferFormat = m_raytracingNormalsBuffer->GetBufferViewDescriptor().m_elementFormat;
-        uint32_t normalsBufferElementSize = AZ::RHI::GetFormatSize(normalsBufferFormat);
-        AZ::RHI::StreamBufferView normalsVertexBufferView(rhiNormalsBuffer, 0, normalsBufferByteCount, normalsBufferElementSize);
-        AZ::RHI::BufferViewDescriptor normalsBufferDescriptor = AZ::RHI::BufferViewDescriptor::CreateRaw(0, normalsBufferByteCount);
-
-        AZ::RHI::Buffer& rhiIndexBuffer = *m_raytracingIndexBuffer->GetRHIBuffer();
-        uint32_t indexBufferByteCount = aznumeric_cast<uint32_t>(rhiIndexBuffer.GetDescriptor().m_byteCount);
-        AZ::RHI::IndexFormat indexBufferFormat = AZ::RHI::IndexFormat::Uint32;
-        AZ::RHI::IndexBufferView indexBufferView(rhiIndexBuffer, 0, indexBufferByteCount, indexBufferFormat);
-
-        uint32_t indexElementSize = AZ::RHI::GetIndexFormatSize(indexBufferFormat);
-        uint32_t indexElementCount = indexBufferByteCount / indexElementSize;
-        AZ::RHI::BufferViewDescriptor indexBufferDescriptor;
-        indexBufferDescriptor.m_elementOffset = 0;
-        indexBufferDescriptor.m_elementCount = indexElementCount;
-        indexBufferDescriptor.m_elementSize = indexElementSize;
-        indexBufferDescriptor.m_elementFormat = AZ::RHI::Format::R32_UINT;
-
-        // build the terrain raytracing submesh
-        AZ::Render::RayTracingFeatureProcessor::SubMeshVector subMeshVector;
-        AZ::Render::RayTracingFeatureProcessor::SubMesh& subMesh = subMeshVector.emplace_back();
-        subMesh.m_positionFormat = positionsBufferFormat;
-        subMesh.m_positionVertexBufferView = positionsVertexBufferView;
-        subMesh.m_positionShaderBufferView = rhiPositionsBuffer.GetBufferView(positionsBufferDescriptor);
-        subMesh.m_normalFormat = normalsBufferFormat;
-        subMesh.m_normalVertexBufferView = normalsVertexBufferView;
-        subMesh.m_normalShaderBufferView = rhiNormalsBuffer.GetBufferView(normalsBufferDescriptor);
-        subMesh.m_indexBufferView = indexBufferView;
-        subMesh.m_indexShaderBufferView = rhiIndexBuffer.GetBufferView(indexBufferDescriptor);
-
-        // add the submesh to the raytracing scene
-        // Note: we use the terrain mesh UUID as the AssetId since it is dynamically created and will not have multiple instances
-        m_rayTracingMeshUuid = AZ::Uuid::CreateRandom();
-        AZ::Render::RayTracingFeatureProcessor::Mesh rayTracingMesh;
-        rayTracingMesh.m_assetId = AZ::Data::AssetId(m_rayTracingMeshUuid);
-        rayTracingMesh.m_transform = AZ::Transform::CreateIdentity();
-        rayTracingMesh.m_nonUniformScale = AZ::Vector3::CreateOne();
-
-        rayTracingFeatureProcessor->AddMesh(m_rayTracingMeshUuid, rayTracingMesh, subMeshVector);
-    }
-
     void TerrainMeshManager::UpdateCandidateSectors()
     {
         // Gather a list of all sectors that could render based on their status, lod, and camera position.
@@ -1186,6 +1163,12 @@ namespace Terrain
         AZStd::vector<bool> previousSelectedSectors;
 
         m_candidateSectors.clear();
+
+        AZStd::vector<RayTracedItem> newRayTraceItems;
+        if (m_rayTracingEnabled)
+        {
+            newRayTraceItems.reserve(m_sectorLods.size() * m_1dSectorCount * m_1dSectorCount);
+        }
 
         for (uint32_t lodLevel = 0; lodLevel < m_sectorLods.size(); ++lodLevel)
         {
@@ -1233,6 +1216,10 @@ namespace Terrain
                     {
                         // Since this is the first lod, no previous lod to check, so just draw.
                         m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacket.get() });
+                        if (sector.m_rtData)
+                        {
+                            newRayTraceItems.push_back({ &sector, 0, lodLevel });
+                        }
                         continue;
                     }
 
@@ -1254,6 +1241,10 @@ namespace Terrain
                     {
                         // Not covered at all by previous LOD, so the draw entire sector
                         m_candidateSectors.push_back({ sector.m_aabb, sector.m_rhiDrawPacket.get() });
+                        if (sector.m_rtData)
+                        {
+                            newRayTraceItems.push_back({ &sector, 0, lodLevel });
+                        }
                     }
                     else
                     {
@@ -1263,6 +1254,10 @@ namespace Terrain
                             if ((coveredByHigherLod & 0b0001) == 0b0000)
                             {
                                 m_candidateSectors.push_back({ sector.m_quadrantAabbs.at(i), sector.m_rhiDrawPacketQuadrant.at(i).get() });
+                                if (sector.m_rtData)
+                                {
+                                    newRayTraceItems.push_back({ &sector, i + 1u, lodLevel });
+                                }
                             }
                             coveredByHigherLod >>= 1;
                         }
@@ -1272,6 +1267,82 @@ namespace Terrain
 
             maxDistanceSq = maxDistanceSq * 4.0f; // Double the distance with squared distances is * 2^2.
             previousSelectedSectors = AZStd::move(selectedSectors);
+        }
+
+        if (m_rayTracingEnabled)
+        {
+            // Compare the sorted new list to the old list to figure out which ray traced sectors need to be
+            // added or removed.
+
+            auto getMeshGroup = [](auto& item) -> auto&
+            {
+                return item.m_sector->m_rtData->m_meshGroups[item.m_meshGroupIndex];
+            };
+
+            AZStd::sort(newRayTraceItems.begin(), newRayTraceItems.end(),
+                [&getMeshGroup](const RayTracedItem& value1, const RayTracedItem& value2) -> bool
+                {
+                    return getMeshGroup(value1).m_id < getMeshGroup(value2).m_id;
+                }
+            );
+
+            auto prevIt = m_rayTracedItems.begin();
+            auto newIt = newRayTraceItems.begin();
+
+            auto addMesh = [&](RayTracedItem& item, RtSector::MeshGroup& meshGroup)
+            {
+                const float gridMeters = (m_gridSize * m_sampleSpacing) * (1 << item.m_lodLevel);
+                AZ::Vector3 translation = AZ::Vector3(item.m_sector->m_worldCoord.m_x * gridMeters, item.m_sector->m_worldCoord.m_y * gridMeters, m_worldHeightBounds.m_min);
+                meshGroup.m_mesh.m_transform = AZ::Transform::CreateTranslation(translation);
+                meshGroup.m_isVisible = true;
+                m_rayTracingFeatureProcessor->AddMesh(meshGroup.m_id, meshGroup.m_mesh, meshGroup.m_submeshVector);
+            };
+
+            auto removeMesh = [&](RtSector::MeshGroup& meshGroup)
+            {
+                meshGroup.m_isVisible = false;
+                m_rayTracingFeatureProcessor->RemoveMesh(meshGroup.m_id);
+            };
+
+            // Since the two lists are sorted, we can easily compare them and figure out which items need
+            // to be removed or added. If a uuid shows up in the old list first, then it must not be in the new
+            // list, so it needs to be removed, then only the old list iterator is incremented. Similarly if a
+            // uuid shows up in the new list first then it must not be in the old list, so it needs to be added.
+            // Finally if the uuids match, they're in both lists, and therefore both iterators can be incremented.
+            while (prevIt < m_rayTracedItems.end() && newIt < newRayTraceItems.end())
+            {
+                RtSector::MeshGroup& prevMeshGroup = getMeshGroup(*prevIt);
+                RtSector::MeshGroup& newMeshGroup = getMeshGroup(*newIt);
+                if (prevMeshGroup.m_id < newMeshGroup.m_id)
+                {
+                    removeMesh(prevMeshGroup);
+                    ++prevIt;
+                }
+                else if (prevMeshGroup.m_id > newMeshGroup.m_id)
+                {
+                    addMesh(*newIt, newMeshGroup);
+                    ++newIt;
+                }
+                else
+                {
+                    ++prevIt;
+                    ++newIt;
+                }
+            }
+
+            // Since the above loop stops when either iterator is done, remaining items in the other iterator need to be handled here.
+            while (prevIt < m_rayTracedItems.end())
+            {
+                removeMesh(getMeshGroup(*prevIt));
+                ++prevIt;
+            }
+            while (newIt < newRayTraceItems.end())
+            {
+                addMesh(*newIt, getMeshGroup(*newIt));
+                ++newIt;
+            }
+
+            m_rayTracedItems = AZStd::move(newRayTraceItems);
         }
     }
 
