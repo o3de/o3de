@@ -410,6 +410,14 @@ namespace AzQtComponents
         , m_config(defaultConfig())
     {
         setItemDelegate(m_delegate);
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
+
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -784,6 +792,8 @@ namespace AzQtComponents
             selectionModel()->select(idx, QItemSelectionModel::SelectionFlag::ClearAndSelect);
             emit clicked(idx);
             update();
+            // Pass event to base class to enable drag/drop selections.
+            QAbstractItemView::mousePressEvent(event);
             return;
         }
 
@@ -1054,7 +1064,6 @@ namespace AzQtComponents
     {
         m_showSearchResultsMode = searchMode;
     }
-
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderThumbnailView.cpp"

@@ -513,7 +513,7 @@ namespace AzToolsFramework::Prefab
         SwitchToEditScope();
     }
 
-    void PrefabFocusHandler::OnContextReset()
+    void PrefabFocusHandler::OnPrepareForContextReset()
     {
         // Focus on the root prefab (AZ::EntityId() will default to it)
         FocusOnPrefabInstanceOwningEntityId(AZ::EntityId());

@@ -71,17 +71,6 @@ namespace AZ::Render
     void SplashScreenPass::FrameBeginInternal([[maybe_unused]] FramePrepareParams params)
     {
         FullscreenTrianglePass::FrameBeginInternal(params);
-
-        if (m_beginTimer)
-        {
-            // Scale the tick time to 0 to stop other system from updating until splash screen finishes.
-            // This is not ideal. It may cause conflicts when multiple sources are trying to set the value.
-            // We should replace this with some control from the core system about when to render the splash screen.
-            if (auto* timeSystem = AZ::Interface<ITime>::Get())
-            {
-                timeSystem->SetSimulationTickScale(0.0f);
-            }
-        }
     }
 
     void SplashScreenPass::FrameEndInternal()
@@ -94,12 +83,6 @@ namespace AZ::Render
 
             // Disable the pass after life time passes.
             SetEnabled(false);
-
-            // Reset the tick scale
-            if (auto* timeSystem = AZ::Interface<ITime>::Get())
-            {
-                timeSystem->SetSimulationTickScale(1.0f);
-            }
         }
     }
 

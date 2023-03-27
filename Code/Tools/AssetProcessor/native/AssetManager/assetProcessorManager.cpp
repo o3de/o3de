@@ -4352,7 +4352,7 @@ namespace AssetProcessor
         m_jobEntries.push_back(entry);
 
         // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
-        Q_EMIT CreateJobsDurationChanged(sourceAsset.RelativePath().c_str());
+        Q_EMIT CreateJobsDurationChanged(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId());
     }
 
     bool AssetProcessorManager::ResolveSourceFileDependencyPath(AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
