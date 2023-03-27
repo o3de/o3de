@@ -36,10 +36,13 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+            ModelDataInstance();
+
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
         private:
+
             class MeshLoader
                 : private Data::AssetBus::Handler
                 , private AzFramework::AssetCatalogEventBus::Handler
@@ -122,15 +125,20 @@ namespace AZ
 
             Aabb m_aabb = Aabb::CreateNull();
 
-            bool m_cullBoundsNeedsUpdate = false;
-            bool m_cullableNeedsRebuild = false;
-            bool m_needsInit = false;
-            bool m_objectSrgNeedsUpdate = true;
-            bool m_isAlwaysDynamic = false;
-            bool m_visible = true;
-            bool m_hasForwardPassIblSpecularMaterial = false;
-            bool m_needsSetRayTracingData = false;
-            bool m_hasRayTracingReflectionProbe = false;
+            struct Flags
+            {
+                bool m_cullBoundsNeedsUpdate : 1;
+                bool m_cullableNeedsRebuild : 1;
+                bool m_needsInit : 1;
+                bool m_objectSrgNeedsUpdate : 1;
+                bool m_isAlwaysDynamic : 1;
+                bool m_moved : 1;                               // True if the model's transformation was changed than the initial position
+                bool m_isDrawMotion : 1;                        // Whether draw to the motion vector
+                bool m_visible : 1;
+                bool m_hasForwardPassIblSpecularMaterial : 1;
+                bool m_needsSetRayTracingData : 1;
+                bool m_hasRayTracingReflectionProbe : 1;
+            } m_flags;
         };
 
         static constexpr size_t foo = sizeof(ModelDataInstance);
@@ -236,6 +244,7 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+            RHI::DrawListTag m_meshMotionDrawListTag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

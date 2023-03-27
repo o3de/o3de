@@ -6,6 +6,7 @@
  *
  */
 
+#include <Atom/RHI/RHISystemInterface.h>
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
@@ -36,7 +37,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Name/NameDictionary.h>
-
 
 namespace AZ
 {
@@ -115,6 +115,7 @@ namespace AZ
             }
 
             m_meshMovedFlag = GetParentScene()->GetViewTagBitRegistry().AcquireTag(MeshCommon::MeshMovedName);
+            m_meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->AcquireTag(MeshCommon::MotionDrawListTagName);
         }
 
         void MeshFeatureProcessor::Deactivate()
@@ -133,6 +134,7 @@ namespace AZ
             m_forceRebuildDrawPackets = false;
 
             GetParentScene()->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
+            RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->ReleaseTag(m_meshMotionDrawListTag);
         }
 
         TransformServiceFeatureProcessorInterface::ObjectId MeshFeatureProcessor::GetObjectId(const MeshHandle& meshHandle) const
@@ -167,22 +169,22 @@ namespace AZ
                             continue;   // model not loaded yet
                         }
 
-                        if (!meshDataIter->m_visible)
+                        if (!meshDataIter->m_flags.m_visible)
                         {
                             continue;
                         }
 
-                        if (meshDataIter->m_needsInit)
+                        if (meshDataIter->m_flags.m_needsInit)
                         {
                             meshDataIter->Init();
                         }
 
-                        if (meshDataIter->m_objectSrgNeedsUpdate)
+                        if (meshDataIter->m_flags.m_objectSrgNeedsUpdate)
                         {
                             meshDataIter->UpdateObjectSrg(m_reflectionProbeFeatureProcessor, m_transformService);
                         }
 
-                        if (meshDataIter->m_needsSetRayTracingData)
+                        if (meshDataIter->m_flags.m_needsSetRayTracingData)
                         {
                             meshDataIter->SetRayTracingData(m_rayTracingFeatureProcessor, m_transformService);
                         }
@@ -193,12 +195,12 @@ namespace AZ
                         // to check every one.
                         meshDataIter->UpdateDrawPackets(m_forceRebuildDrawPackets);
 
-                        if (meshDataIter->m_cullableNeedsRebuild)
+                        if (meshDataIter->m_flags.m_cullableNeedsRebuild)
                         {
                             meshDataIter->BuildCullable();
                         }
 
-                        if (meshDataIter->m_cullBoundsNeedsUpdate)
+                        if (meshDataIter->m_flags.m_cullBoundsNeedsUpdate)
                         {
                             meshDataIter->UpdateCullBounds(m_transformService);
                         }
@@ -254,7 +256,7 @@ namespace AZ
                     }
                     model.m_cullable.m_shaderOptionFlags = 0;
                     model.m_cullable.m_prevShaderOptionFlags = 0;
-                    model.m_cullableNeedsRebuild = true;
+                    model.m_flags.m_cullableNeedsRebuild = true;
                     model.BuildCullable();
                 }
             }
@@ -282,7 +284,7 @@ namespace AZ
                                 drawPacket.Update(*GetParentScene(), true);
                             }
                         }
-                        model.m_cullableNeedsRebuild = true;
+                        model.m_flags.m_cullableNeedsRebuild = true;
                         model.BuildCullable();
                     }
                 }
@@ -302,7 +304,7 @@ namespace AZ
             for (auto& model : m_modelData)
             {
                 model.m_cullable.m_prevShaderOptionFlags = model.m_cullable.m_shaderOptionFlags.exchange(0);
-                model.m_cullable.m_flags = model.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
+                model.m_cullable.m_flags = model.m_flags.m_isAlwaysDynamic ? m_meshMovedFlag.GetIndex() : 0;
             }
         }
 
@@ -322,7 +324,7 @@ namespace AZ
             meshDataHandle->m_rayTracingUuid = AZ::Uuid::CreateRandom();
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
-            meshDataHandle->m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
+            meshDataHandle->m_flags.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
 
             if (descriptor.m_excludeFromReflectionCubeMaps)
             {
@@ -399,7 +401,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                meshHandle->m_flags.m_objectSrgNeedsUpdate = true;
             }
         }
 
@@ -426,7 +428,7 @@ namespace AZ
                     meshHandle->m_customMaterials = materials;
                 }
 
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                meshHandle->m_flags.m_objectSrgNeedsUpdate = true;
             }
         }
 
@@ -448,9 +450,11 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 ModelDataInstance& modelData = *meshHandle;
-                modelData.m_cullBoundsNeedsUpdate = true;
-                modelData.m_objectSrgNeedsUpdate = true;
+                modelData.m_flags.m_cullBoundsNeedsUpdate = true;
+                modelData.m_flags.m_objectSrgNeedsUpdate = true;
                 modelData.m_cullable.m_flags = modelData.m_cullable.m_flags | m_meshMovedFlag.GetIndex();
+                // Only set m_moved flag if the model instance is initialized. 
+                modelData.m_flags.m_moved = (modelData.m_model && !modelData.m_flags.m_needsInit)?true:false;
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
@@ -468,8 +472,8 @@ namespace AZ
             {
                 ModelDataInstance& modelData = *meshHandle;
                 modelData.m_aabb = localAabb;
-                modelData.m_cullBoundsNeedsUpdate = true;
-                modelData.m_objectSrgNeedsUpdate = true;
+                modelData.m_flags.m_cullBoundsNeedsUpdate = true;
+                modelData.m_flags.m_objectSrgNeedsUpdate = true;
             }
         };
 
@@ -558,7 +562,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_isAlwaysDynamic = isAlwaysDynamic;
+                meshHandle->m_flags.m_isAlwaysDynamic = isAlwaysDynamic;
             }
         }
 
@@ -569,7 +573,7 @@ namespace AZ
                 AZ_Assert(false, "Invalid mesh handle");
                 return false;
             }
-            return meshHandle->m_isAlwaysDynamic;
+            return meshHandle->m_flags.m_isAlwaysDynamic;
         }
 
         void MeshFeatureProcessor::SetExcludeFromReflectionCubeMaps(const MeshHandle& meshHandle, bool excludeFromReflectionCubeMaps)
@@ -605,7 +609,7 @@ namespace AZ
                 if (rayTracingEnabled && !meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
                     // add to ray tracing
-                    meshHandle->m_needsSetRayTracingData = true;
+                    meshHandle->m_flags.m_needsSetRayTracingData = true;
                 }
                 else if (!rayTracingEnabled && meshHandle->m_descriptor.m_isRayTracingEnabled)
                 {
@@ -638,7 +642,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                return meshHandle->m_visible;
+                return meshHandle->m_flags.m_visible;
             }
             return false;
         }
@@ -657,7 +661,7 @@ namespace AZ
                     // now add if it's visible
                     if (visible)
                     {
-                        meshHandle->m_needsSetRayTracingData = true;
+                        meshHandle->m_flags.m_needsSetRayTracingData = true;
                     }
                 }
             }
@@ -668,7 +672,7 @@ namespace AZ
             if (meshHandle.IsValid())
             {
                 meshHandle->m_descriptor.m_useForwardPassIblSpecular = useForwardPassIblSpecular;
-                meshHandle->m_objectSrgNeedsUpdate = true;
+                meshHandle->m_flags.m_objectSrgNeedsUpdate = true;
 
                 if (meshHandle->m_model)
                 {
@@ -685,7 +689,7 @@ namespace AZ
         {
             if (meshHandle.IsValid())
             {
-                meshHandle->m_needsSetRayTracingData = true;
+                meshHandle->m_flags.m_needsSetRayTracingData = true;
             }
         }
 
@@ -716,16 +720,16 @@ namespace AZ
                 // we need to rebuild the Srg for any meshes that are using the forward pass IBL specular option
                 if (meshInstance.m_descriptor.m_useForwardPassIblSpecular)
                 {
-                    meshInstance.m_objectSrgNeedsUpdate = true;
+                    meshInstance.m_flags.m_objectSrgNeedsUpdate = true;
                 }
 
                 // update the raytracing reflection probe data if necessary
                 RayTracingFeatureProcessor::Mesh::ReflectionProbe reflectionProbe;
-                bool currentHasRayTracingReflectionProbe = meshInstance.m_hasRayTracingReflectionProbe;
+                bool currentHasRayTracingReflectionProbe = meshInstance.m_flags.m_hasRayTracingReflectionProbe;
                 meshInstance.SetRayTracingReflectionProbeData(m_transformService, m_reflectionProbeFeatureProcessor, reflectionProbe);
 
-                if (meshInstance.m_hasRayTracingReflectionProbe ||
-                    (currentHasRayTracingReflectionProbe != meshInstance.m_hasRayTracingReflectionProbe))
+                if (meshInstance.m_flags.m_hasRayTracingReflectionProbe ||
+                    (currentHasRayTracingReflectionProbe != meshInstance.m_flags.m_hasRayTracingReflectionProbe))
                 {
                     m_rayTracingFeatureProcessor->SetMeshReflectionProbe(meshInstance.m_rayTracingUuid, reflectionProbe);
                 }
@@ -802,7 +806,7 @@ namespace AZ
                 AZ_Error("ModelDataInstance::MeshLoader", false, "Invalid model asset Id.");
                 return;
             }
-            
+
             if (!m_modelAsset.IsReady())
             {
                 m_modelAsset.QueueLoad();
@@ -837,7 +841,7 @@ namespace AZ
                 AZ::Data::AssetId newId(AZ::Uuid::CreateRandom(), /*subId=*/0);
                 Data::Asset<RPI::ModelAsset> clonedAsset;
                 // Assume cloned models will involve some kind of geometry deformation
-                m_parent->m_isAlwaysDynamic = true;
+                m_parent->m_flags.m_isAlwaysDynamic = true;
                 if (AZ::RPI::ModelAssetCreator::Clone(modelAsset, clonedAsset, newId))
                 {
                     model = RPI::Model::FindOrCreate(clonedAsset);
@@ -917,6 +921,21 @@ namespace AZ
             }
         }
 
+        ModelDataInstance::ModelDataInstance()
+        {
+            m_flags.m_cullBoundsNeedsUpdate = false;
+            m_flags.m_cullableNeedsRebuild = false;
+            m_flags.m_needsInit = false;
+            m_flags.m_objectSrgNeedsUpdate = true;
+            m_flags.m_isAlwaysDynamic = false;
+            m_flags.m_moved = false;
+            m_flags.m_isDrawMotion = false;
+            m_flags.m_visible = true;
+            m_flags.m_hasForwardPassIblSpecularMaterial = false;
+            m_flags.m_needsSetRayTracingData = false;
+            m_flags.m_hasRayTracingReflectionProbe = false;
+        }
+
         void ModelDataInstance::DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor)
         {
             m_scene->GetCullingScene()->UnregisterCullable(m_cullable);
@@ -932,7 +951,8 @@ namespace AZ
         void ModelDataInstance::QueueInit(const Data::Instance<RPI::Model>& model)
         {
             m_model = model;
-            m_needsInit = true;
+            m_flags.m_needsInit = true;
+            m_flags.m_isDrawMotion = m_flags.m_isAlwaysDynamic;
             m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 
@@ -953,15 +973,15 @@ namespace AZ
                 objectIdIndex.AssertValid();
             }
 
-            if (m_visible && m_descriptor.m_isRayTracingEnabled)
+            if (m_flags.m_visible && m_descriptor.m_isRayTracingEnabled)
             {
-                m_needsSetRayTracingData = true;
+                m_flags.m_needsSetRayTracingData = true;
             }
 
-            m_cullableNeedsRebuild = true;
-            m_cullBoundsNeedsUpdate = true;
-            m_objectSrgNeedsUpdate = true;
-            m_needsInit = false;
+            m_flags.m_cullableNeedsRebuild = true;
+            m_flags.m_cullBoundsNeedsUpdate = true;
+            m_flags.m_objectSrgNeedsUpdate = true;
+            m_flags.m_needsInit = false;
         }
 
         void ModelDataInstance::BuildDrawPacketList(size_t modelLodIndex)
@@ -973,7 +993,9 @@ namespace AZ
             drawPacketListOut.clear();
             drawPacketListOut.reserve(meshCount);
 
-            m_hasForwardPassIblSpecularMaterial = false;
+            auto meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
+
+            m_flags.m_hasForwardPassIblSpecularMaterial = false;
 
             for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
             {
@@ -1034,7 +1056,7 @@ namespace AZ
                 bool materialRequiresForwardPassIblSpecular = MaterialRequiresForwardPassIblSpecular(material);
 
                 // track whether any materials in this mesh require ForwardPassIblSpecular, we need this information when the ObjectSrg is updated
-                m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
+                m_flags.m_hasForwardPassIblSpecularMaterial |= materialRequiresForwardPassIblSpecular;
 
                 // stencil bits
                 uint8_t stencilRef = m_descriptor.m_useForwardPassIblSpecular || materialRequiresForwardPassIblSpecular ? Render::StencilRefs::None : Render::StencilRefs::UseIBLSpecularPass;
@@ -1042,6 +1064,7 @@ namespace AZ
 
                 drawPacket.SetStencilRef(stencilRef);
                 drawPacket.SetSortKey(m_sortKey);
+                drawPacket.SetEnableDraw(meshMotionDrawListTag, m_flags.m_isDrawMotion);
                 drawPacket.Update(*m_scene, false);
                 drawPacketListOut.emplace_back(AZStd::move(drawPacket));
             }
@@ -1344,7 +1367,7 @@ namespace AZ
 
             // add the mesh
             rayTracingFeatureProcessor->AddMesh(m_rayTracingUuid, rayTracingMesh, subMeshes);
-            m_needsSetRayTracingData = false;
+            m_flags.m_needsSetRayTracingData = false;
         }
 
         void ModelDataInstance::SetIrradianceData(
@@ -1491,8 +1514,8 @@ namespace AZ
             ReflectionProbeHandleVector reflectionProbeHandles;
             reflectionProbeFeatureProcessor->FindReflectionProbes(aabbWS, reflectionProbeHandles);
 
-            m_hasRayTracingReflectionProbe = !reflectionProbeHandles.empty();
-            if (m_hasRayTracingReflectionProbe)
+            m_flags.m_hasRayTracingReflectionProbe = !reflectionProbeHandles.empty();
+            if (m_flags.m_hasRayTracingReflectionProbe)
             {
                 // take the last handle from the list, which will be the smallest (most influential) probe
                 ReflectionProbeHandle handle = reflectionProbeHandles.back();
@@ -1543,13 +1566,23 @@ namespace AZ
 
         void ModelDataInstance::UpdateDrawPackets(bool forceUpdate /*= false*/)
         {
+            bool enableDrawMotion = !m_flags.m_isDrawMotion && m_flags.m_moved;
+            RHI::DrawListTag meshMotionDrawListTag;
+            if (enableDrawMotion)
+            {
+                meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
+            }
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)
                 {
+                    if (enableDrawMotion)
+                    {
+                        drawPacket.SetEnableDraw(meshMotionDrawListTag, true);
+                    }
                     if (drawPacket.Update(*m_scene, forceUpdate))
                     {
-                        m_cullableNeedsRebuild = true;
+                        m_flags.m_cullableNeedsRebuild = true;
                     }
                 }
             }
@@ -1557,7 +1590,7 @@ namespace AZ
 
         void ModelDataInstance::BuildCullable()
         {
-            AZ_Assert(m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
+            AZ_Assert(m_flags.m_cullableNeedsRebuild, "This function only needs to be called if the cullable to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
             RPI::Cullable::CullData& cullData = m_cullable.m_cullData;
@@ -1625,13 +1658,13 @@ namespace AZ
             m_cullable.SetDebugName(AZ::Name(AZStd::string::format("%s - objectId: %u", m_model->GetModelAsset()->GetName().GetCStr(), m_objectId.GetIndex())));
 #endif
 
-            m_cullableNeedsRebuild = false;
-            m_cullBoundsNeedsUpdate = true;
+            m_flags.m_cullableNeedsRebuild = false;
+            m_flags.m_cullBoundsNeedsUpdate = true;
         }
 
         void ModelDataInstance::UpdateCullBounds(const TransformServiceFeatureProcessor* transformService)
         {
-            AZ_Assert(m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
+            AZ_Assert(m_flags.m_cullBoundsNeedsUpdate, "This function only needs to be called if the culling bounds need to be rebuilt");
             AZ_Assert(m_model, "The model has not finished loading yet");
 
             Transform localToWorld = transformService->GetTransformForId(m_objectId);
@@ -1653,14 +1686,14 @@ namespace AZ
             m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
-            m_cullBoundsNeedsUpdate = false;
+            m_flags.m_cullBoundsNeedsUpdate = false;
         }
 
         void ModelDataInstance::UpdateObjectSrg(ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor, TransformServiceFeatureProcessor* transformServiceFeatureProcessor)
         {
             for (auto& objectSrg : m_objectSrgList)
             {
-                if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_hasForwardPassIblSpecularMaterial))
+                if (reflectionProbeFeatureProcessor && (m_descriptor.m_useForwardPassIblSpecular || m_flags.m_hasForwardPassIblSpecularMaterial))
                 {
                     // retrieve probe constant indices
                     AZ::RHI::ShaderInputConstantIndex modelToWorldConstantIndex = objectSrg->FindShaderInputConstantIndex(Name("m_reflectionProbeData.m_modelToWorld"));
@@ -1723,7 +1756,7 @@ namespace AZ
             }
 
             // Set m_objectSrgNeedsUpdate to false if there are object SRGs in the list
-            m_objectSrgNeedsUpdate = m_objectSrgNeedsUpdate && (m_objectSrgList.size() == 0);
+            m_flags.m_objectSrgNeedsUpdate = m_flags.m_objectSrgNeedsUpdate && (m_objectSrgList.size() == 0);
         }
 
         bool ModelDataInstance::MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const
@@ -1759,7 +1792,7 @@ namespace AZ
 
         void ModelDataInstance::SetVisible(bool isVisible)
         {
-            m_visible = isVisible;
+            m_flags.m_visible = isVisible;
             m_cullable.m_isHidden = !isVisible;
         }
 
