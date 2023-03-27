@@ -4733,7 +4733,7 @@ namespace AssetProcessor
     void AssetProcessorManager::BeginCacheFileUpdate(const char* productPath)
     {
         // Scope the lock for just modifying the processing product info list.
-        // This will make allow other jobs finishing to lock this list for emitting their own messages.
+        // This will allow other jobs to lock this list for emitting their own messages.
         // This speeds up asset processing time, by not having jobs holding this longer than they need to.
         {        
             QMutexLocker locker(&m_processingJobMutex);
@@ -4747,7 +4747,7 @@ namespace AssetProcessor
     void AssetProcessorManager::EndCacheFileUpdate(const char* productPath, bool queueAgainForDeletion)
     {
         // Scope the lock for just modifying the processing product info list.
-        // This will make allow other jobs finishing to lock this list for emitting their own messages.
+        // This will allow other jobs to lock this list for emitting their own messages.
         // This speeds up asset processing time, by not having jobs holding this longer than they need to.
         {
             QMutexLocker locker(&m_processingJobMutex);
