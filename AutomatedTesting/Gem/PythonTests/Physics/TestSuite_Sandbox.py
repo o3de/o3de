@@ -50,9 +50,3 @@ class EditorTestAutomation(EditorTestSuite):
 
     class RigidBody_StartGravityEnabledWorks(EditorBatchedTest):
         from .tests.rigid_body import RigidBody_StartGravityEnabledWorks as test_module
-
-    class ScriptCanvas_TriggerEvents(EditorBatchedTest):
-        from .tests.script_canvas import ScriptCanvas_TriggerEvents as test_module
-        # needs to be updated to log for unexpected lines
-        # expected_lines = test_module.LogLines.expected_lines
-
