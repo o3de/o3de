@@ -64,6 +64,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -1816,7 +1817,10 @@ bool CCryEditApp::InitInstance()
     }
 
     // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
-    AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+    if (AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+    }
 
     CloseSplashScreen();
 
