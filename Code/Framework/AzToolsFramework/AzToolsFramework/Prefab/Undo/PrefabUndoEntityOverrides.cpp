@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
                     if (entityDomInTopTemplate)
                     {
-                        PrefabUndoUtils::AppendUpdateEntityPatch(
+                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
                             overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
                     else if (auto overrideType = m_prefabOverridePublicInterface->GetEntityOverrideType(entity->GetId());
@@ -102,7 +102,8 @@ namespace AzToolsFramework
                     {
                         // Override patches on the entity would be merged into the entity DOM value stored in the
                         // add-entity override patch.
-                        PrefabUndoUtils::AppendAddEntityPatch(overridePatches, entityDomAfterUpdate, entityPathFromTopInstance);
+                        PrefabUndoUtils::AppendUpdateValuePatch(
+                            overridePatches, entityDomAfterUpdate, entityPathFromTopInstance, PatchType::Add);
                     }
                     else
                     {
@@ -122,7 +123,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
+                    PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
                 }
             }
 

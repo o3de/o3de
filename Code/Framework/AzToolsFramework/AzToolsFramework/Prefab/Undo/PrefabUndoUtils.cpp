@@ -16,16 +16,6 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoUtils
         {
-            void AppendAddEntityPatch(
-                PrefabDom& patches,
-                const PrefabDomValue& newEntityDom,
-                const AZStd::string& newEntityAliasPath)
-            {
-                AZ_Assert(patches.IsArray(), "AppendAddEntityPatch - Provided patches should be an array object DOM value.");
-
-                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchType::Add);
-            }
-
             void AppendUpdateValuePatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValue,
@@ -70,20 +60,20 @@ namespace AzToolsFramework
                 patches.PushBack(removeTargetEntityPatch.Move(), patches.GetAllocator());
             }
 
-            void AppendUpdateEntityPatch(
+            void AppendUpdateValuePatchByComparison(
                 PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPath)
+                const PrefabDomValue& domValueBeforeUpdate,
+                const PrefabDomValue& domValueAfterUpdate,
+                const AZStd::string& pathToValue)
             {
-                AZ_Assert(patches.IsArray(), "AppendUpdateEntityPatch - Provided patches should be an array object DOM value.");
+                AZ_Assert(patches.IsArray(), "AppendUpdateValuePatchByComparison - Provided patches should be an array object DOM value.");
 
                 auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "AppendUpdateEntityPatch - Could not get InstanceToTemplateInterface.");
+                AZ_Assert(instanceToTemplateInterface, "AppendUpdateValuePatchByComparison - Could not get InstanceToTemplateInterface.");
 
                 PrefabDom newPatches(&(patches.GetAllocator()));
-                instanceToTemplateInterface->GeneratePatch(newPatches, entityDomBeforeUpdate, entityDomAfterUpdate);
-                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, entityAliasPath);
+                instanceToTemplateInterface->GeneratePatch(newPatches, domValueBeforeUpdate, domValueAfterUpdate);
+                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, pathToValue);
 
                 for (auto& newPatch : newPatches.GetArray())
                 {
@@ -91,29 +81,15 @@ namespace AzToolsFramework
                 }
             }
 
-            void GenerateUpdateEntityPatch(
-                PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPathForPatches)
+            void UpdateValueInInstanceDom(
+                PrefabDomReference instanceDom, const PrefabDomValue& domValue, const AZStd::string& pathToValue)
             {
-                auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "GenerateUpdateEntityPatch - Could not get InstanceToTemplateInterface.");
-
-                instanceToTemplateInterface->GeneratePatch(patches, entityDomBeforeUpdate, entityDomAfterUpdate);
-
-                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(patches, entityAliasPathForPatches);
-            }
-
-            void UpdateEntityInInstanceDom(
-                PrefabDomReference instanceDom, const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath)
-            {
-                if (!entityAliasPath.empty())
+                if (!pathToValue.empty())
                 {
-                    PrefabDomValue endStateCopy(entityDom, instanceDom->get().GetAllocator());
+                    PrefabDomValue endStateCopy(domValue, instanceDom->get().GetAllocator());
 
-                    PrefabDomPath entityPathInDom(entityAliasPath.c_str());
-                    entityPathInDom.Set(instanceDom->get(), endStateCopy.Move());
+                    PrefabDomPath domPathToValue(pathToValue.c_str());
+                    domPathToValue.Set(instanceDom->get(), endStateCopy.Move());
                 }
             }
 
@@ -125,6 +101,7 @@ namespace AzToolsFramework
                     domPathToRemove.Erase(instanceDom->get());
                 }
             }
+
         } // namespace PrefabUndoUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

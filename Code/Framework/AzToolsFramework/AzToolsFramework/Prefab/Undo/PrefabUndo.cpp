@@ -45,9 +45,6 @@ namespace AzToolsFramework
         {
             m_templateId = templateId;
 
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
-
             for (const AZ::Entity* entity : entityList)
             {
                 if (entity)
@@ -56,7 +53,7 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDom, *entity);
 
                     const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
-                    PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, entityDom, entityAliasPath);
+                    PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, entityDom, entityAliasPath, PatchType::Add);
                     PrefabUndoUtils::AppendRemovePatch(m_undoPatch, entityAliasPath);
                 }
             }
@@ -74,9 +71,6 @@ namespace AzToolsFramework
         {
             m_templateId = templateId;
 
-            m_redoPatch.SetArray();
-            m_undoPatch.SetArray();
-
             for (const auto& entityDomAndPath : entityDomAndPathList)
             {
                 const PrefabDomValue* entityDomValue = entityDomAndPath.first;
@@ -84,7 +78,7 @@ namespace AzToolsFramework
                 {
                     const AZStd::string& entityAliasPath = entityDomAndPath.second;
                     PrefabUndoUtils::AppendRemovePatch(m_redoPatch, entityAliasPath);
-                    PrefabUndoUtils::AppendAddEntityPatch(m_undoPatch, *entityDomValue, entityAliasPath);
+                    PrefabUndoUtils::AppendUpdateValuePatch(m_undoPatch, *entityDomValue, entityAliasPath, PatchType::Add);
                 }
             }
         }
@@ -119,8 +113,8 @@ namespace AzToolsFramework
 
             //generate undo/redo patches
             const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
-            PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch, initialState, endState, entityAliasPath);
-            PrefabUndoUtils::GenerateUpdateEntityPatch(m_undoPatch, endState, initialState, entityAliasPath);
+            PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_redoPatch, initialState, endState, entityAliasPath);
+            PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_undoPatch, endState, initialState, entityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             if (updateCache)
@@ -128,7 +122,7 @@ namespace AzToolsFramework
                 PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom, endState, entityAliasPath);
+                    PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom, endState, entityAliasPath);
                 }
             }
         }

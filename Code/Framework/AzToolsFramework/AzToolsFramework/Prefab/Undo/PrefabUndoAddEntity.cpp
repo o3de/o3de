@@ -63,9 +63,9 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    PrefabUndoUtils::GenerateUpdateEntityPatch(
+                    PrefabUndoUtils::AppendUpdateValuePatchByComparison(
                         m_redoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                    PrefabUndoUtils::GenerateUpdateEntityPatch(
+                    PrefabUndoUtils::AppendUpdateValuePatchByComparison(
                         m_undoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity, parentEntityAliasPath);
                 }
             }
@@ -85,9 +85,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        PrefabUndoUtils::GenerateUpdateEntityPatch(
+                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
                             m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                        PrefabUndoUtils::GenerateUpdateEntityPatch(
+                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
                             m_undoPatch, parentEntityDomAfterAddingEntity, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
                     }
                 }
@@ -95,16 +95,16 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
-            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
+            PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, newEntityDom, newEntityAliasPath, PatchType::Add);
             PrefabUndoUtils::AppendRemovePatch(m_undoPatch, newEntityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom,
                     parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom,
                     newEntityDom, newEntityAliasPath);
             }
         }

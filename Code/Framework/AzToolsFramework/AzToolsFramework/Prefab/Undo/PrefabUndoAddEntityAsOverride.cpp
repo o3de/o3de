@@ -74,7 +74,7 @@ namespace AzToolsFramework
                     "Could not load parent entity's DOM from the focused template's DOM. "
                     "Focused template id: '%llu'.", static_cast<AZ::u64>(focusedTemplateId));
 
-                PrefabUndoUtils::GenerateUpdateEntityPatch(m_redoPatch,
+                PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_redoPatch,
                     *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
             }
 
@@ -83,7 +83,7 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
-            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
+            PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch, PatchType::Add);
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
             PrefabUndoUpdateLink::Capture(m_redoPatch, linkId);
@@ -92,9 +92,9 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom,
                     parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateEntityInInstanceDom(cachedOwningInstanceDom,
+                PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom,
                     newEntityDom, newEntityAliasPath);
             }
         }
