@@ -235,6 +235,14 @@ namespace AzToolsFramework
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
 
+            AZStd::unique_ptr<Instance> CreatePrefab(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) override;
+
             PrefabDom& FindTemplateDom(TemplateId templateId) override;
 
             /**
@@ -270,7 +278,8 @@ namespace AzToolsFramework
             * @param shouldCreateLinks The flag indicating if links should be created between the templates of the instance
             *        and its nested instances.
             */
-            void CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
+            void CreatePrefab(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<Instance>& instance, bool shouldCreateLinks);
 

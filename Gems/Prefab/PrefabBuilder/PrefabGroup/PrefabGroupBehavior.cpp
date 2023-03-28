@@ -6,6 +6,7 @@
  *
  */
 
+#pragma optimize("", off)
 #include <PrefabGroup/PrefabGroupBehavior.h>
 #include <PrefabGroup/PrefabGroup.h>
 #include <PrefabGroup/ProceduralAssetHandler.h>
@@ -500,4 +501,5 @@ namespace AZ::SceneAPI::Behaviors
                 ->Attribute(AZ::Script::Attributes::Module, "prefab");
         }
     }
-}
+} // namespace AZ::SceneAPI::Behaviors
+#pragma optimize("", on)

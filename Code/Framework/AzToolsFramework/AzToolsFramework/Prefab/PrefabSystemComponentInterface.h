@@ -84,6 +84,14 @@ namespace AzToolsFramework
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
                 bool shouldCreateLinks = true) = 0;
+
+            virtual AZStd::unique_ptr<Instance> CreatePrefab(
+                const AZStd::map<EntityAlias, AZ::Entity*>& entities,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume,
+                AZ::IO::PathView filePath,
+                AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
+                InstanceOptionalReference parent = AZStd::nullopt,
+                bool shouldCreateLinks = true) = 0;
         };
         
     } // namespace Prefab

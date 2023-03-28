@@ -6,6 +6,7 @@
  *
  */
 
+#pragma optimize("", off)
 #include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
 #include <Atom/Feature/RenderCommon.h>
@@ -1032,6 +1033,11 @@ namespace AZ
                 m_modelAsset.QueueLoad();
             }
 
+            m_modelReloadedEventHandler = ModelReloadedEvent::Handler(
+                [this](Data::Asset<RPI::ModelAsset> modelAsset)
+                {
+                    this->OnModelReloaded(modelAsset);
+                });
             Data::AssetBus::Handler::BusConnect(modelAsset.GetId());
             AzFramework::AssetCatalogEventBus::Handler::BusConnect();
         }
@@ -1040,6 +1046,7 @@ namespace AZ
         {
             AzFramework::AssetCatalogEventBus::Handler::BusDisconnect();
             Data::AssetBus::Handler::BusDisconnect();
+            m_modelReloadedEventHandler.Disconnect();
         }
 
         //! AssetBus::Handler overrides...
@@ -1145,11 +1152,15 @@ namespace AZ
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
 
                 // If the asset was modified, reload it
-                AZ::SystemTickBus::QueueFunction(
+                /* AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
                     {
                         ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
+                    });*/
+                if (!m_modelReloadedEventHandler.IsConnected())
+                {
+                    ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                }
             }
         }
 
@@ -1160,13 +1171,31 @@ namespace AZ
                 Data::Asset<RPI::ModelAsset> modelAssetReference = m_modelAsset;
                 
                 // If the asset didn't exist in the catalog when it first attempted to load, we need to try loading it again
-                AZ::SystemTickBus::QueueFunction(
+                /* AZ::SystemTickBus::QueueFunction(
                     [=]() mutable
                     {
                         ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
-                    });
+                    });*/
+
+                if (!m_modelReloadedEventHandler.IsConnected())
+                {
+                    ModelReloaderSystemInterface::Get()->ReloadModel(modelAssetReference, m_modelReloadedEventHandler);
+                }
             }
         }
+        /*
+        void ModelDataInstance::MeshLoader::OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, [[maybe_unused]] const AZ::Data::AssetInfo& assetInfo)
+        {
+            if (assetId == m_modelAsset.GetId())
+            {
+                AZ::SystemTickBus::QueueFunction(
+                    [=]() mutable
+                    {
+                        m_modelReloadedEventHandler.Disconnect();
+                        ModelReloaderSystemInterface::Get()->RemoveReloader(assetId);
+                    });
+            }
+        }*/
 
         // ModelDataInstance...
         void ModelDataInstance::DeInit(MeshFeatureProcessor* meshFeatureProcessor)
@@ -2213,3 +2242,4 @@ namespace AZ
 
     } // namespace Render
 } // namespace AZ
+#pragma optimize("", on)
