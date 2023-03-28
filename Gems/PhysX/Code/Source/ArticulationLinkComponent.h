@@ -18,6 +18,7 @@
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/UserDataTypes.h>
 #include <Source/RigidBody.h>
+#include <Source/Articulation/ArticulationLinkConfiguration.h>
 
 namespace physx
 {
@@ -60,7 +61,7 @@ namespace PhysX
         AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
 
         ArticulationLinkComponent();
-        explicit ArticulationLinkComponent(AzPhysics::SceneHandle sceneHandle);
+        explicit ArticulationLinkComponent(ArticulationLinkConfiguration& config);
         ~ArticulationLinkComponent();
 
         static void Reflect(AZ::ReflectContext* context);
@@ -91,6 +92,7 @@ namespace PhysX
         physx::PxArticulationReducedCoordinate* m_articulation = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
         bool m_tempClosing = true;
+        ArticulationLinkConfiguration m_config;
 
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;

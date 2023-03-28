@@ -35,8 +35,8 @@ namespace PhysX
     const float EditorJointLimitLinearPairConfig::LinearLimitMax = 1000.0f;
     const float EditorJointLimitLinearPairConfig::LinearLimitMin = -1000.0f;
 
-    const float EditorJointConfig::s_breakageMax = 10000000.0f;
-    const float EditorJointConfig::s_breakageMin = 0.01f;
+    const float EditorJointConfig::BreakageMax = 10000000.0f;
+    const float EditorJointConfig::BreakageMin = 0.01f;
 
     void EditorJointLimitConfig::Reflect(AZ::ReflectContext* context)
     {
@@ -324,13 +324,13 @@ namespace PhysX
                     ->DataElement(0, &PhysX::EditorJointConfig::m_forceMax,
                         "Maximum Force", "Amount of force joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
-                    ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, BreakageMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, BreakageMin)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_torqueMax,
                         "Maximum Torque", "Amount of torque joint can withstand before breakage.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &EditorJointConfig::m_breakable)
-                    ->Attribute(AZ::Edit::Attributes::Max, s_breakageMax)
-                    ->Attribute(AZ::Edit::Attributes::Min, s_breakageMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, BreakageMax)
+                    ->Attribute(AZ::Edit::Attributes::Min, BreakageMin)
                     ;
             }
         }

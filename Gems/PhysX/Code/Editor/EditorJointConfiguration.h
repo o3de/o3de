@@ -112,8 +112,8 @@ namespace PhysX
     class EditorJointConfig
     {
     public:
-        static const float s_breakageMax;
-        static const float s_breakageMin;
+        static const float BreakageMax;
+        static const float BreakageMin;
 
         AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");

@@ -29,8 +29,10 @@ set(FILES
     Include/PhysX/CharacterGameplayBus.h
     Include/PhysX/Material/PhysXMaterial.h
     Include/PhysX/Material/PhysXMaterialConfiguration.h
+    Source/Articulation/ArticulationLinkConfiguration.h
+    Source/Articulation/ArticulationLinkConfiguration.cpp
     Source/ArticulationLinkComponent.cpp
-    Source/ArticulationLinkComponent.h    
+    Source/ArticulationLinkComponent.h
     Source/RigidBodyComponent.cpp
     Source/RigidBodyComponent.h
     Source/BaseColliderComponent.cpp
