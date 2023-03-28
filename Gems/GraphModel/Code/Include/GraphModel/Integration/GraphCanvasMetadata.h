@@ -58,7 +58,7 @@ namespace GraphModelIntegration
         EntitySaveDataContainerPtr m_sceneMetadata;
 
         //! Graph Canvas metadata that pertains to each node in our data model. For example,
-        //! the selected of each node.
+        //! the position of each node.
         NodeMetadataMap m_nodeMetadata;
     };
 
