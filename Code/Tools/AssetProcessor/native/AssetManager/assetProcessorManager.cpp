@@ -4732,8 +4732,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::BeginCacheFileUpdate(const char* productPath)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.insert(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {        
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.insert(productPath);
+        }
 
         AssetNotificationMessage message(productPath, AssetNotificationMessage::JobFileClaimed, AZ::Data::s_invalidAssetType, "");
         AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
@@ -4741,8 +4746,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::EndCacheFileUpdate(const char* productPath, bool queueAgainForDeletion)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.erase(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.erase(productPath);
+        }
         if (queueAgainForDeletion)
         {
             QMetaObject::invokeMethod(this, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, QString::fromUtf8(productPath)));

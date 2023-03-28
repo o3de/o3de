@@ -99,6 +99,9 @@ namespace ScriptCanvasBuilder
             }
         }
 
+        // Include the base node version in the hash, so when it changes, script canvas jobs are reprocessed.
+        AZStd::hash_combine(fingerprint, ScriptCanvas::Node::GetNodeVersion());
+
         AZ::SerializeContext* serializeContext{};
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         if (!serializeContext)

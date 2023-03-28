@@ -616,20 +616,11 @@ namespace AZ
 
             VkResult vkResult = static_cast<Device&>(GetDevice()).GetContext().BeginCommandBuffer(m_nativeCommandBuffer, &beginInfo);
             AssertSuccess(vkResult);
-            if (vkResult == VK_SUCCESS && !GetName().IsEmpty())
-            {
-                BeginDebugLabel(GetName().GetCStr());
-            }
         }
 
         void CommandList::EndCommandBuffer()
         {
             AZ_Assert(m_isUpdating, "Not in updating state");
-
-            if (!GetName().IsEmpty())
-            {
-                EndDebugLabel();
-            }
 
             m_state.m_framebuffer = nullptr;
             m_state.m_subpassIndex = 0;

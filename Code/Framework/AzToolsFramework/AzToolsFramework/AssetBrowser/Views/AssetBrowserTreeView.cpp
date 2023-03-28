@@ -366,6 +366,11 @@ namespace AzToolsFramework
                     curIndex = indexBelow(curIndex);
                 }
             }
+            else if (m_indexToSelectAfterUpdate.isValid())
+            {
+                selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
+                m_indexToSelectAfterUpdate = QModelIndex();
+            }
         }
 
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
@@ -639,6 +644,11 @@ namespace AzToolsFramework
                     }
                   }
                 });
+        }
+
+        void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
+        {
+            m_indexToSelectAfterUpdate = index;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
