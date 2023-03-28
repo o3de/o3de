@@ -170,17 +170,6 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Min, 1)
                     ->Attribute(AZ::Edit::Attributes::Max, 255)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation);
-                    
-                editContext->Class<EditorArticulationLinkConfiguration>("PhysX Articulation Configuration", "")
-                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "Articulation configuration")
-                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &EditorArticulationLinkConfiguration::m_angularLimits,
-                        "Mass",
-                        "The mass of the rigid body in kilograms. A value of 0 is treated as infinite. "
-                        "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.");
             }
         }
     }

@@ -39,8 +39,6 @@ namespace PhysX
                 ->Field("Centre of mass offset", &ArticulationLinkConfiguration::m_centerOfMassOffset)
                 ->Field("Maximum Angular Velocity", &ArticulationLinkConfiguration::m_maxAngularVelocity)
                 ->Field("Articulation Joint Type", &ArticulationLinkConfiguration::m_articulationJointType)
-                //->Field("Angular Limit", &ArticulationLinkConfiguration::m_angularLimit)
-                //->Field("Linear Limit", &ArticulationLinkConfiguration::m_linearLimit)
                 ->Field("Motor configuration", &ArticulationLinkConfiguration::m_motorConfiguration)
                 ->Field("Fix Joint Location", &ArticulationLinkConfiguration::m_fixJointLocation)
                 ->Field("Select Lead on Snap", &ArticulationLinkConfiguration::m_selectLeadOnSnap)
