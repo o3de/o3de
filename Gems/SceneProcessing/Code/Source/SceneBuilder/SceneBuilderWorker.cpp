@@ -441,7 +441,7 @@ namespace SceneBuilder
             AZStd::string folder;
             AZStd::string jsonName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
-            folder = AZStd::string::format("%s/%s.metadata.json", outputFolder.c_str(), jsonName.c_str());
+            folder = AZStd::string::format("%s/%s.abdata.json", outputFolder.c_str(), jsonName.c_str());
             rapidjson::StringBuffer s;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
             writer.StartObject();
