@@ -272,6 +272,14 @@ namespace AZ
                 //jobDescriptor.m_jobDependencyList.emplace_back(variantTreeJobDependency);
                 // ***************************************************************************
 
+                // If the *.shader file changes, all the variants need to be rebuilt.
+                AssetBuilderSDK::JobDependency shaderAssetJobDependency;
+                shaderAssetJobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
+                shaderAssetJobDependency.m_platformIdentifier = info.m_identifier;
+                shaderAssetJobDependency.m_sourceFile.m_sourceFileDependencyPath = shaderSourceFileFullPath;
+                shaderAssetJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
+                jobDescriptor.m_jobDependencyList.emplace_back(shaderAssetJobDependency);
+                
                 // Store the shader source file full path in the job, so we don't have to recalculate it again
                 // in ProcessJob().
                 jobDescriptor.m_jobParameters.emplace(ShaderSourceFilePathJobParam, shaderSourceFileFullPath);
