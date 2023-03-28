@@ -290,7 +290,6 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # running out of
     engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
     for i, gem_json_data in enumerate(all_gem_json_data):
-        logger.warning(f'{gem_json_data["path"]}')
         all_gem_json_data[i]['engine_gem'] = engine_path in gem_json_data['path'].parents
 
     return all_gem_json_data

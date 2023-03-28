@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/std/string/string.h>
-#include <AzCore/IO/Path/Path.h>
 #include <AzCore/Dependency/Dependency.h>
 #include <GemCatalog/GemModel.h>
 #include <GemCatalog/GemSortFilterProxyModel.h>
@@ -59,7 +58,38 @@ namespace O3DE::ProjectManager
         }
         QVariant gemVariant;
         gemVariant.setValue(gemInfo);
-        versionList.append(gemVariant);
+
+        // sanity check we aren't adding a gem with an existing path and version
+        int versionToReplaceIndex = -1;
+        for (int i = 0; i < versionList.size(); ++i)
+        {
+            const QVariant& existingGemVariant = versionList.at(i);
+            const GemInfo& existingGemInfo = existingGemVariant.value<GemInfo>();
+            if (existingGemInfo.m_path == gemInfo.m_path)
+            {
+                if (existingGemInfo.m_version == gemInfo.m_version)
+                {
+                    AZ_Info("ProjectManager", "Not adding GemInfo because a GemInfo with path (%s) and version (%s) already exists.",
+                        gemInfo.m_path.toUtf8().constData(),
+                        gemInfo.m_version.toUtf8().constData()
+                        );
+                    return;
+                }
+
+                // the path is the same but the version has changed, update the info
+                versionToReplaceIndex = i;
+                break;
+            }
+        }
+
+        if(versionToReplaceIndex != -1)
+        {
+            versionList.replace(versionToReplaceIndex, gemVariant);
+        }
+        else
+        {
+            versionList.append(gemVariant);
+        }
         item->setData(versionList, GemModel::RoleGemInfoVersions);
     }
 
@@ -154,7 +184,7 @@ namespace O3DE::ProjectManager
                     // make sure the gem item delegate displays the correct version info 
                     for (auto versionVariant : versionList)
                     {
-                        if (auto gemInfo = versionVariant.value<GemInfo>(); gemPath == gemInfo.m_path)
+                        if (const auto& gemInfo = versionVariant.value<GemInfo>(); gemPath == gemInfo.m_path)
                         {
                             QStandardItem* gemItem = item(modelIndex.row(), modelIndex.column());
                             AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
@@ -289,7 +319,6 @@ namespace O3DE::ProjectManager
             // if no version is provided, try to find the one that matches the current version
             if (version == variantVersion || (version.isEmpty() && gemVersion == variantVersion))
             {
-                // NOTE this gem info does not include any updates to m_isAdded or m_version
                 return versionVariant.value<GemInfo>();
             }
         }

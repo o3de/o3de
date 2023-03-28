@@ -755,7 +755,7 @@ namespace O3DE::ProjectManager
             return AZ::Failure(result.GetError().c_str());
         }
 
-        // This sort will sort by display name and then by version for all gems with matching names
+        // this sorts by gem name and version
         AZStd::sort(gems.begin(), gems.end());
         return AZ::Success(AZStd::move(gems));
     }

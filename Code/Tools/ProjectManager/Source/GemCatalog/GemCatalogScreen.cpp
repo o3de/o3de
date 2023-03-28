@@ -109,21 +109,20 @@ namespace O3DE::ProjectManager
         GemListHeaderWidget* catalogHeaderWidget = new GemListHeaderWidget(m_proxyModel);
         connect(catalogHeaderWidget, &GemListHeaderWidget::OnRefresh, this, &GemCatalogScreen::Refresh);
 
-        constexpr int GemImageHeaderWidth = GemItemDelegate::s_itemMargins.left() + GemPreviewImageWidth +
+        constexpr int previewWidth = GemItemDelegate::s_itemMargins.left() + GemPreviewImageWidth +
                                             AdjustableHeaderWidget::s_headerTextIndent;
-        constexpr int GemVersionHeaderWidth = GemItemDelegate::s_versionSize + GemItemDelegate::s_versionSizeSpacing;
-        constexpr int GemStatusHeaderWidth = GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing +
+        constexpr int versionWidth = GemItemDelegate::s_versionSize + GemItemDelegate::s_versionSizeSpacing;
+        constexpr int statusWidth = GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing +
                                              GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right();
-        constexpr int minHeaderSectionWidth = AZStd::min(GemImageHeaderWidth, AZStd::min(GemVersionHeaderWidth, GemStatusHeaderWidth));
+        constexpr int minHeaderSectionWidth = AZStd::min(previewWidth, AZStd::min(versionWidth, statusWidth));
 
-        //constexpr int itemLeftMargin = k
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Version"), tr("Status") },
-            QVector<int>{ GemImageHeaderWidth,
-                          GemItemDelegate::s_defaultSummaryStartX - GemImageHeaderWidth,
+            QVector<int>{ previewWidth,
+                          GemItemDelegate::s_defaultSummaryStartX - previewWidth,
                           0, // Section is set to stretch to fit
-                          GemVersionHeaderWidth,
-                          GemStatusHeaderWidth},
+                          versionWidth,
+                          statusWidth},
             minHeaderSectionWidth,
             QVector<QHeaderView::ResizeMode>{ QHeaderView::ResizeMode::Fixed,
                                               QHeaderView::ResizeMode::Interactive,
@@ -377,14 +376,16 @@ namespace O3DE::ProjectManager
             QString notification;
             if (gemStateChanged)
             {
-                QString version = GemModel::GetNewVersion(modelIndex);
-                if (version.isEmpty())
+                const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+                const QString& displayName = GemModel::GetDisplayName(modelIndex);
+                const QString& newVersion = GemModel::GetNewVersion(modelIndex);
+                if (gemInfo.m_isEngineGem || (gemInfo.m_version.isEmpty() && newVersion.isEmpty()))
                 {
-                    notification = GemModel::GetDisplayName(modelIndex);
+                    notification = displayName;
                 } 
                 else
                 {
-                    notification = QString("%1 %2").arg(GemModel::GetDisplayName(modelIndex), version);
+                    notification = QString("%1 %2").arg(displayName, newVersion.isEmpty() ? gemInfo.m_version : newVersion);
                 }
 
                 if (numChangedDependencies > 0)
