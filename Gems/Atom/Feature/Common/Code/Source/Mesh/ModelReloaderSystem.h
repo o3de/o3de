@@ -32,8 +32,6 @@ namespace AZ
             void RemoveReloader(const Data::AssetId& assetId) override;
 
         private:
-            
-
             // Keep track of all the pending reloads so there are no duplicates
             AZStd::unordered_map<Data::AssetId, ModelReloader*> m_pendingReloads;
             AZStd::mutex m_pendingReloadMutex;
