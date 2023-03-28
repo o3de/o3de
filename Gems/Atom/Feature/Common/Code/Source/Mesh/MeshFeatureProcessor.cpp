@@ -192,7 +192,6 @@ namespace AZ
             CheckForInstancingCVarChange();
 
             AZStd::vector<Job*> initJobQueue = CreateInitJobQueue();
-            AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
             AZStd::vector<Job*> updateCullingJobQueue = CreateUpdateCullingJobQueue();
 
             if (!r_meshInstancingEnabled)
@@ -204,6 +203,8 @@ namespace AZ
             }
             else
             {
+                AZStd::vector<Job*> perInstanceGroupJobQueue = CreatePerInstanceGroupJobQueue();
+
                 ExecuteSimulateJobQueue(initJobQueue, parentJob);
                 // Per-InstanceGroup work must be done after the Init jobs are complete, because the init jobs will determine which instance
                 // group each mesh belongs to and populate those instance groups
@@ -653,8 +654,31 @@ namespace AZ
                 modelData.m_flags.m_cullBoundsNeedsUpdate = true;
                 modelData.m_flags.m_objectSrgNeedsUpdate = true;
                 modelData.m_cullable.m_flags = modelData.m_cullable.m_flags | m_meshMovedFlag.GetIndex();
-                // Only set m_moved flag if the model instance is initialized. 
-                modelData.m_flags.m_moved = (modelData.m_model && !modelData.m_flags.m_needsInit)?true:false;
+
+                // Only set m_dynamic flag if the model instance is initialized.
+                if (!modelData.m_flags.m_dynamic)
+                {
+                    modelData.m_flags.m_dynamic = (modelData.m_model && !modelData.m_flags.m_needsInit)?true:false;
+
+                    // Enable draw motion for all the DrawPacket referenced by this model
+                    if (r_meshInstancingEnabled && modelData.m_flags.m_dynamic)
+                    {
+                        for (size_t lodIndex = 0; lodIndex < modelData.m_instanceGroupHandlesByLod.size(); ++lodIndex)
+                        {
+                            ModelDataInstance::InstanceGroupHandleList& instanceGroupHandles = modelData.m_instanceGroupHandlesByLod[lodIndex];
+                            for (size_t meshIndex = 0; meshIndex < instanceGroupHandles.size(); ++meshIndex)
+                            {
+                                AZStd::scoped_lock<AZStd::mutex> scopedLock(instanceGroupHandles[meshIndex]->m_eventLock);
+                                MeshInstanceGroupData& instanceGroupData = m_meshInstanceManager[instanceGroupHandles[meshIndex]];
+                                if (!instanceGroupData.m_isDrawMotion)
+                                {
+                                    instanceGroupData.m_isDrawMotion = true;
+                                    instanceGroupData.m_drawPacket.SetEnableDraw(m_meshMotionDrawListTag, true);
+                                }
+                            }
+                        }
+                    }
+                }
 
                 m_transformService->SetTransformForId(meshHandle->m_objectId, transform, nonUniformScale);
 
@@ -1180,13 +1204,15 @@ namespace AZ
             m_flags.m_needsInit = false;
             m_flags.m_objectSrgNeedsUpdate = true;
             m_flags.m_isAlwaysDynamic = false;
-            m_flags.m_moved = false;
+            m_flags.m_dynamic = false;
             m_flags.m_isDrawMotion = false;
             m_flags.m_visible = true;
+            m_flags.m_useForwardPassIblSpecular = false;
             m_flags.m_hasForwardPassIblSpecularMaterial = false;
             m_flags.m_needsSetRayTracingData = false;
             m_flags.m_hasRayTracingReflectionProbe = false;
         }
+
         void ModelDataInstance::DeInit(MeshFeatureProcessor* meshFeatureProcessor)
         {
             RayTracingFeatureProcessor* rayTracingFeatureProcessor = meshFeatureProcessor->GetRayTracingFeatureProcessor();
@@ -1440,9 +1466,23 @@ namespace AZ
                     {
                         MeshInstanceGroupData& instanceGroupData = meshInstanceManager[instanceGroupInsertResult.m_handle];
                         instanceGroupData.m_drawPacket = drawPacket;
+                        instanceGroupData.m_isDrawMotion = m_flags.m_isDrawMotion;
 
                         // We're going to need an interval for the root constant data that we update every frame for each draw item, so cache that here
                         CacheRootConstantInterval(instanceGroupData);
+                    }
+                }
+
+                // For mesh instancing only
+                // If this model needs to draw motion, enable draw motion vector for the DrawPacket.
+                // This means any mesh instances which are using this draw packet would draw motion vector too. This is fine, just not optimized. 
+                if (r_meshInstancingEnabled && m_flags.m_isDrawMotion)
+                {
+                    MeshInstanceGroupData& instanceGroupData = meshInstanceManager[instanceGroupInsertResult.m_handle];
+                    if (!instanceGroupData.m_isDrawMotion)
+                    {
+                        instanceGroupData.m_isDrawMotion = true;
+                        instanceGroupData.m_drawPacket.SetEnableDraw(meshMotionDrawListTag, true);
                     }
                 }
             }
@@ -1968,12 +2008,14 @@ namespace AZ
         {
             AZ_Assert(!r_meshInstancingEnabled, "If mesh instancing is enabled, the draw packet update should be going through the MeshInstanceManager.");
 
-            bool enableDrawMotion = !m_flags.m_isDrawMotion && m_flags.m_moved;
+            // Only enable draw motion if model is dynamic and draw motion was disabled
+            bool enableDrawMotion = !m_flags.m_isDrawMotion && m_flags.m_dynamic;
             RHI::DrawListTag meshMotionDrawListTag;
             if (enableDrawMotion)
             {
                 meshMotionDrawListTag = AZ::RHI::RHISystemInterface::Get()->GetDrawListTagRegistry()->FindTag(MeshCommon::MotionDrawListTagName);
             }
+
             for (auto& drawPacketList : m_drawPacketListsByLod)
             {
                 for (auto& drawPacket : drawPacketList)

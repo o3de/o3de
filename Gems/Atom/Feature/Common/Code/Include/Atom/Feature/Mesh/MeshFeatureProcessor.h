@@ -148,7 +148,7 @@ namespace AZ
                 bool m_needsInit : 1;
                 bool m_objectSrgNeedsUpdate : 1;
                 bool m_isAlwaysDynamic : 1;
-                bool m_moved : 1;                               // True if the model's transformation was changed than the initial position
+                bool m_dynamic : 1;                             // True if the model's transformation was changed than the initial position
                 bool m_isDrawMotion : 1;                        // Whether draw to the motion vector
                 bool m_visible : 1;
                 bool m_useForwardPassIblSpecular : 1;
