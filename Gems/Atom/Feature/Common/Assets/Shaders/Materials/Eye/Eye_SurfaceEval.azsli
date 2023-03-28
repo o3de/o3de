@@ -24,7 +24,9 @@ Surface EvaluateSurface_Eye(
     float3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     float3 localPosition,
-    bool isFrontFace)
+    bool isFrontFace,
+    float4x4 worldMatrix,
+    float3x3 worldMatrixIT)
 {
     Surface surface;
     surface.position = positionWS;
@@ -64,7 +66,6 @@ Surface EvaluateSurface_Eye(
     // Get UV offset due to refraction (based on http://www.iryoku.com/stare-into-the-future)
     
     // Gaze direction corresponds to the front vector (in WS)
-    float4x4 worldMatrix = ObjectSrg::GetWorldMatrix(); 
     float3 gazeDirWS = normalize(mul(worldMatrix, float4(0,1,0,0)).xyz);
 
     // Position direction corresponds to the vector from the object's center to the point in WS (in order to support refraction in all orientations)
@@ -86,7 +87,7 @@ Surface EvaluateSurface_Eye(
     float3 refractedRay = refractedRayLength * refractedDir;
 
     // Convert ray to object local space and fetch XZ coordinates (which map to -XY in texture space)
-    float2 refractionUVOffset = -mul(refractedRay, ObjectSrg::GetWorldMatrixInverseTranspose()).xz;
+    float2 refractionUVOffset = -mul(refractedRay, worldMatrixIT).xz;
 
     // Apply offset to the current UVs
     for (int uvIdx = 0; uvIdx < UvSetCount; uvIdx++)
@@ -158,5 +159,7 @@ Surface EvaluateSurface_Eye(VsOutput IN, PixelGeometryData geoData)
         geoData.bitangents,
         geoData.uvs,
         geoData.localPosition,
-        geoData.isFrontFace);
+        geoData.isFrontFace,
+        geoData.objectToWorld,
+        geoData.objectToWorldIT);
 }

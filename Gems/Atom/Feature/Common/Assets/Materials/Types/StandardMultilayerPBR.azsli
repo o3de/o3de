@@ -6,6 +6,8 @@
  *
  */
     
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 
@@ -21,6 +23,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
 #if MATERIALPIPELINE_SHADER_HAS_PIXEL_STAGE || MATERIALPIPELINE_SHADER_HAS_GEOMETRIC_PIXEL_STAGE
 
     #define VsInput VsInput_StandardMultilayerPBR
+    #define VsSystemValues VsSystemValues_StandardMultilayerPBR
     #define VsOutput VsOutput_StandardMultilayerPBR
     #define EvaluateVertexGeometry EvaluateVertexGeometry_StandardMultilayerPBR
     #define PixelGeometryData PixelGeometryData_StandardMultilayerPBR
@@ -47,6 +50,11 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float4 m_optional_blendMask : COLOR0;
     };
 
+    struct VsSystemValues_StandardMultilayerPBR
+    {
+        uint m_instanceId;
+    };
+
     struct VsOutput_StandardMultilayerPBR
     {
         // TODO: If we can make the shader builder understand class inheritance for reflection data, then
@@ -59,6 +67,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uvs[UvSetCount] : UV1;
 
         float3 m_blendMask : UV7;
+        uint m_instanceId : SV_InstanceID;
     };
     
     #include <Atom/Feature/Common/Assets/Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli>
@@ -70,9 +79,10 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float2 uv0,
         float2 uv1,
         float3 vertexBlendMask,
+        uint instanceId,
         bool useVertexBlendMask)
     {
-        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1);
+        VsOutput output = EvaluateVertexGeometry_BasePBR(position, normal, tangent, uv0, uv1, instanceId);
 
         if(useVertexBlendMask)
         {
@@ -86,7 +96,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         return output;
     }
 
-    VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN)
+    VsOutput EvaluateVertexGeometry_StandardMultilayerPBR(VsInput IN, VsSystemValues SV)
     {
         return EvaluateVertexGeometry_StandardMultilayerPBR(
             IN.position,
@@ -95,6 +105,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             IN.uv0,
             IN.uv1,
             IN.m_optional_blendMask.rgb,
+            SV.m_instanceId,
             o_blendMask_isBound
             );
     }
@@ -124,6 +135,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         float3 bitangentWS,
         float2 uvs[UvSetCount],
         bool isFrontFace,
+        float4x4 objectToWorld,
         float3 vertexBlendMask)
     {
         PixelGeometryData geoData = EvaluatePixelGeometry_BasePBR(positionWS, normalWS, tangentWS, bitangentWS, uvs, isFrontFace);
@@ -134,7 +146,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
         if(ShouldHandleParallax())
         {
             MultilayerSetPixelDepth(vertexBlendMask, geoData.positionWS, geoData.vertexNormal, geoData.tangents, geoData.bitangents,
-                geoData.uvs, isFrontFace, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
+                geoData.uvs, isFrontFace, objectToWorld, positionSV.z, positionSV.w, geoData.isDisplacementClipped);
         }
 
         return geoData;
@@ -142,8 +154,8 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     
     PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, bool isFrontFace)
     {
-        float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-        float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+        float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+        float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
         float3 normalWS, tangentWS, bitangentWS;
         ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
@@ -156,6 +168,7 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
             bitangentWS,
             IN.uvs,
             isFrontFace,
+            objectToWorld,
             IN.m_blendMask);
     }
     

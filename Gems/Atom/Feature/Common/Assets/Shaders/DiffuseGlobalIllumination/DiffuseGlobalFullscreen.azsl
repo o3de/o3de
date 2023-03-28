@@ -22,8 +22,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     Texture2DMS<float>  m_depth;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 // Vertex Shader
 VSOutput MainVS(VSInput input)
 {

@@ -22,10 +22,11 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 normal,
     float4 tangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
-    const float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    const float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    const float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
+    const float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(instanceId);
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
     const float3 bitangent = cross(normal, (float3)tangent);
 
@@ -58,12 +59,13 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
         IN.normal,
         IN.tangent,
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.m_instanceId);
 }

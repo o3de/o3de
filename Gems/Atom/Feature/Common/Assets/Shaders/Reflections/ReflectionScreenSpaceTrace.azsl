@@ -50,7 +50,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "ReflectionCommon.azsli"
 #include "ReflectionScreenSpaceTrace.azsli"
 

@@ -76,8 +76,8 @@ PixelGeometryData EvaluatePixelGeometry_Eye(
 
 PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
@@ -85,7 +85,7 @@ PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
     // Bitangent is temporarily added back to fix the eye material screenshot test.
     bitangentWS = normalize(mul(objectToWorld, float4(IN.bitangent, 0.0)).xyz);
 
-    return EvaluatePixelGeometry_Eye(
+    PixelGeometryData geoData = EvaluatePixelGeometry_Eye(
         IN.worldPosition,
         normalWS,
         tangentWS,
@@ -93,4 +93,8 @@ PixelGeometryData EvaluatePixelGeometry_Eye(VsOutput IN, bool isFrontFace)
         IN.uvs,
         IN.localPosition,
         isFrontFace);
+
+    geoData.objectToWorld = objectToWorld;
+    geoData.objectToWorldIT = objectToWorldIT;
+    return geoData;
 }

@@ -14,11 +14,11 @@
 
 #include <Atom/RPI/TangentSpace.azsli>
 
-VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN)
+VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(SV.m_instanceId);
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
     output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
     

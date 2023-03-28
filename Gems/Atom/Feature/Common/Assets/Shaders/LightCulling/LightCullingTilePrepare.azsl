@@ -17,8 +17,8 @@
 #include <Atom/RPI/Math.azsli>
 
 // We are using the shader variant system to deal with different MSAA modes
-// The shader variant system needs a fallback, using DefaultDrawSrg for this.
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+// The shader variant system needs a fallback, using UnusedFallbackDrawSrg for this.
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
 #include <Atom/Features/LightCulling/LightCullingShared.azsli>
 
 

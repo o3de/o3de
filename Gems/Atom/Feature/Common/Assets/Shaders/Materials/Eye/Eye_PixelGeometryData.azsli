@@ -28,5 +28,7 @@ class PixelGeometryData_Eye
     bool isFrontFace;
 
     // Eye
+    float4x4 objectToWorld;
+    float3x3 objectToWorldIT;
     float3 localPosition;
 };

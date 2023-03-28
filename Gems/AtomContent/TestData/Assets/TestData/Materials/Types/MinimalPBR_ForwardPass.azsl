@@ -8,7 +8,9 @@
 
 #define FORCE_OPAQUE 1
 
+#include <scenesrg.srgi>
 #include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
@@ -39,13 +41,14 @@ struct VSOutput
     float3 m_normal: NORMAL;
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
+    uint m_instanceId : SV_InstanceID;
 };
 
-VSOutput MinimalPBR_MainPassVS(VSInput IN)
+VSOutput MinimalPBR_MainPassVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
- 
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_instanceId = instanceId;
+    float3 worldPosition = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
  
     OUT.m_worldPosition = worldPosition;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
@@ -57,8 +60,8 @@ VSOutput MinimalPBR_MainPassVS(VSInput IN)
 
 ForwardPassOutput MinimalPBR_MainPassPS(VSOutput IN)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);

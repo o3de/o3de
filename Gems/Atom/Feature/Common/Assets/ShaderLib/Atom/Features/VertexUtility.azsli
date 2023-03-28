@@ -8,13 +8,12 @@
 
 #pragma once
 
-#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <viewsrg.srgi>
 
 // Helper functions for doing common transformations.
-float3 LocalSpaceToWorldSpace(float3 position)
+float3 LocalSpaceToWorldSpace(float3 position, uint instanceId)
 {
-    return mul(ObjectSrg::GetWorldMatrix(), float4(position, 1.0)).xyz;
+    return mul(DrawSrg::GetWorldMatrix(instanceId), float4(position, 1.0)).xyz;
 }
 
 float4 WorldSpaceToClipSpace(float3 position)

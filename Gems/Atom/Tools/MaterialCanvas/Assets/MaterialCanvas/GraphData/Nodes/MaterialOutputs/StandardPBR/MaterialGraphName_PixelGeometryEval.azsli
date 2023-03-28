@@ -25,8 +25,8 @@
 
 PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(inout VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
@@ -53,6 +53,7 @@ PixelGeometryData EvaluatePixelGeometry_MaterialGraphName(inout VsOutput IN, boo
             geoData.bitangents,
             geoData.uvs,
             isFrontFace,
+            objectToWorld,
             IN.position.z,
             IN.position.w,
             geoData.isDisplacementClipped);
