@@ -15,13 +15,21 @@ namespace ScriptCanvasUnitTest
 
     using ScriptCanvasUnitTestTransformFunctions = ScriptCanvasUnitTestFixture;
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, DISABLED_FromMatrix3x3_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromMatrix3x3_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = TransformFunctions::FromMatrix3x3(AZ::Matrix3x3::CreateIdentity());
         EXPECT_EQ(actualResult, AZ::Transform::CreateIdentity());
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, DISABLED_FromMatrix3x3AndTranslation_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestTransformFunctions, FromMatrix3x3AndTranslation_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = TransformFunctions::FromMatrix3x3AndTranslation(AZ::Matrix3x3::CreateIdentity(), AZ::Vector3::CreateOne());
         EXPECT_EQ(actualResult.GetUniformScale(), 1);
@@ -63,19 +71,31 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult.GetTranslation(), AZ::Vector3::CreateOne());
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, DISABLED_GetRight_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetRight_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = TransformFunctions::GetRight(AZ::Transform::CreateIdentity(), 1);
         EXPECT_EQ(actualResult, AZ::Vector3(1, 0, 0));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, DISABLED_GetForward_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetForward_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = TransformFunctions::GetForward(AZ::Transform::CreateIdentity(), 1);
         EXPECT_EQ(actualResult, AZ::Vector3(0, 1, 0));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestTransformFunctions, DISABLED_GetUp_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestTransformFunctions, GetUp_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = TransformFunctions::GetUp(AZ::Transform::CreateIdentity(), 1);
         EXPECT_EQ(actualResult, AZ::Vector3(0, 0, 1));

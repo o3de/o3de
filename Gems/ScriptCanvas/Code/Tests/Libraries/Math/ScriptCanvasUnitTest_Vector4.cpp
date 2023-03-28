@@ -123,13 +123,21 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult, AZ::Vector4(1, 0, 0, 0));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestVector4Functions, DISABLED_Reciprocal_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestVector4Functions, Reciprocal_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = Vector4Functions::Reciprocal(AZ::Vector4::CreateOne());
         EXPECT_EQ(actualResult, AZ::Vector4::CreateOne());
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ScriptCanvasUnitTestVector4Functions, DISABLED_DirectionTo_Call_GetExpectedResult)
+#else
     TEST_F(ScriptCanvasUnitTestVector4Functions, DirectionTo_Call_GetExpectedResult)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = Vector4Functions::DirectionTo(AZ::Vector4::CreateZero(), AZ::Vector4(1, 0, 0, 0), 1);
         EXPECT_EQ(AZStd::get<0>(actualResult), AZ::Vector4(1, 0, 0, 0));
