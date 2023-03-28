@@ -130,7 +130,7 @@ namespace Compression
         //! @return true if the unregistration is successful
         virtual bool UnregisterCompressionInterface(CompressionAlgorithmId compressionAlgorithmId) = 0;
 
-        //! Queries the compression interface with the compression algorithmd Id
+        //! Queries the compression interface with the compression algorithm Id
         //! @param compressionAlgorithmId unique Id of compression interface to query
         //! @return pointer to the compression interface or nullptr if not found
         [[nodiscard]] virtual ICompressionInterface* FindCompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;

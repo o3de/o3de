@@ -8,10 +8,8 @@
 
 #include <AzCore/UnitTest/TestTypes.h>
 
-#include <CompressionLZ4/CompressionLZ4API.h>
+#include <Compression/CompressionLZ4API.h>
 #include <Clients/DecompressorLZ4Impl.h>
-
-AZ_UNIT_TEST_HOOK(DEFAULT_UNIT_TEST_ENV);
 
 namespace CompressionLZ4Test
 {

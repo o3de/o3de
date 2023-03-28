@@ -8,11 +8,13 @@
 
 #pragma once
 
+#include <Compression/CompressionTypeIds.h>
+
 namespace Compression
 {
-    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionOptions, "CompressionOptions", "{037B2A25-E195-4C5D-B402-6108CE978280}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionOptions, "CompressionOptions", CompressionOptionsTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(CompressionOptions);
-    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionRegistrarInterface, "CompressionRegistrarInterface",  "{92251FE8-9D19-4A23-9A2B-F91D99D9491B}");
+    AZ_TYPE_INFO_WITH_NAME_IMPL_INLINE(CompressionRegistrarInterface, "CompressionRegistrarInterface", CompressionRegistrarInterfaceTypeId);
     AZ_RTTI_NO_TYPE_INFO_IMPL_INLINE(CompressionRegistrarInterface);
 
     inline CompressionOptions::~CompressionOptions() = default;

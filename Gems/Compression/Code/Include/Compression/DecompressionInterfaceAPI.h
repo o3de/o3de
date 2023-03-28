@@ -128,9 +128,9 @@ namespace Compression
         //! @return true if the unregistration is successful
         virtual bool UnregisterDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) = 0;
 
-        //! Queries the decompression interface with the decompression algorithmd Id
+        //! Queries the decompression interface with the decompression algorithm Id
         //! @param compressionAlgorithmId unique Id of decompression interface to query
-        //! @return pointer to the decompression tnterface or nullptr if not found
+        //! @return pointer to the decompression interface or nullptr if not found
         [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;
 
 
@@ -144,5 +144,5 @@ namespace Compression
 
 } // namespace Compression
 
-// Provides implemenation of the DecompressionResultData struct
+// Provides implementation of the DecompressionResultData struct
 #include "DecompressionInterfaceAPI.inl"

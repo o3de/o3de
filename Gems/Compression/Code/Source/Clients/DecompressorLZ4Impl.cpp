@@ -8,7 +8,7 @@
 
 #include "DecompressorLZ4Impl.h"
 
-#include <CompressionLZ4/CompressionLZ4API.h>
+#include <Compression/CompressionLZ4API.h>
 
 #include <lz4.h>
 

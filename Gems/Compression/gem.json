@@ -20,6 +20,5 @@
     "dependencies": [],
     "restricted": "Compression",
     "external_subdirectories": [
-        "CompressionLZ4"
     ]
 }
