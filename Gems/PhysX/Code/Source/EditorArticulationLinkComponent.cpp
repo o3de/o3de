@@ -22,32 +22,11 @@ namespace PhysX
         const float LocalRotationMin = -360.0f;
     }
 
-    bool EditorArticulationLinkConfiguration::IsRootArticulation() const
-    {
-        if (m_component)
-        {
-            return m_component->IsRootArticulation();
-        }
-        return false;
-    }
-
-    bool EditorArticulationLinkConfiguration::IsNotRootArticulation() const
-    {
-        return !IsRootArticulation();
-    }
-
-    void EditorArticulationLinkConfiguration::SetArticulationComponent(const EditorArticulationLinkComponent* component)
-    {
-        m_component = component;
-    }
-
     void EditorArticulationLinkConfiguration::Reflect(AZ::ReflectContext* context)
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<EditorArticulationLinkConfiguration, ArticulationLinkConfiguration>()
-                ->Version(2)
-                ->Field("Linear Limits", &EditorArticulationLinkConfiguration::m_angularLimits);
+            serializeContext->Class<EditorArticulationLinkConfiguration, ArticulationLinkConfiguration>()->Version(2);
 
             if (auto* editContext = serializeContext->GetEditContext())
             {
@@ -55,6 +34,23 @@ namespace PhysX
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "Articulation configuration")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->UIElement(AZ::Edit::UIHandlers::Label, "<b>Root Link</b>")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_isFixedBase,
+                        "Fixed Base",
+                        "When active, the root articulation is fixed.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Rigid Body configuration")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_gravityEnabled,
+                        "Gravity enabled",
+                        "When active, global gravity affects this rigid body.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_mass,
@@ -63,33 +59,6 @@ namespace PhysX
                         "The trajectory of infinite mass bodies cannot be affected by any collisions or forces other than gravity.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetMassUnit())
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_isFixedBase,
-                        "Fixed Base",
-                        "When active, the root articulation is fixed.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_gravityEnabled,
-                        "Gravity enabled",
-                        "When active, global gravity affects this rigid body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation)
-                    ->DataElement(
-                        0,
-                        &PhysX::ArticulationLinkConfiguration::m_localPosition,
-                        "Local Position",
-                        "Local Position of joint, relative to its entity.")
-                    ->DataElement(
-                        0,
-                        &PhysX::ArticulationLinkConfiguration::m_localRotation,
-                        "Local Rotation",
-                        "Local Rotation of joint, relative to its entity.")
-                    ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
-                    ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
-
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Rigid Body configuration")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_centerOfMassOffset,
@@ -115,13 +84,13 @@ namespace PhysX
                         "The rigid body can go to sleep (settle) when kinetic energy per unit mass is persistently below this value.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetSleepThresholdUnit())
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_startAsleep,
                         "Start asleep",
                         "When active, the rigid body will be asleep when spawned, and wake when the body is disturbed.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_maxAngularVelocity,
@@ -130,8 +99,37 @@ namespace PhysX
                         "This prevents rigid bodies from rotating at unrealistic velocities after collisions.")
                     ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Suffix, " " + Physics::NameConstants::GetAngularVelocityUnit())
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_solverPositionIterations,
+                        "Solver Position Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationLinkConfiguration::m_solverVelocityIterations,
+                        "Solver Velocity Iterations",
+                        "Higher values can improve stability at the cost of performance.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 1)
+                    ->Attribute(AZ::Edit::Attributes::Max, 255)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Joint configuration")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_localPosition,
+                        "Local Position",
+                        "Local Position of joint, relative to its entity.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
+                    ->DataElement(
+                        0,
+                        &PhysX::ArticulationLinkConfiguration::m_localRotation,
+                        "Local Rotation",
+                        "Local Rotation of joint, relative to its entity.")
+                    ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
+                    ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &ArticulationLinkConfiguration::m_articulationJointType,
@@ -140,39 +138,25 @@ namespace PhysX
                     ->EnumAttribute(physx::PxArticulationJointType::Enum::eFIX, "Fix")
                     ->EnumAttribute(physx::PxArticulationJointType::Enum::eREVOLUTE, "Hinge")
                     ->EnumAttribute(physx::PxArticulationJointType::Enum::ePRISMATIC, "Prismatic")
-                    ->ClassElement(AZ::Edit::ClassElements::Group, "Joint configuration")
-                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
                         0,
-                        &PhysX::ArticulationLinkConfiguration::m_fixJointLocation,
+                        &ArticulationLinkConfiguration::m_fixJointLocation,
                         "Fix Joint Location",
                         "When enabled the joint will remain in the same location when moving the entity.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
                         0,
-                        &PhysX::ArticulationLinkConfiguration::m_selfCollide,
+                        &ArticulationLinkConfiguration::m_selfCollide,
                         "Lead-Follower Collide",
                         "When active, the lead and follower pair will collide with each other.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
                     ->DataElement(
                         0,
-                        &PhysX::ArticulationLinkConfiguration::m_selectLeadOnSnap,
+                        &ArticulationLinkConfiguration::m_selectLeadOnSnap,
                         "Select Lead on Snap",
                         "Select lead entity on snap to position in component mode.")
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_solverPositionIterations,
-                        "Solver Position Iterations",
-                        "Higher values can improve stability at the cost of performance.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation)
-                    ->DataElement(
-                        AZ::Edit::UIHandlers::Default,
-                        &ArticulationLinkConfiguration::m_solverVelocityIterations,
-                        "Solver Velocity Iterations",
-                        "Higher values can improve stability at the cost of performance.")
-                    ->Attribute(AZ::Edit::Attributes::Min, 1)
-                    ->Attribute(AZ::Edit::Attributes::Max, 255)
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsRootArticulation);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation);
             }
         }
     }
@@ -180,12 +164,6 @@ namespace PhysX
     EditorArticulationLinkComponent::EditorArticulationLinkComponent(const EditorArticulationLinkConfiguration& configuration)
         : m_config(configuration)
     {
-        m_config.SetArticulationComponent(this);
-    }
-
-    EditorArticulationLinkComponent::EditorArticulationLinkComponent()
-    {
-        m_config.SetArticulationComponent(this);
     }
 
     void EditorArticulationLinkComponent::Reflect(AZ::ReflectContext* context)
@@ -249,6 +227,7 @@ namespace PhysX
     void EditorArticulationLinkComponent::Activate()
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
+        m_config.m_isRootArticulation = IsRootArticulation();
     }
 
     void EditorArticulationLinkComponent::Deactivate()

@@ -36,8 +36,6 @@ namespace PhysX
 
         // Articulation specific configuration
 
-        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
-        bool m_isRootArticulation = false;
         bool m_isFixedBase = false;
 
         // Rigid Body configuration
@@ -64,15 +62,25 @@ namespace PhysX
 
         // Joint configuration
 
+        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
         bool m_selectLeadOnSnap = true;
         bool m_selfCollide = false;
         bool m_fixJointLocation = false;
         JointMotorProperties m_motorConfiguration;
 
-         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-         AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
+        AZ::Vector3 m_localRotation =
+            AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to follower body.
 
-         virtual bool IsRootArticulation() const { return false; };
-         virtual bool IsNotRootArticulation() const { return false; };
+        // These properties are not exposed to the edit context. They are used when creating editor Articulation components programmatically.
+        bool m_autoCalculateLeaderFrame = true;
+        AZ::Vector3 m_leaderLocalPosition = AZ::Vector3::CreateZero(); 
+        AZ::Vector3 m_LeaderLocalRotation =
+            AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+
+        // This is only used to control the visibility attribute in the edit context. This is not part of the edit context.
+        bool m_isRootArticulation = false;
+
+        bool IsNotRootArticulation() const;
     };
 } // namespace PhysX
