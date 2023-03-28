@@ -137,7 +137,7 @@ namespace O3DE::ProjectManager
         const int nameColumnMaxTextWidth = nameXBounds.second - nameStartX - AdjustableHeaderWidget::s_headerTextIndent;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
-        QString gemName = QFontMetrics(gemNameFont).elidedText(gemInfo.m_displayName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
+        QString gemName = QFontMetrics(gemNameFont).elidedText(GemModel::GetDisplayName(modelIndex), Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
         gemNameRect.moveTo(nameColumnTextStartX, contentRect.top());
         painter->setFont(gemNameFont);

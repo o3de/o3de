@@ -215,6 +215,7 @@ namespace O3DE::ProjectManager
 
             QStandardItem* gemItem = new QStandardItem();
             SetItemDataFromGemInfo(gemItem, gemInfo);
+            AddGemInfoVersion(gemItem, gemInfo);
             appendRow(gemItem); 
 
             const auto modelIndex = index(rowCount() - 1, 0);
