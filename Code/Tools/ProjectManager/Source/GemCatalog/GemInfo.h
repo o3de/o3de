@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
         GemInfo() = default;
         GemInfo(const QString& name, const QString& creator, const QString& summary, Platforms platforms, bool isAdded);
         bool IsPlatformSupported(Platform platform) const;
-        QString GetNameWithVersionSpecifier(const QString& comparitor = "==") const;
+        QString GetNameWithVersionSpecifier(const QString& comparator = "==") const;
         bool IsValid() const;
 
         bool operator<(const GemInfo& gemInfo) const;

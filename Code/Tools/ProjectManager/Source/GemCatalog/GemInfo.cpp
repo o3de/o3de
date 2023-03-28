@@ -99,7 +99,7 @@ namespace O3DE::ProjectManager
         return (m_platforms & platform);
     }
 
-    QString GemInfo::GetNameWithVersionSpecifier(const QString& comparitor) const
+    QString GemInfo::GetNameWithVersionSpecifier(const QString& comparator) const
     {
         if (m_isEngineGem || m_version.isEmpty() || m_version.contains("unknown", Qt::CaseInsensitive))
         {
@@ -109,7 +109,7 @@ namespace O3DE::ProjectManager
         }
         else
         {
-            return QString("%1%2%3").arg(m_name, comparitor, m_version);
+            return QString("%1%2%3").arg(m_name, comparator, m_version);
         }
     }
 

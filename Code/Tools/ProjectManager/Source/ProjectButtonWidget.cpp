@@ -311,7 +311,12 @@ namespace O3DE::ProjectManager
             QHBoxLayout* hLayout = new QHBoxLayout();
             hLayout->setContentsMargins(0, 0, 0, 0);
 
-            m_projectNameLabel = new AzQtComponents::ElidingLabel(m_projectInfo.GetProjectDisplayName(), this);
+            QString projectName = m_projectInfo.GetProjectDisplayName();
+            if (!m_projectInfo.m_version.isEmpty())
+            {
+                projectName +=" " + m_projectInfo.m_version;
+            }
+            m_projectNameLabel = new AzQtComponents::ElidingLabel(projectName, this);
             m_projectNameLabel->setObjectName("projectNameLabel");
             m_projectNameLabel->setToolTip(m_projectInfo.m_path);
             m_projectNameLabel->refreshStyle();

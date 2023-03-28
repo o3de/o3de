@@ -25,7 +25,7 @@ namespace O3DE::ProjectManager
         // Do not use sourceParent->child because an invalid parent does not produce valid children (which our index function does)
         QModelIndex sourceIndex = sourceModel()->index(sourceRow, 0, sourceParent);
         const bool hasNewVersion = !GemModel::GetNewVersion(sourceIndex).isEmpty();
-        return GemModel::IsAdded(sourceIndex) && GemModel::HasRequirement(sourceIndex) && (!GemModel::WasPreviouslyAdded(sourceIndex) || hasNewVersion) ;
+        return GemModel::IsAdded(sourceIndex) && GemModel::HasRequirement(sourceIndex) && (!GemModel::WasPreviouslyAdded(sourceIndex) || hasNewVersion);
     }
 
 } // namespace O3DE::ProjectManager

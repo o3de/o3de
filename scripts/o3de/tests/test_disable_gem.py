@@ -246,7 +246,9 @@ class TestDisableGemCommand:
             project_json = get_project_json_data(project_path=project_path)
             assert expected_gem_name in project_json.get('gem_names', [])
 
-            # unregister the gem if asked
+            # if unregister_gem is set, then set the gem_registered flag to false
+            # to simulate that the gem is now unregistered so we can test disabling a gem
+            # that is not registered 
             self.gem_registered = not unregister_gem
 
             # Disable the gem
