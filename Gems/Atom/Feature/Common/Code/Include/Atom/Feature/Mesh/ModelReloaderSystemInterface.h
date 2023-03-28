@@ -50,6 +50,8 @@ namespace AZ
             virtual void ReloadModel(
                 Data::Asset<RPI::ModelAsset> modelAsset, ModelReloadedEvent::Handler& onReloadedEventHandler) = 0;
 
+            virtual void RemoveReloader(const Data::AssetId& assetId) = 0;
+
             // Note that you have to delete these for safety reasons, you will trip a static_assert if you do not
             AZ_DISABLE_COPY_MOVE(ModelReloaderSystemInterface);
         };
