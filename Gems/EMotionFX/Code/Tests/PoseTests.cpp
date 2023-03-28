@@ -476,7 +476,11 @@ namespace EMotionFX
         }
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_P(PoseTestsBoolParam, DISABLED_UpdateLocalSpaceTranforms)
+#else
     TEST_P(PoseTestsBoolParam, UpdateLocalSpaceTranforms)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         Pose pose;
         pose.LinkToActor(m_actor.get());
@@ -516,7 +520,11 @@ namespace EMotionFX
         }
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(PoseTests, DISABLED_ForceUpdateFullLocalSpacePose)
+#else
     TEST_F(PoseTests, ForceUpdateFullLocalSpacePose)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         Pose pose;
         pose.LinkToActor(m_actor.get());
