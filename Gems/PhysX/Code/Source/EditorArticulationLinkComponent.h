@@ -18,8 +18,8 @@ namespace PhysX
     class EditorArticulationLinkComponent;
 
     //! Configuration data for EditorRigidBodyComponent.
-     struct EditorArticulationLinkConfiguration
-         : public ArticulationLinkConfiguration
+    struct EditorArticulationLinkConfiguration
+        : public ArticulationLinkConfiguration
     {
         AZ_CLASS_ALLOCATOR(EditorArticulationLinkConfiguration, AZ::SystemAllocator);
         AZ_RTTI(

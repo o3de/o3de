@@ -16,8 +16,11 @@
 
 namespace PhysX
 {
-    const float LocalRotationMax = 360.0f;
-    const float LocalRotationMin = -360.0f;
+    namespace
+    {
+        const float LocalRotationMax = 360.0f;
+        const float LocalRotationMin = -360.0f;
+    }
 
     bool EditorArticulationLinkConfiguration::IsRootArticulation() const
     {
@@ -40,7 +43,7 @@ namespace PhysX
 
     void EditorArticulationLinkConfiguration::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorArticulationLinkConfiguration, ArticulationLinkConfiguration>()
                 ->Version(2)
