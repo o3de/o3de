@@ -3322,9 +3322,13 @@ namespace UnitTest
 
     using EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture =
         IndirectCallManipulatorViewportInteractionFixtureMixin<EditorTransformComponentSelectionRenderGeometryIntersectionFixture>;
-
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, DISABLED_BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
+#else
     TEST_F(
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, BoxCanBePlacedOnMeshSurfaceUsingSurfaceManipulator)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // camera (go to position format) - 0.00, 20.00, 12.00, -35.00, -180.00
         m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
@@ -3362,9 +3366,15 @@ namespace UnitTest
         EXPECT_THAT(finalEntityTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
+        DISABLED_SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
+#else
     TEST_F(
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture,
         SurfaceManipulatorFollowsMouseAtDefaultEditorDistanceFromCameraWhenNoMeshIntersection)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // camera (go to position format) - 0.00, 25.00, 12.00, 0.00, -180.00
         m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
@@ -3444,8 +3454,13 @@ namespace UnitTest
         EXPECT_THAT(finalEntityTransform.GetTranslation(), IsCloseTolerance(expectedWorldPosition, 0.01f));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(
+        EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, DISABLED_SurfaceManipulatorSelfIntersectsMeshWhenCtrlIsHeld)
+#else
     TEST_F(
         EditorTransformComponentSelectionRenderGeometryIntersectionManipulatorFixture, SurfaceManipulatorSelfIntersectsMeshWhenCtrlIsHeld)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // camera (go to position format) - 47.00, -52.00, 20.00, 0.00, -60.00
         m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);

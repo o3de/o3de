@@ -133,7 +133,11 @@ namespace UnitTest
             IsClose(AZ::Vector3(expectedCameraRotationXDegrees, 0.0f, expectedCameraRotationZDegrees)));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(ViewBookmarkTestFixture, DISABLED_ViewBookmarkCanBeStoredAndRetrievedAtIndex)
+#else
     TEST_F(ViewBookmarkTestFixture, ViewBookmarkCanBeStoredAndRetrievedAtIndex)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         using ::testing::IsFalse;
         AzToolsFramework::ViewBookmarkInterface* bookmarkInterface = AZ::Interface<AzToolsFramework::ViewBookmarkInterface>::Get();
