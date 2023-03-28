@@ -247,7 +247,7 @@ namespace AzToolsFramework
                         fromPath = item->GetFullPath();
                     }
                     AssetChangeReportRequest request(
-                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete);
+                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete, isFolder);
                     AssetChangeReportResponse response;
 
                     if (SendRequest(request, response))
@@ -300,7 +300,7 @@ namespace AzToolsFramework
                         if (canDelete)
                         {
                             AssetChangeReportRequest deleteRequest(
-                                AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::Delete);
+                                AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::Delete, isFolder);
                             AssetChangeReportResponse deleteResponse;
                             if (SendRequest(deleteRequest, deleteResponse))
                             {

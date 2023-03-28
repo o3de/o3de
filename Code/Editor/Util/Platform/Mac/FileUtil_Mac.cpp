@@ -21,7 +21,7 @@ namespace Platform
         return QProcess::startDetached(command, argsList);
     }
 
-    bool RunEditorWithArg(const QString editor, const QString arg)
+    bool RunEditorWithArg(const QString& editor, const QString& arg)
     {
         return RunCommandWithArguments(QString("/usr/bin/open"), { "-a", gSettings.textureEditor, editor });
     }
