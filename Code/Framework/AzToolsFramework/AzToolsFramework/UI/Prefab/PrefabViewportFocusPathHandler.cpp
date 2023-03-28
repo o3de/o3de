@@ -137,6 +137,9 @@ namespace AzToolsFramework::Prefab
         AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
             m_editorEntityContextId, &AzToolsFramework::EditorEntityContextRequestBus::Events::GetEditorEntityContextId);
 
+        setMinimumWidth(100);
+        setMinimumHeight(60);
+
         m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
         if (m_prefabFocusPublicInterface == nullptr)
         {

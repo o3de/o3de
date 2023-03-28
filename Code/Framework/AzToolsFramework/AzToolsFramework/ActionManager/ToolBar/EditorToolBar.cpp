@@ -62,6 +62,11 @@ namespace AzToolsFramework
                     auto toolbar = qobject_cast<QToolBar*>(expander->parentWidget());
                     auto menu = new QMenu(expander);
 
+                    QAction* dummy = new QAction();
+                    dummy->setText("Dummy");
+
+                    menu->addAction(dummy);
+
                     // Create a parent widget to more easily delete widget action widgets.
                     auto parentWidget = new QWidget();
 
@@ -86,7 +91,7 @@ namespace AzToolsFramework
                                     {
                                         widget->setParent(parentWidget);
 
-                                        QWidgetAction* w = new QWidgetAction(nullptr);
+                                        QWidgetAction* w = new QWidgetAction(parentWidget);
                                         w->setDefaultWidget(widget);
 
                                         menu->addAction(w);

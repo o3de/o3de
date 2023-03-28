@@ -921,6 +921,8 @@ namespace AzToolsFramework
 
         void PrefabIntegrationManager::OnMenuBindingHook()
         {
+            m_menuManagerInterface->AddWidgetToMenu(EditorIdentifiers::FileMenuIdentifier, "o3de.widgetAction.prefab.focusPath", 2000);
+
             // Entity Outliner Context Menu
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.edit", 10500);
             m_menuManagerInterface->AddActionToMenu(EditorIdentifiers::EntityOutlinerContextMenuIdentifier, "o3de.action.prefabs.procedural.inspect", 10600);
