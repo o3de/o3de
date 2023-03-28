@@ -61,7 +61,7 @@ namespace PhysX
         AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
 
         ArticulationLinkComponent();
-        explicit ArticulationLinkComponent(ArticulationLinkConfiguration& config, AzPhysics::SceneHandle sceneHandle);
+        explicit ArticulationLinkComponent(ArticulationLinkConfiguration& config);
         ~ArticulationLinkComponent();
 
         static void Reflect(AZ::ReflectContext* context);

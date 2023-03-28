@@ -38,9 +38,8 @@ namespace PhysX
 
     ArticulationLinkComponent::~ArticulationLinkComponent() = default;
 
-    ArticulationLinkComponent::ArticulationLinkComponent(ArticulationLinkConfiguration& config, AzPhysics::SceneHandle sceneHandle)
+    ArticulationLinkComponent::ArticulationLinkComponent(ArticulationLinkConfiguration& config)
         : m_config(config)
-        , m_attachedSceneHandle(sceneHandle)
     {
         InitPhysicsTickHandler();
     }

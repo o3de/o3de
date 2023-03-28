@@ -237,6 +237,6 @@ namespace PhysX
 
     void EditorArticulationLinkComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
-        gameEntity->CreateComponent<ArticulationLinkComponent>(m_config, AzPhysics::InvalidSceneHandle);
+        gameEntity->CreateComponent<ArticulationLinkComponent>(m_config);
     }
 } // namespace PhysX
