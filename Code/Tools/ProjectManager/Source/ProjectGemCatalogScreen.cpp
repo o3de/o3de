@@ -68,8 +68,9 @@ namespace O3DE::ProjectManager
             for (const QModelIndex& modelIndex : toBeAdded)
             {
                 // make sure any remote gems we added were downloaded successfully
+                GemInfo gemInfo = GemModel::GetGemInfo(modelIndex);
                 const GemInfo::DownloadStatus status = GemModel::GetDownloadStatus(modelIndex);
-                if (GemModel::GetGemOrigin(modelIndex) == GemInfo::Remote &&
+                if (gemInfo.m_gemOrigin == GemInfo::Remote &&
                     !(status == GemInfo::Downloaded || status == GemInfo::DownloadSuccessful))
                 {
                     QMessageBox::critical(
@@ -81,10 +82,9 @@ namespace O3DE::ProjectManager
                     return ConfiguredGemsResult::Failed;
                 }
 
-                gemPaths.append(GemModel::GetPath(modelIndex));
+                gemPaths.append(gemInfo.m_path);
 
                 // use the version that was selected if available
-                auto gemInfo = GemModel::GetGemInfo(modelIndex);
                 if (auto gemVersion = GemModel::GetNewVersion(modelIndex); !gemVersion.isEmpty())
                 {
                     gemInfo.m_version = gemVersion;
@@ -133,7 +133,7 @@ namespace O3DE::ProjectManager
                         GemModel::UpdateWithVersion(*m_gemModel, modelIndex, newVersion);
                         GemModel::SetNewVersion(*m_gemModel, modelIndex, "");
                     }
-                    const auto& gemPath = GemModel::GetPath(modelIndex);
+                    const auto& gemPath = GemModel::GetGemInfo(modelIndex).m_path;
 
                     // register external gems that were added with relative paths
                     if (m_gemsToRegisterWithProject.contains(gemPath))

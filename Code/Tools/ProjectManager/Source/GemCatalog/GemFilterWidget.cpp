@@ -402,7 +402,7 @@ namespace O3DE::ProjectManager
             m_originFilter, "Provider", GemInfo::NumGemOrigins,
             [](GemModel* gemModel, GemInfo::GemOrigin origin, int gemIndex)
             {
-                return origin == gemModel->GetGemOrigin(gemModel->index(gemIndex, 0)); 
+                return origin == gemModel->GetGemInfo(gemModel->index(gemIndex, 0)).m_gemOrigin; 
             },
             &GemInfo::GetGemOriginString, &GemSortFilterProxyModel::GetGemOrigins, &GemSortFilterProxyModel::SetGemOrigins
         );
@@ -414,7 +414,7 @@ namespace O3DE::ProjectManager
             m_typeFilter, "Type", GemInfo::NumTypes,
             [](GemModel* gemModel, GemInfo::Type type, int gemIndex)
             {
-                return static_cast<bool>(type & gemModel->GetTypes(gemModel->index(gemIndex, 0)));
+                return static_cast<bool>(type & gemModel->GetGemInfo(gemModel->index(gemIndex, 0)).m_types);
             },
             &GemInfo::GetTypeString, &GemSortFilterProxyModel::GetTypes, &GemSortFilterProxyModel::SetTypes);
     }
@@ -425,7 +425,7 @@ namespace O3DE::ProjectManager
             m_platformFilter, "Platforms", GemInfo::NumPlatforms,
             [](GemModel* gemModel, GemInfo::Platform platform, int gemIndex)
             {
-                return static_cast<bool>(platform & gemModel->GetPlatforms(gemModel->index(gemIndex, 0)));
+                return static_cast<bool>(platform & gemModel->GetGemInfo(gemModel->index(gemIndex, 0)).m_platforms);
             },
             &GemInfo::GetPlatformString, &GemSortFilterProxyModel::GetPlatforms, &GemSortFilterProxyModel::SetPlatforms);
     }
@@ -437,7 +437,7 @@ namespace O3DE::ProjectManager
         const int numGems = m_gemModel->rowCount();
         for (int gemIndex = 0; gemIndex < numGems; ++gemIndex)
         {
-            const QStringList features = m_gemModel->GetFeatures(m_gemModel->index(gemIndex, 0));
+            const QStringList& features = m_gemModel->GetGemInfo(m_gemModel->index(gemIndex, 0)).m_features;
             for (const QString& feature : features)
             {
                 if (!uniqueFeatureCounts.contains(feature))

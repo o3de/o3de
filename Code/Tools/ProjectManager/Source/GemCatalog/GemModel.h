@@ -31,31 +31,15 @@ namespace O3DE::ProjectManager
         {
             RoleName = Qt::UserRole,
             RoleDisplayName,
-            RoleCreator,
-            RoleGemOrigin,
-            RolePlatforms,
-            RoleSummary,
             RoleWasPreviouslyAdded,
             RoleWasPreviouslyAddedDependency,
             RoleIsAdded,
             RoleIsAddedDependency,
-            RoleDirectoryLink,
-            RoleDocLink,
             RoleDependingGems,
             RoleVersion,            // the current version
             RoleNewVersion,         // the new version the user wants to use
-            RoleLastUpdated,
-            RoleBinarySize,
-            RoleFeatures,
-            RoleTypes,
-            RolePath,
-            RoleRequirement,
             RoleDownloadStatus,
-            RoleLicenseText,
-            RoleLicenseLink,
-            RoleRepoUri,
-            RoleGemInfoVersions,
-            RoleIsEngineGem
+            RoleGemInfoVersions
         };
 
         QModelIndex AddGem(const GemInfo& gemInfo);
@@ -67,7 +51,6 @@ namespace O3DE::ProjectManager
         void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
-        QModelIndex FindIndexByPath(const QString& path) const;
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
@@ -75,24 +58,9 @@ namespace O3DE::ProjectManager
         static const QStringList GetGemVersions(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
-        static QString GetCreator(const QModelIndex& modelIndex);
-        static GemInfo::GemOrigin GetGemOrigin(const QModelIndex& modelIndex);
-        static GemInfo::Platforms GetPlatforms(const QModelIndex& modelIndex);
-        static GemInfo::Types GetTypes(const QModelIndex& modelIndex);
         static GemInfo::DownloadStatus GetDownloadStatus(const QModelIndex& modelIndex);
-        static QString GetSummary(const QModelIndex& modelIndex);
-        static QString GetDirectoryLink(const QModelIndex& modelIndex);
-        static QString GetDocLink(const QModelIndex& modelIndex);
         static QString GetVersion(const QModelIndex& modelIndex);
         static QString GetNewVersion(const QModelIndex& modelIndex);
-        static QString GetLastUpdated(const QModelIndex& modelIndex);
-        static int GetBinarySizeInKB(const QModelIndex& modelIndex);
-        static QStringList GetFeatures(const QModelIndex& modelIndex);
-        static QString GetPath(const QModelIndex& modelIndex);
-        static QString GetRequirement(const QModelIndex& modelIndex);
-        static QString GetLicenseText(const QModelIndex& modelIndex);
-        static QString GetLicenseLink(const QModelIndex& modelIndex);
-        static QString GetRepoUri(const QModelIndex& modelIndex);
         static GemModel* GetSourceModel(QAbstractItemModel* model);
         static const GemModel* GetSourceModel(const QAbstractItemModel* model);
 
@@ -100,6 +68,7 @@ namespace O3DE::ProjectManager
         static bool IsAddedDependency(const QModelIndex& modelIndex);
         static void SetIsAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded, const QString& version = "");
         static void SetIsAddedDependency(QAbstractItemModel& model, const QModelIndex& modelIndex, bool isAdded);
+
         //! Set the version the user confirms they want to use
         static void SetNewVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version);
         static void SetWasPreviouslyAdded(QAbstractItemModel& model, const QModelIndex& modelIndex, bool wasAdded);
@@ -113,7 +82,6 @@ namespace O3DE::ProjectManager
         static void UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version);
         static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
-        static bool IsEngineGem(const QModelIndex& modelIndex);
 
         bool DoGemsToBeAddedHaveRequirements() const;
         bool HasDependentGemsToRemove() const;
@@ -138,7 +106,6 @@ namespace O3DE::ProjectManager
         QStringList GetDependingGems(const QModelIndex& modelIndex);
 
         QHash<QString, QModelIndex> m_nameToIndexMap;
-        QHash<QString, QModelIndex> m_pathToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
         QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
         QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;

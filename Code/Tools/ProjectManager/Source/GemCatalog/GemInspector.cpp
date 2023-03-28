@@ -144,9 +144,8 @@ namespace O3DE::ProjectManager
         // Versions
         disconnect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
         m_versionComboBox->clear();
-        const bool isEngineGem = gemInfo.IsEngineGem();
         auto gemVersions = m_model->GetGemVersions(modelIndex);
-        if (isEngineGem || gemVersions.count() < 2)
+        if (gemInfo.m_isEngineGem || gemVersions.count() < 2)
         {
             m_versionComboBox->setVisible(false);
             m_versionLabel->setText(gemInfo.m_version);
@@ -177,9 +176,9 @@ namespace O3DE::ProjectManager
         }
 
         // Compatible engines
-        m_enginesTitleLabel->setVisible(!isEngineGem);
-        m_enginesLabel->setVisible(!isEngineGem);
-        if (!isEngineGem)
+        m_enginesTitleLabel->setVisible(!gemInfo.m_isEngineGem);
+        m_enginesLabel->setVisible(!gemInfo.m_isEngineGem);
+        if (!gemInfo.m_isEngineGem)
         {
             if (gemInfo.m_compatibleEngines.isEmpty())
             {

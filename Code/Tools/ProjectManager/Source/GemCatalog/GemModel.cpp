@@ -37,25 +37,9 @@ namespace O3DE::ProjectManager
         item->setFlags(Qt::ItemIsEnabled | Qt::ItemIsSelectable);
         item->setData(gemInfo.m_name, GemModel::RoleName);
         item->setData(gemInfo.m_displayName, GemModel::RoleDisplayName);
-        item->setData(gemInfo.m_origin, GemModel::RoleCreator);
-        item->setData(gemInfo.m_gemOrigin, GemModel::RoleGemOrigin);
-        item->setData(aznumeric_cast<int>(gemInfo.m_platforms), GemModel::RolePlatforms);
-        item->setData(aznumeric_cast<int>(gemInfo.m_types), GemModel::RoleTypes);
-        item->setData(gemInfo.m_summary, GemModel::RoleSummary);
-        item->setData(gemInfo.m_directoryLink, GemModel::RoleDirectoryLink);
-        item->setData(gemInfo.m_documentationLink, GemModel::RoleDocLink);
         item->setData(gemInfo.m_dependencies, GemModel::RoleDependingGems);
         item->setData(gemInfo.m_version, GemModel::RoleVersion);
-        item->setData(gemInfo.m_lastUpdatedDate, GemModel::RoleLastUpdated);
-        item->setData(gemInfo.m_binarySizeInKB, GemModel::RoleBinarySize);
-        item->setData(gemInfo.m_features, GemModel::RoleFeatures);
-        item->setData(gemInfo.m_path, GemModel::RolePath);
-        item->setData(gemInfo.m_requirement, GemModel::RoleRequirement);
         item->setData(gemInfo.m_downloadStatus, GemModel::RoleDownloadStatus);
-        item->setData(gemInfo.m_licenseText, GemModel::RoleLicenseText);
-        item->setData(gemInfo.m_licenseLink, GemModel::RoleLicenseLink);
-        item->setData(gemInfo.m_repoUri, GemModel::RoleRepoUri);
-        item->setData(gemInfo.IsEngineGem(), GemModel::RoleIsEngineGem);
 
         if (!metaDataOnly)
         {
@@ -125,11 +109,6 @@ namespace O3DE::ProjectManager
                 indexesChanged.append(modelIndex);
 
                 m_nameToIndexMap[gemInfo.m_name] = modelIndex;
-            }
-
-            if (modelIndex.isValid() && !!gemInfo.m_path.isEmpty())
-            {
-                m_pathToIndexMap[gemInfo.m_path] = modelIndex;
             }
         }
 
@@ -349,66 +328,15 @@ namespace O3DE::ProjectManager
         }
     }
 
-    QString GemModel::GetCreator(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleCreator).toString();
-    }
-
-    GemInfo::GemOrigin GemModel::GetGemOrigin(const QModelIndex& modelIndex)
-    {
-        return static_cast<GemInfo::GemOrigin>(modelIndex.data(RoleGemOrigin).toInt());
-    }
-
-    GemInfo::Platforms GemModel::GetPlatforms(const QModelIndex& modelIndex)
-    {
-        return static_cast<GemInfo::Platforms>(modelIndex.data(RolePlatforms).toInt());
-    }
-
-    GemInfo::Types GemModel::GetTypes(const QModelIndex& modelIndex)
-    {
-        return static_cast<GemInfo::Types>(modelIndex.data(RoleTypes).toInt());
-    }
-
     GemInfo::DownloadStatus GemModel::GetDownloadStatus(const QModelIndex& modelIndex)
     {
         return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
-    }
-
-    bool GemModel::IsEngineGem(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleIsEngineGem).toBool();
-    }
-
-    QString GemModel::GetSummary(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleSummary).toString();
-    }
-
-    QString GemModel::GetDirectoryLink(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleDirectoryLink).toString();
-    }
-
-    QString GemModel::GetDocLink(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleDocLink).toString();
     }
 
     QModelIndex GemModel::FindIndexByNameString(const QString& nameString) const
     {
         const auto iterator = m_nameToIndexMap.find(nameString);
         if (iterator != m_nameToIndexMap.end())
-        {
-            return iterator.value();
-        }
-
-        return {};
-    }
-
-    QModelIndex GemModel::FindIndexByPath(const QString& path) const
-    {
-        const auto iterator = m_pathToIndexMap.find(path);
-        if (iterator != m_pathToIndexMap.end())
         {
             return iterator.value();
         }
@@ -472,46 +400,6 @@ namespace O3DE::ProjectManager
     QString GemModel::GetNewVersion(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleNewVersion).toString();
-    }
-
-    QString GemModel::GetLastUpdated(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleLastUpdated).toString();
-    }
-
-    int GemModel::GetBinarySizeInKB(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleBinarySize).toInt();
-    }
-
-    QStringList GemModel::GetFeatures(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleFeatures).toStringList();
-    }
-
-    QString GemModel::GetPath(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RolePath).toString();
-    }
-
-    QString GemModel::GetRequirement(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleRequirement).toString();
-    }
-
-    QString GemModel::GetLicenseText(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleLicenseText).toString();
-    }
-
-    QString GemModel::GetLicenseLink(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleLicenseLink).toString();
-    }
-
-    QString GemModel::GetRepoUri(const QModelIndex& modelIndex)
-    {
-        return modelIndex.data(RoleRepoUri).toString();
     }
 
     GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)
@@ -765,7 +653,7 @@ namespace O3DE::ProjectManager
 
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
     {
-        return !modelIndex.data(RoleRequirement).toString().isEmpty();
+        return !GemModel::GetGemInfo(modelIndex).m_requirement.isEmpty();
     }
 
     bool GemModel::DoGemsToBeAddedHaveRequirements() const

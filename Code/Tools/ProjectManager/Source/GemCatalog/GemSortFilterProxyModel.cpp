@@ -28,14 +28,15 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        const GemInfo& gemInfo = m_sourceModel->GetGemInfo(sourceIndex);
         // Search Bar
-        if (!m_sourceModel->GetDisplayName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetCreator(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetSummary(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
+        if (!gemInfo.m_displayName.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_name.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_origin.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_summary.contains(m_searchString, Qt::CaseInsensitive))
         {
             bool foundFeature = false;
-            for (const QString& feature : m_sourceModel->GetFeatures(sourceIndex))
+            for (const QString& feature : gemInfo.m_features)
             {
                 if (feature.contains(m_searchString, Qt::CaseInsensitive))
                 {
@@ -94,7 +95,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::GemOrigin filteredGemOrigin = static_cast<GemInfo::GemOrigin>(1 << i);
                 if (m_gemOriginFilter & filteredGemOrigin)
                 {
-                    if ((GemModel::GetGemOrigin(sourceIndex) == filteredGemOrigin))
+                    if ((gemInfo.m_gemOrigin == filteredGemOrigin))
                     {
                         supportsAnyFilteredGemOrigin = true;
                         break;
@@ -116,7 +117,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::Platform filteredPlatform = static_cast<GemInfo::Platform>(1 << i);
                 if (m_platformFilter & filteredPlatform)
                 {
-                    if ((GemModel::GetPlatforms(sourceIndex) & filteredPlatform))
+                    if ((gemInfo.m_platforms & filteredPlatform))
                     {
                         supportsAnyFilteredPlatform = true;
                         break;
@@ -138,7 +139,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::Type filteredType = static_cast<GemInfo::Type>(1 << i);
                 if (m_typeFilter & filteredType)
                 {
-                    if ((GemModel::GetTypes(sourceIndex) & filteredType))
+                    if ((gemInfo.m_types & filteredType))
                     {
                         supportsAnyFilteredType = true;
                         break;
@@ -155,8 +156,7 @@ namespace O3DE::ProjectManager
         if (!m_featureFilter.isEmpty())
         {
             bool containsFilterFeature = false;
-            const QStringList features = m_sourceModel->GetFeatures(sourceIndex);
-            for (const QString& feature : features)
+            for (const QString& feature : gemInfo.m_features)
             {
                 if (m_featureFilter.contains(feature))
                 {

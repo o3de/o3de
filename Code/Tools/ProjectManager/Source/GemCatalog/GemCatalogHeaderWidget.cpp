@@ -347,10 +347,11 @@ namespace O3DE::ProjectManager
         tags.reserve(gems.size());
         for (const QModelIndex& modelIndex : gems)
         {
-            if(GemModel::IsEngineGem(modelIndex))
+            const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+            if(gemInfo.m_isEngineGem)
             {
                 // don't show engine gem versions
-                tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+                tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
             }
             else
             {
@@ -363,12 +364,12 @@ namespace O3DE::ProjectManager
 
                 if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive))
                 {
-                    tags.push_back({ GemModel::GetDisplayName(modelIndex), GemModel::GetName(modelIndex) });
+                    tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
                 }
                 else
                 {
-                    const QString& title = QString("%1 %2").arg(GemModel::GetDisplayName(modelIndex), version);
-                    tags.push_back({ title, GemModel::GetName(modelIndex) });
+                    const QString& title = QString("%1 %2").arg(gemInfo.m_displayName, version);
+                    tags.push_back({ title, gemInfo.m_name });
                 }
             }
 

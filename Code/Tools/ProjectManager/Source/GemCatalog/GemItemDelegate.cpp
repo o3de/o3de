@@ -83,6 +83,8 @@ namespace O3DE::ProjectManager
             return;
         }
 
+        const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+
         QStyleOptionViewItem options(option);
         initStyleOption(&options, modelIndex);
 
@@ -119,7 +121,7 @@ namespace O3DE::ProjectManager
         }
 
         // Gem preview
-        QString previewPath = QDir(GemModel::GetPath(modelIndex)).filePath(ProjectPreviewImagePath);
+        QString previewPath = QDir(gemInfo.m_path).filePath(ProjectPreviewImagePath);
         QPixmap gemPreviewImage(previewPath);
         QRect gemPreviewRect(
             contentRect.left() + AdjustableHeaderWidget::s_headerTextIndent,
@@ -127,8 +129,7 @@ namespace O3DE::ProjectManager
             GemPreviewImageWidth, GemPreviewImageHeight);
         painter->drawPixmap(gemPreviewRect, gemPreviewImage);
 
-        // Gem name
-        QString gemName = GemModel::GetDisplayName(modelIndex);
+        // Gem (dispay) name
         QFont gemNameFont(options.font);
         QPair<int, int> nameXBounds = CalcColumnXBounds(HeaderOrder::Name);
         const int nameStartX = nameXBounds.first;
@@ -136,7 +137,7 @@ namespace O3DE::ProjectManager
         const int nameColumnMaxTextWidth = nameXBounds.second - nameStartX - AdjustableHeaderWidget::s_headerTextIndent;
         gemNameFont.setPixelSize(static_cast<int>(s_gemNameFontSize));
         gemNameFont.setBold(true);
-        gemName = QFontMetrics(gemNameFont).elidedText(gemName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
+        QString gemName = QFontMetrics(gemNameFont).elidedText(gemInfo.m_displayName, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemNameRect = GetTextRect(gemNameFont, gemName, s_gemNameFontSize);
         gemNameRect.moveTo(nameColumnTextStartX, contentRect.top());
         painter->setFont(gemNameFont);
@@ -145,7 +146,7 @@ namespace O3DE::ProjectManager
         painter->drawText(gemNameRect, Qt::TextSingleLine, gemName);
 
         // Gem creator
-        QString gemCreator = GemModel::GetCreator(modelIndex);
+        QString gemCreator = gemInfo.m_origin;
         gemCreator = standardFontMetrics.elidedText(gemCreator, Qt::TextElideMode::ElideRight, nameColumnMaxTextWidth);
         QRect gemCreatorRect = GetTextRect(standardFont, gemCreator, s_fontSize);
         gemCreatorRect.moveTo(nameColumnTextStartX, contentRect.top() + gemNameRect.height());
@@ -155,22 +156,19 @@ namespace O3DE::ProjectManager
         painter->drawText(gemCreatorRect, Qt::TextSingleLine, gemCreator);
 
         // Gem summary
-        const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-        const bool hasTags = !featureTags.isEmpty();
-        const QString summary = GemModel::GetSummary(modelIndex);
+        const bool hasTags = !gemInfo.m_features.isEmpty();
         const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
-        DrawText(summary, painter, summaryRect, standardFont);
+        DrawText(gemInfo.m_summary, painter, summaryRect, standardFont);
 
         // Gem Version
         // include the version in the name if it isn't unknown
-        QString gemVersion = GemModel::GetVersion(modelIndex);
-        if (!gemVersion.isEmpty() && !gemVersion.contains("unknown", Qt::CaseInsensitive))
+        if (!gemInfo.m_version.isEmpty() && !gemInfo.m_version.contains("unknown", Qt::CaseInsensitive))
         {
             QPair<int, int> versionXBounds = CalcColumnXBounds(HeaderOrder::Version);
             QRect gemVersionRect{ versionXBounds.first, contentRect.top(), versionXBounds.second - versionXBounds.first, contentRect.height() };
             painter->setFont(standardFont);
-            gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemVersion);
-            painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemVersion);
+            gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
+            painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
         }
 
         QRect buttonRect = CalcButtonRect(contentRect);
@@ -180,7 +178,7 @@ namespace O3DE::ProjectManager
             DrawButton(painter, buttonRect, modelIndex);
         }
         DrawPlatformText(painter, contentRect, standardFont, modelIndex);
-        DrawFeatureTags(painter, contentRect, featureTags, standardFont, summaryRect);
+        DrawFeatureTags(painter, contentRect, gemInfo.m_features, standardFont, summaryRect);
 
         painter->restore();
     }
@@ -244,13 +242,12 @@ namespace O3DE::ProjectManager
             }
 
             // we must manually handle html links because we aren't using QLabels
-            const QStringList featureTags = GemModel::GetFeatures(modelIndex);
-            const bool hasTags = !featureTags.isEmpty();
+            const GemInfo& gemInfo = GemModel::GetGemInfo(modelIndex);
+            const bool hasTags = !gemInfo.m_features.isEmpty();
             const QRect summaryRect = CalcSummaryRect(contentRect, hasTags);
             if (summaryRect.contains(mouseEvent->pos()))
             {
-                const QString html = GemModel::GetSummary(modelIndex);
-                QString anchor = anchorAt(html, mouseEvent->pos(), summaryRect);
+                QString anchor = anchorAt(gemInfo.m_summary, mouseEvent->pos(), summaryRect);
                 if (!anchor.isEmpty())
                 {
                     QDesktopServices::openUrl(QUrl(anchor));
@@ -362,7 +359,7 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawPlatformIcons(QPainter* painter, const QRect& contentRect, const QModelIndex& modelIndex) const
     {
-        const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
+        const GemInfo::Platforms platforms = GemModel::GetGemInfo(modelIndex).m_platforms;
         int startX = s_itemMargins.left() + CalcColumnXBounds(HeaderOrder::Name).first + AdjustableHeaderWidget::s_headerTextIndent;
 
         // Iterate and draw the platforms in the order they are defined in the enum.
@@ -388,7 +385,7 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawPlatformText(QPainter* painter, const QRect& contentRect, const QFont& standardFont, const QModelIndex& modelIndex) const
     {
-        const GemInfo::Platforms platforms = GemModel::GetPlatforms(modelIndex);
+        const GemInfo::Platforms platforms = GemModel::GetGemInfo(modelIndex).m_platforms;
         
         auto xbounds = CalcColumnXBounds(HeaderOrder::Name);
         const int startX = s_platformTextleftMarginCorrection + xbounds.first;

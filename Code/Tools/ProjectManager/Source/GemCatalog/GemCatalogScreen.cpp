@@ -57,6 +57,7 @@ namespace O3DE::ProjectManager
 
         // default to sort by gem display name 
         m_proxyModel->setSortRole(GemModel::RoleDisplayName);
+        m_proxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
         QVBoxLayout* vLayout = new QVBoxLayout();
         vLayout->setMargin(0);
@@ -452,15 +453,12 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
     {
-        const QString selectedGemName = m_gemModel->GetName(modelIndex);
-        const QString selectedGemLastUpdate = m_gemModel->GetLastUpdated(modelIndex);
-        const QString selectedDisplayGemName = m_gemModel->GetDisplayName(modelIndex);
-        const QString selectedGemRepoUri = m_gemModel->GetRepoUri(modelIndex);
+        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex);
 
         // Refresh gem repo
-        if (!selectedGemRepoUri.isEmpty())
+        if (!gemInfo.m_repoUri.isEmpty())
         {
-            AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(selectedGemRepoUri);
+            AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(gemInfo.m_repoUri);
             if (refreshResult.IsSuccess())
             {
                 Refresh();
@@ -469,7 +467,7 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(
                     this, tr("Operation failed"),
-                    tr("Failed to refresh gem repository %1<br>Error:<br>%2").arg(selectedGemRepoUri, refreshResult.GetError().c_str()));
+                    tr("Failed to refresh gem repository %1<br>Error:<br>%2").arg(gemInfo.m_repoUri, refreshResult.GetError().c_str()));
             }
         }
         // If repo uri isn't specified warn user that repo might not be refreshed
@@ -479,7 +477,7 @@ namespace O3DE::ProjectManager
                 this, tr("Gem Repository Unspecified"),
                 tr("The repo for %1 is unspecfied. Repository cannot be automatically refreshed. "
                    "Please ensure this gem's repo is refreshed before attempting to update.")
-                    .arg(selectedDisplayGemName),
+                    .arg(gemInfo.m_displayName),
                 QMessageBox::Cancel, QMessageBox::Ok);
 
             // Allow user to cancel update to manually refresh repo
@@ -490,12 +488,12 @@ namespace O3DE::ProjectManager
         }
 
         // Check if there is an update avaliable now that repo is refreshed
-        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(selectedGemName, selectedGemLastUpdate);
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemInfo.m_name, gemInfo.m_lastUpdatedDate);
 
-        GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(selectedGemName, updateAvaliable, this);
+        GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(gemInfo.m_name, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddObjectDownload(selectedGemName, "" , DownloadController::DownloadObjectType::Gem);
+            m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
         }
     }
 
@@ -506,7 +504,7 @@ namespace O3DE::ProjectManager
         GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(selectedDisplayGemName, this);
         if (confirmUninstallDialog->exec() == QDialog::Accepted)
         {
-            const QString selectedGemPath = m_gemModel->GetPath(modelIndex);
+            const QString& selectedGemPath = m_gemModel->GetGemInfo(modelIndex).m_path;
 
             const bool wasAdded = GemModel::WasPreviouslyAdded(modelIndex);
             const bool wasAddedDependency = GemModel::WasPreviouslyAddedDependency(modelIndex);
