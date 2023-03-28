@@ -162,7 +162,6 @@ namespace AZ
             void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
             bool GetExcludeFromReflectionCubeMaps() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
-            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // SkinnedMeshOverrideRequestBus::Handler overrides...
