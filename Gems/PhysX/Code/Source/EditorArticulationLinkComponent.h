@@ -15,6 +15,7 @@
 
 namespace PhysX
 {
+    class EditorArticulationLinkComponent;
 
     //! Configuration data for EditorRigidBodyComponent.
      struct EditorArticulationLinkConfiguration
@@ -26,7 +27,15 @@ namespace PhysX
             "{8FFA0EC2-E850-4562-AB3D-08D157E07B81}",
             ArticulationLinkConfiguration);
 
+        const EditorArticulationLinkComponent* m_component = nullptr;
+        EditorJointLimitLinearPairConfig m_linearLimits;
+        EditorJointLimitPairConfig m_angularLimits;
+
         static void Reflect(AZ::ReflectContext* context);
+
+        void SetArticulationComponent(const EditorArticulationLinkComponent* component);
+        bool IsRootArticulation() const override;
+        bool IsNotRootArticulation() const override;
     };
 
     //! Class for in-editor PhysX Articulation Link Component.
@@ -38,7 +47,7 @@ namespace PhysX
             EditorArticulationLinkComponent, "{7D23169B-3214-4A32-ABFC-FCCE6E31F2CF}", AzToolsFramework::Components::EditorComponentBase);
         static void Reflect(AZ::ReflectContext* context);
 
-        EditorArticulationLinkComponent() = default;
+        EditorArticulationLinkComponent();
         explicit EditorArticulationLinkComponent(const EditorArticulationLinkConfiguration& configuration);
         ~EditorArticulationLinkComponent() = default;
 
@@ -54,8 +63,8 @@ namespace PhysX
         void BuildGameEntity(AZ::Entity* gameEntity) override;
 
         bool IsRootArticulation() const;
-        void SetIsRootArticulation();
 
-    private: ArticulationLinkConfiguration m_config;
+    private:
+        EditorArticulationLinkConfiguration m_config;
     };
 } // namespace PhysX

@@ -97,7 +97,6 @@ namespace PhysX
     {
     }
 
-
     bool ArticulationLinkComponent::IsRootArticulation() const
     {
         return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
