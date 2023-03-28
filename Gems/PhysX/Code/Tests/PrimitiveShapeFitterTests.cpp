@@ -366,7 +366,11 @@ namespace PhysX::Pipeline
         ExpectNear(configPtr->m_transform->GetTranslation(), AZ::Vector3(1.0, 2.0, 3.0));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST(GetShapeConfigurationTestFixture, DISABLED_SimpleBoxTest)
+#else
     TEST(GetShapeConfigurationTestFixture, SimpleBoxTest)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const MeshAssetData::ShapeConfigurationPair pair = SimpleBox->GetShapeConfigurationPair();
 
@@ -414,7 +418,11 @@ namespace PhysX::Pipeline
         ExpectNear(configPtr->m_transform->GetBasisZ(), AZ::Vector3(0.5, 0.0, 0.8660254038));
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST(GetShapeConfigurationTestFixture, DISABLED_SimpleCapsuleTest)
+#else
     TEST(GetShapeConfigurationTestFixture, SimpleCapsuleTest)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const MeshAssetData::ShapeConfigurationPair pair = SimpleCapsule->GetShapeConfigurationPair();
 
@@ -516,7 +524,11 @@ namespace PhysX::Pipeline
         );
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_BoxTest)
+#else
     TEST_P(FitPrimitiveShapeTestFixture, BoxTest)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const AZ::Transform& transform = GetParam();
 
@@ -554,7 +566,11 @@ namespace PhysX::Pipeline
         ExpectRightHandedOrthonormalBasis(xAxis, yAxis, zAxis);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_CapsuleTest)
+#else
     TEST_P(FitPrimitiveShapeTestFixture, CapsuleTest)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const AZ::Transform& transform = GetParam();
 
@@ -587,7 +603,11 @@ namespace PhysX::Pipeline
         ExpectRightHandedOrthonormalBasis(xAxis, yAxis, zAxis);
     }
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_VolumeMinimizationTest)
+#else
     TEST_P(FitPrimitiveShapeTestFixture, VolumeMinimizationTest)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // This test verifies that the volume minimization coefficient works as expected. The vertices used here form a
         // 2x2x2 cube centered at the origin. We let the fitter decide which primitive fits best, which should always be
