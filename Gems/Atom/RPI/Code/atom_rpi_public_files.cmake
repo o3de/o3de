@@ -30,6 +30,7 @@ set(FILES
     Include/Atom/RPI.Public/ViewportContextBus.h
     Include/Atom/RPI.Public/ViewportContextManager.h
     Include/Atom/RPI.Public/ViewProviderBus.h
+    Include/Atom/RPI.Public/VisibleObjectContext.h
     Include/Atom/RPI.Public/WindowContext.h
     Include/Atom/RPI.Public/WindowContextBus.h
     Include/Atom/RPI.Public/AuxGeom/AuxGeomDraw.h
@@ -119,6 +120,7 @@ set(FILES
     Source/RPI.Public/ViewGroup.cpp
     Source/RPI.Public/ViewportContext.cpp
     Source/RPI.Public/ViewportContextManager.cpp
+    Source/RPI.Public/VisibleObjectContext.cpp
     Source/RPI.Public/WindowContext.cpp
     Source/RPI.Public/AuxGeomFeatureProcessorInterface.cpp
     Source/RPI.Public/Buffer/Buffer.cpp
