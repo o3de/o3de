@@ -1144,6 +1144,25 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
         consoleViewPane->m_dockWidget->setFloating(false);
 
+        if (assetBrowserViewPane)
+        {
+
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
+            assetBrowserViewPane->m_dockWidget->setFloating(false);
+
+            AzQtComponents::DockTabWidget* bottomTabWidget = m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow);
+            if (bottomTabWidget)
+            {
+                bottomTabWidget->setCurrentWidget(assetBrowserViewPane->m_dockWidget);
+
+                // Resize the bottom tab widget so that the asset browser gets an appropriate default height
+                static const float bottomTabWidgetPercentage = 0.11f;
+                int newHeight = static_cast<int>((float)screenWidth * bottomTabWidgetPercentage);
+                QDockWidget* tabWidgetParent = qobject_cast<QDockWidget*>(bottomTabWidget->parentWidget());
+                m_mainWindow->resizeDocks({ tabWidgetParent }, { newHeight }, Qt::Vertical);
+            }
+        }
+
         if (entityInspectorViewPane)
         {
             m_mainWindow->addDockWidget(Qt::RightDockWidgetArea, entityInspectorViewPane->m_dockWidget);
@@ -1173,19 +1192,13 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             }
         }
 
-        if (assetBrowserViewPane && entityOutlinerViewPane)
+        if (entityOutlinerViewPane)
         {
             m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, entityOutlinerViewPane->m_dockWidget);
             entityOutlinerViewPane->m_dockWidget->setFloating(false);
 
-            m_mainWindow->addDockWidget(Qt::LeftDockWidgetArea, assetBrowserViewPane->m_dockWidget);
-            assetBrowserViewPane->m_dockWidget->setFloating(false);
-
-            m_advancedDockManager->splitDockWidget(m_mainWindow, entityOutlinerViewPane->m_dockWidget, assetBrowserViewPane->m_dockWidget, Qt::Vertical);
-
-            // Resize our entity outliner (and by proxy the asset browser split with it)
-            // so that they get an appropriate default width since the minimum sizes have
-            // been removed from these widgets
+            // Resize our entity outliner so that it gets an appropriate default width
+            // since the minimum sizes been removed from this widget
             static const float entityOutlinerWidthPercentage = 0.15f;
             int newWidth = static_cast<int>((float)screenWidth * entityOutlinerWidthPercentage);
             m_mainWindow->resizeDocks({ entityOutlinerViewPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
