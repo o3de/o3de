@@ -201,7 +201,11 @@ namespace EMotionFX
         QString m_saveLayoutFileName;
     };
 
+#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
+    TEST_F(CanUseLayoutMenuFixture, DISABLED_CanUseLayoutMenu)
+#else
     TEST_F(CanUseLayoutMenuFixture, CanUseLayoutMenu)
+#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         RecordProperty("test_case_id", "C1698603");
 
