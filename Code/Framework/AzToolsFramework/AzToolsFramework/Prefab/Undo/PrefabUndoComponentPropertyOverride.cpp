@@ -138,7 +138,7 @@ namespace AzToolsFramework
                 if (cachedOwningInstanceDom.has_value())
                 {
                     PrefabUndoUtils::UpdateEntityInInstanceDom(
-                        cachedOwningInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocusedPrefab.ToString());
+                        cachedOwningInstanceDom, afterStateOfComponentProperty, relativePathFromOwningPrefab.ToString());
                 }
 
                 // Redo - Update target template of the link.
@@ -160,19 +160,23 @@ namespace AzToolsFramework
 
         void PrefabUndoComponentPropertyOverride::UpdateLink()
         {
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link.has_value())
+            if (m_changed)
             {
-                // In redo, after-state subtrees in map will be moved to the link tree.
-                // In undo, before-state subtrees in map will be moved to the link tree.
-                // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
-                PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(m_overriddenPropertyPath));
-                link->get().AddOverrides(m_overriddenPropertyPath, AZStd::move(m_overriddenPropertySubTree));
-                m_overriddenPropertySubTree = AZStd::move(subtreeInLink);
+                LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
+                if (link.has_value())
+                {
+                    // In redo, after-state subtrees in map will be moved to the link tree.
+                    // In undo, before-state subtrees in map will be moved to the link tree.
+                    // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
+                    AZ_Assert(!m_overriddenPropertyPath.IsEmpty(), "PrefabUndoComponentPropertyOverride - Overriden property path is empty.");
+                    PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(m_overriddenPropertyPath));
+                    link->get().AddOverrides(m_overriddenPropertyPath, AZStd::move(m_overriddenPropertySubTree));
+                    m_overriddenPropertySubTree = AZStd::move(subtreeInLink);
 
-                link->get().UpdateTarget();
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                    link->get().UpdateTarget();
+                    m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
+                    m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                }
             }
         }
     } // namespace Prefab

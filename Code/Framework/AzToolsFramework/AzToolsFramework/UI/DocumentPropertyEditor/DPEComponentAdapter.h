@@ -63,7 +63,7 @@ namespace AZ::DocumentPropertyEditor
         AZ::EntityId m_entityId;
         AZ::ComponentId m_componentId = AZ::InvalidComponentId;
 
-        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
+        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoBatch = nullptr;
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;
