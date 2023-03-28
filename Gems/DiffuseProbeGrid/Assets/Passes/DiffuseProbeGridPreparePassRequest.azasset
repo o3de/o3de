@@ -1,0 +1,10 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassRequest",
+    "ClassData": {
+        "Name": "DiffuseProbeGridPreparePass",
+        "TemplateName": "DiffuseProbeGridPreparePassTemplate",
+        "Enabled": true
+    }
+}

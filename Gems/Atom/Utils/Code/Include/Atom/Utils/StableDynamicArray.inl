@@ -137,9 +137,9 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
-    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> AZStd::vector<AZStd::pair<pageIterator, pageIterator>>
+    auto StableDynamicArray<T, ElementsPerPage, Allocator>::GetParallelRanges() -> ParallelRanges
     {
-        AZStd::vector<AZStd::pair<pageIterator, pageIterator>> pageIterators;
+        ParallelRanges pageIterators;
         Page* page = m_firstPage;
         while (page)
         {
@@ -644,6 +644,18 @@ namespace AZ
     ValueType* StableDynamicArrayWeakHandle<ValueType>::operator->() const
     {
         return m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return m_data == rhs.m_data;
+    }
+
+    template<typename ValueType>
+    bool StableDynamicArrayWeakHandle<ValueType>::operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const
+    {
+        return !operator==(rhs);
     }
 
     // StableDynamicArray::Handle

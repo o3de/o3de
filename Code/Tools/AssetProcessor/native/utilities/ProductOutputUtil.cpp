@@ -8,21 +8,49 @@
 
 #include <native/utilities/ProductOutputUtil.h>
 #include <QString>
+#include <QFile>
 #include <AzCore/std/containers/vector.h>
 #include <AzFramework/IO/FileOperations.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <native/utilities/UuidManager.h>
+#include <native/utilities/IMetadataUpdates.h>
 
 namespace AssetProcessor
 {
-    AZStd::string ProductOutputUtil::GetPrefix(AZ::s64 scanfolderId)
+    AZStd::string ProductOutputUtil::GetInterimPrefix(AZ::s64 scanfolderId)
+    {
+        return AZStd::string::format("(TMP%" PRId64 "___)", int64_t(scanfolderId));
+    }
+
+    AZStd::string ProductOutputUtil::GetFinalPrefix(AZ::s64 scanfolderId)
     {
         return AZStd::string::format("(%" PRId64 ")", int64_t(scanfolderId));
     }
 
-    void ProductOutputUtil::ModifyProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
+    void ProductOutputUtil::GetInterimProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
     {
-        auto prefix = GetPrefix(sourceScanfolderId);
+        auto prefix = GetInterimPrefix(sourceScanfolderId);
         outputFilename = QStringLiteral("%1%2").arg(prefix.c_str()).arg(outputFilename);
+    }
+
+    void ProductOutputUtil::GetFinalProductPath(QString& outputFilename, AZ::s64 sourceScanfolderId)
+    {
+        auto prefix = GetFinalPrefix(sourceScanfolderId);
+        outputFilename = QStringLiteral("%1%2").arg(prefix.c_str()).arg(outputFilename);
+    }
+
+    auto ProductOutputUtil::GetPaths(
+        const AssetBuilderSDK::JobProduct& product,
+        AZStd::string_view platformIdentifier,
+        const AssetUtilities::ProductPath& newProductPath)
+    {
+        AssetUtilities::ProductPath oldProductPath(product.m_productFileName, platformIdentifier);
+        AssetProcessor::ProductAssetWrapper wrapper{ product, oldProductPath };
+
+        auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
+        auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
+
+        return AZStd::make_tuple(oldAbsolutePath, newAbsolutePath);
     }
 
     void ProductOutputUtil::FinalizeProduct(
@@ -42,36 +70,34 @@ namespace AssetProcessor
             if (overrider.isEmpty())
             {
                 // There is no other file or this is the highest priority
+
+                // Sort the products by filename first
+                // This prevents an edge case where there are multiple outputs like
+                // a.png
+                // (2)a.png
+                // from the builder which have been renamed to
+                // (2)a.png
+                // (2)(2)a.png
+                // By sorting, (2)a.png will be renamed first, avoiding the case where (2)(2)a.png is trying to be renamed to (2)a.png which already exists
+                std::stable_sort(
+                    products.begin(),
+                    products.end(),
+                    [](const AssetBuilderSDK::JobProduct& a, const AssetBuilderSDK::JobProduct& b)
+                    {
+                        return a.m_productFileName.compare(b.m_productFileName);
+                    });
+
                 for (auto& product : products)
                 {
-                    QString filename = AZ::IO::PathView(product.m_productFileName).Filename().FixedMaxPathString().c_str();
-
-                    AZStd::string prefix = GetPrefix(sourceAsset.ScanFolderId());
-                    int prefixPos = filename.indexOf(prefix.c_str());
-
-                    if (prefixPos < 0)
+                    AZStd::string newName;
+                    if (!ComputeFinalProductName(GetInterimPrefix(sourceAsset.ScanFolderId()), "", product, newName))
                     {
-                        AZ_Error(
-                            "ProductOutputUtil",
-                            false,
-                            "Product " AZ_STRING_FORMAT " is expected to be prefixed but was not",
-                            AZ_STRING_ARG(product.m_productFileName));
+                        // Error handling is done by function
                         continue;
                     }
 
-                    // Remove the prefix and update
-                    QStringRef unprefixedString = filename.midRef(prefixPos + prefix.size());
-                    AZStd::string newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) /
-                                             unprefixedString.toUtf8().constData())
-                                                .AsPosix()
-                                                .c_str();
-
-                    AssetUtilities::ProductPath oldProductPath(product.m_productFileName, platformIdentifier);
                     AssetUtilities::ProductPath newProductPath(newName, platformIdentifier);
-                    AssetProcessor::ProductAssetWrapper wrapper{ product, oldProductPath };
-
-                    auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
-                    auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
+                    auto [oldAbsolutePath, newAbsolutePath] = GetPaths(product, platformIdentifier, newProductPath);
 
                     product.m_productFileName = newName;
 
@@ -96,21 +122,93 @@ namespace AssetProcessor
                         }
                     }
 
-                    bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
+                    DoFileRename(oldAbsolutePath, newAbsolutePath);
+                }
+            }
+            else
+            {
+                for (auto& product : products)
+                {
+                    AZStd::string newName;
 
-                    if (!result)
+                    if (!ComputeFinalProductName(GetInterimPrefix(sourceAsset.ScanFolderId()), GetFinalPrefix(sourceAsset.ScanFolderId()), product, newName))
                     {
-                        AZ_Error(
-                            "ProductOutputUtil",
-                            false,
-                            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
-                            ".  See previous log messages for details on failure.",
-                            AZ_STRING_ARG(oldAbsolutePath),
-                            AZ_STRING_ARG(newAbsolutePath));
+                        continue;
                     }
+
+                    AssetUtilities::ProductPath newProductPath(newName, platformIdentifier);
+                    auto [oldAbsolutePath, newAbsolutePath] = GetPaths(product, platformIdentifier, newProductPath);
+
+                    product.m_productFileName = newName;
+
+                    DoFileRename(oldAbsolutePath, newAbsolutePath);
                 }
             }
         }
+    }
+
+    bool ProductOutputUtil::ComputeFinalProductName(
+        const AZStd::string& currentPrefix,
+        const AZStd::string& newPrefix,
+        const AssetBuilderSDK::JobProduct& product,
+        AZStd::string& newName)
+    {
+        QString filename = AZ::IO::PathView(product.m_productFileName).Filename().FixedMaxPathString().c_str();
+
+        int prefixPos = filename.indexOf(currentPrefix.c_str());
+
+        if (prefixPos < 0)
+        {
+            AZ_Error(
+                "ProductOutputUtil",
+                false,
+                "Programmer Error - Product " AZ_STRING_FORMAT " is expected to be prefixed but was not",
+                AZ_STRING_ARG(product.m_productFileName));
+            return false;
+        }
+
+        // Remove the prefix and update
+        QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + currentPrefix.size()));
+        newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) / (newPrefix + unprefixedString.toUtf8().constData()))
+                      .StringAsPosix();
+
+        return true;
+    }
+
+    bool ProductOutputUtil::DoFileRename(const AZStd::string& oldAbsolutePath, const AZStd::string& newAbsolutePath)
+    {
+        auto* updateInterface = AZ::Interface<IMetadataUpdates>::Get();
+        AZ_Assert(updateInterface, "Programmer Error - IMetadataUpdates interface is not available.");
+        updateInterface->PrepareForFileMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+
+        bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str(), 1);
+
+        AZ_Error(
+            "ProductOutputUtil",
+            result,
+            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT ".  See previous log messages for details on failure.",
+            AZ_STRING_ARG(oldAbsolutePath),
+            AZ_STRING_ARG(newAbsolutePath));
+
+        auto oldMetadataFile = AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath);
+
+        if (QFile(oldMetadataFile.c_str()).exists())
+        {
+            // Move the metadata file
+            result = AssetUtilities::MoveFileWithTimeout(
+                oldMetadataFile.c_str(),
+                AzToolsFramework::MetadataManager::ToMetadataPath(newAbsolutePath).c_str());
+
+            AZ_Error(
+                "ProductOutputUtil",
+                result,
+                "Failed to move product metadata from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                ".  See previous log messages for details on failure.",
+                AZ_STRING_ARG(oldAbsolutePath),
+                AZ_STRING_ARG(newAbsolutePath));
+        }
+
+        return result;
     }
 
     void ProductOutputUtil::RenameProduct(
@@ -121,7 +219,7 @@ namespace AssetProcessor
         auto oldProductPath = AssetUtilities::ProductPath::FromDatabasePath(existingProduct.m_productName);
         AZ::IO::FixedMaxPath existingProductName(existingProduct.m_productName);
         QString newName = existingProductName.Filename().StringAsPosix().c_str();
-        ModifyProductPath(newName, sourceEntry.m_scanFolderPK);
+        GetFinalProductPath(newName, sourceEntry.m_scanFolderPK);
 
         auto newProductPath = AssetUtilities::ProductPath::FromDatabasePath(
             (AZ::IO::FixedMaxPath(existingProductName.ParentPath()) / newName.toUtf8().constData()).Native().c_str());
@@ -130,14 +228,33 @@ namespace AssetProcessor
         auto oldAbsolutePath = wrapper.HasCacheProduct() ? oldProductPath.GetCachePath() : oldProductPath.GetIntermediatePath();
         auto newAbsolutePath = wrapper.HasCacheProduct() ? newProductPath.GetCachePath() : newProductPath.GetIntermediatePath();
 
+        auto* updateInterface = AZ::Interface<IMetadataUpdates>::Get();
+        AZ_Assert(updateInterface, "Programmer Error - IMetadataUpdates interface is not available.");
+        updateInterface->PrepareForFileMove(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
+
         bool result = AssetUtilities::MoveFileWithTimeout(oldAbsolutePath.c_str(), newAbsolutePath.c_str());
 
-        if (!result)
+        AZ_Error(
+            "ProductOutputUtil",
+            result,
+            "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+            ".  See previous log messages for details on failure.",
+            AZ_STRING_ARG(oldAbsolutePath),
+            AZ_STRING_ARG(newAbsolutePath));
+
+        auto oldMetadataFile = AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath);
+
+        if (QFile(oldMetadataFile.c_str()).exists())
         {
+            // Move the metadata file
+            result = AssetUtilities::MoveFileWithTimeout(
+                AzToolsFramework::MetadataManager::ToMetadataPath(oldAbsolutePath).c_str(),
+                AzToolsFramework::MetadataManager::ToMetadataPath(newAbsolutePath).c_str());
+
             AZ_Error(
                 "ProductOutputUtil",
-                false,
-                "Failed to move product from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
+                result,
+                "Failed to move product metadata from " AZ_STRING_FORMAT " to " AZ_STRING_FORMAT
                 ".  See previous log messages for details on failure.",
                 AZ_STRING_ARG(oldAbsolutePath),
                 AZ_STRING_ARG(newAbsolutePath));

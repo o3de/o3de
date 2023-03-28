@@ -317,13 +317,18 @@ namespace AtomToolsFramework
     void EntityPreviewViewportSettingsInspector::Reset()
     {
         LoadSettings();
+        m_wasPropertyEdit = false;
         InspectorWidget::Reset();
     }
 
     void EntityPreviewViewportSettingsInspector::OnViewportSettingsChanged()
     {
-        LoadSettings();
-        RebuildAll();
+        if (!m_wasPropertyEdit)
+        {
+            LoadSettings();
+            RebuildAll();
+        }
+        m_wasPropertyEdit = false;
     }
 
     void EntityPreviewViewportSettingsInspector::OnModelPresetAdded(const AZStd::string& path)
@@ -338,11 +343,13 @@ namespace AtomToolsFramework
 
     void EntityPreviewViewportSettingsInspector::AfterPropertyModified([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
+        m_wasPropertyEdit = true;
         SaveSettings();
     }
 
     void EntityPreviewViewportSettingsInspector::SetPropertyEditingComplete([[maybe_unused]] AzToolsFramework::InstanceDataNode* pNode)
     {
+        m_wasPropertyEdit = true;
         SaveSettings();
     }
 

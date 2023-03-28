@@ -23,7 +23,7 @@ VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN)
     output.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
     
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
-    output.m_worldPos = worldPosition;
+    output.m_worldPos = worldPosition.xyz;
 
     if (o_prevPosition_isBound)
     {

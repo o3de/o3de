@@ -247,7 +247,7 @@ namespace AzToolsFramework
                         fromPath = item->GetFullPath();
                     }
                     AssetChangeReportRequest request(
-                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete);
+                        AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::CheckDelete, isFolder);
                     AssetChangeReportResponse response;
 
                     if (SendRequest(request, response))
@@ -276,10 +276,31 @@ namespace AzToolsFramework
                                 canDelete = false;
                             }
                         }
+                        else
+                        {
+                            QMessageBox warningBox;
+                            warningBox.setWindowTitle(QObject::tr(isFolder ? "Folder Deletion - Warning" : "Asset Deletion - Warning"));
+                            warningBox.setText(
+                                QObject::tr("O3DE is unable to detect if this file is being used inside a level, prefab, or asset."
+                                            "By deleting these asset(s), you understand this might break a connection if it's still in use."));
+                            warningBox.setInformativeText(
+                                QObject::tr("Currently, delete is a permanent action and cannot be undone.\n"
+                                    "Do you wish to proceed with this deletion?"));
+                            warningBox.setIcon(QMessageBox::Warning);
+                            warningBox.addButton(QMessageBox::Cancel);
+                            warningBox.addButton(QObject::tr("Delete"), QMessageBox::YesRole);
+                            warningBox.setDefaultButton(QMessageBox::Yes);
+                            warningBox.setFixedWidth(600);
+                            if (warningBox.exec() == QMessageBox::Cancel)
+                            {
+                                canDelete = false;
+                            }
+                        }
+
                         if (canDelete)
                         {
                             AssetChangeReportRequest deleteRequest(
-                                AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::Delete);
+                                AZ::OSString(fromPath.c_str()), AZ::OSString(""), AssetChangeReportRequest::ChangeType::Delete, isFolder);
                             AssetChangeReportResponse deleteResponse;
                             if (SendRequest(deleteRequest, deleteResponse))
                             {

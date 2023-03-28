@@ -17,7 +17,6 @@
 #include <EMotionFX/Source/EMotionFXManager.h>
 #include <MCore/Source/Config.h>
 
-
 namespace EMotionFX
 {
     AZ_CLASS_ALLOCATOR_IMPL(BlendSpaceNode, AnimGraphAllocator)

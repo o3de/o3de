@@ -88,11 +88,11 @@ namespace AzToolsFramework
             const AzFramework::SliceInstantiationTicket& ticket) override;
         void OnEditorEntitiesPromotedToSlicedEntities(const AzToolsFramework::EntityIdList& promotedEntities) override;
         void OnEditorEntitiesSliceOwnershipChanged(const AzToolsFramework::EntityIdList& entityIdList) override;
+
         //////////////////////////////////////////////////////////////////////////
         // AzToolsFramework::EditorEntityContextNotificationBus::Handler
         //////////////////////////////////////////////////////////////////////////
-        void PrepareForContextReset() override { m_preparingForContextReset = true; }
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         void OnEntityStreamLoadBegin() override;
         void OnEntityStreamLoadSuccess() override;
         void OnEntityStreamLoadFailed() override;

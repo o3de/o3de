@@ -282,7 +282,10 @@ namespace AZ
             // PSO-impacting property changes are allowed in the editor because the saved data can be analyzed to pre-compile the necessary PSOs.
             for (auto& materialAssignment : materials)
             {
-                materialAssignment.second.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+                if (materialAssignment.second.m_materialInstance)
+                {
+                    materialAssignment.second.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+                }
             }
         }
 
