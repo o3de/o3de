@@ -123,12 +123,48 @@ namespace AZ
                 shaderRelativePath.c_str(),
                 sourceInfo,
                 watchFolder);
-            if (!shaderSourceFound)
+            if (shaderSourceFound)
             {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to find shader source from relative path=[%s]", shaderRelativePath.c_str());
+                return AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), shaderRelativePath.c_str(), shaderSourceFileFullPath, true);
+            }
+
+            // There are two reasons we may end up here:
+            // 1- The *.shader file does not exist.
+            // 2- The *.shader file actually exists, but it is not yet registered in the AP's database.
+            // The only way out, is to search manually across all scan folders.
+            AZ_Trace(ShaderVariantAssetBuilderName, "Did not find the shader [%s] by normal means, will loop manually across all scan folders...", shaderRelativePath.c_str());
+
+            AZStd::vector<AZStd::string> scanFolders;
+            bool foundScanFolders = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                foundScanFolders,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders,
+                scanFolders);
+            if (!foundScanFolders)
+            {
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to get the scan folders!");
                 return false;
             }
-            return AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), shaderRelativePath.c_str(), shaderSourceFileFullPath, true);
+
+            auto fileIO = AZ::IO::LocalFileIO::GetInstance();
+            AZ_Assert(fileIO, "Invalid AZ::IO::LocalFileIO");
+            for (const auto& scanFolder : scanFolders)
+            {
+                if (!AzFramework::StringFunc::Path::ConstructFull(scanFolder.c_str(), shaderRelativePath.c_str(), shaderSourceFileFullPath, true))
+                {
+                    AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to construct full path for scan folder=[%s] and shader=[%s]",
+                        scanFolder.c_str(), shaderRelativePath.c_str());
+                    return false;
+                }
+
+                if (fileIO->Exists(shaderSourceFileFullPath.c_str()))
+                {
+                    return true;
+                }
+            }
+
+            AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to find shader source from relative path=[%s]", shaderRelativePath.c_str());
+            return false;
         }
 
 
