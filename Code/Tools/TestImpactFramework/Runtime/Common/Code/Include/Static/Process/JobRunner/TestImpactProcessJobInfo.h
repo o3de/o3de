@@ -135,7 +135,6 @@ namespace AZStd
     template<typename AdditionalInfo>
     struct less<typename TestImpact::JobInfo<AdditionalInfo>>
     {
-        //! Hash of JobInfo is the hash of the JobInfo's Id.
         bool operator()(const typename TestImpact::JobInfo<AdditionalInfo>& lhs, const typename TestImpact::JobInfo<AdditionalInfo>& rhs) const
         {
             return lhs.GetId().m_value < rhs.GetId().m_value;
@@ -146,7 +145,6 @@ namespace AZStd
     template<typename AdditionalInfo>
     struct hash<typename TestImpact::JobInfo<AdditionalInfo>>
     {
-        //! Hash of JobInfo is the hash of the JobInfo's Id.
         size_t operator()(const typename TestImpact::JobInfo<AdditionalInfo>& jobInfo) const noexcept
         {
             return hash<typename TestImpact::JobInfo<AdditionalInfo>::IdType>{}(jobInfo.GetId().m_value);

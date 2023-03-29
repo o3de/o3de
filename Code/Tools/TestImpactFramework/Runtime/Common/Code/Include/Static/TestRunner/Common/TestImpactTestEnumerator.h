@@ -67,7 +67,7 @@ namespace TestImpact
 
         for (auto jobInfo = jobInfos.begin(); jobInfo != jobInfos.end(); ++jobInfo)
         {
-            // If this job doesn't support enumeratoration, add a blank enumeration
+            // If this job doesn't support enumeration, add an empty enumeration
             if (jobInfo->GetCommand().m_args.empty())
             {
                 // Test target cannot enumerate, this job will not be placed in the job queue
