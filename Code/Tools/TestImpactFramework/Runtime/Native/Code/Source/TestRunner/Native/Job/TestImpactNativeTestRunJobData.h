@@ -24,6 +24,32 @@ namespace TestImpact
         {
         }
 
+        //! Copy and move constructors/assignment operators.
+        NativeTestRunJobData(const NativeTestRunJobData& other)
+            : Parent(other)
+            , m_launchMethod(other.m_launchMethod)
+        {
+        }
+
+        NativeTestRunJobData(NativeTestRunJobData&& other)
+            : Parent(AZStd::move(other))
+            , m_launchMethod(AZStd::move(other.m_launchMethod))
+        {
+        }
+
+        NativeTestRunJobData& operator=(const NativeTestRunJobData& other)
+        {
+            m_launchMethod = other.m_launchMethod;
+            return *this;
+        }
+
+        NativeTestRunJobData& operator=(NativeTestRunJobData&& other)
+        {
+            m_launchMethod = AZStd::move(other.m_launchMethod);
+            return *this;
+        }
+
+
         LaunchMethod GetLaunchMethod() const
         {
             return m_launchMethod;

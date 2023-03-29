@@ -10,6 +10,12 @@
 
 namespace TestImpact
 {
+    namespace SupportedTestFrameworks
+    {
+        //! The CTest label for the GTest framework.
+        inline constexpr auto GTest = "FRAMEWORK_googletest";
+    } // namespace SupportedTestFrameworks
+
     NativeTestTarget::NativeTestTarget(
         TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData)
         : TestTarget(AZStd::move(descriptor), AZStd::move(testMetaData.m_testTargetMeta))
@@ -25,5 +31,10 @@ namespace TestImpact
     LaunchMethod NativeTestTarget::GetLaunchMethod() const
     {
         return m_launchMeta.m_launchMethod;
+    }
+
+    bool NativeTestTarget::CanEnumerate() const
+    {
+        return GetSuiteLabelSet().contains(SupportedTestFrameworks::GTest);
     }
 } // namespace TestImpact
