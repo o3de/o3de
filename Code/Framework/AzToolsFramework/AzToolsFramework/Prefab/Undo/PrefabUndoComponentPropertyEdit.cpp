@@ -44,7 +44,7 @@ namespace AzToolsFramework::Prefab
             PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom, endState, pathToComponentProperty);
+                PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, endState, pathToComponentProperty);
             }
         }
     }

@@ -53,7 +53,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::RemoveValueInInstanceDom(cachedOwningInstanceDom, entityAliasPath);
+                    PrefabUndoUtils::RemoveValueInPrefabDom(cachedOwningInstanceDom, entityAliasPath);
                 }
             }
 
@@ -121,7 +121,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateValueInInstanceDom(
+                    PrefabUndoUtils::UpdateValueInPrefabDom(
                         cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                 }
             }

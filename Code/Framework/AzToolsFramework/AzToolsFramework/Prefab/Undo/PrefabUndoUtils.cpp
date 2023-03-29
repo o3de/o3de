@@ -81,24 +81,24 @@ namespace AzToolsFramework
                 }
             }
 
-            void UpdateValueInInstanceDom(
-                PrefabDomReference instanceDom, const PrefabDomValue& domValue, const AZStd::string& pathToValue)
+            void UpdateValueInPrefabDom(
+                PrefabDomReference prefabDom, const PrefabDomValue& domValue, const AZStd::string& pathToValue)
             {
                 if (!pathToValue.empty())
                 {
-                    PrefabDomValue endStateCopy(domValue, instanceDom->get().GetAllocator());
+                    PrefabDomValue endStateCopy(domValue, prefabDom->get().GetAllocator());
 
                     PrefabDomPath domPathToValue(pathToValue.c_str());
-                    domPathToValue.Set(instanceDom->get(), endStateCopy.Move());
+                    domPathToValue.Set(prefabDom->get(), endStateCopy.Move());
                 }
             }
 
-            void RemoveValueInInstanceDom(PrefabDomReference instanceDom, const AZStd::string& pathToRemove)
+            void RemoveValueInPrefabDom(PrefabDomReference prefabDom, const AZStd::string& pathToRemove)
             {
                 if (!pathToRemove.empty())
                 {
                     PrefabDomPath domPathToRemove(pathToRemove.c_str());
-                    domPathToRemove.Erase(instanceDom->get());
+                    domPathToRemove.Erase(prefabDom->get());
                 }
             }
 

@@ -123,7 +123,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateValueInInstanceDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
+                    PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, entityDomAfterUpdate, entityAliasPath);
                 }
             }
 

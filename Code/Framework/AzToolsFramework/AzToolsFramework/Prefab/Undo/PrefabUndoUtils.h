@@ -48,20 +48,20 @@ namespace AzToolsFramework
                 const PrefabDomValue& domValueAfterUpdate,
                 const AZStd::string& pathToValue);
 
-            //! Update the value in instance DOM with the provided DOM value.
-            //! @param instanceDom The given instance DOM.
-            //! @param domValue The DOM value that will be put in the instance DOM.
+            //! Update the value in prefab DOM with the provided DOM value.
+            //! @param prefabDom The given prefab DOM.
+            //! @param domValue The DOM value that will be put in the prefab DOM.
             //! @param pathToValue The given path to the value.
-            void UpdateValueInInstanceDom(
-                PrefabDomReference instanceDom,
+            void UpdateValueInPrefabDom(
+                PrefabDomReference prefabDom,
                 const PrefabDomValue& domValue,
                 const AZStd::string& pathToValue);
 
-            //! Remove DOM value in instance DOM.
-            //! @param instanceDom The given instance DOM.
+            //! Remove DOM value in prefab DOM.
+            //! @param prefabDom The given prefab DOM.
             //! @param pathToRemove The path to where the value will be removed.
-            void RemoveValueInInstanceDom(
-                PrefabDomReference instanceDom,
+            void RemoveValueInPrefabDom(
+                PrefabDomReference prefabDom,
                 const AZStd::string& pathToRemove);
 
         } // namespace PrefabUndoUtils
