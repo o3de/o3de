@@ -186,7 +186,7 @@ namespace AzFramework
         return true;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status)
+    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status) const
     {
         status.outputDeviceReady = m_stdOutRead->IsValid() && !m_stdOutRead->IsBroken();
         status.errorsDeviceReady = m_stdErrRead->IsValid() && !m_stdErrRead->IsBroken();

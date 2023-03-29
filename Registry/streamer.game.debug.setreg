@@ -15,7 +15,7 @@
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
                                 "$stack_after": "Splitter",
-                                "MaxFileHandles": 128 
+                                "MaxFileHandles": 1024 
                             }
                         }
                     },
@@ -26,12 +26,12 @@
                             "Drive":
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
-                                "MaxFileHandles": 128 
+                                "MaxFileHandles": 1024 
                             },
                             "Remote drive":
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
-                                "MaxFileHandles": 128 
+                                "MaxFileHandles": 1024 
                             }
                         }
                     }

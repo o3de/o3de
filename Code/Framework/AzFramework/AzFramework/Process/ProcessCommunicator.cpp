@@ -45,15 +45,13 @@ namespace AzFramework
     void ProcessCommunicator::ReadIntoProcessOutput(ProcessOutput& processOutput)
     {
         OutputStatus status;
+        char readBuffer[s_readBufferSize];
 
         // read from the process until the handle is no longer valid
         while (true)
         {
             WaitForReadyOutputs(status);
-            if (status.shouldReadErrors || status.shouldReadOutput)
-            {
-                ReadFromOutputs(processOutput, status);
-            }
+            ReadFromOutputs(processOutput, status, readBuffer, s_readBufferSize);
 
             if (!status.outputDeviceReady && !status.errorsDeviceReady)
             {
@@ -62,26 +60,27 @@ namespace AzFramework
         }
     }
 
-    void ProcessCommunicator::ReadFromOutputs(ProcessOutput& processOutput, OutputStatus& status)
+    void ProcessCommunicator::ReadFromOutputs(ProcessOutput& processOutput, OutputStatus& status, char* buffer, AZ::u32 bufferSize)
     {
         AZ::u32 bytesRead = 0;
-        // Send in the size + 1 to leave room for us to write out the 0 in
-        char readBuffer[s_readBufferSize+1];
 
         if (status.shouldReadOutput)
         {
-            bytesRead = ReadOutput(readBuffer, s_readBufferSize);
-            readBuffer[bytesRead] = 0;
-            processOutput.outputResult.append(readBuffer, bytesRead);
+            // Send in the size - 1 to leave room for us to write out the 0 in
+            // bytesRead position on the next line
+            bytesRead = ReadOutput(buffer, bufferSize - 1);
+            buffer[bytesRead] = 0;
+            processOutput.outputResult.append(buffer, bytesRead);
         }
 
         if (status.shouldReadErrors)
         {
-            bytesRead = ReadError(readBuffer, s_readBufferSize);
-            readBuffer[bytesRead] = 0;
-            processOutput.errorResult.append(readBuffer, bytesRead);
+            // Send in the size - 1 to leave room for us to write out the 0 in
+            // bytesRead position on the next line
+            bytesRead = ReadError(buffer, bufferSize - 1);
+            buffer[bytesRead] = 0;
+            processOutput.errorResult.append(buffer, bytesRead);
         }
-
     }
 
     AZ::u32 ProcessCommunicatorForChildProcess::BlockUntilInputAvailable(AZStd::string& readBuffer)
@@ -142,7 +141,6 @@ namespace AzFramework
         m_stdInWrite->Close();
         m_stdOutRead->Close();
         m_stdErrRead->Close();
-        m_communicatorData.reset();
         m_initialized = false;
     }
 

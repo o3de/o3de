@@ -210,19 +210,15 @@ namespace AzFramework
         return true;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status)
+    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status) const
     {
-        // you cannot, in Windows, WaitForMultipleObjects on a pipe.
-        // we only call it if either one of them is not a pipe...
         status.outputDeviceReady = m_stdOutRead->IsValid() && !m_stdOutRead->IsBroken();
         status.errorsDeviceReady = m_stdErrRead->IsValid() && !m_stdErrRead->IsBroken();
         status.shouldReadOutput = status.shouldReadErrors = false;
 
-        bool areAnyInputsPipes = m_stdOutRead->IsPipe() || m_stdErrRead->IsPipe();
-
-        // if neither of them is a pipe, we can use WaitForMultipleObjects on that one:
-        if ((status.outputDeviceReady || status.errorsDeviceReady) && !areAnyInputsPipes)
+        if (status.outputDeviceReady || status.errorsDeviceReady)
         {
+            DWORD waitResult = 0;
             HANDLE waitHandles[2];
             AZ::u32 handleCount = 0;
 
@@ -230,18 +226,28 @@ namespace AzFramework
             {
                 waitHandles[handleCount++] = m_stdOutRead->GetHandle();
             }
+
             if (status.errorsDeviceReady)
             {
                 waitHandles[handleCount++] = m_stdErrRead->GetHandle();
             }
-            WaitForMultipleObjects(handleCount, waitHandles, false, INFINITE);
+
+            waitResult = WaitForMultipleObjects(handleCount, waitHandles, false, INFINITE);
+            switch (waitResult)
+            {
+            case WAIT_OBJECT_0:
+                // If output handle was present, that's the one that signaled, otherwise it was stdError
+                status.shouldReadOutput = status.outputDeviceReady;
+                status.shouldReadErrors = !status.shouldReadOutput;
+                break;
+            case WAIT_OBJECT_0 + 1:
+                // this can only ever be stdError
+                status.shouldReadErrors = true;
+                break;
+            default:
+                break;
+            };
         }
-        // Don't trust the result of WaitForMultipleObjects!
-        // Not only does it fail to work when any of them are pipes (it is not supported to call WaitForXXXX on pipes),
-        // but it also doesn't handle the case where more than one object is signaled...
-        // So regardless of what happened, check if maybe BOTH are ready:
-        status.shouldReadErrors = (PeekHandle(m_stdErrRead) > 0);
-        status.shouldReadOutput = (PeekHandle(m_stdOutRead) > 0);
     }
 
     bool StdInOutProcessCommunicatorForChildProcess::AttachToExistingPipes()

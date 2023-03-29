@@ -16,8 +16,7 @@
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
                                 "$stack_after": "Drive",
                                 // The maximum number of file handles that the drive will cache.
-                                // The Streamer will not close handles until it has at least this many handles open
-                                "MaxFileHandles": 128
+                                "MaxFileHandles": 1024
                             }
                         }
                     }

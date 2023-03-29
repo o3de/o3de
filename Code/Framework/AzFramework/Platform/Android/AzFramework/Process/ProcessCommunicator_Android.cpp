@@ -31,7 +31,7 @@ namespace AzFramework
         return false;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs([[maybe_unused]] OutputStatus& status)
+    void StdInOutProcessCommunicator::WaitForReadyOutputs([[maybe_unused]] OutputStatus& status) const
     {
         status.outputDeviceReady = false;
         status.errorsDeviceReady = false;

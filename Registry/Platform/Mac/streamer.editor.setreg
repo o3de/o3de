@@ -19,7 +19,7 @@
                             {
                                 "$type": "AzFramework::RemoteStorageDriveConfig",
                                 "$stack_after": "Drive",
-                                "MaxFileHandles": 128
+                                "MaxFileHandles": 1024
                             }
                         }
                     }
