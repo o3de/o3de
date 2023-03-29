@@ -60,16 +60,16 @@ namespace AzToolsFramework
                 patches.PushBack(removeTargetEntityPatch.Move(), patches.GetAllocator());
             }
 
-            void AppendUpdateValuePatchByComparison(
+            void GenerateAndAppendPatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValueBeforeUpdate,
                 const PrefabDomValue& domValueAfterUpdate,
                 const AZStd::string& pathToValue)
             {
-                AZ_Assert(patches.IsArray(), "AppendUpdateValuePatchByComparison - Provided patches should be an array object DOM value.");
+                AZ_Assert(patches.IsArray(), "GenerateAndAppendPatch - Provided patches should be an array object DOM value.");
 
                 auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "AppendUpdateValuePatchByComparison - Could not get InstanceToTemplateInterface.");
+                AZ_Assert(instanceToTemplateInterface, "GenerateAndAppendPatch - Could not get InstanceToTemplateInterface.");
 
                 PrefabDom newPatches(&(patches.GetAllocator()));
                 instanceToTemplateInterface->GeneratePatch(newPatches, domValueBeforeUpdate, domValueAfterUpdate);

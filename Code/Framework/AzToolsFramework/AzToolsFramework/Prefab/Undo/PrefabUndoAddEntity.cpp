@@ -63,9 +63,9 @@ namespace AzToolsFramework
                 }
                 else
                 {
-                    PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_redoPatch, parentEntityDomBeforeAddingEntity, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                    PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_undoPatch, parentEntityDomAfterAddingEntity, parentEntityDomBeforeAddingEntity, parentEntityAliasPath);
                 }
             }
@@ -85,9 +85,9 @@ namespace AzToolsFramework
                     }
                     else
                     {
-                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             m_undoPatch, parentEntityDomAfterAddingEntity, *parentEntityDomInFocusedTemplate, parentEntityAliasPath);
                     }
                 }

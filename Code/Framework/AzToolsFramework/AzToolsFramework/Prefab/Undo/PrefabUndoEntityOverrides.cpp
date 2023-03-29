@@ -94,7 +94,7 @@ namespace AzToolsFramework
 
                     if (entityDomInTopTemplate)
                     {
-                        PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                        PrefabUndoUtils::GenerateAndAppendPatch(
                             overridePatches, *entityDomInTopTemplate, entityDomAfterUpdate, entityPathFromTopInstance);
                     }
                     else if (auto overrideType = m_prefabOverridePublicInterface->GetEntityOverrideType(entity->GetId());

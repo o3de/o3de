@@ -35,8 +35,8 @@ namespace AzToolsFramework::Prefab
         m_templateId = instance.GetTemplateId();
 
         // generate undo/redo patches
-        PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_redoPatch, initialState, endState, pathToComponentProperty);
-        PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_undoPatch, endState, initialState, pathToComponentProperty);
+        PrefabUndoUtils::GenerateAndAppendPatch(m_redoPatch, initialState, endState, pathToComponentProperty);
+        PrefabUndoUtils::GenerateAndAppendPatch(m_undoPatch, endState, initialState, pathToComponentProperty);
 
         // Preemptively updates the cached DOM to prevent reloading instance DOM.
         if (updateCache)

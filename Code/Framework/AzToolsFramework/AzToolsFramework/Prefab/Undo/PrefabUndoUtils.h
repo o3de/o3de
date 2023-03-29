@@ -42,7 +42,7 @@ namespace AzToolsFramework
             //! @param domValueBeforeUpdate The DOM presenting state of the value before update.
             //! @param domValueAfterUpdate The DOM presenting state of the value after update.
             //! @param pathToValue The given path to the value.
-            void AppendUpdateValuePatchByComparison(
+            void GenerateAndAppendPatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValueBeforeUpdate,
                 const PrefabDomValue& domValueAfterUpdate,

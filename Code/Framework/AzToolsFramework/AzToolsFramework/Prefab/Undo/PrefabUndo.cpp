@@ -113,8 +113,8 @@ namespace AzToolsFramework
 
             //generate undo/redo patches
             const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId);
-            PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_redoPatch, initialState, endState, entityAliasPath);
-            PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_undoPatch, endState, initialState, entityAliasPath);
+            PrefabUndoUtils::GenerateAndAppendPatch(m_redoPatch, initialState, endState, entityAliasPath);
+            PrefabUndoUtils::GenerateAndAppendPatch(m_undoPatch, endState, initialState, entityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             if (updateCache)

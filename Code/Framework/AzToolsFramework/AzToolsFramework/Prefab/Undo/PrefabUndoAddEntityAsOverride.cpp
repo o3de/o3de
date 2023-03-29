@@ -74,8 +74,8 @@ namespace AzToolsFramework
                     "Could not load parent entity's DOM from the focused template's DOM. "
                     "Focused template id: '%llu'.", static_cast<AZ::u64>(focusedTemplateId));
 
-                PrefabUndoUtils::AppendUpdateValuePatchByComparison(m_redoPatch,
-                    *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
+                PrefabUndoUtils::GenerateAndAppendPatch(
+                    m_redoPatch, *parentEntityDomInFocusedTemplate, parentEntityDomAfterAddingEntity, parentEntityAliasPathForPatch);
             }
 
             const AZStd::string newEntityAliasPathForPatch =

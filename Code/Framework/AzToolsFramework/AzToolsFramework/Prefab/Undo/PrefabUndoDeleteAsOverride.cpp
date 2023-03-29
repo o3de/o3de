@@ -116,7 +116,7 @@ namespace AzToolsFramework
                     PrefabDom parentEntityDomAfterRemovingChildren;
                     m_instanceToTemplateInterface->GenerateEntityDomBySerializing(parentEntityDomAfterRemovingChildren, *parentEntity);
 
-                    PrefabUndoUtils::AppendUpdateValuePatchByComparison(
+                    PrefabUndoUtils::GenerateAndAppendPatch(
                         m_redoPatch,
                         *parentEntityDomInFocusedTemplate,
                         parentEntityDomAfterRemovingChildren,
