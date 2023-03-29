@@ -39,7 +39,7 @@ namespace AZ
 
         public:
             using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
-						
+
             ModelDataInstance();
 
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
