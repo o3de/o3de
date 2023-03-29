@@ -6,7 +6,7 @@
                     "CommonSrgsShaderAssetPath": "shaders/sceneandviewsrgs.azshader",
                     "ImageSystemDescriptor": {
                         "SystemStreamingImagePoolSize": 0,
-                        "SystemStreamingImagePoolMipBias": 1,
+                        "SystemStreamingImagePoolMipBias": 0,
                         "SystemAttachmentImagePoolSize": 0
                     },
                     "GpuQuerySystemDescriptor": {
