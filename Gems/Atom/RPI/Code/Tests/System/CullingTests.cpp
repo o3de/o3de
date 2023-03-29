@@ -166,6 +166,7 @@ namespace UnitTest
             cullable.m_cullData.m_boundingObb = Obb::CreateFromAabb(aabb);
             cullable.m_cullData.m_boundingSphere = Sphere::CreateFromAabb(aabb);
             cullable.m_cullData.m_visibilityEntry.m_boundingVolume = aabb;
+            cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List;
 
             // Set all bits in the draw list mask by default, so everything will be rendered
             cullable.m_cullData.m_drawListMask.reset();
@@ -235,7 +236,6 @@ namespace UnitTest
     {
         for (Cullable& object : m_testObjects)
         {
-            object.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List;
             m_cullingScene->RegisterOrUpdateCullable(object);
         }
 
