@@ -60,11 +60,12 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() override;
-        DetailedOutcome AddProject(const QString& path) override;
+        DetailedOutcome AddProject(const QString& path, bool force = false) override;
         DetailedOutcome RemoveProject(const QString& path) override;
         AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
         AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(
             const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) override;
+        AZ::Outcome<QStringList, IPythonBindings::ErrorPair> GetProjectEngineIncompatibleObjects(const QString& projectPath) override;
         DetailedOutcome AddGemsToProject(
             const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) override;
         AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
