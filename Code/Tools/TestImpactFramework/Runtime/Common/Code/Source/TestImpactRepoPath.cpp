@@ -52,6 +52,17 @@ namespace TestImpact
     AZ::IO::PathView RepoPath::RootName() const { return m_path.RootName(); }
     AZ::IO::PathView RepoPath::RelativePath() const { return m_path.RelativePath(); }
 
+    constexpr RepoPath& RepoPath::ReplaceFilename(const AZ::IO::PathView& replacementFilename)
+    {
+        m_path.ReplaceFilename(replacementFilename);
+        return *this;
+    }
+    
+    constexpr RepoPath& RepoPath::ReplaceExtension(const AZ::IO::PathView& replacementExtension)
+    {
+        m_path.ReplaceExtension(replacementExtension);
+        return *this;
+    }
 
     RepoPath& RepoPath::operator=(const string_type& other) noexcept
     {

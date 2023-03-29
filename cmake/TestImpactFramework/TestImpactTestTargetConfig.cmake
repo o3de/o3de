@@ -46,7 +46,6 @@ endif()
 #! o3de_test_impact_apply_test_labels: applies the the appropriate label to a test target for running in CTest according to whether
 #  or not their test framework type is enabled for running in TIAF.
 #
-# \arg:TEST_NAME The test target name
 # \arg:TEST_FRAMEWORK The test framework type of the test target
 # \arg:TEST_LABELS The existing test labels list that the TIAF label will be appended to
 function(o3de_test_impact_apply_test_labels TEST_FRAMEWORK TEST_LABELS)
