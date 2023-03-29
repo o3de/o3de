@@ -93,6 +93,30 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --json-prefix="/My/Anchor"')" "\n");
         AZ_Printf("Help", R"(    example: 'createtype --type-name="AZ::Entity" --output-file=object.json)" "\n");
         AZ_Printf("Help", "\n");
+        AZ_Printf("Help", "  'createuuid': Create a UUID using a SHA1 hash from a string and output the contents to stdout or a file.\n");
+        AZ_Printf("Help", "    [arg] --values=<string...>: One or more strings to convert to UUID.\n");
+        AZ_Printf("Help", "        Multiple strings can be specified by either using multiple `--values` option or with a single `--values` option by separating them by a comma without any quotes.\n");
+        AZ_Printf("Help", R"(        Ex. --values "engine.json" --values "project.json")" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json)" "\n");
+        AZ_Printf("Help", R"(        Ex. --values engine.json,project.json --values gem.json)" "\n");
+        AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed uuids.\n");
+        AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
+        AZ_Printf("Help", "    [opt] --with-curly-braces=<true|false> Outputs the Uuid with curly braces. Defaults to true\n");
+        AZ_Printf("Help", "         Ex. when true = {0123456789abcdef0123456789abcdef}\n");
+        AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
+        AZ_Printf("Help", "    [opt] --with-dashes=<true|false> Outputs the Uuid with dashes. Defaults to true\n");
+        AZ_Printf("Help", "         Ex. when true = 01234567-89ab-cdef-0123-456789abcdef\n");
+        AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
+        AZ_Printf("Help", "    [opt] -q --quiet suppress output of string used to generate the Uuid\n");
+        AZ_Printf("Help", "         Ex. when set = 01234567-89ab-cdef-0123-456789abcdef\n");
+        AZ_Printf("Help", "         Ex. when not set = 01234567-89ab-cdef-0123-456789abcdef <uuid-string>\n");
+        AZ_Printf("Help", R"(    example: 'createuuid --values="engine.json"')" "\n");
+        AZ_Printf("Help", R"(        output: {3B28A661-E723-5EBE-AB52-EC5829D88C31} engine.json)" "\n");
+        AZ_Printf("Help", R"(    example: 'createuuid --values="engine.json" --values="project.json"')" "\n");
+        AZ_Printf("Help", R"(        output: {3B28A661-E723-5EBE-AB52-EC5829D88C31} engine.json)" "\n");
+        AZ_Printf("Help", R"(        output: {B076CDDC-14DF-50F4-A5E9-7518ABB3E851} project.json)" "\n");
+        AZ_Printf("Help", R"(    example: 'createtype --values=engine.json,project.json --output-file=uuids.txt')" "\n");
+        AZ_Printf("Help", "\n");
         AZ_Printf("Help", "  Miscellaneous Options:\n");
         AZ_Printf("Help", "  This options can be used with any of the above actions:\n");
         AZ_Printf("Help", "    [opt] --regset <setreg_key>=<setreg_value>: Set setreg_value at key setreg_key within the settings registry.\n");
@@ -159,6 +183,10 @@ namespace SerializeContextTools
             else if (AZ::StringFunc::Equal("createtype", action))
             {
                 result = Dumper::CreateType(application);
+            }
+            else if (AZ::StringFunc::Equal("createuuid", action))
+            {
+                result = Dumper::CreateUuid(application);
             }
             else
             {

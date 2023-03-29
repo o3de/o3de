@@ -324,6 +324,13 @@ void CUndoManager::Redo(int numSteps)
             m_bRedoing = true;
             CUndoStep* redo = m_redoStack.back();
             redo->Redo();
+
+            GetIEditor()->GetLogFile()->FormatLine(
+                "(Undo: %d, Redo: %d) - Redo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                redo->GetName().toUtf8().constData());
+
             m_redoStack.pop_back();
             // Push undo object to redo stack.
             m_undoStack.push_back(redo);
@@ -335,7 +342,6 @@ void CUndoManager::Redo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Redo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
     GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bRedoing = true;
@@ -379,6 +385,13 @@ void CUndoManager::Undo(int numSteps)
             m_bUndoing = true;
             CUndoStep* undo = m_undoStack.back();
             undo->Undo(true);
+
+            GetIEditor()->GetLogFile()->FormatLine(
+                "(Undo: %d, Redo: %d) - Undo last operation: '%s'",
+                m_undoStack.size(),
+                m_redoStack.size(),
+                undo->GetName().toUtf8().constData());
+
             m_undoStack.pop_back();
             // Push undo object to redo stack.
             m_redoStack.push_back(undo);
@@ -391,7 +404,6 @@ void CUndoManager::Undo(int numSteps)
     {
         GetIEditor()->UpdateViews(eUpdateObjects);
     }
-    GetIEditor()->GetLogFile()->FormatLine("Undo (Undo:%d,Redo:%d)", m_undoStack.size(), m_redoStack.size());
     GetIEditor()->GetObjectManager()->InvalidateVisibleList();
 
     m_bUndoing = true;

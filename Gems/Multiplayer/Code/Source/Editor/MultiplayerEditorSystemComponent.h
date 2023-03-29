@@ -19,6 +19,7 @@
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/Process/ProcessCommunicatorTracePrinter.h>
 #include <AzFramework/Viewport/ScreenGeometry.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabToInMemorySpawnableNotificationBus.h>
 #include <AzToolsFramework/Editor/EditorContextMenuBus.h>
@@ -54,6 +55,7 @@ namespace Multiplayer
         , private AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler
         , private AzToolsFramework::EditorEntityContextNotificationBus::Handler
         , private AzToolsFramework::EditorContextMenuBus::Handler
+        , private AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(MultiplayerEditorSystemComponent, "{9F335CC0-5574-4AD3-A2D8-2FAEF356946C}");
@@ -95,14 +97,18 @@ namespace Multiplayer
         //! @{
         void OnStartPlayInEditorBegin() override;
         void OnStartPlayInEditor() override;
+        void OnStopPlayInEditorBegin() override;
         //! @}
 
         //! AzToolsFramework::EditorContextMenu::Bus::Handler overrides
         //! @{
         void PopulateEditorGlobalContextMenu(QMenu* menu, const AZStd::optional<AzFramework::ScreenPoint>& point, int flags) override;
         int GetMenuPosition() const override;
-        void OnStopPlayInEditorBegin() override;
         //! @}
+
+        // AzToolsFramework::ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
 
         //! AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler overrides
         //! @{

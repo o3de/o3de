@@ -254,7 +254,7 @@ private:
 
     AZStd::shared_ptr<AzToolsFramework::AssetDatabase::AssetDatabaseConnection> m_sharedDbConnection;
 
-    AZStd::string m_cachedSourceAssetSelection;
+    AssetProcessor::SourceAndScanID m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
     QMetaObject::Connection m_connectionForResettingAssetsView;
 };

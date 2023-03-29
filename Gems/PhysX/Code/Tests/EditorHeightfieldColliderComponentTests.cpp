@@ -60,6 +60,9 @@ namespace PhysXEditorTests
                 {PhysX::MaterialConstants::DensityName, defaultMaterialConfiguration.m_density},
                 {PhysX::MaterialConstants::RestitutionCombineModeName, static_cast<AZ::u32>(defaultMaterialConfiguration.m_restitutionCombine)},
                 {PhysX::MaterialConstants::FrictionCombineModeName, static_cast<AZ::u32>(defaultMaterialConfiguration.m_frictionCombine)},
+                {PhysX::MaterialConstants::CompliantContactModeEnabledName, defaultMaterialConfiguration.m_compliantContactMode.m_enabled},
+                {PhysX::MaterialConstants::CompliantContactModeDampingName, defaultMaterialConfiguration.m_compliantContactMode.m_damping},
+                {PhysX::MaterialConstants::CompliantContactModeStiffnessName, defaultMaterialConfiguration.m_compliantContactMode.m_stiffness},
                 {PhysX::MaterialConstants::DebugColorName, defaultMaterialConfiguration.m_debugColor}
             };
 

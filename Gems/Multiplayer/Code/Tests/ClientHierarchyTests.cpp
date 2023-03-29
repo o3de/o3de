@@ -461,7 +461,8 @@ namespace Multiplayer
         {
             NetEntityIdSet inputProcessedEntities;
             size_t processInputCallCounter = 0;
-            auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](NetEntityId netEntityId)
+            auto processInputCallback = [&inputProcessedEntities, &processInputCallCounter](
+                NetEntityId netEntityId, [[maybe_unused]] Multiplayer::NetworkInput& input, [[maybe_unused]] float deltaTime)
             {
                 inputProcessedEntities.insert(netEntityId);
                 processInputCallCounter++;

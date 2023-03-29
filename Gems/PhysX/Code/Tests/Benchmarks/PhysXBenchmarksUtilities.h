@@ -68,7 +68,8 @@ namespace PhysX::Benchmarks
             int benchmarkObjectType,
             GenerateColliderFuncPtr* genColliderFuncPtr = nullptr, GenerateSpawnPositionFuncPtr* genSpawnPosFuncPtr = nullptr,
             GenerateSpawnOrientationFuncPtr* genSpawnOriFuncPtr = nullptr, GenerateMassFuncPtr* genMassFuncPtr = nullptr,
-            GenerateEntityIdFuncPtr* genEntityIdFuncPtr = nullptr
+            GenerateEntityIdFuncPtr* genEntityIdFuncPtr = nullptr,
+            bool activateEntities = true
         );
 
         //! Helper that takes a list of SimulatedBodyHandles to Rigid Bodies and return RigidBody pointers

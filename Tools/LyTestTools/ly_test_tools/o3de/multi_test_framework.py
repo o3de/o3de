@@ -1195,11 +1195,7 @@ class MultiTestSuite(object):
             try:
                 full_log_name = f'({run_id}){log_name}'
                 path_to_artifact = os.path.join(log_path_function(run_id, workspace), log_name)
-                if type(executable) in [WinEditor, LinuxEditor]:
-                    destination_path = workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
-                    editor_utils.split_batched_editor_log_file(workspace, path_to_artifact, destination_path)
-                elif type(executable) in [LinuxAtomToolsLauncher, WinAtomToolsLauncher]:
-                    workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
+                workspace.artifact_manager.save_artifact(path_to_artifact, full_log_name)
 
             except FileNotFoundError:
                 # Error logging is already performed and we don't want this to fail the test

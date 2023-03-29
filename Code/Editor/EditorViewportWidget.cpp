@@ -603,7 +603,6 @@ void EditorViewportWidget::OnEditorNotifyEvent(EEditorNotifyEvent event)
                 }
 
                 m_preGameModeViewTM = GetViewTM();
-                SetViewTM(Matrix34::CreateIdentity());
 
                 // this should only occur for the main viewport and no others.
                 ShowCursor();
@@ -2089,8 +2088,6 @@ void EditorViewportWidget::OnStartPlayInEditor()
 
 void EditorViewportWidget::OnStopPlayInEditor()
 {
-    PopViewGroupForDefaultContext();
-
     m_playInEditorState = PlayInEditorState::Stopping;
 }
 

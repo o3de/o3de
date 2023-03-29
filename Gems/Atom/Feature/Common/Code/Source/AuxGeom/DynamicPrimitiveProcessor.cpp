@@ -71,10 +71,6 @@ namespace AZ
 
         void DynamicPrimitiveProcessor::PrepareFrame()
         {
-            AZ_PROFILE_SCOPE(AzRender, "DynamicPrimitiveProcessor: PrepareFrame");
-            m_drawPackets.clear();
-            m_processSrgs.clear();
-
             if (m_needUpdatePipelineStates)
             {
                 // for created pipeline state, re-set their data from scene
@@ -85,6 +81,12 @@ namespace AZ
                 }
                 m_needUpdatePipelineStates = false;
             }
+        }
+
+        void DynamicPrimitiveProcessor::FrameEnd()
+        {
+            m_processSrgs.clear();
+            m_drawPackets.clear();
         }
 
         void DynamicPrimitiveProcessor::ProcessDynamicPrimitives(const AuxGeomBufferData* bufferData, const RPI::FeatureProcessor::RenderPacket& fpPacket)

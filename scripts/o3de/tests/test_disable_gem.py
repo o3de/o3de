@@ -132,7 +132,7 @@ class TestDisableGemCommand:
         # when requested to remove a gem with matching version expect success
         pytest.param('TestGem==1.0.0', None, 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 0),
         # when a gem specifier is included but the gem doesn't match, expect failure
-        pytest.param('TestGem', 'None', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 1),
+        pytest.param('TestGem', 'None', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 2),
         # when a gem name with no specifier is provided, expect any gem with that name is removed 
         pytest.param('TestGem==1.2.3', '1.2.3', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, 0),
         ]

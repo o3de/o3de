@@ -11,8 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/ComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
-
-#include <AzCore/UnitTest/TestTypes.h>
+#include <CustomSerializeContextTestFixture.h>
 
 namespace UnitTest
 {
@@ -90,7 +89,7 @@ namespace UnitTest
     };
 
     class WrappedComponentTest
-        : public LeakDetectionFixture
+        : public CustomSerializeContextTestFixture
     {
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -100,12 +99,10 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            LeakDetectionFixture::SetUp();
+            CustomSerializeContextTestFixture::SetUp();
 
             s_activateCalled = false;
             s_deactivateCalled = false;
-
-            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_testRuntimeComponentDescriptor.reset(TestRuntimeComponent::CreateDescriptor());
             m_testRuntimeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -118,9 +115,8 @@ namespace UnitTest
         {
             m_testEditorComponentDescriptor.reset();
             m_testRuntimeComponentDescriptor.reset();
-            m_serializeContext.reset();
 
-            LeakDetectionFixture::TearDown();
+            CustomSerializeContextTestFixture::TearDown();
         }
     };
 

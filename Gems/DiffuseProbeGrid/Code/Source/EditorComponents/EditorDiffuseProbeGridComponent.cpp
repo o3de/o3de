@@ -210,6 +210,8 @@ namespace AZ
 
         void EditorDiffuseProbeGridComponent::Deactivate()
         {
+            m_editorModeSet = false;
+
             m_boxChangedByGridHandler.Disconnect();
             AzToolsFramework::EditorEntityInfoNotificationBus::Handler::BusDisconnect();
             AZ::TickBus::Handler::BusDisconnect();

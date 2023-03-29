@@ -9,8 +9,10 @@
 
 #include <CompressionModuleInterface.h>
 #include "CompressionSystemComponent.h"
+#include <Compression/CompressionTypeIds.h>
 #include <Compression/DecompressionInterfaceAPI.h>
 #include "DecompressionRegistrarImpl.h"
+
 
 namespace Compression
 {
@@ -18,7 +20,7 @@ namespace Compression
         : public CompressionModuleInterface
     {
     public:
-        AZ_RTTI(CompressionModule, "{6D256D91-6F1F-4132-B78E-6C24BA9D688C}", CompressionModuleInterface);
+        AZ_RTTI(CompressionModule, CompressionModuleTypeId, CompressionModuleInterface);
         AZ_CLASS_ALLOCATOR(CompressionModule, AZ::SystemAllocator);
 
         CompressionModule()

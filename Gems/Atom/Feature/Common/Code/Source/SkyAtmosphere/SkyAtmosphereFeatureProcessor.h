@@ -40,6 +40,8 @@ namespace AZ::Render
         AtmosphereId CreateAtmosphere() override;
         void ReleaseAtmosphere(AtmosphereId id) override;
         void SetAtmosphereParams(AtmosphereId id, const SkyAtmosphereParams& params) override;
+        void SetAtmosphereEnabled(AtmosphereId id, bool enabled) override;
+        bool GetAtmosphereEnabled(AtmosphereId id) override;
 
     private:
 

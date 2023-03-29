@@ -9,6 +9,7 @@ set(FILES
     Include/Compression/CompressionInterfaceAPI.h
     Include/Compression/CompressionInterfaceAPI.inl
     Include/Compression/CompressionInterfaceStructs.h
+    Include/Compression/CompressionLZ4API.h
     Include/Compression/DecompressionInterfaceAPI.h
     Include/Compression/DecompressionInterfaceAPI.inl
 )

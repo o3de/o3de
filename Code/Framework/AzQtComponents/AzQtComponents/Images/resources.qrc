@@ -68,4 +68,8 @@
         <file alias="lock_on_hover.svg">Outliner/lock_on_hover.svg</file>
         <file alias="lock_on_transparent.svg">Outliner/lock_on_transparent.svg</file>
     </qresource>
+    <qresource prefix="/Icons">
+        <file alias="material.svg">AssetBrowser/material.svg</file>
+        <file alias="materialtype.svg">AssetBrowser/materialtype.svg</file>
+    </qresource>
 </RCC>

@@ -1,7 +1,9 @@
-
 # Welcome to the AWS Metrics CDK Python project!
 
-This is an optional CDK application that provides a stack to build the metrics analytics pipeline. The deployed pipeline is simplified from the production ready AWS solution:
+> This is the long term supported CDK v2 version of this template. If you have preexisting versions of this template
+see the [CDK guidance](https://docs.aws.amazon.com/cdk/v2/guide/migrating-v2.html) about upgrading to CDK v2.
+
+This is an optional CDKv2 application that provides a stack to build the metrics analytics pipeline. The deployed pipeline is simplified from the production ready AWS solution:
 https://docs.aws.amazon.com/solutions/latest/game-analytics-pipeline/welcome.html.
 
 AWS services used by this CDK application may not be available in all regions.
@@ -15,23 +17,23 @@ directory.  To create the virtualenv it assumes that there is a `python3`
 package. If for any reason the automatic creation of the virtualenv fails,
 you can create the virtualenv manually. Please note that Python version 3.10.5 or higher is required to deploy this CDK application.
 
-To manually create a virtualenv on MacOS and Linux:
+To manually create a virtualenv on macOS and Linux:
 
 ```
-$ python -m venv .env
+$ python -m venv .venv
 ```
 
 After the init process completes and the virtualenv is created, you can use the following
 step to activate your virtualenv.
 
 ```
-$ source .env/bin/activate
+$ source .venv/bin/activate
 ```
 
 If you are a Windows platform, you would activate the virtualenv like this:
 
 ```
-% .env\Scripts\activate.bat
+% .venv\Scripts\activate.bat
 ```
 
 Once the virtualenv is activated, you can install the required dependencies.
@@ -42,15 +44,15 @@ $ pip install -r requirements.txt
 
 ## Set environment variables or accept defaults
 
-* O3DE_AWS_DEPLOY_REGION*: The region to deploy the stacks into, will default to CDK_DEFAULT_REGION
-* O3DE_AWS_DEPLOY_ACCOUNT*: The account to deploy stacks into, will default to CDK_DEFAULT_ACCOUNT
-* O3DE_AWS_PROJECT_NAME*: The name of the O3DE project stacks should be deployed for will default to AWS-PROJECT
+* `O3DE_AWS_DEPLOY_REGION`: The region to deploy the stacks into, will default to CDK_DEFAULT_REGION
+* `O3DE_AWS_DEPLOY_ACCOUNT`: The account to deploy stacks into, will default to CDK_DEFAULT_ACCOUNT
+* `O3DE_AWS_PROJECT_NAME`: The name of the O3DE project stacks should be deployed for will default to AWS-PROJECT
 
-See https://docs.aws.amazon.com/cdk/latest/guide/environments.html for more information including how to pass parameters
+See https://docs.aws.amazon.com/cdk/v2/guide/environments.html for more information including how to pass parameters
 to use for environment variables.
 
 ## Bootstrap the environment
-An environment needs to be bootstrapped since this CDK application uses assets like a local directory that contains the handler code for the AWS Lambda functions.
+Each AWS environment (a combination of AWS account and region) needs to be [bootstrapped](https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html) since this CDK application uses assets like a local directory that contains the handler code for the AWS Lambda functions.
 
 Use the following CDK bootstrap command to bootstrap one or more AWS environments.
 
@@ -58,7 +60,7 @@ Use the following CDK bootstrap command to bootstrap one or more AWS environment
 cdk bootstrap aws://ACCOUNT-NUMBER-1/REGION-1 aws://ACCOUNT-NUMBER-2/REGION-2 ...
 ```
 
-See https://docs.aws.amazon.com/cdk/latest/guide/bootstrapping.html for more information about bootstrapping.
+See https://docs.aws.amazon.com/cdk/v2/guide/bootstrapping.html for more information about bootstrapping.
 
 ## Synthesize the project
 At this point you can now synthesize the CloudFormation template for this code.
@@ -67,9 +69,7 @@ At this point you can now synthesize the CloudFormation template for this code.
 $ cdk synth
 ```
 
-To add additional dependencies, for example other CDK libraries, just add
-them to your `requirements.txt` file and rerun the `pip install -r requirements.txt`
-command.
+To add additional dependencies, for example other CDK libraries, just add them to your `requirements.txt` file and rerun the `pip install -r requirements.txt` command.
 
 ## Deploy the project
 To deploy the CDK application, use the following CLI command:
@@ -105,5 +105,5 @@ $ cdk deploy
  
 ## Troubleshooting
 
-See https://docs.aws.amazon.com/cdk/latest/guide/troubleshooting.html
+See https://docs.aws.amazon.com/cdk/v2/guide/troubleshooting.html
 
