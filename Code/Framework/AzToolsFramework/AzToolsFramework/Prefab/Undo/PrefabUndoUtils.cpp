@@ -16,6 +16,16 @@ namespace AzToolsFramework
     {
         namespace PrefabUndoUtils
         {
+            void AppendAddEntityPatch(
+                PrefabDom& patches,
+                const PrefabDomValue& newEntityDom,
+                const AZStd::string& newEntityAliasPath)
+            {
+                AZ_Assert(patches.IsArray(), "AppendAddEntityPatch - Provided patches should be an array object DOM value.");
+
+                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchType::Add);
+            }
+
             void AppendUpdateValuePatch(
                 PrefabDom& patches,
                 const PrefabDomValue& domValue,
@@ -79,6 +89,12 @@ namespace AzToolsFramework
                 {
                     patches.PushBack(newPatch.Move(), patches.GetAllocator());
                 }
+            }
+
+            void UpdateEntityInPrefabDom(
+                PrefabDomReference prefabDom, const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath)
+            {
+                UpdateValueInPrefabDom(prefabDom, entityDom, entityAliasPath);
             }
 
             void UpdateValueInPrefabDom(

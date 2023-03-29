@@ -53,7 +53,7 @@ namespace AzToolsFramework
                     m_instanceToTemplateInterface->GenerateEntityDomBySerializing(entityDom, *entity);
 
                     const AZStd::string& entityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(entity->GetId());
-                    PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, entityDom, entityAliasPath, PatchType::Add);
+                    PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, entityDom, entityAliasPath);
                     PrefabUndoUtils::AppendRemovePatch(m_undoPatch, entityAliasPath);
                 }
             }
@@ -78,7 +78,7 @@ namespace AzToolsFramework
                 {
                     const AZStd::string& entityAliasPath = entityDomAndPath.second;
                     PrefabUndoUtils::AppendRemovePatch(m_redoPatch, entityAliasPath);
-                    PrefabUndoUtils::AppendUpdateValuePatch(m_undoPatch, *entityDomValue, entityAliasPath, PatchType::Add);
+                    PrefabUndoUtils::AppendAddEntityPatch(m_undoPatch, *entityDomValue, entityAliasPath);
                 }
             }
         }
@@ -122,7 +122,7 @@ namespace AzToolsFramework
                 PrefabDomReference cachedOwningInstanceDom = instance.GetCachedInstanceDom();
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, endState, entityAliasPath);
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, endState, entityAliasPath);
                 }
             }
         }

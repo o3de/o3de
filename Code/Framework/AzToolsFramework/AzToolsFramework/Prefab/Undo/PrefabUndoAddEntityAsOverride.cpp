@@ -83,7 +83,7 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
-            PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch, PatchType::Add);
+            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPathForPatch);
 
             const LinkId linkId = climbUpResult.m_climbedInstances.back()->GetLinkId();
             PrefabUndoUpdateLink::Capture(m_redoPatch, linkId);
@@ -92,8 +92,8 @@ namespace AzToolsFramework
             PrefabDomReference cachedOwningInstanceDom = owningInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }

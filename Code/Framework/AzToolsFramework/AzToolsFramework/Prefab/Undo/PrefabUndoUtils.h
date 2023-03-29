@@ -17,7 +17,16 @@ namespace AzToolsFramework
     namespace Prefab
     {
         namespace PrefabUndoUtils
-        {            
+        {
+            //! Create an add-entity patch for new entity with alias path, and append it to patch array.
+            //! @param patches An array object of DOM values which stores undo or redo patches.
+            //! @param newEntityDom The entity DOM generated from the new entity.
+            //! @param newEntityAliasPath The given alias path for the new entity.
+            void AppendAddEntityPatch(
+                PrefabDom& patches,
+                const PrefabDomValue& newEntityDom,
+                const AZStd::string& newEntityAliasPath);
+
             //! Create an 'add' or 'replace' patch for updating value in DOM.
             //! To remove value, use AppendRemovePatch.
             //! @param patches An array object of DOM values which stores undo or redo patches.
@@ -47,6 +56,15 @@ namespace AzToolsFramework
                 const PrefabDomValue& domValueBeforeUpdate,
                 const PrefabDomValue& domValueAfterUpdate,
                 const AZStd::string& pathToValue);
+
+            //! Update the entity in prefab DOM with the provided entity DOM.
+            //! @param prefabDom The given prefab DOM.
+            //! @param entityDom The entity DOM that will be put in the prefab DOM.
+            //! @param entityAliasPath The given alias path to the entity.
+            void UpdateEntityInPrefabDom(
+                PrefabDomReference prefabDom,
+                const PrefabDomValue& entityDom,
+                const AZStd::string& entityAliasPath);
 
             //! Update the value in prefab DOM with the provided DOM value.
             //! @param prefabDom The given prefab DOM.

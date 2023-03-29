@@ -48,7 +48,7 @@ namespace AzToolsFramework
 
                 PrefabDomPath entityDomPathInFocusedTemplate(entityAliasPath.c_str());
                 const PrefabDomValue* entityDomInFocusedTemplate = entityDomPathInFocusedTemplate.Get(focusedTempalteDom);
-                PrefabUndoUtils::AppendUpdateValuePatch(m_undoPatch, *entityDomInFocusedTemplate, entityAliasPath, PatchType::Add);
+                PrefabUndoUtils::AppendAddEntityPatch(m_undoPatch, *entityDomInFocusedTemplate, entityAliasPath);
 
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
@@ -121,7 +121,7 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateValueInPrefabDom(
+                    PrefabUndoUtils::UpdateEntityInPrefabDom(
                         cachedOwningInstanceDom->get(), parentEntityDomAfterRemovingChildren, parentEntityAliasPath);
                 }
             }

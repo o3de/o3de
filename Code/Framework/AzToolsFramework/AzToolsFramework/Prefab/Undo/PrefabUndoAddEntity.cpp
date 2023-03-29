@@ -95,15 +95,15 @@ namespace AzToolsFramework
 
             PrefabDom newEntityDom;
             m_instanceToTemplateInterface->GenerateEntityDomBySerializing(newEntityDom, newEntity);
-            PrefabUndoUtils::AppendUpdateValuePatch(m_redoPatch, newEntityDom, newEntityAliasPath, PatchType::Add);
+            PrefabUndoUtils::AppendAddEntityPatch(m_redoPatch, newEntityDom, newEntityAliasPath);
             PrefabUndoUtils::AppendRemovePatch(m_undoPatch, newEntityAliasPath);
 
             // Preemptively updates the cached DOM to prevent reloading instance DOM.
             PrefabDomReference cachedOwningInstanceDom = focusedInstance.GetCachedInstanceDom();
             if (cachedOwningInstanceDom.has_value())
             {
-                PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
-                PrefabUndoUtils::UpdateValueInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, parentEntityDomAfterAddingEntity, parentEntityAliasPath);
+                PrefabUndoUtils::UpdateEntityInPrefabDom(cachedOwningInstanceDom, newEntityDom, newEntityAliasPath);
             }
         }
     }
