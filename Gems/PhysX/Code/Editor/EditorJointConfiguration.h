@@ -145,12 +145,14 @@ namespace PhysX
         float m_torqueMax = 1.0f;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to follower body.
+
+        bool m_fixJointLocation = false; //!< When moving entity, the joint location and rotation will be recalculated to stay the same.
 
     private:
-        bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
+        bool IsInComponentMode() const; //!< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
 
-        void ValidateLeadEntityId(); ///< Issues warning if lead entity does not contain required components for a joint to function correctly.
+        AZ::Crc32 OnLeadEntityChanged() const; //!< Issues warning if lead entity does not contain required components for a joint to function correctly.
     };
 
 } // namespace PhysX

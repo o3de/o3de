@@ -274,6 +274,7 @@ namespace PhysX
                 ->Version(1)
                 ->Field("Local Position", &EditorJointConfig::m_localPosition)
                 ->Field("Local Rotation", &EditorJointConfig::m_localRotation)
+                ->Field("Fix Joint Location", &EditorJointConfig::m_fixJointLocation)
                 ->Field("Parent Entity", &EditorJointConfig::m_leadEntity)
                 ->Field("Child Entity", &EditorJointConfig::m_followerEntity)
                 ->Field("Breakable", &EditorJointConfig::m_breakable)
@@ -303,9 +304,11 @@ namespace PhysX
                         , "Local Rotation of joint, relative to its entity.")
                     ->Attribute(AZ::Edit::Attributes::Min, LocalRotationMin)
                     ->Attribute(AZ::Edit::Attributes::Max, LocalRotationMax)
+                    ->DataElement(0, &PhysX::EditorJointConfig::m_fixJointLocation, "Fix Joint Location"
+                        , "When enabled the joint will remain in the same location when moving the entity.")
                     ->DataElement(0, &PhysX::EditorJointConfig::m_leadEntity, "Lead Entity"
                         , "Parent entity associated with joint.")
-                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointConfig::ValidateLeadEntityId)
+                    ->Attribute(AZ::Edit::Attributes::ChangeNotify, &EditorJointConfig::OnLeadEntityChanged)
                     ->DataElement(0, &PhysX::EditorJointConfig::m_selfCollide, "Lead-Follower Collide"
                         , "When active, the lead and follower pair will collide with each other.")
                     ->DataElement(
@@ -339,7 +342,7 @@ namespace PhysX
     void EditorJointConfig::SetLeadEntityId(AZ::EntityId leadEntityId)
     {
         m_leadEntity = leadEntityId;
-        ValidateLeadEntityId();
+        OnLeadEntityChanged();
 
         AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
             &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay
@@ -363,11 +366,9 @@ namespace PhysX
 
     JointComponentConfiguration EditorJointConfig::ToGameTimeConfig() const
     {
-        AZ::Vector3 localRotation(m_localRotation);
-
         return JointComponentConfiguration(
             AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(localRotation),
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(m_localRotation),
                 m_localPosition),
             m_leadEntity,
             m_followerEntity);
@@ -395,11 +396,11 @@ namespace PhysX
         return m_inComponentMode;
     }
 
-    void EditorJointConfig::ValidateLeadEntityId()
+    AZ::Crc32 EditorJointConfig::OnLeadEntityChanged() const
     {
         if (!m_leadEntity.IsValid())
         {
-            return;
+            return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
         }
 
         AZ::Entity* entity = nullptr;
@@ -433,5 +434,7 @@ namespace PhysX
                 "Cannot find instance of lead entity given its entity ID. Please check that joint in entity %s has valid lead entity.",
                 followerEntityName.c_str());
         }
+
+        return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
     }
 } // namespace PhysX
