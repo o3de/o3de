@@ -160,7 +160,7 @@ namespace AZ
             {
                 return;
             }
-            // set the bit to true (1) if it's enabled for drawing
+
             uint8_t index = drawListTag.GetIndex();
             if (m_drawListFilter[index] != enableDraw)
             {

@@ -658,7 +658,7 @@ namespace AZ
                 // Only set m_dynamic flag if the model instance is initialized.
                 if (!modelData.m_flags.m_dynamic)
                 {
-                    modelData.m_flags.m_dynamic = (modelData.m_model && !modelData.m_flags.m_needsInit)?true:false;
+                    modelData.m_flags.m_dynamic = (modelData.m_model && !modelData.m_flags.m_needsInit) ? true : false;
 
                     // Enable draw motion for all the DrawPacket referenced by this model
                     if (r_meshInstancingEnabled && modelData.m_flags.m_dynamic)

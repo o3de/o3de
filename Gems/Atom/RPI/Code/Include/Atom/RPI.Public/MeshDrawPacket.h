@@ -68,7 +68,7 @@ namespace AZ
             void ClearShaderOptions();
 
             // Enable/disable draw filter for a specific draw list tag.
-            // If disabled, Any draw items with this drawListTag won't be added to the DrawPacket when update
+            // If disabled, any draw items with this drawListTag won't be added to the DrawPacket when updated
             void SetEnableDraw(RHI::DrawListTag drawListTag, bool enableDraw);
             RHI::DrawListMask GetDrawListFilter();
             // Remove the draw list filter and enable render for all draw items
