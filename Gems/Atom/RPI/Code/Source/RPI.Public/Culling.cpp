@@ -235,7 +235,7 @@ namespace AZ
                 AzFramework::VisibilityEntry* visibleEntry = entries[i];
 
                 if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
-                    visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
+                    visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
                     Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
 
@@ -286,7 +286,7 @@ namespace AZ
                     for (AzFramework::VisibilityEntry* visibleEntry : entries)
                     {
                         if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
-                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                         {
                             Cullable* c = static_cast<Cullable*>(visibleEntry->m_userData);
                             if (worklistData->m_debugCtx->m_drawBoundingBoxes)
@@ -753,7 +753,7 @@ namespace AZ
                 AZ_PROFILE_SCOPE(RPI, "add draw packets: %zu", lod.m_drawPackets.size());
 #endif
                 numVisibleDrawPackets += static_cast<uint32_t>(lod.m_drawPackets.size());   //don't want to pay the cost of aznumeric_cast<> here so using static_cast<> instead
-                if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
+                if (typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                 {
                     view.AddVisibleObject(lod.m_visibleObjectUserData, pos);
                 }
@@ -944,7 +944,7 @@ namespace AZ
                     for (AzFramework::VisibilityEntry* visibleEntry : nodeData.m_entries)
                     {
                         if (visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Cullable ||
-                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List)
+                            visibleEntry->m_typeFlags & AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList)
                         {
                             ++numObjects;
                         }

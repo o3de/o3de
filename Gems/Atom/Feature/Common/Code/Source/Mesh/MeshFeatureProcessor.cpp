@@ -2125,7 +2125,7 @@ namespace AZ
             }
             else
             {
-                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Visibility_List;
+                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList;
             }
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
