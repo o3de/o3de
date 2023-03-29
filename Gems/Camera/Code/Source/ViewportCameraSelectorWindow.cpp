@@ -227,6 +227,12 @@ namespace Camera
         {
             if (current.row() != previous.row())
             {
+                // Make sure the selected item is always visible (e.g. when using the arrow keys to change selection)
+                if (current.isValid())
+                {
+                    scrollTo(current);
+                }
+
                 QScopedValueRollback<bool> rb(m_ignoreViewportViewEntityChanged, true);
 
                 const AZ::EntityId entityId = selectionModel()->currentIndex().data(Qt::CameraIdRole).value<AZ::EntityId>();

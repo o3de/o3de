@@ -41,9 +41,13 @@ namespace AZ
             //! Invokes the frame scheduler. The provided callback is invoked prior to compilation of the graph.
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
-            // Register/Unregister xr system
+            //! Register/Unregister xr system
             void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
             void UnregisterXRSystem();
+
+            //! Get/Set functions for the number of active pipelines in use in a frame 
+            void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
+            uint16_t GetNumActiveRenderPipelines() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
@@ -72,6 +76,9 @@ namespace AZ
             RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             XRRenderingInterface* m_xrSystem = nullptr;
+
+            //Used for better verbosity related to gpu markers
+            uint16_t m_numActiveRenderPipelines = 0;
         };
     } // namespace RPI
 } // namespace AZ
