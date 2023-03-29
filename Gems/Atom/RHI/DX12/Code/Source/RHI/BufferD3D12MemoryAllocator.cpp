@@ -33,10 +33,11 @@ namespace AZ
         {
         }
 
-        BufferMemoryView BufferD3D12MemoryAllocator::Allocate(size_t sizeInBytes, size_t overrideSubAllocAlignment [[maybe_unused]])
+        BufferMemoryView BufferD3D12MemoryAllocator::Allocate([[maybe_unused]] size_t sizeInBytes, [[maybe_unused]] size_t overrideSubAllocAlignment)
         {
             AZ_PROFILE_FUNCTION(RHI);
 
+#ifdef USE_AMD_D3D12MA
             RHI::BufferDescriptor bufferDescriptor;
             bufferDescriptor.m_byteCount = azlossy_caster(sizeInBytes);
             bufferDescriptor.m_bindFlags = m_descriptor.m_bindFlags;
@@ -62,11 +63,14 @@ namespace AZ
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
-
+#else
+            return BufferMemoryView();
+#endif
         }
 
-        void BufferD3D12MemoryAllocator::DeAllocate(const BufferMemoryView& memoryView)
+        void BufferD3D12MemoryAllocator::DeAllocate([[maybe_unused]] const BufferMemoryView& memoryView)
         {
+#ifdef USE_AMD_D3D12MA
             AZ_Assert(memoryView.GetType() == BufferMemoryType::Unique, "This call only supports unique BufferMemoryView allocations.");
             const size_t sizeInBytes = memoryView.GetSize();
 
@@ -76,6 +80,7 @@ namespace AZ
             heapMemoryUsage.m_uniqueAllocationBytes -= sizeInBytes;
 
             m_descriptor.m_device->QueueForRelease(memoryView);
+#endif
         }
 
         float BufferD3D12MemoryAllocator::ComputeFragmentation() const

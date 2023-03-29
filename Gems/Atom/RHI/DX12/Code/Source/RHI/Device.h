@@ -27,10 +27,13 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzCore/std/string/string.h>
 
+#define USE_AMD_D3D12MA
+#ifdef USE_AMD_D3D12MA
 #include <dx12ma/D3D12MemAlloc.h>
 
 AZ_DX12_REFCOUNTED(D3D12MA::Allocator);
 AZ_DX12_REFCOUNTED(D3D12MA::Allocation);
+#endif
 
 namespace AZ
 {
@@ -74,11 +77,12 @@ namespace AZ
                 const RHI::ImageDescriptor& descriptor,
                 D3D12_RESOURCE_ALLOCATION_INFO& info);
 
+#ifdef USE_AMD_D3D12MA
             MemoryView CreateD3d12maBuffer(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
                 D3D12_HEAP_TYPE heapType);
-
+#endif
             MemoryView CreateBufferCommitted(
                 const RHI::BufferDescriptor& bufferDescriptor,
                 D3D12_RESOURCE_STATES initialState,
@@ -185,16 +189,28 @@ namespace AZ
 
             void InitDeviceRemovalHandle();
 
+#ifdef USE_AMD_D3D12MA
             RHI::ResultCode InitD3d12maAllocator();
+#endif
             void InitFeatures();
+
+            void ConvertBufferDescriptorToResourceDesc(
+                const RHI::BufferDescriptor& bufferDescriptor,
+                D3D12_RESOURCE_STATES initialState,
+                D3D12_RESOURCE_DESC& output
+            );
 
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
+#ifdef USE_AMD_D3D12MA
             RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
+#endif
 
             ReleaseQueue m_releaseQueue;
+#ifdef USE_AMD_D3D12MA
             D3d12maReleaseQueue m_D3d12maReleaseQueue;
+#endif
 
             PipelineLayoutCache m_pipelineLayoutCache;
 

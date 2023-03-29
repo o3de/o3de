@@ -8,8 +8,8 @@
 #pragma once
 
 #include <Atom/RHI/BufferPool.h>
+#include <RHI/Device.h>
 
-#define USE_AMD_D3D12MA
 #ifdef USE_AMD_D3D12MA
 #include <RHI/BufferD3D12MemoryAllocator.h>
 #else

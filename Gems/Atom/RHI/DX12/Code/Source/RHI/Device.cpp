@@ -25,6 +25,7 @@ namespace AZ
 {
     namespace DX12
     {
+#ifdef USE_AMD_D3D12MA
         namespace
         {
             constexpr D3D12MA::ALLOCATOR_FLAGS s_D3d12maAllocatorFlags = D3D12MA::ALLOCATOR_FLAG_DEFAULT_POOLS_NOT_ZEROED;
@@ -56,7 +57,7 @@ namespace AZ
                 allocation.Release();
             }
         }
-
+#endif
         namespace Platform
         {
             void DeviceCompileMemoryStatisticsInternal(RHI::MemoryStatisticsBuilder& builder, IDXGIAdapterX* dxgiAdapter);
@@ -82,12 +83,13 @@ namespace AZ
                 return resultCode;
             }
 
+#ifdef USE_AMD_D3D12MA
             resultCode = InitD3d12maAllocator();
             if (resultCode != RHI::ResultCode::Success)
             {
                 return resultCode;
             }
-
+#endif
             InitFeatures();
 
             return RHI::ResultCode::Success;
@@ -102,10 +104,12 @@ namespace AZ
                 releaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
                 m_releaseQueue.Init(releaseQueueDescriptor);
 
+#ifdef USE_AMD_D3D12MA
                 D3d12maReleaseQueue::Descriptor D3d12maReleaseQueueDescriptor;
                 D3d12maReleaseQueueDescriptor.m_collectLatency = m_descriptor.m_frameCountMax;
                 D3d12maReleaseQueueDescriptor.m_collectFunction = &D3d12maRelease;
                 m_D3d12maReleaseQueue.Init(D3d12maReleaseQueueDescriptor);
+#endif
             }
 
             m_descriptorContext = AZStd::make_shared<DescriptorContext>();
@@ -165,17 +169,20 @@ namespace AZ
             m_descriptorContext = nullptr;
 
             m_releaseQueue.Shutdown();
+#ifdef USE_AMD_D3D12MA
             m_D3d12maReleaseQueue.Shutdown();
-
+#endif
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
+#ifdef USE_AMD_D3D12MA
             m_dx12MemAlloc = nullptr;
-
+#endif
             ShutdownSubPlatform();
 
             m_dx12Device = nullptr;
         }
 
+#ifdef USE_AMD_D3D12MA
         RHI::ResultCode Device::InitD3d12maAllocator()
         {
             // Create D3d12ma allocator
@@ -198,6 +205,7 @@ namespace AZ
             m_dx12MemAlloc = dx12MemAlloc;
             return RHI::ResultCode::Success;
         }
+#endif
 
         void Device::InitFeatures()
         {
@@ -325,14 +333,18 @@ namespace AZ
             m_stagingMemoryAllocator.GarbageCollect();
 
             m_releaseQueue.Collect();
+#ifdef USE_AMD_D3D12MA
             m_D3d12maReleaseQueue.Collect();
+#endif
         }
 
         void Device::WaitForIdleInternal()
         {
             m_commandQueueContext.WaitForIdle();
             m_releaseQueue.Collect(true);
+#ifdef USE_AMD_D3D12MA
             m_D3d12maReleaseQueue.Collect(true);
+#endif
         }
 
         AZStd::chrono::microseconds Device::GpuTimestampToMicroseconds(uint64_t gpuTimestamp, RHI::HardwareQueueClass queueClass) const
@@ -422,7 +434,9 @@ namespace AZ
         void Device::ObjectCollectionNotify(RHI::ObjectCollectorNotifyFunction notifyFunction)
         {
             m_releaseQueue.Notify(notifyFunction);
+#ifdef USE_AMD_D3D12MA
             m_D3d12maReleaseQueue.Notify(notifyFunction);
+#endif
         }
 
         //AZStd::vector<RHI::Format> Device::GetValidSwapChainImageFormats(const RHI::WindowHandle& windowHandle) const
@@ -514,20 +528,28 @@ namespace AZ
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
         }
 
+        void Device::ConvertBufferDescriptorToResourceDesc(
+            const RHI::BufferDescriptor& bufferDescriptor,
+            D3D12_RESOURCE_STATES initialState,
+            D3D12_RESOURCE_DESC& output)
+        {
+            ConvertBufferDescriptor(bufferDescriptor, output);
+#ifdef AZ_DX12_DXR_SUPPORT
+            if (initialState == D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE)
+            {
+                output.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
+            }
+#endif
+        }
+
+#ifdef USE_AMD_D3D12MA
         MemoryView Device::CreateD3d12maBuffer(
             const RHI::BufferDescriptor& bufferDescriptor,
             D3D12_RESOURCE_STATES initialState,
             D3D12_HEAP_TYPE heapType)
         {
             D3D12_RESOURCE_DESC resourceDesc;
-            ConvertBufferDescriptor(bufferDescriptor, resourceDesc);
-
-#ifdef AZ_DX12_DXR_SUPPORT
-            if (initialState == D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE)
-            {
-                resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-            }
-#endif
+            ConvertBufferDescriptorToResourceDesc(bufferDescriptor, initialState, resourceDesc);
 
             D3D12MA::ALLOCATION_DESC allocDesc = {};
             allocDesc.HeapType = heapType;
@@ -544,7 +566,7 @@ namespace AZ
 
             return MemoryView(allocation, resource.Get(), 0, allocation->GetSize(), allocation->GetAlignment(), MemoryViewType::Buffer);
         }
-
+#endif
 
         MemoryView Device::CreateBufferCommitted(
             const RHI::BufferDescriptor& bufferDescriptor,
@@ -552,16 +574,9 @@ namespace AZ
             D3D12_HEAP_TYPE heapType)
         {
             D3D12_RESOURCE_DESC resourceDesc;
-            ConvertBufferDescriptor(bufferDescriptor, resourceDesc);
+            ConvertBufferDescriptorToResourceDesc(bufferDescriptor, initialState, resourceDesc);
+
             CD3DX12_HEAP_PROPERTIES heapProperties(heapType);
-
-#ifdef AZ_DX12_DXR_SUPPORT
-            if (initialState == D3D12_RESOURCE_STATE_RAYTRACING_ACCELERATION_STRUCTURE)
-            {
-                resourceDesc.Flags |= D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
-            }
-#endif
-
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
             AssertSuccess(m_dx12Device->CreateCommittedResource(
                 &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
@@ -719,14 +734,18 @@ namespace AZ
 
         void Device::QueueForRelease(const MemoryView& memoryView)
         {
+#ifdef USE_AMD_D3D12MA
             if (auto* D3d12maAllocation = memoryView.GetD3d12maAllocation())
             {
                 m_D3d12maReleaseQueue.QueueForCollect(D3d12maAllocation);
             }
             else
             {
+#endif
                 m_releaseQueue.QueueForCollect(memoryView.GetMemory());
+#ifdef USE_AMD_D3D12MA
             }
+#endif
         }
 
 
