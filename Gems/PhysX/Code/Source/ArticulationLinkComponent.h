@@ -14,6 +14,7 @@
 #include <AzFramework/Physics/Components/SimulatedBodyComponentBus.h>
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
+#include <PhysX/ArticulationJointBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/UserDataTypes.h>
@@ -56,6 +57,9 @@ namespace PhysX
     class ArticulationLinkComponent final
         : public AZ::Component
         , private AZ::TransformNotificationBus::Handler
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        , public PhysX::ArticulationJointRequestBus::Handler
+#endif
     {
     public:
         AZ_COMPONENT(ArticulationLinkComponent, ArticulationLinkComponentTypeId);
@@ -71,17 +75,52 @@ namespace PhysX
         static void GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        // ArticulationJointRequestBus overrides ...
+        void SetMotion(JointAxis jointAxis, JointMotionType jointMotionType) override;
+        JointMotionType GetMotion(JointAxis jointAxis) override;
+        void SetLimit(JointAxis jointAxis, AZStd::pair<float, float> limitPair) override;
+        AZStd::pair<float, float> GetLimit(JointAxis jointAxis) override;
+        void SetDriveStiffness(JointAxis jointAxis, float stiffness) override;
+        float GetDriveStiffness(JointAxis jointAxis) override;
+        void SetDriveDamping(JointAxis jointAxis, float damping) override;
+        float GetDriveDamping(JointAxis jointAxis) override;
+        void SetMaxForce(JointAxis jointAxis, float maxForce) override;
+        float GetMaxForce(JointAxis jointAxis) override;
+        void SetIsAccelerationDrive(JointAxis jointAxis, bool isAccelerationDrive) override;
+        bool GetIsAccelerationDrive(JointAxis jointAxis) override;
+        void SetDriveTarget(JointAxis jointAxis, float target) override;
+        float GetDriveTarget(JointAxis jointAxis) override;
+        void SetDriveTargetVelocity(JointAxis jointAxis, float targetVelocity) override;
+        float GetDriveTargetVelocity(JointAxis jointAxis) override;
+        void SetFrictionCoefficient(float frictionCoefficient) override;
+        float GetFrictionCoefficient() override;
+        void SetMaxJointVelocity(float maxJointVelocity) override;
+        float GetMaxJointVelocity() override;
+#endif
+        physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
+        physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
 
     private:
         bool IsRootArticulation() const;
+        AZ::Entity* GetArticulationRootEntity() const;
 
+        physx::PxArticulationJointType::Enum GetArticulationJointType(JointType jointType) const;
+        physx::PxArticulationAxis::Enum GetArticulationAxis(JointAxis jointAxis) const;
+        physx::PxArticulationMotion::Enum GetArticulationMotion(JointMotionType jointMotionType) const;
+        JointType GetJointType(physx::PxArticulationJointType::Enum articulationJointType) const;
+        JointAxis GetJointAxis(physx::PxArticulationAxis::Enum articulationAxis) const;
+        JointMotionType GetJointMotionType(physx::PxArticulationMotion::Enum articulationMotion) const;
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
         void CreateArticulation();
         void CreateChildArticulationLinks(physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData);
         void DestroyArticulation();
 
         void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
+#endif
 
         // AZ::Component overrides ...
         void Activate() override;
@@ -90,6 +129,7 @@ namespace PhysX
         // AZ::TransformNotificationsBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
         physx::PxArticulationReducedCoordinate* m_articulation = nullptr;
+        physx::PxArticulationLink* m_link = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
         bool m_tempClosing = true;
         ArticulationLinkConfiguration m_config;
@@ -100,9 +140,11 @@ namespace PhysX
 
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_articulationShapes;
         AZStd::vector<AZStd::shared_ptr<ActorData>> m_linksActorData; // TODO: Move to AzPhysics::ArticulationLink
+
+        AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
     };
 
-    //! Utility function for detecting if the current entity is the root of articulation
+    //! Utility function for detecting if the current entity is the root of articulation.
     template<typename ArticulationComponentClass>
     bool IsRootArticulationEntity(AZ::Entity* entity)
     {
