@@ -21,7 +21,6 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
@@ -234,22 +233,17 @@ namespace ImageProcessingAtom
                 AZStd::string jsonName;
                 folder = AZStd::string::format("%s/%s.abdata.json", m_productFolder.c_str(), m_fileName.c_str());
 
-                rapidjson::StringBuffer s;
-                rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-                writer.StartObject();
-                writer.Key("metadata");
-                writer.StartObject();
-                writer.Key("dimension");
-                writer.StartArray();
-                writer.Double(imageDescriptor.m_size.m_width);
-                writer.Double(imageDescriptor.m_size.m_height);
-                writer.Double(imageDescriptor.m_size.m_depth);
-                writer.EndArray();
-                writer.EndObject();
-                writer.EndObject();
-                rapidjson::Document doc;
-                doc.Parse(s.GetString());
-                AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+                AssetBuilderSDK::CreateABDataFile(folder,
+                    [imageDescriptor](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+                {
+                    writer.Key("dimension");
+                    writer.StartArray();
+                    writer.Double(imageDescriptor.m_size.m_width);
+                    writer.Double(imageDescriptor.m_size.m_height);
+                    writer.Double(imageDescriptor.m_size.m_depth);
+                    writer.EndArray();
+                });
+
                 AssetBuilderSDK::JobProduct jsonProduct(folder);
                 m_jobProducts.push_back(AZStd::move(jsonProduct));
             }
