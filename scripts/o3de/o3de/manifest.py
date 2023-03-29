@@ -840,7 +840,11 @@ def get_project_json_data(project_name: str = None,
         project_path = get_registered(project_name=project_name)
 
     if pathlib.Path(project_path).is_file():
-        return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
+        if user:
+            # skip validation because a user project.json is only for overrides and can be empty
+            return get_json_data_file(project_path, 'project', validation.always_valid)
+        else:
+            return get_json_data_file(project_path, 'project', validation.valid_o3de_project_json)
     elif user:
         # create the project user folder if it doesn't exist
         user_project_folder = pathlib.Path(project_path) / 'user'

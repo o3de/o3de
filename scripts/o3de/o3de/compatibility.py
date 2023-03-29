@@ -44,16 +44,18 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
             'Please verify the path is correct, the file exists and is formatted correctly.')
         return None
     
-    # take into account any user project.json overrides 
+    # look for user project.json overrides if none are provided
     if not isinstance(user_project_json_data, dict):
         user_project_json_path = pathlib.Path(project_path) / 'user' / 'project.json'
         if user_project_json_path.is_file():
             user_project_json_data = manifest.get_json_data_file(user_project_json_path, 'project', validation.always_valid)
-            if user_project_json_data:
-                project_json_data.update(user_project_json_data)
-                user_engine_path = project_json_data.get('engine_path', '')
-                if user_engine_path:
-                    return pathlib.Path(user_engine_path)
+
+    # take into account any user project.json overrides 
+    if user_project_json_data:
+        project_json_data.update(user_project_json_data)
+        user_engine_path = project_json_data.get('engine_path', '')
+        if user_engine_path:
+            return pathlib.Path(user_engine_path)
 
     project_engine = project_json_data.get('engine')
     if not project_engine:
