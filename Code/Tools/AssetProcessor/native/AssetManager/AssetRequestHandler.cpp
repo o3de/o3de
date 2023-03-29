@@ -124,14 +124,24 @@ namespace
                 }
                 case AssetChangeReportRequest::ChangeType::CheckDelete:
                 {
-                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag);
+                    auto flags = RelocationParameters_PreviewOnlyFlag | RelocationParameters_AllowDependencyBreakingFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultCheck = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultCheck, lines);
                     break;
                 }
                 case AssetChangeReportRequest::ChangeType::Delete:
                 {
-                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, RelocationParameters_AllowDependencyBreakingFlag);
+                    int flags = RelocationParameters_AllowDependencyBreakingFlag;
+                    if (messageData.m_message->m_isFolder)
+                    {
+                        flags |= RelocationParameters_RemoveEmptyFoldersFlag;
+                    }
+                    auto resultDelete = relocationInterface->Delete(messageData.m_message->m_fromPath, flags);
 
                     BuildReport(relocationInterface, resultDelete, lines);
                     break;

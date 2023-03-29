@@ -45,6 +45,12 @@ namespace NodeCpp
         MergeFromBackend2dotZero = 12,
         AddDisabledFlag = 13,
         AddName = 1,
+        // AddName was changed to a lower value than the previous version instead of a higher value,
+        // causing errors when processing assets generated with versions between 2 and 14.
+        // This both causes the serialization system to emit an error message, because this is usually not intentional
+        // and a symptom of other problems, and it causes the version converter used by this class to not work as expected.
+        // This change resolves this error by setting the version higher than any previous version.
+        FixedVersioningIssue = 14,
 
         // add your named version above
         Current,
@@ -78,6 +84,21 @@ namespace ScriptCanvas
 
     bool NodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& nodeElementNode)
     {
+        // AddName was mistakenly set to version 1 instead of a higher version than the previous version.
+        // This caused issues with version conversion and nodes, and caused asset processing errors.
+        // This early out check skips conversion that may have previously failed because the version number was mistakenly
+        // set backward and was previously triggering incorrect conversion logic.
+        // This is +1 because the current value is always the latest +1, and when AddName was the most recent, the saved node versions were AddName+1 and not AddName.
+        // The version enum wasn't created until version MergeFromBackend2dotZero, so there are many additional version checks below here that could get triggered
+        // and cause the version converter to think it failed.
+        if (nodeElementNode.GetVersion() == NodeCpp::Version::AddName + 1)
+        {
+            // To avoid triggering those other version conversion checks, skip them by returning early.
+            // Return true so the system knows this was handled.
+            // This does mean that if someone tried to convert data from the old version 2 instead of the new version 2, it will fail.
+            // That's a narrow edge case and would require data that is many years old, from before O3DE.
+            return true;
+        }
         if (nodeElementNode.GetVersion() <= 5)
         {
             auto slotVectorElementNodes = AZ::Utils::FindDescendantElements(context, nodeElementNode, AZStd::vector<AZ::Crc32>{AZ_CRC("Slots", 0xc87435d0), AZ_CRC("m_slots", 0x84838ab4)});
@@ -441,6 +462,11 @@ namespace ScriptCanvas
                     ;
             }
         }
+    }
+
+    int Node::GetNodeVersion()
+    {
+        return NodeCpp::Version::Current;
     }
 
     // Class Definition

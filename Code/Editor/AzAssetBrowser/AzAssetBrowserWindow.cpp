@@ -208,10 +208,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
                     return;
                 }
 
-                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
                 auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
-
-                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+                m_ui->m_assetBrowserTreeViewWidget->SetShowIndexAfterUpdate(targetIndex);
             });
     }
 
