@@ -404,10 +404,10 @@ void AzAssetBrowserWindow::AddCreateMenu()
 void AzAssetBrowserWindow::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::LeftDockWidgetArea;
+    options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
-    options.preferedDockingArea = Qt::RightDockWidgetArea;
+    options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
 
     options.showInMenu = false;
