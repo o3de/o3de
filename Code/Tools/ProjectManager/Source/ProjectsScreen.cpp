@@ -687,6 +687,7 @@ namespace O3DE::ProjectManager
             if (ProjectUtils::UnregisterProject(projectPath))
             {
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                emit NotifyProjectRemoved(projectPath);
             }
         }
     }
@@ -707,6 +708,8 @@ namespace O3DE::ProjectManager
                 HandleRemoveProject(projectPath);
                 ProjectUtils::DeleteProjectFiles(projectPath);
                 QGuiApplication::restoreOverrideCursor();
+
+                emit NotifyProjectRemoved(projectPath);
             }
         }
     }

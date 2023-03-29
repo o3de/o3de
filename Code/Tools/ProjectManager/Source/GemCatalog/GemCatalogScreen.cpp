@@ -180,6 +180,17 @@ namespace O3DE::ProjectManager
         }
     }
 
+
+    void GemCatalogScreen::NotifyProjectRemoved(const QString& projectPath)
+    {
+        if (QDir(projectPath) == QDir(m_projectPath))
+        {
+            m_projectPath = "";
+            m_gemModel->Clear();
+            m_gemsToRegisterWithProject.clear();
+        }
+    }
+
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
         // avoid slow rebuilding, user can manually refresh if needed

@@ -203,6 +203,7 @@ namespace O3DE::ProjectManager
         connect(newScreen, &ScreenWidget::ResetScreenRequest, this, &ScreensCtrl::ResetScreen);
         connect(newScreen, &ScreenWidget::NotifyCurrentProject, this, &ScreensCtrl::NotifyCurrentProject);
         connect(newScreen, &ScreenWidget::NotifyBuildProject, this, &ScreensCtrl::NotifyBuildProject);
+        connect(newScreen, &ScreenWidget::NotifyProjectRemoved, this, &ScreensCtrl::NotifyProjectRemoved);
     }
 
     void ScreensCtrl::ResetAllScreens()

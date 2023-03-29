@@ -38,6 +38,7 @@ namespace O3DE::ProjectManager
     signals:
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
+        void NotifyProjectRemoved(const QString& projectPath);
 
     public slots:
         bool ChangeToScreen(ProjectManagerScreen screen);

@@ -63,6 +63,7 @@ namespace O3DE::ProjectManager
         void UninstallGem(const QModelIndex& modelIndex);
         void HandleGemCreated(const GemInfo& gemInfo);
         void HandleGemEdited(const GemInfo& newGemInfo);
+        void NotifyProjectRemoved(const QString& projectPath);
 
     protected:
         void hideEvent(QHideEvent* event) override;
@@ -74,8 +75,6 @@ namespace O3DE::ProjectManager
         GemModel* m_gemModel = nullptr;
         QSet<QString> m_gemsToRegisterWithProject;
         ScreensCtrl* m_screensControl = nullptr;
-
-
 
     private slots:
         void HandleOpenGemRepo();
