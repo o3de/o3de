@@ -7,6 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <RHI/Device.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/Conversions.h>
@@ -432,8 +433,17 @@ namespace AZ
             }
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            AssertSuccess(m_dx12Device->CreateCommittedResource(
-                &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialState, (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            HRESULT result = m_dx12Device->CreateCommittedResource(
+                &heapProperties, 
+                D3D12_HEAP_FLAG_NONE, 
+                &resourceDesc, 
+                initialState, 
+                (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr, 
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
+            );
+
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
+            AssertSuccess(result);
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             GetImageAllocationInfo(imageDescriptor, allocationInfo);
@@ -458,8 +468,16 @@ namespace AZ
 #endif
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            AssertSuccess(m_dx12Device->CreateCommittedResource(
-                &heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            HRESULT result = m_dx12Device->CreateCommittedResource(
+                &heapProperties, 
+                D3D12_HEAP_FLAG_NONE, 
+                &resourceDesc, 
+                initialState, 
+                nullptr, 
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
+            );
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
+            AssertSuccess(result);
 
             D3D12_RESOURCE_ALLOCATION_INFO allocationInfo;
             allocationInfo.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
@@ -482,8 +500,16 @@ namespace AZ
             allocationInfo.SizeInBytes = RHI::AlignUp(resourceDesc.Width, D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT);
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            AssertSuccess(m_dx12Device->CreatePlacedResource(
-                heap, heapByteOffset, &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            HRESULT result = m_dx12Device->CreatePlacedResource(
+                heap, 
+                heapByteOffset, 
+                &resourceDesc, 
+                initialState, 
+                nullptr, 
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
+            );
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
+            AssertSuccess(result);
 
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Buffer);
         }
@@ -530,8 +556,16 @@ namespace AZ
             }
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            AssertSuccess(m_dx12Device->CreatePlacedResource(
-                heap,heapByteOffset, &resourceDesc,initialState, (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            HRESULT result = m_dx12Device->CreatePlacedResource(
+                heap,
+                heapByteOffset, 
+                &resourceDesc,
+                initialState, 
+                (isOutputMergerAttachment && optimizedClearValue) ? &clearValue : nullptr, 
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
+            );
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
+            AssertSuccess(result);
 
             return MemoryView(resource.Get(), 0, allocationInfo.SizeInBytes, allocationInfo.Alignment, MemoryViewType::Image);
         }
@@ -550,8 +584,14 @@ namespace AZ
                 "Reserved resources are not supported for color / depth stencil images.");
 
             Microsoft::WRL::ComPtr<ID3D12Resource> resource;
-            AssertSuccess(m_dx12Device->CreateReservedResource(
-                &resourceDesc, initialState, nullptr, IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())));
+            HRESULT result = m_dx12Device->CreateReservedResource(
+                &resourceDesc, 
+                initialState, 
+                nullptr, 
+                IID_GRAPHICS_PPV_ARGS(resource.GetAddressOf())
+            );
+            AZ_RHI_DUMP_POOL_INFO_ON_FAIL(SUCCEEDED(result));
+            AssertSuccess(result);
 
             uint32_t subresourceCount = resourceDesc.MipLevels * resourceDesc.DepthOrArraySize;
             imageTileLayout.m_subresourceTiling.resize(subresourceCount);

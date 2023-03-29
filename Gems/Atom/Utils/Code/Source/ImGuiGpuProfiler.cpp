@@ -9,6 +9,7 @@
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
 #include <Atom/RPI.Public/RenderPipeline.h>
@@ -1708,33 +1709,6 @@ namespace AZ
             }
         }
 
-        // POOL attributes
-        using JsonStringRef = rapidjson::Value::StringRefType;
-        static const char PoolNameAttribStr[] = "PoolName";
-        static const char HostMemoryTypeValueStr[] = "Host";
-        static const char DeviceMemoryTypeValueStr[] = "Device";
-        static const char MemoryTypeAttribStr[] = "MemoryType";
-        static const char BudgetInBytesAttribStr[] = "BudgetInBytes";
-        static const char TotalResidentInBytesAttribStr[] = "TotalResidentInBytes";
-        static const char UsedResidentInBytesAttribStr[] = "UsedResidentInBytes";
-        static const char FragmentationAttribStr[] = "Fragmentation";
-        static const char UniqueAllocationsInBytesAttribStr[] = "UniqueAllocationsInBytes";
-        static const char BufferCountAttribStr[] = "BufferCount";
-        static const char ImageCountAttribStr[] = "ImageCount";
-        static const char BuffersListAttribStr[] = "BuffersList";
-        static const char ImagesListAttribStr[] = "ImagesList";
-
-        // Buffer and Image attributes
-        static const char BufferNameAttribStr[] = "BufferName";
-        static const char ImageNameAttribStr[] = "ImageName";
-        static const char SizeInBytesAttribStr[] = "SizeInBytes";
-        static const char BindFlagsAttribStr[] = "BindFlags";
-
-        // Top level attributes
-        static const char PoolsAttribStr[] = "Pools";
-        static const char MemoryDataVersionMajorAttribStr[] = "MemoryDataVersionMajor";
-        static const char MemoryDataVersionMinorAttribStr[] = "MemoryDataVersionMinor";
-        static const char MemoryDataVersionRevisionAttribStr[] = "MemoryDataVersionRevision";
 
         int GetIntMember(const rapidjson::Value& object, const char* memberName, int defaultValue)
         {
@@ -1769,64 +1743,8 @@ namespace AZ
 
             rapidjson::Document doc;
             rapidjson::Value& root = doc.SetObject();
-            rapidjson::Value poolsArray(rapidjson::kArrayType);
 
-            for (const auto& pool : m_savedPools)
-            {
-                rapidjson::Value poolObject(rapidjson::kObjectType);
-                poolObject.AddMember(PoolNameAttribStr, rapidjson::StringRef(!pool.m_name.IsEmpty()?pool.m_name.GetCStr():"Unnamed Pool"), doc.GetAllocator());
-                if (const auto& heapMemoryUsageHost = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Host); heapMemoryUsageHost.m_totalResidentInBytes > 0)
-                {
-                    poolObject.AddMember(MemoryTypeAttribStr, HostMemoryTypeValueStr, doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_budgetInBytes), doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_totalResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_usedResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageHost.m_fragmentation, doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageHost.m_uniqueAllocationBytes.load()), doc.GetAllocator());
-                }
-                else if (const auto& heapMemoryUsageDevice = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device); heapMemoryUsageDevice.m_totalResidentInBytes > 0)
-                {
-                    poolObject.AddMember(MemoryTypeAttribStr,               DeviceMemoryTypeValueStr, doc.GetAllocator());
-                    poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_budgetInBytes), doc.GetAllocator());
-                    poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_totalResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_usedResidentInBytes.load()), doc.GetAllocator());
-                    poolObject.AddMember(FragmentationAttribStr, heapMemoryUsageDevice.m_fragmentation, doc.GetAllocator());
-                    poolObject.AddMember(UniqueAllocationsInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_uniqueAllocationBytes.load()), doc.GetAllocator());
-                }
-                else
-                {
-                    continue;
-                }
-
-                poolObject.AddMember(BufferCountAttribStr, static_cast<uint64_t>(pool.m_buffers.size()), doc.GetAllocator());
-                poolObject.AddMember(ImageCountAttribStr,  static_cast<uint64_t>(pool.m_images.size()),  doc.GetAllocator());
-                rapidjson::Value buffersArray(rapidjson::kArrayType);
-                for (const auto& buffer : pool.m_buffers)
-                {
-                    rapidjson::Value bufferObject(rapidjson::kObjectType);
-                    bufferObject.AddMember(BufferNameAttribStr, rapidjson::StringRef(!buffer.m_name.IsEmpty()?buffer.m_name.GetCStr():"Unnamed Buffer"), doc.GetAllocator());
-                    bufferObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(buffer.m_sizeInBytes), doc.GetAllocator());
-                    bufferObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(buffer.m_bindFlags), doc.GetAllocator());
-                    buffersArray.PushBack(bufferObject, doc.GetAllocator());
-                }
-                poolObject.AddMember(BuffersListAttribStr, buffersArray, doc.GetAllocator());
-
-                rapidjson::Value imagesArray(rapidjson::kArrayType);
-                for (const auto& image : pool.m_images)
-                {
-                    rapidjson::Value imageObject(rapidjson::kObjectType);
-                    imageObject.AddMember(ImageNameAttribStr, rapidjson::StringRef(!image.m_name.IsEmpty()?image.m_name.GetCStr():"Unnamed Image"), doc.GetAllocator());
-                    imageObject.AddMember(SizeInBytesAttribStr, static_cast<uint64_t>(image.m_sizeInBytes), doc.GetAllocator());
-                    imageObject.AddMember(BindFlagsAttribStr, static_cast<uint32_t>(image.m_bindFlags), doc.GetAllocator());
-                    imagesArray.PushBack(imageObject, doc.GetAllocator());
-                }
-                poolObject.AddMember(ImagesListAttribStr, imagesArray, doc.GetAllocator());
-                poolsArray.PushBack(poolObject, doc.GetAllocator());
-            }
-            root.AddMember(PoolsAttribStr, poolsArray, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionMajorAttribStr, 1, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionMinorAttribStr, 0, doc.GetAllocator());
-            root.AddMember(MemoryDataVersionRevisionAttribStr, 0, doc.GetAllocator());
+            AZ::RHI::WritePoolsToJson(m_savedPools, doc, root);
 
             rapidjson::StringBuffer jsonStringBuffer;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(jsonStringBuffer);
@@ -1863,17 +1781,17 @@ namespace AZ
             AZStd::unordered_map<AZ::Name, AZ::RHI::MemoryStatistics::Pool> pools;
 
             rapidjson::Document& doc = outcome.GetValue();
-            if (!doc.IsObject() || !doc.HasMember(PoolsAttribStr) )
+            if (!doc.IsObject() || !doc.HasMember(AZ::RHI::PoolsAttribStr) )
             {
                 m_captureMessage = AZStd::string::format("File %s doesn't contain saved memory state", fileName.c_str());
                 AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
-            rapidjson::Value& poolsData = doc[PoolsAttribStr];
-            int dataVersionMajor = GetIntMember(doc, MemoryDataVersionMajorAttribStr, 1);
-            int dataVersionMinor = GetIntMember(doc, MemoryDataVersionMinorAttribStr, 0);
-            int dataVersionRevision = GetIntMember(doc, MemoryDataVersionRevisionAttribStr, 0);
+            rapidjson::Value& poolsData = doc[AZ::RHI::PoolsAttribStr];
+            int dataVersionMajor = GetIntMember(doc, AZ::RHI::MemoryDataVersionMajorAttribStr, 1);
+            int dataVersionMinor = GetIntMember(doc, AZ::RHI::MemoryDataVersionMinorAttribStr, 0);
+            int dataVersionRevision = GetIntMember(doc, AZ::RHI::MemoryDataVersionRevisionAttribStr, 0);
 
             if (dataVersionMajor == 1 && dataVersionMinor == 0 && dataVersionRevision >= 0)
             {
@@ -1897,8 +1815,8 @@ namespace AZ
                     }
                     rapidjson::Value& poolData = *poolItr;
                     RHI::MemoryStatistics::Pool pool;
-                    pool.m_name = poolData[PoolNameAttribStr].GetString();
-                    AZStd::string poolHeapType = poolData[MemoryTypeAttribStr].GetString();
+                    pool.m_name = poolData[AZ::RHI::PoolNameAttribStr].GetString();
+                    AZStd::string poolHeapType = poolData[AZ::RHI::MemoryTypeAttribStr].GetString();
                     RHI::HeapMemoryUsage* heapMemUsage = nullptr;
                     RHI::MemoryStatistics::Heap* globalHeapStats = nullptr;
                     if (poolHeapType == "Host")
@@ -1920,16 +1838,16 @@ namespace AZ
                         AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                         return;
                     }
-                    heapMemUsage->m_budgetInBytes = poolData[BudgetInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_totalResidentInBytes = poolData[TotalResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_usedResidentInBytes = poolData[UsedResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_fragmentation = poolData[FragmentationAttribStr].GetFloat();
-                    heapMemUsage->m_uniqueAllocationBytes = poolData[UniqueAllocationsInBytesAttribStr].GetUint64();
+                    heapMemUsage->m_budgetInBytes = poolData[AZ::RHI::BudgetInBytesAttribStr].GetUint64();
+                    heapMemUsage->m_totalResidentInBytes = poolData[AZ::RHI::TotalResidentInBytesAttribStr].GetUint64();
+                    heapMemUsage->m_usedResidentInBytes = poolData[AZ::RHI::UsedResidentInBytesAttribStr].GetUint64();
+                    heapMemUsage->m_fragmentation = poolData[AZ::RHI::FragmentationAttribStr].GetFloat();
+                    heapMemUsage->m_uniqueAllocationBytes = poolData[AZ::RHI::UniqueAllocationsInBytesAttribStr].GetUint64();
 
                     globalHeapStats->m_memoryUsage.m_totalResidentInBytes += heapMemUsage->m_totalResidentInBytes;
                     globalHeapStats->m_memoryUsage.m_usedResidentInBytes += heapMemUsage->m_usedResidentInBytes;
 
-                    rapidjson::Value& buffersList = poolData[BuffersListAttribStr];
+                    rapidjson::Value& buffersList = poolData[AZ::RHI::BuffersListAttribStr];
                     if (!buffersList.IsArray())
                     {
                         m_captureMessage = AZStd::string::format(
@@ -1953,13 +1871,13 @@ namespace AZ
                         }
                         rapidjson::Value& bufferData = *bufferItr;
                         RHI::MemoryStatistics::Buffer buffer;
-                        buffer.m_name = bufferData[BufferNameAttribStr].GetString();
-                        buffer.m_sizeInBytes = bufferData[SizeInBytesAttribStr].GetUint64();
-                        buffer.m_bindFlags = static_cast<RHI::BufferBindFlags>(bufferData[BindFlagsAttribStr].GetUint());
+                        buffer.m_name = bufferData[AZ::RHI::BufferNameAttribStr].GetString();
+                        buffer.m_sizeInBytes = bufferData[AZ::RHI::SizeInBytesAttribStr].GetUint64();
+                        buffer.m_bindFlags = static_cast<RHI::BufferBindFlags>(bufferData[AZ::RHI::BindFlagsAttribStr].GetUint());
                         pool.m_buffers.push_back(AZStd::move(buffer));
                     }
 
-                    rapidjson::Value& imagesList = poolData[ImagesListAttribStr];
+                    rapidjson::Value& imagesList = poolData[AZ::RHI::ImagesListAttribStr];
                     if (!imagesList.IsArray())
                     {
                         m_captureMessage = AZStd::string::format(
@@ -1983,9 +1901,9 @@ namespace AZ
                         }
                         rapidjson::Value& imageData = *imageItr;
                         RHI::MemoryStatistics::Image image;
-                        image.m_name = imageData[ImageNameAttribStr].GetString();
-                        image.m_sizeInBytes = imageData[SizeInBytesAttribStr].GetUint64();
-                        image.m_bindFlags = static_cast<RHI::ImageBindFlags>(imageData[BindFlagsAttribStr].GetUint());
+                        image.m_name = imageData[AZ::RHI::ImageNameAttribStr].GetString();
+                        image.m_sizeInBytes = imageData[AZ::RHI::SizeInBytesAttribStr].GetUint64();
+                        image.m_bindFlags = static_cast<RHI::ImageBindFlags>(imageData[AZ::RHI::BindFlagsAttribStr].GetUint());
                         pool.m_images.push_back(AZStd::move(image));
                     }
 
