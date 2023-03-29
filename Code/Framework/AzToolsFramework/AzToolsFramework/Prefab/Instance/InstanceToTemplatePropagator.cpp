@@ -184,11 +184,7 @@ namespace AzToolsFramework
 
         void InstanceToTemplatePropagator::PrependPathToPatchPaths(PrefabDom& patches, const AZStd::string& pathToPrepend)
         {
-            if (!patches.IsArray())
-            {
-                AZ_Error("Prefab", false, "Patch is not an array of updates.  Update failed.");
-                return;
-            }
+            AZ_Assert(patches.IsArray(), "PrependPathToPatchPaths - Provided patches should be an array object DOM value.");
 
             if (pathToPrepend.empty())
             {

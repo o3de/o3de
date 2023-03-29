@@ -415,12 +415,8 @@ namespace AzToolsFramework::Prefab
 
     LinkId PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const
     {
-        if (!patches.IsArray())
-        {
-            AZ_Error("Prefab", false, "PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths - "
-                "The given patch is not an array of updates. Returns an invalid link id.");
-            return InvalidLinkId;
-        }
+        AZ_Assert(false, "PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths - "
+            "The provided patches should an array of patches to update.");
 
         // Climb up the instance hierarchy from the owning instance until it hits the focused prefab instance.
         InstanceClimbUpResult climbUpResult = ClimbUpToFocusedOrRootInstanceFromEntity(entityId);
