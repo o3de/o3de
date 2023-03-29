@@ -73,7 +73,7 @@ namespace AzToolsFramework
 
                 PrefabDom newPatches(&(patches.GetAllocator()));
                 instanceToTemplateInterface->GeneratePatch(newPatches, domValueBeforeUpdate, domValueAfterUpdate);
-                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, pathToValue);
+                instanceToTemplateInterface->PrependPathToPatchPaths(newPatches, pathToValue);
 
                 for (auto& newPatch : newPatches.GetArray())
                 {

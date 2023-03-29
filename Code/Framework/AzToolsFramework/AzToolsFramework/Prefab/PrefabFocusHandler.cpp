@@ -413,11 +413,11 @@ namespace AzToolsFramework::Prefab
         return climbUpResult;
     }
 
-    LinkId PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths(PrefabDom& providedPatch, AZ::EntityId entityId) const
+    LinkId PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths(PrefabDom& patches, AZ::EntityId entityId) const
     {
-        if (!providedPatch.IsArray())
+        if (!patches.IsArray())
         {
-            AZ_Error("Prefab", false, "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
+            AZ_Error("Prefab", false, "PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths - "
                 "The given patch is not an array of updates. Returns an invalid link id.");
             return InvalidLinkId;
         }
@@ -426,7 +426,7 @@ namespace AzToolsFramework::Prefab
         InstanceClimbUpResult climbUpResult = ClimbUpToFocusedOrRootInstanceFromEntity(entityId);
         if (!climbUpResult.m_isTargetInstanceReached)
         {
-            AZ_Error("Prefab", false, "PrefabFocusHandler::AppendPathFromFocusedInstanceToPatchPaths - "
+            AZ_Error("Prefab", false, "PrefabFocusHandler::PrependPathFromFocusedInstanceToPatchPaths - "
                 "Entity id is not owned by a descendant of the focused prefab instance.");
             return InvalidLinkId;
         }
@@ -439,12 +439,12 @@ namespace AzToolsFramework::Prefab
             AZStd::string prefix = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(
                 climbUpResult.m_climbedInstances, true);
 
-            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId, AZStd::move(prefix));
+            m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patches, entityId, AZStd::move(prefix));
             return climbUpResult.m_climbedInstances.back()->GetLinkId();
         }
         else
         {
-            m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(providedPatch, entityId);
+            m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patches, entityId);
             return InvalidLinkId;
         }
     }
