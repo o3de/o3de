@@ -30,6 +30,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
@@ -83,12 +84,17 @@ namespace AZ
             if (m_xrSystem)
             {
                 AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
-                if (resultCode == AZ::RHI::ResultCode::Fail)
+                // Check if the result code is a Success. Failure can happen if no compatible device is attached.
+                // Check if the active rhi backend is not vulkan
+                // UnRegister xr system if any of the criteria is not met
+                if (resultCode == AZ::RHI::ResultCode::Fail || !AZ::RHI::IsVulkanRHI())
                 {
                     UnregisterXRSystem();
+                    AZ_Error(
+                        "RPISystem",
+                        resultCode == AZ::RHI::ResultCode::Success,
+                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled or a non vulkan rhi in use.");
                 }
-                AZ_Error("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled");
             }
 
             //Init RHI device
