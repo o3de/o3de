@@ -1114,6 +1114,7 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // Reset the default view panes to be opened. Used for restoring default layout and component entity layout.
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
+    const QtViewPane* assetBrowserInspectorPane = OpenPane(LyViewPane::AssetBrowserInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityInspectorViewPane = OpenPane(LyViewPane::EntityInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
@@ -1132,13 +1133,14 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
         // so that the inspector will be to the right of the viewport and console
         m_advancedDockManager->setAbsoluteCornersForDockArea(m_mainWindow, Qt::RightDockWidgetArea);
 
-        // Retrieve the width of the screen that our main window is on so we can
+        // Retrieve the width and height of the screen that our main window is on so we can
         // use it later for resizing our panes. The main window ends up being maximized
         // when we restore the default layout, but even if we maximize the main window
-        // before doing anything else, its width won't update until after this has all
+        // before doing anything else, its height and width won't update until after this has all
         // been processed, so we need to resize the panes based on what the main window
-        // width WILL be after maximized
+        // height and width WILL be after maximized
         int screenWidth = QApplication::desktop()->screenGeometry(m_mainWindow).width();
+        int screenHeight = QApplication::desktop()->screenGeometry(m_mainWindow).height();
 
         // Add the console view pane first
         m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, consoleViewPane->m_dockWidget);
@@ -1146,21 +1148,35 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
 
         if (assetBrowserViewPane)
         {
-
             m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserViewPane->m_dockWidget);
             assetBrowserViewPane->m_dockWidget->setFloating(false);
+
+            static const float bottomTabWidgetPercentage = 0.25f;
+            int newHeight = static_cast<int>((float)screenHeight * bottomTabWidgetPercentage);
 
             AzQtComponents::DockTabWidget* bottomTabWidget = m_advancedDockManager->tabifyDockWidget(assetBrowserViewPane->m_dockWidget, consoleViewPane->m_dockWidget, m_mainWindow);
             if (bottomTabWidget)
             {
                 bottomTabWidget->setCurrentWidget(assetBrowserViewPane->m_dockWidget);
 
-                // Resize the bottom tab widget so that the asset browser gets an appropriate default height
-                static const float bottomTabWidgetPercentage = 0.11f;
-                int newHeight = static_cast<int>((float)screenWidth * bottomTabWidgetPercentage);
-                QDockWidget* tabWidgetParent = qobject_cast<QDockWidget*>(bottomTabWidget->parentWidget());
-                m_mainWindow->resizeDocks({ tabWidgetParent }, { newHeight }, Qt::Vertical);
+                QDockWidget* bottomTabWidgetParent = qobject_cast<QDockWidget*>(bottomTabWidget->parentWidget());
+                m_mainWindow->resizeDocks({ bottomTabWidgetParent }, { newHeight }, Qt::Vertical);
             }
+            else
+            {
+                m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
+            }
+        }
+
+        if (assetBrowserInspectorPane)
+        {
+            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserInspectorPane->m_dockWidget);
+            assetBrowserInspectorPane->m_dockWidget->setFloating(false);
+
+            static const float assetBrowserInspectorWidthPercentage = 0.15f;
+            int newWidth = static_cast<int>((float)screenWidth * assetBrowserInspectorWidthPercentage);
+
+            m_mainWindow->resizeDocks({ assetBrowserInspectorPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
         }
 
         if (entityInspectorViewPane)
