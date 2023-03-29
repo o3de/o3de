@@ -294,6 +294,16 @@ namespace AZ
             return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
 
+        void RHISystem::SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines)
+        {
+            m_numActiveRenderPipelines = numActiveRenderPipelines;
+        }
+
+        uint16_t RHISystem::GetNumActiveRenderPipelines() const
+        {
+            return m_numActiveRenderPipelines;
+        }
+
         ConstPtr<PlatformLimitsDescriptor> RHISystem::GetPlatformLimitsDescriptor(int deviceIndex) const
         {
             return m_devices[deviceIndex]->GetDescriptor().m_platformLimitsDescriptor;

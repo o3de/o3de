@@ -8,7 +8,6 @@
 
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/UnitTest/TestTypes.h>
 #include <AzManipulatorTestFramework/AzManipulatorTestFrameworkTestHelpers.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
@@ -17,17 +16,17 @@
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
 #include <AzToolsFramework/UnitTest/AzToolsFrameworkTestHelpers.h>
+#include <CustomSerializeContextTestFixture.h>
 
 namespace UnitTest
 {
-    class ManipulatorCoreFixture : public LeakDetectionFixture
+    class ManipulatorCoreFixture
+        : public CustomSerializeContextTestFixture
     {
     public:
         void SetUp() override
         {
-            LeakDetectionFixture::SetUp();
-
-            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
+            CustomSerializeContextTestFixture::SetUp();
 
             m_transformComponentDescriptor =
                 AZStd::unique_ptr<AZ::ComponentDescriptor>(AzToolsFramework::Components::TransformComponent::CreateDescriptor());
@@ -81,16 +80,13 @@ namespace UnitTest
             m_transformComponentDescriptor.reset();
             m_lockComponentDescriptor.reset();
             m_visibilityComponentDescriptor.reset();
-            m_serializeContext.reset();
-
-            LeakDetectionFixture::TearDown();
+            CustomSerializeContextTestFixture::TearDown();
         }
 
         AZ::EntityId m_entityId;
         AZStd::unique_ptr<AZ::Entity> m_entity;
         AZStd::shared_ptr<AzToolsFramework::LinearManipulator> m_linearManipulator;
         AZStd::unique_ptr<EditorEntityComponentChangeDetector> m_editorEntityComponentChangeDetector;
-        AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
         AZ::ComponentId m_transformComponentId;
         AZStd::unique_ptr<AZ::ComponentDescriptor> m_transformComponentDescriptor;
         AZ::ComponentId m_lockComponentId;

@@ -54,7 +54,8 @@ namespace UnitTest
         EXPECT_EQ(wheelEntityComponents->MemberCount(), expectedComponentCount);
 
         // Extract the component id of the entity in wheel template and verify that it matches with the component id of the wheel instance.
-        PrefabTestDomUtils::ValidateComponentsDomHasId(*wheelEntityComponents, prefabTestComponentId);
+        PrefabTestDomUtils::ValidateComponentsDomHasId(
+            *wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName(), prefabTestComponentId);
 
         // Create an axle with 0 entities and 1 wheel instance.
         AZStd::unique_ptr<Instance> wheel1UnderAxle = m_prefabSystemComponent->InstantiatePrefab(wheelTemplateId);
@@ -132,8 +133,7 @@ namespace UnitTest
         wheelEntityComponents = PrefabTestDomUtils::GetPrefabDomComponentsPath(wheelEntityAlias).Get(*wheelInstanceDomUnderAxle);
         ASSERT_TRUE(wheelEntityComponents != nullptr);
 
-        AZStd::string componentValueName = AZStd::string::format("Component_[%llu]", prefabTestComponentId);
-        PrefabDomValueReference wheelEntityComponentValue = PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents, componentValueName.c_str());
+        PrefabDomValueReference wheelEntityComponentValue = PrefabDomUtils::FindPrefabDomValue(*wheelEntityComponents, prefabTestComponent->RTTI_GetTypeName());
         ASSERT_TRUE(wheelEntityComponentValue);
 
         PrefabDomValueReference wheelEntityComponentBoolPropertyValue =

@@ -317,19 +317,16 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RHI);
 
             commandList.GetValidator().BeginScope(*this);
-
-            PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
-
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
-            {
-                PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
-            }
-
             commandList.SetAftermathEventMarker(GetId().GetCStr());
             
             const bool isPrologue = commandListIndex == 0;
             if (isPrologue)
             {
+                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                {
+                    PIXBeginEvent(commandList.GetCommandList(), PIX_MARKER_CMDLIST_COL, GetMarkerLabel().data());
+                }
+
                 for (const auto& barrier : m_preDiscardTransitionBarrierRequests)
                 {
                     commandList.QueueTransitionBarrier(barrier);
@@ -436,13 +433,12 @@ namespace AZ
                 {
                     commandList.QueueTransitionBarrier(request);
                 }
-            }
 
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
-            {
-                PIXEndEvent(commandList.GetCommandList());
+                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                {
+                    PIXEndEvent(commandList.GetCommandList());
+                }
             }
-            PIXEndEvent();
 
             commandList.GetValidator().EndScope();
         }

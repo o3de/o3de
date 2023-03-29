@@ -646,6 +646,14 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler)
+        {
+            if (meshHandle.IsValid())
+            {
+                handler.Connect(meshHandle->GetObjectSrgCreatedEvent());
+            }
+        }
+
         void MeshFeatureProcessor::SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform, const AZ::Vector3& nonUniformScale)
         {
             if (meshHandle.IsValid())
@@ -1382,6 +1390,7 @@ namespace AZ
                         AZ_Warning("MeshFeatureProcessor", false, "Failed to create a new shader resource group, skipping.");
                         continue;
                     }
+                    m_objectSrgCreatedEvent.Signal(meshObjectSrg);
                     m_objectSrgList.push_back(meshObjectSrg);
                 }
 
