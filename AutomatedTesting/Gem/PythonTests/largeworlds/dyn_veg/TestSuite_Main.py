@@ -89,6 +89,7 @@ class TestAutomation(EditorTestSuite):
     class test_MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully(EditorBatchedTest):
         from .EditorScripts import MeshSurfaceTagEmitter_SurfaceTagsAddRemoveSuccessfully as test_module
 
+    @pytest.mark.skip(reason="https://github.com/o3de/o3de/issues/15456")
     class test_PhysXColliderSurfaceTagEmitter_E2E_Editor(EditorBatchedTest):
         from .EditorScripts import PhysXColliderSurfaceTagEmitter_E2E_Editor as test_module
 
