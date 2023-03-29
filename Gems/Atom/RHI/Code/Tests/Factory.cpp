@@ -51,6 +51,11 @@ namespace UnitTest
         return RHI::APIType(m_platformName.GetStringView());
     }
 
+    bool Factory::SupportXR()
+    {
+        return false;
+    }
+
     RHI::PhysicalDeviceList Factory::EnumeratePhysicalDevices()
     {
         return PhysicalDevice::Enumerate();

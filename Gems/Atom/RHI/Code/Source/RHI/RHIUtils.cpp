@@ -110,11 +110,6 @@ namespace AZ
             return RHI::Factory::Get().GetAPIUniqueIndex() == static_cast<uint32_t>(APIIndex::Null);
         }
 
-        bool IsVulkanRHI()
-        {
-            return RHI::Factory::Get().GetAPIUniqueIndex() == static_cast<uint32_t>(APIIndex::Vulkan);
-        }
-
         AZStd::string GetCommandLineValue(const AZStd::string& commandLineOption)
         {
             const AzFramework::CommandLine* commandLine = nullptr;

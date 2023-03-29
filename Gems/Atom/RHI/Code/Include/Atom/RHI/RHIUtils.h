@@ -43,9 +43,6 @@ namespace AZ
         //! Returns true if the current backend is null 
         bool IsNullRHI();
 
-        //! Returns true if the current backend is vulkan 
-        bool IsVulkanRHI();
-
         //! Returns true if the Atom/GraphicsDevMode settings registry key is set
         bool IsGraphicsDevModeEnabled();
     }
