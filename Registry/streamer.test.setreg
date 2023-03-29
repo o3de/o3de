@@ -15,7 +15,7 @@
                             "Drive":
                             {
                                 "$type": "AZ::IO::StorageDriveConfig",
-                                "MaxFileHandles": 1024
+                                "MaxFileHandles": 128
                             },
                             "Splitter":
                             {
