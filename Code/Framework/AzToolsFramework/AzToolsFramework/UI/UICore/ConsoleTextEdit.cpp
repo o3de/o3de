@@ -7,6 +7,7 @@
  */
 
 #include <AzCore/Debug/Trace.h>
+#include <AzCore/Interface/Interface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx>
