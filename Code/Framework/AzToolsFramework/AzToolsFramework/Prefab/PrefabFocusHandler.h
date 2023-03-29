@@ -73,7 +73,7 @@ namespace AzToolsFramework::Prefab
         void SetPrefabEditScope(AzFramework::EntityContextId entityContextId, PrefabEditScope mode) override;
 
         // EditorEntityContextNotificationBus overrides ...
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         
         // EditorEntityInfoNotificationBus overrides ...
         void OnEntityInfoUpdatedName(AZ::EntityId entityId, const AZStd::string& name) override;

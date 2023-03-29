@@ -138,7 +138,7 @@ namespace RemoteTools
             netInterface->SetTimeoutMs(AZ::TimeMs(0));
         }
 
-        if (!m_joinThread->IsRunning())
+        if (m_joinThread && !m_joinThread->IsRunning())
         {
             m_joinThread->Join();
             m_joinThread->Start();
@@ -563,15 +563,6 @@ namespace RemoteTools
             m_joinThread->Join();
             m_joinThread->Start();
         }
-
-        // Check if there are any active connections, if not stop the outbox thread
-        bool hasActiveConnection = false;
-        for (auto registryIt = m_entryRegistry.begin(); registryIt != m_entryRegistry.end(); ++registryIt)
-        {
-            hasActiveConnection =
-                AZ::Interface<AzNetworking::INetworking>::Get()->RetrieveNetworkInterface(registryIt->second.m_name) != nullptr;
-        }
-
     }
 
 } // namespace RemoteTools

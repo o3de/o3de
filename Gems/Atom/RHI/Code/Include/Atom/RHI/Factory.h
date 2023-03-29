@@ -11,10 +11,13 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Console/IConsole.h>
 
 #if defined(USE_RENDERDOC)
 #include <renderdoc_app.h>
 #endif
+
+AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
 
 namespace AZ
 {
@@ -55,6 +58,8 @@ namespace AZ
         static const APIPriority APITopPriority = 1;
         static const APIPriority APILowPriority = 10;
         static const APIPriority APIMiddlePriority = (APILowPriority - APITopPriority) / 2;
+
+        
 
         //! The factory is an interface for creating RHI data structures. The platform system should
         //! register itself with the factory by calling Register, and unregister on shutdown with

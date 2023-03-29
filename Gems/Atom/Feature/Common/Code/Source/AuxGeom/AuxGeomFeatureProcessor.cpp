@@ -114,6 +114,12 @@ namespace AZ
             }
         }
 
+        void AuxGeomFeatureProcessor::OnRenderEnd()
+        {
+            m_dynamicPrimitiveProcessor->FrameEnd();
+            m_fixedShapeProcessor->FrameEnd();
+        }
+
         RPI::AuxGeomDrawPtr AuxGeomFeatureProcessor::GetDrawQueueForView(const RPI::View* view)
         {
             if (view)

@@ -277,6 +277,11 @@ namespace AzToolsFramework
                 auto crc = AZ::Crc32(m_name.toUtf8().data());
                 InitializeTreeViewSaving(crc);
                 ApplyTreeViewSnapshot();
+                if (!selectionModel()->hasSelection())
+                {
+                    QModelIndex firstItem = model()->index(0, 0);
+                    selectionModel()->select(firstItem, QItemSelectionModel::ClearAndSelect);
+                }
             }
         }
 
@@ -360,6 +365,11 @@ namespace AzToolsFramework
 
                     curIndex = indexBelow(curIndex);
                 }
+            }
+            else if (m_indexToSelectAfterUpdate.isValid())
+            {
+                selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
+                m_indexToSelectAfterUpdate = QModelIndex();
             }
         }
 
@@ -634,6 +644,11 @@ namespace AzToolsFramework
                     }
                   }
                 });
+        }
+
+        void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
+        {
+            m_indexToSelectAfterUpdate = index;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

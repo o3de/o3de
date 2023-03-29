@@ -16,9 +16,15 @@
 namespace AssetProcessor
 {
 
-    AZStd::shared_ptr<ProductAssetTreeItemData> ProductAssetTreeItemData::MakeShared(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo, const AZStd::string& assetDbName, QString name, bool isFolder, const AZ::Uuid& uuid)
+    AZStd::shared_ptr<ProductAssetTreeItemData> ProductAssetTreeItemData::MakeShared(
+        const AzToolsFramework::AssetDatabase::ProductDatabaseEntry* databaseInfo,
+        const AZStd::string& assetDbName,
+        QString name,
+        bool isFolder,
+        const AZ::Uuid& uuid,
+        const AZ::s64 scanFolderID)
     {
-        return AZStd::make_shared<ProductAssetTreeItemData>(databaseInfo, assetDbName, name, isFolder, uuid);
+        return AZStd::make_shared<ProductAssetTreeItemData>(databaseInfo, assetDbName, name, isFolder, uuid, scanFolderID);
     }
 
     ProductAssetTreeItemData::ProductAssetTreeItemData(
@@ -26,8 +32,10 @@ namespace AssetProcessor
         const AZStd::string& assetDbName,
         QString name,
         bool isFolder,
-        const AZ::Uuid& uuid) :
-        AssetTreeItemData(assetDbName, name, isFolder, uuid)
+        const AZ::Uuid& uuid,
+        const AZ::s64 scanFolderID)
+        :
+        AssetTreeItemData(assetDbName, name, isFolder, uuid, scanFolderID)
     {
         if (databaseInfo)
         {

@@ -17,5 +17,6 @@ namespace EditorIdentifiers
 
     // Main Window Widgets
     inline constexpr AZStd::string_view EditorAssetBrowserActionContextIdentifier = "o3de.context.editor.assetbrowser";
+    inline constexpr AZStd::string_view EditorConsoleActionContextIdentifier = "o3de.context.editor.console";
     inline constexpr AZStd::string_view EditorEntityPropertyEditorActionContextIdentifier = "o3de.context.editor.entitypropertyeditor";
 }

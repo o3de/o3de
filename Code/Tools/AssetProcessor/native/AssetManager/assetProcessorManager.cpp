@@ -36,6 +36,7 @@
 #include <native/AssetManager/SourceAssetReference.h>
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <native/utilities/UuidManager.h>
+#include <native/utilities/ProductOutputUtil.h>
 
 namespace AssetProcessor
 {
@@ -1307,6 +1308,13 @@ namespace AssetProcessor
             AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer priorProducts;
             m_stateData->GetProductsByJobID(job.m_jobID, priorProducts);
 
+            ProductOutputUtil::FinalizeProduct(
+                m_stateData,
+                m_platformConfig,
+                processedAsset.m_entry.m_sourceAssetReference,
+                processedAsset.m_response.m_outputProducts,
+                processedAsset.m_entry.m_platformInfo.m_identifier);
+
             //make new product entries from the job response output products
             ProductInfoList newProducts;
             AZStd::vector<AZStd::vector<AZ::u32> > newLegacySubIDs;  // each product has a vector of legacy subids;
@@ -1479,6 +1487,9 @@ namespace AssetProcessor
                 }
             }
 
+            auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
             //set the new products
             for (size_t productIdx = 0; productIdx < newProducts.size(); ++productIdx)
             {
@@ -1524,8 +1535,14 @@ namespace AssetProcessor
                 AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
                 dependencyContainer.reserve(dependencySet.size());
 
-                for(const auto& entry : dependencySet)
+                for(auto& entry : dependencySet)
                 {
+                    // Attempt to update legacy UUID references to canonical UUIDs if possible
+                    if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(entry.m_dependencySourceGuid); canonicalUuid)
+                    {
+                        entry.m_dependencySourceGuid = canonicalUuid.value();
+                    }
+
                     dependencyContainer.push_back(entry);
                 }
 
@@ -2769,6 +2786,9 @@ namespace AssetProcessor
         auto* fileStateInterface = AZ::Interface<AssetProcessor::IFileStateRequests>::Get();
         AZ_Assert(fileStateInterface, "Programmer Error - IFileStateRequests interface is not available.");
 
+        auto* uuidManagerInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidManagerInterface, "Programmer Error - IUuidRequests interface is not available.");
+
         // During unit tests, it can be the case that cache folders are actually in a temp folder structure
         // on OSX this is /var/... , but that is a symlink for real path /private/var.  In some circumstances file monitor
         // for deletions may report the canonical path (/private/var/...) when the 'cache root' or watched folder
@@ -2995,6 +3015,8 @@ namespace AssetProcessor
                     }
                 }
 
+                const bool isMetadataEnabledType = uuidManagerInterface->IsGenerationEnabledForFile(normalizedPath.toUtf8().constData());
+
                 // is it being overridden by a higher priority file?
                 QString overrider;
                 if (examineFile.m_isDelete)
@@ -3031,7 +3053,7 @@ namespace AssetProcessor
                         }
                     }
                 }
-                else
+                else if(!isMetadataEnabledType)
                 {
                     overrider = m_platformConfig->GetOverridingFile(sourceAssetReference.RelativePath().c_str(), sourceAssetReference.ScanFolderPath().c_str());
                 }
@@ -4330,15 +4352,25 @@ namespace AssetProcessor
         m_jobEntries.push_back(entry);
 
         // Signals SourceAssetTreeModel so it can update the CreateJobs duration change
-        Q_EMIT CreateJobsDurationChanged(sourceAsset.RelativePath().c_str());
+        Q_EMIT CreateJobsDurationChanged(sourceAsset.RelativePath().c_str(), sourceAsset.ScanFolderId());
     }
 
-    bool AssetProcessorManager::ResolveSourceFileDependencyPath(const AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
+    bool AssetProcessorManager::ResolveSourceFileDependencyPath(AssetBuilderSDK::SourceFileDependency& sourceDependency, QString& resultDatabaseSourceName, QStringList& resolvedDependencyList)
     {
         resultDatabaseSourceName.clear();
         if (!sourceDependency.m_sourceFileDependencyUUID.IsNull())
         {
             // if the UUID has been provided, we will use that
+
+            auto* uuidInterface = AZ::Interface<IUuidRequests>::Get();
+            AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests is not available.");
+
+            // Try to get the canonical UUID for the file in case this is a legacy UUID
+            if (auto canonicalUuid = uuidInterface->GetCanonicalUuid(sourceDependency.m_sourceFileDependencyUUID); canonicalUuid)
+            {
+                sourceDependency.m_sourceFileDependencyUUID = canonicalUuid.value();
+            }
+
             resultDatabaseSourceName = QString::fromUtf8(sourceDependency.m_sourceFileDependencyUUID.ToFixedString().c_str());
         }
         else if (!sourceDependency.m_sourceFileDependencyPath.empty())
@@ -4529,13 +4561,13 @@ namespace AssetProcessor
         AZStd::unordered_set<DependencyDeduplication, DependencyDeduplication::Hasher> jobDependenciesDeduplication;
 
         // gather the job dependencies first, since they're more specific and we'll use the dedupe set to check for unnecessary source dependencies
-        for (const JobDetails& jobToCheck : entry.m_jobsToAnalyze)
+        for (JobDetails& jobToCheck : entry.m_jobsToAnalyze)
         {
             // Since we're dealing with job dependencies here, we're going to be saving these SourceDependencies as JobToJob dependencies
             constexpr SourceFileDependencyEntry::TypeOfDependency JobDependencyType = SourceFileDependencyEntry::DEP_JobToJob;
 
             const AZ::Uuid& builderId = jobToCheck.m_assetBuilderDesc.m_busId;
-            for (const AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
+            for (AssetProcessor::JobDependencyInternal& jobDependency : jobToCheck.m_jobDependencyList)
             {
                 // figure out whether we can resolve the dependency or not:
                 QStringList resolvedWildcardDependencies;
@@ -4580,7 +4612,7 @@ namespace AssetProcessor
 
         AZStd::unordered_set<AZStd::string> resolvedSourceDependenciesDeduplication;
 
-        for (const AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
+        for (AZStd::pair<AZ::Uuid, AssetBuilderSDK::SourceFileDependency>& sourceDependency : entry.m_sourceFileDependencies)
         {
             // figure out whether we can resolve the dependency or not:
             QStringList resolvedWildcardDependencies;
@@ -4700,8 +4732,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::BeginCacheFileUpdate(const char* productPath)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.insert(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {        
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.insert(productPath);
+        }
 
         AssetNotificationMessage message(productPath, AssetNotificationMessage::JobFileClaimed, AZ::Data::s_invalidAssetType, "");
         AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
@@ -4709,8 +4746,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::EndCacheFileUpdate(const char* productPath, bool queueAgainForDeletion)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.erase(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.erase(productPath);
+        }
         if (queueAgainForDeletion)
         {
             QMetaObject::invokeMethod(this, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, QString::fromUtf8(productPath)));
@@ -4841,6 +4883,16 @@ namespace AssetProcessor
                 result = foundSource->second;
                 return true;
             }
+        }
+
+        // Try checking the UuidManager, it keeps track of legacy UUIDs
+        auto* uuidInterface = AZ::Interface<AssetProcessor::IUuidRequests>::Get();
+        AZ_Assert(uuidInterface, "Programmer Error - IUuidRequests interface is not available.");
+
+        if (auto foundFile = uuidInterface->FindHighestPriorityFileByUuid(sourceUuid); foundFile)
+        {
+            result = SourceAssetReference(foundFile.value());
+            return true;
         }
 
         // try the database next:

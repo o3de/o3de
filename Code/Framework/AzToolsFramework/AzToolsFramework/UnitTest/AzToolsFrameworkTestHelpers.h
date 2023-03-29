@@ -25,6 +25,7 @@
 #include <AZTestShared/Math/MathTestHelpers.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/UnitTest/TestDebugDisplayRequests.h>
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
 #include <AzToolsFramework/ActionManager/Action/ActionManagerInternalInterface.h>
 #include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
@@ -279,7 +280,7 @@ namespace UnitTest
                 m_app = CreateTestApplication();
                 AZ::ComponentApplication::StartupParameters startupParameters;
                 startupParameters.m_loadAssetCatalog = false;
-
+                startupParameters.m_loadSettingsRegistry = false;
                 m_app->Start(AzFramework::Application::Descriptor(), startupParameters);
             }
 
@@ -327,7 +328,7 @@ namespace UnitTest
 
                 hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::MainWindowActionContextIdentifier, m_defaultMainWindow);
 
-                AzToolsFramework::EditorEventsBus::Broadcast(&AzToolsFramework::EditorEvents::NotifyMainWindowInitialized, m_defaultMainWindow);
+                AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
             }
 
             SetUpEditorFixtureImpl();

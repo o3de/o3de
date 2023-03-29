@@ -21,6 +21,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <QHash>
+#include <QStringList>
 #endif
 
 
@@ -236,12 +237,23 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) = 0;
 
         /**
-         * Add a gem to a project
-         * @param gemPath the absolute path to the gem 
+         * Add multiple gems to a project
+         * @param gemPaths the absolute paths to the gems
+         * @param gemNames the names of the gems to add with optional version specifiers
          * @param projectPath the absolute path to the project
-         * @return An outcome with the success flag as well as an error message in case of a failure.
+         * @param force whether to bypass compatibility checks and activate the gems or not 
+         * @return an outcome with a pair of string error and detailed messages on failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) = 0;
+        virtual DetailedOutcome AddGemsToProject(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) = 0;
+
+        /**
+         * Get gems that are incompatibile with this project 
+         * @param gemPaths the absolute paths to the gems
+         * @param gemNames the names of the gems to add with optional version specifiers
+         * @param projectPath the absolute path to the project
+         * @return An outcome with the a list of incompatible gems or an error message on failure.
+         */
+        virtual AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) = 0;
 
         /**
          * Remove gem to a project

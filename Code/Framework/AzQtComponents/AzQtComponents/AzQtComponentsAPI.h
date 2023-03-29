@@ -20,7 +20,7 @@
  * API refernce for all tools developers that are extending Open 3D Engine. The API reference
  * is intended for C++ programmers building tools. For UX designers looking to understand
  * the best patterns and practices when making a tool to comfortably integrate with
- * the Open 3D Engine editor, see the [UI 2.0 design guide](https://o3de.org/docs/tools-ui/ui-dev-intro/).
+ * the Open 3D Engine editor, see the [Tools UI Developer's Guide](https://www.o3de.org/docs/tools-ui/).
  */
 #include <AzCore/PlatformDef.h>
 
