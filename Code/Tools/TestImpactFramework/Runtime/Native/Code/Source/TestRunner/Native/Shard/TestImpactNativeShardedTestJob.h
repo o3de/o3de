@@ -19,7 +19,7 @@
 
 namespace TestImpact
 {
-    //!
+    //! Composite test job for all test shards of a given test target.
     template<typename TestRunnerType>
     class ShardedTestJob
     {
@@ -27,32 +27,32 @@ namespace TestImpact
         using ShardedTestJobInfoType = ShardedTestJobInfo<TestRunnerType>;
         using JobInfo = typename TestRunnerType::Job::Info;
 
-        //!
+        //! Consolidated job data for all sharded sub jobs.
         struct JobData;
 
-        //!
+        //! Constructs a sharded test job from the specified sharded test job info.
         ShardedTestJob(const ShardedTestJobInfoType& shardedTestJobInfo);
 
-        //!
+        //! Returns `true` if all shards in this job have completed, otherwise `false`.
         bool IsComplete() const;
 
-        //!
+        //! Registers the specified sharded sub job as complete.
         void RegisterCompletedSubJob(const JobInfo& jobInfo, const JobMeta& meta, const StdContent& std);
 
-        //!
+        //! Returns the consolidated job data when all sharded sub jobs have completed, otherwise `AZStd::nullopt`.
         const AZStd::optional<JobData>& GetConsolidatedJobData() const;
 
-        //!
+        //! Returns the vector of sub job data that may or may not be complete.
         const AZStd::vector<JobData>& GetSubJobs() const;
 
-        //!
+        //! Resolves the test run results of each sharded sub job into one consolidated test run result.
         static JobResult ResolveJobResult(const AZStd::optional<JobResult> jobResult, const JobResult subJobResult);
 
     private:
-        const ShardedTestJobInfoType* m_shardedTestJobInfo = nullptr; //!<
-        AZStd::vector<JobData> m_subJobs; //!<
-        AZStd::optional<JobData> m_consolidatedJobData; //!<
-        Timer m_timer; //!<
+        const ShardedTestJobInfoType* m_shardedTestJobInfo = nullptr; //!< Pointer to the sharded test job info of this sharded job.
+        AZStd::vector<JobData> m_subJobs; //!< The sharded sub jobs that belong this job.
+        AZStd::optional<JobData> m_consolidatedJobData; //!< The consolidated sub job data.
+        Timer m_timer; //!< The timer to measure the total runtime of all ahrded sub jobs.
     };
 
     template<typename TestRunnerType>
@@ -80,7 +80,7 @@ namespace TestImpact
     {
         if (jobResult.has_value())
         {
-            // Unless the subjob result is not executed, take the job result in reverse order of precedence
+            // Unless the sub job result is not executed, take the job result in reverse order of precedence
             // of the JobResult enumeration
             if (AZStd::to_underlying(subJobResult) < AZStd::to_underlying(jobResult.value()))
             {

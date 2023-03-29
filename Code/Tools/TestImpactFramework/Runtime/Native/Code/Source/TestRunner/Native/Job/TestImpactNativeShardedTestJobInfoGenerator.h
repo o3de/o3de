@@ -21,7 +21,7 @@
 
 namespace TestImpact
 {
-    //!
+    //! Job info for all shards of a given test target.
     template<typename TestJobRunner>
     class ShardedTestJobInfo
     {
@@ -37,41 +37,43 @@ namespace TestImpact
             AZ_TestImpact_Eval(!m_jobInfos.empty(), TestRunnerException, "Attepted to instantiate a sharded test job info no sub job infos");
         }
 
-        //!
+        //! Returns the id of the job info (the first shard is considered the "parent" id of all shards).
         Id GetId() const
         {
             return m_jobInfos.front().GetId();
         }
 
+        //! Returns the test target that is sharded.
         const NativeTestTarget* GetTestTarget() const
         {
             return m_testTarget;
         }
 
+        // Returns the job infos of each shard for the test target.
         const JobInfos& GetJobInfos() const
         {
             return m_jobInfos;
         }
 
     private:
-        const NativeTestTarget* m_testTarget = nullptr;
-        JobInfos m_jobInfos;
+        const NativeTestTarget* m_testTarget = nullptr; //!< The sharded test target.
+        JobInfos m_jobInfos; //! The job infos for each shard of the test target.
     };
 
-    //!
+    //! Type alias for the instrumented test runner.
     using ShardedInstrumentedTestJobInfo = ShardedTestJobInfo<NativeInstrumentedTestRunner>;
 
-    //!
+    //! Type alias for the regular test runner.
     using ShardedRegularTestJobInfo = ShardedTestJobInfo<NativeRegularTestRunner>;
 
+    //! Helper pair for a test target and its enumeration (if any).
     using TestTargetAndEnumeration = AZStd::pair<const NativeTestTarget*, AZStd::optional<TestEnumeration>>;
 
-    //!
+    //! Base class for the regular and instrumented sharded job info generators.
     template<typename TestJobRunner>
     class NativeShardedTestRunJobInfoGeneratorBase
     {
     public:
-        //!
         using JobInfoGenerator = typename TestJobRunner::JobInfoGenerator;
 
         NativeShardedTestRunJobInfoGeneratorBase(
@@ -84,50 +86,52 @@ namespace TestImpact
 
         virtual ~NativeShardedTestRunJobInfoGeneratorBase() = default;
 
-        //!
+        //! Generates the sharded job info for a given test target based on its enumerated tests.
+        //! @note If no enumeration is provided, the standard job info generator for the underlying test runner will be used.
         ShardedTestJobInfo<TestJobRunner> GenerateJobInfo(
             const TestTargetAndEnumeration& testTargetAndEnumeration,
             typename TestJobRunner::JobInfo::Id startingId);
 
+        //! Generates the sharded job infos for a set of test target based on their enumerated tests.
         AZStd::vector<ShardedTestJobInfo<TestJobRunner>> GenerateJobInfos(
             const AZStd::vector<TestTargetAndEnumeration>& testTargetsAndEnumerations);
 
     protected:
-        //!
+        //! The interleaved tests for a given set of shards.
         using ShardedTestsList = AZStd::vector<AZStd::vector<AZStd::string>>;
 
-        //!
+        //! The test framework specific string to filter the tests for a given shard.
         using ShardedTestsFilter = AZStd::vector<AZStd::string>;
 
-        //!
+        //! The specialized (instrumented or regular test runner) job generator.
         virtual ShardedTestJobInfo<TestJobRunner> GenerateJobInfoImpl(
             const TestTargetAndEnumeration& testTargetAndEnumeration, typename TestJobRunner::JobInfo::Id startingId) const = 0;
 
-        //!
+        //! Interleaves the enumerated tests across the shards.
         ShardedTestsList ShardTestInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const;
 
-        //!
+        //! Converts the raw shard test lists to the test framework specific filters.
         ShardedTestsFilter TestListsToTestFilters(const ShardedTestsList& shardedTestList) const;
 
-        //!
+        //! Generates a sharded run artifact file path for a given test target's shard.
         RepoPath GenerateShardedTargetRunArtifactFilePath(const NativeTestTarget* testTarget, size_t shardNumber) const;
 
-        //!
+        //! Generates a sharded AzTestRunner additional arguments file path for a given test target's shard.
         RepoPath GenerateShardedAdditionalArgsFilePath(const NativeTestTarget* testTarget, size_t shardNumber) const;
 
-        //!
+        //! Generates the launch command for a given test target's shard.
         AZStd::string GenerateShardedLaunchCommand(
             const NativeTestTarget* testTarget, const RepoPath& shardAdditionalArgsFile) const;
 
-        const JobInfoGenerator* m_jobInfoGenerator = nullptr;
-        size_t m_maxConcurrency;
-        RepoPath m_sourceDir;
-        RepoPath m_targetBinaryDir;
-        NativeShardedArtifactDir m_artifactDir;
-        RepoPath m_testRunnerBinary;
+        const JobInfoGenerator* m_jobInfoGenerator = nullptr; //!< The standard job info generator to use if a target cannot be sharded.
+        size_t m_maxConcurrency; //!< The maximum number of shards to generate for a test target.
+        RepoPath m_sourceDir; //!< Path to the repository.
+        RepoPath m_targetBinaryDir; //!< Path to the test target binaries.
+        NativeShardedArtifactDir m_artifactDir; //!< Path to the sharded artifact directories.
+        RepoPath m_testRunnerBinary; //!< Path to the test runner binary.
     };
 
-    //!
+    //! Job info generator for the instrumented sharded test runner.
     class NativeShardedInstrumentedTestRunJobInfoGenerator
         : public NativeShardedTestRunJobInfoGeneratorBase<NativeInstrumentedTestRunner>
     {
@@ -149,15 +153,14 @@ namespace TestImpact
             typename NativeInstrumentedTestRunner::JobInfo::Id startingId) const override;
 
     private:
-        //!
+        //! Generates a sharded coverage artifact file path for a given test target's shard.
         RepoPath GenerateShardedTargetCoverageArtifactFilePath(const NativeTestTarget* testTarget, size_t shardNumber) const;
 
-        RepoPath m_cacheDir;
-        RepoPath m_instrumentBinary;
-        CoverageLevel m_coverageLevel;
+        RepoPath m_instrumentBinary; //!< Path to the coverage instrumentation binary.
+        CoverageLevel m_coverageLevel; //!< Coverage level to use for instrumentation.
     };
 
-    //!
+    //! Job info generator for the regular sharded test runner.
     class NativeShardedRegularTestRunJobInfoGenerator
         :  public NativeShardedTestRunJobInfoGeneratorBase<NativeRegularTestRunner>
     {
@@ -200,6 +203,7 @@ namespace TestImpact
         }
         else
         {
+            // Target cannot be sharded, use the standard job info generator.
             return { testTarget, { m_jobInfoGenerator->GenerateJobInfo(testTarget, startingId) } };
         }
     }
@@ -249,7 +253,7 @@ namespace TestImpact
             AZStd::string testFilter = "--gtest_filter=";
             for (const auto& test : shardTests)
             {
-                // The trailing colon added by the last test is still a valid gtest filter
+                // The trailing colon added by the last test is still a valid GTest filter
                 testFilter += AZStd::string::format("%s:", test.c_str());
             }
 
@@ -303,7 +307,7 @@ namespace TestImpact
 
 namespace AZStd
 {
-    //!
+    //! Less function for TestTargetAndEnumeration types for use in maps and sets.
     template<>
     struct less<TestImpact::TestTargetAndEnumeration>
     {
@@ -313,7 +317,7 @@ namespace AZStd
         }
     };
 
-    //!
+    //! Hash function for TestTargetAndEnumeration types for use in unordered maps and sets.
     template<>
     struct hash<TestImpact::TestTargetAndEnumeration>
     {

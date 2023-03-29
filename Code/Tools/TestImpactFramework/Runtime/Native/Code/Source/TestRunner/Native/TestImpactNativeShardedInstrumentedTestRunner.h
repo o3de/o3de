@@ -13,12 +13,11 @@
 
 namespace TestImpact
 {
-    //!
+    //! Sharded test runner for instrumented tests.
     class NativeShardedInstrumentedTestRunner
         : public NativeShardedTestRunnerBase<NativeInstrumentedTestRunner>
     {
-    public:        
-        //!
+    public:
         using NativeShardedTestRunnerBase<NativeInstrumentedTestRunner>::NativeShardedTestRunnerBase;
 
     private:

@@ -115,7 +115,7 @@ namespace TestImpact
         //! Cleans up the artifacts directory of any artifacts from previous runs.
         void DeleteXmlArtifacts() const;
 
-        //!
+        //! Helper function to generate the test target and enumeration pairs for a given set of test targets.
         AZStd::vector<TestTargetAndEnumeration> GenerateTestTargetAndEnumerations(const AZStd::vector<const NativeTestTarget*> testTargets) const;
 
         AZStd::unique_ptr<NativeTestEnumerationJobInfoGenerator> m_enumerationTestJobInfoGenerator;

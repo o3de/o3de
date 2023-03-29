@@ -64,8 +64,12 @@ namespace TestImpact
     NativeTestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
         NativeTestEngineConfig testEngineConfig;
-        testEngineConfig.m_testRunner.m_binary = testEngine[NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestRunner]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::BinaryFile]].GetString();
-        testEngineConfig.m_instrumentation.m_binary = testEngine[NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestInstrumentation]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::BinaryFile]].GetString();
+        testEngineConfig.m_testRunner.m_binary =
+            testEngine[NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestRunner]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::BinaryFile]].GetString();
+        testEngineConfig.m_instrumentation.m_binary =
+            testEngine[NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestInstrumentation]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::BinaryFile]].GetString();
         return testEngineConfig;
     }
 
@@ -74,8 +78,10 @@ namespace TestImpact
         NativeTargetConfig targetConfig;
         targetConfig.m_outputDirectory = target[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Directory]].GetString();
         const auto& testExcludes = target[NativeConfigFactory::Keys[NativeConfigFactory::Fields::TargetExclude]];
-        targetConfig.m_excludedTargets.m_excludedRegularTestTargets = ParseTargetExcludeList(testExcludes[NativeConfigFactory::Keys[NativeConfigFactory::Fields::RegularTargetExcludeFilter]].GetArray());
-        targetConfig.m_excludedTargets.m_excludedInstrumentedTestTargets = ParseTargetExcludeList(testExcludes[NativeConfigFactory::Keys[NativeConfigFactory::Fields::InstrumentedTargetExcludeFilter]].GetArray());
+        targetConfig.m_excludedTargets.m_excludedRegularTestTargets =
+            ParseTargetExcludeList(testExcludes[NativeConfigFactory::Keys[NativeConfigFactory::Fields::RegularTargetExcludeFilter]].GetArray());
+        targetConfig.m_excludedTargets.m_excludedInstrumentedTestTargets =
+            ParseTargetExcludeList(testExcludes[NativeConfigFactory::Keys[NativeConfigFactory::Fields::InstrumentedTargetExcludeFilter]].GetArray());
 
         return targetConfig;
     }
@@ -83,8 +89,10 @@ namespace TestImpact
     NativeShardedArtifactDir ParseShardedArtifactConfig(const rapidjson::Value& tempWorkspace)
     {
         NativeShardedArtifactDir shardedWorkspaceConfig;
-        shardedWorkspaceConfig.m_shardedTestRunArtifactDirectory = tempWorkspace[NativeConfigFactory::Keys[NativeConfigFactory::Fields::ShardedRunArtifactDir]].GetString();
-        shardedWorkspaceConfig.m_shardedCoverageArtifactDirectory = tempWorkspace[NativeConfigFactory::Keys[NativeConfigFactory::Fields::ShardedCoverageArtifactDir]].GetString();
+        shardedWorkspaceConfig.m_shardedTestRunArtifactDirectory =
+            tempWorkspace[NativeConfigFactory::Keys[NativeConfigFactory::Fields::ShardedRunArtifactDir]].GetString();
+        shardedWorkspaceConfig.m_shardedCoverageArtifactDirectory =
+            tempWorkspace[NativeConfigFactory::Keys[NativeConfigFactory::Fields::ShardedCoverageArtifactDir]].GetString();
         return shardedWorkspaceConfig;
     }
 
@@ -100,11 +108,19 @@ namespace TestImpact
 
         NativeRuntimeConfig runtimeConfig;
         runtimeConfig.m_commonConfig = RuntimeConfigurationFactory(configurationData);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::Workspace]]);
+        runtimeConfig.m_workspace =
+            ParseWorkspaceConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::Workspace]]);
         runtimeConfig.m_shardedArtifactDir = ParseShardedArtifactConfig(
-            configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::Workspace]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::TempWorkspace]]);
-        runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestEngine]]);
-        runtimeConfig.m_target = ParseTargetConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]][NativeConfigFactory::Keys[NativeConfigFactory::Fields::TargetConfig]]);
+            configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::Workspace]]
+                    [NativeConfigFactory::Keys[NativeConfigFactory::Fields::TempWorkspace]]);
+        runtimeConfig.m_testEngine =
+            ParseTestEngineConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::TestEngine]]);
+        runtimeConfig.m_target =
+            ParseTargetConfig(configurationFile[NativeConfigFactory::Keys[NativeConfigFactory::Fields::Native]]
+                [NativeConfigFactory::Keys[NativeConfigFactory::Fields::TargetConfig]]);
 
         return runtimeConfig;
     }

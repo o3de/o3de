@@ -74,11 +74,11 @@ namespace TestImpact
             const RepoPath& instrumentBinary,
             CoverageLevel coverageLevel = CoverageLevel::Source);
 
-        //!
+        //! Sets the coverage level of the job info generator.
         //! @param cachePolicy The cache policy to use for job generation.
         void SetCoverageLevel(CoverageLevel coverageLevel);
 
-        //!
+        //! Returns the coverage level of the job info generator.
         CoverageLevel GetCoverageLevel() const;
 
         // TestJobInfoGeneratorBase overrides...
