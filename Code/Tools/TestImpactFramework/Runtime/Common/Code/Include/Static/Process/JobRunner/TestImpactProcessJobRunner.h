@@ -31,6 +31,7 @@ namespace TestImpact
     public:
         using JobData = AdditionalInfo;
         using JobInfo = JobInfo<AdditionalInfo>;
+        using JobInfos = AZStd::vector<typename JobInfo>; //!< @note job ids are not assumed to be correlated with their position in the array, nor contiguous.
         using Command = typename JobInfo::Command;
         using JobPayload = Payload;
         using Job = Job<JobInfo, Payload>;
@@ -100,7 +101,7 @@ namespace TestImpact
         //! @param jobCallback The client callback to be called when each job changes state.
         //! @return The result of the run sequence and the jobs with their associated payloads.
         AZStd::pair<ProcessSchedulerResult, AZStd::vector<Job>> Execute(
-            const AZStd::vector<typename Job::Info>& jobs,
+            const JobInfos& jobs,
             PayloadMapProducer payloadMapProducer,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
@@ -236,7 +237,7 @@ namespace TestImpact
     template<typename AdditionalInfo, typename Payload>
     AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename JobRunner<AdditionalInfo, Payload>::Job>> JobRunner<AdditionalInfo, Payload>::
         Execute(
-        const AZStd::vector<typename Job::Info>& jobInfos,
+        const JobInfos& jobInfos,
         PayloadMapProducer payloadMapProducer,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
@@ -271,7 +272,7 @@ namespace TestImpact
         for (const auto& jobInfo : jobInfos)
         {
             const auto jobId = jobInfo.GetId().m_value;
-            jobs.emplace_back(Job(jobInfo, AZStd::move(metas.at(jobId).first), AZStd::move(payloadMap[jobId])));
+            jobs.emplace_back(jobInfo, AZStd::move(metas.at(jobId).first), AZStd::move(payloadMap[jobId]));
         }
 
         return { result, jobs };

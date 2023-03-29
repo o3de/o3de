@@ -48,6 +48,8 @@ namespace TestImpact
         [[nodiscard]] bool IsRelativeTo(const RepoPath& base) const;
         AZ::IO::PathView RootName() const;
         AZ::IO::PathView RelativePath() const;
+        constexpr RepoPath& ReplaceFilename(const AZ::IO::PathView& replacementFilename);
+        constexpr RepoPath& ReplaceExtension(const AZ::IO::PathView& replacementExtension = {});
 
         // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
@@ -67,3 +69,26 @@ namespace TestImpact
         AZ::IO::Path m_path;
     };
 } // namespace TestImpact
+
+namespace AZStd
+{
+    //!
+    template<>
+    struct less<TestImpact::RepoPath>
+    {
+        bool operator()(const TestImpact::RepoPath& lhs, const TestImpact::RepoPath& rhs) const
+        {
+            return lhs.String() < rhs.String();
+        }
+    };
+
+    //!
+    template<>
+    struct hash<TestImpact::RepoPath>
+    {
+        bool operator()(const TestImpact::RepoPath& key) const
+        {
+            return hash<AZStd::string>()(key.String());
+        }
+    };
+} // namespace AZStd

@@ -51,27 +51,29 @@ set(FILES
     Include/Static/TestRunner/Common/TestImpactTestRunnerWithCoverage.h
     Include/Static/TestRunner/Common/TestImpactTestEnumerator.h
     Include/Static/TestRunner/Common/TestImpactTestSuiteContainer.h
+    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
+    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
     Include/Static/TestRunner/Common/Job/TestImpactTestJobInfoGenerator.h
     Include/Static/TestRunner/Common/Job/TestImpactTestRunWithCoverageJobData.h
     Include/Static/TestRunner/Common/Job/TestImpactTestEnumerationJobData.h
     Include/Static/TestRunner/Common/Job/TestImpactTestRunJobData.h
     Include/Static/TestRunner/Common/Job/TestImpactTestJobInfoUtils.h
     Include/Static/TestRunner/Common/Job/TestImpactTestJobRunner.h
-    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumeration.h
-    Include/Static/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.h
+    Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Include/Static/TestRunner/Common/Run/TestImpactTestCoverage.h
+    Include/Static/TestRunner/Common/Run/TestImpactTestCoverageSerializer.h
     Include/Static/TestRunner/Common/Run/TestImpactTestRun.h
     Include/Static/TestRunner/Common/Run/TestImpactTestRunSerializer.h
+    Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
+    Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Include/Static/TestEngine/Common/TestImpactTestEngineException.h
     Include/Static/TestEngine/Common/TestImpactTestEngine.h
     Include/Static/TestEngine/Common/TestImpactTestEngineBus.h
-    Include/Static/TestEngine/Common/Job/TestImpactTestEngineJob.h
     Include/Static/TestEngine/Common/Enumeration/TestImpactTestEngineEnumeration.h
-    Include/Static/TestEngine/Common/Run/TestImpactTestEngineRegularRun.h
-    Include/Static/TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h
     Include/Static/TestImpactRuntimeUtils.cpp
     Include/Static/TestImpactRuntimeUtils.h
     Include/Static/TestImpactTestTargetExclusionList.h
+    Include/Static/TestImpactRuntimeConfigurationFactory.h
     Source/Artifact/Factory/TestImpactTestEnumerationSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactTestRunSuiteFactory.cpp
     Source/Artifact/Factory/TestImpactModuleCoverageFactory.cpp
@@ -91,6 +93,7 @@ set(FILES
     Source/TestRunner/Common/Job/TestImpactTestRunJobData.cpp
     Source/TestRunner/Common/Enumeration/TestImpactTestEnumerationSerializer.cpp
     Source/TestRunner/Common/Run/TestImpactTestCoverage.cpp
+    Source/TestRunner/Common/Run/TestImpactTestCoverageSerializer.cpp
     Source/TestRunner/Common/Run/TestImpactTestRun.cpp
     Source/TestRunner/Common/Run/TestImpactTestRunSerializer.cpp
     Source/TestImpactException.cpp
@@ -101,4 +104,5 @@ set(FILES
     Source/TestImpactClientSequenceReportSerializer.cpp
     Source/TestImpactRepoPath.cpp
     Source/TestImpactUtils.cpp
+    Source/TestImpactRuntimeConfigurationFactory.cpp
 )
