@@ -194,7 +194,7 @@ def get_project_engine_incompatible_objects(project_path: pathlib.Path) -> set()
         return 2
 
     return compatibility.get_project_engine_incompatible_objects(project_path=project_path, 
-                                                                 engine_path=manifest.get_this_engine_path())
+                                                                 engine_path=engine_path)
 
 
 def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set() or int:
