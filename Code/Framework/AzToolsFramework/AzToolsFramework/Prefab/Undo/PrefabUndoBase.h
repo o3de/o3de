@@ -36,15 +36,16 @@ namespace AzToolsFramework
             void virtual Redo(InstanceOptionalConstReference instanceToExclude);
 
         protected:
-            bool m_changed;
-            TemplateId m_templateId;
-
             PrefabDom m_redoPatch;
             PrefabDom m_undoPatch;
+
+            TemplateId m_templateId;
 
             InstanceToTemplateInterface* m_instanceToTemplateInterface = nullptr;
             InstanceDomGeneratorInterface* m_instanceDomGeneratorInterface = nullptr;
             PrefabSystemComponentInterface* m_prefabSystemComponentInterface = nullptr;
+
+            bool m_changed;
         };
     }
 }
