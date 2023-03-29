@@ -41,7 +41,8 @@ namespace MultiplayerTest
         void OnDeactivate(Multiplayer::EntityIsMigrating entityIsMigrating) override;
         void OnNetworkActivated() override;
 
-        AZStd::function<void(Multiplayer::NetEntityId)> m_processInputCallback;
+        AZStd::function<void(Multiplayer::NetEntityId, Multiplayer::NetworkInput& input, float deltaTime)> m_createInputCallback;
+        AZStd::function<void(Multiplayer::NetEntityId, Multiplayer::NetworkInput& input, float deltaTime)> m_processInputCallback;
     };
 
     // Multiplayer controller for the test component

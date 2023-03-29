@@ -23,15 +23,37 @@ namespace AzToolsFramework
             {
                 AZ_Assert(patches.IsArray(), "AppendAddEntityPatch - Provided patches should be an array object DOM value.");
 
-                PrefabDomValue addNewEntityPatch(rapidjson::kObjectType);
-                rapidjson::Value path = rapidjson::Value(newEntityAliasPath.data(),
-                    aznumeric_caster(newEntityAliasPath.length()), patches.GetAllocator());
-                rapidjson::Value patchValue;
-                patchValue.CopyFrom(newEntityDom, patches.GetAllocator(), true);
-                addNewEntityPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), patches.GetAllocator())
-                    .AddMember(rapidjson::StringRef("path"), AZStd::move(path), patches.GetAllocator())
-                    .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), patches.GetAllocator());
-                patches.PushBack(addNewEntityPatch.Move(), patches.GetAllocator());
+                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchType::Add);
+            }
+
+            void AppendUpdateValuePatch(
+                PrefabDom& patches,
+                const PrefabDomValue& domValue,
+                const AZStd::string& pathToUpdate,
+                const PatchType patchType)
+            {
+                AZ_Assert(patches.IsArray(), "AppendUpdateValuePatch - Provided patches should be an array object DOM value.");
+
+                PrefabDomValue patch(rapidjson::kObjectType);
+                rapidjson::Value path = rapidjson::Value(
+                    pathToUpdate.data(), aznumeric_caster(pathToUpdate.length()), patches.GetAllocator());
+                rapidjson::Value value;
+                value.CopyFrom(domValue, patches.GetAllocator(), true);
+                if (patchType == PatchType::Add)
+                {
+                    patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), patches.GetAllocator());
+                }
+                else if (patchType == PatchType::Edit)
+                {
+                    patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("replace"), patches.GetAllocator());
+                }
+                else
+                {
+                    AZ_Assert(false, "AppendUpdateValuePatch - Unsupported operation type.");
+                }
+                patch.AddMember(rapidjson::StringRef("path"), AZStd::move(path), patches.GetAllocator())
+                    .AddMember(rapidjson::StringRef("value"), AZStd::move(value), patches.GetAllocator());
+                patches.PushBack(patch.Move(), patches.GetAllocator());
             }
 
             void AppendRemovePatch(

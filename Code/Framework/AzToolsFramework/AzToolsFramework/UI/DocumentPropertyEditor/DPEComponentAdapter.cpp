@@ -8,6 +8,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -89,9 +90,23 @@ namespace AZ::DocumentPropertyEditor
         SetValue(componentInstance, instanceTypeId);
     }
 
+    bool ComponentAdapter::IsComponentValid() const
+    {
+        if (m_entityId.IsValid())
+        {
+            const Entity* entity = AzToolsFramework::GetEntity(m_entityId);
+            AZ_Assert(entity, "ComponentAdapter::IsComponentValid - Entity is nullptr.");
+
+            bool isEntityActive = entity->GetState() == AZ::Entity::State::Active;
+            return isEntityActive && entity->FindComponent(m_componentId) != nullptr;
+        }
+
+        return false;
+    }
+
     void ComponentAdapter::DoRefresh()
     {
-        if (!m_entityId.IsValid())
+        if (!IsComponentValid())
         {
             return;
         }

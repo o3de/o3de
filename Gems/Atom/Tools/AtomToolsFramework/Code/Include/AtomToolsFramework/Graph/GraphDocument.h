@@ -95,6 +95,8 @@ namespace AtomToolsFramework
 
         void BuildEditablePropertyGroups();
 
+        DocumentObjectInfoVector GetObjectInfoForGraphCanvasNodes() const;
+
         AZ::Entity* m_sceneEntity = {};
         GraphCanvas::GraphId m_graphId;
         GraphModel::GraphPtr m_graph;
