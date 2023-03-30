@@ -181,25 +181,6 @@ namespace PhysX
                     }
                 }
             }
-
-
-            if (!articulationRootEntity)
-            {
-                return;
-            } 
-            const auto rootArticulationLinkComponent = articulationRootEntity->FindComponent<ArticulationLinkComponent>();
-            if (!rootArticulationLinkComponent)
-            {
-                return;
-            }
-            m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
-            if (m_link)
-            {
-                m_driveJoint = m_link->getInboundJoint();
-            }
-
-
-
         }
     }
 
