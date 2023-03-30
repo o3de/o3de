@@ -312,6 +312,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedExpandedTableView(this);
 
             if (!m_assetTreeView)
             {
@@ -354,6 +355,29 @@ namespace AzToolsFramework
         QAbstractItemView::SelectionMode AssetBrowserExpandedTableView::selectionMode() const
         {
             return m_expandedTableViewWidget->selectionMode();
+        }
+
+        void AssetBrowserExpandedTableView::SelectEntry(QString assetName)
+        {
+            QModelIndex rootIndex = m_expandedTableViewProxyModel->GetRootIndex();
+
+            auto model = GetExpandedTableViewWidget()->model();
+
+            for (int rowIndex = 0; rowIndex < model->rowCount(rootIndex); rowIndex++)
+            {
+                auto index = model->index(rowIndex, 0, rootIndex);
+                if (!index.isValid())
+                {
+                    continue;
+                }
+
+                auto str = index.data().toString();
+                if (assetName == str)
+                {
+                    m_expandedTableViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_expandedTableViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
+                }
+            }
         }
 
         void AssetBrowserExpandedTableView::HandleTreeViewSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected)

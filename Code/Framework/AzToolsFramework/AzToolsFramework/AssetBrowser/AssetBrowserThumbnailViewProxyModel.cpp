@@ -190,6 +190,11 @@ namespace AzToolsFramework
             m_rootIndex = index;
         }
 
+        const QModelIndex AssetBrowserThumbnailViewProxyModel::GetRootIndex() const
+        {
+            return m_rootIndex;
+        }
+
         bool AssetBrowserThumbnailViewProxyModel::GetShowSearchResultsMode() const
         {
             return m_searchResultsMode;
