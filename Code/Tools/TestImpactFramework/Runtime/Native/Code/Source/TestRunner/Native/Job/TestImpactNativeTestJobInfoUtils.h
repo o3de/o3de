@@ -24,17 +24,17 @@ namespace TestImpact
         const NativeTestTarget* testTarget, const RepoPath& targetBinaryDir, const RepoPath& testRunnerBinary);
 
     //! Generates a test enumeration job command.
-    typename NativeTestEnumerator::Command GenerateTestEnumeratorJobInfoCommand(
+    NativeTestEnumerator::Command GenerateTestEnumeratorJobInfoCommand(
         const AZStd::string& launchArguement, const RepoPath& runArtifact);
 
     //! Generates a regular test run job command.
-    typename NativeRegularTestRunner::Command GenerateRegularTestJobInfoCommand(
+    NativeRegularTestRunner::Command GenerateRegularTestJobInfoCommand(
         const AZStd::string& launchArguement,
         const RepoPath& runArtifact
     );
 
     //! Generates an instrumented test run job command.
-    typename NativeInstrumentedTestRunner::Command GenerateInstrumentedTestJobInfoCommand(
+    NativeInstrumentedTestRunner::Command GenerateInstrumentedTestJobInfoCommand(
         const RepoPath& instrumentBindaryPath,
         const RepoPath& coverageArtifactPath,
         CoverageLevel coverageLevel,
