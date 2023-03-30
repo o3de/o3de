@@ -32,6 +32,7 @@ namespace AzToolsFramework
         class AssetBrowserEntry;
         class AssetBrowserModel;
         class AssetBrowserFilterModel;
+        class AssetBrowserThumbnailView;
         class EntryDelegate;
 
         class AssetBrowserTreeView
@@ -103,6 +104,9 @@ namespace AzToolsFramework
 
             void SetShowIndexAfterUpdate(QModelIndex index);
 
+            void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
+            AssetBrowserThumbnailView* GetAttachedThumbnailView() const;
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -128,6 +132,8 @@ namespace AzToolsFramework
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
+
+            AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
 
             QString m_name;
 

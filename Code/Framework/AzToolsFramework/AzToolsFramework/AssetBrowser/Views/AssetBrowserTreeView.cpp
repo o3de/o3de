@@ -23,6 +23,7 @@
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserThumbnailView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryCache.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
@@ -259,6 +260,13 @@ namespace AzToolsFramework
             // Entries are in reverse order, so fix this
             AZStd::reverse(entries.begin(), entries.end());
 
+            // If we're in the thumbnail view, the actual asset will not appear in this treeview.
+            if (m_attachedThumbnailView)
+            {
+                m_attachedThumbnailView->SelectEntry(entries.back().data());
+                entries.pop_back();
+            }
+
             SelectEntry(QModelIndex(), entries);
         }
 
@@ -368,6 +376,7 @@ namespace AzToolsFramework
             }
             else if (m_indexToSelectAfterUpdate.isValid())
             {
+                AZ_Printf("sjr", "AssetBrowserTreeView::UpdateAfterFilter selecting required\n");
                 selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
                 m_indexToSelectAfterUpdate = QModelIndex();
             }
@@ -648,7 +657,20 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
         {
+            AZ_Printf("sjr", "AssetBrowserTreeView::SetShowIndexAfterUpdate %d, %d, %ld\n", index.row(), index.column(), index.internalPointer());
+            selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
             m_indexToSelectAfterUpdate = index;
+            m_assetBrowserSortFilterProxyModel->FilterUpdatedSlotImmediate();
+        }
+
+        void AssetBrowserTreeView::SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView)
+        {
+            m_attachedThumbnailView = thumbnailView;
+        }
+
+        AssetBrowserThumbnailView* AssetBrowserTreeView::GetAttachedThumbnailView() const
+        {
+            return m_attachedThumbnailView;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
