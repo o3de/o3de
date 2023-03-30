@@ -56,6 +56,7 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.uvs[1] = uv1;
     output.normal = normal;
     output.tangent = tangent;
+    output.m_instanceId = instanceId;
     return output;
 }
 
