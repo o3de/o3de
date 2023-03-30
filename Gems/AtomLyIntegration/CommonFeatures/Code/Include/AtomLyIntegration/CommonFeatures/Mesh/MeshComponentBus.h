@@ -113,6 +113,9 @@ namespace AZ
             //! Notifies listeners when the instance of the model for this component is about to be released.
             virtual void OnModelPreDestroy() {}
 
+            //! Notifies listeners when a new ObjectSrg was created (this is where you'd like to update your custom ObjectSrg)
+            virtual void OnObjectSrgCreated(const Data::Instance<RPI::ShaderResourceGroup>& /*objectSrg*/) {}
+
             /**
              * When connecting to this bus if the asset is ready you will immediately get an OnModelReady event
              */

@@ -59,6 +59,8 @@ namespace AZ
             MaterialAsset();
             virtual ~MaterialAsset();
 
+            bool InitializeNonSerializedData();
+
             //! Returns the MaterialTypeAsset.
             const Data::Asset<MaterialTypeAsset>& GetMaterialTypeAsset() const;
 
@@ -154,6 +156,8 @@ namespace AZ
             //! The materialTypeVersion this materialAsset was based off. If the versions do not match at runtime when a
             //! materialTypeAsset is loaded, automatic updates will be attempted.
             uint32_t m_materialTypeVersion = UnspecifiedMaterialTypeVersion;
+
+            bool m_isNonSerializedDataInitialized = false;
         };
        
 

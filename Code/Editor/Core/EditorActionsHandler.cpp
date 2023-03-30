@@ -203,6 +203,15 @@ void EditorActionsHandler::OnActionContextRegistrationHook()
             EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, contextProperties);
     }
 
+    // Editor Console
+    {
+        AzToolsFramework::ActionContextProperties contextProperties;
+        contextProperties.m_name = "O3DE Editor - Console";
+
+        m_actionManagerInterface->RegisterActionContext(
+            EditorIdentifiers::EditorConsoleActionContextIdentifier, contextProperties);
+    }
+
     // Editor Entity Property Editor (Entity Inspector)
     {
         AzToolsFramework::ActionContextProperties contextProperties;

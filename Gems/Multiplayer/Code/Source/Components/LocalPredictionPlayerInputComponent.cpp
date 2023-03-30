@@ -10,6 +10,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <AzNetworking/ConnectionLayer/SequenceGenerator.h>
 #include <AzNetworking/Serialization/HashSerializer.h>
 #include <AzNetworking/Serialization/StringifySerializer.h>
 #include <Multiplayer/Components/NetworkHierarchyRootComponent.h>
@@ -188,18 +189,23 @@ namespace Multiplayer
             return;
         }
 
+        // After receiving the first input from the client, start the update event to check for slow hacking.
+        // Also initialize the lastClientInputId to one before the oldest available one in the inputArray so that
+        // we process everything available to us on the first call.
+        if (!m_updateBankedTimeEvent.IsScheduled())
+        {
+            // This subtraction intentionally wraps around.
+            m_lastClientInputId = inputArray[NetworkInputArray::MaxElements - 1].GetClientInputId() - ClientInputId(1);
+
+            m_updateBankedTimeEvent.Enqueue(sv_InputUpdateTimeMs, true);
+        }
+
         const ClientInputId clientInputId = inputArray[0].GetClientInputId();
-        if (clientInputId <= m_lastClientInputId)
+        if (!AzNetworking::SequenceMoreRecent(clientInputId, m_lastClientInputId))
         {
             AZLOG(NET_Prediction, "Discarding old or out of order move input (current: %u, received %u)",
                 aznumeric_cast<uint32_t>(m_lastClientInputId), aznumeric_cast<uint32_t>(clientInputId));
             return;
-        }
-
-        // After receiving the first input from the client, start the update event to check for slow hacking
-        if (!m_updateBankedTimeEvent.IsScheduled())
-        {
-            m_updateBankedTimeEvent.Enqueue(sv_InputUpdateTimeMs, true);
         }
 
         const AZ::TimeMs currentTimeMs = AZ::GetElapsedTimeMs();
@@ -210,15 +216,16 @@ namespace Multiplayer
         m_lastInputReceived = inputArray;
         SetLastInputId(m_lastInputReceived[0].GetClientInputId()); // Set this variable in case of migration
 
-        while (m_lastClientInputId < clientInputId)
+        // Since id values can wrap around, we intentionally compare with a "!=" instead of a "<".
+        while (m_lastClientInputId != clientInputId)
         {
             ++m_lastClientInputId;
 
             // Figure out which index from the input array we want
             // If we have skipped an id, check if it was sent to us in the array. If we have lost too many, just use the oldest one in the array
-            const uint32_t deltaFrameId = aznumeric_cast<uint32_t>(clientInputId - m_lastClientInputId); // always >= 0 because of while loop check
-            const uint32_t inputArrayIdx = AZStd::min(deltaFrameId, NetworkInputArray::MaxElements - 1);
-            const bool     lostInput = deltaFrameId >= NetworkInputArray::MaxElements; // For logging only
+            const ClientInputId deltaInputId = clientInputId - m_lastClientInputId; // The subtraction intentionally wraps around
+            const uint32_t inputArrayIdx = AZStd::min(aznumeric_cast<uint32_t>(deltaInputId), NetworkInputArray::MaxElements - 1);
+            const bool lostInput = aznumeric_cast<uint32_t>(deltaInputId) >= NetworkInputArray::MaxElements; // For logging only
 
             NetworkInput &input = m_lastInputReceived[inputArrayIdx];
             input.SetClientInputId(m_lastClientInputId);
@@ -416,14 +423,15 @@ namespace Multiplayer
     )
     {
         AZ_Assert(invokingConnection != nullptr, "Invalid connection, cannot reprocess corrections.");
-        AZ_Assert(inputId <= m_clientInputId, "Invalid correction frame id, correction is for a move the client has not yet submitted to the server");
-        if (inputId > m_clientInputId)
+        AZ_Assert(!AzNetworking::SequenceMoreRecent(inputId, m_clientInputId),
+            "Invalid correction frame id, correction is for a move the client has not yet submitted to the server");
+        if (AzNetworking ::SequenceMoreRecent(inputId, m_clientInputId))
         {
             AZLOG_ERROR("Discarding correction for non-existent move, correction represents a move we haven't sent to the server yet");
             return;
         }
 
-        if (inputId <= m_lastCorrectionInputId)
+        if (!AzNetworking::SequenceMoreRecent(inputId, m_lastCorrectionInputId))
         {
             AZLOG(NET_Prediction, "Discarding old correction for client frame %u", aznumeric_cast<uint32_t>(inputId));
             return;
@@ -437,10 +445,15 @@ namespace Multiplayer
         GetNetBindComponent()->NotifyCorrection();
 
         const uint32_t inputHistorySize = static_cast<uint32_t>(m_inputHistory.Size());
-        const uint32_t historicalDelta = aznumeric_cast<uint32_t>(m_clientInputId - inputId); // Do not replay the move just corrected, it was already processed by the server
+
+        // Do not replay the move just corrected, it was already processed by the server.
+        // (The subtraction intentionally wraps around to capture the delta)
+        const ClientInputId historicalDelta = m_clientInputId - inputId; 
 
         // If this correction is for a move outside our input history window, just start replaying from the oldest move we have available
-        const uint32_t startReplayIndex = (inputHistorySize > historicalDelta) ? (inputHistorySize - historicalDelta) : 0;
+        const uint32_t startReplayIndex = (inputHistorySize > aznumeric_cast<uint32_t>(historicalDelta))
+            ? (inputHistorySize - aznumeric_cast<uint32_t>(historicalDelta))
+            : 0;
 
 #ifndef AZ_RELEASE_BUILD
         if (cl_EnableDesyncDebugging)

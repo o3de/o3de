@@ -83,6 +83,7 @@ namespace AZ
 
             using MeshHandle = StableDynamicArrayHandle<ModelDataInstance>;
             using ModelChangedEvent = Event<const Data::Instance<RPI::Model>>;
+            using ObjectSrgCreatedEvent = Event<const Data::Instance<RPI::ShaderResourceGroup>&>;
 
             //! Returns the object id for a mesh handle.
             virtual TransformServiceFeatureProcessorInterface::ObjectId GetObjectId(const MeshHandle& meshHandle) const = 0;
@@ -124,6 +125,9 @@ namespace AZ
             virtual const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const = 0;
             //! Connects a handler to any changes to an RPI::Model. Changes include loading and reloading.
             virtual void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) = 0;
+
+            //! Connects a handler to ObjectSrg creation
+            virtual void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) = 0;
 
             //! Sets the transform for a given mesh handle.
             virtual void SetTransform(const MeshHandle& meshHandle, const Transform& transform,

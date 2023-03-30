@@ -59,8 +59,14 @@ namespace AZ::DocumentPropertyEditor
 
         void OnEntityDestroyed(const AZ::EntityId&) override;
 
+    private:
+        //! Checks if the component is still valid in the entity.
+        bool IsComponentValid() const;
+
     protected:
         AZ::EntityId m_entityId;
+
+        // Should call IsComponentValid() for validity check before using the component id and its component instance.
         AZ::ComponentId m_componentId = AZ::InvalidComponentId;
 
         AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
