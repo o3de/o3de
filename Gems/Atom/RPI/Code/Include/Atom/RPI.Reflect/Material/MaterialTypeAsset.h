@@ -151,6 +151,8 @@ namespace AZ
             //! @return true if the property was renamed
             bool ApplyPropertyRenames(Name& propertyId) const;
 
+            bool InitializeNonSerializedData();
+
         private:
 
             bool PostLoadInit() override;
@@ -200,6 +202,8 @@ namespace AZ
 
             //! Contains actions to perform for each material update version.
             MaterialVersionUpdates m_materialVersionUpdates;
+
+            bool m_isNonSerializedDataInitialized = false;
         };
 
         class MaterialTypeAssetHandler : public AssetHandler<MaterialTypeAsset>

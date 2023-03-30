@@ -84,7 +84,7 @@ namespace AssetProcessor
                     products.end(),
                     [](const AssetBuilderSDK::JobProduct& a, const AssetBuilderSDK::JobProduct& b)
                     {
-                        return a.m_productFileName.compare(b.m_productFileName);
+                        return a.m_productFileName.compare(b.m_productFileName) < 0;
                     });
 
                 for (auto& product : products)

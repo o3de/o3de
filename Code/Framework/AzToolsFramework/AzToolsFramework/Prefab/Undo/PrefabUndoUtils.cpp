@@ -23,15 +23,37 @@ namespace AzToolsFramework
             {
                 AZ_Assert(patches.IsArray(), "AppendAddEntityPatch - Provided patches should be an array object DOM value.");
 
-                PrefabDomValue addNewEntityPatch(rapidjson::kObjectType);
-                rapidjson::Value path = rapidjson::Value(newEntityAliasPath.data(),
-                    aznumeric_caster(newEntityAliasPath.length()), patches.GetAllocator());
-                rapidjson::Value patchValue;
-                patchValue.CopyFrom(newEntityDom, patches.GetAllocator(), true);
-                addNewEntityPatch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), patches.GetAllocator())
-                    .AddMember(rapidjson::StringRef("path"), AZStd::move(path), patches.GetAllocator())
-                    .AddMember(rapidjson::StringRef("value"), AZStd::move(patchValue), patches.GetAllocator());
-                patches.PushBack(addNewEntityPatch.Move(), patches.GetAllocator());
+                AppendUpdateValuePatch(patches, newEntityDom, newEntityAliasPath, PatchType::Add);
+            }
+
+            void AppendUpdateValuePatch(
+                PrefabDom& patches,
+                const PrefabDomValue& domValue,
+                const AZStd::string& pathToUpdate,
+                const PatchType patchType)
+            {
+                AZ_Assert(patches.IsArray(), "AppendUpdateValuePatch - Provided patches should be an array object DOM value.");
+
+                PrefabDomValue patch(rapidjson::kObjectType);
+                rapidjson::Value path = rapidjson::Value(
+                    pathToUpdate.data(), aznumeric_caster(pathToUpdate.length()), patches.GetAllocator());
+                rapidjson::Value value;
+                value.CopyFrom(domValue, patches.GetAllocator(), true);
+                if (patchType == PatchType::Add)
+                {
+                    patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("add"), patches.GetAllocator());
+                }
+                else if (patchType == PatchType::Edit)
+                {
+                    patch.AddMember(rapidjson::StringRef("op"), rapidjson::StringRef("replace"), patches.GetAllocator());
+                }
+                else
+                {
+                    AZ_Assert(false, "AppendUpdateValuePatch - Unsupported operation type.");
+                }
+                patch.AddMember(rapidjson::StringRef("path"), AZStd::move(path), patches.GetAllocator())
+                    .AddMember(rapidjson::StringRef("value"), AZStd::move(value), patches.GetAllocator());
+                patches.PushBack(patch.Move(), patches.GetAllocator());
             }
 
             void AppendRemovePatch(
@@ -48,20 +70,20 @@ namespace AzToolsFramework
                 patches.PushBack(removeTargetEntityPatch.Move(), patches.GetAllocator());
             }
 
-            void AppendUpdateEntityPatch(
+            void GenerateAndAppendPatch(
                 PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPath)
+                const PrefabDomValue& domValueBeforeUpdate,
+                const PrefabDomValue& domValueAfterUpdate,
+                const AZStd::string& pathToValue)
             {
-                AZ_Assert(patches.IsArray(), "AppendUpdateEntityPatch - Provided patches should be an array object DOM value.");
+                AZ_Assert(patches.IsArray(), "GenerateAndAppendPatch - Provided patches should be an array object DOM value.");
 
                 auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "AppendUpdateEntityPatch - Could not get InstanceToTemplateInterface.");
+                AZ_Assert(instanceToTemplateInterface, "GenerateAndAppendPatch - Could not get InstanceToTemplateInterface.");
 
                 PrefabDom newPatches(&(patches.GetAllocator()));
-                instanceToTemplateInterface->GeneratePatch(newPatches, entityDomBeforeUpdate, entityDomAfterUpdate);
-                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(newPatches, entityAliasPath);
+                instanceToTemplateInterface->GeneratePatch(newPatches, domValueBeforeUpdate, domValueAfterUpdate);
+                instanceToTemplateInterface->PrependPathToPatchPaths(newPatches, pathToValue);
 
                 for (auto& newPatch : newPatches.GetArray())
                 {
@@ -69,40 +91,33 @@ namespace AzToolsFramework
                 }
             }
 
-            void GenerateUpdateEntityPatch(
-                PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPathForPatches)
+            void UpdateEntityInPrefabDom(
+                PrefabDomReference prefabDom, const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath)
             {
-                auto instanceToTemplateInterface = AZ::Interface<InstanceToTemplateInterface>::Get();
-                AZ_Assert(instanceToTemplateInterface, "GenerateUpdateEntityPatch - Could not get InstanceToTemplateInterface.");
-
-                instanceToTemplateInterface->GeneratePatch(patches, entityDomBeforeUpdate, entityDomAfterUpdate);
-
-                instanceToTemplateInterface->AppendEntityAliasPathToPatchPaths(patches, entityAliasPathForPatches);
+                UpdateValueInPrefabDom(prefabDom, entityDom, entityAliasPath);
             }
 
-            void UpdateEntityInInstanceDom(
-                PrefabDomReference instanceDom, const PrefabDomValue& entityDom, const AZStd::string& entityAliasPath)
+            void UpdateValueInPrefabDom(
+                PrefabDomReference prefabDom, const PrefabDomValue& domValue, const AZStd::string& pathToValue)
             {
-                if (!entityAliasPath.empty())
+                if (!pathToValue.empty())
                 {
-                    PrefabDomValue endStateCopy(entityDom, instanceDom->get().GetAllocator());
+                    PrefabDomValue endStateCopy(domValue, prefabDom->get().GetAllocator());
 
-                    PrefabDomPath entityPathInDom(entityAliasPath.c_str());
-                    entityPathInDom.Set(instanceDom->get(), endStateCopy.Move());
+                    PrefabDomPath domPathToValue(pathToValue.c_str());
+                    domPathToValue.Set(prefabDom->get(), endStateCopy.Move());
                 }
             }
 
-            void RemoveValueInInstanceDom(PrefabDomReference instanceDom, const AZStd::string& pathToRemove)
+            void RemoveValueInPrefabDom(PrefabDomReference prefabDom, const AZStd::string& pathToRemove)
             {
                 if (!pathToRemove.empty())
                 {
                     PrefabDomPath domPathToRemove(pathToRemove.c_str());
-                    domPathToRemove.Erase(instanceDom->get());
+                    domPathToRemove.Erase(prefabDom->get());
                 }
             }
+
         } // namespace PrefabUndoUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

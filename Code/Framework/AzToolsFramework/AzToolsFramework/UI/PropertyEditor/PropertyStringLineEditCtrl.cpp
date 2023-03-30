@@ -38,8 +38,6 @@ namespace AzToolsFramework
         setLayout(pLayout);
         setFocusProxy(m_pLineEdit);
         setFocusPolicy(m_pLineEdit->focusPolicy());
-
-        ConnectWidgets();
     };
 
     void PropertyStringLineEditCtrl::setValue(AZStd::string& value)
@@ -59,6 +57,15 @@ namespace AzToolsFramework
         m_pLineEdit->selectAll();
     }
 
+    void PropertyStringLineEditCtrl::UpdateValue(const QString& newValue)
+    {
+        if (m_pLineEdit->text() != newValue)
+        {
+            m_pLineEdit->setText(newValue);
+            m_pLineEdit->editingFinished();
+        }
+    }
+
     AZStd::string PropertyStringLineEditCtrl::value() const
     {
         return AZStd::string(m_pLineEdit->text().toUtf8().data());
@@ -74,12 +81,6 @@ namespace AzToolsFramework
         m_pLineEdit->blockSignals(true);
         m_pLineEdit->setMaxLength(maxLen);
         m_pLineEdit->blockSignals(false);
-    }
-
-    void PropertyStringLineEditCtrl::onChildLineEditValueChange(const QString& newValue)
-    {
-        AZStd::string changedVal(newValue.toUtf8().data());
-        emit valueChanged(changedVal);
     }
 
     PropertyStringLineEditCtrl::~PropertyStringLineEditCtrl()
@@ -101,21 +102,13 @@ namespace AzToolsFramework
         // There's only one QT widget on this property.
     }
 
-    void PropertyStringLineEditCtrl::ConnectWidgets()
-    {
-        connect(m_pLineEdit, SIGNAL(textChanged(const QString&)), this, SLOT(onChildLineEditValueChange(const QString&)));
-        connect(m_pLineEdit, &QLineEdit::editingFinished, this, [this]()
-        {
-            PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Handler::OnEditingFinished, this);
-        });
-    }
-
     QWidget* StringPropertyLineEditHandler::CreateGUI(QWidget* pParent)
     {
         PropertyStringLineEditCtrl* newCtrl = aznew PropertyStringLineEditCtrl(pParent);
-        connect(newCtrl, &PropertyStringLineEditCtrl::valueChanged, this, [newCtrl]()
+        connect(newCtrl->GetLineEdit(), &QLineEdit::editingFinished, this, [newCtrl]()
             {
-                PropertyEditorGUIMessages::Bus::Broadcast(&PropertyEditorGUIMessages::Bus::Events::RequestWrite, newCtrl);
+                PropertyEditorGUIMessagesBus::Broadcast(&PropertyEditorGUIMessages::RequestWrite, newCtrl);
+                PropertyEditorGUIMessagesBus::Broadcast(&PropertyEditorGUIMessages::OnEditingFinished, newCtrl);
             });
         return newCtrl;
     }

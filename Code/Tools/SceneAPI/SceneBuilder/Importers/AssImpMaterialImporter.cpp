@@ -98,6 +98,7 @@ namespace AZ
                         material->SetSpecularColor(assImpMaterial->GetSpecularColor());
                         material->SetEmissiveColor(assImpMaterial->GetEmissiveColor());
                         material->SetShininess(assImpMaterial->GetShininess());
+                        material->SetOpacity(assImpMaterial->GetOpacity());
 
                         material->SetUseColorMap(assImpMaterial->GetUseColorMap());
                         material->SetBaseColor(assImpMaterial->GetBaseColor());
