@@ -27,11 +27,11 @@ VsOutput EvaluateVertexGeometry_DepthPass(VsInput IN, VsSystemValues SV)
 
     if (o_prevPosition_isBound)
     {
-        output.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        output.m_worldPosPrev = mul(DrawSrg::GetWorldMatrixPrev(SV.m_instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
     }
     else
     {
-        output.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
+        output.m_worldPosPrev = mul(DrawSrg::GetWorldMatrixPrev(SV.m_instanceId), float4(IN.m_position, 1.0)).xyz;
     }
 #endif
 
