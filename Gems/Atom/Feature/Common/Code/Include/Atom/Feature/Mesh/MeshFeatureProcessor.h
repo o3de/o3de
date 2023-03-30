@@ -40,6 +40,8 @@ namespace AZ
         public:
             using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
 
+            ModelDataInstance();
+
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
 
@@ -143,15 +145,21 @@ namespace AZ
 
             Aabb m_aabb = Aabb::CreateNull();
 
-            bool m_cullBoundsNeedsUpdate = false;
-            bool m_cullableNeedsRebuild = false;
-            bool m_needsInit = false;
-            bool m_objectSrgNeedsUpdate = true;
-            bool m_isAlwaysDynamic = false;
-            bool m_visible = true;
-            bool m_hasForwardPassIblSpecularMaterial = false;
-            bool m_needsSetRayTracingData = false;
-            bool m_hasRayTracingReflectionProbe = false;
+            struct Flags
+            {
+                bool m_cullBoundsNeedsUpdate : 1;
+                bool m_cullableNeedsRebuild : 1;
+                bool m_needsInit : 1;
+                bool m_objectSrgNeedsUpdate : 1;
+                bool m_isAlwaysDynamic : 1;
+                bool m_dynamic : 1;                             // True if the model's transformation was changed than the initial position
+                bool m_isDrawMotion : 1;                        // Whether draw to the motion vector
+                bool m_visible : 1;
+                bool m_useForwardPassIblSpecular : 1;
+                bool m_hasForwardPassIblSpecularMaterial : 1;
+                bool m_needsSetRayTracingData : 1;
+                bool m_hasRayTracingReflectionProbe : 1;
+            } m_flags;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -273,6 +281,7 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+            RHI::DrawListTag m_meshMotionDrawListTag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

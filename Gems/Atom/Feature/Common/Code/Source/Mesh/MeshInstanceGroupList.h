@@ -40,6 +40,9 @@ namespace AZ::Render
         AZ::Event<> m_updateDrawPacketEvent;
         // Connecting to an AZ::Event is not thread safe, so we need to protect that with a lock
         AZStd::mutex m_eventLock;
+
+        // Enable draw motion or not. Set to true if any of mesh instance use this group has the same flag set in their ModelDataInstance
+        bool m_isDrawMotion = false;
     };
 
     //! Manages all the instance groups used by mesh instancing.
