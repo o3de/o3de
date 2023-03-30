@@ -337,5 +337,7 @@ namespace Terrain
         bool m_rebuildDrawPackets{ false };
         bool m_rayTracingEnabled{ false };
 
+
+        AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
     };
 }
