@@ -10,10 +10,13 @@
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
+#include <AzCore/Console/IConsole.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Name/Name.h>
 
 #include <AzCore/JSON/document.h>
+
+AZ_CVAR_EXTERNED(bool, r_EnableAutoGpuMemDump); 
 
 namespace AZ::RHI
 {
@@ -128,15 +131,15 @@ namespace AZ::RHI
     void DumpPoolInfoToJson();
 
 #ifndef AZ_RELEASE_BUILD
-    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(test) \
+    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(result) \
     do \
     { \
-        if (!test) \
+        if (r_EnableAutoGpuMemDump && !(result)) \
         { \
             AZ::RHI::DumpPoolInfoToJson(); \
         } \
     } while(false)
 #else
-    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(test)
+    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(result)
 #endif
 }

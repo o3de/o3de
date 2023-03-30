@@ -290,6 +290,11 @@ namespace AZ
         {
             return m_frameScheduler.GetMemoryStatistics();
         }
+        
+        void RHISystem::TriggerResourcePoolAllocInfoDump() const
+        {
+            AZ::RHI::DumpPoolInfoToJson();
+        }
 
         const AZ::RHI::TransientAttachmentPoolDescriptor* RHISystem::GetTransientAttachmentPoolDescriptor() const
         {

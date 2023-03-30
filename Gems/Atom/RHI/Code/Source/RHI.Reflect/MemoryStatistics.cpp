@@ -7,15 +7,25 @@
  */
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 
+#include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/JSON/stringbuffer.h>
 #include <AzCore/JSON/prettywriter.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
 
+AZ_CVAR(
+    bool, 
+    r_EnableAutoGpuMemDump, 
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "If true AZ_RHI_DUMP_POOL_INFO_ON_FAIL will write a json file containing all gpu mem allocations. By default it is false.");
+
+
 namespace AZ::RHI
 {
-    // POOL attributes
+    // Pool attributes
     using JsonStringRef = rapidjson::Value::StringRefType;
     const char PoolNameAttribStr[] = "PoolName";
     const char HostMemoryTypeValueStr[] = "Host";
@@ -62,7 +72,7 @@ namespace AZ::RHI
             }
             else if (const auto& heapMemoryUsageDevice = pool.m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device); heapMemoryUsageDevice.m_totalResidentInBytes > 0)
             {
-                poolObject.AddMember(MemoryTypeAttribStr,               DeviceMemoryTypeValueStr, doc.GetAllocator());
+                poolObject.AddMember(MemoryTypeAttribStr, DeviceMemoryTypeValueStr, doc.GetAllocator());
                 poolObject.AddMember(BudgetInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_budgetInBytes), doc.GetAllocator());
                 poolObject.AddMember(TotalResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_totalResidentInBytes.load()), doc.GetAllocator());
                 poolObject.AddMember(UsedResidentInBytesAttribStr, static_cast<uint64_t>(heapMemoryUsageDevice.m_usedResidentInBytes.load()), doc.GetAllocator());
@@ -122,9 +132,9 @@ namespace AZ::RHI
 #else
             today = *localtime(&ltime);
 #endif
-            char sTemp[128];
-            strftime(sTemp, sizeof(sTemp), "%Y-%m-%d.%H-%M-%S", &today);
-            AZStd::string filename = AZStd::string::format("%s/GpuMemoryLog_%s.%" PRIu64 ".json", path.c_str(), sTemp, ltime);
+            char gpuMemDumpFileName[128];
+            strftime(gpuMemDumpFileName, sizeof(gpuMemDumpFileName), "%Y-%m-%d.%H-%M-%S", &today);
+            AZStd::string filename = AZStd::string::format("%s/GpuMemoryLog_%s.%" PRIu64 ".json", path.c_str(), gpuMemDumpFileName, ltime);
 
             AZ::IO::SystemFile outputFile;
             if (!outputFile.Open(filename.c_str(), AZ::IO::SystemFile::SF_OPEN_CREATE | AZ::IO::SystemFile::SF_OPEN_WRITE_ONLY))

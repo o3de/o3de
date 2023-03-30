@@ -59,6 +59,7 @@ namespace AZ
             double GetCpuFrameTime() const override;
             const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
             const RHI::MemoryStatistics* GetMemoryStatistics() const override;
+            void TriggerResourcePoolAllocInfoDump() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
