@@ -76,6 +76,13 @@ namespace AZ
 
         static constexpr char ShaderVariantListBuilderName[] = "ShaderVariantListBuilder";
 
+        //! Searches recursively inside @parentFolder, for @relativePath and discovers the correct casing
+        //! For each component of @relativePath
+        static AZStd::string GetRelativePathWithCorrectCasing(const AZStd::string& parentFolder, const AZStd::string& relativePath)
+        {
+            if (relativePath.)
+        }
+
         //! Adds source file dependencies for every place a referenced file may appear, and detects if one of
         //! those possible paths resolves to the expected file.
         //! @param variantListFullpath - The full path to the shader variant list file being processed.
