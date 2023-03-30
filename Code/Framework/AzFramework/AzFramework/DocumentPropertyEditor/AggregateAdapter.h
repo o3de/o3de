@@ -10,8 +10,8 @@
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/vector.h>
-#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
+#include <AzFramework/DocumentPropertyEditor/DocumentAdapter.h>
 
 namespace AZ::DocumentPropertyEditor
 {
@@ -28,7 +28,6 @@ namespace AZ::DocumentPropertyEditor
         static bool IsRow(const Dom::Value& domValue);
 
     protected:
-
         struct AggregateNode
         {
             bool HasEntryForAdapter(size_t adapterIndex);
@@ -72,10 +71,15 @@ namespace AZ::DocumentPropertyEditor
 
         // DocumentAdapter overrides
         Dom::Value GenerateContents() override;
+        Dom::Value HandleMessage(const AdapterMessage& message) override;
 
         size_t GetIndexForAdapter(const DocumentAdapterPtr& adapter);
-        AggregateNode* GetNodeAtPath(size_t adapterIndex, const Dom::Path& path);
+        AggregateNode* GetNodeAtAdapterPath(size_t adapterIndex, const Dom::Path& path);
         Dom::Value GetComparisonRow(AggregateNode* aggregateNode);
+
+        //! gets the node at the given path relative to this adapter, if it exists
+        AggregateNode* GetNodeAtPath(const Dom::Path& aggregatePath);
+        Dom::Path GetPathForNode(AggregateNode* node); //!< returns the resultant path for this node if it exists, otherwise an empty path
 
         void PopulateNodesForAdapter(size_t adapterIndex);
         void PopulateChildren(size_t adapterIndex, const Dom::Value& parentValue, AggregateNode* parentNode);
@@ -103,7 +107,6 @@ namespace AZ::DocumentPropertyEditor
     class LabeledRowAggregateAdapter : public RowAggregateAdapter
     {
     public:
-
     protected:
         static AZStd::string_view GetFirstLabel(const Dom::Value& rowValue);
 
