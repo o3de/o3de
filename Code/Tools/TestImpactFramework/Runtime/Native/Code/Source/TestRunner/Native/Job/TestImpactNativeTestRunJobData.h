@@ -19,56 +19,26 @@ namespace TestImpact
     public:
         template<typename... AdditionalInfoArgs>
         NativeTestRunJobData(LaunchMethod launchMethod, AdditionalInfoArgs&&... additionalInfo)
-            : Parent(std::forward<AdditionalInfoArgs>(additionalInfo)...)
+            : Parent(std::forward<AdditionalInfoArgs>(additionalInfo)...)   
             , m_launchMethod(launchMethod)
         {
         }
 
         //! Copy and move constructors/assignment operators.
-        NativeTestRunJobData(const NativeTestRunJobData& other);
-        NativeTestRunJobData(NativeTestRunJobData&& other);
-        NativeTestRunJobData& operator=(const NativeTestRunJobData& other);
-        NativeTestRunJobData& operator=(NativeTestRunJobData&& other);
+        NativeTestRunJobData(const NativeTestRunJobData& other) = default;
+        NativeTestRunJobData(NativeTestRunJobData&& other) = default;
+        NativeTestRunJobData& operator=(const NativeTestRunJobData& other) = default;
+        NativeTestRunJobData& operator=(NativeTestRunJobData&& other) = default;
 
         //! Returns the launch method used by this test target.
-        LaunchMethod GetLaunchMethod() const
-        {
-            return m_launchMethod;
-        }
+        LaunchMethod GetLaunchMethod() const;
 
     private:
         LaunchMethod m_launchMethod = LaunchMethod::TestRunner;
     };
 
     template<typename Parent>
-    NativeTestRunJobData<Parent>::NativeTestRunJobData(const NativeTestRunJobData& other)
-        : Parent(other)
-        , m_launchMethod(other.m_launchMethod)
-    {
-    }
-
-    template<typename Parent>
-    NativeTestRunJobData<Parent>::NativeTestRunJobData(NativeTestRunJobData&& other)
-        : Parent(AZStd::move(other))
-        , m_launchMethod(AZStd::move(other.m_launchMethod))
-    {
-    }
-
-    template<typename Parent>
-    NativeTestRunJobData<Parent>& NativeTestRunJobData<Parent>::operator=(const NativeTestRunJobData& other)
-    {
-        m_launchMethod = other.m_launchMethod;
-        return *this;
-    }
-
-    template<typename Parent>
-    NativeTestRunJobData<Parent>& NativeTestRunJobData<Parent>::operator=(NativeTestRunJobData&& other)
-    {
-        m_launchMethod = AZStd::move(other.m_launchMethod);
-        return *this;
-    }
-
-    LaunchMethod GetLaunchMethod() const
+    LaunchMethod NativeTestRunJobData<Parent>::GetLaunchMethod() const
     {
         return m_launchMethod;
     }

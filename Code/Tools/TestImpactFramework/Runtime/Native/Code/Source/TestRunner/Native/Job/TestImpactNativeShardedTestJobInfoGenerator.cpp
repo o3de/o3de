@@ -10,6 +10,8 @@
 
 #include <TestRunner/Native/Job/TestImpactNativeShardedTestJobInfoGenerator.h>
 
+#include <AzCore/std/string/string_view.h>
+
 namespace TestImpact
 {
     NativeShardedInstrumentedTestRunJobInfoGenerator::NativeShardedInstrumentedTestRunJobInfoGenerator(
@@ -38,7 +40,7 @@ namespace TestImpact
     {
         auto artifactFilePath = GenerateTargetCoverageArtifactFilePath(testTarget, m_artifactDir.m_shardedCoverageArtifactDirectory);
         return artifactFilePath.ReplaceExtension(
-            AZStd::string::format("%zu%s", shardNumber, artifactFilePath.Extension().String().c_str()).c_str());
+            AZStd::string_view(AZStd::string::format("%zu%.*s", shardNumber, AZ_STRING_ARG(artifactFilePath.Extension().Native()))));
     }
 
     ShardedInstrumentedTestJobInfo NativeShardedInstrumentedTestRunJobInfoGenerator::GenerateJobInfoImpl(
@@ -53,14 +55,14 @@ namespace TestImpact
         for (size_t i = 0; i < testFilters.size(); i++)
         {
             const auto shardedRunArtifact = GenerateShardedTargetRunArtifactFilePath(testTarget, i);
-            const auto shardCoverageArtifact = GenerateShardedTargetCoverageArtifactFilePath(testTarget, i);
+            const auto shardedCoverageArtifact = GenerateShardedTargetCoverageArtifactFilePath(testTarget, i);
             const RepoPath shardAdditionalArgsFile = GenerateShardedAdditionalArgsFilePath(testTarget, i);
             const auto shardLaunchCommand = GenerateShardedLaunchCommand(testTarget, shardAdditionalArgsFile);
             WriteFileContents<TestRunnerException>(testFilters[i], shardAdditionalArgsFile);
 
             const auto command = GenerateInstrumentedTestJobInfoCommand(
                 m_instrumentBinary,
-                shardCoverageArtifact,
+                shardedCoverageArtifact,
                 m_coverageLevel,
                 m_targetBinaryDir,
                 m_testRunnerBinary,
@@ -70,7 +72,7 @@ namespace TestImpact
             jobInfos.emplace_back(
                 NativeInstrumentedTestRunner::JobInfo::Id{ startingId.m_value + i },
                 command,
-                NativeInstrumentedTestRunner::JobData(testTarget->GetLaunchMethod(), shardedRunArtifact, shardCoverageArtifact));
+                NativeInstrumentedTestRunner::JobData(testTarget->GetLaunchMethod(), shardedRunArtifact, shardedCoverageArtifact));
         }
 
         return ShardedInstrumentedTestJobInfo(testTarget, AZStd::move(jobInfos));

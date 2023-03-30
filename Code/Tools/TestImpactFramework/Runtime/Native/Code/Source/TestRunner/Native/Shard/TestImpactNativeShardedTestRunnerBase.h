@@ -275,8 +275,9 @@ namespace TestImpact
 
             if (jobData->m_std.m_out.has_value())
             {
-                // Offending sub job has std output available, print a truncated summary of the last know output
-                const size_t subStringLength = AZStd::min(size_t{ 500 }, jobData->m_std.m_out->length());
+                // Offending sub job has std output available, print a truncated summary of the last 500 characters of known output
+                constexpr size_t numCharsToPrint = 500;
+                const size_t subStringLength = AZStd::min(size_t{ numCharsToPrint }, jobData->m_std.m_out->length());
                 const auto subString = jobData->m_std.m_out->substr(jobData->m_std.m_out->length() - subStringLength);
                 AZ_Warning(
                     "Shard",

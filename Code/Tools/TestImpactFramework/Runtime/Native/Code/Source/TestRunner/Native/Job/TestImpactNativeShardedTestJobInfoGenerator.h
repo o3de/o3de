@@ -272,6 +272,9 @@ namespace TestImpact
         for (size_t testTargetIndex = 0, jobId = 0; testTargetIndex < testTargetsAndEnumerations.size(); testTargetIndex++)
         {
             jobInfos.push_back(GenerateJobInfo(testTargetsAndEnumerations[testTargetIndex], { jobId }));
+
+            // Increment the job id by the number of sharded job infos generated for the most recently added test target so that the next
+            // job id used is contiguous in seqeunce
             jobId += jobInfos.back().GetJobInfos().size();
         }
 

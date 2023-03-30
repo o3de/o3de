@@ -70,9 +70,9 @@ namespace TestImpact
         {
         }
 
-        JobInfo m_jobInfo;
-        JobMeta m_meta;
-        StdContent m_std;
+        JobInfo m_jobInfo; //!< The job info for this shard.
+        JobMeta m_meta; //<! The job meta for this shard.
+        StdContent m_std; //!< The standard output/error for this shard.
     };
 
     template<typename TestRunnerType>
@@ -117,7 +117,7 @@ namespace TestImpact
         if (IsComplete())
         {
             // Take the first job to be scheduled as for no sharding this will be the actual job and for sharding it
-            // doesn't make a great deal of sense to try and consolodate the jobs at this level anyway (the completed
+            // doesn't make a great deal of sense to try and consolidate the jobs at this level anyway (the completed
             // jobs returned by the sharded test runner will present all shards as a single completed job)
             m_consolidatedJobData = JobData(m_shardedTestJobInfo->GetJobInfos().front());
 

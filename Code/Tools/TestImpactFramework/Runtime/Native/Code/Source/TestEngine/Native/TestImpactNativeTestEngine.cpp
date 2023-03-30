@@ -270,7 +270,7 @@ namespace TestImpact
     }
 
     AZStd::vector<TestTargetAndEnumeration> NativeTestEngine::GenerateTestTargetAndEnumerations(
-        const AZStd::vector<const NativeTestTarget*> testTargets) const
+        const AZStd::vector<const NativeTestTarget*>& testTargets) const
     {
         const auto enumerationJobInfos = m_enumerationTestJobInfoGenerator->GenerateJobInfos(testTargets);
         auto [enumerationResult, enumerations] =
