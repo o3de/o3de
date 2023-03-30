@@ -203,14 +203,13 @@ namespace AZ
             RHI::Ptr<ID3D12DeviceX> m_dx12Device;
             RHI::Ptr<IDXGIAdapterX> m_dxgiAdapter;
             RHI::Ptr<IDXGIFactoryX> m_dxgiFactory;
+
 #ifdef USE_AMD_D3D12MA
             RHI::Ptr<D3D12MA::Allocator> m_dx12MemAlloc;
+            D3d12maReleaseQueue m_D3d12maReleaseQueue;
 #endif
 
             ReleaseQueue m_releaseQueue;
-#ifdef USE_AMD_D3D12MA
-            D3d12maReleaseQueue m_D3d12maReleaseQueue;
-#endif
 
             PipelineLayoutCache m_pipelineLayoutCache;
 

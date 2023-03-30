@@ -171,12 +171,11 @@ namespace AZ
             m_releaseQueue.Shutdown();
 #ifdef USE_AMD_D3D12MA
             m_D3d12maReleaseQueue.Shutdown();
+            m_dx12MemAlloc = nullptr;
 #endif
             m_dxgiFactory = nullptr;
             m_dxgiAdapter = nullptr;
-#ifdef USE_AMD_D3D12MA
-            m_dx12MemAlloc = nullptr;
-#endif
+
             ShutdownSubPlatform();
 
             m_dx12Device = nullptr;
