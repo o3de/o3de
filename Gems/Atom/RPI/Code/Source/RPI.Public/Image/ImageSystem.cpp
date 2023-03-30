@@ -392,11 +392,15 @@ namespace AZ
             // Sync values from ImageSystemDescriptor back to the cvars
             // Note 1: we need the sync here because one instance of the cvars might be initialized early than setting registry,
             // so it can't be initialized properly. See cvar_r_streamingImagePoolBudgetMb_Init and cvar_r_streamingImageMipBias_Init
-            // Note 2: we need to use PerformCommand instead of assign value directly because of this issue https://github.com/o3de/o3de/issues/5537
-            AZ::CVarFixedString commandString = AZ::CVarFixedString::format("r_streamingImagePoolBudgetMb %" PRIu64, desc.m_systemStreamingImagePoolSize);
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-            commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %" PRIu16, desc.m_systemStreamingImagePoolMipBias);
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
+            // Note 2: we need to use PerformCommand instead of assign value directly because of this issue https://github.com/o3de/o3de/issues/5537            
+            AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+            if (console)
+            {
+                AZ::CVarFixedString commandString = AZ::CVarFixedString::format("r_streamingImagePoolBudgetMb %" PRIu64, desc.m_systemStreamingImagePoolSize);
+                console->PerformCommand(commandString.c_str());
+                commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %" PRId16, desc.m_systemStreamingImagePoolMipBias);
+                console->PerformCommand(commandString.c_str());
+            }
 
             const SystemImagePoolDescriptor systemStreamingPoolDescriptor{ desc.m_systemStreamingImagePoolSize, "ImageSystem::SystemStreamingImagePool" };
             const SystemImagePoolDescriptor systemAttachmentPoolDescriptor{desc.m_systemAttachmentImagePoolSize, "ImageSystem::AttachmentImagePool" };
