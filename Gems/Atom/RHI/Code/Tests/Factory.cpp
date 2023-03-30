@@ -51,7 +51,7 @@ namespace UnitTest
         return RHI::APIType(m_platformName.GetStringView());
     }
 
-    bool Factory::SupportsXR()
+    bool Factory::SupportsXR() const
     {
         return false;
     }
