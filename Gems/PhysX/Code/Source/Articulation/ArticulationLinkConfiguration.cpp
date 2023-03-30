@@ -22,7 +22,7 @@ namespace PhysX
     {
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
-            serializeContext->Class<ArticulationLinkConfiguration>()
+            serializeContext->Class<ArticulationLinkConfiguration, AzPhysics::SimulatedBodyConfiguration>()
                 ->Version(2)
                 ->Field("Fixed Base", &ArticulationLinkConfiguration::m_isFixedBase)
                 ->Field("Mass", &ArticulationLinkConfiguration::m_mass)

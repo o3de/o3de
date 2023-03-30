@@ -81,6 +81,8 @@ set(FILES
     Source/RigidBody.h
     Source/RigidBodyStatic.cpp
     Source/RigidBodyStatic.h
+    Source/Articulation.cpp
+    Source/Articulation.h
     Source/Collision.cpp
     Source/Collision.h
     Source/Shape.h
