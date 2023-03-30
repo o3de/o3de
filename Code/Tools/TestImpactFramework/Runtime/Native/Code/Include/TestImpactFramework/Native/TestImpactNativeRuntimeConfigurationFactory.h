@@ -6,7 +6,7 @@
  *
  */
 
-#pragma once1
+#pragma once
 
 #include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 
