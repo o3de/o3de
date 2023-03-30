@@ -13,6 +13,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
 
+#include <PhysX/ArticulationTypes.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <Source/JointComponent.h>
 
@@ -23,13 +24,6 @@ namespace AZ
 
 namespace PhysX
 {
-    enum class ArticulationJointType
-    {
-        Fix,
-        Hinge,
-        Prismatic
-    };
-
     //! Configuration used to Add Articulations to a Scene.
     struct ArticulationLinkConfiguration
     {

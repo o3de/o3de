@@ -8,6 +8,7 @@
 
 #include <Source/ArticulationLinkComponent.h>
 
+#include <ArticulationUtils.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/NonUniformScaleBus.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -364,218 +365,110 @@ namespace PhysX
         return m_driveJoint;
     }
 
-    physx::PxArticulationJointType::Enum ArticulationLinkComponent::GetArticulationJointType(JointType jointType) const
-    {
-        switch (jointType)
-        {
-        case JointType::Fixed:
-            return physx::PxArticulationJointType::eFIX;
-        case JointType::Hinge:
-            return physx::PxArticulationJointType::eREVOLUTE;
-        case JointType::Prismatic:
-            return physx::PxArticulationJointType::ePRISMATIC;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported joint type");
-            return physx::PxArticulationJointType::eFIX;
-        }
-    }
-
-    physx::PxArticulationAxis::Enum ArticulationLinkComponent::GetArticulationAxis(JointAxis jointAxis) const
-    {
-        switch (jointAxis)
-        {
-        case JointAxis::Twist:
-            return physx::PxArticulationAxis::eTWIST;
-        case JointAxis::SwingY:
-            return physx::PxArticulationAxis::eSWING1;
-        case JointAxis::SwingZ:
-            return physx::PxArticulationAxis::eSWING2;
-        case JointAxis::X:
-            return physx::PxArticulationAxis::eX;
-        case JointAxis::Y:
-            return physx::PxArticulationAxis::eY;
-        case JointAxis::Z:
-            return physx::PxArticulationAxis::eZ;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported joint axis");
-            return physx::PxArticulationAxis::eTWIST;
-        }
-    }
-
-    physx::PxArticulationMotion::Enum ArticulationLinkComponent::GetArticulationMotion(JointMotionType jointMotionType) const
-    {
-        switch (jointMotionType)
-        {
-        case JointMotionType::Free:
-            return physx::PxArticulationMotion::eFREE;
-        case JointMotionType::Limited:
-            return physx::PxArticulationMotion::eLIMITED;
-        case JointMotionType::Locked:
-            return physx::PxArticulationMotion::eLOCKED;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported joint motion type");
-            return physx::PxArticulationMotion::eLOCKED;
-        }
-    }
-
-    JointType ArticulationLinkComponent::GetJointType(physx::PxArticulationJointType::Enum articulationJointType) const
-    {
-        switch (articulationJointType)
-        {
-        case physx::PxArticulationJointType::eFIX:
-            return JointType::Fixed;
-        case physx::PxArticulationJointType::eREVOLUTE:
-            return JointType::Hinge;
-        case physx::PxArticulationJointType::ePRISMATIC:
-            return JointType::Prismatic;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported articulation joint type");
-            return JointType::Unsupported;
-        }
-    }
-
-    JointAxis ArticulationLinkComponent::GetJointAxis(physx::PxArticulationAxis::Enum articulationAxis) const
-    {
-        switch (articulationAxis)
-        {
-        case physx::PxArticulationAxis::eTWIST:
-            return JointAxis::Twist;
-        case physx::PxArticulationAxis::eSWING1:
-            return JointAxis::SwingY;
-        case physx::PxArticulationAxis::eSWING2:
-            return JointAxis::SwingZ;
-        case physx::PxArticulationAxis::eX:
-            return JointAxis::X;
-        case physx::PxArticulationAxis::eY:
-            return JointAxis::Y;
-        case physx::PxArticulationAxis::eZ:
-            return JointAxis::Z;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported articulation axis");
-            return JointAxis::Twist;
-        }
-    }
-
-    JointMotionType ArticulationLinkComponent::GetJointMotionType(physx::PxArticulationMotion::Enum articulationMotion) const
-    {
-        switch (articulationMotion)
-        {
-        case physx::PxArticulationMotion::eFREE:
-            return JointMotionType::Free;
-        case physx::PxArticulationMotion::eLIMITED:
-            return JointMotionType::Limited;
-        case physx::PxArticulationMotion::eLOCKED:
-            return JointMotionType::Locked;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported articulation motion");
-            return JointMotionType::Locked;
-        }
-    }
-
-    void ArticulationLinkComponent::SetMotion(JointAxis jointAxis, JointMotionType jointMotionType)
+    void ArticulationLinkComponent::SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType)
     {
         if (auto* joint = GetDriveJoint())
         {
-            joint->setMotion(GetArticulationAxis(jointAxis), GetArticulationMotion(jointMotionType));
+            joint->setMotion(GetPxArticulationAxis(jointAxis), GetPxArticulationMotion(jointMotionType));
         }
     }
 
-    JointMotionType ArticulationLinkComponent::GetMotion(JointAxis jointAxis)
+    ArticulationJointMotionType ArticulationLinkComponent::GetMotion(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            return GetJointMotionType(joint->getMotion(GetArticulationAxis(jointAxis)));
+            return GetArticulationJointMotionType(joint->getMotion(GetPxArticulationAxis(jointAxis)));
         }
-        return JointMotionType::Locked;
+        return ArticulationJointMotionType::Locked;
     }
 
-    void ArticulationLinkComponent::SetLimit(JointAxis jointAxis, AZStd::pair<float, float> limitPair)
+    void ArticulationLinkComponent::SetLimit(ArticulationJointAxis jointAxis, AZStd::pair<float, float> limitPair)
     {
         if (auto* joint = GetDriveJoint())
         {
             physx::PxArticulationLimit limit(limitPair.first, limitPair.second);
-            joint->setLimitParams(GetArticulationAxis(jointAxis), limit);
+            joint->setLimitParams(GetPxArticulationAxis(jointAxis), limit);
         }
     }
 
-    AZStd::pair<float, float> ArticulationLinkComponent::GetLimit(JointAxis jointAxis)
+    AZStd::pair<float, float> ArticulationLinkComponent::GetLimit(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            const auto limit = joint->getLimitParams(GetArticulationAxis(jointAxis));
+            const auto limit = joint->getLimitParams(GetPxArticulationAxis(jointAxis));
             return { limit.low, limit.high };
         }
         return { -AZ::Constants::FloatMax, AZ::Constants::FloatMax };
     }
 
-    void ArticulationLinkComponent::SetDriveStiffness(JointAxis jointAxis, float stiffness)
+    void ArticulationLinkComponent::SetDriveStiffness(ArticulationJointAxis jointAxis, float stiffness)
     {
         if (auto* joint = GetDriveJoint())
         {
-            const auto articulationAxis = GetArticulationAxis(jointAxis);
+            const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.stiffness = stiffness;
             joint->setDriveParams(articulationAxis, driveParams);
         }
     }
 
-    float ArticulationLinkComponent::GetDriveStiffness(JointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveStiffness(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            auto driveParams = joint->getDriveParams(GetArticulationAxis(jointAxis));
+            auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.stiffness;
         }
         return AZ::Constants::FloatMax;
     }
 
-    void ArticulationLinkComponent::SetDriveDamping(JointAxis jointAxis, float damping)
+    void ArticulationLinkComponent::SetDriveDamping(ArticulationJointAxis jointAxis, float damping)
     {
         if (auto* joint = GetDriveJoint())
         {
-            const auto articulationAxis = GetArticulationAxis(jointAxis);
+            const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.damping = damping;
             joint->setDriveParams(articulationAxis, driveParams);
         }
     }
 
-    float ArticulationLinkComponent::GetDriveDamping(JointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveDamping(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            auto driveParams = joint->getDriveParams(GetArticulationAxis(jointAxis));
+            auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.damping;
         }
         return AZ::Constants::FloatMax;
     }
 
-    void ArticulationLinkComponent::SetMaxForce(JointAxis jointAxis, float maxForce)
+    void ArticulationLinkComponent::SetMaxForce(ArticulationJointAxis jointAxis, float maxForce)
     {
         if (auto* joint = GetDriveJoint())
         {
-            const auto articulationAxis = GetArticulationAxis(jointAxis);
+            const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.maxForce = maxForce;
             joint->setDriveParams(articulationAxis, driveParams);
         }
     }
 
-    float ArticulationLinkComponent::GetMaxForce(JointAxis jointAxis)
+    float ArticulationLinkComponent::GetMaxForce(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            auto driveParams = joint->getDriveParams(GetArticulationAxis(jointAxis));
+            auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.maxForce;
         }
         return AZ::Constants::FloatMax;
     }
 
-    void ArticulationLinkComponent::SetIsAccelerationDrive(JointAxis jointAxis, bool isAccelerationDrive)
+    void ArticulationLinkComponent::SetIsAccelerationDrive(ArticulationJointAxis jointAxis, bool isAccelerationDrive)
     {
         if (auto* joint = GetDriveJoint())
         {
-            const auto articulationAxis = GetArticulationAxis(jointAxis);
+            const auto articulationAxis = GetPxArticulationAxis(jointAxis);
             auto driveParams = joint->getDriveParams(articulationAxis);
             driveParams.driveType =
                 isAccelerationDrive ? physx::PxArticulationDriveType::eACCELERATION : physx::PxArticulationDriveType::eFORCE;
@@ -583,46 +476,46 @@ namespace PhysX
         }
     }
 
-    bool ArticulationLinkComponent::GetIsAccelerationDrive(JointAxis jointAxis)
+    bool ArticulationLinkComponent::GetIsAccelerationDrive(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            auto driveParams = joint->getDriveParams(GetArticulationAxis(jointAxis));
+            auto driveParams = joint->getDriveParams(GetPxArticulationAxis(jointAxis));
             return driveParams.driveType == physx::PxArticulationDriveType::eACCELERATION;
         }
         return false;
     }
 
-    void ArticulationLinkComponent::SetDriveTarget(JointAxis jointAxis, float target)
+    void ArticulationLinkComponent::SetDriveTarget(ArticulationJointAxis jointAxis, float target)
     {
         if (auto* joint = GetDriveJoint())
         {
-            joint->setDriveTarget(GetArticulationAxis(jointAxis), target);
+            joint->setDriveTarget(GetPxArticulationAxis(jointAxis), target);
         }
     }
 
-    float ArticulationLinkComponent::GetDriveTarget(JointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveTarget(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            return joint->getDriveTarget(GetArticulationAxis(jointAxis));
+            return joint->getDriveTarget(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
     }
 
-    void ArticulationLinkComponent::SetDriveTargetVelocity(JointAxis jointAxis, float targetVelocity)
+    void ArticulationLinkComponent::SetDriveTargetVelocity(ArticulationJointAxis jointAxis, float targetVelocity)
     {
         if (auto* joint = GetDriveJoint())
         {
-            joint->setDriveVelocity(GetArticulationAxis(jointAxis), targetVelocity);
+            joint->setDriveVelocity(GetPxArticulationAxis(jointAxis), targetVelocity);
         }
     }
 
-    float ArticulationLinkComponent::GetDriveTargetVelocity(JointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveTargetVelocity(ArticulationJointAxis jointAxis)
     {
         if (auto* joint = GetDriveJoint())
         {
-            return joint->getDriveVelocity(GetArticulationAxis(jointAxis));
+            return joint->getDriveVelocity(GetPxArticulationAxis(jointAxis));
         }
         return 0.0f;
     }

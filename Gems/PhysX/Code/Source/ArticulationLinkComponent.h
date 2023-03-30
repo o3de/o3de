@@ -77,22 +77,22 @@ namespace PhysX
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         // ArticulationJointRequestBus overrides ...
-        void SetMotion(JointAxis jointAxis, JointMotionType jointMotionType) override;
-        JointMotionType GetMotion(JointAxis jointAxis) override;
-        void SetLimit(JointAxis jointAxis, AZStd::pair<float, float> limitPair) override;
-        AZStd::pair<float, float> GetLimit(JointAxis jointAxis) override;
-        void SetDriveStiffness(JointAxis jointAxis, float stiffness) override;
-        float GetDriveStiffness(JointAxis jointAxis) override;
-        void SetDriveDamping(JointAxis jointAxis, float damping) override;
-        float GetDriveDamping(JointAxis jointAxis) override;
-        void SetMaxForce(JointAxis jointAxis, float maxForce) override;
-        float GetMaxForce(JointAxis jointAxis) override;
-        void SetIsAccelerationDrive(JointAxis jointAxis, bool isAccelerationDrive) override;
-        bool GetIsAccelerationDrive(JointAxis jointAxis) override;
-        void SetDriveTarget(JointAxis jointAxis, float target) override;
-        float GetDriveTarget(JointAxis jointAxis) override;
-        void SetDriveTargetVelocity(JointAxis jointAxis, float targetVelocity) override;
-        float GetDriveTargetVelocity(JointAxis jointAxis) override;
+        void SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType) override;
+        ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) override;
+        void SetLimit(ArticulationJointAxis jointAxis, AZStd::pair<float, float> limitPair) override;
+        AZStd::pair<float, float> GetLimit(ArticulationJointAxis jointAxis) override;
+        void SetDriveStiffness(ArticulationJointAxis jointAxis, float stiffness) override;
+        float GetDriveStiffness(ArticulationJointAxis jointAxis) override;
+        void SetDriveDamping(ArticulationJointAxis jointAxis, float damping) override;
+        float GetDriveDamping(ArticulationJointAxis jointAxis) override;
+        void SetMaxForce(ArticulationJointAxis jointAxis, float maxForce) override;
+        float GetMaxForce(ArticulationJointAxis jointAxis) override;
+        void SetIsAccelerationDrive(ArticulationJointAxis jointAxis, bool isAccelerationDrive) override;
+        bool GetIsAccelerationDrive(ArticulationJointAxis jointAxis) override;
+        void SetDriveTarget(ArticulationJointAxis jointAxis, float target) override;
+        float GetDriveTarget(ArticulationJointAxis jointAxis) override;
+        void SetDriveTargetVelocity(ArticulationJointAxis jointAxis, float targetVelocity) override;
+        float GetDriveTargetVelocity(ArticulationJointAxis jointAxis) override;
         void SetFrictionCoefficient(float frictionCoefficient) override;
         float GetFrictionCoefficient() override;
         void SetMaxJointVelocity(float maxJointVelocity) override;
@@ -106,12 +106,6 @@ namespace PhysX
         bool IsRootArticulation() const;
         AZ::Entity* GetArticulationRootEntity() const;
 
-        physx::PxArticulationJointType::Enum GetArticulationJointType(JointType jointType) const;
-        physx::PxArticulationAxis::Enum GetArticulationAxis(JointAxis jointAxis) const;
-        physx::PxArticulationMotion::Enum GetArticulationMotion(JointMotionType jointMotionType) const;
-        JointType GetJointType(physx::PxArticulationJointType::Enum articulationJointType) const;
-        JointAxis GetJointAxis(physx::PxArticulationAxis::Enum articulationAxis) const;
-        JointMotionType GetJointMotionType(physx::PxArticulationMotion::Enum articulationMotion) const;
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         void CreateArticulation();
