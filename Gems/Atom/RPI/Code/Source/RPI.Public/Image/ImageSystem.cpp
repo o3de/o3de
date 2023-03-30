@@ -394,7 +394,7 @@ namespace AZ
             // due to this issue: https://github.com/o3de/o3de/issues/5537
             AZ::CVarFixedString commandString = AZ::CVarFixedString::format("r_streamingImagePoolBudgetMb %" PRIu64, desc.m_systemStreamingImagePoolSize);
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
-            commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %d", desc.m_systemStreamingImagePoolMipBias);
+            commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %" PRIu16, desc.m_systemStreamingImagePoolMipBias);
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
 
             const SystemImagePoolDescriptor systemStreamingPoolDescriptor{ desc.m_systemStreamingImagePoolSize, "ImageSystem::SystemStreamingImagePool" };
