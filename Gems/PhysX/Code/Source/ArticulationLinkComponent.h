@@ -112,14 +112,14 @@ namespace PhysX
         float GetMaxJointVelocity() const override;
 #endif
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
-        physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
+        const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
+        physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
         ArticulationLinkConfiguration m_config;
 
     private:
         bool IsRootArticulation() const;
-        AZ::Entity* GetArticulationRootEntity() const;
-
+        const AZ::Entity* GetArticulationRootEntity() const;
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         void CreateArticulation();
@@ -148,6 +148,7 @@ namespace PhysX
         AZStd::vector<AZStd::shared_ptr<Physics::Shape>> m_articulationShapes;
         AZStd::vector<AZStd::shared_ptr<ActorData>> m_linksActorData; // TODO: Move to AzPhysics::ArticulationLink
 
+        using EntityIdArticulationLinkPair = AZStd::pair<AZ::EntityId, physx::PxArticulationLink*>;
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
     };
 

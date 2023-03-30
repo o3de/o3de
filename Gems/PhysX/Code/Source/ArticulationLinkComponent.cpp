@@ -118,14 +118,18 @@ namespace PhysX
         return IsRootArticulationEntity<ArticulationLinkComponent>(GetEntity());
     }
 
-    AZ::Entity* ArticulationLinkComponent::GetArticulationRootEntity() const
+    const AZ::Entity* ArticulationLinkComponent::GetArticulationRootEntity() const
     {
         bool rootFound = false;
         AZ::Entity* currentEntity = GetEntity();
         while (!rootFound)
         {
             AZ::EntityId parentId = currentEntity->GetTransform()->GetParentId();
-            if (parentId.IsValid())
+            if (!parentId.IsValid())
+            {
+                rootFound = true;
+            }
+            else
             {
                 AZ::Entity* parentEntity = nullptr;
                 AZ::ComponentApplicationBus::BroadcastResult(parentEntity, &AZ::ComponentApplicationBus::Events::FindEntity, parentId);
@@ -177,6 +181,25 @@ namespace PhysX
                     }
                 }
             }
+
+
+            if (!articulationRootEntity)
+            {
+                return;
+            } 
+            const auto rootArticulationLinkComponent = articulationRootEntity->FindComponent<ArticulationLinkComponent>();
+            if (!rootArticulationLinkComponent)
+            {
+                return;
+            }
+            m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
+            if (m_link)
+            {
+                m_driveJoint = m_link->getInboundJoint();
+            }
+
+
+
         }
     }
 
@@ -302,7 +325,7 @@ namespace PhysX
             thisLink->attachShape(*static_cast<physx::PxShape*>(physicsShape->GetNativePointer()));
         }
 
-        m_articulationLinksByEntityId.insert({ thisLinkData.m_entityId, thisLink });
+        m_articulationLinksByEntityId.insert(EntityIdArticulationLinkPair{ thisLinkData.m_entityId, thisLink });
 
         for (const auto& childLink : thisLinkData.m_childLinks)
         {
@@ -366,8 +389,8 @@ namespace PhysX
 
     physx::PxArticulationLink* ArticulationLinkComponent::GetArticulationLink(const AZ::EntityId entityId)
     {
-        const auto iterator = m_articulationLinksByEntityId.find(entityId);
-        if (iterator != m_articulationLinksByEntityId.end())
+        if (const auto iterator = m_articulationLinksByEntityId.find(entityId);
+            iterator != m_articulationLinksByEntityId.end())
         {
             return iterator->second;
         }
@@ -377,10 +400,18 @@ namespace PhysX
         }
     }
 
-    physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint() const
+    const physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint() const
     {
-        AZ_ErrorOnce("Articulation Link Component", m_driveJoint, "Invalid articulation joint pointer");
+        const bool isRootArticulation = IsRootArticulation();
+        AZ_ErrorOnce("Articulation Link Component", !isRootArticulation, "Articulation root does not have an inbound joint.");
+        AZ_ErrorOnce("Articulation Link Component", m_driveJoint || IsRootArticulation(), "Invalid articulation joint pointer");
         return m_driveJoint;
+    }
+
+    physx::PxArticulationJointReducedCoordinate* ArticulationLinkComponent::GetDriveJoint()
+    {
+        return const_cast<physx::PxArticulationJointReducedCoordinate*>(
+            static_cast<const ArticulationLinkComponent&>(*this).GetDriveJoint());
     }
 
     void ArticulationLinkComponent::SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType)
@@ -404,7 +435,7 @@ namespace PhysX
     {
         if (auto* joint = GetDriveJoint())
         {
-            physx::PxArticulationLimit limit(limitPair.first, limitPair.second);
+            const physx::PxArticulationLimit limit(limitPair.first, limitPair.second);
             joint->setLimitParams(GetPxArticulationAxis(jointAxis), limit);
         }
     }
