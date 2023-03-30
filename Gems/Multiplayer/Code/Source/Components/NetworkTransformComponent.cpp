@@ -69,7 +69,7 @@ namespace Multiplayer
         , m_translationChangedEventHandler([this](AZ::Vector3) { OnTransformChanged(); })
         , m_scaleChangedEventHandler([this](float) { OnTransformChanged(); })
         , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
-        , m_resetCountChangedEventHandler([this]([[maybe_unused]] uint8_t resetCount) { OnTransformChanged(); })
+        , m_resetCountChangedEventHandler([this]([[maybe_unused]] uint8_t resetCount) { m_syncTransformImmediate = true; })
     {
         ;
     }
@@ -177,7 +177,6 @@ namespace Multiplayer
 
     void NetworkTransformComponent::OnTransformChanged()
     {
-        m_syncTransformImmediate = true;
         OnPreRender(0.0f);
     }
 
