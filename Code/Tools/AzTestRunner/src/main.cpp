@@ -199,14 +199,14 @@ namespace AzTestRunner
         if (testMainFunction->IsValid())
         {
             // collapse the arguments vector into a c-style array of character pointers
-            std::vector<char*> cArguments;
-            cArguments.reserve(arguments.size());
-            for (const auto& argument : arguments)
+            std::vector<const char*> charArguments;
+            charArguments.reserve(arguments.size());
+            for (const std::string_view argument : arguments)
             {
-                cArguments.push_back(const_cast<char*>(argument.c_str()));
+                charArguments.push_back(argument.data());
             }
 
-            result = (*testMainFunction)(static_cast<int>(cArguments.size()), cArguments.data());
+            result = (*testMainFunction)(static_cast<int>(charArguments.size()), const_cast<char**>(charArguments.data()));
             std::cout << "OKAY " << symbol << "() returned " << result << std::endl;
             testMainFunction.reset();
         }
