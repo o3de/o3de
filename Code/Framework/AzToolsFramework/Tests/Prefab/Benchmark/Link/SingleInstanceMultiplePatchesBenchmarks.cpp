@@ -64,7 +64,7 @@ namespace Benchmark
 
                         PrefabDom patch;
                         instanceToTemplateInterface->GeneratePatch(patch, entityDomBefore, entityDomAfter);
-                        instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, entity->GetId());
+                        instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, entity->GetId());
                         for (auto& entry : patch.GetArray())
                         {
                             PrefabDomValue patchEntryCopy;
