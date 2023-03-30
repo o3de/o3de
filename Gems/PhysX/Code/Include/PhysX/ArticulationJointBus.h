@@ -22,7 +22,7 @@ namespace PhysX
         virtual void SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType) = 0;
 
         //! Get whether the degree of freedom for the specified axis is disabled, enabled with limits or enabled without limits.
-        virtual ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) = 0;
+        virtual ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the lower and upper limits for the motion corresponding to the specified axis.
         //! For linear degrees of freedom, the limits will be distances in meters.
@@ -32,7 +32,7 @@ namespace PhysX
         //! Get the lower and upper limits for the motion corresponding to the specified axis.
         //! For linear degrees of freedom, the limits will be distances in meters.
         //! For rotational degrees of freedom, the limits will be angles in radians.
-        virtual AZStd::pair<float, float> GetLimit(ArticulationJointAxis jointAxis) = 0;
+        virtual AZStd::pair<float, float> GetLimit(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the drive stiffness for the joint drive for the motion associated with the given axis.
         //! The drive stiffness affects how strongly the joint drive responds to the difference between the target and actual joint position
@@ -42,7 +42,7 @@ namespace PhysX
         //! Get the drive stiffness for the joint drive for the motion associated with the given axis.
         //! The drive stiffness affects how strongly the joint drive responds to the difference between the target and actual joint position
         //! or rotation.
-        virtual float GetDriveStiffness(ArticulationJointAxis jointAxis) = 0;
+        virtual float GetDriveStiffness(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the drive damping for the joint drive for the motion associated with the given axis.
         //! The drive stiffness affects how strongly the joint drive responds to the difference between the target and actual joint
@@ -52,13 +52,13 @@ namespace PhysX
         //! Get the drive damping for the joint drive for the motion associated with the given axis.
         //! The drive stiffness affects how strongly the joint drive responds to the difference between the target and actual joint
         //! velocity or angular velocity.
-        virtual float GetDriveDamping(ArticulationJointAxis jointAxis) = 0;
+        virtual float GetDriveDamping(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the maximum force for the joint drive for the motion associated with the given axis.
         virtual void SetMaxForce(ArticulationJointAxis jointAxis, float maxForce) = 0;
 
         //! Get the maximum force for the joint drive for the motion associated with the given axis.
-        virtual float GetMaxForce(ArticulationJointAxis jointAxis) = 0;
+        virtual float GetMaxForce(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set whether the joint drive for the motion associated with the given axis operates in terms of acceleration (true) or force
         //! (false).
@@ -66,7 +66,7 @@ namespace PhysX
 
         //! Get whether the joint drive for the motion associated with the given axis operates in terms of acceleration (true) or force
         //! (false).
-        virtual bool GetIsAccelerationDrive(ArticulationJointAxis jointAxis) = 0;
+        virtual bool IsAccelerationDrive(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the target position for the motion associated with the given axis.
         //! The target will be a position in meters for a linear degree of freedom, or an angle in radians for a rotational degree of
@@ -76,7 +76,7 @@ namespace PhysX
         //! Get the target position for the motion associated with the given axis.
         //! The target will be a position in meters for a linear degree of freedom, or an angle in radians for a rotational degree of
         //! freedom.
-        virtual float GetDriveTarget(ArticulationJointAxis jointAxis) = 0;
+        virtual float GetDriveTarget(ArticulationJointAxis jointAxis) const = 0;
         
         //! Set the target velocity for the motion associated with the given axis.
         //! The target velocity will be a linear velocity in meters per second for a linear degree of freedom, or an angular velocity in
@@ -86,19 +86,19 @@ namespace PhysX
         //! Get the target velocity for the motion associated with the given axis.
         //! The target velocity will be a linear velocity in meters per second for a linear degree of freedom, or an angular velocity in
         //! radians per second for a rotational degree of freedom.
-        virtual float GetDriveTargetVelocity(ArticulationJointAxis jointAxis) = 0;
+        virtual float GetDriveTargetVelocity(ArticulationJointAxis jointAxis) const = 0;
 
         //! Set the joint friction coefficient for all the degrees of freedom of this joint.
         virtual void SetFrictionCoefficient(float frictionCoefficient) = 0;
 
         //! Get the joint friction coefficient for all the degrees of freedom of this joint.
-        virtual float GetFrictionCoefficient() = 0;
+        virtual float GetFrictionCoefficient() const = 0;
 
         //! Set the maximum joint velocity for all the degrees of freedom of this joint.
         virtual void SetMaxJointVelocity(float maxJointVelocity) = 0;
 
         //! Get the maximum joint velocity for all the degrees of freedom of this joint.
-        virtual float GetMaxJointVelocity() = 0;
+        virtual float GetMaxJointVelocity() const = 0;
     };
 
     using ArticulationJointRequestBus = AZ::EBus<ArticulationJointRequests>;

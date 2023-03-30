@@ -201,22 +201,6 @@ namespace PhysX
     }
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
-    static physx::PxArticulationJointType::Enum GetPxArticulationJointType(ArticulationJointType jointType)
-    {
-        switch (jointType)
-        {
-        case ArticulationJointType::Fix:
-            return physx::PxArticulationJointType::eFIX;
-        case ArticulationJointType::Hinge:
-            return physx::PxArticulationJointType::eREVOLUTE;
-        case ArticulationJointType::Prismatic:
-            return physx::PxArticulationJointType::ePRISMATIC;
-        default:
-            AZ_ErrorOnce("Articulation Link Component", false, "unsupported joint type");
-            return physx::PxArticulationJointType::eFIX;
-        }
-    }
-
     void ArticulationLinkComponent::CreateArticulation()
     {
         physx::PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
@@ -407,7 +391,7 @@ namespace PhysX
         }
     }
 
-    ArticulationJointMotionType ArticulationLinkComponent::GetMotion(ArticulationJointAxis jointAxis)
+    ArticulationJointMotionType ArticulationLinkComponent::GetMotion(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -425,7 +409,7 @@ namespace PhysX
         }
     }
 
-    AZStd::pair<float, float> ArticulationLinkComponent::GetLimit(ArticulationJointAxis jointAxis)
+    AZStd::pair<float, float> ArticulationLinkComponent::GetLimit(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -446,7 +430,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetDriveStiffness(ArticulationJointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveStiffness(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -467,7 +451,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetDriveDamping(ArticulationJointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveDamping(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -488,7 +472,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetMaxForce(ArticulationJointAxis jointAxis)
+    float ArticulationLinkComponent::GetMaxForce(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -510,7 +494,7 @@ namespace PhysX
         }
     }
 
-    bool ArticulationLinkComponent::GetIsAccelerationDrive(ArticulationJointAxis jointAxis)
+    bool ArticulationLinkComponent::IsAccelerationDrive(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -528,7 +512,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetDriveTarget(ArticulationJointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveTarget(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -545,7 +529,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetDriveTargetVelocity(ArticulationJointAxis jointAxis)
+    float ArticulationLinkComponent::GetDriveTargetVelocity(ArticulationJointAxis jointAxis) const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -562,7 +546,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetFrictionCoefficient()
+    float ArticulationLinkComponent::GetFrictionCoefficient() const
     {
         if (auto* joint = GetDriveJoint())
         {
@@ -579,7 +563,7 @@ namespace PhysX
         }
     }
 
-    float ArticulationLinkComponent::GetMaxJointVelocity()
+    float ArticulationLinkComponent::GetMaxJointVelocity() const
     {
         if (auto* joint = GetDriveJoint())
         {

@@ -91,25 +91,25 @@ namespace PhysX
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         // ArticulationJointRequestBus overrides ...
         void SetMotion(ArticulationJointAxis jointAxis, ArticulationJointMotionType jointMotionType) override;
-        ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) override;
+        ArticulationJointMotionType GetMotion(ArticulationJointAxis jointAxis) const override;
         void SetLimit(ArticulationJointAxis jointAxis, AZStd::pair<float, float> limitPair) override;
-        AZStd::pair<float, float> GetLimit(ArticulationJointAxis jointAxis) override;
+        AZStd::pair<float, float> GetLimit(ArticulationJointAxis jointAxis) const override;
         void SetDriveStiffness(ArticulationJointAxis jointAxis, float stiffness) override;
-        float GetDriveStiffness(ArticulationJointAxis jointAxis) override;
+        float GetDriveStiffness(ArticulationJointAxis jointAxis) const override;
         void SetDriveDamping(ArticulationJointAxis jointAxis, float damping) override;
-        float GetDriveDamping(ArticulationJointAxis jointAxis) override;
+        float GetDriveDamping(ArticulationJointAxis jointAxis) const override;
         void SetMaxForce(ArticulationJointAxis jointAxis, float maxForce) override;
-        float GetMaxForce(ArticulationJointAxis jointAxis) override;
+        float GetMaxForce(ArticulationJointAxis jointAxis) const override;
         void SetIsAccelerationDrive(ArticulationJointAxis jointAxis, bool isAccelerationDrive) override;
-        bool GetIsAccelerationDrive(ArticulationJointAxis jointAxis) override;
+        bool IsAccelerationDrive(ArticulationJointAxis jointAxis) const override;
         void SetDriveTarget(ArticulationJointAxis jointAxis, float target) override;
-        float GetDriveTarget(ArticulationJointAxis jointAxis) override;
+        float GetDriveTarget(ArticulationJointAxis jointAxis) const override;
         void SetDriveTargetVelocity(ArticulationJointAxis jointAxis, float targetVelocity) override;
-        float GetDriveTargetVelocity(ArticulationJointAxis jointAxis) override;
+        float GetDriveTargetVelocity(ArticulationJointAxis jointAxis) const override;
         void SetFrictionCoefficient(float frictionCoefficient) override;
-        float GetFrictionCoefficient() override;
+        float GetFrictionCoefficient() const override;
         void SetMaxJointVelocity(float maxJointVelocity) override;
-        float GetMaxJointVelocity() override;
+        float GetMaxJointVelocity() const override;
 #endif
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
