@@ -31,7 +31,7 @@ namespace Multiplayer
     AZ_CVAR(bool, sv_ForceCorrections, false, nullptr, AZ::ConsoleFunctorFlags::Null, "If enabled, the server will force a correction for every input received for debugging");
     AZ_CVAR(bool, sv_EnableCorrections, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Enables server corrections on autonomous proxy desyncs");
     AZ_CVAR(double, sv_MaxBankTimeWindowSec, 0.2, nullptr, AZ::ConsoleFunctorFlags::Null, "Maximum bank time we allow before we start rejecting autonomous proxy move inputs due to anticheat kicking in");
-    AZ_CVAR(double, sv_BankTimeDecay, 0.025, nullptr, AZ::ConsoleFunctorFlags::Null, "Amount to decay bank time by, in case of more permanent shifts in client latency");
+    AZ_CVAR(double, sv_BankTimeDecay, 0.05, nullptr, AZ::ConsoleFunctorFlags::Null, "Amount to decay bank time by, in case of more permanent shifts in client latency");
     AZ_CVAR(AZ::TimeMs, sv_MinCorrectionTimeMs, AZ::TimeMs{ 100 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time to wait between sending out corrections in order to avoid flooding corrections on high-latency connections");
     AZ_CVAR(AZ::TimeMs, sv_InputUpdateTimeMs, AZ::TimeMs{ 5 }, nullptr, AZ::ConsoleFunctorFlags::Null, "Minimum time between component updates");
 #endif
@@ -391,8 +391,8 @@ namespace Multiplayer
 
     void LocalPredictionPlayerInputComponentController::UpdateBankedTime(AZ::TimeMs deltaTimeMs)
     {
-        const double deltaTime = static_cast<double>(deltaTimeMs) / 1000.0;
-        const double clientInputRateSec = static_cast<double>(static_cast<AZ::TimeMs>(cl_InputRateMs)) / 1000.0;
+        const double deltaTime = AZ::TimeMsToSecondsDouble(deltaTimeMs);
+        const double clientInputRateSec = AZ::TimeMsToSecondsDouble(cl_InputRateMs);
 
         // Update banked time accumulator
         m_clientBankedTime -= deltaTime;
@@ -401,12 +401,11 @@ namespace Multiplayer
         // Client may be slow hacking
         if (m_clientBankedTime < -sv_MaxBankTimeWindowSec)
         {
-            m_clientBankedTime = -sv_MaxBankTimeWindowSec; // clamp to boundary
+            m_clientBankedTime = -sv_MaxBankTimeWindowSec + clientInputRateSec; // Clamp to boundary and advance by one input worth of time
 
             NetworkInput& input = m_lastInputReceived[0];
             {
-                ScopedAlterTime scopedTime(
-                    input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
+                ScopedAlterTime scopedTime(input.GetHostFrameId(), input.GetHostTimeMs(), DefaultBlendFactor, GetNetBindComponent()->GetOwningConnectionId());
                 GetNetBindComponent()->ProcessInput(input, static_cast<float>(clientInputRateSec));
             }
 
