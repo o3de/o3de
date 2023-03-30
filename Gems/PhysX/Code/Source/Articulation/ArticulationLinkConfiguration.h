@@ -84,9 +84,9 @@ namespace PhysX
             AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to follower body.
 
         // These properties are not exposed to the edit context. They are used when creating editor Articulation components programmatically.
-        bool m_autoCalculateLeaderFrame = true;
-        AZ::Vector3 m_leaderLocalPosition = AZ::Vector3::CreateZero(); 
-        AZ::Vector3 m_LeaderLocalRotation =
+        bool m_autoCalculateLeadFrame = true;
+        AZ::Vector3 m_leadLocalPosition = AZ::Vector3::CreateZero(); 
+        AZ::Vector3 m_LeadLocalRotation =
             AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
 
         // This is only used to control the visibility attribute in the edit context. This is not part of the edit context.
