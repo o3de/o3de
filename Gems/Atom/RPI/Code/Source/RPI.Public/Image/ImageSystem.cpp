@@ -77,7 +77,7 @@ namespace AZ
                 // Update setting registry value which is used for image system initialization
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get())
                 {
-                    settingsRegistry->Set(MemoryBudgetSettingPath, value);
+                    settingsRegistry->Set(MemoryBudgetSettingPath, aznumeric_cast<u64>(value));
                 }
             }
         }
