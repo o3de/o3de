@@ -79,8 +79,11 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
+        # Disable registry settings to prevent message boxes from blocking test progression.
+        atom_tools_utils.disable_document_message_box_settings()
+
         # Disable automatic material and shader generation when opening graphs (to avoid any file writing/saving).
-        atom_tools_utils.disable_material_canvas_file_writes()
+        atom_tools_utils.disable_graph_compiler_settings()
 
         # Set constants before starting test steps.
         test_1_material_graph = os.path.join(atom_tools_utils.MATERIALCANVAS_GRAPH_PATH, "test1.materialgraph")
