@@ -23,6 +23,13 @@ namespace AZ
 
 namespace PhysX
 {
+    enum class ArticulationJointType
+    {
+        Fix,
+        Hinge,
+        Prismatic
+    };
+
     //! Configuration used to Add Articulations to a Scene.
     struct ArticulationLinkConfiguration
     {
@@ -41,8 +48,6 @@ namespace PhysX
         // Rigid Body configuration
 
         // Basic initial settings.
-        AZ::Vector3 m_initialLinearVelocity = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_initialAngularVelocity = AZ::Vector3::CreateZero();
         AZ::Vector3 m_centerOfMassOffset = AZ::Vector3::CreateZero();
 
         // Simulation parameters.
@@ -62,10 +67,16 @@ namespace PhysX
 
         // Joint configuration
 
-        physx::PxArticulationJointType::Enum m_articulationJointType = physx::PxArticulationJointType::Enum::eFIX;
-        bool m_selectLeadOnSnap = true;
+        ArticulationJointType m_articulationJointType = ArticulationJointType::Fix;
         bool m_selfCollide = false;
         bool m_fixJointLocation = false;
+
+        bool m_isLimited = true; //!< Indicates if this joint has limits, e.g. maximum swing angles.
+        float m_linearLimitLower = -1.0f;
+        float m_linearLimitUpper = 1.0f;
+        float m_angularLimitPositive = 45.0f;
+        float m_angularLimitNegative = -45.0f;
+
         JointMotorProperties m_motorConfiguration;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
@@ -82,5 +93,8 @@ namespace PhysX
         bool m_isRootArticulation = false;
 
         bool IsNotRootArticulation() const;
+        bool HingePropertiesVisible() const;
+        bool PrismaticPropertiesVisible() const;
+        bool IsSingleDofJointType() const;
     };
 } // namespace PhysX
