@@ -43,13 +43,13 @@ namespace AZ
         
         size_t cvar_r_streamingImagePoolBudgetMb_Init()
         {
-            size_t value = 0;
+            u64 value = 0;
             auto settingsRegistry = AZ::SettingsRegistry::Get();
             if (settingsRegistry)
             {
                 settingsRegistry->Get(value, MemoryBudgetSettingPath);
             }
-            return value;
+            return aznumeric_cast<size_t>(value);
         }
 
         int16_t cvar_r_streamingImageMipBias_Init()
@@ -389,9 +389,10 @@ namespace AZ
                 Data::AssetId m_assetId;
             };
 
-            // Sync values from desc back to the cvars
-            // Note: we need this code because one of the instance of the cvar might be initialized early than setting registry
-            // due to this issue: https://github.com/o3de/o3de/issues/5537
+            // Sync values from ImageSystemDescriptor back to the cvars
+            // Note 1: we need the sync here because one instance of the cvars might be initialized early than setting registry,
+            // so it can't be initialized properly. See cvar_r_streamingImagePoolBudgetMb_Init and cvar_r_streamingImageMipBias_Init
+            // Note 2: we need to use PerformCommand instead of assign value directly because of this issue https://github.com/o3de/o3de/issues/5537
             AZ::CVarFixedString commandString = AZ::CVarFixedString::format("r_streamingImagePoolBudgetMb %" PRIu64, desc.m_systemStreamingImagePoolSize);
             AZ::Interface<AZ::IConsole>::Get()->PerformCommand(commandString.c_str());
             commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %" PRIu16, desc.m_systemStreamingImagePoolMipBias);
