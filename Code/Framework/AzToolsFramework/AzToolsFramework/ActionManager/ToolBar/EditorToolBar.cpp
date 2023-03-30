@@ -62,11 +62,6 @@ namespace AzToolsFramework
                     auto toolbar = qobject_cast<QToolBar*>(expander->parentWidget());
                     auto menu = new QMenu(expander);
 
-                    QAction* dummy = new QAction();
-                    dummy->setText("Dummy");
-
-                    menu->addAction(dummy);
-
                     // Create a parent widget to more easily delete widget action widgets.
                     auto parentWidget = new QWidget();
 
@@ -79,13 +74,10 @@ namespace AzToolsFramework
                                 if (auto toolButton = qobject_cast<QToolButton*>(widgetAction->defaultWidget());
                                     toolButton && toolButton->menu())
                                 {
-                                    AZ_TracePrintf("MENU", action->objectName().toStdString().c_str());
                                     menu->addMenu(s_menuManagerInternalInterface->GetMenu(action->objectName().toStdString().c_str()));
                                 }
                                 else
                                 {
-                                    AZ_TracePrintf("WIDGET", action->objectName().toStdString().c_str());
-
                                     if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(
                                             action->objectName().toStdString().c_str()))
                                     {
@@ -101,11 +93,10 @@ namespace AzToolsFramework
                             }
                             else if (action->isSeparator())
                             {
-                                AZ_TracePrintf("SEPARATOR", "");
+                                menu->addSeparator();
                             }
                             else
                             {
-                                AZ_TracePrintf("ACTION", action->objectName().toStdString().c_str());
                                 menu->addAction(s_actionManagerInternalInterface->GetAction(action->objectName().toStdString().c_str()));
                             }
                         }
