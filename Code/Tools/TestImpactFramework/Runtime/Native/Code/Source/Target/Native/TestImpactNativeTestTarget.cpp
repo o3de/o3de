@@ -13,7 +13,7 @@ namespace TestImpact
     namespace SupportedTestFrameworks
     {
         //! The CTest label for the GTest framework.
-        inline constexpr auto GTest = "FRAMEWORK_googletest";
+        inline constexpr const char* GTest = "FRAMEWORK_googletest";
     } // namespace SupportedTestFrameworks
 
     NativeTestTarget::NativeTestTarget(

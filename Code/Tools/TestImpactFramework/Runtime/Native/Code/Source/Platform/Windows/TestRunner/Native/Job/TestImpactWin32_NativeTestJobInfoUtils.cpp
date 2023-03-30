@@ -10,14 +10,14 @@
 
 namespace TestImpact
 {
-    typename NativeInstrumentedTestRunner::Command GenerateInstrumentedTestJobInfoCommand(
+    NativeInstrumentedTestRunner::Command GenerateInstrumentedTestJobInfoCommand(
         const RepoPath& instrumentBindaryPath,
         const RepoPath& coverageArtifactPath,
         CoverageLevel coverageLevel,
         const RepoPath& modulesPath,
         const RepoPath& excludedModulesPath,
         const RepoPath& sourcesPath,
-        const typename NativeRegularTestRunner::Command& testRunLaunchCommand)
+        const NativeRegularTestRunner::Command& testRunLaunchCommand)
     {
         return {
             AZStd::string::format(
