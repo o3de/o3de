@@ -320,7 +320,11 @@ namespace GraphModelIntegration
             }
 
             AZ::EntityId nodeUiId = CreateNodeUi(nodeId, node, AZ::Vector2::CreateZero());
-            GraphCanvas::EntitySaveDataRequestBus::Event(nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *container);
+
+            if (container)
+            {
+                GraphCanvas::EntitySaveDataRequestBus::Event(nodeUiId, &GraphCanvas::EntitySaveDataRequests::ReadSaveData, *container);
+            }
         }
 
         // Wrap any nodes stored in the node wrappings
