@@ -33,14 +33,14 @@ namespace TestImpact
         }
     }
 
-    typename NativeTestEnumerator::Command GenerateTestEnumeratorJobInfoCommand(
+    NativeTestEnumerator::Command GenerateTestEnumeratorJobInfoCommand(
         const AZStd::string& launchArguement, const RepoPath& runArtifact)
     {
         const auto regularCommand = GenerateRegularTestJobInfoCommand(launchArguement, runArtifact);
         return { AZStd::string::format("%s --gtest_list_tests", regularCommand.m_args.c_str()) };
     }
 
-    typename NativeRegularTestRunner::Command GenerateRegularTestJobInfoCommand(
+    NativeRegularTestRunner::Command GenerateRegularTestJobInfoCommand(
         const AZStd::string& launchArguement,
         const RepoPath& runArtifact
     )
