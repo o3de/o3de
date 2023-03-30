@@ -175,12 +175,10 @@ namespace EMotionFX
         ASSERT_NE(nameWidget, nullptr) << "Name widget not found";
         AzToolsFramework::PropertyStringLineEditCtrl* lineEditCtrl = reinterpret_cast< AzToolsFramework::PropertyStringLineEditCtrl* >(nameWidget->GetChildWidget());
         ASSERT_NE(lineEditCtrl, nullptr) << "Line edit control not found.";
-        QLineEdit* lineEdit = lineEditCtrl->GetLineEdit();
-        ASSERT_NE(lineEdit, nullptr) << "Line edit not found.";
 
         // Change the group name by editing the line edit.
         const AZStd::string changedGroupName = "Changed Group Name";
-        lineEdit->setText(changedGroupName.c_str());
+        lineEditCtrl->UpdateValue(changedGroupName.c_str());
 
         // Find and click the apply button.
         QPushButton* applyButton = parameterCreateWidget->findChild<QPushButton*>("EMFX.ParameterCreateEditWidget.CreateApplyButton");

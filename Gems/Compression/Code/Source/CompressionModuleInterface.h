@@ -6,9 +6,10 @@
  *
  */
 
-#include <AzCore/Memory/SystemAllocator.h>
+#include <AzCore/Memory/Memory_fwd.h>
 #include <AzCore/Module/Module.h>
-#include <Clients/CompressionSystemComponent.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
 
 namespace Compression
 {
@@ -16,28 +17,15 @@ namespace Compression
         : public AZ::Module
     {
     public:
-        AZ_RTTI(CompressionModuleInterface, "{89158BD2-EAC1-4CBF-9F05-9237034FF28E}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(CompressionModuleInterface, AZ::SystemAllocator);
+        AZ_TYPE_INFO_WITH_NAME_DECL(CompressionModuleInterface);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        AZ_CLASS_ALLOCATOR_DECL;
 
-        CompressionModuleInterface()
-        {
-            // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            // Add ALL components descriptors associated with this gem to m_descriptors.
-            // This will associate the AzTypeInfo information for the components with the the SerializeContext, BehaviorContext and EditContext.
-            // This happens through the [MyComponent]::Reflect() function.
-            m_descriptors.insert(m_descriptors.end(), {
-                CompressionSystemComponent::CreateDescriptor(),
-                });
-        }
+        CompressionModuleInterface();
 
         /**
          * Add required SystemComponents to the SystemEntity.
          */
-        AZ::ComponentTypeList GetRequiredSystemComponents() const override
-        {
-            return AZ::ComponentTypeList{
-                azrtti_typeid<CompressionSystemComponent>(),
-            };
-        }
+        AZ::ComponentTypeList GetRequiredSystemComponents() const override;
     };
 }// namespace Compression

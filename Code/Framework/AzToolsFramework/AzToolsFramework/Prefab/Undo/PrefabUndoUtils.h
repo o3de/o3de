@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/std/string/string.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverrideTypes.h>
 #include <AzToolsFramework/Prefab/PrefabDomTypes.h>
 
 namespace AzToolsFramework
@@ -25,8 +26,20 @@ namespace AzToolsFramework
                 PrefabDom& patches,
                 const PrefabDomValue& newEntityDom,
                 const AZStd::string& newEntityAliasPath);
+            
+            //! Create an 'add' or 'replace' patch for updating value in DOM.
+            //! To remove value, use AppendRemovePatch.
+            //! @param patches An array object of DOM values which stores undo or redo patches.
+            //! @param domValue The DOM value to add or replace.
+            //! @param pathToUpdate The given path for the new value.
+            //! @param patchType The patch type for the patch (supported value: Add and Edit).
+            void AppendUpdateValuePatch(
+                PrefabDom& patches,
+                const PrefabDomValue& domValue,
+                const AZStd::string& pathToUpdate,
+                const PatchType patchType);
 
-            //! Create a remove patch with alias path, and append it to patch array.
+            //! Create a 'remove' patch with alias path, and append it to patch array.
             //! @param patches An array object of DOM values which stores undo or redo patches.
             //! @param pathToRemove The given path to where the DOM value will be removed.
             void AppendRemovePatch(

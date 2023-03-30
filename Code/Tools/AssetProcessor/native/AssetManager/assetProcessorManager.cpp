@@ -3481,7 +3481,10 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
-            QueueIdleCheck();
+            // place a message in the queue that will cause us to transition
+            // into a "no longer scanning" state and then continue with the next phase
+            QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
+
             m_initialScanSkippingFeature = false;
             return;
         }
@@ -3535,7 +3538,7 @@ namespace AssetProcessor
 
         // place a message in the queue that will cause us to transition
         // into a "no longer scanning" state and then continue with the next phase
-        // we place this at the end of the queue rather than calling it immediately, becuase
+        // we place this at the end of the queue rather than calling it immediately, because
         // other messages may still be in the queue such as the incoming file list.
         QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
     }
@@ -4732,8 +4735,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::BeginCacheFileUpdate(const char* productPath)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.insert(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {        
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.insert(productPath);
+        }
 
         AssetNotificationMessage message(productPath, AssetNotificationMessage::JobFileClaimed, AZ::Data::s_invalidAssetType, "");
         AssetProcessor::ConnectionBus::Broadcast(&AssetProcessor::ConnectionBus::Events::Send, 0, message);
@@ -4741,8 +4749,13 @@ namespace AssetProcessor
 
     void AssetProcessorManager::EndCacheFileUpdate(const char* productPath, bool queueAgainForDeletion)
     {
-        QMutexLocker locker(&m_processingJobMutex);
-        m_processingProductInfoList.erase(productPath);
+        // Scope the lock for just modifying the processing product info list.
+        // This will allow other jobs to lock this list for emitting their own messages.
+        // This speeds up asset processing time, by not having jobs holding this longer than they need to.
+        {
+            QMutexLocker locker(&m_processingJobMutex);
+            m_processingProductInfoList.erase(productPath);
+        }
         if (queueAgainForDeletion)
         {
             QMetaObject::invokeMethod(this, "AssessDeletedFile", Qt::QueuedConnection, Q_ARG(QString, QString::fromUtf8(productPath)));

@@ -489,6 +489,7 @@ namespace ScriptCanvas
 
         AZ_COMPONENT(Node, "{52B454AE-FA7E-4FE9-87D3-A1CAB235C691}", SerializationListener);
         static void Reflect(AZ::ReflectContext* reflection);
+        static int GetNodeVersion();
 
         Node();
         ~Node() override;

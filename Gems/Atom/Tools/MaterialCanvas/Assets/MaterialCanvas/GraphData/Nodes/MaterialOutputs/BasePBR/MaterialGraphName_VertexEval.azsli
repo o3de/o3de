@@ -34,9 +34,9 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
 
     const float3 O3DE_MC_POSITION = position;
     const float3 O3DE_MC_NORMAL = normal;
-    const float3 O3DE_MC_TANGENT = tangent;
+    const float3 O3DE_MC_TANGENT = tangent.xyz;
     const float3 O3DE_MC_BITANGENT = bitangent;
-    const float3 O3DE_MC_POSITION_WS = positionWS;
+    const float3 O3DE_MC_POSITION_WS = positionWS.xyz;
     const float3 O3DE_MC_NORMAL_WS = normalWS;
     const float3 O3DE_MC_TANGENT_WS = tangentWS;
     const float3 O3DE_MC_BITANGENT_WS = bitangentWS;

@@ -19,7 +19,6 @@
 #include <RHI/SwapChain.h>
 #include <RHI/CommandQueue.h>
 #include <RHI/QueryPool.h>
-#include <Atom/RHI/IndirectArguments.h>
 #include <RHI/RayTracingBlas.h>
 #include <RHI/RayTracingTlas.h>
 #include <RHI/RayTracingPipelineState.h>
@@ -27,6 +26,7 @@
 #include <RHI/BufferPool.h>
 #include <Atom/RHI/DispatchRaysItem.h>
 #include <Atom/RHI/Factory.h>
+#include <Atom/RHI/IndirectArguments.h>
 
 // Conditionally disable timing at compile-time based on profile policy
 #if DX12_GPU_PROFILE_MODE == DX12_GPU_PROFILE_MODE_DETAIL
@@ -40,12 +40,11 @@
 #define DX12_COMMANDLIST_TIMER_DETAIL(id)
 #endif
 
-#define PIX_MARKER_CMDLIST_COL 0xFF0000FF
-
 namespace AZ
 {
     namespace DX12
     {
+
         RHI::Ptr<CommandList> CommandList::Create()
         {
             return aznew CommandList();
@@ -95,8 +94,7 @@ namespace AZ
         {
             SetName(name);
 
-            PIXBeginEvent(PIX_MARKER_CMDLIST_COL, name.GetCStr());
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXBeginEvent(GetCommandList(), PIX_MARKER_CMDLIST_COL, name.GetCStr());
             }
@@ -105,12 +103,10 @@ namespace AZ
         void CommandList::Close()
         {
             FlushBarriers();
-            PIXEndEvent();
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
+            if (RHI::Factory::Get().PixGpuEventsEnabled() && r_gpuMarkersMergeGroups)
             {
                 PIXEndEvent(GetCommandList());
             }
-            
 
             CommandListBase::Close();
         }
@@ -344,10 +340,27 @@ namespace AZ
 
             // set the global root signature
             const RayTracingPipelineState* rayTracingPipelineState = static_cast<const RayTracingPipelineState*>(dispatchRaysItem.m_rayTracingPipelineState);
+            if (!rayTracingPipelineState)
+            {
+                AZ_Assert(false, "Pipeline state not provided");
+                return;
+            }
+
             commandList->SetComputeRootSignature(rayTracingPipelineState->GetGlobalRootSignature());
 
             const PipelineState* globalPipelineState = static_cast<const PipelineState*>(dispatchRaysItem.m_globalPipelineState);
-            const PipelineLayout& globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            if (!globalPipelineState)
+            {
+                AZ_Assert(false, "Global Pipeline state not provided");
+                return;
+            }
+
+            const PipelineLayout* globalPipelineLayout = globalPipelineState->GetPipelineLayout();              
+            if (!globalPipelineLayout)
+            {
+                AZ_Assert(false, "Pipeline layout is null.");
+                return;
+            }
 
             // bind ShaderResourceGroups
             for (uint32_t srgIndex = 0; srgIndex < dispatchRaysItem.m_shaderResourceGroupCount; ++srgIndex)
@@ -355,8 +368,8 @@ namespace AZ
                 const uint32_t srgBindingSlot = dispatchRaysItem.m_shaderResourceGroups[srgIndex]->GetBindingSlot();
 
                 // retrieve binding
-                const size_t srgBindingIndex = globalPipelineLayout.GetIndexBySlot(srgBindingSlot);
-                RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(srgBindingIndex);
+                const size_t srgBindingIndex = globalPipelineLayout->GetIndexBySlot(srgBindingSlot);
+                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(srgBindingIndex);
                 const ShaderResourceGroup* srg = static_cast<const ShaderResourceGroup*>(dispatchRaysItem.m_shaderResourceGroups[srgIndex]);
                 const ShaderResourceGroupCompiledData& compiledData = srg->GetCompiledData();
 
@@ -384,9 +397,9 @@ namespace AZ
             }
 
             // set the bindless descriptor table if required by the shader
-            for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout.GetRootParameterBindingCount(); ++bindingIndex)
+            for (uint32_t bindingIndex = 0; bindingIndex < globalPipelineLayout->GetRootParameterBindingCount(); ++bindingIndex)
             {
-                RootParameterBinding binding = globalPipelineLayout.GetRootParameterBindingByIndex(bindingIndex);
+                RootParameterBinding binding = globalPipelineLayout->GetRootParameterBindingByIndex(bindingIndex);
                 if (binding.m_bindlessTable.IsValid())
                 {
                     GetCommandList()->SetComputeRootDescriptorTable(
