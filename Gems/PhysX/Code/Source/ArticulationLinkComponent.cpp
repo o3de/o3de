@@ -45,21 +45,37 @@ namespace PhysX
         InitPhysicsTickHandler();
     }
 
+    void ArticulationJointData::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ArticulationJointData>()
+                ->Version(1)
+                ->Field("JointType", &ArticulationJointData::m_jointType)
+                ->Field("JointLeadLocalFrame", &ArticulationJointData::m_jointLeadLocalFrame)
+                ->Field("JointFollowerLocalFrame", &ArticulationJointData::m_jointFollowerLocalFrame)
+                ->Field("GenericProperties", &ArticulationJointData::m_genericProperties)
+                ->Field("Limits", &ArticulationJointData::m_limits)
+                ->Field("Motor", &ArticulationJointData::m_motor)
+            ;
+        }
+    }
+
     void ArticulationLinkData::Reflect(AZ::ReflectContext* context)
     {
-        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        ArticulationJointData::Reflect(context);
+
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ArticulationLinkData>()
                 ->Version(1)
                 ->Field("ShapeConfiguration", &ArticulationLinkData::m_shapeConfiguration)
                 ->Field("ColliderConfiguration", &ArticulationLinkData::m_colliderConfiguration)
                 ->Field("EntityId", &ArticulationLinkData::m_entityId)
-                ->Field("RelativeTransform", &ArticulationLinkData::m_relativeTransform)
+                ->Field("LocalTransform", &ArticulationLinkData::m_localTransform)
                 ->Field("ChildLinks", &ArticulationLinkData::m_childLinks)
                 ->Field("PhysxSpecificConfig", &ArticulationLinkData::m_physxSpecificConfig)
-                ->Field("GenericProperties", &ArticulationLinkData::m_genericProperties)
-                ->Field("Limits", &ArticulationLinkData::m_limits)
-                ->Field("Motor", &ArticulationLinkData::m_motor)
+                ->Field("ArticulationJointData", &ArticulationLinkData::m_articulationJointData)
             ;
         }
     }
@@ -185,6 +201,22 @@ namespace PhysX
     }
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
+    static physx::PxArticulationJointType::Enum GetPxArticulationJointType(ArticulationJointType jointType)
+    {
+        switch (jointType)
+        {
+        case ArticulationJointType::Fix:
+            return physx::PxArticulationJointType::eFIX;
+        case ArticulationJointType::Hinge:
+            return physx::PxArticulationJointType::eREVOLUTE;
+        case ArticulationJointType::Prismatic:
+            return physx::PxArticulationJointType::ePRISMATIC;
+        default:
+            AZ_ErrorOnce("Articulation Link Component", false, "unsupported joint type");
+            return physx::PxArticulationJointType::eFIX;
+        }
+    }
+
     void ArticulationLinkComponent::CreateArticulation()
     {
         physx::PxPhysics* pxPhysics = GetPhysXSystem()->GetPxPhysics();
@@ -249,7 +281,7 @@ namespace PhysX
         if (parentLink)
         {
             physx::PxTransform parentLinkTransform = parentLink->getGlobalPose();
-            physx::PxTransform thisLinkRelativeTransform = PxMathConvert(thisLinkData.m_relativeTransform);
+            physx::PxTransform thisLinkRelativeTransform = PxMathConvert(thisLinkData.m_localTransform);
             thisLinkTransform = parentLinkTransform * thisLinkRelativeTransform;
         }
         else
@@ -273,10 +305,12 @@ namespace PhysX
         {
             physx::PxArticulationJointReducedCoordinate* inboundJoint =
                 thisLink->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
-            // TODO: Set the values for joints from thisLinkData
-            inboundJoint->setJointType(physx::PxArticulationJointType::eFIX);
-            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_relativeTransform));
-            inboundJoint->setChildPose(physx::PxTransform(physx::PxIdentity));
+            inboundJoint->setJointType(GetPxArticulationJointType(thisLinkData.m_articulationJointData.m_jointType));
+            // Sets the joint pose in the lead link actor frame.
+            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointLeadLocalFrame));
+            // Sets the joint pose in the follower link actor frame.
+            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointFollowerLocalFrame));
+            // TODO: Set other joint's properties from thisLinkData
         }
 
         if (physicsShape)

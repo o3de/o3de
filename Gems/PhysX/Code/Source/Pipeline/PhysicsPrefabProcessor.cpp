@@ -26,12 +26,13 @@
 
 namespace PhysX
 {
-    static void EntityDataToArticulationLinkData(AZ::Entity* entity, ArticulationLinkData* linkData)
+    static void EntityDataToArticulationLinkData(
+        AZ::Entity* entity, ArticulationLinkData* linkData, ArticulationLinkData* parentLinkData)
     {
         linkData->m_entityId = entity->GetId();
 
         auto* transformComponent = entity->FindComponent<AzFramework::TransformComponent>();
-        linkData->m_relativeTransform = transformComponent->GetLocalTM();
+        linkData->m_localTransform = transformComponent->GetLocalTM();
 
         const auto& components = entity->GetComponents();
         auto baseColliderComponentIt = AZStd::find_if(
@@ -53,7 +54,32 @@ namespace PhysX
             linkData->m_shapeConfiguration = shapeColliderPair.second;
         }
 
-        // TODO: pack joints data here.
+        // If the entity has a parent then it's not a root articulation and we fill the joint information.
+        if (parentLinkData)
+        {
+            auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
+            AZ_Assert(articulationComponent, "Entity being proceessed for articulation has not articulation link component.");
+
+            linkData->m_articulationJointData.m_jointType = articulationComponent->m_config.m_articulationJointType;
+
+            linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_localRotation),
+                articulationComponent->m_config.m_localPosition);
+
+            if (articulationComponent->m_config.m_autoCalculateLeadFrame)
+            {
+                linkData->m_articulationJointData.m_jointLeadLocalFrame =
+                    linkData->m_localTransform * linkData->m_articulationJointData.m_jointFollowerLocalFrame;
+            }
+            else
+            {
+                linkData->m_articulationJointData.m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+                    AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_leadLocalPosition),
+                    articulationComponent->m_config.m_leadLocalPosition);
+            }
+
+            // TODO: copy other joint's data from articulationComponent->m_config to linkData.
+        }
     }
 
     PhysicsPrefabProcessor::PhysicsPrefabProcessor()
@@ -87,7 +113,7 @@ namespace PhysX
 
         // Pack the data from this entity into ArticulationLinkData.
         // This includes the information about collision shapes, collider configuration, joints, debug data etc.
-        EntityDataToArticulationLinkData(currentNode->m_entity, thisLinkData.get());
+        EntityDataToArticulationLinkData(currentNode->m_entity, thisLinkData.get(), parentLinkData.get());
 
         if (parentLinkData)
         {
