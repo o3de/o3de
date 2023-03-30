@@ -89,6 +89,14 @@ namespace PhysX
         AZ::Vector3 m_LeadLocalRotation =
             AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
 
+        enum class DisplaySetupState : AZ::u8
+        {
+            Never = 0,
+            Selected,
+            Always
+        };
+        DisplaySetupState m_displayJointSetup = DisplaySetupState::Selected;
+
         // This is only used to control the visibility attribute in the edit context. This is not part of the edit context.
         bool m_isRootArticulation = false;
 

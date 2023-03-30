@@ -8,7 +8,10 @@
 
 #include <AzCore/Serialization/EditContext.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
+#include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 
+#include <Editor/EditorJointCommon.h>
 #include <Source/ArticulationLinkComponent.h>
 #include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorColliderComponent.h>
@@ -157,6 +160,17 @@ namespace PhysX
                         "Lead-Follower Collide",
                         "When active, the lead and follower pair will collide with each other.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::ComboBox,
+                        &ArticulationLinkConfiguration::m_displayJointSetup,
+                        "Display Setup in Viewport",
+                        "Never = Not shown."
+                        "Select = Show setup display when entity is selected."
+                        "Always = Always show setup display.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Never, "Never")
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Selected, "Selected")
+                    ->EnumAttribute(ArticulationLinkConfiguration::DisplaySetupState::Always, "Always")
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Joint limits")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -251,15 +265,302 @@ namespace PhysX
     {
         AzToolsFramework::Components::EditorComponentBase::Activate();
         m_config.m_isRootArticulation = IsRootArticulation();
+
+        AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
     }
 
     void EditorArticulationLinkComponent::Deactivate()
     {
+        AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
+        AZ::TransformNotificationBus::Handler::BusDisconnect();
+
         AzToolsFramework::Components::EditorComponentBase::Deactivate();
     }
 
     void EditorArticulationLinkComponent::BuildGameEntity(AZ::Entity* gameEntity)
     {
         gameEntity->CreateComponent<ArticulationLinkComponent>(m_config);
+    }
+
+    void EditorArticulationLinkComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& localTM, const AZ::Transform& worldTM)
+    {
+        if (m_config.m_fixJointLocation)
+        {
+            const AZ::Transform localJoint = AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(m_config.m_localRotation), m_config.m_localPosition);
+            const AZ::Transform worldJoint = m_cachedWorldTM * localJoint;
+
+            const AZ::Transform localFromWorld = worldTM.GetInverse();
+            const AZ::Transform newLocalJoint = localFromWorld * worldJoint;
+            m_config.m_localPosition = newLocalJoint.GetTranslation();
+            m_config.m_localRotation = newLocalJoint.GetEulerDegrees();
+
+            AzToolsFramework::ToolsApplicationEvents::Bus::Broadcast(
+                &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_Values);
+        }
+        m_cachedWorldTM = worldTM;
+    }
+
+    void EditorArticulationLinkComponent::DisplayEntityViewport(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        // The root articulation doesn't have a joint.
+        if (IsRootArticulation())
+        {
+            return;
+        }
+
+        ShowJointHierarchy(viewportInfo, debugDisplay);
+
+        if (!ShowSetupDisplay())
+        {
+            return;
+        }
+
+        switch (m_config.m_articulationJointType)
+        {
+        case ArticulationJointType::Hinge:
+            ShowHingeJoint(viewportInfo, debugDisplay);
+            break;
+
+        case ArticulationJointType::Prismatic:
+            ShowPrismaticJoint(viewportInfo, debugDisplay);
+            break;
+
+        default:
+            // Nothing to show
+            break;
+        }
+    }
+
+    bool EditorArticulationLinkComponent::ShowSetupDisplay() const
+    {
+        switch (m_config.m_displayJointSetup)
+        {
+        case ArticulationLinkConfiguration::DisplaySetupState::Always:
+            return true;
+        case ArticulationLinkConfiguration::DisplaySetupState::Selected:
+            {
+                bool showSetup = false;
+                AzToolsFramework::EditorEntityInfoRequestBus::EventResult(
+                    showSetup, GetEntityId(), &AzToolsFramework::EditorEntityInfoRequests::IsSelected);
+                return showSetup;
+            }
+        }
+        return false;
+    }
+
+    void EditorArticulationLinkComponent::ShowJointHierarchy(
+        [[maybe_unused]] const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) const
+    {
+        auto* physXDebug = AZ::Interface<Debug::PhysXDebugInterface>::Get();
+        if (physXDebug == nullptr)
+        {
+            return;
+        }
+
+        const PhysX::Debug::DebugDisplayData& displayData = physXDebug->GetDebugDisplayData();
+        if (displayData.m_showJointHierarchy)
+        {
+            const AZ::Color leadLineColor = displayData.GetJointLeadColor();
+            const AZ::Color followerLineColor = displayData.GetJointFollowerColor();
+
+            const AZ::Transform followerWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(GetEntityId());
+            const AZ::Vector3 followerWorldPosition = followerWorldTransform.GetTranslation();
+
+            const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(AZ::Quaternion::CreateFromEulerAnglesDegrees(m_config.m_localRotation),
+                m_config.m_localPosition);
+            const AZ::Vector3 jointWorldPosition = PhysX::Utils::ComputeJointWorldTransform(jointLocalTransform, followerWorldTransform).GetTranslation();
+
+            const float distance = followerWorldPosition.GetDistance(jointWorldPosition);
+
+            const float lineWidth = 4.0f;
+
+            AZ::u32 stateBefore = debugDisplay.GetState();
+            debugDisplay.DepthTestOff();
+            debugDisplay.SetColor(leadLineColor);
+            debugDisplay.SetLineWidth(lineWidth);
+
+            if (distance < displayData.m_jointHierarchyDistanceThreshold)
+            {
+                const AZ::Transform leadWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(GetEntity()->GetTransform()->GetParentId());
+                const AZ::Vector3 leadWorldPosition = leadWorldTransform.GetTranslation();
+
+                const AZ::Vector3 midPoint = (jointWorldPosition + leadWorldPosition) * 0.5f;
+
+                debugDisplay.DrawLine(jointWorldPosition, midPoint);
+                debugDisplay.SetColor(followerLineColor);
+                debugDisplay.DrawLine(midPoint, leadWorldPosition);
+            }
+            else
+            {
+                const AZ::Vector3 midPoint = (jointWorldPosition + followerWorldPosition) * 0.5f;
+
+                debugDisplay.DrawLine(jointWorldPosition, midPoint);
+                debugDisplay.SetColor(followerLineColor);
+                debugDisplay.DrawLine(midPoint, followerWorldPosition);
+            }
+
+            debugDisplay.SetState(stateBefore);
+        }
+    }
+
+    void EditorArticulationLinkComponent::ShowHingeJoint(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) const
+    {
+        const float s_alpha = 0.6f;
+        const AZ::Color s_colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, s_alpha);
+        const AZ::Color s_colorFirst = AZ::Color(1.0f, 0.0f, 0.0f, s_alpha);
+        const AZ::Color s_colorSecond = AZ::Color(0.0f, 1.0f, 0.0f, s_alpha);
+        const AZ::Color s_colorSweepArc = AZ::Color(1.0f, 1.0f, 1.0f, s_alpha);
+
+        AngleLimitsFloatPair currentValue(m_config.m_angularLimitPositive, m_config.m_angularLimitNegative);
+        AZ::Vector3 axis = AZ::Vector3::CreateAxisX();
+
+        const AZ::EntityId& entityId = GetEntityId();
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateFromEulerAnglesDegrees(m_config.m_localRotation), m_config.m_localPosition);
+        const AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) * jointLocalTransform;
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
+
+        const float size = 2.0f * scaleMultiply;
+
+        AZ::u32 stateBefore = debugDisplay.GetState();
+        debugDisplay.CullOff();
+        debugDisplay.SetAlpha(s_alpha);
+
+        debugDisplay.PushMatrix(jointWorldTransform);
+
+        // draw a cylinder to indicate the axis of revolution.
+        const float cylinderThickness = 0.05f * scaleMultiply;
+        debugDisplay.SetColor(s_colorFirst);
+        debugDisplay.DrawSolidCylinder(AZ::Vector3::CreateZero(), AZ::Vector3::CreateAxisX(), cylinderThickness, size, true);
+
+        if (m_config.m_isLimited)
+        {
+            // if we are angularly limited, then show the limits, with an arc between them:
+            AZ::Vector3 axisPoint = axis * size * 0.5f;
+
+            AZ::Vector3 points[4] = { -axisPoint, axisPoint, axisPoint, -axisPoint };
+
+            if (axis == AZ::Vector3::CreateAxisX())
+            {
+                points[2].SetZ(size);
+                points[3].SetZ(size);
+            }
+            else if (axis == AZ::Vector3::CreateAxisY())
+            {
+                points[2].SetX(size);
+                points[3].SetX(size);
+            }
+            else if (axis == AZ::Vector3::CreateAxisZ())
+            {
+                points[2].SetX(size);
+                points[3].SetX(size);
+            }
+
+            debugDisplay.SetColor(s_colorSweepArc);
+            const float sweepLineDisplaceFactor = 0.5f;
+            const float sweepLineThickness = 1.0f * scaleMultiply;
+            const float sweepLineGranularity = 1.0f;
+            const AZ::Vector3 zeroVector = AZ::Vector3::CreateZero();
+            const AZ::Vector3 posPosition = axis * sweepLineDisplaceFactor * scaleMultiply;
+            const AZ::Vector3 negPosition = -posPosition;
+            debugDisplay.DrawArc(posPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(zeroVector, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(negPosition, sweepLineThickness, -currentValue.first, currentValue.first, sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(posPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(zeroVector, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+            debugDisplay.DrawArc(negPosition, sweepLineThickness, 0.0f, abs(currentValue.second), sweepLineGranularity, -axis);
+
+            AZ::Quaternion firstRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.first));
+            AZ::Transform firstTM = AZ::Transform::CreateFromQuaternion(firstRotate);
+            debugDisplay.PushMatrix(firstTM);
+            debugDisplay.SetColor(s_colorFirst);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+            debugDisplay.PopMatrix();
+
+            AZ::Quaternion secondRotate = AZ::Quaternion::CreateFromAxisAngle(axis, AZ::DegToRad(currentValue.second));
+            AZ::Transform secondTM = AZ::Transform::CreateFromQuaternion(secondRotate);
+            debugDisplay.PushMatrix(secondTM);
+            debugDisplay.SetColor(s_colorSecond);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+            debugDisplay.PopMatrix();
+
+            debugDisplay.SetColor(s_colorDefault);
+            debugDisplay.DrawQuad(points[0], points[1], points[2], points[3]);
+        }
+        else // if we are not limited, show direction of revolve instead
+        {
+            debugDisplay.SetColor(s_colorSweepArc);
+            const float circleRadius = 0.6f * scaleMultiply;
+            const float coneRadius = 0.05 * scaleMultiply;
+            const float coneHeight = 0.2f * scaleMultiply;
+            debugDisplay.DrawCircle(AZ::Vector3::CreateZero(), 1.0f * circleRadius, 0);
+            // show tick-marks on the revolve axis that indicate the positive direction of revolution
+            AZ::Vector3 pointOnCircle = circleRadius * AZ::Vector3::CreateAxisY();
+            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisZ(), coneRadius, coneHeight);
+            pointOnCircle = -circleRadius * AZ::Vector3::CreateAxisY();
+            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisZ(), coneRadius, coneHeight);
+
+            pointOnCircle = circleRadius * AZ::Vector3::CreateAxisZ();
+            debugDisplay.DrawWireCone(pointOnCircle, AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
+            pointOnCircle = -circleRadius * AZ::Vector3::CreateAxisZ();
+            debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
+        }
+
+        debugDisplay.PopMatrix(); // pop joint world transform
+        debugDisplay.SetState(stateBefore);
+    }
+
+    void EditorArticulationLinkComponent::ShowPrismaticJoint(
+        const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay) const
+    {
+        const float alpha = 0.6f;
+        const AZ::Color colorDefault = AZ::Color(1.0f, 1.0f, 1.0f, alpha);
+        const AZ::Color colorLimitLower = AZ::Color(1.0f, 0.0f, 0.0f, alpha);
+        const AZ::Color colorLimitUpper = AZ::Color(0.0f, 1.0f, 0.0f, alpha);
+
+        AZ::u32 stateBefore = debugDisplay.GetState();
+        debugDisplay.CullOff();
+        debugDisplay.SetAlpha(alpha);
+
+        const AZ::EntityId& entityId = GetEntityId();
+
+        const AZ::Transform jointLocalTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+            AZ::Quaternion::CreateFromEulerAnglesDegrees(m_config.m_localRotation), m_config.m_localPosition);
+        const AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) * jointLocalTransform;
+
+        const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
+        // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
+
+        const float size = 1.0f * scaleMultiply;
+
+        debugDisplay.PushMatrix(jointWorldTransform);
+
+        debugDisplay.SetColor(colorDefault);
+        debugDisplay.DrawLine(AZ::Vector3::CreateAxisX(m_config.m_linearLimitLower), AZ::Vector3::CreateAxisX(m_config.m_linearLimitUpper));
+
+        debugDisplay.SetColor(colorLimitLower);
+        debugDisplay.DrawQuad(
+            AZ::Vector3(m_config.m_linearLimitLower, -size, -size),
+            AZ::Vector3(m_config.m_linearLimitLower, -size, size),
+            AZ::Vector3(m_config.m_linearLimitLower, size, size),
+            AZ::Vector3(m_config.m_linearLimitLower, size, -size));
+
+        debugDisplay.SetColor(colorLimitUpper);
+        debugDisplay.DrawQuad(
+            AZ::Vector3(m_config.m_linearLimitUpper, -size, -size),
+            AZ::Vector3(m_config.m_linearLimitUpper, -size, size),
+            AZ::Vector3(m_config.m_linearLimitUpper, size, size),
+            AZ::Vector3(m_config.m_linearLimitUpper, size, -size));
+
+        debugDisplay.PopMatrix(); // pop joint world transform
+        debugDisplay.SetState(stateBefore);
     }
 } // namespace PhysX
