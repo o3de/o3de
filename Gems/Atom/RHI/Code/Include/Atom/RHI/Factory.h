@@ -131,7 +131,7 @@ namespace AZ
             virtual APIPriority GetDefaultPriority() = 0;
 
             //! Returns true if the factory supports XR api
-            virtual bool SupportXR() const = 0;
+            virtual bool SupportsXR() const = 0;
 
             //! Purpose: The API Unique Index will be encoded in the 2 Most Significant Bits of a ShaderVariantAsset ProductSubId (a 32bits integer). 
             //! Returns a number in the range [0..3].

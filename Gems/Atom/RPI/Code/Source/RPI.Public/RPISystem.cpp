@@ -84,14 +84,14 @@ namespace AZ
             if (m_xrSystem)
             {
                 AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // UnRegister xr system if a Fail resultcode is returned
+                // UnRegister xr system if a Fail ResultCode is returned
                 if (resultCode == AZ::RHI::ResultCode::Fail)
                 {
                     UnregisterXRSystem();
                     AZ_Error(
                         "RPISystem",
                         resultCode == AZ::RHI::ResultCode::Success,
-                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled or a non vulkan rhi in use.");
+                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled.");
                 }
             }
 

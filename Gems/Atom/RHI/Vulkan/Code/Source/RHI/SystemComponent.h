@@ -42,7 +42,7 @@ namespace AZ
             RHI::APIType GetType() override;
             RHI::APIPriority GetDefaultPriority() override;
             uint32_t GetAPIUniqueIndex() const override { return APIUniqueIndex; }
-            bool SupportXR() const override;
+            bool SupportsXR() const override;
             RHI::PhysicalDeviceList EnumeratePhysicalDevices() override;
             RHI::Ptr<RHI::Buffer> CreateBuffer() override;
             RHI::Ptr<RHI::BufferPool> CreateBufferPool() override;

@@ -121,7 +121,7 @@ namespace AZ
             return Vulkan::RHIType;
         }
 
-        bool SystemComponent::SupportXR() const
+        bool SystemComponent::SupportsXR() const
         {
             // Vulkan RHI supports Openxr
             return true;

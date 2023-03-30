@@ -96,7 +96,7 @@ namespace AZ
             return RHI::APITopPriority;
         }
 
-        bool SystemComponent::SupportXR() const
+        bool SystemComponent::SupportsXR() const
         {
             //DX12 RHI does not support XR api
             return false;

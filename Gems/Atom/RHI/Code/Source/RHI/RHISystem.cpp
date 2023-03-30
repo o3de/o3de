@@ -319,7 +319,7 @@ namespace AZ
         bool RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)
         {
             AZ_Assert(!m_xrSystem, "XR System is already registered");
-            if (RHI::Factory::Get().SupportXR())
+            if (RHI::Factory::Get().SupportsXR())
             {
                 m_xrSystem = xrRenderingInterface;
                 return true;

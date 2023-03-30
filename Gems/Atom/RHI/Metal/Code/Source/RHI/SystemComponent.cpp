@@ -87,7 +87,7 @@ namespace AZ
             return RHI::APITopPriority;
         }
 
-        bool SystemComponent::SupportXR() const
+        bool SystemComponent::SupportsXR() const
         {
             // Metal RHI does not support any xr api
             return false;

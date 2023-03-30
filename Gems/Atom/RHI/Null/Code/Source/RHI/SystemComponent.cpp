@@ -87,7 +87,7 @@ namespace AZ
             return RHI::APILowPriority;
         }
 
-        bool SystemComponent::SupportXR() const
+        bool SystemComponent::SupportsXR() const
         {
             return false;
         }

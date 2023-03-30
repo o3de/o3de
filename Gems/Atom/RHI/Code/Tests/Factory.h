@@ -38,7 +38,7 @@ namespace UnitTest
 
         uint32_t GetAPIUniqueIndex() const override { return 0; }
 
-        bool SupportXR() const override;
+        bool SupportsXR() const override;
 
         AZ::RHI::PhysicalDeviceList EnumeratePhysicalDevices() override;
 
