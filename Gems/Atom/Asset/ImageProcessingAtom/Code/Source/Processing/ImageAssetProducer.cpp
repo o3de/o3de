@@ -245,6 +245,7 @@ namespace ImageProcessingAtom
                 });
 
                 AssetBuilderSDK::JobProduct jsonProduct(folder);
+                jsonProduct.m_productSubID = product.m_productSubID + 1;
                 m_jobProducts.push_back(AZStd::move(jsonProduct));
             }
         }

@@ -102,7 +102,7 @@ namespace AzToolsFramework
             case Qt::DisplayRole:
                 if (orientation == Qt::Horizontal)
                 {
-                    section += section ? static_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                    section += section ? aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
                     return tr(AssetBrowserEntry::m_columnNames[section]);
                 }
                 break;
