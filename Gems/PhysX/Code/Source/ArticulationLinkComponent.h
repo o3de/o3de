@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <PhysX/ArticulationJointBus.h>
+#include <PhysX/ArticulationSensorBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/UserDataTypes.h>
@@ -35,6 +36,7 @@ namespace PhysX
         , private AZ::TransformNotificationBus::Handler
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         , public PhysX::ArticulationJointRequestBus::Handler
+        , public PhysX::ArticulationSensorRequestBus::Handler
 #endif
     {
     public:
@@ -73,6 +75,12 @@ namespace PhysX
         float GetFrictionCoefficient() const override;
         void SetMaxJointVelocity(float maxJointVelocity) override;
         float GetMaxJointVelocity() const override;
+
+        // ArticulationSensorRequestBus overrides ...
+        AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const override;
+        void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
+        AZ::Vector3 GetForce(AZ::u32 sensorIndex) const override;
+        AZ::Vector3 GetTorque(AZ::u32 sensorIndex) const override;
 #endif
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
         const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
@@ -84,6 +92,9 @@ namespace PhysX
     private:
         bool IsRootArticulation() const;
         const AZ::Entity* GetArticulationRootEntity() const;
+
+        const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
+        physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
 
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         void CreateArticulation();

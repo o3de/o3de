@@ -588,5 +588,79 @@ namespace PhysX
         }
         return 0.0f;
     }
+
+    const physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex) const
+    {
+        if (sensorIndex >= m_sensorIndices.size())
+        {
+            AZ_ErrorOnce(
+                "Articulation Link Component", false, "Invalid sensor index (%i) for entity %s", sensorIndex, GetEntity()->GetName().c_str());
+            return nullptr;
+        }
+
+        AZ::u32 internalIndex = m_sensorIndices[sensorIndex];
+        if (!m_link)
+        {
+            AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
+            return nullptr;
+        }
+
+        auto& articulation = m_link->getArticulation();            
+        const auto numSensors = articulation.getNbSensors();
+        if (internalIndex >= numSensors)
+        {
+            AZ_ErrorOnce(
+                "Articulation Link Component",
+                false,
+                "Invalid internal sensor index (%i) for entity %s",
+                sensorIndex,
+                GetEntity()->GetName().c_str());
+            return nullptr;
+        }
+
+        physx::PxArticulationSensor* sensor;
+        articulation.getSensors(&sensor, 1, internalIndex);
+        return sensor;
+    }
+
+    physx::PxArticulationSensor* ArticulationLinkComponent::GetSensor(AZ::u32 sensorIndex)
+    {
+        return const_cast<physx::PxArticulationSensor*>(static_cast<const ArticulationLinkComponent&>(*this).GetSensor(sensorIndex));
+    }
+
+    AZ::Transform ArticulationLinkComponent::GetSensorTransform(AZ::u32 sensorIndex) const
+    {
+        if (auto* sensor = GetSensor(sensorIndex))
+        {
+            return PxMathConvert(sensor->getRelativePose());
+        }
+        return AZ::Transform::CreateIdentity();
+    }
+
+    void ArticulationLinkComponent::SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform)
+    {
+        if (auto* sensor = GetSensor(sensorIndex))
+        {
+            sensor->setRelativePose(PxMathConvert(sensorTransform));
+        }
+    }
+
+    AZ::Vector3 ArticulationLinkComponent::GetForce(AZ::u32 sensorIndex) const
+    {
+        if (auto* sensor = GetSensor(sensorIndex))
+        {
+            return PxMathConvert(sensor->getForces().force);
+        }
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector3 ArticulationLinkComponent::GetTorque(AZ::u32 sensorIndex) const
+    {
+        if (auto* sensor = GetSensor(sensorIndex))
+        {
+            return PxMathConvert(sensor->getForces().torque);
+        }
+        return AZ::Vector3::CreateZero();
+    }
 #endif
 } // namespace PhysX
