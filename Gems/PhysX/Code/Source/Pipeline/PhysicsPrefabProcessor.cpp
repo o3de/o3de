@@ -59,18 +59,18 @@ namespace PhysX
         // If the entity has a parent then it's not a root articulation and we fill the joint information.
         if (parentLinkData)
         {
-            linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+            linkData->m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_localRotation),
                 articulationLinkComponent->m_config.m_localPosition);
 
             if (articulationLinkComponent->m_config.m_autoCalculateLeadFrame)
             {
-                linkData->m_articulationJointData.m_jointLeadLocalFrame =
-                    linkData->m_localTransform * linkData->m_articulationJointData.m_jointFollowerLocalFrame;
+                linkData->m_jointLeadLocalFrame =
+                    linkData->m_localTransform * linkData->m_jointFollowerLocalFrame;
             }
             else
             {
-                linkData->m_articulationJointData.m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+                linkData->m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                     AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_leadLocalPosition),
                     articulationLinkComponent->m_config.m_leadLocalPosition);
             }

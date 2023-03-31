@@ -102,6 +102,11 @@ namespace PhysX
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::Activate()
     {
+        auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get();
+        if (!sceneInterface)
+        {
+            return;
+        }
         // set the transform to not update when the parent's transform changes, to avoid conflict with physics transform updates
         GetEntity()->GetTransform()->SetOnParentChangedBehavior(AZ::OnParentChangedBehavior::DoNotUpdate);
 
@@ -113,10 +118,7 @@ namespace PhysX
 
             if (m_attachedSceneHandle != AzPhysics::InvalidSceneHandle)
             {
-                if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-                {
-                    sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
-                }
+                sceneInterface->RegisterSceneSimulationFinishHandler(m_attachedSceneHandle, m_sceneFinishSimHandler);
 
                 CreateArticulation();
                 m_link = GetArticulationLink(GetEntityId());
@@ -131,16 +133,20 @@ namespace PhysX
             const auto* articulationRootEntity = GetArticulationRootEntity();
             if (articulationRootEntity)
             {
-                const auto rootArticulationLinkComponent = articulationRootEntity->FindComponent<ArticulationLinkComponent>();
-                if (rootArticulationLinkComponent)
+                auto* rootArticulationLinkComponent = articulationRootEntity->FindComponent<ArticulationLinkComponent>();
+                AZ_Assert(rootArticulationLinkComponent, "Articulation root has to have ArticulationLinkComponent");
+
+                m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
+
+                AzPhysics::Scene* scene = sceneInterface->GetScene(rootArticulationLinkComponent->m_attachedSceneHandle);
+                auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
+                if (m_link && pxScene)
                 {
-                    m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
-                    if (m_link)
-                    {
-                        m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
-                    }
-                    m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
+                    PHYSX_SCENE_READ_LOCK(pxScene);
+                    m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
                 }
+
+                m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
             }
         }
 
@@ -250,6 +256,8 @@ namespace PhysX
 
         m_articulation->setArticulationFlags(articulationFlags);
 
+        m_articulation->setSolverIterationCounts(
+            rootLinkConfiguration.m_solverPositionIterations, rootLinkConfiguration.m_solverVelocityIterations);
         // TODO: Expose these in the configuration
         //      eDRIVE_LIMITS_ARE_FORCES //!< Limits for drive effort are forces and torques rather than impulses
         //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
@@ -302,9 +310,9 @@ namespace PhysX
             physx::PxArticulationJointReducedCoordinate* inboundJoint =
                 thisPxLink->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
             // Sets the joint pose in the lead link actor frame.
-            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointLeadLocalFrame));
+            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_jointLeadLocalFrame));
             // Sets the joint pose in the follower link actor frame.
-            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointFollowerLocalFrame));
+            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_jointFollowerLocalFrame));
             // Sets the joint type and limits.
             switch (articulationLinkConfiguration.m_articulationJointType)
             {
