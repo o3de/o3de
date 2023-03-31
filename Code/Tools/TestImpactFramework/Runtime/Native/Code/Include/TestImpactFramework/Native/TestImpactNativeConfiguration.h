@@ -12,6 +12,14 @@
 
 namespace TestImpact
 {
+    //! Temporary workspace configuration.
+    struct NativeShardedArtifactDir
+    {
+        RepoPath m_shardedTestRunArtifactDirectory; //!< Path to read and write sharded test run artifacts to and from.
+        RepoPath m_shardedCoverageArtifactDirectory; //!< Path to read and write coverage artifacts to and from.
+    };
+
+
     //! Test engine configuration.
     struct NativeTestEngineConfig
     {
@@ -40,23 +48,16 @@ namespace TestImpact
     //! Build target configuration.
     struct NativeTargetConfig
     {
-        //! Test target sharding configuration.
-        struct ShardedTarget
-        {
-            AZStd::string m_name; //!< Name of test target this sharding configuration applies to.
-            ShardConfiguration m_configuration; //!< The shard configuration to use.
-        };
-
         RepoPath m_outputDirectory; //!< Path to the test target binary directory.
-        NativeExcludedTargets m_excludedTargets;
-        AZStd::vector<ShardedTarget> m_shardedTestTargets; //!< Test target shard configurations (opt-in).
+        NativeExcludedTargets m_excludedTargets; //!< Test targets to exclude from regular and/or instrumented runs.
     };
 
     //! Native runtime configuration.
     struct NativeRuntimeConfig
     {
         RuntimeConfig m_commonConfig;
-        WorkspaceConfig m_workspace;    
+        WorkspaceConfig m_workspace;
+        NativeShardedArtifactDir m_shardedArtifactDir;
         NativeTestEngineConfig m_testEngine;
         NativeTargetConfig m_target;
     };

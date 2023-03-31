@@ -53,12 +53,17 @@ namespace AZ
 
         void FullscreenTrianglePass::OnShaderReinitialized(const Shader&)
         {
-            UpdateSrgs();
+            LoadShader();
         }
 
         void FullscreenTrianglePass::OnShaderAssetReinitialized(const Data::Asset<ShaderAsset>&)
         {
-            UpdateSrgs();
+            LoadShader();
+        }
+
+        void FullscreenTrianglePass::OnShaderVariantReinitialized(const ShaderVariant&)
+        {
+            LoadShader();
         }
 
         void FullscreenTrianglePass::LoadShader()

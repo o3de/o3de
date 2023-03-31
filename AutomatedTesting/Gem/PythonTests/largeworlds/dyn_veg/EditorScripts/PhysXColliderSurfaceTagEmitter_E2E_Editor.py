@@ -171,8 +171,8 @@ def PhysXColliderSurfaceTagEmitter_E2E_Editor():
 
     # Setup collider entity with a PhysX Mesh
     test_physx_mesh_asset_id = asset.AssetCatalogRequestBus(
-        bus.Broadcast, "GetAssetIdByPath", os.path.join("levels", "physics",
-                                                        "Material_PerFaceMaterialGetsCorrectMaterial",
+        bus.Broadcast, "GetAssetIdByPath", os.path.join("assets", "objects",
+                                                        "pxmesh",
                                                         "test.pxmesh"), math.Uuid(), False)
     collider_entity.remove_component(PHYSX_PRIMITIVE_COLLIDER)
     collider_entity.add_component(PHYSX_MESH_COLLIDER)
