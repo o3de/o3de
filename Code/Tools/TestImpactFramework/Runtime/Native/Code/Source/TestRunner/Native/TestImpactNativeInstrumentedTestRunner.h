@@ -20,10 +20,13 @@
 
 namespace TestImpact
 {
+    class NativeInstrumentedTestRunJobInfoGenerator;
+
     class NativeInstrumentedTestRunner
         : public TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>
     {
     public:
+        using JobInfoGenerator = NativeInstrumentedTestRunJobInfoGenerator;
         using TestRunnerWithCoverage<NativeTestRunJobData<TestRunWithCoverageJobData>, TestCoverage>::TestRunnerWithCoverage;
 
     protected:

@@ -485,6 +485,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
 
@@ -706,6 +711,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent();
@@ -733,6 +743,8 @@ namespace AZ
                     }
                 }
             }
+
+            m_numActiveRenderPipelines = aznumeric_cast<uint16_t>(activePipelines.size());
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
             if (m_pipelineStatesLookupNeedsRebuild)
@@ -879,6 +891,11 @@ namespace AZ
 
         void Scene::UpdateSrgs()
         {
+            if (!m_activated)
+            {
+                return;
+            }
+
             PrepareSceneSrg();
 
             for (auto& view : m_renderPacket.m_views)

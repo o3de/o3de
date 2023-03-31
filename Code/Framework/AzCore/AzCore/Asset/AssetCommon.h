@@ -220,10 +220,9 @@ namespace AZ
          * Setting for each reference (Asset<T>) to control loading of referenced assets during serialization.
          */
         AZ_ENUM_WITH_UNDERLYING_TYPE(AssetLoadBehavior, u8,
-            (PreLoad, 0),          ///< Serializer will "Pre load" dependencies, asset containers may load in parallel but will not signal AssetReady
-            (QueueLoad, 1),        ///< Serializer will queue an asynchronous load of the referenced asset and return the object to the user. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-            (NoLoad, 2),           ///< Serializer will load reference information, but asset loading will be left to the user. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
-                                   ///< AssetContainers will skip NoLoad dependencies
+            (PreLoad, 0),          ///< Specifies the asset should be loaded automatically and that it will be required to finish loading before the parent (asset depending on this asset) can be considered "ready" (OnReady only fires when the asset and all it's PreLoad dependencies are loaded)
+            (QueueLoad, 1),        ///< Specifies the asset should be loaded automatically but the parent (asset depending on this asset) will not wait for it and can be considered ready without this asset. User code should use the \ref AZ::Data::AssetBus to monitor for when it's ready.
+            (NoLoad, 2),           ///< Specifies the asset should not be loaded automatically. User code should call Asset<T>::QueueLoad and use the \ref AZ::Data::AssetBus to monitor for when it's ready.
             Count,
             (Default, QueueLoad)
         );

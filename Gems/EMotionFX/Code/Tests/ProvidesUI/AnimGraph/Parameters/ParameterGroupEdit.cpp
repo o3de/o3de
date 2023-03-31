@@ -115,9 +115,8 @@ namespace EMotionFX
 
         // Set the text for the textbox to edit AnimGraph Node name
         auto lineEdit = static_cast<AzToolsFramework::PropertyStringLineEditCtrl*>(propertyRow->GetChildWidget());
-        AZStd::string newName = "DiffGroup";
-        lineEdit->setValue(newName);
-        lineEdit->valueChanged(newName);
+        QString newName = "DiffGroup";
+        lineEdit->UpdateValue(newName);
         groupEditWidget->accept();
 
         // Verify that name was changed

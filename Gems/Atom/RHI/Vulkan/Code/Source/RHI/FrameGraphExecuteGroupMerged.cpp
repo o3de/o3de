@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom/RHI/Factory.h>
 #include <RHI/FrameGraphExecuteGroupMerged.h>
 #include <RHI/Scope.h>
 #include <RHI/SwapChain.h>
@@ -61,11 +62,20 @@ namespace AZ
         {
             m_commandList = AcquireCommandList(VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             m_commandList->BeginCommandBuffer();
+            if (r_gpuMarkersMergeGroups)
+            {
+                m_commandList->BeginDebugLabel(m_commandList->GetName().GetCStr());
+            }
+            
             m_workRequest.m_commandList = m_commandList;
         }
 
         void FrameGraphExecuteGroupMerged::EndInternal()
         {
+            if (r_gpuMarkersMergeGroups)
+            {
+                m_commandList->EndDebugLabel();
+            }
             m_commandList->EndCommandBuffer();
         }
 
@@ -76,6 +86,8 @@ namespace AZ
             AZ_Assert(static_cast<uint32_t>(m_lastCompletedScope + 1) == contextIndex, "Contexts must be recorded in order!");
 
             const Scope* scope = m_scopes[contextIndex];
+            m_commandList->SetName(m_mergedCommandListName);
+            m_commandList->BeginDebugLabel(scope->GetMarkerLabel().data());
             context.SetCommandList(*m_commandList);
 
             scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Aliasing);
@@ -111,6 +123,8 @@ namespace AZ
             scope->ResolveMSAAAttachments(*commandList);
             scope->End(*commandList);
             scope->EmitScopeBarriers(*m_commandList, Scope::BarrierSlot::Epilogue);
+
+            commandList->EndDebugLabel();
         }
 
         AZStd::span<const Scope* const> FrameGraphExecuteGroupMerged::GetScopes() const

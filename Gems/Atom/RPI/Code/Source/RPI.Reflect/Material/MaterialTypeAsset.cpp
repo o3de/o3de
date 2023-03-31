@@ -76,6 +76,27 @@ namespace AZ
             AssetInitBus::Handler::BusDisconnect();
         }
 
+        bool MaterialTypeAsset::InitializeNonSerializedData()
+        {
+            if (m_isNonSerializedDataInitialized)
+            {
+                return true;
+            }
+            if (!m_generalShaderCollection.InitializeShaderOptionGroups())
+            {
+                return false;
+            }
+            for (auto& materialPipelinePair : m_materialPipelinePayloads)
+            {
+                if (!materialPipelinePair.second.m_shaderCollection.InitializeShaderOptionGroups())
+                {
+                    return false;
+                }
+            }
+            m_isNonSerializedDataInitialized = true;
+            return true;
+        }
+
         const ShaderCollection& MaterialTypeAsset::GetGeneralShaderCollection() const
         {
             return m_generalShaderCollection;
@@ -210,6 +231,9 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
+            [[maybe_unused]] bool success = InitializeNonSerializedData();
+            AZ_Assert(success, "Failed to InitializeNonSerializedData");
+
             for (const auto& shaderItem : m_generalShaderCollection)
             {
                 Data::AssetBus::MultiHandler::BusConnect(shaderItem.GetShaderAsset().GetId());
@@ -227,33 +251,17 @@ namespace AZ
 
             return true;
         }
-
-        template<typename AssetDataT>
-        void TryReplaceAsset(Data::Asset<AssetDataT>& assetToReplace, const Data::Asset<Data::AssetData>& newAsset)
-        {
-            if (assetToReplace.GetId() == newAsset.GetId())
-            {
-                assetToReplace = newAsset;
-            }
-        }
         
         void MaterialTypeAsset::ReinitializeAsset(Data::Asset<Data::AssetData> asset)
         {
             // The order of asset reloads is non-deterministic. If the MaterialTypeAsset reloads before these
             // dependency assets, this will make sure the MaterialTypeAsset gets the latest ones when they reload.
             // Or in some cases a these assets could get updated and reloaded without reloading the MaterialTypeAsset at all.
-
-            for (auto& shaderItem : m_generalShaderCollection)
-            {
-                TryReplaceAsset(shaderItem.m_shaderAsset, asset);
-            }
+            m_generalShaderCollection.TryReplaceShaderAsset(asset);
 
             for (auto& materialPipelinePair : m_materialPipelinePayloads)
             {
-                for (auto& shaderItem : materialPipelinePair.second.m_shaderCollection)
-                {
-                    TryReplaceAsset(shaderItem.m_shaderAsset, asset);
-                }
+                materialPipelinePair.second.m_shaderCollection.TryReplaceShaderAsset(asset);
             }
         }
 
