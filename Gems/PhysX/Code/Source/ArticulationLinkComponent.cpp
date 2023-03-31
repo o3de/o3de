@@ -119,6 +119,8 @@ namespace PhysX
                 }
 
                 CreateArticulation();
+                m_link = GetArticulationLink(GetEntityId());
+                m_sensorIndices = GetSensorIndices(GetEntityId());
             }
         }
         else
