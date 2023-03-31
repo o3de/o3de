@@ -28,11 +28,10 @@ namespace PhysX
     struct ArticulationSensorConfiguration
     {
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(ArticulationSensorConfiguration, "{83960469-C92D-405D-B12E-EB235BCFFECA}");
+        AZ_TYPE_INFO(ArticulationSensorConfiguration, "{83960469-C92D-405D-B12E-EB235BCFFECA}");
         static void Reflect(AZ::ReflectContext* context);
 
         ArticulationSensorConfiguration() = default;
-        virtual ~ArticulationSensorConfiguration() = default;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero(); //!< Position of the sensor relative to its link.
         AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Euler angle rotation of the sensor relative to its link.

@@ -51,6 +51,7 @@ namespace PhysX
         }
 
         auto* articulationLinkComponent = entity->FindComponent<ArticulationLinkComponent>();
+        AZ_Assert(articulationLinkComponent, "Entity being proceessed for articulation has not articulation link component.");
         linkData->m_articulationLinkConfiguration = articulationLinkComponent->m_config;
         linkData->m_articulationLinkConfiguration.m_entityId = entity->GetId();
         linkData->m_articulationLinkConfiguration.m_debugName = entity->GetName();
@@ -58,8 +59,6 @@ namespace PhysX
         // If the entity has a parent then it's not a root articulation and we fill the joint information.
         if (parentLinkData)
         {
-            AZ_Assert(articulationLinkComponent, "Entity being proceessed for articulation has not articulation link component.");
-
             linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_localRotation),
                 articulationLinkComponent->m_config.m_localPosition);

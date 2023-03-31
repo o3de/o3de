@@ -193,17 +193,18 @@ namespace PhysX
         pxScene->addArticulation(*m_articulation);
 
         const AZ::u32 numSensors = m_articulation->getNbSensors();
-        physx::PxArticulationSensor* sensor;
         for (AZ::u32 sensorIndex = 0; sensorIndex < numSensors; sensorIndex++)
         {
+            physx::PxArticulationSensor* sensor = nullptr;
             m_articulation->getSensors(&sensor, 1, sensorIndex);
             ActorData* linkActorData = Utils::GetUserData(sensor->getLink());
             if (linkActorData)
             {
                 const auto entityId = linkActorData->GetEntityId();
-                if (m_sensorIndicesByEntityId.contains(entityId))
+                if (auto iterator = m_sensorIndicesByEntityId.find(entityId);
+                    iterator != m_sensorIndicesByEntityId.end())
                 {
-                    m_sensorIndicesByEntityId[entityId].push_back(sensor->getIndex());
+                    iterator->second.push_back(sensor->getIndex());
                 }
                 else
                 {
@@ -608,14 +609,14 @@ namespace PhysX
             return nullptr;
         }
 
-        AZ::u32 internalIndex = m_sensorIndices[sensorIndex];
         if (!m_link)
         {
             AZ_ErrorOnce("Articulation Link Component", false, "Invalid link pointer for entity %s", GetEntity()->GetName().c_str());
             return nullptr;
         }
 
-        auto& articulation = m_link->getArticulation();            
+        AZ::u32 internalIndex = m_sensorIndices[sensorIndex];
+        auto& articulation = m_link->getArticulation();
         const auto numSensors = articulation.getNbSensors();
         if (internalIndex >= numSensors)
         {
