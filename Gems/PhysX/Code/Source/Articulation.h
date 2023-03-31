@@ -68,6 +68,7 @@ namespace PhysX
         //! so there's no way to query their local transform.
         AZ::Transform m_localTransform = AZ::Transform::CreateIdentity();
 
+        //! Extra data for the articulation joint that is not in the link configuration. (to be removed)
         ArticulationJointData m_articulationJointData;
 
         //! List of child links. Together this forms a tree-like data structure representing the entire articulation.

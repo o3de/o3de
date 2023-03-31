@@ -130,6 +130,9 @@ namespace AZ
             //! Returns the default priority of the factory in case there's no priorities set in the FactoryManager.
             virtual APIPriority GetDefaultPriority() = 0;
 
+            //! Returns true if the factory supports XR api
+            virtual bool SupportsXR() const = 0;
+
             //! Purpose: The API Unique Index will be encoded in the 2 Most Significant Bits of a ShaderVariantAsset ProductSubId (a 32bits integer). 
             //! Returns a number in the range [0..3].
             //! In theory any given AssetBuilderSdk::PlatformInfo can support several RHI::APITypes.
