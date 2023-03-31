@@ -57,9 +57,10 @@ namespace AZ
 
                 // Add the resident usage now that everything succeeded.
                 RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
+                // D2D12MA allocates memory in 64MB heaps that are shared between all BufferPools, 
+                // so this number is a reasonable approximation of how much memory this BufferPool has resident.
                 heapMemoryUsage.m_totalResidentInBytes += sizeAllocated;
                 heapMemoryUsage.m_usedResidentInBytes += sizeAllocated;
-                heapMemoryUsage.m_uniqueAllocationBytes += sizeAllocated;
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);
