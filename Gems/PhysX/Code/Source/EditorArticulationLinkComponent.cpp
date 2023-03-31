@@ -51,8 +51,8 @@ namespace PhysX
                     ->DataElement(
                         0,
                         &ArticulationLinkConfiguration::m_selfCollide,
-                        "Lead-Follower Collide",
-                        "When active, the lead and follower pair will collide with each other.")
+                        "Self Collide",
+                        "Enable collisions between the articulation's links (note that parent/child collisions are disabled internally in either case).")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Rigid Body configuration")
