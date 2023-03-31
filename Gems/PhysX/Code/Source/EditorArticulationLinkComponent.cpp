@@ -221,12 +221,18 @@ namespace PhysX
             {
                 constexpr const char* ToolTip = "Articulated rigid body.";
 
+                AZStd::vector<AZ::Crc32> componentMenus;
+                if (ReducedCoordinateArticulationsEnabled())
+                {
+                    componentMenus.push_back(AZ::Crc32("Game"));
+                }
+
                 editContext->Class<EditorArticulationLinkComponent>("PhysX Articulation Link", ToolTip)
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
                     ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/PhysXRigidBody.svg")
                     ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/PhysXRigidBody.svg")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("Game"))
+                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, componentMenus)
                     ->Attribute(AZ::Edit::Attributes::HelpPageURL, "")
 
                     ->DataElement(

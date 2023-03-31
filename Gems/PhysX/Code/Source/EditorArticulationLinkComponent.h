@@ -9,14 +9,32 @@
 #pragma once
 
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentBase.h>
 #include <Editor/EditorJointConfiguration.h>
-#include <Source/EditorRigidBodyComponent.h>
 #include <Source/Articulation/ArticulationLinkConfiguration.h>
+#include <Source/EditorRigidBodyComponent.h>
 
 namespace PhysX
 {
+    //! Feature flag for work in progress on PhysX reduced co-ordinate articulations (see https://github.com/o3de/sig-simulation/issues/60).
+    constexpr AZStd::string_view ReducedCoordinateArticulationsFlag = "/Amazon/Physics/EnableReducedCoordinateArticulations";
+
+    //! Helper function for checking whether feature flag for in progress PhysX reduced co-ordinate articulations work is enabled.
+    //! See https://github.com/o3de/sig-simulation/issues/60 for more details.
+    inline bool ReducedCoordinateArticulationsEnabled()
+    {
+        bool reducedCoordinateArticulationsEnabled = false;
+
+        if (auto* registry = AZ::SettingsRegistry::Get())
+        {
+            registry->Get(reducedCoordinateArticulationsEnabled, ReducedCoordinateArticulationsFlag);
+        }
+
+        return reducedCoordinateArticulationsEnabled;
+    }
+
     class EditorArticulationLinkComponent;
 
     //! Configuration data for EditorRigidBodyComponent.
