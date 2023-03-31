@@ -19,7 +19,7 @@
 namespace PhysX
 {
     //! Feature flag for work in progress on PhysX reduced co-ordinate articulations (see https://github.com/o3de/sig-simulation/issues/60).
-    constexpr AZStd::string_view ReducedCoordinateArticulationsFlag = "/Amazon/Preferences/EnableReducedCoordinateArticulations";
+    constexpr AZStd::string_view ReducedCoordinateArticulationsFlag = "/Amazon/Physics/EnableReducedCoordinateArticulations";
 
     //! Helper function for checking whether feature flag for in progress PhysX reduced co-ordinate articulations work is enabled.
     //! See https://github.com/o3de/sig-simulation/issues/60 for more details.
