@@ -135,10 +135,20 @@ namespace PhysX
                 }
             }
         }
+
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        ArticulationJointRequestBus::Handler::BusConnect(GetEntityId());
+        ArticulationSensorRequestBus::Handler::BusConnect(GetEntityId());
+#endif
     }
 
     void ArticulationLinkComponent::Deactivate()
     {
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        ArticulationSensorRequestBus::Handler::BusDisconnect();
+        ArticulationJointRequestBus::Handler::BusDisconnect();
+#endif
+
         if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
             return;
