@@ -1,0 +1,202 @@
+{
+    "template_name": "GraphicsGem",
+    "template_restricted_platform_relative_path": "Templates/GraphicsGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/GraphicsGem",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Graphics Gem Template",
+    "summary": "This is the gem template that will be used if no gem template is specified during gem creation.",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "GraphicsGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/Source/${Name}Module.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}FeatureProcessorInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Render/${Name}FeatureProcessor.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Render/${Name}FeatureProcessor.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Android/${Name}_Traits_Android.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Android/${Name}_Traits_Platform.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Android/platform_android_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/iOS/${Name}_Traits_iOS.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/iOS/${Name}_Traits_Platform.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/iOS/platform_ios_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Linux/${Name}_Traits_Linux.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Linux/${Name}_Traits_Platform.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Mac/${Name}_Traits_Mac.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Mac/${Name}_Traits_Platform.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Mac/platform_mac_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Windows/${Name}_Traits_Windows.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Windows/${Name}_Traits_Platform.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Platform/Windows/platform_windows_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Components/${Name}Component.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}Component.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}ComponentConstants.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Components/${Name}ComponentController.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}ComponentController.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}SystemComponent.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/Components/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/EditorComponents/Editor${Name}Component.h",
+            "isTemplated": true
+        },        
+        {
+            "file": "Code/Source/EditorComponents/Editor${Name}Component.cpp",
+            "isTemplated": true
+        },        
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Android"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Platform/iOS"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Registry"
+        }
+    ]
+}
