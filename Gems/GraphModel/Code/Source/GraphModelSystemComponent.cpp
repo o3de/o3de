@@ -50,6 +50,7 @@ namespace GraphModel
 
         // Reflect data types for integrating graph model with graph canvas
         GraphModelIntegration::GraphCanvasMetadata::Reflect(context);
+        GraphModelIntegration::GraphCanvasSelectionData::Reflect(context);
 
         // Reflect MIME events for graph canvas nodes
         GraphModelIntegration::CreateGraphCanvasNodeMimeEvent::Reflect(context);
