@@ -61,18 +61,18 @@ namespace PhysX
             auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
             AZ_Assert(articulationComponent, "Entity being proceessed for articulation has not articulation link component.");
 
-            linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+            linkData->m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_localRotation),
                 articulationComponent->m_config.m_localPosition);
 
             if (articulationComponent->m_config.m_autoCalculateLeadFrame)
             {
-                linkData->m_articulationJointData.m_jointLeadLocalFrame =
-                    linkData->m_localTransform * linkData->m_articulationJointData.m_jointFollowerLocalFrame;
+                linkData->m_jointLeadLocalFrame =
+                    linkData->m_localTransform * linkData->m_jointFollowerLocalFrame;
             }
             else
             {
-                linkData->m_articulationJointData.m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
+                linkData->m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                     AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_leadLocalPosition),
                     articulationComponent->m_config.m_leadLocalPosition);
             }

@@ -203,6 +203,8 @@ namespace PhysX
             articulationFlags.raise(physx::PxArticulationFlag::eDISABLE_SELF_COLLISION);
         }
 
+        m_articulation->setSolverIterationCounts(
+            rootLinkConfiguration.m_solverPositionIterations, rootLinkConfiguration.m_solverVelocityIterations);
         // TODO: Expose these in the configuration
         //      eDRIVE_LIMITS_ARE_FORCES //!< Limits for drive effort are forces and torques rather than impulses
         //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
@@ -256,9 +258,9 @@ namespace PhysX
                 thisPxLink->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
             inboundJoint->setJointType(GetPxArticulationJointType(articulationLinkConfiguration.m_articulationJointType));
             // Sets the joint pose in the lead link actor frame.
-            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointLeadLocalFrame));
+            inboundJoint->setParentPose(PxMathConvert(thisLinkData.m_jointLeadLocalFrame));
             // Sets the joint pose in the follower link actor frame.
-            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_articulationJointData.m_jointFollowerLocalFrame));
+            inboundJoint->setChildPose(PxMathConvert(thisLinkData.m_jointFollowerLocalFrame));
             // TODO: Set other joint's properties from articulationLinkConfiguration
         }
 

@@ -48,6 +48,13 @@ namespace PhysX
                         "When active, the root articulation is fixed.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
 
+                    ->DataElement(
+                        0,
+                        &ArticulationLinkConfiguration::m_selfCollide,
+                        "Lead-Follower Collide",
+                        "When active, the lead and follower pair will collide with each other.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Rigid Body configuration")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(
@@ -55,7 +62,6 @@ namespace PhysX
                         &ArticulationLinkConfiguration::m_gravityEnabled,
                         "Gravity enabled",
                         "When active, global gravity affects this rigid body.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::m_isRootArticulation)
                     ->DataElement(
                         AZ::Edit::UIHandlers::Default,
                         &ArticulationLinkConfiguration::m_mass,
@@ -154,12 +160,7 @@ namespace PhysX
                         "Fix Joint Location",
                         "When enabled the joint will remain in the same location when moving the entity.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
-                    ->DataElement(
-                        0,
-                        &ArticulationLinkConfiguration::m_selfCollide,
-                        "Lead-Follower Collide",
-                        "When active, the lead and follower pair will collide with each other.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsNotRootArticulation)
+
                     ->DataElement(
                         AZ::Edit::UIHandlers::ComboBox,
                         &ArticulationLinkConfiguration::m_displayJointSetup,

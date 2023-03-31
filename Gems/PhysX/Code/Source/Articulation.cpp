@@ -18,22 +18,8 @@
 
 namespace PhysX
 {
-    void ArticulationJointData::Reflect(AZ::ReflectContext* context)
-    {
-        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
-        {
-            serializeContext->Class<ArticulationJointData>()
-                ->Version(1)
-                ->Field("JointLeadLocalFrame", &ArticulationJointData::m_jointLeadLocalFrame)
-                ->Field("JointFollowerLocalFrame", &ArticulationJointData::m_jointFollowerLocalFrame)
-            ;
-        }
-    }
-
     void ArticulationLinkData::Reflect(AZ::ReflectContext* context)
     {
-        ArticulationJointData::Reflect(context);
-
         if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ArticulationLinkData>()
@@ -41,8 +27,10 @@ namespace PhysX
                 ->Field("LinkConfiguration", &ArticulationLinkData::m_articulationLinkConfiguration)
                 ->Field("ShapeColliderPair", &ArticulationLinkData::m_shapeColliderConfiguration)
                 ->Field("LocalTransform", &ArticulationLinkData::m_localTransform)
+                ->Field("JointLeadLocalFrame", &ArticulationLinkData::m_jointLeadLocalFrame)
+                ->Field("JointFollowerLocalFrame", &ArticulationLinkData::m_jointFollowerLocalFrame)
                 ->Field("ChildLinks", &ArticulationLinkData::m_childLinks)
-                ->Field("ArticulationJointData", &ArticulationLinkData::m_articulationJointData);
+            ;
         }
     }
 
@@ -67,6 +55,7 @@ namespace PhysX
         m_pxLink->setLinearDamping(configuration.m_linearDamping);
         m_pxLink->setAngularDamping(configuration.m_angularDamping);
         m_pxLink->setMaxAngularVelocity(configuration.m_maxAngularVelocity);
+        m_pxLink->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, configuration.m_gravityEnabled == false);
 
         AddCollisionShape(thisLinkData);
     }

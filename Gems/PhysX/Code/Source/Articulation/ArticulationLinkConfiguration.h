@@ -38,6 +38,7 @@ namespace PhysX
         // Articulation specific configuration
 
         bool m_isFixedBase = false;
+        bool m_selfCollide = false;
 
         // Rigid Body configuration
 
@@ -62,7 +63,6 @@ namespace PhysX
         // Joint configuration
 
         ArticulationJointType m_articulationJointType = ArticulationJointType::Fix;
-        bool m_selfCollide = false;
         bool m_fixJointLocation = false;
 
         bool m_isLimited = true; //!< Indicates if this joint has limits, e.g. maximum swing angles.
