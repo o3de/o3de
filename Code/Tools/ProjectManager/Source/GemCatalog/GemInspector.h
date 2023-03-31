@@ -16,6 +16,8 @@
 
 #include <QItemSelection>
 #include <QScrollArea>
+#include <QThread>
+#include <QDir>
 #endif
 
 QT_FORWARD_DECLARE_CLASS(QVBoxLayout)
@@ -23,9 +25,29 @@ QT_FORWARD_DECLARE_CLASS(QLabel)
 QT_FORWARD_DECLARE_CLASS(QSpacerItem)
 QT_FORWARD_DECLARE_CLASS(QPushButton)
 QT_FORWARD_DECLARE_CLASS(QComboBox)
+QT_FORWARD_DECLARE_CLASS(QThread)
+QT_FORWARD_DECLARE_CLASS(QDir)
 
 namespace O3DE::ProjectManager
 {
+    class GemInspectorWorker : public QObject
+    {
+        Q_OBJECT
+
+    public:
+        explicit GemInspectorWorker();
+        ~GemInspectorWorker() = default;
+
+    signals:
+        void Done(QString size);
+
+    public slots:
+        void SetDir(QDir dir);
+
+    private:
+        void GetDirSize(QDir dir, quint64& sizeTotal);
+    };
+
     class GemInspector
         : public QScrollArea
     {
@@ -33,7 +55,7 @@ namespace O3DE::ProjectManager
 
     public:
         explicit GemInspector(GemModel* model, QWidget* parent, bool readOnly = false);
-        ~GemInspector() = default;
+        ~GemInspector();
 
         void Update(const QModelIndex& modelIndex, const QString& version = "");
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
@@ -64,6 +86,8 @@ namespace O3DE::ProjectManager
         QWidget* m_mainWidget = nullptr;
         QVBoxLayout* m_mainLayout = nullptr;
         QModelIndex m_curModelIndex;
+        QThread m_workerThread;
+        GemInspectorWorker* m_worker = nullptr;
 
         // General info (top) section
         QLabel* m_nameLabel = nullptr;

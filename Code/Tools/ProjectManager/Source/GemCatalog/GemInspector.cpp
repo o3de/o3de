@@ -24,6 +24,32 @@
 
 namespace O3DE::ProjectManager
 {
+    GemInspectorWorker::GemInspectorWorker() : QObject()
+    {
+    }
+
+    void GemInspectorWorker::GetDirSize(QDir dir, quint64& sizeTotal)
+    {
+        const QDir::Filters fileFilters = QDir::Files | QDir::System | QDir::Hidden;
+        for (const QString& filePath : dir.entryList(fileFilters))
+        {
+            sizeTotal += QFileInfo(dir, filePath).size();
+        }
+
+        const QDir::Filters dirFilters = QDir::Dirs | QDir::NoDotAndDotDot | QDir::System | QDir::Hidden;
+        for (const QString& childDirPath : dir.entryList(dirFilters))
+        {
+            GetDirSize(dir.filePath(childDirPath), sizeTotal);
+        }
+    }
+
+    void GemInspectorWorker::SetDir(QDir dir)
+    {
+        quint64 size = 0;
+        GetDirSize(dir, size);
+        emit Done(QLocale().formattedDataSize(size, QLocale::DataSizeTraditionalFormat));
+    }
+
     GemInspector::GemInspector(GemModel* model, QWidget* parent, bool readOnly)
         : QScrollArea(parent)
         , m_model(model)
@@ -48,8 +74,24 @@ namespace O3DE::ProjectManager
 
         InitMainWidget();
 
+        // worker for calculating folder sizes
+        m_worker = new GemInspectorWorker();
+        m_worker->moveToThread(&m_workerThread);
+
+        connect(m_worker, &GemInspectorWorker::Done, [this](QString size){
+            m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(size));
+        });
+
         connect(m_model->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemInspector::OnSelectionChanged);
         Update({});
+    }
+
+    GemInspector::~GemInspector()
+    {
+        connect(&m_workerThread, &QThread::finished, m_worker, &GemInspectorWorker::deleteLater);
+        m_workerThread.requestInterruption();
+        m_workerThread.quit();
+        m_workerThread.wait();
     }
 
     void GemInspector::OnSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
@@ -141,7 +183,20 @@ namespace O3DE::ProjectManager
 
         // Additional information
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(gemInfo.m_lastUpdatedDate));
-        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(gemInfo.m_binarySizeInKB ? tr("%1 KB").arg(gemInfo.m_binarySizeInKB) : tr("Unknown")));
+        if (gemInfo.m_binarySizeInKB)
+        {
+            m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(gemInfo.m_binarySizeInKB));
+        }
+        else if (gemInfo.m_downloadStatus == GemInfo::Downloaded)
+        {
+            m_binarySizeLabel->setText(tr("Binary Size: ...").arg(gemInfo.m_binarySizeInKB));
+            m_worker->SetDir(QDir(gemInfo.m_path));
+            m_workerThread.start();
+        }
+        else
+        {
+            m_binarySizeLabel->setText(tr("Binary Size:  Unknown"));
+        }
 
         // Versions
         disconnect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);

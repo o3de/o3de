@@ -764,28 +764,34 @@ namespace O3DE::ProjectManager
                     // we only support a single specifier
                     const auto& bound = bounds[0];
                     Comparison comparison = bound.GetComparison();
-                    if (comparison != Comparison::EqualTo)
+                    if (comparison == Comparison::GreaterThan)
                     {
-                        if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
-                        {
-                            // don't try to explain the twiddle wakka in short form
-                            result.append("~=");
-                        }
-                        else if ((comparison& Comparison::GreaterThan) != Comparison::None)
-                        {
-                            result.append(" greater than ");
-                        }
-                        else if ((comparison& Comparison::LessThan) != Comparison::None)
-                        {
-                            result.append(" less than ");
-                        }
+                        result.append(QObject::tr(" versions greater than"));
+                    }
+                    else if (comparison == Comparison::LessThan)
+                    {
+                        result.append(QObject::tr(" versions less than"));
+                    }
+                    else if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
+                    {
+                        // don't try to explain the twiddle wakka in short form
+                        result.append(QObject::tr(" versions ~="));
+                    }
 
-                        if ((comparison& Comparison::EqualTo) != Comparison::None)
+                    result.append(" ");
+                    result.append(bound.GetVersion().ToString().c_str());
+
+                    if ((comparison & Comparison::EqualTo) != Comparison::None)
+                    {
+                        if ((comparison & Comparison::GreaterThan) != Comparison::None)
                         {
-                            result.append(" or equal to ");
+                            result.append(QObject::tr(" or higher "));
+                        }
+                        else if ((comparison & Comparison::LessThan) != Comparison::None)
+                        {
+                            result.append(QObject::tr(" or lower "));
                         }
                     }
-                    result.append(bound.GetVersion().ToString().c_str());
                 }
             }
             return result;
