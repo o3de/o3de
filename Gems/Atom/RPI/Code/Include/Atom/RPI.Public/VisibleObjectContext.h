@@ -21,11 +21,7 @@ namespace AZ
         {
             //! A pointer to the custom data for this object
             const void* m_userData = nullptr;
-            //! A sorting key of this draw item which is used for sorting draw items in DrawList
-            // Check RHI::SortDrawList() function for detail
-            RHI::DrawItemSortKey m_sortKey = 0;
-            //! A depth value this draw item which is used for sorting draw items in DrawList
-            //! Check RHI::SortDrawList() function for detail
+            //! A depth value this object which can be used for sorting draw calls
             float m_depth = 0.0f;
         };
         using VisibleObjectList = AZStd::vector<VisibleObjectProperties>;
@@ -38,8 +34,7 @@ namespace AZ
          * In the append phase, visible object entries (or void* pointers to user data) are added to the context.
          * This is thread-safe and low contention. 
          *
-         * Call FinalizeLists to transition to the consume phase. This performs sorting and coalescing
-         * of visible object entries.
+         * Call FinalizeLists to transition to the consume phase. This combines the per-thread data into a single list.
          *
          * Finally, in the consume phase, the context is immutable and lists are accessible via GetList.
          */
@@ -50,11 +45,6 @@ namespace AZ
 
             /// Copies and moves are disabled to enforce thread safety.
             AZ_DISABLE_COPY_MOVE(VisibleObjectContext);
-
-            bool IsInitialized() const;
-
-            /// Must be called prior to adding draw items. Defines the set of draw list tags to filter into.
-            void Init();
 
             void Shutdown();
 
