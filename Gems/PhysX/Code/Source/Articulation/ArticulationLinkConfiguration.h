@@ -24,6 +24,22 @@ namespace AZ
 
 namespace PhysX
 {
+    //! Configuration used to describe force/torque sensors attached to articulation links.
+    struct ArticulationSensorConfiguration
+    {
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_TYPE_INFO(ArticulationSensorConfiguration, "{83960469-C92D-405D-B12E-EB235BCFFECA}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        ArticulationSensorConfiguration() = default;
+
+        AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero(); //!< Position of the sensor relative to its link.
+        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Euler angle rotation of the sensor relative to its link.
+        bool m_includeForwardDynamicsForces = true; //!< Whether the output reported by the sensor should include forward dynamics forces.
+        bool m_includeConstraintSolverForces = true; //!< Whether the output reported by the sensor should include constraint solver forces.
+        bool m_useWorldFrame = false; //!< If true, the output will be reported in world space, otherwise in the local space of the sensor.
+    };
+
     //! Configuration used to Add Articulations to a Scene.
     struct ArticulationLinkConfiguration : public AzPhysics::SimulatedBodyConfiguration
     {
@@ -82,6 +98,8 @@ namespace PhysX
         AZ::Vector3 m_leadLocalPosition = AZ::Vector3::CreateZero(); 
         AZ::Vector3 m_LeadLocalRotation =
             AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+
+        AZStd::vector<ArticulationSensorConfiguration> m_sensorConfigs;
 
         enum class DisplaySetupState : AZ::u8
         {

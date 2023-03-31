@@ -193,7 +193,12 @@ namespace PhysX
 
                     ->DataElement(
                         0, &ArticulationLinkConfiguration::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
+                    ->EndGroup();
             }
         }
     }
