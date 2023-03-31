@@ -306,6 +306,17 @@ namespace PhysX
             thisLink->attachShape(*static_cast<physx::PxShape*>(physicsShape->GetNativePointer()));
         }
 
+        // set up sensors
+        for (const auto& sensorConfig : thisLinkData.m_sensorConfigs)
+        {
+            const AZ::Transform sensorTransform = AZ::Transform::CreateFromQuaternionAndTranslation(
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(sensorConfig.m_localRotation), sensorConfig.m_localPosition);
+            auto* sensor = thisLink->getArticulation().createSensor(thisLink, PxMathConvert(sensorTransform));
+            sensor->setFlag(physx::PxArticulationSensorFlag::eFORWARD_DYNAMICS_FORCES, sensorConfig.m_includeForwardDynamicsForces);
+            sensor->setFlag(physx::PxArticulationSensorFlag::eCONSTRAINT_SOLVER_FORCES, sensorConfig.m_includeConstraintSolverForces);
+            sensor->setFlag(physx::PxArticulationSensorFlag::eWORLD_FRAME, sensorConfig.m_useWorldFrame);
+        }
+        
         m_articulationLinksByEntityId.insert(EntityIdArticulationLinkPair{ thisLinkData.m_entityId, thisLink });
 
         for (const auto& childLink : thisLinkData.m_childLinks)

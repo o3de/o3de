@@ -54,10 +54,12 @@ namespace PhysX
             linkData->m_shapeConfiguration = shapeColliderPair.second;
         }
 
+        auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
+        linkData->m_sensorConfigs = articulationComponent->m_config.m_sensorConfigs;
+
         // If the entity has a parent then it's not a root articulation and we fill the joint information.
         if (parentLinkData)
         {
-            auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
             AZ_Assert(articulationComponent, "Entity being proceessed for articulation has not articulation link component.");
 
             linkData->m_articulationJointData.m_jointType = articulationComponent->m_config.m_articulationJointType;

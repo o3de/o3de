@@ -64,6 +64,7 @@ namespace PhysX
         ArticulationJointData m_articulationJointData;
 
         AZStd::vector<AZStd::shared_ptr<ArticulationLinkData>> m_childLinks;
+        AZStd::vector<ArticulationSensorConfiguration> m_sensorConfigs;
     };
 
     //! Component implementing articulation link logic.
