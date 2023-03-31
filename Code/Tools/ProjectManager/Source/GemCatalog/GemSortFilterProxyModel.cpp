@@ -76,6 +76,12 @@ namespace O3DE::ProjectManager
             }
         }
 
+        // Update available
+        if (m_updateAvailableFilter && !GemModel::HasUpdates(sourceIndex))
+        {
+            return false;
+        }
+
         // Gem enabled
         if (m_gemActiveFilter != GemActive::NoFilter)
         {

@@ -221,6 +221,7 @@ namespace O3DE::ProjectManager
     void GemFilterWidget::ResetAllFilters()
     {
         ResetGemStatusFilter();
+        ResetUpdatesFilter();
         ResetGemOriginFilter();
         ResetTypeFilter();
         ResetFeatureFilter();
@@ -308,6 +309,22 @@ namespace O3DE::ProjectManager
                     (m_filterProxyModel->*filterFlagsSetter)(gemFilters);
                 });
         }
+    }
+
+    void GemFilterWidget::ResetUpdatesFilter()
+    {
+        int numGemsWithUpdates = 0;
+        for (int i = 0; i < m_gemModel->rowCount(); ++i)
+        {
+            numGemsWithUpdates += GemModel::HasUpdates(m_gemModel->index(i, 0)) ? 1 : 0;
+        }
+
+        ResetFilterWidget(m_updatesFilter, "Versions", { "Update Available" }, { numGemsWithUpdates });
+        const QList<QAbstractButton*> buttons = m_updatesFilter->GetButtonGroup()->buttons();
+        AZ_Assert(!buttons.empty(), "Failed to create versions filter buttons");
+        connect(buttons[0], &QAbstractButton::toggled, this, [&](bool checked) {
+            m_filterProxyModel->SetUpdateAvailable(checked);
+        });
     }
 
     void GemFilterWidget::ResetGemStatusFilter()

@@ -9,6 +9,8 @@
 #include <GemCatalog/GemInspector.h>
 #include <GemCatalog/GemItemDelegate.h>
 #include <ProjectManagerDefs.h>
+#include <ProjectUtils.h>
+#include <AzCore/Dependency/Dependency.h>
 
 #include <QDir>
 #include <QFrame>
@@ -182,11 +184,25 @@ namespace O3DE::ProjectManager
         {
             if (gemInfo.m_compatibleEngines.isEmpty())
             {
-                m_enginesLabel->setText("All");
+                // reduce to one line for common case
+                m_enginesTitleLabel->setText(tr("Compatible Engines: All engines"));
+                m_enginesLabel->setVisible(false);
             }
             else
             {
-                m_enginesLabel->setText(gemInfo.m_compatibleEngines.join("\n"));
+                m_enginesTitleLabel->setText(tr("Compatible Engines:"));
+                using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+                using Comparison = Dependency::Bound::Comparison;
+                QString compatibleEngines;
+                for (int i = 0; i < gemInfo.m_compatibleEngines.size(); ++i)
+                {
+                    if (i > 0)
+                    {
+                        compatibleEngines.append("\n");
+                    }
+                    compatibleEngines.append(ProjectUtils::GetDependencyString(gemInfo.m_compatibleEngines[i]));
+                }
+                m_enginesLabel->setText(compatibleEngines);
             }
         }
 
@@ -231,6 +247,7 @@ namespace O3DE::ProjectManager
             m_versionWidget->setObjectName("GemCatalogVersion");
             auto versionVLayout = new QVBoxLayout();
             versionVLayout->setMargin(0);
+            versionVLayout->addSpacing(5);
             auto versionHLayout = new QHBoxLayout();
             versionHLayout->setMargin(0);
             versionVLayout->addLayout(versionHLayout);
@@ -241,7 +258,6 @@ namespace O3DE::ProjectManager
             versionLabelTitle->setProperty("class", "label");
             versionHLayout->addWidget(versionLabelTitle);
             m_versionLabel = new QLabel();
-            m_versionLabel->setProperty("class", "value");
             versionHLayout->addWidget(m_versionLabel);
 
             m_versionComboBox = new QComboBox();
@@ -256,15 +272,10 @@ namespace O3DE::ProjectManager
                 m_updateVersionButton->setVisible(false);
             });
 
-            auto enginesHLayout = new QHBoxLayout();
-            enginesHLayout->setMargin(0);
-            versionVLayout->addLayout(enginesHLayout);
-            m_enginesTitleLabel = new QLabel(tr("Engines: "));
-            m_enginesTitleLabel->setProperty("class", "label");
-            enginesHLayout->addWidget(m_enginesTitleLabel);
+            m_enginesTitleLabel = new QLabel(tr("Compatible Engines: "));
+            versionVLayout->addWidget(m_enginesTitleLabel);
             m_enginesLabel = new QLabel();
-            m_enginesLabel->setProperty("class", "value");
-            enginesHLayout->addWidget(m_enginesLabel);
+            versionVLayout->addWidget(m_enginesLabel);
         }
 
         m_mainLayout->addSpacing(5);

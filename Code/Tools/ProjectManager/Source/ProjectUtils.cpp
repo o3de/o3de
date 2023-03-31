@@ -11,6 +11,8 @@
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Dependency/Dependency.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -30,7 +32,6 @@
 #include <QLabel>
 #include <QStandardPaths>
 
-#include <AzCore/std/chrono/chrono.h>
 
 namespace O3DE::ProjectManager
 {
@@ -744,6 +745,50 @@ namespace O3DE::ProjectManager
 
             return AZ::SemanticVersion::Compare(versionA, versionB);
 
+        }
+
+        QString GetDependencyString(const QString& dependencyString)
+        {
+            using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+            using Comparison = Dependency::Bound::Comparison;
+            Dependency dependency;
+
+            QString result;
+            if(auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                // dependency name
+                result.append(dependency.GetName().c_str());
+
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    // we only support a single specifier
+                    const auto& bound = bounds[0];
+                    Comparison comparison = bound.GetComparison();
+                    if (comparison != Comparison::EqualTo)
+                    {
+                        if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
+                        {
+                            // don't try to explain the twiddle wakka in short form
+                            result.append("~=");
+                        }
+                        else if ((comparison& Comparison::GreaterThan) != Comparison::None)
+                        {
+                            result.append(" greater than ");
+                        }
+                        else if ((comparison& Comparison::LessThan) != Comparison::None)
+                        {
+                            result.append(" less than ");
+                        }
+
+                        if ((comparison& Comparison::EqualTo) != Comparison::None)
+                        {
+                            result.append(" or equal to ");
+                        }
+                    }
+                    result.append(bound.GetVersion().ToString().c_str());
+                }
+            }
+            return result;
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

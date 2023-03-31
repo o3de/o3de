@@ -69,6 +69,9 @@ namespace O3DE::ProjectManager
         const QSet<QString>& GetFeatures() const { return m_featureFilter; }
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
+        bool GetUpdateAvailable() const { return m_updateAvailableFilter; }
+        void SetUpdateAvailable(bool showGemsWithUpdates) { m_updateAvailableFilter = showGemsWithUpdates; InvalidateFilter(); }
+
         void InvalidateFilter();
         void ResetFilters(bool clearSearchString = true);
 
@@ -85,6 +88,7 @@ namespace O3DE::ProjectManager
         GemInfo::GemOrigins m_gemOriginFilter = {};
         GemInfo::Platforms m_platformFilter = {};
         GemInfo::Types m_typeFilter = {};
+        bool m_updateAvailableFilter = false;
         QSet<QString> m_featureFilter;
     };
 } // namespace O3DE::ProjectManager

@@ -204,6 +204,7 @@ namespace O3DE::ProjectManager
         {
             // disconnect so we don't update the status filter for every gem we add
             disconnect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+            disconnect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetUpdatesFilter);
         }
 
         FillModel(projectPath);
@@ -224,6 +225,7 @@ namespace O3DE::ProjectManager
         m_headerWidget->ReinitForProject();
 
         connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetGemStatusFilter);
+        connect(m_gemModel, &GemModel::dataChanged, m_filterWidget, &GemFilterWidget::ResetUpdatesFilter);
 
         // Select the first entry after everything got correctly sized
         QTimer::singleShot(200, [=]{

@@ -78,6 +78,7 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
+        static bool HasUpdates(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
         static void UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version);
         static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);

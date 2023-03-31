@@ -68,6 +68,7 @@ namespace O3DE::ProjectManager
     public slots:
         void ResetAllFilters();
         void ResetGemStatusFilter();
+        void ResetUpdatesFilter();
 
     private:
         void ResetGemOriginFilter();
@@ -96,6 +97,7 @@ namespace O3DE::ProjectManager
         GemModel* m_gemModel = nullptr;
         GemSortFilterProxyModel* m_filterProxyModel = nullptr;
         FilterCategoryWidget* m_statusFilter = nullptr;
+        FilterCategoryWidget* m_updatesFilter = nullptr;
         FilterCategoryWidget* m_originFilter = nullptr;
         FilterCategoryWidget* m_typeFilter = nullptr;
         FilterCategoryWidget* m_platformFilter = nullptr;

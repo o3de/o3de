@@ -46,6 +46,9 @@ namespace O3DE::ProjectManager
         SetStatusIcon(m_unknownStatusPixmap, ":/X.svg");
         SetStatusIcon(m_downloadSuccessfulPixmap, ":/checkmark.svg");
         SetStatusIcon(m_downloadFailedPixmap, ":/Warning.svg");
+        SetStatusIcon(m_downloadedPixmap, ":/Downloaded.svg");
+
+        m_updatePixmap = QIcon(":/Update.svg").pixmap(s_statusIconSize, s_statusIconSize);
 
         m_downloadingMovie = new QMovie(":/in_progress.gif");
     }
@@ -60,20 +63,20 @@ namespace O3DE::ProjectManager
     void GemItemDelegate::SetStatusIcon(QPixmap& m_iconPixmap, const QString& iconPath)
     {
         QPixmap pixmap(iconPath);
-        float aspectRatio = static_cast<float>(pixmap.width()) / pixmap.height();
-        int xScaler = s_statusIconSize;
-        int yScaler = s_statusIconSize;
+        const float aspectRatio = static_cast<float>(pixmap.width()) / pixmap.height();
+        int xScaler = m_readOnly ? s_statusIconSizeLarge : s_statusIconSize;
+        int yScaler = xScaler;
 
         if (aspectRatio > 1.0f)
         {
-            yScaler = static_cast<int>(1.0f / aspectRatio * s_statusIconSize);
+            yScaler = static_cast<int>(1.0f / aspectRatio * xScaler);
         }
         else if (aspectRatio < 1.0f)
         {
-            xScaler = static_cast<int>(aspectRatio * s_statusIconSize);
+            xScaler = static_cast<int>(aspectRatio * yScaler);
         }
 
-        m_iconPixmap = QPixmap(QIcon(iconPath).pixmap(xScaler, yScaler));
+        m_iconPixmap = QIcon(iconPath).pixmap(xScaler, yScaler);
     }
 
     void GemItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& modelIndex) const
@@ -161,7 +164,6 @@ namespace O3DE::ProjectManager
         DrawText(gemInfo.m_summary, painter, summaryRect, standardFont);
 
         // Gem Version
-        // include the version in the name if it isn't unknown
         if (!gemInfo.m_version.isEmpty() && !gemInfo.m_version.contains("unknown", Qt::CaseInsensitive))
         {
             QPair<int, int> versionXBounds = CalcColumnXBounds(HeaderOrder::Version);
@@ -169,6 +171,13 @@ namespace O3DE::ProjectManager
             painter->setFont(standardFont);
             gemVersionRect = painter->boundingRect(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
             painter->drawText(gemVersionRect, Qt::TextWordWrap | Qt::AlignRight | Qt::AlignVCenter, gemInfo.m_version);
+
+            if (GemModel::HasUpdates(modelIndex))
+            {
+                painter->drawPixmap(gemVersionRect.left() - s_statusButtonSpacing - m_updatePixmap.width(),
+                                    contentRect.center().y() - m_updatePixmap.height() / 2,
+                                    m_updatePixmap);
+            }
         }
 
         QRect buttonRect = CalcButtonRect(contentRect);
@@ -553,17 +562,20 @@ namespace O3DE::ProjectManager
 
     void GemItemDelegate::DrawDownloadStatusIcon(QPainter* painter, const QRect& contentRect, const QRect& buttonRect, const QModelIndex& modelIndex) const
     {
-        const GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
-
-        // Show no icon if gem is already downloaded
-        if (downloadStatus == GemInfo::DownloadStatus::Downloaded)
+        if(GemModel::GetGemInfo(modelIndex).m_gemOrigin != GemInfo::Remote)
         {
             return;
         }
 
+        const GemInfo::DownloadStatus downloadStatus = GemModel::GetDownloadStatus(modelIndex);
+
         QPixmap currentFrame;
         const QPixmap* statusPixmap;
-        if (downloadStatus == GemInfo::DownloadStatus::Downloading)
+        if (downloadStatus == GemInfo::DownloadStatus::Downloaded)
+        {
+            statusPixmap = &m_downloadedPixmap;
+        }
+        else if (downloadStatus == GemInfo::DownloadStatus::Downloading)
         {
             if (m_downloadingMovie->state() != QMovie::Running)
             {
@@ -594,9 +606,21 @@ namespace O3DE::ProjectManager
 
         QSize statusSize = statusPixmap->size();
 
-        painter->drawPixmap(
-            buttonRect.left() - s_statusButtonSpacing - statusSize.width(),
-            contentRect.center().y() - statusSize.height() / 2,
-            *statusPixmap);
+        if (m_readOnly)
+        {
+            // for now, we don't draw the status button in read only state
+            // so draw the status icon centered
+            painter->drawPixmap(
+                buttonRect.center().x() - statusSize.width() / 2,
+                contentRect.center().y() - statusSize.height() / 2,
+                *statusPixmap);
+        }
+        else
+        {
+            painter->drawPixmap(
+                buttonRect.left() - s_statusButtonSpacing - statusSize.width(),
+                contentRect.center().y() - statusSize.height() / 2,
+                *statusPixmap);
+        }
     }
 } // namespace O3DE::ProjectManager

@@ -16,7 +16,6 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
-#include <AzCore/Dependency/Version.h>
 
 namespace O3DE::ProjectManager
 {
@@ -126,6 +125,13 @@ namespace O3DE::ProjectManager
          * @return 0 if a == b, <0 if a < b, and >0 if a > b on success, or failure
          */
         int VersionCompare(const QString& a, const QString&b);
+
+        /**
+         * Return a human readable dependency
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @return a human readable string e.g. o3de 1.2.3, or o3de greater than or equal to 2.3.4
+         */
+        QString GetDependencyString(const QString& dependency);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

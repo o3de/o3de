@@ -14,6 +14,7 @@
 #include <AzToolsFramework/UI/Notifications/ToastBus.h>
 #include <ProjectUtils.h>
 
+#include <QDir>
 #include <QList>
 
 namespace O3DE::ProjectManager
@@ -65,7 +66,7 @@ namespace O3DE::ProjectManager
         {
             const QVariant& existingGemVariant = versionList.at(i);
             const GemInfo& existingGemInfo = existingGemVariant.value<GemInfo>();
-            if (existingGemInfo.m_path == gemInfo.m_path)
+            if (QDir(existingGemInfo.m_path) == QDir(gemInfo.m_path))
             {
                 if (existingGemInfo.m_version == gemInfo.m_version)
                 {
@@ -177,18 +178,18 @@ namespace O3DE::ProjectManager
             if (auto nameFoundIter = m_nameToIndexMap.find(gemName); nameFoundIter != m_nameToIndexMap.end())
             {
                 const QModelIndex modelIndex = nameFoundIter.value();
-                auto versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
-
+                const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
                 if (versionList.count() > 1 && !gemPath.isEmpty())
                 {
                     // make sure the gem item delegate displays the correct version info 
                     for (auto versionVariant : versionList)
                     {
-                        if (const auto& gemInfo = versionVariant.value<GemInfo>(); gemPath == gemInfo.m_path)
+                        const auto& variantGemInfo = versionVariant.value<GemInfo>();
+                        if (QDir(gemPath) == QDir(variantGemInfo.m_path))
                         {
                             QStandardItem* gemItem = item(modelIndex.row(), modelIndex.column());
                             AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
-                            SetItemDataFromGemInfo(gemItem, gemInfo);
+                            SetItemDataFromGemInfo(gemItem, variantGemInfo);
                             break;
                         }
                     }
@@ -684,6 +685,38 @@ namespace O3DE::ProjectManager
     bool GemModel::HasRequirement(const QModelIndex& modelIndex)
     {
         return !GemModel::GetGemInfo(modelIndex).m_requirement.isEmpty();
+    }
+
+    bool GemModel::HasUpdates(const QModelIndex& modelIndex)
+    {
+        const auto& gemInfo = GemModel::GetGemInfo(modelIndex);
+        if (gemInfo.m_isEngineGem)
+        {
+            // engine gems are only updated with the engine
+            return false;
+        }
+
+        if (gemInfo.m_gemOrigin == GemInfo::Remote)
+        {
+            // Not implemented yet - check for new versions available from the remote
+            // or use a new Role to store the latest version avaiable on the remote
+            return false;
+        }
+        else
+        {
+            const auto& versions = GemModel::GetGemVersions(modelIndex);
+            if (versions.count() < 2)
+            {
+                return false;
+            }
+
+            auto currentVersion = modelIndex.data(RoleVersion).toString();
+
+            // gem versions are sorted so we can just compare if we're using the latest version
+            return currentVersion != versions.at(0);
+        }
+
+        return false;
     }
 
     bool GemModel::DoGemsToBeAddedHaveRequirements() const

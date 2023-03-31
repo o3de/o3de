@@ -81,6 +81,7 @@ namespace O3DE::ProjectManager
 
         // Status icon
         inline constexpr static int s_statusIconSize = 16;
+        inline constexpr static int s_statusIconSizeLarge = 20;
         inline constexpr static int s_statusButtonSpacing = 5;
 
         enum class HeaderOrder
@@ -130,9 +131,11 @@ namespace O3DE::ProjectManager
 
         QPixmap m_unknownStatusPixmap;
         QPixmap m_notDownloadedPixmap;
+        QPixmap m_downloadedPixmap;
         QPixmap m_downloadSuccessfulPixmap;
         QPixmap m_downloadFailedPixmap;
         QMovie* m_downloadingMovie = nullptr;
+        QPixmap m_updatePixmap;
         bool m_readOnly = false;
 
         AdjustableHeaderWidget* m_headerWidget = nullptr;
