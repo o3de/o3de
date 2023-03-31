@@ -271,8 +271,10 @@ namespace TestImpact
         // This really should't fail but check anyway
         if (jobData != shardedSubJobs.end())
         {
-            if (const size_t shardNumber = jobData->m_jobInfo.GetId().m_value - shardedTestJobInfo->GetJobInfos().front().GetId().m_value;
-                jobData->m_std.m_out.has_value())
+            [[maybe_unused]] const size_t shardNumber =
+                jobData->m_jobInfo.GetId().m_value - shardedTestJobInfo->GetJobInfos().front().GetId().m_value;
+
+            if (jobData->m_std.m_out.has_value())
             {
                 // Offending sub job has std output available, print a truncated summary of the last 500 characters of known output
                 constexpr size_t numCharsToPrint = 500;
