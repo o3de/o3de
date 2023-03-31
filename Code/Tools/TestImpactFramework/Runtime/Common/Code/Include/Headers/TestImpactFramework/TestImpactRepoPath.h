@@ -48,8 +48,18 @@ namespace TestImpact
         [[nodiscard]] bool IsRelativeTo(const RepoPath& base) const;
         AZ::IO::PathView RootName() const;
         AZ::IO::PathView RelativePath() const;
-        constexpr RepoPath& ReplaceFilename(const AZ::IO::PathView& replacementFilename);
-        constexpr RepoPath& ReplaceExtension(const AZ::IO::PathView& replacementExtension = {});
+
+        constexpr RepoPath& ReplaceFilename(const AZ::IO::PathView& replacementFilename)
+        {
+            m_path.ReplaceFilename(replacementFilename);
+            return *this;
+        }
+        
+        constexpr RepoPath& ReplaceExtension(const AZ::IO::PathView& replacementExtension = {})
+        {
+            m_path.ReplaceExtension(replacementExtension);
+            return *this;
+        }
 
         // Wrappers around the AZ::IO::Path concatenation operator
         friend RepoPath operator/(const RepoPath& lhs, const AZ::IO::PathView& rhs);
