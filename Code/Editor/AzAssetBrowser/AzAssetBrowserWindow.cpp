@@ -651,6 +651,7 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 {
     m_ui->m_middleStackWidget->show();
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
+    m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
     if (qobject_cast<AssetBrowserThumbnailView*>(viewToShow))
     {
@@ -669,8 +670,14 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
     m_ui->m_middleStackWidget->hide();
+    m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->RemoveFolderFilter();
+    if (!m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows().isEmpty())
+    {
+        m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
+    }
     m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+    m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
 }
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
@@ -704,7 +711,7 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
             targetIndexAncestor = targetIndexAncestor.parent();
         }
 
-        m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+        m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
     else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
     {

@@ -344,13 +344,13 @@ namespace AzToolsFramework
             {
                 QModelIndex curIndex = selectedIndexes[0];
                 m_expandToEntriesByDefault = true;
-                if (m_treeStateSaver)
+                if (m_treeStateSaver && m_applySnapshot)
                 {
                     m_treeStateSaver->ApplySnapshot();
                 }
 
                 setCurrentIndex(curIndex);
-                scrollTo(curIndex);
+                scrollTo(curIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
                 return;
             }
@@ -359,7 +359,7 @@ namespace AzToolsFramework
             m_expandToEntriesByDefault = hasFilter;
 
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not
-            if (m_treeStateSaver)
+            if (m_treeStateSaver && m_applySnapshot)
             {
                 m_treeStateSaver->ApplySnapshot();
             }
@@ -384,6 +384,12 @@ namespace AzToolsFramework
                 selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
                 m_indexToSelectAfterUpdate = QModelIndex();
             }
+            m_applySnapshot = true;
+        }
+
+        void AssetBrowserTreeView::SetApplySnapshot(bool shouldApplySnapshot)
+        {
+            m_applySnapshot = shouldApplySnapshot;
         }
 
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
