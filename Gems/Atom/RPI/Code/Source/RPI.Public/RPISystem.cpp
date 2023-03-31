@@ -30,6 +30,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/Device.h>
 #include <Atom/RHI.Reflect/PlatformLimitsDescriptor.h>
+#include <Atom/RHI/RHIUtils.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 #include <AzCore/Interface/Interface.h>
@@ -83,12 +84,15 @@ namespace AZ
             if (m_xrSystem)
             {
                 AZ::RHI::ResultCode resultCode = m_xrSystem->InitInstance();
-                // Fail result code can happen if no compatible device is attached. UnRegister xr system if that happens
+                // UnRegister xr system if a Fail ResultCode is returned
                 if (resultCode == AZ::RHI::ResultCode::Fail)
                 {
                     UnregisterXRSystem();
+                    AZ_Error(
+                        "RPISystem",
+                        resultCode == AZ::RHI::ResultCode::Success,
+                        "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled.");
                 }
-                AZ_Error("RPISystem", resultCode == AZ::RHI::ResultCode::Success, "Unable to initialize XR System. Possible reasons could be no xr compatible device found or Link mode not enabled");
             }
 
             //Init RHI device
@@ -494,14 +498,20 @@ namespace AZ
         void RPISystem::RegisterXRSystem(XRRenderingInterface* xrSystemInterface)
         { 
             AZ_Assert(!m_xrSystem, "XR System is already registered");
-            m_xrSystem = xrSystemInterface;
-            m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface());
+            if (m_rhiSystem.RegisterXRSystem(xrSystemInterface->GetRHIXRRenderingInterface()))
+            {
+                m_xrSystem = xrSystemInterface;
+            }
         }
 
         void RPISystem::UnregisterXRSystem()
         {
-            m_rhiSystem.UnregisterXRSystem();
-            m_xrSystem = nullptr;
+            AZ_Assert(m_xrSystem, "XR System is not registered");
+            if (m_xrSystem)
+            {
+                m_rhiSystem.UnregisterXRSystem();
+                m_xrSystem = nullptr;
+            }
         }
 
         XRRenderingInterface* RPISystem::GetXRSystem() const

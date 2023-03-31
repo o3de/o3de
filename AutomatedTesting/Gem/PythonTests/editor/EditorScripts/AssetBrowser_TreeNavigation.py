@@ -82,9 +82,12 @@ def AssetBrowser_TreeNavigation():
     else:
         Report.info("Asset Browser is already open")
 
-    # 3) Collapse all files initially
+    # 3) Switch to List view and collapse all files initially
     main_window = editor_window.findChild(QtWidgets.QMainWindow)
     asset_browser = pyside_utils.find_child_by_pattern(main_window, text="Asset Browser", type=QtWidgets.QDockWidget)
+    tree_view_button = asset_browser.findChild(QtWidgets.QToolButton, "m_treeViewButton")
+    tree_view_button.click()
+    general.idle_wait(1.0)
     tree = pyside_utils.find_child_by_pattern(asset_browser, "m_assetBrowserTreeViewWidget")
     scroll_area = tree.findChild(QtWidgets.QWidget, "qt_scrollarea_vcontainer")
     scroll_bar = scroll_area.findChild(QtWidgets.QScrollBar)

@@ -17,10 +17,10 @@
 #include <TestImpactFramework/TestImpactClientTestSelection.h>
 #include <TestImpactFramework/TestImpactClientSequenceReportSerializer.h>
 #include <TestImpactFramework/Native/TestImpactNativeRuntime.h>
+#include <TestImpactFramework/Native/TestImpactNativeRuntimeConfigurationFactory.h>
 
 #include <TestImpactConsoleUtils.h>
 #include <TestImpactNativeCommandLineOptions.h>
-#include <TestImpactNativeRuntimeConfigurationFactory.h>
 
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/containers/vector.h>
@@ -50,7 +50,7 @@ namespace TestImpact::Console
             std::cout << "Constructing in-memory model of source tree and test coverage for test suite ";
             std::cout << SuiteSetAsString(options.GetSuiteSet()).c_str() << ", this may take a moment...\n";
             NativeRuntime runtime(
-                NativeRuntimeConfigurationFactory(ReadFileContents<CommandLineOptionsException>(options.GetConfigurationFilePath())),
+                NativeRuntimeConfigurationFactory(ReadFileContents<ConfigurationException>(options.GetConfigurationFilePath())),
                 options.GetDataFilePath(),
                 options.GetPreviousRunDataFilePath(),
                 options.GetExcludedTests(),
@@ -60,7 +60,6 @@ namespace TestImpact::Console
                 options.GetFailedTestCoveragePolicy(),
                 options.GetTestFailurePolicy(),
                 options.GetIntegrityFailurePolicy(),
-                options.GetTestShardingPolicy(),
                 options.GetTargetOutputCapture(),
                 options.GetMaxConcurrency());
 

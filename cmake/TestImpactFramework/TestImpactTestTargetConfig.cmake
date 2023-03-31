@@ -10,7 +10,7 @@
 set(O3DE_TEST_IMPACT_INSTRUMENTATION_BIN "" CACHE PATH "Path to test impact framework instrumentation binary")
 
 # Label to add to test for them to be included in TIAF
-set(REQUIRES_TIAF_LABEL "REQURIES_tiaf")
+set(REQUIRES_TIAF_LABEL "REQUIRES_tiaf")
 
 # Test impact analysis opt-in for native test targets
 set(O3DE_TEST_IMPACT_NATIVE_TEST_TARGETS_ENABLED FALSE CACHE BOOL "Whether to enable native C++ test targets with the REQUIRES_TIAF_LABEL label for test impact analysis (otherwise, CTest will be used to run these targets).")
@@ -46,7 +46,6 @@ endif()
 #! o3de_test_impact_apply_test_labels: applies the the appropriate label to a test target for running in CTest according to whether
 #  or not their test framework type is enabled for running in TIAF.
 #
-# \arg:TEST_NAME The test target name
 # \arg:TEST_FRAMEWORK The test framework type of the test target
 # \arg:TEST_LABELS The existing test labels list that the TIAF label will be appended to
 function(o3de_test_impact_apply_test_labels TEST_FRAMEWORK TEST_LABELS)
@@ -61,7 +60,7 @@ function(o3de_test_impact_apply_test_labels TEST_FRAMEWORK TEST_LABELS)
     endif()
     
     if(remove_tiaf_label)
-        list(REMOVE_ITEM TEST_LABELS REQUIRES_TIAF_LABEL)
+        list(REMOVE_ITEM ${TEST_LABELS} ${REQUIRES_TIAF_LABEL})
         set(${TEST_LABELS} ${${TEST_LABELS}} PARENT_SCOPE)
     endif()
 endfunction()

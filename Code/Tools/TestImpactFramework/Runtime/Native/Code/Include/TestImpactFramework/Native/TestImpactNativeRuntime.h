@@ -56,7 +56,6 @@ namespace TestImpact
         //! @param executionFailureDraftingPolicy Determines how test targets that previously failed to execute are drafted into subsequent test sequences.
         //! @param testFailurePolicy Determines how to handle test targets that report test failures.
         //! @param integrationFailurePolicy Determines how to handle instances where the build system model and/or test impact analysis data is compromised.
-        //! @param testShardingPolicy  Determines how to handle test targets that have opted in to test sharding.
         NativeRuntime(
             NativeRuntimeConfig&& config,
             const AZStd::optional<RepoPath>& dataFile,
@@ -68,7 +67,6 @@ namespace TestImpact
             Policy::FailedTestCoverage failedTestCoveragePolicy,
             Policy::TestFailure testFailurePolicy,
             Policy::IntegrityFailure integrationFailurePolicy,
-            Policy::TestSharding testShardingPolicy,
             Policy::TargetOutputCapture targetOutputCapture,
             AZStd::optional<size_t> maxConcurrency = AZStd::nullopt);
 
@@ -161,7 +159,6 @@ namespace TestImpact
         Policy::FailedTestCoverage m_failedTestCoveragePolicy;
         Policy::TestFailure m_testFailurePolicy;
         Policy::IntegrityFailure m_integrationFailurePolicy;
-        Policy::TestSharding m_testShardingPolicy;
         Policy::TargetOutputCapture m_targetOutputCapture;
         size_t m_maxConcurrency = 0;
         AZStd::unique_ptr<BuildTargetList<NativeProductionTarget, NativeTestTarget>> m_buildTargets;
@@ -170,7 +167,6 @@ namespace TestImpact
         AZStd::unique_ptr<TestEngine> m_testEngine;
         AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_regularTestTargetExcludeList;
         AZStd::unique_ptr<TestTargetExclusionList<NativeTestTarget>> m_instrumentedTestTargetExcludeList;
-        AZStd::unordered_set<const NativeTestTarget*> m_testTargetShardList;
         AZStd::unordered_set<const NativeTestTarget*> m_previouslyFailingTestTargets;
         bool m_hasImpactAnalysisData = false;
     };
