@@ -12,6 +12,7 @@
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzFramework/Physics/Common/PhysicsTypes.h>
+#include <AzFramework/Physics/Configuration/SimulatedBodyConfiguration.h>
 
 #include <PhysX/ArticulationTypes.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
