@@ -51,6 +51,7 @@ namespace PhysX
         }
 
         auto* articulationLinkComponent = entity->FindComponent<ArticulationLinkComponent>();
+        AZ_Assert(articulationLinkComponent, "Entity being proceessed for articulation has not articulation link component.");
         linkData->m_articulationLinkConfiguration = articulationLinkComponent->m_config;
         linkData->m_articulationLinkConfiguration.m_entityId = entity->GetId();
         linkData->m_articulationLinkConfiguration.m_debugName = entity->GetName();
@@ -58,14 +59,11 @@ namespace PhysX
         // If the entity has a parent then it's not a root articulation and we fill the joint information.
         if (parentLinkData)
         {
-            auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
-            AZ_Assert(articulationComponent, "Entity being proceessed for articulation has not articulation link component.");
-
             linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
-                AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_localRotation),
-                articulationComponent->m_config.m_localPosition);
+                AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_localRotation),
+                articulationLinkComponent->m_config.m_localPosition);
 
-            if (articulationComponent->m_config.m_autoCalculateLeadFrame)
+            if (articulationLinkComponent->m_config.m_autoCalculateLeadFrame)
             {
                 linkData->m_articulationJointData.m_jointLeadLocalFrame =
                     linkData->m_localTransform * linkData->m_articulationJointData.m_jointFollowerLocalFrame;
@@ -73,8 +71,8 @@ namespace PhysX
             else
             {
                 linkData->m_articulationJointData.m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
-                    AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_leadLocalPosition),
-                    articulationComponent->m_config.m_leadLocalPosition);
+                    AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_leadLocalPosition),
+                    articulationLinkComponent->m_config.m_leadLocalPosition);
             }
         }
     }

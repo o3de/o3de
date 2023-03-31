@@ -184,7 +184,7 @@ namespace PhysX
                         0, &ArticulationLinkConfiguration::m_linearLimitUpper, "Upper Linear Limit", "Upper limit for linear motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::PrismaticPropertiesVisible)
                     ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_angularLimitNegative, "Lower Angular Limit", "Lower limit of angular motion..")
+                        0, &ArticulationLinkConfiguration::m_angularLimitNegative, "Lower Angular Limit", "Lower limit of angular motion.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::HingePropertiesVisible)
                     ->DataElement(
                         0, &ArticulationLinkConfiguration::m_angularLimitPositive, "Upper Angular Limit", "Lower limit of angular motion.")
@@ -193,7 +193,12 @@ namespace PhysX
 
                     ->DataElement(
                         0, &ArticulationLinkConfiguration::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
-                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType);
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
+
+                    ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")
+                    ->EndGroup();
             }
         }
     }

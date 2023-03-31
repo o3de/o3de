@@ -16,7 +16,52 @@
 
 namespace PhysX
 {
+    AZ_CLASS_ALLOCATOR_IMPL(ArticulationSensorConfiguration, AZ::SystemAllocator);
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationLinkConfiguration, AZ::SystemAllocator);
+
+    void ArticulationSensorConfiguration::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ArticulationSensorConfiguration>()
+                ->Version(1)
+                ->Field("Local Position", &ArticulationSensorConfiguration::m_localPosition)
+                ->Field("Local Rotation", &ArticulationSensorConfiguration::m_localRotation)
+                ->Field("Include Forward Dynamics Forces", &ArticulationSensorConfiguration::m_includeForwardDynamicsForces)
+                ->Field("Include Constraint Solver Forces", &ArticulationSensorConfiguration::m_includeConstraintSolverForces)
+                ->Field("Use World Frame", &ArticulationSensorConfiguration::m_useWorldFrame);
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<ArticulationSensorConfiguration>("PhysX Articulation Sensor Configuration", "")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationSensorConfiguration::m_localPosition,
+                        "Local Position",
+                        "The local position of the sensor relative to the articulation link")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationSensorConfiguration::m_localRotation,
+                        "Local Rotation",
+                        "The local rotation of the sensor relative to the articulation link")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationSensorConfiguration::m_includeForwardDynamicsForces,
+                        "Include Forward Dynamics Forces",
+                        "Whether the output reported by the sensor should include forward dynamics forces")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationSensorConfiguration::m_includeConstraintSolverForces,
+                        "Include Constraint Solver Forces",
+                        "Whether the output reported by the sensor should include constraint solver forces")
+                    ->DataElement(
+                        AZ::Edit::UIHandlers::Default,
+                        &ArticulationSensorConfiguration::m_useWorldFrame,
+                        "Use World Frame",
+                        "If true, the output will be reported in world space, otherwise in the local space of the sensor");
+            }
+        }
+    }
 
     void ArticulationLinkConfiguration::Reflect(AZ::ReflectContext* context)
     {
@@ -50,7 +95,7 @@ namespace PhysX
                 ->Field("Angular Limit Negative", &ArticulationLinkConfiguration::m_angularLimitNegative)
                 ->Field("Angular Limit Positive", &ArticulationLinkConfiguration::m_angularLimitPositive)
                 ->Field("Motor configuration", &ArticulationLinkConfiguration::m_motorConfiguration)
-                ;
+                ->Field("Sensor Configurations", &ArticulationLinkConfiguration::m_sensorConfigs);
         }
     }
 
