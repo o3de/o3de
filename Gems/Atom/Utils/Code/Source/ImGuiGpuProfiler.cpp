@@ -9,6 +9,7 @@
 #include <Atom/Utils/ImGuiGpuProfiler.h>
 
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI.Reflect/MemoryStatistics.h>
 #include <Atom/RPI.Public/Pass/ParentPass.h>
 #include <Atom/RPI.Public/Pass/RenderPass.h>
@@ -1383,8 +1384,8 @@ namespace AZ
         void ImGuiGpuMemoryView::PerformCapture()
         {
             // Collect and save new GPU memory usage data
-            auto* rhiSystem = AZ::RHI::RHISystemInterface::Get();
-            const auto* memoryStatistics = rhiSystem->GetMemoryStatistics();
+            RHI::RHIMemoryStatisticsInterface* rhiMemStats = RHI::RHIMemoryStatisticsInterface::Get();
+            const auto* memoryStatistics = rhiMemStats->GetMemoryStatistics();
             if (memoryStatistics)
             {
                 m_savedPools = memoryStatistics->m_pools;
@@ -1709,16 +1710,6 @@ namespace AZ
             }
         }
 
-
-        int GetIntMember(const rapidjson::Value& object, const char* memberName, int defaultValue)
-        {
-            if (object.HasMember(memberName))
-            {
-                return object[memberName].GetInt();
-            }
-            return defaultValue;
-        }
-
         void ImGuiGpuMemoryView::SaveToJSON()
         {
             time_t ltime;
@@ -1742,9 +1733,8 @@ namespace AZ
             }
 
             rapidjson::Document doc;
-            rapidjson::Value& root = doc.SetObject();
 
-            AZ::RHI::WritePoolsToJson(m_savedPools, doc, root);
+            AZ::RHI::RHIMemoryStatisticsInterface::Get()->WriteResourcePoolInfoToJson(m_savedPools, doc);
 
             rapidjson::StringBuffer jsonStringBuffer;
             rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(jsonStringBuffer);
@@ -1760,156 +1750,28 @@ namespace AZ
         {
             m_loadedCapturePath.clear();
 
-            auto outcome = JsonSerializationUtils::ReadJsonFile(fileName);
+            auto serializeOutcome = JsonSerializationUtils::ReadJsonFile(fileName);
 
-            if (!outcome.IsSuccess())
+            if (!serializeOutcome.IsSuccess())
             {
-                m_captureMessage = AZStd::string::format("Failed to load memory data from %s, error message = \"%s\"", fileName.c_str(), outcome.GetError().c_str());
+                m_captureMessage = AZStd::string::format("Failed to load memory data from %s, error message = \"%s\"", 
+                                                        fileName.c_str(), serializeOutcome.GetError().c_str());
                 AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
                 return;
             }
 
             m_loadedCapturePath = fileName;
-            m_savedHeaps.clear();
-            m_savedHeaps.resize(2);
-            m_savedHeaps[0].m_name = AZ::Name{ "Host Heap" };
-            m_savedHeaps[0].m_heapMemoryType = RHI::HeapMemoryLevel::Host;
-            m_savedHeaps[1].m_name = AZ::Name{ "Device Heap" };
-            m_savedHeaps[1].m_heapMemoryType = RHI::HeapMemoryLevel::Device;
+            rapidjson::Document& doc = serializeOutcome.GetValue();
 
-            m_savedPools.clear();
-            AZStd::unordered_map<AZ::Name, AZ::RHI::MemoryStatistics::Pool> pools;
-
-            rapidjson::Document& doc = outcome.GetValue();
-            if (!doc.IsObject() || !doc.HasMember(AZ::RHI::PoolsAttribStr) )
+            auto loadOutcome = AZ::RHI::RHIMemoryStatisticsInterface::Get()->LoadResourcePoolInfoFromJson(
+                                                m_savedPools, m_savedHeaps, doc, fileName);
+            if (!loadOutcome.IsSuccess())
             {
-                m_captureMessage = AZStd::string::format("File %s doesn't contain saved memory state", fileName.c_str());
-                AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
+                m_captureMessage = loadOutcome.GetError();
                 return;
             }
 
-            rapidjson::Value& poolsData = doc[AZ::RHI::PoolsAttribStr];
-            int dataVersionMajor = GetIntMember(doc, AZ::RHI::MemoryDataVersionMajorAttribStr, 1);
-            int dataVersionMinor = GetIntMember(doc, AZ::RHI::MemoryDataVersionMinorAttribStr, 0);
-            int dataVersionRevision = GetIntMember(doc, AZ::RHI::MemoryDataVersionRevisionAttribStr, 0);
-
-            if (dataVersionMajor == 1 && dataVersionMinor == 0 && dataVersionRevision >= 0)
-            {
-                if (!poolsData.IsArray())
-                {
-                    m_captureMessage = AZStd::string::format("File %s doesn't contain saved memory state", fileName.c_str());
-                    AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                    return;
-                }
-                
-                for (auto poolItr = poolsData.Begin(); poolItr != poolsData.End(); ++poolItr)
-                {
-                    if (!poolItr->IsObject())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format)",
-                            fileName.c_str());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    rapidjson::Value& poolData = *poolItr;
-                    RHI::MemoryStatistics::Pool pool;
-                    pool.m_name = poolData[AZ::RHI::PoolNameAttribStr].GetString();
-                    AZStd::string poolHeapType = poolData[AZ::RHI::MemoryTypeAttribStr].GetString();
-                    RHI::HeapMemoryUsage* heapMemUsage = nullptr;
-                    RHI::MemoryStatistics::Heap* globalHeapStats = nullptr;
-                    if (poolHeapType == "Host")
-                    {
-                        heapMemUsage = &pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Host);
-                        globalHeapStats = &m_savedHeaps[0];
-                    }
-                    else if (poolHeapType == "Device")
-                    {
-                        heapMemUsage = &pool.m_memoryUsage.GetHeapMemoryUsage(AZ::RHI::HeapMemoryLevel::Device);
-                        globalHeapStats = &m_savedHeaps[1];
-                    }
-                    else
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    heapMemUsage->m_budgetInBytes = poolData[AZ::RHI::BudgetInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_totalResidentInBytes = poolData[AZ::RHI::TotalResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_usedResidentInBytes = poolData[AZ::RHI::UsedResidentInBytesAttribStr].GetUint64();
-                    heapMemUsage->m_fragmentation = poolData[AZ::RHI::FragmentationAttribStr].GetFloat();
-                    heapMemUsage->m_uniqueAllocationBytes = poolData[AZ::RHI::UniqueAllocationsInBytesAttribStr].GetUint64();
-
-                    globalHeapStats->m_memoryUsage.m_totalResidentInBytes += heapMemUsage->m_totalResidentInBytes;
-                    globalHeapStats->m_memoryUsage.m_usedResidentInBytes += heapMemUsage->m_usedResidentInBytes;
-
-                    rapidjson::Value& buffersList = poolData[AZ::RHI::BuffersListAttribStr];
-                    if (!buffersList.IsArray())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    pool.m_buffers.reserve(buffersList.Size());
-                    for (auto bufferItr = buffersList.Begin(); bufferItr != buffersList.End(); ++bufferItr)
-                    {
-                        if (!bufferItr->IsObject())
-                        {
-                            m_captureMessage = AZStd::string::format(
-                                "Attempted to load buffer memory data from %s but a parse error occurred (indicating invalid file "
-                                "format) at pool %s",
-                                fileName.c_str(), pool.m_name.GetCStr());
-                            AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                            return;
-                        }
-                        rapidjson::Value& bufferData = *bufferItr;
-                        RHI::MemoryStatistics::Buffer buffer;
-                        buffer.m_name = bufferData[AZ::RHI::BufferNameAttribStr].GetString();
-                        buffer.m_sizeInBytes = bufferData[AZ::RHI::SizeInBytesAttribStr].GetUint64();
-                        buffer.m_bindFlags = static_cast<RHI::BufferBindFlags>(bufferData[AZ::RHI::BindFlagsAttribStr].GetUint());
-                        pool.m_buffers.push_back(AZStd::move(buffer));
-                    }
-
-                    rapidjson::Value& imagesList = poolData[AZ::RHI::ImagesListAttribStr];
-                    if (!imagesList.IsArray())
-                    {
-                        m_captureMessage = AZStd::string::format(
-                            "Attempted to load memory data from %s but a parse error occurred (indicating invalid file "
-                            "format) at pool %s",
-                            fileName.c_str(), pool.m_name.GetCStr());
-                        AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                        return;
-                    }
-                    pool.m_images.reserve(imagesList.Size());
-                    for (auto imageItr = imagesList.Begin(); imageItr != imagesList.End(); ++imageItr)
-                    {
-                        if (!imageItr->IsObject())
-                        {
-                            m_captureMessage = AZStd::string::format(
-                                "Attempted to load buffer memory data from %s but a parse error occurred (indicating invalid file "
-                                "format) at pool %s",
-                                fileName.c_str(), pool.m_name.GetCStr());
-                            AZ_Error("ImGuiGpuMemoryView", false, m_captureMessage.c_str());
-                            return;
-                        }
-                        rapidjson::Value& imageData = *imageItr;
-                        RHI::MemoryStatistics::Image image;
-                        image.m_name = imageData[AZ::RHI::ImageNameAttribStr].GetString();
-                        image.m_sizeInBytes = imageData[AZ::RHI::SizeInBytesAttribStr].GetUint64();
-                        image.m_bindFlags = static_cast<RHI::ImageBindFlags>(imageData[AZ::RHI::BindFlagsAttribStr].GetUint());
-                        pool.m_images.push_back(AZStd::move(image));
-                    }
-
-                    m_savedPools.push_back(AZStd::move(pool));
-                }
-            }
+            // load from json here
             UpdateTableRows();
             UpdateTreemaps();
         }

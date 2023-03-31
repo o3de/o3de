@@ -7,7 +7,7 @@
  */
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/RHISystemInterface.h>
-#include <Atom/RHI.Reflect/MemoryStatistics.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <RHI/Device.h>
 #include <RHI/PhysicalDevice.h>
 #include <RHI/Conversions.h>

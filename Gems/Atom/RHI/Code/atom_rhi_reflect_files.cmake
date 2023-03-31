@@ -57,7 +57,6 @@ set(FILES
     Source/RHI.Reflect/IndirectBufferLayout.cpp
     Include/Atom/RHI.Reflect/MemoryEnums.h
     Include/Atom/RHI.Reflect/MemoryUsage.h
-    Source/RHI.Reflect/MemoryStatistics.cpp
     Source/RHI.Reflect/MemoryUsage.cpp
     Include/Atom/RHI.Reflect/PhysicalDeviceDescriptor.h
     Source/RHI.Reflect/PhysicalDeviceDescriptor.cpp

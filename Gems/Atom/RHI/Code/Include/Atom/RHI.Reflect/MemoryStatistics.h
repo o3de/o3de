@@ -10,13 +10,8 @@
 #include <Atom/RHI.Reflect/BufferDescriptor.h>
 #include <Atom/RHI.Reflect/ImageDescriptor.h>
 #include <Atom/RHI.Reflect/MemoryUsage.h>
-#include <AzCore/Console/IConsole.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Name/Name.h>
-
-#include <AzCore/JSON/document.h>
-
-AZ_CVAR_EXTERNED(bool, r_EnableAutoGpuMemDump); 
 
 namespace AZ::RHI
 {
@@ -96,50 +91,4 @@ namespace AZ::RHI
         //! Indicates if detailed memory statistics were captured
         bool m_detailedCapture;
     };
-
-    extern const char PoolNameAttribStr[];
-    extern const char HostMemoryTypeValueStr[];
-    extern const char DeviceMemoryTypeValueStr[];
-    extern const char MemoryTypeAttribStr[];
-    extern const char BudgetInBytesAttribStr[];
-    extern const char TotalResidentInBytesAttribStr[];
-    extern const char UsedResidentInBytesAttribStr[];
-    extern const char FragmentationAttribStr[];
-    extern const char UniqueAllocationsInBytesAttribStr[];
-    extern const char BufferCountAttribStr[];
-    extern const char ImageCountAttribStr[];
-    extern const char BuffersListAttribStr[];
-    extern const char ImagesListAttribStr[];
-
-    // Buffer and Image attributes
-    extern const char BufferNameAttribStr[];
-    extern const char ImageNameAttribStr[];
-    extern const char SizeInBytesAttribStr[];
-    extern const char BindFlagsAttribStr[];
-
-    // Top level attributes
-    extern const char PoolsAttribStr[];
-    extern const char MemoryDataVersionMajorAttribStr[];
-    extern const char MemoryDataVersionMinorAttribStr[];
-    extern const char MemoryDataVersionRevisionAttribStr[];
-
-    //! Utility function to write captured pool data to a json document
-    void WritePoolsToJson(AZStd::vector<MemoryStatistics::Pool>& pools, rapidjson::Document& doc, rapidjson::Value& docRoot);
-
-    //! Utility function to trigger an emergency dump of pool information to json.
-    //! intended to be used for gpu memory failure debugging.
-    void DumpPoolInfoToJson();
-
-#ifndef AZ_RELEASE_BUILD
-    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(result) \
-    do \
-    { \
-        if (r_EnableAutoGpuMemDump && !(result)) \
-        { \
-            AZ::RHI::DumpPoolInfoToJson(); \
-        } \
-    } while(false)
-#else
-    #define AZ_RHI_DUMP_POOL_INFO_ON_FAIL(result)
-#endif
 }
