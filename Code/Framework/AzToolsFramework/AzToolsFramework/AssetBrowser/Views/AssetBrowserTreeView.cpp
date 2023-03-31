@@ -624,26 +624,35 @@ namespace AzToolsFramework
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
         {
-            creators.push_back(
-                { "Folder_Creator", "Folder", QIcon(),
-                  [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
-                  {
-                    AZ::IO::Path path = fullSourceFolderNameInCallback.c_str();
-                    path /= "New Folder";
-
-                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
-                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
-                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
-                        path.c_str(),
-                        AZ::Crc32(),
-                        true);
-
-                    if (!AZ::IO::SystemFile::Exists(path.c_str()))
-                    {
-                        AZ::IO::SystemFile::CreateDir(path.c_str());
-                    }
-                  }
+            auto it = std::find_if(creators.begin(), creators.end(),
+                [&](const AzToolsFramework::AssetBrowser::SourceFileCreatorDetails& creator)
+                {
+                    return creator.m_identifier == "Folder_Creator";
                 });
+            if (it == creators.end())
+            {
+                creators.push_back(
+                    { "Folder_Creator",
+                      "Folder",
+                      QIcon(),
+                      [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                      {
+                          AZ::IO::Path path = fullSourceFolderNameInCallback.c_str();
+                          path /= "New Folder";
+
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              path.c_str(),
+                              AZ::Crc32(),
+                              true);
+
+                          if (!AZ::IO::SystemFile::Exists(path.c_str()))
+                          {
+                              AZ::IO::SystemFile::CreateDir(path.c_str());
+                          }
+                      } });
+            }
         }
 
         void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
