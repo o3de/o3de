@@ -16,7 +16,7 @@
 
 namespace TestImpact
 {
-    namespace ChangeListFields
+    namespace ChangeListSerializer
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -26,16 +26,19 @@ namespace TestImpact
             "deletedFiles"
         };
 
-        enum
+        enum Fields
         {
             CreateKey,
             UpdateKey,
-            DeleteKey
+            DeleteKey,
+            // Checksum
+            _CHECKSUM_
         };
-    } // namespace
+    } // namespace ChangeListSerializer
 
     AZStd::string SerializeChangeList(const ChangeList& changeList)
     {
+        static_assert(ChangeListSerializer::Fields::_CHECKSUM_ == AZStd::size(ChangeListSerializer::Keys));
         rapidjson::StringBuffer stringBuffer;
         rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(stringBuffer);
 
@@ -53,9 +56,9 @@ namespace TestImpact
         };
 
         writer.StartObject();
-        serializeFileList(ChangeListFields::Keys[ChangeListFields::CreateKey], changeList.m_createdFiles);
-        serializeFileList(ChangeListFields::Keys[ChangeListFields::UpdateKey], changeList.m_updatedFiles);
-        serializeFileList(ChangeListFields::Keys[ChangeListFields::DeleteKey], changeList.m_deletedFiles);
+        serializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::CreateKey], changeList.m_createdFiles);
+        serializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::UpdateKey], changeList.m_updatedFiles);
+        serializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::DeleteKey], changeList.m_deletedFiles);
         writer.EndObject();
 
         return stringBuffer.GetString();
@@ -83,9 +86,9 @@ namespace TestImpact
             return fileList;
         };
 
-        changeList.m_createdFiles = deserializeFileList(ChangeListFields::Keys[ChangeListFields::CreateKey]);
-        changeList.m_updatedFiles = deserializeFileList(ChangeListFields::Keys[ChangeListFields::UpdateKey]);
-        changeList.m_deletedFiles = deserializeFileList(ChangeListFields::Keys[ChangeListFields::DeleteKey]);
+        changeList.m_createdFiles = deserializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::CreateKey]);
+        changeList.m_updatedFiles = deserializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::UpdateKey]);
+        changeList.m_deletedFiles = deserializeFileList(ChangeListSerializer::Keys[ChangeListSerializer::Fields::DeleteKey]);
 
         return changeList;
     }

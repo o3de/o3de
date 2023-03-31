@@ -28,6 +28,9 @@ namespace TestImpact
         //! Returns the test target launch method.
         LaunchMethod GetLaunchMethod() const;
 
+        // TestTarget overrides ...
+        bool CanEnumerate() const override;
+
     private:
         NativeTargetLaunchMeta m_launchMeta;
     };

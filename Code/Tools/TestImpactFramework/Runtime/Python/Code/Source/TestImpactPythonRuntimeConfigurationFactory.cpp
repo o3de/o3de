@@ -8,13 +8,13 @@
 
 #include <TestImpactFramework/TestImpactConfigurationException.h>
 #include <TestImpactFramework/TestImpactUtils.h>
+#include <TestImpactFramework/Python/TestImpactPythonRuntimeConfigurationFactory.h>
 
-#include <TestImpactPythonRuntimeConfigurationFactory.h>
 #include <TestImpactRuntimeConfigurationFactory.h>
 
 namespace TestImpact
 {
-    namespace Config
+    namespace PythonConfigFactory
     {
         // Keys for pertinent JSON elements
         constexpr const char* Keys[] = {
@@ -27,7 +27,7 @@ namespace TestImpact
             "workspace",
         };
 
-        enum
+        enum Fields
         {
             TargetExclude,
             Python,
@@ -36,26 +36,29 @@ namespace TestImpact
             TestRunner,
             PythonCmd,
             Workspace,
+            // Checksum
+            _CHECKSUM_
         };
     } // namespace Config
 
     PythonTestEngineConfig ParseTestEngineConfig(const rapidjson::Value& testEngine)
     {
         PythonTestEngineConfig testEngineConfig;
-        testEngineConfig.m_testRunner.m_pythonCmd = testEngine[Config::Keys[Config::TestRunner]][Config::Keys[Config::PythonCmd]].GetString();
+        testEngineConfig.m_testRunner.m_pythonCmd = testEngine[PythonConfigFactory::Keys[PythonConfigFactory::TestRunner]][PythonConfigFactory::Keys[PythonConfigFactory::PythonCmd]].GetString();
         return testEngineConfig;
     }
 
     PythonTargetConfig ParseTargetConfig(const rapidjson::Value& target)
     {
         PythonTargetConfig targetConfig;
-        targetConfig.m_excludedTargets = ParseTargetExcludeList(target[Config::Keys[Config::TargetExclude]].GetArray());
+        targetConfig.m_excludedTargets = ParseTargetExcludeList(target[PythonConfigFactory::Keys[PythonConfigFactory::TargetExclude]].GetArray());
 
         return targetConfig;
     }
 
     PythonRuntimeConfig PythonRuntimeConfigurationFactory(const AZStd::string& configurationData)
     {
+        static_assert(PythonConfigFactory::Fields::_CHECKSUM_ == AZStd::size(PythonConfigFactory::Keys));
         rapidjson::Document configurationFile;
 
         if (configurationFile.Parse(configurationData.c_str()).HasParseError())
@@ -65,9 +68,9 @@ namespace TestImpact
 
         PythonRuntimeConfig runtimeConfig;
         runtimeConfig.m_commonConfig = RuntimeConfigurationFactory(configurationData);
-        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::Workspace]]);
-        runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TestEngine]]);
-        runtimeConfig.m_target = ParseTargetConfig(configurationFile[Config::Keys[Config::Python]][Config::Keys[Config::TargetConfig]]);
+        runtimeConfig.m_workspace = ParseWorkspaceConfig(configurationFile[PythonConfigFactory::Keys[PythonConfigFactory::Python]][PythonConfigFactory::Keys[PythonConfigFactory::Workspace]]);
+        runtimeConfig.m_testEngine = ParseTestEngineConfig(configurationFile[PythonConfigFactory::Keys[PythonConfigFactory::Python]][PythonConfigFactory::Keys[PythonConfigFactory::TestEngine]]);
+        runtimeConfig.m_target = ParseTargetConfig(configurationFile[PythonConfigFactory::Keys[PythonConfigFactory::Python]][PythonConfigFactory::Keys[PythonConfigFactory::TargetConfig]]);
 
         return runtimeConfig;
     }

@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #include <TestImpactFramework/Native/TestImpactNativeConfiguration.h>
 
 namespace TestImpact
