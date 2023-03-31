@@ -652,15 +652,15 @@ namespace O3DE::ProjectManager
         gemInfo.m_directoryLink = QDir::cleanPath(gemInfo.m_path);
         gemInfo.m_isEngineGem = Py_To_Int_Optional(data, "engine_gem", 0);
 
-        if (gemInfo.m_origin.contains("Open 3D Engine"))
+        if (gemInfo.m_isEngineGem || gemInfo.m_origin.contains("Open 3D Engine"))
         {
             gemInfo.m_gemOrigin = GemInfo::GemOrigin::Open3DEngine;
         }
-        else if (data.contains("origin"))
+        else if (QUrl(gemInfo.m_repoUri, QUrl::StrictMode).isValid())
         {
+            // this gem has a valid remote repo 
             gemInfo.m_gemOrigin = GemInfo::GemOrigin::Remote;
         }
-        // If no origin was provided this cannot be remote and would be specified if O3DE so it should be local
         else
         {
             gemInfo.m_gemOrigin = GemInfo::GemOrigin::Local;
@@ -1700,7 +1700,8 @@ namespace O3DE::ProjectManager
                     {
                         GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
                         gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
-                        gemInfos.push_back(gemInfo);
+                        gemInfo.m_gemOrigin = GemInfo::Remote;
+                        gemInfos.push_back(AZStd::move(gemInfo));
                     }
                 }
             });
@@ -1727,7 +1728,8 @@ namespace O3DE::ProjectManager
                     {
                         GemInfo gemInfo = GemInfoFromPath(path, pybind11::none());
                         gemInfo.m_downloadStatus = GemInfo::DownloadStatus::NotDownloaded;
-                        gemInfos.push_back(gemInfo);
+                        gemInfo.m_gemOrigin = GemInfo::Remote;
+                        gemInfos.push_back(AZStd::move(gemInfo));
                     }
                 }
             });
