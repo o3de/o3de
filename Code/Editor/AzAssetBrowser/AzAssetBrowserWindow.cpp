@@ -649,17 +649,29 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 {
+    auto* thumbnailView = qobject_cast<AssetBrowserThumbnailView*>(viewToShow);
+    if (thumbnailView && m_ui->m_thumbnailView->GetThumbnailActiveView())
+    {
+        return;
+    }
+
+    auto* expandedTableView = qobject_cast<AssetBrowserExpandedTableView*>(viewToShow);
+    if (expandedTableView && m_ui->m_expandedTableView->GetExpandedTableViewActive())
+    {
+        return;
+    }
+
     m_ui->m_middleStackWidget->show();
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
     m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
-    if (qobject_cast<AssetBrowserThumbnailView*>(viewToShow))
+    if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
         m_ui->m_searchWidget->setDisabled(false);
     }
-    else if (qobject_cast<AssetBrowserExpandedTableView*>(viewToShow))
+    else if (expandedTableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(true);
@@ -669,15 +681,18 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
-    m_ui->m_middleStackWidget->hide();
-    m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
-    m_ui->m_searchWidget->RemoveFolderFilter();
-    if (!m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows().isEmpty())
+    if (m_ui->m_thumbnailView->GetThumbnailActiveView() || m_ui->m_expandedTableView->GetExpandedTableViewActive())
     {
-        m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
+        m_ui->m_middleStackWidget->hide();
+        m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
+        m_ui->m_searchWidget->RemoveFolderFilter();
+        if (!m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows().isEmpty())
+        {
+            m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
+        }
+        m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+        m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
     }
-    m_ui->m_thumbnailView->SetThumbnailActiveView(false);
-    m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
 }
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
