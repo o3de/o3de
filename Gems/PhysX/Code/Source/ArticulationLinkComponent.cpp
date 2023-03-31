@@ -131,6 +131,7 @@ namespace PhysX
                     {
                         m_driveJoint = m_link->getInboundJoint();
                     }
+                    m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
                 }
             }
         }
@@ -180,6 +181,26 @@ namespace PhysX
 
         PHYSX_SCENE_WRITE_LOCK(pxScene);
         pxScene->addArticulation(*m_articulation);
+
+        const AZ::u32 numSensors = m_articulation->getNbSensors();
+        physx::PxArticulationSensor* sensor;
+        for (AZ::u32 sensorIndex = 0; sensorIndex < numSensors; sensorIndex++)
+        {
+            m_articulation->getSensors(&sensor, 1, sensorIndex);
+            ActorData* linkActorData = Utils::GetUserData(sensor->getLink());
+            if (linkActorData)
+            {
+                const auto entityId = linkActorData->GetEntityId();
+                if (m_sensorIndicesByEntityId.contains(entityId))
+                {
+                    m_sensorIndicesByEntityId[entityId].push_back(sensor->getIndex());
+                }
+                else
+                {
+                    m_sensorIndicesByEntityId.insert(EntityIdSensorIndexListPair({ entityId, { sensor->getIndex() } }));
+                }
+            }
+        }
     }
 
     void ArticulationLinkComponent::SetRootSpecificProperties(const ArticulationLinkConfiguration& rootLinkConfiguration)
@@ -272,7 +293,7 @@ namespace PhysX
             sensor->setFlag(physx::PxArticulationSensorFlag::eCONSTRAINT_SOLVER_FORCES, sensorConfig.m_includeConstraintSolverForces);
             sensor->setFlag(physx::PxArticulationSensorFlag::eWORLD_FRAME, sensorConfig.m_useWorldFrame);
         }
-        
+
         m_articulationLinksByEntityId.insert(EntityIdArticulationLinkPair{ articulationLinkConfiguration.m_entityId, thisPxLink });
 
         for (const auto& childLink : thisLinkData.m_childLinks)
@@ -349,6 +370,19 @@ namespace PhysX
         else
         {
             return nullptr;
+        }
+    }
+
+    const AZStd::vector<AZ::u32> ArticulationLinkComponent::GetSensorIndices(const AZ::EntityId entityId)
+    {
+        if (const auto iterator = m_sensorIndicesByEntityId.find(entityId);
+            iterator != m_sensorIndicesByEntityId.end())
+        {
+            return iterator->second;
+        }
+        else
+        {
+            return {};
         }
     }
 

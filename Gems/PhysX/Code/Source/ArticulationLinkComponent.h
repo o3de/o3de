@@ -75,6 +75,7 @@ namespace PhysX
         float GetMaxJointVelocity() const override;
 #endif
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
+        const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
@@ -110,12 +111,16 @@ namespace PhysX
         physx::PxArticulationLink* m_link = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
 
+        AZStd::vector<AZ::u32> m_sensorIndices;
+
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AZStd::vector<AzPhysics::SimulatedBodyHandle> m_articulationLinks;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
 
         using EntityIdArticulationLinkPair = AZStd::pair<AZ::EntityId, physx::PxArticulationLink*>;
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
+        using EntityIdSensorIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_sensorIndicesByEntityId;
     };
 
     //! Utility function for detecting if the current entity is the root of articulation.
