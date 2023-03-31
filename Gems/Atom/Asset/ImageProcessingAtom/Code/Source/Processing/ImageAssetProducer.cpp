@@ -21,6 +21,7 @@
 #include <Atom/RPI.Reflect/Image/ImageAsset.h>
 
 #include <AzCore/Asset/AssetManager.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 
@@ -225,6 +226,27 @@ namespace ImageProcessingAtom
                 // The Asset system can be modified to solve the problem so the order doesn't matter.
                 // The task is tracked in ATOM-242
                 m_jobProducts.push_back(AZStd::move(product));
+
+                auto& imageDescriptor = imageAsset->GetImageDescriptor();
+
+                AZStd::string folder;
+                AZStd::string jsonName;
+                folder = AZStd::string::format("%s/%s.abdata.json", m_productFolder.c_str(), m_fileName.c_str());
+
+                AssetBuilderSDK::CreateABDataFile(folder,
+                    [imageDescriptor](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+                {
+                    writer.Key("dimension");
+                    writer.StartArray();
+                    writer.Double(imageDescriptor.m_size.m_width);
+                    writer.Double(imageDescriptor.m_size.m_height);
+                    writer.Double(imageDescriptor.m_size.m_depth);
+                    writer.EndArray();
+                });
+
+                AssetBuilderSDK::JobProduct jsonProduct(folder);
+                jsonProduct.m_productSubID = product.m_productSubID + 1;
+                m_jobProducts.push_back(AZStd::move(jsonProduct));
             }
         }
 
