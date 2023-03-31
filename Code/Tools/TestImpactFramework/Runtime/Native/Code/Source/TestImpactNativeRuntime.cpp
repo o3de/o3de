@@ -26,7 +26,9 @@
 namespace TestImpact
 {
     NativeTestTargetMetaMap ReadNativeTestTargetMetaMapFile(
-        const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet, const RepoPath& testTargetMetaConfigFile)
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet,
+        const RepoPath& testTargetMetaConfigFile)
     {
         const auto masterTestListData = ReadFileContents<RuntimeException>(testTargetMetaConfigFile);
         return NativeTestTargetMetaMapFactory(masterTestListData, suiteSet, suiteLabelExcludeSet);
@@ -43,7 +45,6 @@ namespace TestImpact
         Policy::FailedTestCoverage failedTestCoveragePolicy,
         Policy::TestFailure testFailurePolicy,
         Policy::IntegrityFailure integrationFailurePolicy,
-        Policy::TestSharding testShardingPolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<size_t> maxConcurrency)
         : m_config(AZStd::move(config))
@@ -53,7 +54,6 @@ namespace TestImpact
         , m_failedTestCoveragePolicy(failedTestCoveragePolicy)
         , m_testFailurePolicy(testFailurePolicy)
         , m_integrationFailurePolicy(integrationFailurePolicy)
-        , m_testShardingPolicy(testShardingPolicy)
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
@@ -96,8 +96,8 @@ namespace TestImpact
         m_testEngine = AZStd::make_unique<TestEngine>(
             m_config.m_commonConfig.m_repo.m_root,
             m_config.m_target.m_outputDirectory,
-            m_config.m_workspace.m_temp.m_enumerationCacheDirectory,
             m_config.m_workspace.m_temp,
+            m_config.m_shardedArtifactDir,
             m_config.m_testEngine.m_testRunner.m_binary,
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
@@ -200,7 +200,6 @@ namespace TestImpact
         policyState.m_integrityFailurePolicy = m_integrationFailurePolicy;
         policyState.m_targetOutputCapture = m_targetOutputCapture;
         policyState.m_testFailurePolicy = m_testFailurePolicy;
-        policyState.m_testShardingPolicy = m_testShardingPolicy;
 
         return policyState;
     }

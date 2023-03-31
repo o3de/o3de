@@ -9,6 +9,7 @@
 set(FILES
     Include/TestImpactFramework/Python/TestImpactPythonRuntime.h
     Include/TestImpactFramework/Python/TestImpactPythonConfiguration.h
+    Include/TestImpactFramework/Python/TestImpactPythonRuntimeConfigurationFactory.h
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.cpp
     Source/Artifact/Factory/TestImpactPythonTestTargetMetaMapFactory.h
     Source/Artifact/Static/TestImpactPythonTestTargetMeta.h
@@ -35,4 +36,5 @@ set(FILES
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
     Source/TestImpactPythonRuntime.cpp
+    Source/TestImpactPythonRuntimeConfigurationFactory.cpp
 )

@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/std/string/string.h>
 

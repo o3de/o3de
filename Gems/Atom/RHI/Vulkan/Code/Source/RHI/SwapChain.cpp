@@ -95,7 +95,7 @@ namespace AZ
 
         void SwapChain::SetNameInternal(const AZStd::string_view& name)
         {
-            if (IsInitialized() && !name.empty())
+            if ((m_nativeSwapChain != VK_NULL_HANDLE) && IsInitialized() && !name.empty())
             {
                 Debug::SetNameToObject(reinterpret_cast<uint64_t>(m_nativeSwapChain), name.data(), VK_OBJECT_TYPE_SWAPCHAIN_KHR, static_cast<Device&>(GetDevice()));
             }

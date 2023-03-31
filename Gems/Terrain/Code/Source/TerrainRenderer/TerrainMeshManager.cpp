@@ -76,6 +76,8 @@ namespace Terrain
             [this](const AZ::Name&, AZ::RPI::ShaderOptionValue) { m_rebuildDrawPackets = true; }
         };
         AZ::RPI::ShaderSystemInterface::Get()->Connect(m_handleGlobalShaderOptionUpdate);
+        
+        m_meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
 
         AZ::RHI::Ptr<AZ::RHI::Device> rhiDevice = AZ::RHI::RHISystemInterface::Get()->GetDevice();
         m_rayTracingFeatureProcessor = m_parentScene->GetFeatureProcessor<AZ::Render::RayTracingFeatureProcessor>();
@@ -150,6 +152,10 @@ namespace Terrain
 
     void TerrainMeshManager::Reset()
     {
+        if (m_meshMovedFlag.IsValid())
+        {
+            m_parentScene->GetViewTagBitRegistry().ReleaseTag(m_meshMovedFlag);
+        }
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
         m_sectorLods.clear();
@@ -512,14 +518,12 @@ namespace Terrain
             AZ::RPI::AuxGeomFeatureProcessorInterface::GetDrawQueueForScene(m_parentScene) :
             nullptr;
 
-        auto meshMovedFlag = m_parentScene->GetViewTagBitRegistry().AcquireTag(AZ::Render::MeshCommon::MeshMovedName);
-
         // Compare view frustums against the list of candidate sectors and submit those sectors to draw.
         for (auto& view : process.m_views)
         {
             if (terrainChanged)
             {
-                view->ApplyFlags(meshMovedFlag.GetIndex());
+                view->ApplyFlags(m_meshMovedFlag.GetIndex());
             }
 
             const AZ::Frustum viewFrustum = AZ::Frustum::CreateFromMatrixColumnMajor(view->GetWorldToClipMatrix());
