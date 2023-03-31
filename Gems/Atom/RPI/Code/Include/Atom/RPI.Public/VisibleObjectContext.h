@@ -48,15 +48,15 @@ namespace AZ
 
             void Shutdown();
 
-            /// Filters the draw items in the draw packet into draw lists. Only draw lists specified at init time are appended.
+            /// Adds visible objects to the thread local visible object lists.
             /// The depth value here is the depth of the object from the perspective of the view.
             void AddVisibleObject(const void* userData, float depth = 0.0f);
 
-            /// Coalesces the draw lists in preparation for access via GetList. This should
+            /// Coalesces the thread local visible object lists in preparation for access via GetList. This should
             /// be called from a single thread as a sync point between the append / consume phases.
             void FinalizeLists();
 
-            /// Returns the draw list associated with the provided tag.
+            /// Returns the visible object list for the view.
             VisibleObjectListView GetList() const;
 
         private:
