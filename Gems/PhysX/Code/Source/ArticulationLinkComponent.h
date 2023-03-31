@@ -15,6 +15,7 @@
 #include <AzFramework/Physics/RigidBodyBus.h>
 #include <AzFramework/Physics/Shape.h>
 #include <PhysX/ArticulationJointBus.h>
+#include <PhysX/ArticulationSensorBus.h>
 #include <PhysX/ComponentTypeIds.h>
 #include <PhysX/Joint/Configuration/PhysXJointConfiguration.h>
 #include <PhysX/UserDataTypes.h>
@@ -35,6 +36,7 @@ namespace PhysX
         , private AZ::TransformNotificationBus::Handler
 #if (PX_PHYSICS_VERSION_MAJOR == 5)
         , public PhysX::ArticulationJointRequestBus::Handler
+        , public PhysX::ArticulationSensorRequestBus::Handler
 #endif
     {
     public:
@@ -73,8 +75,15 @@ namespace PhysX
         float GetFrictionCoefficient() const override;
         void SetMaxJointVelocity(float maxJointVelocity) override;
         float GetMaxJointVelocity() const override;
+
+        // ArticulationSensorRequestBus overrides ...
+        AZ::Transform GetSensorTransform(AZ::u32 sensorIndex) const override;
+        void SetSensorTransform(AZ::u32 sensorIndex, const AZ::Transform& sensorTransform) override;
+        AZ::Vector3 GetForce(AZ::u32 sensorIndex) const override;
+        AZ::Vector3 GetTorque(AZ::u32 sensorIndex) const override;
 #endif
         physx::PxArticulationLink* GetArticulationLink(const AZ::EntityId entityId);
+        const AZStd::vector<AZ::u32> GetSensorIndices(const AZ::EntityId entityId);
         const physx::PxArticulationJointReducedCoordinate* GetDriveJoint() const;
         physx::PxArticulationJointReducedCoordinate* GetDriveJoint();
         AZStd::shared_ptr<ArticulationLinkData> m_articulationLinkData;
@@ -84,8 +93,12 @@ namespace PhysX
         bool IsRootArticulation() const;
         const AZ::Entity* GetArticulationRootEntity() const;
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         void CreateArticulation();
+        void DestroyArticulation();
+        void InitPhysicsTickHandler();
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
+        const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
+        physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
 
         void SetRootSpecificProperties(const ArticulationLinkConfiguration& rootLinkConfiguration);
 
@@ -93,9 +106,6 @@ namespace PhysX
 
         void AddCollisionShape(const ArticulationLinkData& thisLinkData, ArticulationLink* articulationLink);
 
-        void DestroyArticulation();
-
-        void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 #endif
 
@@ -110,12 +120,16 @@ namespace PhysX
         physx::PxArticulationLink* m_link = nullptr;
         physx::PxArticulationJointReducedCoordinate* m_driveJoint = nullptr;
 
+        AZStd::vector<AZ::u32> m_sensorIndices;
+
         AzPhysics::SceneHandle m_attachedSceneHandle = AzPhysics::InvalidSceneHandle;
         AZStd::vector<AzPhysics::SimulatedBodyHandle> m_articulationLinks;
         AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneFinishSimHandler;
 
         using EntityIdArticulationLinkPair = AZStd::pair<AZ::EntityId, physx::PxArticulationLink*>;
         AZStd::unordered_map<AZ::EntityId, physx::PxArticulationLink*> m_articulationLinksByEntityId;
+        using EntityIdSensorIndexListPair = AZStd::pair<AZ::EntityId, AZStd::vector<AZ::u32>>;
+        AZStd::unordered_map<AZ::EntityId, AZStd::vector<AZ::u32>> m_sensorIndicesByEntityId;
     };
 
     //! Utility function for detecting if the current entity is the root of articulation.
