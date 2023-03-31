@@ -29,8 +29,6 @@ namespace PhysX
     static void EntityDataToArticulationLinkData(
         AZ::Entity* entity, ArticulationLinkData* linkData, ArticulationLinkData* parentLinkData)
     {
-        linkData->m_entityId = entity->GetId();
-
         auto* transformComponent = entity->FindComponent<AzFramework::TransformComponent>();
         linkData->m_localTransform = transformComponent->GetLocalTM();
 
@@ -49,20 +47,18 @@ namespace PhysX
             AzPhysics::ShapeColliderPairList shapeColliderPairList = baseColliderComponent->GetShapeConfigurations();
             AZ_Assert(!shapeColliderPairList.empty(), "Collider component with no shape configurations");
 
-            AzPhysics::ShapeColliderPair& shapeColliderPair = shapeColliderPairList[0];
-            linkData->m_colliderConfiguration = *(shapeColliderPair.first);
-            linkData->m_shapeConfiguration = shapeColliderPair.second;
+            linkData->m_shapeColliderConfiguration = shapeColliderPairList[0];
         }
 
-        auto* articulationComponent = entity->FindComponent<ArticulationLinkComponent>();
-        linkData->m_sensorConfigs = articulationComponent->m_config.m_sensorConfigs;
+        auto* articulationLinkComponent = entity->FindComponent<ArticulationLinkComponent>();
+        linkData->m_articulationLinkConfiguration = articulationLinkComponent->m_config;
+        linkData->m_articulationLinkConfiguration.m_entityId = entity->GetId();
+        linkData->m_articulationLinkConfiguration.m_debugName = entity->GetName();
 
         // If the entity has a parent then it's not a root articulation and we fill the joint information.
         if (parentLinkData)
         {
             AZ_Assert(articulationComponent, "Entity being proceessed for articulation has not articulation link component.");
-
-            linkData->m_articulationJointData.m_jointType = articulationComponent->m_config.m_articulationJointType;
 
             linkData->m_articulationJointData.m_jointFollowerLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
                 AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_localRotation),
@@ -79,8 +75,6 @@ namespace PhysX
                     AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationComponent->m_config.m_leadLocalPosition),
                     articulationComponent->m_config.m_leadLocalPosition);
             }
-
-            // TODO: copy other joint's data from articulationComponent->m_config to linkData.
         }
     }
 

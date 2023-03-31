@@ -42,11 +42,11 @@ namespace PhysX
     };
 
     //! Configuration used to Add Articulations to a Scene.
-    struct ArticulationLinkConfiguration
+    struct ArticulationLinkConfiguration : public AzPhysics::SimulatedBodyConfiguration
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL;
-        AZ_RTTI(ArticulationLinkConfiguration, "{56268154-037A-4BB2-A7EE-E1E76B7D2F8E}");
+        AZ_RTTI(ArticulationLinkConfiguration, "{56268154-037A-4BB2-A7EE-E1E76B7D2F8E}", AzPhysics::SimulatedBodyConfiguration);
         static void Reflect(AZ::ReflectContext* context);
 
         ArticulationLinkConfiguration() = default;
@@ -65,7 +65,7 @@ namespace PhysX
         float m_mass = 1.0f;
         float m_linearDamping = 0.05f;
         float m_angularDamping = 0.15f;
-        float m_sleepMinEnergy = 0.005f;
+        float m_sleepMinEnergy = 0.005f; // Relevant to the root link only
         float m_maxAngularVelocity = 100.0f;
 
         bool m_startAsleep = false;
