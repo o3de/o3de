@@ -18,6 +18,7 @@ namespace PhysX
 {
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationSensorConfiguration, AZ::SystemAllocator);
     AZ_CLASS_ALLOCATOR_IMPL(ArticulationLinkConfiguration, AZ::SystemAllocator);
+    AZ_CLASS_ALLOCATOR_IMPL(ArticulationJointMotorProperties, AZ::SystemAllocator);
 
     void ArticulationSensorConfiguration::Reflect(AZ::ReflectContext* context)
     {
@@ -59,6 +60,32 @@ namespace PhysX
                         &ArticulationSensorConfiguration::m_useWorldFrame,
                         "Use World Frame",
                         "If true, the output will be reported in world space, otherwise in the local space of the sensor");
+            }
+        }
+    }
+
+    void ArticulationJointMotorProperties::Reflect(AZ::ReflectContext* context)
+    {
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            serializeContext->Class<ArticulationJointMotorProperties>()
+                ->Version(1)
+                ->Field("UseMotor", &ArticulationJointMotorProperties::m_useMotor)
+                ->Field("ForceLimit", &ArticulationJointMotorProperties::m_driveForceLimit)
+                ->Field("Stiffness", &ArticulationJointMotorProperties::m_driveStiffness)
+                ->Field("Damping", &ArticulationJointMotorProperties::m_driveDamping);
+
+
+            if (auto* editContext = serializeContext->GetEditContext())
+            {
+                editContext->Class<PhysX::ArticulationJointMotorProperties>("PhysX Joint Motor Configuration", "")
+                    ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
+                    ->Attribute(AZ::Edit::Attributes::Category, "PhysX")
+                    ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_useMotor, "Use Motor", "Enable motor in the joint.")
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveForceLimit, "Force Limit Value", "Sets force limit value.")
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveStiffness, "Stiffness Value", "Stiffness of motor servo.")
+                    ->DataElement(0, &PhysX::ArticulationJointMotorProperties::m_driveDamping, "Damping Value", "Damping of motor servo.");
             }
         }
     }

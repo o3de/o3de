@@ -41,6 +41,21 @@ namespace PhysX
         bool m_useWorldFrame = false; //!< If true, the output will be reported in world space, otherwise in the local space of the sensor.
     };
 
+    //! Configuration articulation motor
+    struct ArticulationJointMotorProperties
+    {
+        AZ_CLASS_ALLOCATOR_DECL;
+        AZ_TYPE_INFO(ArticulationJointMotorProperties, "{44AAC055-73A0-4835-B9E9-A9E233B2C54A}");
+        static void Reflect(AZ::ReflectContext* context);
+
+        ArticulationJointMotorProperties() = default;
+
+        bool m_useMotor = false; ///< Enables joint actuation.
+        float m_driveForceLimit = 1.0f; ///< Force/torque limit applied by motor.
+        float m_driveStiffness = 1.0f; ///< Stiffness of motor servo.
+        float m_driveDamping = 1.0f; ///< Damping of motor servo.
+    };
+
     //! Configuration used to Add Articulations to a Scene.
     struct ArticulationLinkConfiguration : public AzPhysics::SimulatedBodyConfiguration
     {
@@ -88,7 +103,7 @@ namespace PhysX
         float m_angularLimitPositive = 45.0f;
         float m_angularLimitNegative = -45.0f;
 
-        JointMotorProperties m_motorConfiguration;
+        ArticulationJointMotorProperties m_motorConfiguration;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
         AZ::Vector3 m_localRotation =

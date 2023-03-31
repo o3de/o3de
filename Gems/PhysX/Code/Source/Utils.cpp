@@ -1806,6 +1806,7 @@ namespace PhysX
             HingeJointConfiguration::Reflect(context);
             PrismaticJointConfiguration::Reflect(context);
             ArticulationSensorConfiguration::Reflect(context);
+            ArticulationJointMotorProperties::Reflect(context);
             ArticulationLinkConfiguration::Reflect(context);
 
             MaterialConfiguration::Reflect(context);
