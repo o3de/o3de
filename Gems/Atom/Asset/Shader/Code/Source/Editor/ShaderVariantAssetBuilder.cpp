@@ -79,95 +79,6 @@ namespace AZ
             return AZStd::string::format("%s_variant", ShaderVariantAssetBuilderJobKeyPrefix);
         }
 
-
-        // @param intermediateAssetRelativePath: Can be a <shaderName>.hashedvariantlist, or <shaderName>_<StableId>.hashedvariantinfo
-        // returns the absolute path of the corresponding <shaderName>.shader
-        static bool GetShaderSourceFullPath(const AZStd::string& intermediateAssetRelativePath,
-                                          AZStd::string& shaderSourceFileFullPath)
-        {
-            AZStd::string shaderRelativePath;
-
-            // Get the extension.
-            AZStd::string fileExtension;
-            AzFramework::StringFunc::Path::GetExtension(intermediateAssetRelativePath.c_str(), fileExtension, false /*includeDot*/);
-            if (fileExtension == HashedVariantListSourceData::Extension)
-            {
-                shaderRelativePath = intermediateAssetRelativePath;
-                AZ::StringFunc::Path::ReplaceExtension(shaderRelativePath, RPI::ShaderSourceData::Extension);
-            }
-            else if (fileExtension == HashedVariantInfoSourceData::Extension)
-            {
-                size_t charPos = AZ::StringFunc::Find(intermediateAssetRelativePath, "_", 0, true /* reverse*/);
-                AZ_Assert(charPos != AZStd::string::npos, "Was expecting a file name with the pattern: <shaderName>_<StableId>.hashedvariantinfo");
-                AZStd::string pathBefore_ = intermediateAssetRelativePath.substr(0, charPos);
-                shaderRelativePath = AZStd::string::format("%s.%s", pathBefore_.c_str(), RPI::ShaderSourceData::Extension);
-            }
-
-            // When the game project customizes a shadervariantlist for a particular shader,
-            // the path starts with ShaderVariants/ or shadervariants/, in that case the real relative path of the shader
-            // starts AFTER ShaderVariants/ or shadervariants/.
-            if (AZ::StringFunc::StartsWith(intermediateAssetRelativePath, RPI::ShaderVariantTreeAsset::CommonSubFolder, false /*case sensitive*/))
-            {
-                const auto startPos = sizeof(RPI::ShaderVariantTreeAsset::CommonSubFolder);
-                shaderRelativePath = shaderRelativePath.substr(startPos);
-            }
-
-            bool shaderSourceFound = false;
-            AZ::Data::AssetInfo sourceInfo;
-            AZStd::string watchFolder;
-
-            // Try to find the source file starting at the originatingSourceFilePath, and return the full path
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                shaderSourceFound,
-                &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
-                shaderRelativePath.c_str(),
-                sourceInfo,
-                watchFolder);
-            if (shaderSourceFound)
-            {
-                return AzFramework::StringFunc::Path::ConstructFull(watchFolder.c_str(), shaderRelativePath.c_str(), shaderSourceFileFullPath, true);
-            }
-
-            // There are two reasons we may end up here:
-            // 1- The *.shader file does not exist.
-            // 2- The *.shader file actually exists, but it is not yet registered in the AP's database.
-            // The only way out, is to search manually across all scan folders.
-            AZ_Trace(ShaderVariantAssetBuilderName, "Did not find the shader [%s] by normal means, will loop manually across all scan folders...", shaderRelativePath.c_str());
-
-            AZStd::vector<AZStd::string> scanFolders;
-            bool foundScanFolders = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
-                foundScanFolders,
-                &AzToolsFramework::AssetSystemRequestBus::Events::GetScanFolders,
-                scanFolders);
-            if (!foundScanFolders)
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to get the scan folders!");
-                return false;
-            }
-
-            auto fileIO = AZ::IO::LocalFileIO::GetInstance();
-            AZ_Assert(fileIO, "Invalid AZ::IO::LocalFileIO");
-            for (const auto& scanFolder : scanFolders)
-            {
-                if (!AzFramework::StringFunc::Path::ConstructFull(scanFolder.c_str(), shaderRelativePath.c_str(), shaderSourceFileFullPath, true))
-                {
-                    AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to construct full path for scan folder=[%s] and shader=[%s]",
-                        scanFolder.c_str(), shaderRelativePath.c_str());
-                    return false;
-                }
-
-                if (fileIO->Exists(shaderSourceFileFullPath.c_str()))
-                {
-                    return true;
-                }
-            }
-
-            AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to find shader source from relative path=[%s]", shaderRelativePath.c_str());
-            return false;
-        }
-
-
         void ShaderVariantAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
             // Please see comments in the header file for the core principles of this builder.
@@ -193,16 +104,16 @@ namespace AZ
 
         void ShaderVariantAssetBuilder::CreateShaderVariantTreeJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
-            //AZStd::string variantListWatchFolderPath(request.m_watchFolder.data());
             AZStd::string variantListRelativePath(request.m_sourceFile.data());
             AZStd::string hashedVariantListFullPath;
             AZ::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), hashedVariantListFullPath, true);
 
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "CreateShaderVariantTreeJob for Hashed Shader Variant List \"%s\"\n", hashedVariantListFullPath.data());
 
-            AZStd::string shaderSourceFileFullPath;
-            if (!GetShaderSourceFullPath(variantListRelativePath, shaderSourceFileFullPath))
+            HashedVariantListSourceData hashedVariantListDescriptor;
+            if (!RPI::JsonUtils::LoadObjectFromFile(hashedVariantListFullPath, hashedVariantListDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
+                AZ_Assert(false, "Failed to parse Hashed Variant List Descriptor JSON [%s]", hashedVariantListFullPath.c_str());
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
@@ -226,12 +137,8 @@ namespace AZ
                 jobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
                 jobDependency.m_platformIdentifier = info.m_identifier;
                 jobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                jobDependency.m_sourceFile.m_sourceFileDependencyPath = shaderSourceFileFullPath;
+                jobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantListDescriptor.m_shaderPath;
                 jobDescriptor.m_jobDependencyList.push_back(jobDependency);
-
-                // Store the shader source file full path in the job, so we don't have to recalculate it again
-                // in ProcessJob().
-                jobDescriptor.m_jobParameters.emplace(ShaderSourceFilePathJobParam, shaderSourceFileFullPath);
 
                 response.m_createJobOutputs.push_back(jobDescriptor);
 
@@ -260,9 +167,10 @@ namespace AZ
             
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "CreateShaderVariantJobs for Hashed Variant Info [%s]\n", hashedVariantInfoFullPath.data());
             
-            AZStd::string shaderSourceFileFullPath;
-            if (!GetShaderSourceFullPath(hashedVariantInfoRelativePath, shaderSourceFileFullPath))
+            HashedVariantInfoSourceData hashedVariantInfoDescriptor;
+            if (!RPI::JsonUtils::LoadObjectFromFile(hashedVariantInfoFullPath, hashedVariantInfoDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
+                AZ_Assert(false, "Failed to parse Hashed Variant Info Descriptor JSON [%s]", hashedVariantInfoFullPath.c_str());
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
@@ -298,6 +206,7 @@ namespace AZ
                 //
                 // TODO: Add "OrderOnly" job dependency type to the Asset System so we can:
                 //  "make sure X completes before Y runs, but don't re-run Y just because X ran".
+                // https://github.com/o3de/o3de/issues/15428
                 // 
                 // **************************************************************************
                 //AssetBuilderSDK::JobDependency variantTreeJobDependency;
@@ -312,13 +221,9 @@ namespace AZ
                 AssetBuilderSDK::JobDependency shaderAssetJobDependency;
                 shaderAssetJobDependency.m_jobKey = ShaderAssetBuilder::ShaderAssetBuilderJobKey;
                 shaderAssetJobDependency.m_platformIdentifier = info.m_identifier;
-                shaderAssetJobDependency.m_sourceFile.m_sourceFileDependencyPath = shaderSourceFileFullPath;
+                shaderAssetJobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantInfoDescriptor.m_shaderPath;
                 shaderAssetJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
                 jobDescriptor.m_jobDependencyList.emplace_back(shaderAssetJobDependency);
-                
-                // Store the shader source file full path in the job, so we don't have to recalculate it again
-                // in ProcessJob().
-                jobDescriptor.m_jobParameters.emplace(ShaderSourceFilePathJobParam, shaderSourceFileFullPath);
             
                 response.m_createJobOutputs.push_back(jobDescriptor);
             
@@ -540,13 +445,12 @@ namespace AZ
             HashedVariantListSourceData hashedVariantListDescriptor;
             if (!RPI::JsonUtils::LoadObjectFromFile(hashedVariantListFullPath, hashedVariantListDescriptor, AZStd::numeric_limits<size_t>::max()))
             {
-                AZ_Assert(false, "Failed to parse Hashed Variant List Descriptor JSON [%s]", hashedVariantListFullPath.c_str());
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse Hashed Variant List Descriptor JSON [%s]", hashedVariantListFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
 
-            const auto& jobParameters = request.m_jobDescription.m_jobParameters;
-            const AZStd::string& shaderSourceFileFullPath = jobParameters.at(ShaderSourceFilePathJobParam);
+            const AZStd::string& shaderSourceFileFullPath = hashedVariantListDescriptor.m_shaderPath;
 
             AZStd::string shaderName;
             AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderName);
@@ -554,7 +458,7 @@ namespace AZ
             auto descriptorParseOutcome = ShaderBuilderUtility::LoadShaderDataJson(shaderSourceFileFullPath);
             if (!descriptorParseOutcome.IsSuccess())
             {
-                AZ_Assert(false, "Failed to parse shader file [%s]", shaderSourceFileFullPath.c_str());
+                AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to parse shader file [%s]", shaderSourceFileFullPath.c_str());
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                 return;
             }
@@ -663,8 +567,7 @@ namespace AZ
 
             const RPI::ShaderVariantListSourceData::VariantInfo& variantInfo = hashedVariantInfoDescriptor.m_variantInfo;
 
-            const auto& jobParameters = request.m_jobDescription.m_jobParameters;
-            const AZStd::string& shaderSourceFileFullPath = jobParameters.at(ShaderSourceFilePathJobParam);
+            const AZStd::string& shaderSourceFileFullPath = hashedVariantInfoDescriptor.m_shaderPath;
             AZStd::string shaderFileName;
             AZ::StringFunc::Path::GetFileName(shaderSourceFileFullPath.c_str(), shaderFileName);
 

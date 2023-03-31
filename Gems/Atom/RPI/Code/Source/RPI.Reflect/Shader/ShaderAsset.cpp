@@ -185,6 +185,7 @@ namespace AZ
             const auto& supervariants = GetCurrentShaderApiData().m_supervariants;
             if (supervariantIndex.GetIndex() >= supervariants.size())
             {
+                // Index 0 always exists, because the default supervariant always exists.
                 return supervariants[0].m_name;
             }
             return supervariants[supervariantIndex.GetIndex()].m_name;
