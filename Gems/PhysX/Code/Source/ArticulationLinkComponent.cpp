@@ -99,6 +99,7 @@ namespace PhysX
         return currentEntity;
     }
 
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
     void ArticulationLinkComponent::Activate()
     {
         if (IsRootArticulation())
@@ -129,25 +130,21 @@ namespace PhysX
                     m_link = rootArticulationLinkComponent->GetArticulationLink(GetEntityId());
                     if (m_link)
                     {
-                        m_driveJoint = m_link->getInboundJoint();
+                        m_driveJoint = m_link->getInboundJoint()->is<physx::PxArticulationJointReducedCoordinate>();
                     }
                     m_sensorIndices = rootArticulationLinkComponent->GetSensorIndices(GetEntityId());
                 }
             }
         }
 
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         ArticulationJointRequestBus::Handler::BusConnect(GetEntityId());
         ArticulationSensorRequestBus::Handler::BusConnect(GetEntityId());
-#endif
     }
 
     void ArticulationLinkComponent::Deactivate()
     {
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
         ArticulationSensorRequestBus::Handler::BusDisconnect();
         ArticulationJointRequestBus::Handler::BusDisconnect();
-#endif
 
         if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
@@ -161,6 +158,7 @@ namespace PhysX
 
         AZ::TransformNotificationBus::Handler::BusDisconnect();
     }
+#endif
 
     void ArticulationLinkComponent::OnTransformChanged(
         [[maybe_unused]] const AZ::Transform& local, [[maybe_unused]] const AZ::Transform& world)
@@ -673,5 +671,11 @@ namespace PhysX
         }
         return AZ::Vector3::CreateZero();
     }
+#else
+    void ArticulationLinkComponent::Activate() {}
+    void ArticulationLinkComponent::Deactivate() {}
+    void ArticulationLinkComponent::CreateArticulation() {}
+    void ArticulationLinkComponent::DestroyArticulation() {}
+    void ArticulationLinkComponent::InitPhysicsTickHandler() {}
 #endif
 } // namespace PhysX

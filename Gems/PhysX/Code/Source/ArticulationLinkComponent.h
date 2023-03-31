@@ -93,11 +93,12 @@ namespace PhysX
         bool IsRootArticulation() const;
         const AZ::Entity* GetArticulationRootEntity() const;
 
+        void CreateArticulation();
+        void DestroyArticulation();
+        void InitPhysicsTickHandler();
+#if (PX_PHYSICS_VERSION_MAJOR == 5)
         const physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex) const;
         physx::PxArticulationSensor* GetSensor(AZ::u32 sensorIndex);
-
-#if (PX_PHYSICS_VERSION_MAJOR == 5)
-        void CreateArticulation();
 
         void SetRootSpecificProperties(const ArticulationLinkConfiguration& rootLinkConfiguration);
 
@@ -105,9 +106,6 @@ namespace PhysX
 
         void AddCollisionShape(const ArticulationLinkData& thisLinkData, ArticulationLink* articulationLink);
 
-        void DestroyArticulation();
-
-        void InitPhysicsTickHandler();
         void PostPhysicsTick(float fixedDeltaTime);
 #endif
 
