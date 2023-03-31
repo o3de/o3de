@@ -161,8 +161,6 @@ def get_all_project_infos() -> list:
     return project_infos
 
 
-
-
 def set_project_info(project_info: dict):
     """
         Call edit_project_props using parameters gathered from project_info
@@ -170,6 +168,16 @@ def set_project_info(project_info: dict):
         :param engine_info: dict containing values to change in project
     """
     pass
+
+
+def get_project_engine_incompatible_objects(project_path: pathlib.Path) -> set():
+    """
+        Checks for compatibility issues between the provided project and current engine
+
+        :param project_path: Project path 
+        :return a set of all incompatible objects which may include APIs and gems
+    """
+    return compatibility.get_project_engine_incompatible_objects(project_path=project_path, engine_path=manifest.get_this_engine_path())
 
 
 def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set():
@@ -193,6 +201,7 @@ def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path:
         logger.error(f"The following dependency issues were found:\n"
             "\n  ".join(incompatible_objects))
     return incompatible_objects
+
 
 def add_gems_to_project(gem_paths:list, gem_names: list, project_path: str, force: bool = False) -> int:
     """
@@ -289,8 +298,9 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # because this gem might belong to a different engine than the one Project Manager is
     # running out of
     engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+    engine_gem_paths = [pathlib.PurePath(path) for path in manifest.get_engine_gems(engine_path)]
     for i, gem_json_data in enumerate(all_gem_json_data):
-        all_gem_json_data[i]['engine_gem'] = engine_path in gem_json_data['path'].parents
+        all_gem_json_data[i]['engine_gem'] = gem_json_data['path'] in engine_gem_paths
 
     return all_gem_json_data
 
