@@ -896,7 +896,7 @@ QProgressBar::chunk {
    min-height: 34px;
    font-size:10px;
    color:#ddd;
-   background:transparent url(:/Warning.svg) no-repeat left center;
+   background:transparent url(:/Info.svg) no-repeat left center;
 }
 
 #GemCatalogCartOverlayGemDownloadHeader {

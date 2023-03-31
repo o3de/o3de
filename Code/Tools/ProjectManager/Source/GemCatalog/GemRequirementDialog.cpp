@@ -36,7 +36,7 @@ namespace O3DE::ProjectManager
         instructionLayout->setMargin(0);
 
         QLabel* instructionIconLabel = new QLabel();
-        instructionIconLabel->setPixmap(QIcon(":/Warning.svg").pixmap(32, 32));
+        instructionIconLabel->setPixmap(QIcon(":/Info.svg").pixmap(32, 32));
         instructionLayout->addWidget(instructionIconLabel);
 
         instructionLayout->addSpacing(10);
