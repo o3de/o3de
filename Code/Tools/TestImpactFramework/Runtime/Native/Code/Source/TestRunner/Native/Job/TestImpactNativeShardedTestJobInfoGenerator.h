@@ -216,7 +216,6 @@ namespace TestImpact
         const auto numTests = testEnumeration->GetNumEnabledTests();
         const auto numShards = std::min(m_maxConcurrency, numTests);
         ShardedTestsList shardTestList(numShards);
-        const auto testsPerShard = numTests / numShards;
 
         size_t testIndex = 0;
         for (const auto fixture : testEnumeration->GetTestSuites())
