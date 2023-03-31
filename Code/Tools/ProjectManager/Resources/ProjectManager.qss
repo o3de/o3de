@@ -139,7 +139,6 @@ QTabBar::tab:focus {
 #formFrame QComboBox {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    color:red;
     min-width:810px;
     max-width:810px;
     line-height: 26px;
@@ -304,7 +303,6 @@ QTabBar::tab:focus {
 #formFrame QComboBox {
     subcontrol-origin: padding;
     subcontrol-position: top right;
-    color:red;
     min-width:810px;
     max-width:810px;
     line-height: 26px;
@@ -890,7 +888,8 @@ QProgressBar::chunk {
     min-height:24px;
 }
 
-#GemCatalogRequirements {
+/* be specific here to override the general QLabel margins */
+#GemCatalogInspector #GemCatalogRequirements {
    margin:0 0 10px 0; 
    padding-left:34px;
    min-height: 34px;
@@ -984,19 +983,17 @@ QProgressBar::chunk {
     background-color: #444444;
 }
 
+#GemCatalogInspector QLabel {
+    margin:0;
+}
+
 #GemCatalogInspector QLabel[class="title"] {
     font-size: 16px;
-    margin:0;
 }
 
 #GemCatalogInspector QLabel[class="label"] {
     min-width:50px;
     max-width:50px;
-    margin:0;
-}
-
-#GemCatalogInspector QLabel[class="value"] {
-    margin:0;
 }
 
 #GemCatalogVersion QPushButton {
