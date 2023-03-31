@@ -19,7 +19,7 @@ namespace TestImpact
     namespace ChangeListSerializer
     {
         // Keys for pertinent JSON node and attribute names
-        constexpr const char*  Keys[] =
+        constexpr const char* Keys[] =
         {
             "createdFiles",
             "updatedFiles",
