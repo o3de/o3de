@@ -20,6 +20,5 @@ ly_install_directory(
         ScriptCanvasNode
         UnifiedMultiplayerGem
         GraphicsGem
-        ExampleTemplate
     VERBATIM
 )
