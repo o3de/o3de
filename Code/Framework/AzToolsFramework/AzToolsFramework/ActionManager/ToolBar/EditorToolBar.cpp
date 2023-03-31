@@ -67,38 +67,37 @@ namespace AzToolsFramework
 
                     for (auto action : toolbar->actions())
                     {
-                        if (!toolbar->widgetForAction(action)->isVisible())
+                        // Only show actions that are not visible in the toolbar.
+                        if (toolbar->widgetForAction(action)->isVisible())
                         {
-                            if (auto widgetAction = qobject_cast<QWidgetAction*>(action))
-                            {
-                                if (auto toolButton = qobject_cast<QToolButton*>(widgetAction->defaultWidget());
-                                    toolButton && toolButton->menu())
-                                {
-                                    menu->addMenu(s_menuManagerInternalInterface->GetMenu(action->objectName().toStdString().c_str()));
-                                }
-                                else
-                                {
-                                    if (QWidget* widget = s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(
-                                            action->objectName().toStdString().c_str()))
-                                    {
-                                        widget->setParent(parentWidget);
+                            continue;
+                        }
 
-                                        QWidgetAction* w = new QWidgetAction(parentWidget);
-                                        w->setDefaultWidget(widget);
+                        if (auto widgetAction = qobject_cast<QWidgetAction*>(action))
+                        {
+                            if (auto toolButton = qobject_cast<QToolButton*>(widgetAction->defaultWidget());
+                                toolButton && toolButton->menu())
+                            {
+                                menu->addMenu(s_menuManagerInternalInterface->GetMenu(action->objectName().toStdString().c_str()));
+                            }
+                            else if (QWidget* widget =
+                                s_actionManagerInternalInterface->GenerateWidgetFromWidgetAction(action->objectName().toStdString().c_str()))
+                            {
+                                widget->setParent(parentWidget);
 
-                                        menu->addAction(w);
-                                        
-                                    }
-                                }
+                                QWidgetAction* w = new QWidgetAction(parentWidget);
+                                w->setDefaultWidget(widget);
+
+                                menu->addAction(w);
                             }
-                            else if (action->isSeparator())
-                            {
-                                menu->addSeparator();
-                            }
-                            else
-                            {
-                                menu->addAction(s_actionManagerInternalInterface->GetAction(action->objectName().toStdString().c_str()));
-                            }
+                        }
+                        else if (action->isSeparator())
+                        {
+                            menu->addSeparator();
+                        }
+                        else
+                        {
+                            menu->addAction(s_actionManagerInternalInterface->GetAction(action->objectName().toStdString().c_str()));
                         }
                     }
 

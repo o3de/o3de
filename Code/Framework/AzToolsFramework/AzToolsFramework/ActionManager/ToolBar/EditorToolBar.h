@@ -33,10 +33,11 @@ namespace AzToolsFramework
     class MenuManagerInternalInterface;
     class ToolBarManagerInterface;
 
+    //! A watcher class to handle the expander menu for a toolbar.
     class ToolBarExpanderWatcher : public QObject
     {
     public:
-        ToolBarExpanderWatcher(QObject* parent);
+        explicit ToolBarExpanderWatcher(QObject* parent);
 
         static void Initialize();
 
