@@ -132,6 +132,8 @@ namespace AZ
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
 
+            //! Finalize visible object lists in this view. This function should only be called when all
+            //! visible objects for current frame are added, but before FinalizeDrawLists is called. 
             void FinalizeVisibleObjectList();
 
             //! Finalize draw lists in this view. This function should only be called when all

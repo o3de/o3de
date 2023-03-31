@@ -38,7 +38,6 @@ namespace AZ
             VisibleObjectProperties visibleObject;
             visibleObject.m_userData = userData;
             visibleObject.m_depth = depth;
-            // TODO: Should we store/set the sort key here?
             visibleObjectList.push_back(visibleObject);
         }
 

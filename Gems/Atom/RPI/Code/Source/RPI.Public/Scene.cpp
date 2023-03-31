@@ -825,13 +825,16 @@ namespace AZ
             }
 
             {
-                AZ_PROFILE_SCOPE(RPI, "Scene OnEndPrepareRender");
-                // TODO: Make this parallel
+                AZ_PROFILE_SCOPE(RPI, "Scene FinalizeVisibleObjectLists");
 
                 for (auto& view : m_renderPacket.m_views)
                 {
                     view->FinalizeVisibleObjectList();
                 }
+            }
+
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene OnEndCulling");
                 for (auto& fp : m_featureProcessors)
                 {
                     fp->OnEndCulling(m_renderPacket);
