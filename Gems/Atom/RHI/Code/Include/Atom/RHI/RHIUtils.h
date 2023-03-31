@@ -40,7 +40,7 @@ namespace AZ
         //! Returns true if the command line option is set
         bool QueryCommandLineOption(const AZStd::string& commandLineOption);
 
-        //! Returns if the current bakcend is null 
+        //! Returns true if the current backend is null 
         bool IsNullRHI();
 
         //! Returns true if the Atom/GraphicsDevMode settings registry key is set
