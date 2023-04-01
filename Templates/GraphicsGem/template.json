@@ -199,10 +199,6 @@
             "isTemplated": true
         },        
         {
-            "file": "Code/Source/Components/${Name}ComponentConstants.h",
-            "isTemplated": true
-        },
-        {
             "file": "Code/Source/Components/${Name}ComponentController.h",
             "isTemplated": true
         },        
