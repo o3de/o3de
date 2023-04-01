@@ -8,11 +8,11 @@
 
 #include "${Name}FeatureProcessor.h"
 
-namespace AZ::Render
+namespace ${Name}
 {
     void ${Name}FeatureProcessor::Reflect(AZ::ReflectContext* context)
     {
-        if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
+        if (auto* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext
                 ->Class<${Name}FeatureProcessor, FeatureProcessor>()

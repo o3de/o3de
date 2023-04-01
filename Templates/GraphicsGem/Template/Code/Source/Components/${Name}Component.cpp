@@ -7,8 +7,9 @@
  */
 
 #include <Components/${Name}Component.h>
+#include <AzCore/RTTI/BehaviorContext.h>
 
-namespace AZ::Render
+namespace ${Name}
 {
     ${Name}Component::${Name}Component(const ${Name}ComponentConfig& config)
         : BaseClass(config)
@@ -17,6 +18,8 @@ namespace AZ::Render
 
     void ${Name}Component::Reflect(AZ::ReflectContext* context)
     {
+        ${Name}ComponentController::Reflect(context);
+
         BaseClass::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
@@ -26,9 +29,9 @@ namespace AZ::Render
                 ;
         }
 
-        if (auto behaviorContext = azrtti_cast<BehaviorContext*>(context))
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {
-            behaviorContext->ConstantProperty("${Name}ComponentTypeId", BehaviorConstant(Uuid(${Name}ComponentTypeId)))
+            behaviorContext->ConstantProperty("${Name}ComponentTypeId", BehaviorConstant(AZ::Uuid(${Name}ComponentTypeId)))
                 ->Attribute(AZ::Script::Attributes::Module, "render")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
         }

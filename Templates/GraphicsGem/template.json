@@ -6,13 +6,15 @@
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
     "display_name": "Graphics Gem Template",
-    "summary": "This is the gem template that will be used if no gem template is specified during gem creation.",
+    "summary": "This is a gem template that has Atom rendering support",
     "canonical_tags": [
         "Template",
         "Gem"
     ],
     "user_tags": [
-        "GraphicsGem"
+        "Rendering",
+        "Graphics",
+        "Atom"
     ],
     "icon_path": "preview.png",
     "copyFiles": [
@@ -21,15 +23,31 @@
             "isTemplated": false
         },
         {
-            "file": "Code/Source/${Name}Module.h",
+            "file": "CMakeLists.txt",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/${Name}Module.cpp",
+            "file": "gem.json",
             "isTemplated": true
         },
         {
-            "file": "Code/${NameLower}_files.cmake",
+            "file": "preview.png",
+            "isTemplated": false
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
             "isTemplated": true
         },
         {
@@ -37,15 +55,23 @@
             "isTemplated": true
         },
         {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
             "file": "Code/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "CMakeLists.txt",
+            "file": "Code/${NameLower}_tests_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/CMakeLists.txt",
+            "file": "Code/Include/${Name}/${Name}Bus.h",
             "isTemplated": true
         },
         {
@@ -53,67 +79,115 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Render/${Name}FeatureProcessor.h",
+            "file": "Code/Include/${Name}/${Name}FeatureProcessorInterface.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Render/${Name}FeatureProcessor.cpp",
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Android/${Name}_Traits_Android.h",
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Android/${Name}_Traits_Platform.h",
+            "file": "Code/Source/${Name}ModuleInterface.h",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Android/platform_android_files.cmake",
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/iOS/${Name}_Traits_iOS.h",
+            "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/iOS/${Name}_Traits_Platform.h",
+            "file": "Code/Platform/Android/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/iOS/platform_ios_files.cmake",
+            "file": "Code/Platform/Android/PAL_android.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Linux/${Name}_Traits_Linux.h",
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Linux/${Name}_Traits_Platform.h",
+            "file": "Code/Platform/iOS/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Mac/${Name}_Traits_Mac.h",
+            "file": "Code/Platform/iOS/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Mac/${Name}_Traits_Platform.h",
+            "file": "Code/Platform/iOS/PAL_ios.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Mac/platform_mac_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Windows/${Name}_Traits_Windows.h",
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Windows/${Name}_Traits_Platform.h",
+            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
             "isTemplated": true
         },
         {
-            "file": "Code/Source/Platform/Windows/platform_windows_files.cmake",
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Clients/${Name}SystemComponent.h",
             "isTemplated": true
         },
         {
@@ -137,28 +211,32 @@
             "isTemplated": true
         },        
         {
-            "file": "Code/Source/Components/${Name}SystemComponent.h",
+            "file": "Code/Source/Tools/Components/Editor${Name}Component.h",
             "isTemplated": true
         },        
         {
-            "file": "Code/Source/Components/${Name}SystemComponent.cpp",
-            "isTemplated": true
-        },        
-        {
-            "file": "Code/Source/EditorComponents/Editor${Name}Component.h",
-            "isTemplated": true
-        },        
-        {
-            "file": "Code/Source/EditorComponents/Editor${Name}Component.cpp",
-            "isTemplated": true
-        },        
-        {
-            "file": "gem.json",
+            "file": "Code/Source/Tools/Components/Editor${Name}Component.cpp",
             "isTemplated": true
         },
         {
-            "file": "preview.png",
-            "isTemplated": false
+            "file": "Code/Source/Render/${Name}FeatureProcessor.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Render/${Name}FeatureProcessor.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
         }
     ],
     "createDirectories": [

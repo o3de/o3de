@@ -1,14 +1,4 @@
-#
-# Copyright (c) Contributors to the Open 3D Engine Project.
-# For complete copyright and license terms please see the LICENSE at the root of this distribution.
-#
-# SPDX-License-Identifier: Apache-2.0 OR MIT
-#
-#
 
 set(FILES
-    Source/EditorComponents/Editor${Name}Component.cpp
-    Source/EditorComponents/Editor${Name}Component.h
-    Source/${Name}Module.cpp
-    Source/${Name}Module.h
+    Source/Tools/${Name}EditorModule.cpp
 )

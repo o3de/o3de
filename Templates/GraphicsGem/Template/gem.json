@@ -21,6 +21,8 @@
     "requirements": "${Requirements}",
     "documentation_url": "${DocumentationURL}",
     "dependencies": [
+        "Atom_RPI",
+        "Atom"
     ],
     "repo_uri": "${RepoURI}",
     "compatible_engines": [

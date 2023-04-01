@@ -12,14 +12,14 @@
 #include <Components/${Name}ComponentConstants.h>
 #include <AzFramework/Components/ComponentAdapter.h>
 
-namespace AZ::Render
+namespace ${Name}
 {
     class ${Name}Component final
         : public AzFramework::Components::ComponentAdapter<${Name}ComponentController, ${Name}ComponentConfig>
     {
     public:
         using BaseClass = AzFramework::Components::ComponentAdapter<${Name}ComponentController, ${Name}ComponentConfig>;
-        AZ_COMPONENT(AZ::Render::${Name}Component, ${Name}ComponentTypeId, BaseClass);
+        AZ_COMPONENT(${Name}Component, ${Name}ComponentTypeId, BaseClass);
 
         ${Name}Component() = default;
         ${Name}Component(const ${Name}ComponentConfig& config);

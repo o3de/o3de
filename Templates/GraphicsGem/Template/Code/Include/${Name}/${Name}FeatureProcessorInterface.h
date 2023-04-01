@@ -11,7 +11,7 @@
 #include <AzCore/base.h>
 #include <Atom/RPI.Public/FeatureProcessor.h>
 
-namespace AZ::Render
+namespace ${Name}
 {
     class ${Name};
 
@@ -19,10 +19,10 @@ namespace AZ::Render
 
     // ${Name}FeatureProcessorInterface provides an interface to the feature processor for code outside of Atom
     class ${Name}FeatureProcessorInterface
-        : public RPI::FeatureProcessor
+        : public AZ::RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(AZ::Render::${Name}FeatureProcessorInterface, "{${Random_Uuid}}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(${Name}FeatureProcessorInterface, "{${Random_Uuid}}", AZ::RPI::FeatureProcessor);
 
     };
 }

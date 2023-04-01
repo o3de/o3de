@@ -11,35 +11,35 @@
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+
 #include <${Name}/${Name}FeatureProcessorInterface.h>
-#include <Atom/RPI.Public/Model/Model.h>
-#include <LmbrCentral/Shape/BoxShapeComponentBus.h>
+
 #include <Components/${Name}ComponentConstants.h>
 
-namespace AZ::Render
+namespace ${Name}
 {
     class ${Name}ComponentConfig final
         : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(AZ::Render::${Name}ComponentConfig, "{${Random_Uuid}}", ComponentConfig);
-        AZ_CLASS_ALLOCATOR(${Name}ComponentConfig, SystemAllocator);
+        AZ_RTTI(${Name}ComponentConfig, "{${Random_Uuid}}", ComponentConfig);
+        AZ_CLASS_ALLOCATOR(${Name}ComponentConfig, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
         ${Name}ComponentConfig() = default;
 
-        AZ::u64 m_entityId{ EntityId::InvalidEntityId };
+        AZ::u64 m_entityId{ AZ::EntityId::InvalidEntityId };
     };
 
     class ${Name}ComponentController final
-        : public Data::AssetBus::MultiHandler
-        , private TransformNotificationBus::Handler
+        : public AZ::Data::AssetBus::MultiHandler
+        , private AZ::TransformNotificationBus::Handler
     {
     public:
         friend class Editor${Name}Component;
 
-        AZ_CLASS_ALLOCATOR(${Name}ComponentController, AZ::SystemAllocator);
         AZ_RTTI(${Name}ComponentController, "{${Random_Uuid}}");
+        AZ_CLASS_ALLOCATOR(${Name}ComponentController, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
         static void GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent);
@@ -66,8 +66,9 @@ namespace AZ::Render
         ${Name}Handle m_handle;
 
         ${Name}FeatureProcessorInterface* m_featureProcessor = nullptr;
-        TransformInterface* m_transformInterface = nullptr;
+        AZ::TransformInterface* m_transformInterface = nullptr;
         AZ::EntityId m_entityId;
+        
         ${Name}ComponentConfig m_configuration;
 
     };

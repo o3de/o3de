@@ -10,14 +10,14 @@
 
 #include <${Name}/${Name}FeatureProcessorInterface.h>
 
-namespace AZ::Render
+namespace ${Name}
 {
     class ${Name}FeatureProcessor final
         : public ${Name}FeatureProcessorInterface
     {
     public:
-        AZ_CLASS_ALLOCATOR(${Name}FeatureProcessor, SystemAllocator)
         AZ_RTTI(${Name}FeatureProcessor, "{${Random_Uuid}}", ${Name}FeatureProcessorInterface);
+        AZ_CLASS_ALLOCATOR(${Name}FeatureProcessor, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context);
 
