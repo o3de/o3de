@@ -298,38 +298,77 @@ def search_repo(manifest_json_data: dict,
                 gem_name: str = None,
                 template_name: str = None,
                 restricted_name: str = None) -> dict or None:
-    if isinstance(engine_name, str) or isinstance(engine_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('engines', [])
-        manifest_json = 'engine.json'
-        json_key = 'engine_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == engine_name else None
-    elif isinstance(project_name, str) or isinstance(project_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('projects', [])
-        manifest_json = 'project.json'
-        json_key = 'project_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == project_name else None
-    elif isinstance(gem_name, str) or isinstance(gem_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('gems', [])
-        manifest_json = 'gem.json'
-        json_key = 'gem_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == gem_name else None
-    elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('templates', [])
-        manifest_json = 'template.json'
-        json_key = 'template_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name else None
-    elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('restricted', [])
-        manifest_json = 'restricted.json'
-        json_key = 'restricted_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == restricted_name else None
-    else:
-        return None
-    o3de_object = search_o3de_object(manifest_json, o3de_object_uris, search_func)
-    if o3de_object:
-        o3de_object['repo_name'] = manifest_json_data['repo_name']
-        return o3de_object
+    repo_schema_version = get_repo_schema_version(manifest_json_data)
 
+    target_name = ''
+
+    if repo_schema_version == "1.0.0":        
+        if isinstance(engine_name, str) or isinstance(engine_name, pathlib.PurePath):
+            o3de_object_uris = manifest_json_data.get('engines', [])
+            manifest_json = 'engine.json'
+            json_key = 'engine_name'
+            target_name = engine_name
+        elif isinstance(project_name, str) or isinstance(project_name, pathlib.PurePath):
+            o3de_object_uris = manifest_json_data.get('projects', [])
+            manifest_json = 'project.json'
+            json_key = 'project_name'
+            target_name = project_name
+        elif isinstance(gem_name, str) or isinstance(gem_name, pathlib.PurePath):
+            o3de_object_uris = manifest_json_data.get('gems', [])
+            manifest_json = 'gem.json'
+            json_key = 'gem_name'
+            target_name = gem_name
+        elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
+            o3de_object_uris = manifest_json_data.get('templates', [])
+            manifest_json = 'template.json'
+            json_key = 'template_name'
+            target_name = template_name
+        elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
+            o3de_object_uris = manifest_json_data.get('restricted', [])
+            manifest_json = 'restricted.json'
+            json_key = 'restricted_name'
+            target_name = restricted_name
+        else:
+            return None
+        
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == target_name else None
+        o3de_object = search_o3de_object(manifest_json, o3de_object_uris, search_func)
+        if o3de_object:
+            o3de_object['repo_name'] = manifest_json_data['repo_name']
+            return o3de_object
+    
+    elif repo_schema_version == "2.0.0":
+        #search for the o3de object from inside repos object 
+        if isinstance(engine_name, str) or isinstance(engine_name, pathlib.PurePath):
+            o3de_objects = manifest_json_data.get('engines', [])
+            json_key = 'engine_name'
+            target_name = engine_name
+        elif isinstance(project_name, str) or isinstance(project_name, pathlib.PurePath):
+            o3de_objects = manifest_json_data.get('projects', [])
+            json_key = 'project_name'
+            target_name = project_name
+        elif isinstance(gem_name, str) or isinstance(gem_name, pathlib.PurePath):
+            o3de_objects = manifest_json_data.get('gems', [])
+            json_key = 'gem_name'
+            target_name = gem_name
+        elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
+            o3de_objects = manifest_json_data.get('templates', [])
+            json_key = 'template_name'
+            target_name = template_name
+        elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
+            o3de_objects = manifest_json_data.get('restricted', [])
+            json_key = 'restricted_name'
+            target_name = restricted_name
+        else:
+            return None
+        
+        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == target_name else None
+        
+        for o3de_object in o3de_objects:
+            result_json_data = search_func(o3de_object)
+            if result_json_data:
+                return result_json_data
+    
     # recurse into the repos object to search for the o3de object
     o3de_object_uris = []
     try:
@@ -340,6 +379,7 @@ def search_repo(manifest_json_data: dict,
     manifest_json = 'repo.json'
     search_func = lambda manifest_json_data: search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name)
     return search_o3de_object(manifest_json, o3de_object_uris, search_func)
+
 
 
 def search_o3de_object(manifest_json, o3de_object_uris, search_func):
