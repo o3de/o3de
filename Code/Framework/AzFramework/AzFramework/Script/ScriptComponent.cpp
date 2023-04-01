@@ -489,7 +489,7 @@ namespace AzFramework
     void ScriptComponent::Init()
     {
         // Grab the script context
-        EBUS_EVENT_RESULT(m_context, AZ::ScriptSystemRequestBus, GetContext, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(m_context, &AZ::ScriptSystemRequestBus::Events::GetContext, m_contextId);
         AZ_Assert(m_context, "We must have a valid script context!");
     }
 
@@ -568,7 +568,8 @@ namespace AzFramework
 
         // Set the metamethods as we will use the script table as a metatable for entity tables
         bool success = false;
-        EBUS_EVENT_RESULT(success, AZ::ScriptSystemRequestBus, Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
+        AZ::ScriptSystemRequestBus::BroadcastResult(
+            success, &AZ::ScriptSystemRequestBus::Events::Load, m_script, AZ::k_scriptLoadBinary, m_contextId);
         if (!success)
         {
             return false;

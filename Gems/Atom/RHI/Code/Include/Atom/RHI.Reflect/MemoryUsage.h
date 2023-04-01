@@ -82,6 +82,9 @@ namespace AZ
             // Number of bytes are used for resources or objects. This usually tracks the sub-allocations out of the total resident.
             // It may not exceed the total resident.
             AZStd::atomic_size_t m_usedResidentInBytes{ 0 };
+
+            // Number of bytes used by Unique Allocations
+            AZStd::atomic_size_t m_uniqueAllocationBytes{ 0 };
         };
 
         //!

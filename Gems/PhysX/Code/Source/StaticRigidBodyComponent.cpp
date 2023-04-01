@@ -46,6 +46,7 @@ namespace PhysX
     void StaticRigidBodyComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
         provided.push_back(AZ_CRC_CE("PhysicsWorldBodyService"));
+        provided.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
         provided.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
     }
 
@@ -56,18 +57,14 @@ namespace PhysX
 
     void StaticRigidBodyComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        // There can be only one StaticRigidBodyComponent per entity
-        incompatible.push_back(AZ_CRC_CE("PhysicsStaticRigidBodyService"));
-        // Cannot have both StaticRigidBodyComponent and RigidBodyComponent
         incompatible.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
     }
 
-    void StaticRigidBodyComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void StaticRigidBodyComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC_CE("PhysicsColliderService"));
     }
 
-    void StaticRigidBodyComponent::InitStaticRigidBody()
+    void StaticRigidBodyComponent::CreateRigidBody()
     {
         AZ::Transform transform = AZ::Transform::CreateIdentity();
         AZ::TransformBus::EventResult(transform, GetEntityId(), &AZ::TransformInterface::GetWorldTM);
@@ -87,34 +84,71 @@ namespace PhysX
         });
         configuration.m_colliderAndShapeData = allshapes;
 
-        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
-        {
-            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-        }
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
+            configuration.m_startSimulationEnabled = false; // enable physics will enable this when called.
             m_staticRigidBodyHandle = sceneInterface->AddSimulatedBody(m_attachedSceneHandle, &configuration);
         }
-    }
 
-    void StaticRigidBodyComponent::Activate()
-    {
         AZ::TransformNotificationBus::Handler::BusConnect(GetEntityId());
-
-        InitStaticRigidBody();
-
+        Physics::RigidBodyRequestBus::Handler::BusConnect(GetEntityId());
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusConnect(GetEntityId());
     }
 
-    void StaticRigidBodyComponent::Deactivate()
+    void StaticRigidBodyComponent::DestroyRigidBody()
     {
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->RemoveSimulatedBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
+            m_staticRigidBodyHandle = AzPhysics::InvalidSimulatedBodyHandle;
         }
 
+        Physics::RigidBodyRequestBus::Handler::BusDisconnect();
         AzPhysics::SimulatedBodyComponentRequestsBus::Handler::BusDisconnect();
         AZ::TransformNotificationBus::Handler::BusDisconnect();
+    }
+
+    void StaticRigidBodyComponent::Activate()
+    {
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            Physics::DefaultWorldBus::BroadcastResult(m_attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        }
+
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            // Early out if there's no relevant physics world present.
+            // It may be a valid case when we have game-time components assigned to editor entities via a script
+            // so no need to print a warning here.
+            return;
+        }
+
+        // During activation all the collider components will create their physics shapes.
+        // Delaying the creation of the rigid body to OnEntityActivated so all the shapes are ready.
+        AZ::EntityBus::Handler::BusConnect(GetEntityId());
+    }
+
+    void StaticRigidBodyComponent::OnEntityActivated([[maybe_unused]] const AZ::EntityId& entityId)
+    {
+        AZ::EntityBus::Handler::BusDisconnect();
+
+        CreateRigidBody();
+
+        EnablePhysics();
+    }
+
+    void StaticRigidBodyComponent::Deactivate()
+    {
+        if (m_attachedSceneHandle == AzPhysics::InvalidSceneHandle)
+        {
+            return;
+        }
+
+        DisablePhysics();
+
+        DestroyRigidBody();
+
+        AZ::EntityBus::Handler::BusDisconnect();
     }
 
     void StaticRigidBodyComponent::OnTransformChanged([[maybe_unused]] const AZ::Transform& local, const AZ::Transform& world)
@@ -135,14 +169,22 @@ namespace PhysX
         {
             sceneInterface->EnableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
+
+        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsEnabled, GetEntityId());
     }
 
     void StaticRigidBodyComponent::DisablePhysics()
     {
+        if (!IsPhysicsEnabled())
+        {
+            return;
+        }
         if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
         {
             sceneInterface->DisableSimulationOfBody(m_attachedSceneHandle, m_staticRigidBodyHandle);
         }
+
+        Physics::RigidBodyNotificationBus::Event(GetEntityId(), &Physics::RigidBodyNotificationBus::Events::OnPhysicsDisabled, GetEntityId());
     }
 
     bool StaticRigidBodyComponent::IsPhysicsEnabled() const
@@ -197,4 +239,157 @@ namespace PhysX
         return AzPhysics::SceneQueryHit();
     }
 
+    AZ::Vector3 StaticRigidBodyComponent::GetCenterOfMassWorld() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Vector3 StaticRigidBodyComponent::GetCenterOfMassLocal() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    AZ::Matrix3x3 StaticRigidBodyComponent::GetInertiaWorld() const
+    {
+        return AZ::Matrix3x3::CreateIdentity();
+    }
+
+    AZ::Matrix3x3 StaticRigidBodyComponent::GetInertiaLocal() const
+    {
+        return AZ::Matrix3x3::CreateIdentity();
+    }
+
+    AZ::Matrix3x3 StaticRigidBodyComponent::GetInverseInertiaWorld() const
+    {
+        return AZ::Matrix3x3::CreateIdentity();
+    }
+
+    AZ::Matrix3x3 StaticRigidBodyComponent::GetInverseInertiaLocal() const
+    {
+        return AZ::Matrix3x3::CreateIdentity();
+    }
+
+    float StaticRigidBodyComponent::GetMass() const
+    {
+        return 0.0f;
+    }
+
+    float StaticRigidBodyComponent::GetInverseMass() const
+    {
+        return 0.0f;
+    }
+
+    void StaticRigidBodyComponent::SetMass(float)
+    {
+    }
+
+    void StaticRigidBodyComponent::SetCenterOfMassOffset(const AZ::Vector3&)
+    {
+    }
+
+    AZ::Vector3 StaticRigidBodyComponent::GetLinearVelocity() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    void StaticRigidBodyComponent::SetLinearVelocity(const AZ::Vector3&)
+    {
+    }
+
+    AZ::Vector3 StaticRigidBodyComponent::GetAngularVelocity() const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    void StaticRigidBodyComponent::SetAngularVelocity(const AZ::Vector3&)
+    {
+    }
+
+    AZ::Vector3 StaticRigidBodyComponent::GetLinearVelocityAtWorldPoint(const AZ::Vector3&) const
+    {
+        return AZ::Vector3::CreateZero();
+    }
+
+    void StaticRigidBodyComponent::ApplyLinearImpulse(const AZ::Vector3&)
+    {
+    }
+
+    void StaticRigidBodyComponent::ApplyLinearImpulseAtWorldPoint(const AZ::Vector3&, const AZ::Vector3&)
+    {
+    }
+
+    void StaticRigidBodyComponent::ApplyAngularImpulse(const AZ::Vector3&)
+    {
+    }
+
+    float StaticRigidBodyComponent::GetLinearDamping() const
+    {
+        return 0.0f;
+    }
+
+    void StaticRigidBodyComponent::SetLinearDamping(float)
+    {
+    }
+
+    float StaticRigidBodyComponent::GetAngularDamping() const
+    {
+        return 0.0f;
+    }
+
+    void StaticRigidBodyComponent::SetAngularDamping(float)
+    {
+    }
+
+    bool StaticRigidBodyComponent::IsAwake() const
+    {
+        return false;
+    }
+
+    void StaticRigidBodyComponent::ForceAsleep()
+    {
+    }
+
+    void StaticRigidBodyComponent::ForceAwake()
+    {
+    }
+
+    bool StaticRigidBodyComponent::IsKinematic() const
+    {
+        return false;
+    }
+
+    void StaticRigidBodyComponent::SetKinematic(bool)
+    {
+    }
+
+    void StaticRigidBodyComponent::SetKinematicTarget(const AZ::Transform&)
+    {
+    }
+
+    bool StaticRigidBodyComponent::IsGravityEnabled() const
+    {
+        return false;
+    }
+
+    void StaticRigidBodyComponent::SetGravityEnabled(bool)
+    {
+    }
+
+    void StaticRigidBodyComponent::SetSimulationEnabled(bool)
+    {
+    }
+
+    float StaticRigidBodyComponent::GetSleepThreshold() const
+    {
+        return 0.0f;
+    }
+
+    void StaticRigidBodyComponent::SetSleepThreshold(float)
+    {
+    }
+
+    AzPhysics::RigidBody* StaticRigidBodyComponent::GetRigidBody()
+    {
+        return nullptr;
+    }
 } // namespace PhysX

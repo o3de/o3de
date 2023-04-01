@@ -25,7 +25,7 @@ class UserPropertyEditor : public QWidget
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(UserPropertyEditor, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UserPropertyEditor, AZ::SystemAllocator);
     UserPropertyEditor(QWidget *pParent = nullptr);
 
     void SetValue(const QString &value, bool notify = true);
@@ -53,7 +53,7 @@ class UserPopupWidgetHandler : public QObject, public AzToolsFramework::Property
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(UserPopupWidgetHandler, AZ::SystemAllocator);
     bool IsDefaultHandler() const override { return false; }
     QWidget* CreateGUI(QWidget *pParent) override;
 
@@ -68,7 +68,7 @@ class FloatCurveHandler : public QObject, public AzToolsFramework::PropertyHandl
 {
     Q_OBJECT
 public:
-    AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FloatCurveHandler, AZ::SystemAllocator);
     bool IsDefaultHandler() const override { return false; }
     QWidget* CreateGUI(QWidget *pParent) override;
 

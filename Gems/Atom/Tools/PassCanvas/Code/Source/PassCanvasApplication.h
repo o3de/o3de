@@ -12,7 +12,6 @@
 #include <AtomToolsFramework/EntityPreviewViewport/EntityPreviewViewportSettingsSystem.h>
 #include <AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h>
 #include <AzToolsFramework/API/EditorWindowRequestBus.h>
-#include <Document/PassGraphCompiler.h>
 #include <GraphModel/Model/GraphContext.h>
 #include <Window/PassCanvasMainWindow.h>
 
@@ -47,13 +46,6 @@ namespace PassCanvas
         // AzToolsFramework::EditorWindowRequests::Bus::Handler
         QWidget* GetAppMainWindow() override;
 
-        // AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler overrides...
-        void OnDocumentOpened(const AZ::Uuid& documentId) override;
-        void OnDocumentSaved(const AZ::Uuid& documentId) override;
-        void OnDocumentUndoStateChanged(const AZ::Uuid& documentId) override;
-        void OnDocumentClosed(const AZ::Uuid& documentId) override;
-        void OnDocumentDestroyed(const AZ::Uuid& documentId) override;
-
         void InitDynamicNodeManager();
         void InitDynamicNodeEditData();
         void InitSharedGraphContext();
@@ -67,6 +59,5 @@ namespace PassCanvas
         AZStd::unique_ptr<AtomToolsFramework::DynamicNodeManager> m_dynamicNodeManager;
         AZStd::shared_ptr<GraphModel::GraphContext> m_graphContext;
         AtomToolsFramework::GraphViewSettingsPtr m_graphViewSettingsPtr;
-        AZStd::unordered_map<AZ::Uuid, AZStd::unique_ptr<PassGraphCompiler>> m_graphCompilerMap;
     };
 } // namespace PassCanvas

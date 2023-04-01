@@ -19,10 +19,10 @@ TEST_ENGINE_JSON_PAYLOAD = '''
     "engine_name": "o3de",
     "version": "0.0.0",
     "restricted_name": "o3de",
-    "FileVersion": 1,
+    "file_version": 1,
     "O3DEVersion": "0.0.0",
-    "O3DECopyrightYear": 2021,
-    "O3DEBuildNumber": 0,
+    "copyright_year": 2021,
+    "build": 0,
     "external_subdirectories": [
         "Gems/TestGem2"
     ],
@@ -100,10 +100,7 @@ TEST_O3DE_MANIFEST_JSON_PAYLOAD = '''
     "repos": [],
     "engines": [
         "D:/o3de/o3de"
-    ],
-    "engines_path": {
-        "o3de": "D:/o3de/o3de"
-    }
+    ]
 }
 '''
 
@@ -153,10 +150,14 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
                                        project_path: pathlib.Path = None, 
                                        include_manifest_gems: bool = False,
-                                       include_engine_gems: bool = False) -> dict:
+                                       include_engine_gems: bool = False,
+                                       external_subdirectories: list = None
+                                       ) -> dict:
             return {}
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             return self.enable_gem.project_data
 
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
@@ -178,8 +179,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_gems_json_data_by_name', side_effect=get_gems_json_data_by_name) as get_gems_json_data_by_name_patch,\
@@ -207,7 +213,7 @@ class TestEnableGemCommand:
                 assert gem not in project_json.get('gem_names', [])
 
     @pytest.mark.parametrize("gem_registered_with_project, gem_registered_with_engine, "
-                             "gem_version, gem_dependencies, gem_names_and_versions, dry_run, force, "
+                             "gem_version, gem_dependencies, gem_json_data_by_name, dry_run, force, "
                              "compatible_engines, engine_api_dependencies, test_engine_name, test_engine_version, "
                              "test_engine_api_versions, is_optional_gem, expected_result", [
         # passes when no version information is provided
@@ -227,22 +233,28 @@ class TestEnableGemCommand:
         # fails when no compatible engine is found
         pytest.param(False, False, '1.2.3', [], {}, False, False, ['o3de-test<1.0.0'], [], 'other-engine', '0.0.0', {}, False, 1),
         # passes when dependent gems and engines are found
-        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':{'version':'1.2.3'}, 'testgem2':{'version':'2.0.0'}}, 
+                    False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
+        # passes when dependent gems with implicit dependencies and engines are found
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3'], { 'testgem1':{'version':'1.2.3','dependencies':['testgem2>1.0.0']}, 'testgem2':{'version':'2.0.0'}}, 
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when dependent gems without version specifiers are used
-        pytest.param(False, False, '1.2.3', ['testgem1','testgem2'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1','testgem2'], { 'testgem1':{'version':'1.2.3'}, 'testgem2':{'version':'2.0.0'}},
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when dependent gems with and without version specifiers are used
-        pytest.param(False, False, '1.2.3', ['testgem1','testgem2~=2.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.1'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1','testgem2~=2.0.0'], { 'testgem1':{'version':'1.2.3'}, 'testgem2':{'version':'2.0.1'}},
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # fails when dependent gem is not found
-        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':{'version':'1.2.3'}},
+                    False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '0.0.0', {}, False, 1),
+        # fails when implicit dependent gem is not found
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3'], { 'testgem1':{'version':'1.2.3','dependencies':['testgem2>1.0.0']}},
                     False, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '0.0.0', {}, False, 1),
         # fails when dependent gem with wrong version found
-        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.0.0', 'testgem2':'1.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':{'version':'1.0.0'}, 'testgem2':{'version':'1.0.0'}},
                     False, False, ['o3de-test~=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 1),
         # does not modify project when check only
-        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':'1.2.3', 'testgem2':'2.0.0'}, 
+        pytest.param(False, False, '1.2.3', ['testgem1==1.2.3','testgem2>1.0.0'], { 'testgem1':{'version':'1.2.3'}, 'testgem2':{'version':'2.0.1'}},
                     True, False, ['o3de-test<=1.0.0'], [], 'o3de-test', '1.0.0', {}, False, 0),
         # passes when a engine api versions found
         pytest.param(False, False, '1.2.3', [], {}, False, False, [], ['api==1.2.3'], 'o3de-test', '1.0.0', {'api':'1.2.3'}, False, 0),
@@ -262,7 +274,7 @@ class TestEnableGemCommand:
     )
     def test_enable_gem_checks_engine_compatibility(self, gem_registered_with_project, gem_registered_with_engine, 
                                                     gem_version, gem_dependencies, 
-                                                    gem_names_and_versions, dry_run, force, compatible_engines, 
+                                                    gem_json_data_by_name, dry_run, force, compatible_engines, 
                                                     engine_api_dependencies, test_engine_name, test_engine_version, 
                                                     test_engine_api_versions, is_optional_gem, expected_result):
         project_path = pathlib.PurePath('TestProject')
@@ -291,9 +303,11 @@ class TestEnableGemCommand:
         def get_gems_json_data_by_name( engine_path:pathlib.Path = None, 
                                         project_path: pathlib.Path = None, 
                                         include_manifest_gems: bool = False,
-                                        include_engine_gems: bool = False) -> dict:
+                                        include_engine_gems: bool = False,
+                                        external_subdirectories: list = None
+                                        ) -> dict:
             all_gems_json_data = {}
-            for gem_name in gem_names_and_versions.keys():
+            for gem_name in gem_json_data_by_name.keys():
                 all_gems_json_data[gem_name] = get_gem_json_data(gem_name=gem_name)
             return all_gems_json_data
 
@@ -312,7 +326,9 @@ class TestEnableGemCommand:
                 engine_data['api_versions'] = test_engine_api_versions
             return engine_data
 
-        def get_project_json_data(project_name: str = None, project_path: pathlib.Path = None):
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             project_data = self.enable_gem.project_data
             project_data['engine'] = test_engine_name
             if test_engine_version != None:
@@ -322,10 +338,10 @@ class TestEnableGemCommand:
         def get_gem_json_data(gem_name: str = None, gem_path: str or pathlib.Path = None,
                             project_path: pathlib.Path = None) -> dict or None:
             gem_data = self.enable_gem.gem_data.copy()
-            if gem_name in gem_names_and_versions:
+            if gem_name in gem_json_data_by_name:
                 # gem dependencies data
+                gem_data.update(gem_json_data_by_name[gem_name])
                 gem_data['gem_name'] = gem_name 
-                gem_data['version'] = gem_names_and_versions[gem_name] 
             else:
                 # test gem data
                 gem_data['version'] = gem_version
@@ -343,7 +359,7 @@ class TestEnableGemCommand:
             return set() 
 
         def get_engine_gems():
-            gem_paths = list(map(lambda path:pathlib.Path(path).resolve(), gem_names_and_versions.keys()))
+            gem_paths = list(map(lambda path:pathlib.Path(path).resolve(), gem_json_data_by_name.keys()))
             if gem_registered_with_engine:
                 gem_paths.append(pathlib.Path(gem_path).resolve())
             return gem_paths
@@ -351,8 +367,13 @@ class TestEnableGemCommand:
         def add_gem_dependency(enable_gem_cmake_file: pathlib.Path, gem_name: str):
             return 0
 
+        def is_file(path : pathlib.Path) -> bool:
+            if path.match("*/user/project.json"):
+                return False
+            return True
+
         with patch('pathlib.Path.is_dir', return_value=True) as pathlib_is_dir_patch,\
-                patch('pathlib.Path.is_file', return_value=True) as pathlib_is_file_patch, \
+                patch('pathlib.Path.is_file', new=is_file) as pathlib_is_file_patch, \
                 patch('o3de.manifest.load_o3de_manifest', side_effect=load_o3de_manifest) as load_o3de_manifest_patch, \
                 patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch,\
                 patch('o3de.manifest.get_registered', side_effect=get_registered_path) as get_registered_patch,\

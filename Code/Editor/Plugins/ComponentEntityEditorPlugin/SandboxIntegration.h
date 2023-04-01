@@ -72,7 +72,6 @@ class CToolsApplicationUndoLink;
 class QMenu;
 class QWidget;
 class CComponentEntityObject;
-class CHyperGraph;
 
 namespace AzToolsFramework
 {

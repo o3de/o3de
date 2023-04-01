@@ -12,7 +12,6 @@
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
 #include <AzCore/Memory/AllocatorManager.h>
-#include <AzCore/Memory/MemoryComponent.h>
 
 namespace AZ
 {
@@ -80,11 +79,12 @@ namespace AZ
 
         void GemTestEnvironment::SetupEnvironment()
         {
+            AZ::AllocatorManager::Instance().EnterProfilingMode();
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(true);
             AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_FULL);
 
             UnitTest::TraceBusHook::SetupEnvironment();
-
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
 
             m_parameters = new Parameters;
 
@@ -116,7 +116,6 @@ namespace AZ
 
             // Some applications (e.g. ToolsApplication) already add some of these components
             // So making sure we don't duplicate them on the system entity.
-            AddComponentIfNotPresent<AZ::MemoryComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::AssetManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::JobManagerComponent>(m_systemEntity);
             AddComponentIfNotPresent<AZ::StreamerComponent>(m_systemEntity);
@@ -169,9 +168,12 @@ namespace AZ
 
             AZ::GetCurrentSerializeContextModule().Cleanup();
 
-            AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-
             UnitTest::TraceBusHook::TeardownEnvironment();
+
+            AZ::AllocatorManager::Instance().SetDefaultTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetTrackingMode(AZ::Debug::AllocationRecords::RECORD_NO_RECORDS);
+            AZ::AllocatorManager::Instance().SetDefaultProfilingState(false);
+            AZ::AllocatorManager::Instance().ExitProfilingMode();
         }
     } // namespace Test
 } // namespace AZ

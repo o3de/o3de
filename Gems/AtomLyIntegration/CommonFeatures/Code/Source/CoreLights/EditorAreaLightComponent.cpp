@@ -304,7 +304,8 @@ namespace AZ
             {
                 ComponentDescriptor::DependencyArrayType provided;
                 ComponentDescriptor* componentDescriptor = nullptr;
-                EBUS_EVENT_ID_RESULT(componentDescriptor, component->RTTI_GetType(), ComponentDescriptorBus, GetDescriptor);
+                ComponentDescriptorBus::EventResult(
+                    componentDescriptor, component->RTTI_GetType(), &ComponentDescriptorBus::Events::GetDescriptor);
                 AZ_Assert(componentDescriptor, "Component class %s descriptor is not created! It must be before you can use it!", component->RTTI_GetTypeName());
                 componentDescriptor->GetProvidedServices(provided, component);
                 auto providedItr = AZStd::find(provided.begin(), provided.end(), AZ_CRC_CE("ShapeService"));

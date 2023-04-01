@@ -98,10 +98,11 @@ namespace PhysX
             void finalizeQuery() override;
 
             const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& m_hitCallback;
-            AzPhysics::SceneQueryHits m_results;
+            AzPhysics::SceneQueryHits& m_results;
 
             UnboundedOverlapCallback(const AzPhysics::SceneQuery::UnboundedOverlapHitCallback& hitCallback,
-                AZStd::vector<physx::PxOverlapHit>& hitBuffer);
+                AZStd::vector<physx::PxOverlapHit>& hitBuffer,
+                AzPhysics::SceneQueryHits& hits);
         };
     } // namespace SceneQueryHelpers
 }

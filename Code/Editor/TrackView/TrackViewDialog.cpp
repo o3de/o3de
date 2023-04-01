@@ -505,6 +505,7 @@ void CTrackViewDialog::InitToolbar()
             connect(qaction, &QAction::triggered, this, &CTrackViewDialog::OnAutoRecordStep);
             qaction->setCheckable(true);
             qaction->setChecked(i == 1);
+            m_fAutoRecordStep = 1;
             ag->addAction(qaction);
         }
     }
@@ -893,10 +894,8 @@ void CTrackViewDialog::Update()
     // 2. The camera which owns this node has been set as the current camera by the director node.
     if (gEnv->pMovieSystem)
     {
-        bool bSequenceCamInUse = gEnv->pMovieSystem->GetCallback() == nullptr ||
-            gEnv->pMovieSystem->GetCallback()->IsSequenceCamUsed();
         AZ::EntityId camId = gEnv->pMovieSystem->GetCameraParams().cameraEntityId;
-        if (camId.IsValid() && bSequenceCamInUse)
+        if (camId.IsValid())
         {
             AZ::Entity* entity = nullptr;
             AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, camId);
@@ -1277,6 +1276,11 @@ void CTrackViewDialog::OnSequenceComboBox()
     if (sel == -1)
     {
         GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false);
+        return;
+    }
+    if (sel == 0)
+    {
+        GetIEditor()->GetAnimation()->SetSequence(nullptr, false, false, true);
         return;
     }
 

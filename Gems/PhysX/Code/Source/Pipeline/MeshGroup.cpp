@@ -571,7 +571,7 @@ namespace PhysX
         }
 
 
-        AZ_CLASS_ALLOCATOR_IMPL(MeshGroup, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR_IMPL(MeshGroup, AZ::SystemAllocator)
 
         MeshGroup::MeshGroup()
             : m_id(AZ::Uuid::CreateRandom())
@@ -618,6 +618,7 @@ namespace PhysX
                             ->Attribute(AZ::Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::Icon, "Editor/Icons/MeshCollider.svg")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/physx-tab/")
 
                         ->DataElement(AZ_CRC_CE("ManifestName"), &MeshGroup::m_name, "Name PhysX Mesh",
                             "<span>Name for the group. This name will also be used as a part of the name for the "

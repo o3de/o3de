@@ -203,6 +203,11 @@ namespace AssetProcessor
         AZ::IO::Path m_cachePath; // The base/root path of the cache folder, including the platform
         AZ::IO::Path m_relativePath; // Relative path portion of the output file.  This can be overridden by the builder
 
+        // UUID of the original source asset.
+        // If this job is for an intermediate asset, the UUID is for the direct source which produced the intermediate.
+        // If the original source asset is not using metadata files, this value will be empty.
+        AZ::Uuid m_sourceUuid;
+
         AZStd::vector<JobDependencyInternal> m_jobDependencyList;
 
         // which files to include in the fingerprinting. (Not including job dependencies)
@@ -270,7 +275,7 @@ namespace AssetProcessor
 
         AZStd::string ToString() const
         {
-            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().Native();
+            AZStd::string lowerSourceName = m_sourceAsset.AbsolutePath().c_str();
             AZStd::to_lower(lowerSourceName.begin(), lowerSourceName.end());
 
             return AZStd::string::format("%s %s %s", lowerSourceName.c_str(), m_platformIdentifier.c_str(), m_jobKey.c_str());

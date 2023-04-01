@@ -29,7 +29,7 @@ namespace AzToolsFramework
         class TypeFingerprinter
         {
         public:
-            AZ_CLASS_ALLOCATOR(TypeFingerprinter, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TypeFingerprinter, AZ::SystemAllocator);
 
             TypeFingerprinter(const AZ::SerializeContext& serializeContext);
 

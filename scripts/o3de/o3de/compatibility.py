@@ -12,10 +12,68 @@ from packaging.version import Version, InvalidVersion
 from packaging.specifiers import SpecifierSet
 import pathlib
 import logging
-from o3de import manifest, utils, cmake
+from o3de import manifest, utils, cmake, validation
 
 logger = logging.getLogger('o3de.compatibility')
 logging.basicConfig(format=utils.LOG_FORMAT)
+
+def get_most_compatible_project_engine_path(project_path:pathlib.Path, 
+                                            project_json_data:dict = None, 
+                                            user_project_json_data:dict = None, 
+                                            engines_json_data:dict = None) -> pathlib.Path or None:
+    """
+    Returns the most compatible engine path for a project based on the project's 
+    'engine' field and taking into account <project_path>/user/project.json overrides
+    :param project_path: Path to the project
+    :param project_json_data: Json data to use to avoid reloading project.json  
+    :param user_project_json_data: Json data to use to avoid reloading <project_path>/user/project.json  
+    :param engines_json_data: Json data to use for engines instead of opening each file, useful for speed 
+    """
+    if not project_json_data:
+        project_json_data = manifest.get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f'Failed to load project.json data from {project_path}. '
+            'Please verify the path is correct, the file exists and is formatted correctly.')
+        return None
+    
+    # take into account any user project.json overrides 
+    if not isinstance(user_project_json_data, dict):
+        user_project_json_path = pathlib.Path(project_path) / 'user' / 'project.json'
+        if user_project_json_path.is_file():
+            user_project_json_data = manifest.get_json_data_file(user_project_json_path, 'project', validation.always_valid)
+            if user_project_json_data:
+                project_json_data.update(user_project_json_data)
+                user_engine_path = project_json_data.get('engine_path', '')
+                if user_engine_path:
+                    return pathlib.Path(user_engine_path)
+
+    project_engine = project_json_data.get('engine')
+    if not project_engine:
+        # The project has not been registered to an engine yet
+        return None
+
+    if not engines_json_data:
+        engines_json_data = manifest.get_engines_json_data_by_path()
+
+    most_compatible_engine_path = None
+    most_compatible_engine_version = None
+    for engine_path, engine_json_data in engines_json_data.items():
+        engine_name = engine_json_data.get('engine_name')
+        engine_version = engine_json_data.get('version')
+        if not engine_version:
+            # use a default version number in case version is missing or empty
+            engine_version = '0.0.0'
+
+        if has_compatible_version([project_engine], engine_name, engine_version):
+            if not most_compatible_engine_path:
+                most_compatible_engine_path = pathlib.Path(engine_path)
+                most_compatible_engine_version = Version(engine_version)
+            elif Version(engine_version) > most_compatible_engine_version:
+                most_compatible_engine_path = pathlib.Path(engine_path)
+                most_compatible_engine_version = Version(engine_version)
+    
+    return most_compatible_engine_path
+
 
 def get_project_engine_incompatible_objects(project_path:pathlib.Path, engine_path:pathlib.Path = None) -> set:
     """
@@ -70,10 +128,13 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
     if not gem_dependencies:
         return set()
 
-    return get_incompatible_gem_version_specifiers(gem_dependencies, all_gems_json_data)
+    return get_incompatible_gem_version_specifiers(gem_json_data, all_gems_json_data, checked_specifiers=set())
 
 
-def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathlib.Path, all_gems_json_data:dict = None) -> set:
+def get_gem_project_incompatible_objects(gem_path:pathlib.Path, 
+                                        gem_json_data:dict, 
+                                        project_path:pathlib.Path
+                                        ) -> set:
     """
     Returns any incompatible objects for this gem and project.
     :param gem_json_data: gem json data dictionary
@@ -100,8 +161,10 @@ def get_gem_project_incompatible_objects(gem_json_data:dict, project_path:pathli
         logger.error(f'Failed to load engine.json data based on the engine field in project.json or detect the engine from the current folder')
         return set(f'engine.json (missing)') 
 
-    if not all_gems_json_data:
-        all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, include_manifest_gems=True)
+    # Include the gem_path for the gem we are adding so it 
+    # and any gems in 'external_subdirectories' it has will be considered 
+    all_gems_json_data = manifest.get_gems_json_data_by_name(engine_path, project_path, 
+        external_subdirectories=[gem_path], include_manifest_gems=True)
 
     # compatibility will be based on the engine the project uses and the gems visible to
     # the engine and project
@@ -170,13 +233,14 @@ def get_incompatible_objects_for_engine(object_json_data:dict, engine_json_data:
     return incompatible_objects
 
 
-def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all_gems_json_data:dict) -> set:
+def get_incompatible_gem_version_specifiers(gem_json_data:dict, all_gems_json_data:dict, checked_specifiers:set) -> set:
     """
     Returns a set of gem version specifiers that are not compatible with the gem's provided
     If a gem_version_specifier_list entry only has a gem name, it is assumed compatible with every gem version with that name.
     :param gem_version_specifier_list: a list of gem names and (optional)version specifiers
     :param all_gems_json_data: json data of all gems to use for compatibility checks
     """
+    gem_version_specifier_list = gem_json_data.get('dependencies')
     if not gem_version_specifier_list:
         return set()
 
@@ -185,20 +249,37 @@ def get_incompatible_gem_version_specifiers(gem_version_specifier_list:list, all
         return set(gem_version_specifier_list)
 
     incompatible_gem_version_specifiers = set()
+
+    # helper function to check dependency tree for incompatible gem dependencies
+    def get_gem_dependency_version_specifiers(gem_name):
+        gem_dependencies = all_gems_json_data[gem_name].get('dependencies')
+        if gem_dependencies:
+            incompatible_dependency_specifiers = get_incompatible_gem_version_specifiers(all_gems_json_data[gem_name], all_gems_json_data, checked_specifiers)
+            if incompatible_dependency_specifiers:
+                incompatible_gem_version_specifiers.update(incompatible_dependency_specifiers)
+
     for gem_version_specifier in gem_version_specifier_list:
+        if gem_version_specifier in checked_specifiers:
+            continue
+
+        checked_specifiers.add(gem_version_specifier)
+
         gem_name, version_specifier = utils.get_object_name_and_optional_version_specifier(gem_version_specifier)
         if not gem_name in all_gems_json_data:
-            incompatible_gem_version_specifiers.add(f"{gem_version_specifier} (missing dependency)")
+            incompatible_gem_version_specifiers.add(f"{gem_json_data['gem_name']} is missing the dependency {gem_version_specifier}")
             continue
 
         if not version_specifier:
             # when no version specifier is provided we assume compatibility with any version
+            get_gem_dependency_version_specifiers(gem_name)
             continue
         
         gem_version = all_gems_json_data[gem_name].get('version')
         if gem_version and not has_compatible_version([gem_version_specifier], gem_name, gem_version):
-            incompatible_gem_version_specifiers.add(f"{gem_version_specifier} (different version found ${gem_version})")
+            incompatible_gem_version_specifiers.add(f"{gem_json_data['gem_name']} depends on {gem_version_specifier} but {gem_name} version {gem_version} was found")
             continue
+
+        get_gem_dependency_version_specifiers(gem_name)
 
     return incompatible_gem_version_specifiers
 

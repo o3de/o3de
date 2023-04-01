@@ -12,6 +12,7 @@
 
 #include <QItemSelection>
 #include <QWidget>
+#include <QAbstractItemView>
 
 #endif
 
@@ -27,23 +28,36 @@ namespace AzToolsFramework
         class AssetBrowserFilterModel;
         class AssetBrowserTreeView;
         class AssetBrowserThumbnailViewProxyModel;
-        class PreviewerFrame;
+        class AssetBrowserEntry;
 
         class AssetBrowserThumbnailView : public QWidget
         {
             Q_OBJECT
         public:
-            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AssetBrowserThumbnailView, AZ::SystemAllocator);
 
             explicit AssetBrowserThumbnailView(QWidget* parent = nullptr);
             ~AssetBrowserThumbnailView() override;
 
-            void SetPreviewerFrame(PreviewerFrame* previewerFrame);
             void SetAssetTreeView(AssetBrowserTreeView* treeView);
+
+            void HideProductAssets(bool checked);
+
+            AzQtComponents::AssetFolderThumbnailView* GetThumbnailViewWidget() const;
+
+            void setSelectionMode(QAbstractItemView::SelectionMode mode);
+            QAbstractItemView::SelectionMode selectionMode() const;
+
+        signals:
+            void entryClicked(const AssetBrowserEntry* entry);
+            void entryDoubleClicked(const AssetBrowserEntry* entry);
+            void showInFolderTriggered(const AssetBrowserEntry* entry);
+
+        public Q_SLOTS:
+            void UpdateThumbnailview();
 
         private:
             AssetBrowserTreeView* m_assetTreeView = nullptr;
-            PreviewerFrame* m_previewerFrame = nullptr;
             AzQtComponents::AssetFolderThumbnailView* m_thumbnailViewWidget = nullptr;
             AssetBrowserThumbnailViewProxyModel* m_thumbnailViewProxyModel = nullptr;
             AssetBrowserFilterModel* m_assetFilterModel = nullptr;

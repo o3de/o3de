@@ -96,6 +96,7 @@ namespace ScriptCanvasEditor
         , private UpgradeNotificationsBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetBrowserModel, AZ::SystemAllocator);
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)

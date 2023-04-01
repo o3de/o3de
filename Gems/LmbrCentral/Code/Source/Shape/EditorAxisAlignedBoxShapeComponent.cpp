@@ -65,6 +65,8 @@ namespace LmbrCentral
         AzFramework::EntityDebugDisplayEventBus::Handler::BusConnect(GetEntityId());
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusConnect(
             AZ::EntityComponentIdPair(GetEntityId(), GetId()));
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusConnect(
+            AZ::EntityComponentIdPair(GetEntityId(), GetId()));
 
         // ComponentMode
         const bool allowAsymmetricalEditing = IsShapeComponentTranslationEnabled();
@@ -77,6 +79,7 @@ namespace LmbrCentral
     {
         m_componentModeDelegate.Disconnect();
 
+        AzToolsFramework::ShapeManipulatorRequestBus::Handler::BusDisconnect();
         AzToolsFramework::BoxManipulatorRequestBus::Handler::BusDisconnect();
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
         m_aaboxShape.Deactivate();
@@ -178,6 +181,11 @@ namespace LmbrCentral
         AZ::Transform worldTransform = GetWorldTM();
         worldTransform.SetRotation(AZ::Quaternion::CreateIdentity());
         return worldTransform;
+    }
+
+    AZ::Quaternion EditorAxisAlignedBoxShapeComponent::GetRotationOffset() const
+    {
+        return AZ::Quaternion::CreateIdentity();
     }
 
     AZ::Aabb EditorAxisAlignedBoxShapeComponent::GetLocalBounds()

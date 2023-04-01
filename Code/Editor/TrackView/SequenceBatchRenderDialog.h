@@ -51,6 +51,7 @@ protected:
     void OnSequenceSelected();
     void OnRenderItemSelChange();
     void OnFPSEditChange();
+    void OnDirectorChange(int itemIndex);
     void OnFPSChange(int itemIndex);
     void OnImageFormatChange();
     void OnResolutionSelected();
@@ -60,6 +61,12 @@ protected:
     void OnSaveBatch();
     void OnKickIdle();
     void OnCancelRender();
+
+    void OnVarsChange();
+    void OnFormatChange();
+    void OnPrefixChange();
+    void OnDisableDebugInfoChange();
+    void OnCreateVideoChange();
 
     void SaveOutputOptions(const QString& pathname) const;
     bool LoadOutputOptions(const QString& pathname);
@@ -76,6 +83,7 @@ protected:
         int resW, resH;
         int fps;
         QString folder;
+        QString imageFormat;
         QString prefix;
         QStringList cvars;
         bool disableDebugInfo;
@@ -96,7 +104,8 @@ protected:
                 && prefix == item.prefix
                 && cvars == item.cvars
                 && disableDebugInfo == item.disableDebugInfo
-                && bCreateVideo == item.bCreateVideo)
+                && bCreateVideo == item.bCreateVideo
+                && imageFormat == item.imageFormat)
             {
                 return true;
             }

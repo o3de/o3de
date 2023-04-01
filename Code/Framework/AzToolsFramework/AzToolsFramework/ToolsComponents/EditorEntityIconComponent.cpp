@@ -259,7 +259,7 @@ namespace AzToolsFramework
                 bool preferNoViewportIcon = false;
 
                 AZ::SerializeContext* serializeContext = nullptr;
-                EBUS_EVENT_RESULT(serializeContext, AZ::ComponentApplicationBus, GetSerializeContext);
+                AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
                 AZ_Assert(serializeContext, "No serialize context");
 
                 for (AZ::ComponentId componentId : componentOrderArray)

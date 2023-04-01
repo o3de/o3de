@@ -335,7 +335,7 @@ namespace LyShineExamples
     void UiCustomImageComponent::RenderToCache(LyShine::IRenderGraph* renderGraph)
     {
         UiTransformInterface::RectPoints points;
-        EBUS_EVENT_ID(GetEntityId(), UiTransformBus, GetViewportSpacePoints, points);
+        UiTransformBus::Event(GetEntityId(), &UiTransformBus::Events::GetViewportSpacePoints, points);
 
         // points are a clockwise quad
         const AZ::Vector2 uvs[4] = {
@@ -391,9 +391,9 @@ namespace LyShineExamples
     bool UiCustomImageComponent::IsPixelAligned()
     {
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
         bool isPixelAligned = true;
-        EBUS_EVENT_ID_RESULT(isPixelAligned, canvasEntityId, UiCanvasBus, GetIsPixelAligned);
+        UiCanvasBus::EventResult(isPixelAligned, canvasEntityId, &UiCanvasBus::Events::GetIsPixelAligned);
         return isPixelAligned;
     }
 
@@ -442,8 +442,8 @@ namespace LyShineExamples
     {
         // tell the canvas to invalidate the render graph (never want to do this while rendering)
         AZ::EntityId canvasEntityId;
-        EBUS_EVENT_ID_RESULT(canvasEntityId, GetEntityId(), UiElementBus, GetCanvasEntityId);
-        EBUS_EVENT_ID(canvasEntityId, UiCanvasComponentImplementationBus, MarkRenderGraphDirty);
+        UiElementBus::EventResult(canvasEntityId, GetEntityId(), &UiElementBus::Events::GetCanvasEntityId);
+        UiCanvasComponentImplementationBus::Event(canvasEntityId, &UiCanvasComponentImplementationBus::Events::MarkRenderGraphDirty);
     }
 
 }

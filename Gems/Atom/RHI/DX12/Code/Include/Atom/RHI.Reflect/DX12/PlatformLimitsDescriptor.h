@@ -53,7 +53,7 @@ namespace AZ
             using Base = RHI::PlatformLimitsDescriptor;
         public:
             AZ_RTTI(AZ::DX12::PlatformLimitsDescriptor, "{ADCC8071-FCE4-4FA1-A048-DF8982951A0D}", Base);
-            AZ_CLASS_ALLOCATOR(AZ::DX12::PlatformLimitsDescriptor, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AZ::DX12::PlatformLimitsDescriptor, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             PlatformLimitsDescriptor() = default;

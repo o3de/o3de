@@ -440,19 +440,13 @@ namespace O3DELauncher
         {
             AzGameFramework::GameApplication::StartupParameters gameApplicationStartupParams;
 
-            if (mainInfo.m_allocator)
-            {
-                gameApplicationStartupParams.m_allocator = mainInfo.m_allocator;
-            }
-            else if (AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-            {
-                gameApplicationStartupParams.m_allocator = &AZ::AllocatorInstance<AZ::OSAllocator>::Get();
-            }
-
         #if defined(AZ_MONOLITHIC_BUILD)
             gameApplicationStartupParams.m_createStaticModulesCallback = CreateStaticModules;
             gameApplicationStartupParams.m_loadDynamicModules = false;
         #endif // defined(AZ_MONOLITHIC_BUILD)
+
+            const char* isDedicatedServerCommand = IsDedicatedServer() ? "sv_isDedicated true" : "sv_isDedicated false";
+            AZ::Interface<AZ::IConsole>::Get()->PerformCommand(isDedicatedServerCommand);
 
             gameApplication.Start({}, gameApplicationStartupParams);
 
@@ -471,7 +465,6 @@ namespace O3DELauncher
                 }
             }
 
-            AZ_Assert(AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady(), "System allocator was not created or creation failed.");
             //Initialize the Debug trace instance to create necessary environment variables
             AZ::Debug::Trace::Instance().Init();
 
@@ -496,16 +489,7 @@ namespace O3DELauncher
         systemInitParams.hInstance = mainInfo.m_instance;
         systemInitParams.hWnd = mainInfo.m_window;
         systemInitParams.pPrintSync = mainInfo.m_printSink;
-
         systemInitParams.bDedicatedServer = IsDedicatedServer();
-        if (IsDedicatedServer())
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated true");
-        }
-        else
-        {
-            AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
-        }
 
         AZ::s64 remoteFileSystemEnabled{};
         AZ::SettingsRegistryMergeUtils::PlatformGet(*settingsRegistry, remoteFileSystemEnabled,
@@ -581,6 +565,8 @@ namespace O3DELauncher
 
                 gEnv->pSystem->ExecuteCommandLine(false);
 
+                AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacyCommandLineProcessed", R"({})");
+
                 // Run the main loop
                 RunMainLoop(gameApplication);
             }
@@ -606,8 +592,10 @@ namespace O3DELauncher
         }
     #endif // !defined(_RELEASE)
 
-        delete systemInitParams.pSystem;
+        SAFE_DELETE(systemInitParams.pSystem);
         crySystemLibrary.reset(nullptr);
+    #else
+        SAFE_DELETE(systemInitParams.pSystem);
     #endif // !defined(AZ_MONOLITHIC_BUILD)
 
         gameApplication.Stop();

@@ -28,7 +28,7 @@ namespace LUAEditor
         static const int c_borderSize = 3;
 
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorBreakpointWidget, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorBreakpointWidget, AZ::SystemAllocator);
 
         LUAEditorBreakpointWidget(QWidget *pParent = nullptr);
         virtual ~LUAEditorBreakpointWidget();

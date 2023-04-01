@@ -27,7 +27,7 @@ namespace AZ
 
         public:
             AZ_RTTI(CascadedShadowmapsPass, "3956C19A-FBCB-4884-8AA9-3B47EFEC2B33", Base);
-            AZ_CLASS_ALLOCATOR(CascadedShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CascadedShadowmapsPass, SystemAllocator);
 
             virtual ~CascadedShadowmapsPass();
             static RPI::Ptr<CascadedShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);

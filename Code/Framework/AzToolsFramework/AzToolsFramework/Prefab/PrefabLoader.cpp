@@ -983,7 +983,7 @@ namespace AzToolsFramework
                 else
                 {
                     // If a relative path was passed in, just return it.
-                    finalPath = path;
+                    finalPath = AZ::IO::Path(path.Native(), '/');
                 }
             }
 

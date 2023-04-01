@@ -134,7 +134,7 @@ namespace AZ
     struct ExposedLambda
     {
         AZ_TYPE_INFO(ExposedLambda, "{B702DB0B-516B-4807-8007-DC50A5CE180A}");
-        AZ_CLASS_ALLOCATOR(ExposedLambda, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ExposedLambda, AZ::SystemAllocator);
 
         // assumes a lambda is at the top of the stack and will pop it
         ExposedLambda(lua_State* lua)
@@ -887,7 +887,7 @@ namespace AZ
                     lua_pushvalue(l, -4); // copy the value for set
                     lua_call(l, 2, 0);
 
-                   //EBUS_EVENT_ID(thisPtr, BehaviorObjectSignals, OnMemberMethodCalled, method);
+                    //BehaviorObjectSignals::Event(thisPtr, &BehaviorObjectSignals::Events::OnMemberMethodCalled, method);
                 }
             }
 
@@ -3420,7 +3420,7 @@ LUA_API const Node* lua_getDummyNode()
         class LuaScriptCaller : public LuaCaller
         {
         public:
-            AZ_CLASS_ALLOCATOR(LuaScriptCaller, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LuaScriptCaller, AZ::SystemAllocator);
 
             LuaScriptCaller(BehaviorContext* context, BehaviorMethod* method)
             {
@@ -3602,7 +3602,7 @@ LUA_API const Node* lua_getDummyNode()
         class LuaGenericCaller : public LuaCaller
         {
         public:
-            AZ_CLASS_ALLOCATOR(LuaGenericCaller, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(LuaGenericCaller, AZ::SystemAllocator);
 
             LuaGenericCaller(BehaviorContext* context, BehaviorMethod* method)
             {
@@ -3732,7 +3732,7 @@ LUA_API const Node* lua_getDummyNode()
         {
         public:
             AZ_TYPE_INFO(LuaEBusHandler, "{425e6ac2-d36d-4bba-b2b4-989ef3f69597}");
-            //AZ_CLASS_ALLOCATOR(LuaEBusHandler, AZ::SystemAllocator, 0);
+            //AZ_CLASS_ALLOCATOR(LuaEBusHandler, AZ::SystemAllocator);
 
             struct HookUserData
             {
@@ -4294,7 +4294,7 @@ LUA_API const Node* lua_getDummyNode()
         public:
             typedef ScriptProperty* (*ScriptTypeFactory)(ScriptDataContext& context, int valueIndex, const char* name);
 
-            AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ScriptContextImpl, AZ::SystemAllocator);
 
             //////////////////////////////////////////////////////////////////////////
             ScriptContextImpl(ScriptContext* owner, IAllocator* allocator, lua_State* nativeContext)

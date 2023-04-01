@@ -166,7 +166,6 @@ namespace AZ
             if (device->Init(*physicalDeviceFound) == RHI::ResultCode::Success)
             {
                 m_physicalDeviceDescriptor = physicalDeviceFound->GetDescriptor();
-                PlatformLimitsDescriptor::Create();
                 return device;
             }
 

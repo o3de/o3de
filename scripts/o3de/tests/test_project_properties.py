@@ -14,6 +14,17 @@ from unittest.mock import patch
 from o3de import project_properties
 
 
+TEST_ENGINE_JSON_PAYLOAD = '''
+{
+    "engine_name": "o3de",
+    "version": "0.0.0",
+    "external_subdirectories": [
+    ],
+    "projects": [],
+    "templates": []
+}
+'''
+
 TEST_PROJECT_JSON_PAYLOAD = '''
 {
     "project_name": "TestProject",
@@ -50,10 +61,16 @@ def init_project_json_data(request):
     class ProjectJsonData:
         def __init__(self):
             self.data = json.loads(TEST_PROJECT_JSON_PAYLOAD)
+            self.path = None
     request.cls.project_json = ProjectJsonData()
 
 @pytest.mark.usefixtures('init_project_json_data')
 class TestEditProjectProperties:
+
+    @staticmethod
+    def resolve(self):
+        return self
+
     @pytest.mark.parametrize("project_path, project_name, project_new_name, project_id, project_origin,\
                               project_display, project_summary, project_icon, project_version, \
                               add_tags, delete_tags, replace_tags, expected_tags, \
@@ -63,9 +80,9 @@ class TestEditProjectProperties:
                               expected_compatible_engines, \
                               add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies,\
                               expected_engine_api_dependencies,\
-                              is_optional_gem,\
+                              is_optional_gem, user, engine_path, engine_finder_cmake_path,\
                               expected_result",  [
-        pytest.param(pathlib.PurePath('E:/TestProject'),
+        pytest.param(pathlib.Path('E:/TestProject'),
                     'ProjNameA1', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
@@ -73,9 +90,9 @@ class TestEditProjectProperties:
                     'NewEngineName',
                     'o3de>=1.0', 'o3de-sdk==2205.01', None, ['o3de>=1.0'],
                     ['editor==2.3.4'], None, None, ['framework==1.2.3','editor==2.3.4'],
-                    False,
+                    False, True, pathlib.Path('D:/TestEngine'), pathlib.Path('cmake/CustomEngineFinder.cmake'),
                     0),
-        pytest.param(pathlib.PurePath('D:/TestProject'),
+        pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA2', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
@@ -83,9 +100,9 @@ class TestEditProjectProperties:
                     'o3de-sdk',
                     'c==4.3.2.1', None, 'a>=0.1 b==1.0,==2.0', ['a>=0.1', 'b==1.0,==2.0'],
                     ['launcher==3.4.5'], ['framework==1.2.3'], None, ['launcher==3.4.5'],
-                    False,
+                    False, False, None, None,
                     0),
-        pytest.param(pathlib.PurePath('D:/TestProject'),
+        pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA3', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
@@ -93,19 +110,19 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, 'o3de-sdk==2205.01', None, [],
                     None, None, ['framework==9.8.7'], ['framework==9.8.7'],
-                    False,
+                    False, False, None, None,
                     0),
-        pytest.param(pathlib.PurePath('D:/TestProject'),
+        pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
                     None, None, '', [],
-                    'o3de-install',
+                    'o3de-custom==1.0.0',
                     None, None, [], [],
                     None, None, [], [],
-                    False,
+                    False, False, None, None,
                     0),
-        pytest.param(pathlib.PurePath('F:/TestProject'),
+        pytest.param(pathlib.Path('F:/TestProject'),
                     'ProjNameA5', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A B C', 'B', 'D E F', ['D','E','F'],
@@ -113,7 +130,7 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'invalid', ['b==1.0,==2.0'], # invalid version
                     None, None, None, ['framework==1.2.3'],
-                    False,
+                    False, False, None, None,
                     1),
         pytest.param('', # invalid path
                     'ProjNameA6', 'ProjNameB', 'IDB', 'OriginB', 
@@ -123,10 +140,21 @@ class TestEditProjectProperties:
                     None,
                     None, None, 'o3de-sdk==2205.1', ['o3de-sdk==2205.1'],
                     None, None, None, ['framework==1.2.3'],
-                    False,
+                    False, False, None, None,
                     1),
         # test with an optional gem
-        pytest.param(pathlib.PurePath('D:/TestProject'),
+        pytest.param(pathlib.Path('D:/TestProject'),
+                    'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
+                    'Display', 'Summary', 'Icon', '1.0.0.0', 
+                    'A', None, None, ['A', 'TestProject'],
+                    ['GemA'], None, '', [{'name':'GemA','optional':True}],
+                    'o3de~=1.2',
+                    None, None, [], [],
+                    None, None, [], [],
+                    True, True, pathlib.Path(''), None,
+                    0),
+        # fails when trying to set engine_path in shared project.json
+        pytest.param(pathlib.Path('D:/TestProject'),
                     'ProjNameA4', 'ProjNameB', 'ProjID', 'Origin', 
                     'Display', 'Summary', 'Icon', '1.0.0.0', 
                     'A', None, None, ['A', 'TestProject'],
@@ -134,8 +162,8 @@ class TestEditProjectProperties:
                     'o3de-install',
                     None, None, [], [],
                     None, None, [], [],
-                    True,
-                    0),
+                    False, False, pathlib.Path('D:/TestEngine'), None,
+                    1),
         ]
     )
     def test_edit_project_properties(self, project_path, project_name, project_new_name, project_id, project_origin,
@@ -147,21 +175,30 @@ class TestEditProjectProperties:
                                      expected_compatible_engines,
                                      add_engine_api_dependencies, remove_engine_api_dependencies, 
                                      replace_engine_api_dependencies, expected_engine_api_dependencies,
-                                     is_optional_gem,
+                                     is_optional_gem, user, engine_path, engine_finder_cmake_path,
                                      expected_result):
 
-        def get_project_json_data(project_name: str, project_path) -> dict:
+        def get_project_json_data(project_name: str = None,
+                                project_path: str or pathlib.Path = None,
+                                user: bool = False) -> dict or None:
             if not project_path:
                 self.project_json.data = None
                 return None
             return self.project_json.data
 
+        def get_engine_json_data(engine_name: str = None,
+                                engine_path: str or pathlib.Path = None) -> dict or None:
+            return TEST_ENGINE_JSON_PAYLOAD
+
         def save_o3de_manifest(new_proj_data: dict, project_path) -> bool:
             self.project_json.data = new_proj_data
+            self.project_json.path = project_path
             return True
 
         with patch('o3de.manifest.get_project_json_data', side_effect=get_project_json_data) as get_project_json_data_patch, \
-                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch:
+                patch('o3de.manifest.save_o3de_manifest', side_effect=save_o3de_manifest) as save_o3de_manifest_patch, \
+                patch('pathlib.Path.resolve', new=self.resolve) as pathlib_is_resolve_mock,\
+                patch('o3de.manifest.get_engine_json_data', side_effect=get_engine_json_data) as get_engine_json_data_patch:
             result = project_properties.edit_project_props(project_path, project_name, project_new_name, project_id,
                                                            project_origin, project_display, project_summary, project_icon,
                                                            add_tags, delete_tags, replace_tags,
@@ -169,7 +206,8 @@ class TestEditProjectProperties:
                                                            engine_name,
                                                            add_compatible_engines, delete_compatible_engines, replace_compatible_engines,
                                                            project_version, is_optional_gem,
-                                                           add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies)
+                                                           add_engine_api_dependencies, remove_engine_api_dependencies, replace_engine_api_dependencies,
+                                                           user, engine_path, engine_finder_cmake_path)
             assert result == expected_result
             if result == 0:
                 assert self.project_json.data
@@ -181,6 +219,15 @@ class TestEditProjectProperties:
                 assert self.project_json.data.get('icon_path', '') == project_icon
                 assert self.project_json.data.get('version', '') == project_version
 
+                expected_project_json_path = project_path if not user else project_path / 'user'
+                expected_project_json_path /= 'project.json'
+                assert self.project_json.path.as_posix() == expected_project_json_path.as_posix()
+
+                if engine_path:
+                    engine_path = engine_path.as_posix() if engine_path.name else None
+                assert self.project_json.data.get('engine_path') == (engine_path if user else None)
+                assert self.project_json.data.get('engine_finder_cmake_path') == (engine_finder_cmake_path.as_posix() if engine_finder_cmake_path else None)
+                
                 if engine_name:
                     assert self.project_json.data.get('engine', '') == engine_name
 

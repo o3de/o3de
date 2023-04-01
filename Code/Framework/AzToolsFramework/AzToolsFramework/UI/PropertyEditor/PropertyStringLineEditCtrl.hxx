@@ -29,7 +29,7 @@ namespace AzToolsFramework
         friend class StringPropertyLineEditHandler;
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(PropertyStringLineEditCtrl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PropertyStringLineEditCtrl, AZ::SystemAllocator);
 
         PropertyStringLineEditCtrl(QWidget* pParent = NULL);
         virtual ~PropertyStringLineEditCtrl();
@@ -65,7 +65,7 @@ namespace AzToolsFramework
         // this is a Qt Object purely so it can connect to slots with context.  This is the only reason its in this header.
         Q_OBJECT
     public:
-        AZ_CLASS_ALLOCATOR(StringPropertyLineEditHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(StringPropertyLineEditHandler, AZ::SystemAllocator);
 
         virtual AZ::u32 GetHandlerName(void) const override  { return AZ_CRC("LineEdit", 0x3f15f4ba); }
         virtual bool IsDefaultHandler() const override { return true; }

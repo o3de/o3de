@@ -128,6 +128,11 @@ namespace AzToolsFramework
             return false;
         }
 
+        bool AssetBrowserEntryFilter::MatchWithoutPropagation(const AssetBrowserEntry* entry) const
+        {
+            return MatchInternal(entry);
+        }
+
         void AssetBrowserEntryFilter::Filter(AZStd::vector<const AssetBrowserEntry*>& result, const AssetBrowserEntry* entry) const
         {
             FilterInternal(result, entry);

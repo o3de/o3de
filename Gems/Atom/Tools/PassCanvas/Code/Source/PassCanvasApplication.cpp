@@ -20,6 +20,7 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/std/smart_ptr/make_shared.h>
+#include <Document/PassGraphCompiler.h>
 #include <GraphModel/Model/DataType.h>
 #include <PassCanvasApplication.h>
 #include <Window/PassCanvasMainWindow.h>
@@ -127,34 +128,6 @@ namespace PassCanvas
         return m_window.get();
     }
 
-    void PassCanvasApplication::OnDocumentOpened(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentSaved(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentUndoStateChanged(const AZ::Uuid& documentId)
-    {
-        AtomToolsFramework::GraphCompilerRequestBus::Event(
-            documentId, &AtomToolsFramework::GraphCompilerRequestBus::Events::QueueCompileGraph);
-    }
-
-    void PassCanvasApplication::OnDocumentClosed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
-    void PassCanvasApplication::OnDocumentDestroyed(const AZ::Uuid& documentId)
-    {
-        m_graphCompilerMap.erase(documentId);
-    }
-
     void PassCanvasApplication::InitDynamicNodeManager()
     {
         // Instantiate the dynamic node manager to register all dynamic node configurations and data types used in this tool
@@ -231,14 +204,14 @@ namespace PassCanvas
             AtomToolsFramework::GetPathWithoutAlias(AtomToolsFramework::GetSettingsValue<AZStd::string>(
                 "/O3DE/Atom/PassCanvas/DefaultPassGraphTemplate",
                 "@gemroot:PassCanvas@/Assets/PassCanvas/GraphData/blank_graph.passgraphtemplate")),
-            m_graphContext);
+            m_graphContext,
+            [toolId = m_toolId](){ return AZStd::make_shared<PassGraphCompiler>(toolId); });
 
         // Overriding documentview factory function to create graph view
         documentTypeInfo.m_documentViewFactoryCallback = [this](const AZ::Crc32& toolId, const AZ::Uuid& documentId)
         {
             m_window->AddDocumentTab(
                 documentId, aznew AtomToolsFramework::GraphDocumentView(toolId, documentId, m_graphViewSettingsPtr, m_window.get()));
-            m_graphCompilerMap.emplace(documentId, AZStd::make_unique<PassGraphCompiler>(toolId, documentId));
             return true;
         };
 

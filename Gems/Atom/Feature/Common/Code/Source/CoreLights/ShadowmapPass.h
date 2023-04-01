@@ -28,7 +28,7 @@ namespace AZ
       
         public:
             AZ_RTTI(ShadowmapPass, "FCBDDB8C-E565-4780-9E2E-B45F16203F77", Base);
-            AZ_CLASS_ALLOCATOR(ShadowmapPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShadowmapPass, SystemAllocator);
 
             ~ShadowmapPass() = default;
 

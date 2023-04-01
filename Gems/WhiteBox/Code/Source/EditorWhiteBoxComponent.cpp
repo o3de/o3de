@@ -68,7 +68,7 @@ namespace WhiteBox
         WhiteBoxRenderData renderData;
         WhiteBoxFaces& faceData = renderData.m_faces;
 
-        const size_t faceCount = Api::MeshFaceCount(whiteBox);
+        const auto faceCount = Api::MeshFaceCount(whiteBox);
         faceData.reserve(faceCount);
 
         const auto createWhiteBoxFaceFromHandle = [&whiteBox](const Api::FaceHandle& faceHandle) -> WhiteBoxFace

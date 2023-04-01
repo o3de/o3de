@@ -21,9 +21,11 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
 // Editor
 #include "AzAssetBrowser/AzAssetBrowserRequestHandler.h"
@@ -40,6 +42,16 @@ AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFla
 //! When the Asset Browser window is resized to be less than this many pixels in width
 //! the layout changes to accomodate its narrow state better. See AzAssetBrowserWindow::SetNarrowMode
 static constexpr int s_narrowModeThreshold = 700;
+
+using namespace AzToolsFramework::AssetBrowser;
+
+namespace
+{
+    inline QString FromStdString(AZStd::string_view string)
+    {
+        return QString::fromUtf8(string.data(), static_cast<int>(string.size()));
+    }
+}
 
 namespace AzToolsFramework
 {
@@ -153,10 +165,94 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         connect(m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::ClearTypeFilter,
             m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-        m_ui->m_assetBrowserTableViewWidget->SetName("AssetBrowserTableView_main");
-    }
+        m_ui->m_assetBrowserTableViewWidget->SetIsAssetBrowserMainView();
 
-    m_ui->m_thumbnailView->SetPreviewerFrame(m_ui->m_previewerFrame);
+        connect(
+            m_ui->m_thumbnailView,
+            &AssetBrowserThumbnailView::entryDoubleClicked,
+            this,
+            [this](const AssetBrowserEntry* entry)
+            {
+                if (!m_ui->m_assetBrowserTreeViewWidget)
+                {
+                    return;
+                }
+
+                if (!entry)
+                {
+                    return;
+                }
+
+                if (entry->GetEntryType() != AssetBrowserEntry::AssetEntryType::Folder)
+                {
+                    return;
+                }
+
+                if (!m_assetBrowserModel)
+                {
+                    return;
+                }
+
+                if (!m_filterModel.data())
+                {
+                    return;
+                }
+
+                QModelIndex indexForEntry;
+                m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry), indexForEntry);
+
+                if (!indexForEntry.isValid())
+                {
+                    return;
+                }
+
+                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
+                auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
+
+                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+
+                auto targetIndexAncestor = targetIndex.parent();
+                while (targetIndexAncestor.isValid())
+                {
+                    m_ui->m_assetBrowserTreeViewWidget->expand(targetIndexAncestor);
+                    targetIndexAncestor = targetIndexAncestor.parent();
+                }
+
+                m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+            });
+
+        connect(
+            m_ui->m_thumbnailView,
+            &AssetBrowserThumbnailView::showInFolderTriggered,
+            this,
+            [this](const AssetBrowserEntry* entry)
+            {
+                if (!entry)
+                {
+                    return;
+                }
+
+                if (!entry->GetParent())
+                {
+                    return;
+                }
+
+                m_ui->m_searchWidget->ClearStringFilter();
+
+                QModelIndex indexForEntry;
+                m_assetBrowserModel->GetEntryIndex(const_cast<AssetBrowserEntry*>(entry->GetParent()), indexForEntry);
+
+                if (!indexForEntry.isValid())
+                {
+                    return;
+                }
+
+                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
+                auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
+
+                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+            });
+    }
 
     if (!ed_useWIPAssetBrowserDesign)
     {
@@ -189,7 +285,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         if (folderEntry)
         {
             // No need to select the folder ourselves, callback from Breadcrumbs will take care of that
-            m_ui->m_pathBreadCrumbs->pushPath(QString::fromUtf8(folderEntry->GetVisiblePath().c_str()));
+            m_ui->m_pathBreadCrumbs->pushFullPath(FromStdString(folderEntry->GetFullPath()), FromStdString(folderEntry->GetVisiblePath()));
         }
     });
 
@@ -228,6 +324,15 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             }
         });
 
+    connect(
+        m_ui->m_assetBrowserTreeViewWidget,
+        &QAbstractItemView::clicked,
+        this,
+        [this](const QModelIndex&)
+        {
+            m_ui->m_searchWidget->ClearStringFilter();
+        });
+
     connect(m_ui->m_assetBrowserTreeViewWidget, &QAbstractItemView::doubleClicked, this, &AzAssetBrowserWindow::DoubleClickedItem);
 
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearStringFilter,
@@ -236,13 +341,19 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
     connect(m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::ClearTypeFilter,
         m_ui->m_searchWidget, &AzAssetBrowser::SearchWidget::ClearTypeFilter);
 
-    connect(m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
+    connect(
+        m_assetBrowserModel,
+        &AzAssetBrowser::AssetBrowserModel::RequestOpenItemForEditing,
         m_ui->m_assetBrowserTreeViewWidget, &AzAssetBrowser::AssetBrowserTreeView::OpenItemForEditing);
+
+    connect(
+        m_assetBrowserModel, &AzAssetBrowser::AssetBrowserModel::RequestThumbnailviewUpdate,
+            m_ui->m_thumbnailView, &AzAssetBrowser::AssetBrowserThumbnailView::UpdateThumbnailview);
 
     connect(this, &AzAssetBrowserWindow::SizeChangedSignal,
         m_ui->m_assetBrowserTableViewWidget, &AzAssetBrowser::AssetBrowserTableView::UpdateSizeSlot);
 
-    m_ui->m_assetBrowserTreeViewWidget->SetName("AssetBrowserTreeView_main");
+    m_ui->m_assetBrowserTreeViewWidget->SetIsAssetBrowserMainView();
 }
 
 AzAssetBrowserWindow::~AzAssetBrowserWindow()
@@ -313,6 +424,9 @@ void AzAssetBrowserWindow::RegisterViewClass()
     options.preferedDockingArea = Qt::LeftDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
+    options.preferedDockingArea = Qt::RightDockWidgetArea;
+    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
+
     options.showInMenu = false;
     const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
@@ -326,8 +440,9 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
     return listener;
 }
 
-bool AzAssetBrowserWindow::TreeViewBelongsTo(AzToolsFramework::AssetBrowser::AssetBrowserTreeView* treeView) {
-    return m_ui->m_assetBrowserTreeViewWidget == treeView;
+bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
+{
+    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
@@ -338,10 +453,9 @@ void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
     // but the resizeEvent holds the new size of the whole widget
     // So we have to save the proportions somehow
     const QWidget* leftLayout = m_ui->m_leftLayout;
-    const QVBoxLayout* rightLayout = m_ui->m_rightLayout;
 
     const float oldLeftLayoutWidth = aznumeric_cast<float>(leftLayout->geometry().width());
-    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width() + rightLayout->geometry().width());
+    const float oldWidth = aznumeric_cast<float>(leftLayout->geometry().width());
 
     const float newWidth = oldLeftLayoutWidth * aznumeric_cast<float>(resizeEvent->size().width()) / oldWidth;
 
@@ -370,13 +484,18 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         m_toolsMenu->addAction(collapseAllAction);
 
         m_toolsMenu->addSeparator();
-        auto* projectSourceAssets = new QAction(tr("Filter Project and Source Assets"), this);
+        auto* projectSourceAssets = new QAction(tr("Hide Product Assets"), this);
         projectSourceAssets->setCheckable(true);
         projectSourceAssets->setChecked(true);
-        connect(projectSourceAssets, &QAction::triggered, this, [this] { m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(); });
+        connect(projectSourceAssets, &QAction::triggered, this,
+            [this, projectSourceAssets]
+            {
+                m_ui->m_thumbnailView->HideProductAssets(projectSourceAssets->isChecked());
+                m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+            });
         m_toolsMenu->addAction(projectSourceAssets);
 
-        m_ui->m_searchWidget->GetFilter()->AddFilter(m_ui->m_searchWidget->GetProjectSourceFilter());
+        m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
         m_ui->m_searchWidget->AddFolderFilter();
 
         m_assetBrowserDisplayState = AzToolsFramework::AssetBrowser::AssetBrowserDisplayState::TreeViewMode;
@@ -489,17 +608,23 @@ void AzAssetBrowserWindow::UpdateWidgetAfterFilter()
         m_ui->m_assetBrowserTableViewWidget->setVisible(hasFilter);
         m_ui->m_assetBrowserTreeViewWidget->setVisible(!hasFilter);
     }
-}
 
-void AzAssetBrowserWindow::UpdatePreview(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* selectedEntry) const
-{
-    if (selectedEntry)
+    if (hasFilter)
     {
-        m_ui->m_previewerFrame->Display(selectedEntry);
+        m_ui->m_assetBrowserTreeViewWidget->selectionModel()->select(
+            m_ui->m_assetBrowserTreeViewWidget->model()->index(0, 0, {}), QItemSelectionModel::ClearAndSelect);
     }
-    else
+
+    if (ed_useNewAssetBrowserTableView)
     {
-        m_ui->m_previewerFrame->Clear();
+        if (hasFilter)
+        {
+            auto thumbnailWidget = m_ui->m_thumbnailView->GetThumbnailViewWidget();
+            if (thumbnailWidget)
+            {
+                thumbnailWidget->setRootIndex(thumbnailWidget->model()->index(0, 0, {}));
+            }
+        }
     }
 }
 
@@ -508,15 +633,17 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
     using namespace AzToolsFramework::AssetBrowser;
 
     QString entryPath;
+    QString fullPath;
     if (selectedEntry)
     {
         const AssetBrowserEntry* folderEntry = Utils::FolderForEntry(selectedEntry);
         if (folderEntry)
         {
-            entryPath = QString::fromUtf8(folderEntry->GetVisiblePath().c_str());
+            entryPath = FromStdString(folderEntry->GetVisiblePath());
+            fullPath = FromStdString(folderEntry->GetFullPath());
         }
     }
-    m_ui->m_pathBreadCrumbs->pushPath(entryPath);
+    m_ui->m_pathBreadCrumbs->pushFullPath(fullPath, entryPath);
 }
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
@@ -587,8 +714,8 @@ void AzAssetBrowserWindow::CurrentIndexChangedSlot(const QModelIndex& idx) const
     using namespace AzToolsFramework::AssetBrowser;
     auto* entry = idx.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
 
-    UpdatePreview(entry);
     UpdateBreadcrumbs(entry);
+    AssetBrowserPreviewRequestBus::Broadcast(&AssetBrowserPreviewRequest::PreviewAsset, entry);
 }
 
 // while its tempting to use Activated here, we don't actually want it to count as activation

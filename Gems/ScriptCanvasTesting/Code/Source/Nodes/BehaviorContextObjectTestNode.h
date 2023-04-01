@@ -20,7 +20,7 @@ namespace ScriptCanvasTestingNodes
     {
     public:
         AZ_RTTI(BehaviorContextObjectTest, "{FF687BD7-42AA-44C4-B3AB-79353E8C6CCF}");
-        AZ_CLASS_ALLOCATOR(BehaviorContextObjectTest, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorContextObjectTest, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context)
         {

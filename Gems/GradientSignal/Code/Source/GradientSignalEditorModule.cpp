@@ -85,7 +85,6 @@ namespace GradientSignal
             {
                 editContext->Class<GradientSignalEditorSystemComponent>("GradientSignalEditorSystemComponent", "Handles registration of the gradient preview data widget handler")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -109,17 +108,23 @@ namespace GradientSignal
 
     void GradientSignalEditorSystemComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& /*dependent*/)
     {
+    }
 
+    void GradientSignalEditorSystemComponent::OnActionContextModeBindingHook()
+    {
+        EditorImageGradientComponentMode::BindActionsToModes();
     }
 
     void GradientSignalEditorSystemComponent::Activate()
     {
         GradientPreviewDataWidgetHandler::Register();
         StreamingImagePropertyHandler::Register();
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusConnect();
     }
 
     void GradientSignalEditorSystemComponent::Deactivate()
     {
+        AzToolsFramework::ActionManagerRegistrationNotificationBus::Handler::BusDisconnect();
         GradientPreviewDataWidgetHandler::Unregister();
         // We don't need to unregister the StreamingImagePropertyHandler
         // because its set to auto-delete (default)

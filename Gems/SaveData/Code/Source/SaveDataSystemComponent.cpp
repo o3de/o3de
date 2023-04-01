@@ -37,7 +37,6 @@ namespace SaveData
             {
                 ec->Class<SaveDataSystemComponent>("SaveData", "Provides functionality for saving and loading persistent user data.")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }

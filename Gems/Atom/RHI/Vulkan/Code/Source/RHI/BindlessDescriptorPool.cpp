@@ -11,6 +11,7 @@
 #include "BufferView.h"
 #include "Device.h"
 #include "ImageView.h"
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 #include <vulkan/vulkan.h>
 
@@ -89,7 +90,8 @@ namespace AZ::Vulkan
             layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
             layoutInfo.pBindings = bindings;
 
-            m_device->GetContext().CreateDescriptorSetLayout(m_device->GetNativeDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout);
+            m_device->GetContext().CreateDescriptorSetLayout(
+                m_device->GetNativeDevice(), &layoutInfo, VkSystemAllocator::Get(), &m_descriptorSetLayout);
 
             VkDescriptorSetAllocateInfo allocInfo{};
             allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
@@ -114,7 +116,7 @@ namespace AZ::Vulkan
     void BindlessDescriptorPool::Shutdown()
     {
         m_device->GetContext().FreeDescriptorSets(m_device->GetNativeDevice(), m_pool->GetNativeDescriptorPool(), 1, &m_set);
-        m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, nullptr);
+        m_device->GetContext().DestroyDescriptorSetLayout(m_device->GetNativeDevice(), m_descriptorSetLayout, VkSystemAllocator::Get());
 
         m_pool.reset();
     }
@@ -137,9 +139,15 @@ namespace AZ::Vulkan
         const uint32_t roTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadTexture);
         
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
+            RHI::VirtualAddress address = m_allocators[roTextureIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         VkWriteDescriptorSet write = PrepareWrite(heapIndex, roTextureIndex, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE);
         VkDescriptorImageInfo imageInfo{};
@@ -158,9 +166,15 @@ namespace AZ::Vulkan
         const uint32_t rwTextureIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteTexture);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadWriteIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
+            RHI::VirtualAddress address = m_allocators[rwTextureIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         VkWriteDescriptorSet write = PrepareWrite(heapIndex, rwTextureIndex, VK_DESCRIPTOR_TYPE_STORAGE_IMAGE);
         VkDescriptorImageInfo imageInfo{};
@@ -180,9 +194,15 @@ namespace AZ::Vulkan
         const uint32_t roBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadBuffer);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
+            RHI::VirtualAddress address = m_allocators[roBufferIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();
@@ -202,9 +222,15 @@ namespace AZ::Vulkan
         const uint32_t rwBufferIndex = static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::ReadWriteBuffer);
 
         AZStd::lock_guard<AZStd::mutex> lock(m_mutex);
-        RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
-        AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
-        uint32_t heapIndex = static_cast<uint32_t>(address.m_ptr);
+
+        uint32_t heapIndex = view->GetBindlessReadWriteIndex();
+        if (heapIndex == ImageView::InvalidBindlessIndex)
+        {
+            // Only allocate a new index if the view doesn't already have one. This allows views to update in-place.
+            RHI::VirtualAddress address = m_allocators[rwBufferIndex].Allocate(1, 1);
+            AZ_Assert(address.IsValid(), "Bindless allocator ran out of space.");
+            heapIndex = static_cast<uint32_t>(address.m_ptr);
+        }
 
         const auto& viewDesc = view->GetDescriptor();
         const Vulkan::BufferMemoryView& bufferMemoryView = *static_cast<const Vulkan::Buffer&>(view->GetBuffer()).GetBufferMemoryView();

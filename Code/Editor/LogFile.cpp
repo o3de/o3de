@@ -456,12 +456,12 @@ AZ_POP_DISABLE_WARNING
 //////////////////////////////////////////////////////////////////////////
 QString CLogFile::GetMemUsage()
 {
-    ProcessMemInfo mi;
-    CProcessInfo::QueryMemInfo(mi);
-    int MB = 1024 * 1024;
+    AZ::ProcessMemInfo mi;
+    AZ::QueryMemInfo(mi);
+    constexpr int MB = 1024 * 1024;
 
     QString str;
-    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.WorkingSet / MB).arg(mi.PagefileUsage / MB);
+    str = QStringLiteral("Memory=%1Mb, Pagefile=%2Mb").arg(mi.m_workingSet / MB).arg(mi.m_pagefileUsage / MB);
     //FormatLine( "PeakWorkingSet=%dMb, PeakPagefileUsage=%dMb",pc.PeakWorkingSetSize/MB,pc.PeakPagefileUsage/MB );
     //FormatLine( "PagedPoolUsage=%d",pc.QuotaPagedPoolUsage/MB );
     //FormatLine( "NonPagedPoolUsage=%d",pc.QuotaNonPagedPoolUsage/MB );

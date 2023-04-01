@@ -35,7 +35,7 @@ public:
     MOCK_METHOD0(GetHelp, const char*());
     MOCK_CONST_METHOD0(IsConstCVar, bool());
     MOCK_METHOD1(SetOnChangeCallback, void(ConsoleVarFunc));
-    MOCK_METHOD1(AddOnChangeFunctor, uint64(const AZStd::function<void()>& pChangeFunctor));
+    MOCK_METHOD2(AddOnChangeFunctor, bool(AZ::Name, const AZStd::function<void()>&));
     MOCK_CONST_METHOD0(GetOnChangeCallback, ConsoleVarFunc());
     MOCK_CONST_METHOD0(GetRealIVal, int());
     MOCK_METHOD2(SetLimits, void(float, float));

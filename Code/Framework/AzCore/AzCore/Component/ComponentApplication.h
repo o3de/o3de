@@ -89,7 +89,7 @@ namespace AZ
 
     public:
         AZ_RTTI(ComponentApplication, "{1F3B070F-89F7-4C3D-B5A3-8832D5BC81D7}");
-        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ComponentApplication, SystemAllocator);
 
         /**
          * Configures the component application.
@@ -102,20 +102,7 @@ namespace AZ
             : public SerializeContext::IObjectFactory
         {
             AZ_TYPE_INFO(ComponentApplication::Descriptor, "{70277A3E-2AF5-4309-9BBF-6161AFBDE792}");
-            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator, 0);
-
-            struct AllocatorRemapping
-            {
-                AZ_TYPE_INFO(ComponentApplication::Descriptor::AllocatorRemapping, "{4C865590-4506-4B76-BF14-6CCB1B83019A}");
-                AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor::AllocatorRemapping, OSAllocator, 0);
-
-                static void Reflect(ReflectContext* context, ComponentApplication* app);
-
-                OSString m_from;
-                OSString m_to;
-            };
-
-            typedef AZStd::vector<AllocatorRemapping, OSStdAllocator> AllocatorRemappings;
+            AZ_CLASS_ALLOCATOR(ComponentApplication::Descriptor, SystemAllocator);
 
             ///////////////////////////////////////////////
             // SerializeContext::IObjectFactory
@@ -148,10 +135,6 @@ namespace AZ
         struct StartupParameters
         {
             StartupParameters() {}
-
-            //! If set, this allocator is used to allocate the temporary bootstrap memory, as well as the main \ref SystemAllocator heap.
-            //! If it's left nullptr (default), the \ref OSAllocator will be used.
-            IAllocator* m_allocator = nullptr;
 
             //! Callback to create AZ::Modules for the static libraries linked by this application.
             //! Leave null if the application uses no static AZ::Modules.
@@ -187,7 +170,6 @@ namespace AZ
          */
         virtual Entity* Create(const Descriptor& descriptor, const StartupParameters& startupParameters = StartupParameters());
         virtual void Destroy();
-        virtual void DestroyAllocator(); // Called at the end of Destroy(). Applications can override to do tear down work right before allocator is destroyed.
 
         //////////////////////////////////////////////////////////////////////////
         // ComponentApplicationRequests
@@ -313,17 +295,26 @@ namespace AZ
         /// Common logic shared between the multiple Create(...) functions.
         void        CreateCommon();
 
-        /// Create the operating system allocator if not supplied in the StartupParameters
-        void        CreateOSAllocator();
-
-        /// Create the system allocator using the data in the m_descriptor
-        void        CreateSystemAllocator();
+        /// Create the system allocator to track allocations
+        void        ConfigureSystemAllocatorTracking();
 
         virtual void MergeSettingsToRegistry(SettingsRegistryInterface& registry);
+
+        void MergeSharedSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
+
+        void MergeUserSettings(
+            SettingsRegistryInterface& registry,
+            const AZ::SettingsRegistryInterface::Specializations& specializations,
+            AZStd::vector<char>& scratchBuffer);
 
         //! Sets the specializations that will be used when loading the Settings Registry. Extend this in derived
         //! application classes to specialize settings for those applications.
         virtual void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations);
+
+        void ReportBadEngineRoot();
 
         /**
          * This is the function that will be called instantly after the memory
@@ -369,8 +360,6 @@ namespace AZ
         EntityRemovedEvent                          m_entityDeactivatedEvent;
         Descriptor                                  m_descriptor;
         bool                                        m_isStarted{ false };
-        bool                                        m_isSystemAllocatorOwner{ false };
-        bool                                        m_isOSAllocatorOwner{ false };
         IAllocator*                                 m_osAllocator{ nullptr };
         EntitySetType                               m_entities;
 

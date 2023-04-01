@@ -32,9 +32,11 @@ namespace AzQtComponents
     static const QChar g_windowsSeparator = '\\';
     static const QString g_labelName = QStringLiteral("BreadCrumbLabel");
     static const QString g_buttonName = QStringLiteral("MenuButton");
+    AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
     // Separator is two non-breaking spaces, Right-Pointing Angle Quotation Mark (U+203A) and two more
     // non-breaking spaces
     static const QString g_plainTextSeparator = QStringLiteral("\u00a0\u00a0\u203a\u00a0\u00a0");
+    AZ_POP_DISABLE_WARNING
     static constexpr int g_iconWidth = 16;
     static constexpr int g_leftMargin = 5;
     //! This reserved space is used to make sure that for editable breadcrumbs user has at least some empty space to click and initiate the
@@ -107,6 +109,8 @@ namespace AzQtComponents
         m_label->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         m_lineEdit->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
         connect(m_label, &QLabel::linkActivated, this, &BreadCrumbs::onLinkActivated);
+        // A minimum width is required to prevent the editor from crashing when being resized
+        setMinimumWidth(25);
     }
 
     BreadCrumbs::~BreadCrumbs()
@@ -132,6 +136,11 @@ namespace AzQtComponents
     QString BreadCrumbs::currentPath() const
     {
         return m_currentPath;
+    }
+
+    QString BreadCrumbs::fullPath() const
+    {
+        return m_fullPath;
     }
 
     void BreadCrumbs::setCurrentPath(const QString& newPath)
@@ -212,8 +221,9 @@ namespace AzQtComponents
         const QFontMetrics fm(m_label->font());
         const qreal separatorWidth = fm.horizontalAdvance(g_plainTextSeparator);
         // Icon adds the icon itself plus two spaces, see generateIconHtml()
+        AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconWidth = g_iconWidth + fm.horizontalAdvance("\u00a0\u00a0");
-
+        AZ_POP_DISABLE_WARNING
         // TODO(Qt 5.15.2): replace with:
         // const QList<QStringView> fullPath = QStringView(m_currentPath).split(g_separator, Qt::SkipEmptyParts);
         // to use views for avoiding allocations
@@ -312,6 +322,20 @@ namespace AzQtComponents
         emitButtonSignals(buttonStates);
     }
 
+    void BreadCrumbs::pushFullPath(const QString& newFullPath, const QString& newPath)
+    {
+        pushPath(newPath);
+
+        const QString sanitizedPath = toCommonSeparators(newFullPath);
+
+        if (sanitizedPath == m_currentPath)
+        {
+            return;
+        }
+
+        m_fullPath = sanitizedPath;
+    }
+
     bool BreadCrumbs::back()
     {
         if (!isBackAvailable())
@@ -363,6 +387,16 @@ namespace AzQtComponents
             fillLabel();
         }
         QFrame::resizeEvent(event);
+    }
+
+    void BreadCrumbs::changeEvent(QEvent* event)
+    {
+        if (event->type() == QEvent::EnabledChange)
+        {
+            // Refresh the contents of the label since they are different based on the enabled state of the widget.
+            fillLabel();
+        }
+        QFrame::changeEvent(event);
     }
 
     bool BreadCrumbs::eventFilter(QObject* obj, QEvent* ev)
@@ -419,6 +453,7 @@ namespace AzQtComponents
             return;
         }
         m_labelEditStack->setCurrentWidget(m_lineEdit);
+        m_lineEdit->setText(m_fullPath);
         m_lineEdit->selectAll();
         m_lineEdit->setFocus();
     }
@@ -480,12 +515,14 @@ namespace AzQtComponents
         const QFontMetricsF fm(m_label->font());
 
         // Icon adds the icon itself plus two non-breaking spaces, see generateIconHtml()
+        AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
-
+        AZ_POP_DISABLE_WARNING
         QString plainTextPath;
-
-        auto formatLink = [this](const QString& fullPath, const QString& shortPath) -> QString {
-            return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, m_config.linkColor, shortPath);
+        QString linkColor = isEnabled() ? m_config.linkColor : m_config.disabledLinkColor;
+        auto formatLink = [linkColor](const QString& fullPath, const QString& shortPath) -> QString
+        {
+            return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, linkColor, shortPath);
         };
 
         const QString nonBreakingSpace = QStringLiteral("&nbsp;");
@@ -583,6 +620,7 @@ namespace AzQtComponents
     {
         Config config = defaultConfig();
 
+        ConfigHelpers::read<QString>(settings, QStringLiteral("DisabledLinkColor"), config.disabledLinkColor);
         ConfigHelpers::read<QString>(settings, QStringLiteral("LinkColor"), config.linkColor);
 
         return config;
@@ -592,6 +630,7 @@ namespace AzQtComponents
     {
         Config config;
 
+        config.disabledLinkColor = QStringLiteral("#999999");
         config.linkColor = QStringLiteral("white");
 
         return config;

@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator)
 
 
     BlendTreeBlend2LegacyNode::BlendTreeBlend2LegacyNode()

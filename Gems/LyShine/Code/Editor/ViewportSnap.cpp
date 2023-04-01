@@ -39,7 +39,7 @@ void ViewportSnap::Rotate(HierarchyWidget* hierarchy,
     float signedAngle)
 {
     bool isSnapping = false;
-    EBUS_EVENT_ID_RESULT(isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     if (isSnapping)
     {
@@ -50,30 +50,30 @@ void ViewportSnap::Rotate(HierarchyWidget* hierarchy,
 
         // Update the currently used rotation.
         float realRotation;
-        EBUS_EVENT_ID_RESULT(realRotation, element->GetId(), UiTransformBus, GetZRotation);
+        UiTransformBus::EventResult(realRotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
 
         float snappedRotation = item->GetNonSnappedZRotation();
         {
             float snapRotationInDegrees = 1.0f;
-            EBUS_EVENT_ID_RESULT(snapRotationInDegrees, canvasId, UiEditorCanvasBus, GetSnapRotationDegrees);
+            UiEditorCanvasBus::EventResult(snapRotationInDegrees, canvasId, &UiEditorCanvasBus::Events::GetSnapRotationDegrees);
 
             snappedRotation = EntityHelpers::Snap(snappedRotation, snapRotationInDegrees);
         }
 
         if (snappedRotation != realRotation)
         {
-            EBUS_EVENT_ID(element->GetId(), UiTransformBus, SetZRotation, snappedRotation);
-            EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+            UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::SetZRotation, snappedRotation);
+            UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
         }
     }
     else // if (!isSnapping)
     {
         // Add the angle to the current rotation of this element
         float rotation;
-        EBUS_EVENT_ID_RESULT(rotation, element->GetId(), UiTransformBus, GetZRotation);
+        UiTransformBus::EventResult(rotation, element->GetId(), &UiTransformBus::Events::GetZRotation);
 
-        EBUS_EVENT_ID(element->GetId(), UiTransformBus, SetZRotation, (rotation + signedAngle));
-        EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+        UiTransformBus::Event(element->GetId(), &UiTransformBus::Events::SetZRotation, (rotation + signedAngle));
+        UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
     }
 }
 
@@ -85,7 +85,7 @@ void ViewportSnap::ResizeByGizmo(HierarchyWidget* hierarchy,
     const AZ::Vector2& translation)
 {
     bool isSnapping = false;
-    EBUS_EVENT_ID_RESULT(isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     if (isSnapping)
     {
@@ -100,15 +100,15 @@ void ViewportSnap::ResizeByGizmo(HierarchyWidget* hierarchy,
         UiTransform2dInterface::Offsets snappedOffsets(item->GetNonSnappedOffsets());
         {
             float snapDistance = 1.0f;
-            EBUS_EVENT_ID_RESULT(snapDistance, canvasId, UiEditorCanvasBus, GetSnapDistance);
+            UiEditorCanvasBus::EventResult(snapDistance, canvasId, &UiEditorCanvasBus::Events::GetSnapDistance);
 
             UiTransform2dInterface::Anchors anchors;
-            EBUS_EVENT_ID_RESULT(anchors, element->GetId(), UiTransform2dBus, GetAnchors);
+            UiTransform2dBus::EventResult(anchors, element->GetId(), &UiTransform2dBus::Events::GetAnchors);
 
             AZ::Entity* parentElement = EntityHelpers::GetParentElement(element);
 
             AZ::Vector2 parentSize;
-            EBUS_EVENT_ID_RESULT(parentSize, parentElement->GetId(), UiTransformBus, GetCanvasSpaceSizeNoScaleRotate);
+            UiTransformBus::EventResult(parentSize, parentElement->GetId(), &UiTransformBus::Events::GetCanvasSpaceSizeNoScaleRotate);
 
             float newWidth  = parentSize.GetX() * (anchors.m_right  - anchors.m_left) + offsets.m_right  - offsets.m_left;
             float newHeight = parentSize.GetY() * (anchors.m_bottom - anchors.m_top)  + offsets.m_bottom - offsets.m_top;
@@ -135,22 +135,22 @@ void ViewportSnap::ResizeByGizmo(HierarchyWidget* hierarchy,
         // Update the currently used offset.
         if (snappedOffsets != offsets)
         {
-            EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, snappedOffsets);
-            EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+            UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, snappedOffsets);
+            UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
         }
     }
     else // if (!isSnapping)
     {
         // Resize the element about the pivot
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, element->GetId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
         UiTransform2dInterface::Offsets newOffsets(ResizeAboutPivot(offsets, grabbedGizmoParts, pivot, translation));
 
         // Resize the element
-        EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, newOffsets);
+        UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, newOffsets);
 
-        EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+        UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
     }
 }
 
@@ -161,7 +161,7 @@ void ViewportSnap::ResizeDirectlyWithScaleOrRotation(HierarchyWidget* hierarchy,
     const UiTransformInterface::RectPoints& translation)
 {
     bool isSnapping = false;
-    EBUS_EVENT_ID_RESULT(isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     if (isSnapping)
     {
@@ -173,20 +173,20 @@ void ViewportSnap::ResizeDirectlyWithScaleOrRotation(HierarchyWidget* hierarchy,
         // Update the currently used offset.
         {
             UiTransform2dInterface::Offsets currentOffsets;
-            EBUS_EVENT_ID_RESULT(currentOffsets, element->GetId(), UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(currentOffsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
             UiTransform2dInterface::Offsets snappedOffsets(item->GetNonSnappedOffsets());
             {
                 float snapDistance = 1.0f;
-                EBUS_EVENT_ID_RESULT(snapDistance, canvasId, UiEditorCanvasBus, GetSnapDistance);
+                UiEditorCanvasBus::EventResult(snapDistance, canvasId, &UiEditorCanvasBus::Events::GetSnapDistance);
 
                 snappedOffsets = EntityHelpers::Snap(snappedOffsets, grabbedEdges, snapDistance);
             }
 
             if (snappedOffsets != currentOffsets)
             {
-                EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, snappedOffsets);
-                EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+                UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, snappedOffsets);
+                UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
             }
         }
     }
@@ -194,11 +194,11 @@ void ViewportSnap::ResizeDirectlyWithScaleOrRotation(HierarchyWidget* hierarchy,
     {
         // Resize the element
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, element->GetId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
-        EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, (offsets + translation));
+        UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, (offsets + translation));
 
-        EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+        UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
     }
 }
 
@@ -209,7 +209,7 @@ void ViewportSnap::ResizeDirectlyNoScaleNoRotation(HierarchyWidget* hierarchy,
     const AZ::Vector2& translation)
 {
     bool isSnapping = false;
-    EBUS_EVENT_ID_RESULT(isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     if (isSnapping)
     {
@@ -221,20 +221,20 @@ void ViewportSnap::ResizeDirectlyNoScaleNoRotation(HierarchyWidget* hierarchy,
         // Update the currently used offset.
         {
             UiTransform2dInterface::Offsets currentOffsets;
-            EBUS_EVENT_ID_RESULT(currentOffsets, element->GetId(), UiTransform2dBus, GetOffsets);
+            UiTransform2dBus::EventResult(currentOffsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
             UiTransform2dInterface::Offsets snappedOffsets(item->GetNonSnappedOffsets());
             {
                 float snapDistance = 1.0f;
-                EBUS_EVENT_ID_RESULT(snapDistance, canvasId, UiEditorCanvasBus, GetSnapDistance);
+                UiEditorCanvasBus::EventResult(snapDistance, canvasId, &UiEditorCanvasBus::Events::GetSnapDistance);
 
                 snappedOffsets = EntityHelpers::Snap(snappedOffsets, grabbedEdges, snapDistance);
             }
 
             if (snappedOffsets != currentOffsets)
             {
-                EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, snappedOffsets);
-                EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+                UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, snappedOffsets);
+                UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
             }
         }
     }
@@ -242,10 +242,10 @@ void ViewportSnap::ResizeDirectlyNoScaleNoRotation(HierarchyWidget* hierarchy,
     {
         // Resize the element
         UiTransform2dInterface::Offsets offsets;
-        EBUS_EVENT_ID_RESULT(offsets, element->GetId(), UiTransform2dBus, GetOffsets);
+        UiTransform2dBus::EventResult(offsets, element->GetId(), &UiTransform2dBus::Events::GetOffsets);
 
-        EBUS_EVENT_ID(element->GetId(), UiTransform2dBus, SetOffsets, ViewportHelpers::MoveGrabbedEdges(offsets, grabbedEdges, translation));
+        UiTransform2dBus::Event(element->GetId(), &UiTransform2dBus::Events::SetOffsets, ViewportHelpers::MoveGrabbedEdges(offsets, grabbedEdges, translation));
 
-        EBUS_EVENT_ID(element->GetId(), UiElementChangeNotificationBus, UiElementPropertyChanged);
+        UiElementChangeNotificationBus::Event(element->GetId(), &UiElementChangeNotificationBus::Events::UiElementPropertyChanged);
     }
 }

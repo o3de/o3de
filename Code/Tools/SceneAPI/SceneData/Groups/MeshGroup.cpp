@@ -94,6 +94,7 @@ namespace AZ
                             ->Attribute("AutoExpand", true)
                             ->Attribute(Edit::Attributes::NameLabelOverride, "")
                             ->Attribute(AZ::Edit::Attributes::CategoryStyle, "display divider")
+                            ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://www.o3de.org/docs/user-guide/assets/scene-settings/meshes-tab/")
                         ->DataElement(AZ_CRC("ManifestName", 0x5215b349), &MeshGroup::m_name, "Name mesh",
                             "Name the mesh as you want it to appear in the Open 3D Engine Asset Browser.")
                             ->Attribute("FilterType", DataTypes::IMeshGroup::TYPEINFO_Uuid())
