@@ -16,10 +16,6 @@
 
 namespace ${Name}
 {
-    AZ_COMPONENT_IMPL(Editor${Name}Component, "Editor${Name}Component",
-        ${Name}EditorModuleTypeId);
-
-
     void Editor${Name}Component::Reflect(AZ::ReflectContext* context)
     {
         BaseClass::Reflect(context);

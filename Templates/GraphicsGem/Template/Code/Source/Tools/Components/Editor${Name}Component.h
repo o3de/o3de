@@ -29,7 +29,7 @@ namespace ${Name}
     {
     public:
         using BaseClass = AZ::Render::EditorRenderComponentAdapter<${Name}ComponentController, Editor${Name}Component, ${Name}ComponentConfig>;
-        AZ_COMPONENT_DECL(Editor${Name}Component);
+        AZ_EDITOR_COMPONENT(Editor${Name}Component);
 
         static void Reflect(AZ::ReflectContext* context);
 
