@@ -33,6 +33,12 @@ namespace TestImpact
         return m_launchMeta.m_launchMethod;
     }
 
+    bool NativeTestTarget::CanShard() const
+    {
+        // Target must be able to enumerate as well as being opted in to test sharding in order to shard
+        return CanEnumerate() && GetSuiteLabelSet().contains(TiafShardingLabel);
+    }
+
     bool NativeTestTarget::CanEnumerate() const
     {
         return GetSuiteLabelSet().contains(SupportedTestFrameworks::GTest);
