@@ -8,6 +8,7 @@
 
 #include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 
+#include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
@@ -16,6 +17,98 @@
 
 namespace AzToolsFramework
 {
+    namespace Internal
+    {
+        struct ActionManagerRegistrationNotificationBusHandler final
+            : public ActionManagerRegistrationNotificationBus::Handler
+            , public AZ::BehaviorEBusHandler
+        {
+            AZ_EBUS_BEHAVIOR_BINDER(
+                ActionManagerRegistrationNotificationBusHandler,
+                "{A9397A5D-0B04-4552-814F-0B4F385A3890}",
+                AZ::SystemAllocator,
+                OnActionContextRegistrationHook,
+                OnActionContextModeRegistrationHook,
+                OnActionUpdaterRegistrationHook,
+                OnMenuBarRegistrationHook,
+                OnMenuRegistrationHook,
+                OnToolBarAreaRegistrationHook,
+                OnToolBarRegistrationHook,
+                OnActionRegistrationHook,
+                OnWidgetActionRegistrationHook,
+                OnActionContextModeBindingHook,
+                OnMenuBindingHook,
+                OnToolBarBindingHook,
+                OnPostActionManagerRegistrationHook
+            );
+
+            void OnActionContextRegistrationHook() override
+            {
+                Call(FN_OnActionContextRegistrationHook);
+            }
+
+            void OnActionContextModeRegistrationHook() override
+            {
+                Call(FN_OnActionContextModeRegistrationHook);
+            }
+
+            void OnActionUpdaterRegistrationHook() override
+            {
+                Call(FN_OnActionUpdaterRegistrationHook);
+            }
+
+            void OnMenuBarRegistrationHook() override
+            {
+                Call(FN_OnMenuBarRegistrationHook);
+            }
+
+            void OnMenuRegistrationHook() override
+            {
+                Call(FN_OnMenuRegistrationHook);
+            }
+
+            void OnToolBarAreaRegistrationHook() override
+            {
+                Call(FN_OnToolBarAreaRegistrationHook);
+            }
+
+            void OnToolBarRegistrationHook() override
+            {
+                Call(FN_OnToolBarRegistrationHook);
+            }
+
+            void OnActionRegistrationHook() override
+            {
+                Call(FN_OnActionRegistrationHook);
+            }
+
+            void OnWidgetActionRegistrationHook() override
+            {
+                Call(FN_OnWidgetActionRegistrationHook);
+            }
+
+            void OnActionContextModeBindingHook() override
+            {
+                Call(FN_OnActionContextModeBindingHook);
+            }
+
+            void OnMenuBindingHook() override
+            {
+                Call(FN_OnMenuBindingHook);
+            }
+
+            void OnToolBarBindingHook() override
+            {
+                Call(FN_OnToolBarBindingHook);
+            }
+
+            void OnPostActionManagerRegistrationHook() override
+            {
+                Call(FN_OnPostActionManagerRegistrationHook);
+            }
+        };
+    } // namespace Internal
+
     ActionManagerSystemComponent::~ActionManagerSystemComponent()
     {
         if (m_defaultParentObject)
@@ -43,29 +136,43 @@ namespace AzToolsFramework
 
     void ActionManagerSystemComponent::Activate()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            AzToolsFramework::EditorEventsBus::Handler::BusConnect();
-        }
     }
 
     void ActionManagerSystemComponent::Deactivate()
     {
-        if (IsNewActionManagerEnabled())
-        {
-            AzToolsFramework::EditorEventsBus::Handler::BusDisconnect();
-        }
     }
-
     void ActionManagerSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        MenuManager::Reflect(context);
+        ToolBarManager::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<ActionManagerSystemComponent, AZ::Component>()->Version(1);
         }
 
-        MenuManager::Reflect(context);
-        ToolBarManager::Reflect(context);
+        if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
+        {
+            behaviorContext->EBus<ActionManagerRegistrationNotificationBus>("ActionManagerRegistrationNotificationBus")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
+                ->Attribute(AZ::Script::Attributes::Category, "Action")
+                ->Attribute(AZ::Script::Attributes::Module, "action")
+                ->Handler<Internal::ActionManagerRegistrationNotificationBusHandler>()
+                ->Event("OnActionContextRegistrationHook", &ActionManagerRegistrationNotifications::OnActionContextRegistrationHook)
+                ->Event("OnActionContextModeRegistrationHook", &ActionManagerRegistrationNotifications::OnActionContextModeRegistrationHook)
+                ->Event("OnActionUpdaterRegistrationHook", &ActionManagerRegistrationNotifications::OnActionUpdaterRegistrationHook)
+                ->Event("OnMenuBarRegistrationHook", &ActionManagerRegistrationNotifications::OnMenuBarRegistrationHook)
+                ->Event("OnMenuRegistrationHook", &ActionManagerRegistrationNotifications::OnMenuRegistrationHook)
+                ->Event("OnToolBarAreaRegistrationHook", &ActionManagerRegistrationNotifications::OnToolBarAreaRegistrationHook)
+                ->Event("OnToolBarRegistrationHook", &ActionManagerRegistrationNotifications::OnToolBarRegistrationHook)
+                ->Event("OnActionRegistrationHook", &ActionManagerRegistrationNotifications::OnActionRegistrationHook)
+                ->Event("OnWidgetActionRegistrationHook", &ActionManagerRegistrationNotifications::OnWidgetActionRegistrationHook)
+                ->Event("OnActionContextModeBindingHook", &ActionManagerRegistrationNotifications::OnActionContextModeBindingHook)
+                ->Event("OnMenuBindingHook", &ActionManagerRegistrationNotifications::OnMenuBindingHook)
+                ->Event("OnToolBarBindingHook", &ActionManagerRegistrationNotifications::OnToolBarBindingHook)
+                ->Event("OnPostActionManagerRegistrationHook", &ActionManagerRegistrationNotifications::OnPostActionManagerRegistrationHook)
+                ;
+        }
     }
 
     void ActionManagerSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -81,7 +188,7 @@ namespace AzToolsFramework
     {
     }
 
-    void ActionManagerSystemComponent::NotifyMainWindowInitialized(QMainWindow* /* mainWindow */)
+    void ActionManagerSystemComponent::TriggerRegistrationNotifications()
     {
         // Broadcast synchronization hooks.
         // Order is important since latter elements may have depencencies on earlier ones.

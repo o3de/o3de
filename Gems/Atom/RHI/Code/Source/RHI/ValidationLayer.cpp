@@ -26,7 +26,7 @@ namespace AZ
 
         ValidationMode ReadValidationMode()
         {
-#if 1 //JJS defined(AZ_RELEASE_BUILD)
+#if defined(AZ_RELEASE_BUILD)
             // Always disabled in Release configuration.
             return ValidationMode::Disabled;
 #else

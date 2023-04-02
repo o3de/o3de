@@ -24,6 +24,9 @@ namespace AZ::Render::MeshCommon
 
     inline static AZ::Name MeshMovedName = AZ::Name::FromStringLiteral("MeshMoved", AZ::Interface<AZ::NameDictionary>::Get());
 
+    // The DrawListTag name for drawing to MeshMotionVector pass
+    inline static AZ::Name MotionDrawListTagName = AZ::Name::FromStringLiteral("motion", AZ::Interface<AZ::NameDictionary>::Get());
+
     template <typename BoundsType>
     void MarkMeshesForBounds(AZ::RPI::Scene* scene, const BoundsType& bounds, AZ::RPI::Cullable::FlagType flag)
     {

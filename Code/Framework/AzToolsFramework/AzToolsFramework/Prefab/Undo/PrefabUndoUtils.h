@@ -26,12 +26,12 @@ namespace AzToolsFramework
                 PrefabDom& patches,
                 const PrefabDomValue& newEntityDom,
                 const AZStd::string& newEntityAliasPath);
-            
+
             //! Create an 'add' or 'replace' patch for updating value in DOM.
             //! To remove value, use AppendRemovePatch.
             //! @param patches An array object of DOM values which stores undo or redo patches.
             //! @param domValue The DOM value to add or replace.
-            //! @param pathToUpdate The given path for the new value.
+            //! @param pathToUpdate The given path to the value.
             //! @param patchType The patch type for the patch (supported value: Add and Edit).
             void AppendUpdateValuePatch(
                 PrefabDom& patches,
@@ -46,44 +46,42 @@ namespace AzToolsFramework
                 PrefabDom& patches,
                 const AZStd::string& pathToRemove);
 
-            //! Create edit-entity patch(es), and append them to patch array.
+            //! Create patches by comparing DOM states before and after update, and append them to patch array.
             //! @param patches An array object of DOM values which stores undo or redo patches.
-            //! @param entityDomBeforeUpdate The DOM presenting state of an entity before update.
-            //! @param entityDomAfterUpdate The DOM presenting state of an entity after update.
-            //! @param entityAliasPath The given alias path for the entity to be updated.
-            void AppendUpdateEntityPatch(
+            //! @param domValueBeforeUpdate The DOM presenting state of the value before update.
+            //! @param domValueAfterUpdate The DOM presenting state of the value after update.
+            //! @param pathToValue The given path to the value.
+            void GenerateAndAppendPatch(
                 PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPath);
+                const PrefabDomValue& domValueBeforeUpdate,
+                const PrefabDomValue& domValueAfterUpdate,
+                const AZStd::string& pathToValue);
 
-            //! Create edit-entity patch(es), and output them to patch array.
-            //! Note: It will overwrite the given patch array with new patches.
-            //! @param patches An array object of DOM values which stores undo or redo patches.
-            //! @param entityDomBeforeUpdate The DOM presenting state of an entity before update.
-            //! @param entityDomAfterUpdate The DOM presenting state of an entity after update.
-            //! @param entityAliasPath The given alias path for the entity to be updated.
-            void GenerateUpdateEntityPatch(
-                PrefabDom& patches,
-                const PrefabDomValue& entityDomBeforeUpdate,
-                const PrefabDomValue& entityDomAfterUpdate,
-                const AZStd::string& entityAliasPath);
-
-            //! Update the entity in instance DOM with the provided entity DOM.
-            //! @param instanceDom The given instance DOM.
-            //! @param entityDom The entity DOM that will be put in the instance DOM.
+            //! Update the entity in prefab DOM with the provided entity DOM.
+            //! @param prefabDom The given prefab DOM.
+            //! @param entityDom The entity DOM that will be put in the prefab DOM.
             //! @param entityAliasPath The given alias path to the entity.
-            void UpdateEntityInInstanceDom(
-                PrefabDomReference instanceDom,
+            void UpdateEntityInPrefabDom(
+                PrefabDomReference prefabDom,
                 const PrefabDomValue& entityDom,
                 const AZStd::string& entityAliasPath);
 
-            //! Remove DOM value in instance DOM.
-            //! @param instanceDom The given instance DOM.
+            //! Update the value in prefab DOM with the provided DOM value.
+            //! @param prefabDom The given prefab DOM.
+            //! @param domValue The DOM value that will be put in the prefab DOM.
+            //! @param pathToValue The given path to the value.
+            void UpdateValueInPrefabDom(
+                PrefabDomReference prefabDom,
+                const PrefabDomValue& domValue,
+                const AZStd::string& pathToValue);
+
+            //! Remove DOM value in prefab DOM.
+            //! @param prefabDom The given prefab DOM.
             //! @param pathToRemove The path to where the value will be removed.
-            void RemoveValueInInstanceDom(
-                PrefabDomReference instanceDom,
+            void RemoveValueInPrefabDom(
+                PrefabDomReference prefabDom,
                 const AZStd::string& pathToRemove);
+
         } // namespace PrefabUndoUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

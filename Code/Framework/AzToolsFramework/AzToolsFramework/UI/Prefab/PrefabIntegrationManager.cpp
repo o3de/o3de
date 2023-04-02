@@ -576,10 +576,12 @@ namespace AzToolsFramework
                             selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
                         return CanCreatePrefabWithCurrentSelection(selectedEntities);
-                    });
+                    }
+                );
 
-                // Trigger update whenever entity selection changes.
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
 
                 // This action is only accessible outside of Component Modes
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -666,7 +668,10 @@ namespace AzToolsFramework
                     }
                 );
 
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
 
                 // This action is only accessible outside of Component Modes
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -694,7 +699,8 @@ namespace AzToolsFramework
                         {
                             ContextMenu_InstantiateProceduralPrefab();
                         }
-                    });
+                    }
+                );
 
                 m_actionManagerInterface->InstallEnabledStateCallback(
                     actionIdentifier,
@@ -705,9 +711,13 @@ namespace AzToolsFramework
                             selectedEntities, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
                         return CanInstantiatePrefabWithCurrentSelection(selectedEntities);
-                    });
+                    }
+                );
 
+                // Trigger update whenever entity selection changes, and after prefab instance propagation.
                 m_actionManagerInterface->AddActionToUpdater(EditorIdentifiers::EntitySelectionChangedUpdaterIdentifier, actionIdentifier);
+                m_actionManagerInterface->AddActionToUpdater(
+                    PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, actionIdentifier);
 
                 // This action is only accessible outside of Component Modes
                 m_actionManagerInterface->AssignModeToAction(DefaultActionContextModeIdentifier, actionIdentifier);
@@ -998,6 +1008,16 @@ namespace AzToolsFramework
                     return false;
                 }
             );
+
+            // Update the duplicate action after Prefab instance propagation.
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.edit.duplicate");
+
+            // Update the move up/move down actions after Prefab instance propagation.
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveUp");
+            m_actionManagerInterface->AddActionToUpdater(
+                PrefabIdentifiers::PrefabInstancePropagationEndUpdaterIdentifier, "o3de.action.entitySorting.moveDown");
         }
 
         int PrefabIntegrationManager::GetMenuPosition() const

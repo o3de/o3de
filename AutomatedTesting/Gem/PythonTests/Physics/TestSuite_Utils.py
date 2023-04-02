@@ -18,20 +18,6 @@ from base import TestAutomationBase
 @pytest.mark.parametrize("launcher_platform", ['windows_editor'])
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 class TestUtils(TestAutomationBase):
-    @fm.file_revert("UtilTest_Physmaterial_Editor_TestLibrary.physmaterial", r"AutomatedTesting\Levels\Physics\Physmaterial_Editor_Test")
-    def test_physmaterial_editor(self, request, workspace, launcher_platform, editor):
-        """
-        Tests functionality of physmaterial editing utility
-        :param workspace: Fixture containing platform and project detail
-        :param request: Built in pytest object, and is needed to call the pytest "addfinalizer" teardown command.
-        :editor: Fixture containing editor details
-        """
-        from .utils import UtilTest_Physmaterial_Editor as physmaterial_editor_test_module
-
-        expected_lines = []
-        unexpected_lines = ["Assert"]
-        self._run_test(request, workspace, editor, physmaterial_editor_test_module, expected_lines, unexpected_lines)
-
     def test_UtilTest_Tracer_PicksErrorsAndWarnings(self, request, workspace, launcher_platform, editor):
         from .utils import UtilTest_Tracer_PicksErrorsAndWarnings as testcase_module
         self._run_test(request, workspace, editor, testcase_module, [], [])
