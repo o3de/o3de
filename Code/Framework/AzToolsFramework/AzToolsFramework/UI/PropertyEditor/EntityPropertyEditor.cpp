@@ -1943,12 +1943,10 @@ namespace AzToolsFramework
                     [this, componentEditor](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
                     {
                         // Check if the component editor is currently in use
-                        if (componentEditor->isVisible())
+                        if (componentEditor->isVisible() &&
+                            changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
                         {
-                            if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
-                            {
-                                UpdateOverrideVisualization(*componentEditor);
-                            }
+                            UpdateOverrideVisualization(*componentEditor);
                         }
                     };
                 componentEditor->ConnectPropertyChangeHandler(propertyChanged);
