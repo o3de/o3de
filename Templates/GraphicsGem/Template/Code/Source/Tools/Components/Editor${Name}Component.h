@@ -12,24 +12,26 @@
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <Components/${Name}Component.h>
 #include <Components/${Name}ComponentConstants.h>
-#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
 
 #include <${Name}/${Name}TypeIds.h>
 
 namespace ${Name}
 {
+    inline constexpr AZ::TypeId EditorComponentTypeId { "{${Random_Uuid}}" };
+
     class Editor${Name}Component final
-        : public AZ::Render::EditorRenderComponentAdapter<${Name}ComponentController, Editor${Name}Component, ${Name}ComponentConfig>
+        : public AzToolsFramework::Components::EditorComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>
         , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TickBus::Handler
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     {
     public:
-        using BaseClass = AZ::Render::EditorRenderComponentAdapter<${Name}ComponentController, Editor${Name}Component, ${Name}ComponentConfig>;
-        AZ_EDITOR_COMPONENT(Editor${Name}Component);
+        using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>;
+        AZ_EDITOR_COMPONENT(EditorDynamicTriangleFIXEDComponent, EditorComponentTypeId, BaseClass);
 
         static void Reflect(AZ::ReflectContext* context);
 

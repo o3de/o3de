@@ -19,6 +19,7 @@ namespace ${Name}
     void Editor${Name}Component::Reflect(AZ::ReflectContext* context)
     {
         BaseClass::Reflect(context);
+        ${Name}ComponentController::Reflect(context);
 
         if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
