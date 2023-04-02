@@ -114,7 +114,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::ScriptCanvasTesting.Editor.Tests
-        LABELS REQUIRES_tiaf;TIAF_sharding
+        LABELS REQUIRES_tiaf;TIAF_shard_test
     )
 endif()
 

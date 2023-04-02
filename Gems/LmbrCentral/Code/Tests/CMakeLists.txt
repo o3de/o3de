@@ -75,7 +75,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     ly_add_googletest(
         NAME Gem::LmbrCentral.Editor.Tests
-        LABELS REQUIRES_tiaf;TIAF_sharding
+        LABELS REQUIRES_tiaf;TIAF_shard_test
     )
 endif()
 

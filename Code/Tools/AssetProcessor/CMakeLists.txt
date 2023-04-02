@@ -270,7 +270,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # there are some tests in the main suite, and some in periodic.
     ly_add_googletest(
         NAME AZ::AssetProcessor.Tests
-        LABELS REQUIRES_tiaf;TIAF_sharding
+        LABELS REQUIRES_tiaf;TIAF_shard_fixture
     )
     ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
         TARGET AZ::AssetProcessor.Tests 
