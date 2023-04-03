@@ -46,6 +46,7 @@ set(FILES
     DataTypes/Rules/IClothRule.h
     DataTypes/Rules/IUnmodifiableRule.h
     DataTypes/Rules/ISkinRule.h
+    DataTypes/Rules/ITagRule.h
     Components/BehaviorComponent.h
     Components/BehaviorComponent.cpp
     Components/ExportingComponent.h

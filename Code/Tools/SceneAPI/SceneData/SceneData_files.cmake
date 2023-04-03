@@ -65,6 +65,8 @@ set(FILES
     Rules/SkinMeshAdvancedRule.cpp
     Rules/SkinRule.h
     Rules/SkinRule.cpp
+    Rules/TagRule.h
+    Rules/TagRule.cpp
     Rules/TangentsRule.h
     Rules/TangentsRule.cpp
     Rules/UnmodifiableRule.h

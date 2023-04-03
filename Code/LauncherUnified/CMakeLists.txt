@@ -109,6 +109,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     ly_add_googletest(
         NAME AZ::Launcher.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

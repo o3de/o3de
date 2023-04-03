@@ -24,6 +24,7 @@
 #include <AzCore/Jobs/JobManagerDesc.h>
 #include <AzCore/Utils/Utils.h>
 #include <tests/assetmanager/AssetManagerTestingBase.h>
+#include <utilities/ProductOutputUtil.h>
 
 using namespace AssetProcessor;
 
@@ -312,10 +313,11 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
     AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
     AZStd::string testFilename = "test.in";
     AZ::IO::Path filePath = (scanFolderDir / testFilename).AsPosix();
+    AssetProcessor::SourceAssetReference sourceAsset{ filePath.c_str() };
 
     UnitTestUtils::CreateDummyFileAZ(filePath, "unit test file");
 
-    ProcessFileMultiStage(1, true, filePath.c_str());
+    ProcessFileMultiStage(1, true, sourceAsset);
 
     auto metadataInterface = AZ::Interface<AzToolsFramework::IMetadataRequests>::Get();
 
@@ -348,7 +350,7 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
         });
 
     // Run the file again
-    ProcessFileMultiStage(1, true, filePath.c_str());
+    ProcessFileMultiStage(1, true, sourceAsset);
 
     // Verify asset removed and asset changed messages were sent
     std::sort(
@@ -367,6 +369,163 @@ TEST_F(AssetProcessorManagerUuid, UuidUpdated_SendsAssetRemovedMessage)
     EXPECT_EQ(notifications[1].m_data, "test.stage2");
     EXPECT_EQ(notifications[1].m_assetId, AZ::Data::AssetId(uuidEntry.m_uuid, AssetSubId));
     EXPECT_EQ(notifications[1].m_type, AzFramework::AssetSystem::AssetNotificationMessage::AssetChanged);
+}
+
+class MetadataOverrides : public UnitTests::AssetManagerTestingBase
+{
+public:
+    void SetUp() override
+    {
+        UnitTests::AssetManagerTestingBase::SetUp();
+
+        using namespace AssetBuilderSDK;
+
+        // Set up a custom builder with a ProcessJob stage that will output 2 files, one of which is intentionally
+        // designed to output a product with a name that conflicts with the prefixing scheme (the (2) prefix).
+        // .stage1 is the input and .stage2 is the output.  This unit test framework currently requires those extensions.
+        m_builderInfoHandler.CreateBuilderDesc(
+            "stage1",
+            AZ::Uuid::CreateRandom().ToFixedString().c_str(),
+            { AssetBuilderPattern{ "*.stage1", AssetBuilderPattern::Wildcard } },
+            CreateJobStage("stage1", false),
+            [](const ProcessJobRequest& request, ProcessJobResponse& response)
+            {
+                AZ::IO::FixedMaxPath outputFile = AZ::IO::FixedMaxPath(request.m_sourceFile);
+                outputFile.ReplaceExtension("stage2");
+                outputFile = outputFile.Filename();
+
+                AZ::IO::Result result = AZ::IO::FileIOBase::GetInstance()->Copy(
+                    request.m_fullPath.c_str(), (AZ::IO::FixedMaxPath(request.m_tempDirPath) / outputFile).c_str());
+
+                EXPECT_TRUE(result);
+
+                auto product = JobProduct{ outputFile.c_str(), AZ::Data::AssetType::CreateName("stage2"), AssetSubId };
+
+                product.m_outputFlags = ProductOutputFlags::ProductAsset;
+                product.m_dependenciesHandled = true;
+
+                // Output an extra product which is already prefixed
+                // This tests an edge case where removing the prefixes during finalization in the wrong order can result in overwriting the main product
+                auto extraFilePath =
+                    AZ::IO::Path(request.m_tempDirPath) / "(2)file.stage2";
+
+                AZ::Utils::WriteFile("unit test file", extraFilePath.Native());
+
+                auto extraProduct = JobProduct{ extraFilePath.c_str(), AZ::Data::AssetType::CreateName("extra"), ExtraAssetSubId };
+
+                extraProduct.m_outputFlags = ProductOutputFlags::ProductAsset;
+                extraProduct.m_dependenciesHandled = true;
+
+                response.m_outputProducts.push_back(extraProduct);
+                response.m_outputProducts.push_back(product);
+                response.m_resultCode = ProcessJobResult_Success;
+            },
+            "fingerprint");
+
+        // Enable metadata for our file type
+        AZ::Interface<IUuidRequests>::Get()->EnableGenerationForTypes({ ".stage1" });
+
+        AZ::IO::Path assetRootDir = m_databaseLocationListener.GetAssetRootDir();
+        m_sourceA = SourceAssetReference{ assetRootDir / "folder" / "subfolder" / "file.stage1" };
+        m_sourceB = SourceAssetReference{ assetRootDir / "folder2" / "subfolder" / "file.stage1" };
+    }
+
+    void SetupScanfolders(AZ::IO::Path assetRootDir, const AZStd::vector<AssetBuilderSDK::PlatformInfo>& platforms) override
+    {
+        UnitTests::AssetManagerTestingBase::SetupScanfolders(assetRootDir, platforms);
+
+        m_platformConfig->AddScanFolder(
+            AssetProcessor::ScanFolderInfo{ (assetRootDir / "folder2").c_str(), "folder2", "folder2", false, true, platforms });
+    }
+
+    void VerifyProducts()
+    {
+        AzToolsFramework::AssetDatabase::ProductDatabaseEntryContainer products;
+        EXPECT_TRUE(this->m_stateData->GetProductsByProductName("pc/subfolder/file.stage2", products));
+        EXPECT_EQ(products.size(), 1);
+
+        products = {};
+        auto productName =
+            AZStd::string::format("pc/subfolder/%sfile.stage2", ProductOutputUtil::GetFinalPrefix(m_sourceB.ScanFolderId()).c_str());
+        EXPECT_TRUE(m_stateData->GetProductsByProductName(productName.c_str(), products));
+        EXPECT_EQ(products.size(), 1);
+
+        auto io = AZ::IO::FileIOBase::GetInstance();
+        // SourceA
+        // SourceA is highest priority so its files should exist without the prefix
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+        EXPECT_TRUE(io->Exists(MakePath("subfolder/(2)file.stage2", false).c_str()));
+
+        auto prefix = ProductOutputUtil::GetFinalPrefix(m_sourceA.ScanFolderId());
+
+        EXPECT_FALSE(io->Exists(MakePath(AZStd::string::format("subfolder/%s(2)file.stage2", prefix.c_str()).c_str(), false).c_str()));
+
+        // SourceB
+        // SourceB is lower priority so its files should exist with the prefix
+        prefix = ProductOutputUtil::GetFinalPrefix(m_sourceB.ScanFolderId());
+
+        EXPECT_TRUE(io->Exists(MakePath(AZStd::string::format("subfolder/%sfile.stage2", prefix.c_str()).c_str(), false).c_str()));
+        EXPECT_TRUE(io->Exists(MakePath(AZStd::string::format("subfolder/%s(2)file.stage2", prefix.c_str()).c_str(), false).c_str()));
+
+        auto fileContentsResult = AZ::Utils::ReadFile(MakePath("subfolder/file.stage2", false).c_str());
+
+        ASSERT_TRUE(fileContentsResult);
+        EXPECT_STREQ(fileContentsResult.GetValue().c_str(), "unit test file A");
+    }
+
+    AssetProcessor::SourceAssetReference m_sourceA;
+    AssetProcessor::SourceAssetReference m_sourceB;
+};
+
+TEST_F(MetadataOverrides, MetadataOverrides_HighestPriorityProcessedFirst_OutputsCorrectly)
+{
+    // Create 2 source files with the same relative name, one in each scanfolder
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+
+    // Process both files
+    ProcessFileMultiStage(1, true, m_sourceA);
+    ProcessFileMultiStage(1, true, m_sourceB);
+
+    VerifyProducts();
+}
+
+TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityProcessedFirst_OutputsCorrectly)
+{
+    // Create 2 source files with the same relative name, one in each scanfolder
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+
+    // Process both files
+    ProcessFileMultiStage(1, false, m_sourceB);
+
+    auto io = AZ::IO::FileIOBase::GetInstance();
+    auto prefix = ProductOutputUtil::GetFinalPrefix(m_sourceB.ScanFolderId());
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_FALSE(io->Exists(MakePath("subfolder/(2)file.stage2", false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath(AZStd::string::format("subfolder/%sfile.stage2", prefix.c_str()).c_str(), false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath(AZStd::string::format("subfolder/%s(2)file.stage2", prefix.c_str()).c_str(), false).c_str()));
+
+    ProcessFileMultiStage(1, false, m_sourceA);
+
+    VerifyProducts();
+}
+
+TEST_F(MetadataOverrides, MetadataOverrides_LowestPriorityCreatedFirst_OutputsCorrectly)
+{
+    // Create and process the low priority file first
+    AZ::Utils::WriteFile("unit test file B", m_sourceB.AbsolutePath().c_str());
+    ProcessFileMultiStage(1, false, m_sourceB);
+
+    auto io = AZ::IO::FileIOBase::GetInstance();
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/file.stage2", false).c_str()));
+    EXPECT_TRUE(io->Exists(MakePath("subfolder/(2)file.stage2", false).c_str()));
+
+    // Create and process the high priority file second
+    AZ::Utils::WriteFile("unit test file A", m_sourceA.AbsolutePath().c_str());
+    ProcessFileMultiStage(1, false, m_sourceA);
+
+    VerifyProducts();
 }
 
 using AssetProcessorManagerFinishTests = UnitTests::AssetManagerTestingBase;
@@ -1068,7 +1227,7 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     receiver.WaitForFinish();
 
     QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
-    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event 
+    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event
 
     // Product B shouldn't exist yet because A was processed first.
     EXPECT_FALSE(AZ::IO::FileIOBase::GetInstance()->Exists(m_secondProductPath.c_str()));
@@ -1123,7 +1282,7 @@ TEST_F(AssetProcessorIntermediateAssetSourceDependencyTests, SourceDependencyIsI
     receiver.WaitForFinish();
 
     QCoreApplication::processEvents(); // RCJob::Finished : Once more to trigger the JobFinished event
-    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event 
+    QCoreApplication::processEvents(); // RCController::FinishJob : Again to trigger the Finished event
 
     // Mark this asset as processed, so AP will move on to the next steps.
     m_assetProcessorManager->AssetProcessed(m_processedJobEntry, m_processJobResponse);

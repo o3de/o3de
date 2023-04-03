@@ -9,7 +9,7 @@
 #include <native/tests/assetmanager/IntermediateAssetTests.h>
 #include <QCoreApplication>
 #include <native/unittests/UnitTestUtils.h>
-
+#include <native/utilities/ProductOutputUtil.h>
 #include <AzFramework/IO/LocalFileIO.h>
 
 namespace UnitTests
@@ -110,7 +110,7 @@ namespace UnitTests
 
         auto expectedIntermediateUuid = AZ::Uuid::CreateName(uuidFormat);
 
-        EXPECT_EQ(actualIntermediateUuid.GetValue(), expectedIntermediateUuid);
+        EXPECT_STREQ(actualIntermediateUuid.GetValue().ToFixedString().c_str(), expectedIntermediateUuid.ToFixedString().c_str());
     }
 
     TEST_F(IntermediateAssetTests, IntermediateOutputWithWrongPlatform_CausesFailure)
@@ -292,7 +292,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 1 since we're expecting a failure at that point
@@ -327,7 +327,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 3);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 3);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 2 since we're expecting a failure at that point
@@ -364,7 +364,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2);
 
         // Now process another file which produces intermediates that conflict with the existing source file above
         // Only go to stage 1 since we're expecting a failure at that point
@@ -486,7 +486,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2, true);
 
         ASSERT_EQ(m_jobDetailsList.size(), 1);
 
@@ -512,7 +512,7 @@ namespace UnitTests
 
         UnitTestUtils::CreateDummyFile(testFilePath.c_str(), "unit test file");
 
-        ProcessFileMultiStage(NumberOfStages, true, testFilePath.c_str(), 2, true);
+        ProcessFileMultiStage(NumberOfStages, true, AssetProcessor::SourceAssetReference(testFilePath.c_str()), 2, true);
 
         ASSERT_EQ(m_jobDetailsList.size(), 2);
 
@@ -530,7 +530,7 @@ namespace UnitTests
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset, true);
         CreateBuilder("stage2", "*.stage2", "stage3", false, ProductOutputFlags::ProductAsset);
 
-        ProcessFileMultiStage(2, true, nullptr, 1, false, true);
+        ProcessFileMultiStage(2, true, {}, 1, false, true);
 
         AZ::IO::Path scanFolderDir(m_scanfolder.m_scanFolder);
         AZStd::string testFilename = "test2.stage1";
@@ -575,7 +575,7 @@ namespace UnitTests
         // Process the intermediate-style file first
         ProcessFileMultiStage(2, true);
         // Process the regular source second
-        ProcessFileMultiStage(1, false, (scanFolderDir / testFilename).c_str());
+        ProcessFileMultiStage(1, false, AssetProcessor::SourceAssetReference((scanFolderDir / testFilename).c_str()));
 
         // Modify the intermediate-style file so it will be processed again
         QFile writer(m_testFilePath.c_str());
@@ -600,12 +600,13 @@ namespace UnitTests
     TEST_F(IntermediateAssetTests, IntermediateAsset_SourceDependencyOnSourceAsset_Reprocesses)
     {
         using namespace AssetBuilderSDK;
+        using namespace AzToolsFramework::AssetDatabase;
 
         CreateBuilder("stage1", "*.stage1", "stage2", true, ProductOutputFlags::IntermediateAsset);
 
         m_builderInfoHandler.CreateBuilderDesc(
             "stage2", AZ::Uuid::CreateRandom().ToFixedString().c_str(), { AssetBuilderPattern{ "*.stage2", AssetBuilderPattern::Wildcard } },
-            CreateJobStage("stage2", false, "one.test"),
+            CreateJobStage("stage2", false, PathOrUuid("one.test")),
             ProcessJobStage("stage3", ProductOutputFlags::ProductAsset, false), "fingerprint");
 
         CreateBuilder("normal file builder", "*.test", "test", false, ProductOutputFlags::ProductAsset);
@@ -616,7 +617,7 @@ namespace UnitTests
         UnitTestUtils::CreateDummyFile((scanFolderDir / testFilename).c_str(), "unit test file");
 
         // Process the normal source first
-        ProcessFileMultiStage(1, false, (scanFolderDir / testFilename).c_str());
+        ProcessFileMultiStage(1, false, AssetProcessor::SourceAssetReference((scanFolderDir / testFilename).c_str()));
         // Process the intermediate-style source second
         ProcessFileMultiStage(2, true);
 

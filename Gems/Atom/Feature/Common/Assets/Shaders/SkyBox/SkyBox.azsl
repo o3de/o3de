@@ -177,6 +177,7 @@ PSOutput MainPS(VSOutput input)
 #endif
     {
         color = SceneSrg::m_skyboxCubemap.Sample(PassSrg::LinearSampler, GetCubemapCoords(input.m_cubemapCoord)).rgb;
+        color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
 
         // apply the exposure for HDRi texture
         float exposureFactor = pow(2.0, SceneSrg::m_cubemapExposure);

@@ -867,6 +867,14 @@ namespace EMotionFX
             {
                 return SourceFileDetails("Editor/Images/AssetBrowser/AnimGraph_16.svg");
             }
+            else if (AZStd::wildcard_match("*.actor", fullSourceFileName))
+            {
+                return SourceFileDetails("Editor/Images/AssetBrowser/Actor_16.svg");
+            }
+            else if (AZStd::wildcard_match("*.motion", fullSourceFileName))
+            {
+                return SourceFileDetails("Editor/Images/AssetBrowser/Motion_16.svg");
+            }
             return SourceFileDetails(); // no result
         }
 

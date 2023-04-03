@@ -298,6 +298,7 @@ namespace AtomToolsFramework
         }
 
         DestroyDocument(documentId);
+
         return true;
     }
 

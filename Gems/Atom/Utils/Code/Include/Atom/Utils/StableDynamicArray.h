@@ -46,7 +46,6 @@ namespace AZ
 
         class iterator;
         class const_iterator;
-        class pageIterator;
 
         friend iterator;
         friend const_iterator;
@@ -58,6 +57,13 @@ namespace AZ
 
     public:
 
+        class pageIterator;
+        struct IteratorRange
+        {
+            pageIterator m_begin;
+            pageIterator m_end;
+        };
+        using ParallelRanges = AZStd::vector<IteratorRange>;
         using Handle = StableDynamicArrayHandle<T>;
         using WeakHandle = StableDynamicArrayWeakHandle<T>;
 
@@ -87,7 +93,7 @@ namespace AZ
          * different thread. Since StableDynamicArray only uses forward iterators, this would be
          * expensive to create external to this class.
          */
-        AZStd::vector<AZStd::pair<pageIterator, pageIterator>> GetParallelRanges();
+        ParallelRanges GetParallelRanges();
 
         /* 
         * If the memory associated with this handle can be moved to a more compact spot, it will be.
@@ -287,6 +293,9 @@ namespace AZ
 
         ValueType& operator*() const;
         ValueType* operator->() const;
+
+        bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+        bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         
     private:
         StableDynamicArrayWeakHandle(ValueType* data);
