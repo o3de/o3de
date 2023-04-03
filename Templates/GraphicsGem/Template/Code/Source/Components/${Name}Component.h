@@ -13,6 +13,8 @@
 
 namespace ${Name}
 {
+    inline constexpr AZ::TypeId ${Name}ComponentTypeId { "{${Random_Uuid}}" };
+
     class ${Name}Component final
         : public AzFramework::Components::ComponentAdapter<${Name}ComponentController, ${Name}ComponentConfig>
     {

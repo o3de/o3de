@@ -14,7 +14,6 @@
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
 #include <Components/${Name}Component.h>
-#include <Components/${Name}ComponentConstants.h>
 
 #include <${Name}/${Name}TypeIds.h>
 
@@ -31,7 +30,7 @@ namespace ${Name}
     {
     public:
         using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>;
-        AZ_EDITOR_COMPONENT(EditorDynamicTriangleFIXEDComponent, EditorComponentTypeId, BaseClass);
+        AZ_EDITOR_COMPONENT(Editor${Name}Component, EditorComponentTypeId, BaseClass);
 
         static void Reflect(AZ::ReflectContext* context);
 
