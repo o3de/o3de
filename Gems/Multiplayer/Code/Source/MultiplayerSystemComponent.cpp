@@ -1694,6 +1694,12 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
+        // Ignore level loads if not in multiplayer mode
+        if (m_agentType == MultiplayerAgentType::Uninitialized)
+        {
+            return;
+        }
+
         // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
         IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
         if (!spawner)
