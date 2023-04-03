@@ -135,7 +135,11 @@
             "isTemplated": true
         },
         {
-            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
@@ -148,6 +152,10 @@
         },
         {
             "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
             "isTemplated": true
         },
         {
