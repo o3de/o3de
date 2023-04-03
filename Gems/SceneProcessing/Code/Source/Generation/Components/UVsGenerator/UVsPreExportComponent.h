@@ -13,25 +13,21 @@
 
 #include <AzCore/RTTI/RTTI.h>
 
-
 namespace AZ::SceneAPI::Events { class GenerateAdditionEventContext; }
 
 namespace AZ::SceneGenerationComponents
 {
-    class TangentPreExportComponent
+    //! This is the component responsible for actually hooking into the scene API's processing flow
+    //! during the generation step.
+    class UVsPreExportComponent
         : public AZ::SceneAPI::SceneCore::GenerationComponent
     {
     public:
-        AZ_COMPONENT(TangentPreExportComponent, "{BFFE114A-2FC6-42F1-92C4-61329CC54A2B}", AZ::SceneAPI::SceneCore::GenerationComponent)
+        AZ_COMPONENT(UVsPreExportComponent, "{64F79C1E-CED6-42A9-8229-6607F788C731}", AZ::SceneAPI::SceneCore::GenerationComponent)
 
-        TangentPreExportComponent();
+        UVsPreExportComponent();
 
         static void Reflect(AZ::ReflectContext* context);
-
-        // bumps Tangent export to later on in the generation phase, so that it can generate tangents after other rules have
-        // generated things like normals and UVs.
-
-        uint8_t GetPriority() const override;
 
         AZ::SceneAPI::Events::ProcessingResult Register(AZ::SceneAPI::Events::GenerateAdditionEventContext& context);
     };

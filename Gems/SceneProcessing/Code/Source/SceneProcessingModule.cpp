@@ -16,6 +16,8 @@
 #include <Config/Widgets/GraphTypeSelector.h>
 #include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
 #include <Generation/Components/TangentGenerator/TangentPreExportComponent.h>
+#include <Generation/Components/UVsGenerator/UVsGenerateComponent.h>
+#include <Generation/Components/UVsGenerator/UVsPreExportComponent.h>
 #include <Generation/Components/MeshOptimizer/MeshOptimizerComponent.h>
 #include <Source/SceneProcessingModule.h>
 
@@ -42,9 +44,11 @@ namespace AZ
                     SceneProcessingConfig::SoftNameBehavior::CreateDescriptor(),
                     SceneBuilder::BuilderPluginComponent::CreateDescriptor(),
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
-                    AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
-                    AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
-                    AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
+                        AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
+                        AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
+                        AZ::SceneGenerationComponents::UVsPreExportComponent::CreateDescriptor(),
+                        AZ::SceneGenerationComponents::UVsGenerateComponent::CreateDescriptor(),
+                        AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
                 });
 
                 // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.
