@@ -28,6 +28,9 @@ namespace TestImpact
         //! Returns the test target launch method.
         LaunchMethod GetLaunchMethod() const;
 
+        //! Returns `true` if the target can shard, otherwise `false`.
+        bool CanShard() const;
+
         // TestTarget overrides ...
         bool CanEnumerate() const override;
 
