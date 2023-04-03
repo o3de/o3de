@@ -16,7 +16,7 @@ namespace GraphicsGem_AR_Test
         : public GraphicsGem_AR_TestFeatureProcessorInterface
     {
     public:
-        AZ_RTTI(GraphicsGem_AR_TestFeatureProcessor, "{989FD0CC-2B32-446E-8405-3BADD97B658B}", GraphicsGem_AR_TestFeatureProcessorInterface);
+        AZ_RTTI(GraphicsGem_AR_TestFeatureProcessor, "{1F2AE769-FD53-4BC4-8C98-F8935455B4BE}", GraphicsGem_AR_TestFeatureProcessorInterface);
         AZ_CLASS_ALLOCATOR(GraphicsGem_AR_TestFeatureProcessor, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context);

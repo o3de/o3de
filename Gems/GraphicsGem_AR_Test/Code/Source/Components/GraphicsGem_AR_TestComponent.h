@@ -13,7 +13,7 @@
 
 namespace GraphicsGem_AR_Test
 {
-    inline constexpr AZ::TypeId GraphicsGem_AR_TestComponentTypeId { "{FD611FC2-B6E7-47F9-BBBC-1A0EE9D6E345}" };
+    inline constexpr AZ::TypeId GraphicsGem_AR_TestComponentTypeId { "{A9D7E801-4A59-44D1-BFCE-7D1F54E58137}" };
 
     class GraphicsGem_AR_TestComponent final
         : public AzFramework::Components::ComponentAdapter<GraphicsGem_AR_TestComponentController, GraphicsGem_AR_TestComponentConfig>
