@@ -15,7 +15,6 @@
     "copyright_year": 2023,
     "build": 0,
     "external_subdirectories": [
-        "Gems/GraphicsGem_AR_Test",
         "Gems/Achievements",
         "Gems/AssetValidation",
         "Gems/Atom",
