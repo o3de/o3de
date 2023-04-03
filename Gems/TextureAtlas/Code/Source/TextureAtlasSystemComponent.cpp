@@ -52,7 +52,6 @@ namespace TextureAtlasNamespace
                 ec->Class<TextureAtlasSystemComponent>(
                     "TextureAtlas", "This component loads and manages TextureAtlases")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }

@@ -689,7 +689,7 @@ namespace UnitTest
         EXPECT_FALSE(saveResult.has_value());
     }
 
-    class EditorWhiteBoxAssetFixture : public ToolsApplicationFixture
+    class EditorWhiteBoxAssetFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

@@ -50,3 +50,12 @@ float3 GetSpecularF0(float3 baseColor, float metallic, float specularF0Factor)
     float3 dielectricSpecularF0 = MaxDielectricSpecularF0 * specularF0Factor;
     return lerp(dielectricSpecularF0, baseColor, metallic);
 }
+
+// Manipulates surface specularF0 to apply a clear coat factor
+void ApplyClearCoatToSpecularF0(inout float3 specularF0, float clearCoatFactor)
+{
+    // For the derivation of the following equation please refer to:
+    // https://google.github.io/filament/Filament.md.html#materialsystem/clearcoatmodel/baselayermodification
+    float3 f0 = (1.0 - 5.0 * sqrt(specularF0)) / (5.0 - sqrt(specularF0));
+    specularF0 = lerp(specularF0, f0 * f0, clearCoatFactor);
+}

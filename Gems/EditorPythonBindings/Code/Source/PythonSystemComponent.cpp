@@ -350,7 +350,6 @@ namespace EditorPythonBindings
             {
                 ec->Class<PythonSystemComponent>("PythonSystemComponent", "The Python interpreter")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC_CE("System"))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ;
             }
@@ -547,7 +546,8 @@ namespace EditorPythonBindings
             AzFramework::StringFunc::Path::Join(path.c_str(), "bootstrap.py", bootstrapPath);
             if (AZ::IO::SystemFile::Exists(bootstrapPath.c_str()))
             {
-                ExecuteByFilename(bootstrapPath);
+                [[maybe_unused]] bool success = ExecuteByFilename(bootstrapPath);
+                AZ_Assert(success, "Error while executing bootstrap script: %s", bootstrapPath.c_str());
             }
         }
     }
@@ -723,12 +723,12 @@ namespace EditorPythonBindings
         }
     }
 
-    void PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
+    bool PythonSystemComponent::ExecuteByFilename(AZStd::string_view filename)
     {
         AZStd::vector<AZStd::string_view> args;
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilename, filename);
-        ExecuteByFilenameWithArgs(filename, args);
+        return ExecuteByFilenameWithArgs(filename, args);
     }
 
     bool PythonSystemComponent::ExecuteByFilenameAsTest(AZStd::string_view filename, AZStd::string_view testCase, const AZStd::vector<AZStd::string_view>& args)
@@ -740,11 +740,12 @@ namespace EditorPythonBindings
         return evalResult == Result::Okay;
     }
 
-    void PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
+    bool PythonSystemComponent::ExecuteByFilenameWithArgs(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)
     {
         AzToolsFramework::EditorPythonScriptNotificationsBus::Broadcast(
             &AzToolsFramework::EditorPythonScriptNotificationsBus::Events::OnStartExecuteByFilenameWithArgs, filename, args);
-        EvaluateFile(filename, args);
+        const Result result = EvaluateFile(filename, args);
+        return result == Result::Okay;
     }
 
     PythonSystemComponent::Result PythonSystemComponent::EvaluateFile(AZStd::string_view filename, const AZStd::vector<AZStd::string_view>& args)

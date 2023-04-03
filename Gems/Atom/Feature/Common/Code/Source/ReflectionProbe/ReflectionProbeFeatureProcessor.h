@@ -20,6 +20,7 @@ namespace AZ
               private Data::AssetBus::MultiHandler
         {
         public:
+            AZ_CLASS_ALLOCATOR(ReflectionProbeFeatureProcessor, AZ::SystemAllocator)
             AZ_RTTI(AZ::Render::ReflectionProbeFeatureProcessor, "{A08C591F-D2AB-4550-852A-4436533DB137}", AZ::Render::ReflectionProbeFeatureProcessorInterface);
 
             static void Reflect(AZ::ReflectContext* context);
@@ -142,9 +143,9 @@ namespace AZ
             // it is loaded by the feature processor and passed to the probes to avoid loading it in each probe
             ReflectionRenderData m_reflectionRenderData;
 
-            // indicates that the probe list needs to be re-sorted, necessary when a probe is resized
+            // flags
             bool m_probeSortRequired = false;
-
+            bool m_meshFeatureProcessorUpdateRequired = false;
             bool m_needUpdatePipelineStates = false;
         };
     } // namespace Render

@@ -14,7 +14,9 @@
 
 class Surface
 {
+#if ENABLE_TRANSMISSION
     TransmissionSurfaceData transmission;
+#endif
 
     // ------- BasePbrSurfaceData -------
     float3 position;            //!< Position in world-space

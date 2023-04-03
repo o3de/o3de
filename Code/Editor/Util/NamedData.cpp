@@ -174,9 +174,9 @@ bool CNamedData::Serialize(CArchive& ar)
             {
                 nOriginalSize = pBlock->compressedData.GetUncompressedSize();
                 // Compressed data.
-                unsigned long destSize = pBlock->compressedData.GetSize();
+                unsigned int destSize = static_cast<unsigned int>(pBlock->compressedData.GetSize());
                 void* dest = pBlock->compressedData.GetBuffer();
-                nSizeFlags = destSize | (1 << 31);
+                nSizeFlags = destSize | (1u << 31);
 
                 ar << key;
                 ar << nSizeFlags; // Current size of data + 1 bit for compressed flag.

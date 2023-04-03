@@ -19,6 +19,7 @@
 #include <Atom/Features/Debug.azsli>
 #include <Atom/Features/LightCulling/LightCullingTileIterator.azsli>
 #include <Atom/Features/PBR/LightingUtils.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
 
 class LightingData_BasePBR
 {

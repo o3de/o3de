@@ -15,7 +15,7 @@
 #include <native/utilities/assetUtils.h>
 #include <native/utilities/ByteArrayStream.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 #include <native/unittests/AssetProcessorUnitTests.h>
 
 #include <QThread>
@@ -127,8 +127,6 @@ TEST_F(UtilitiesUnitTests, ChangeFileAttributes_MakeFileReadOnlyOrWritable_Succe
 
 TEST_F(UtilitiesUnitTests, NormalizeAndRemoveAlias_FeedFilePathWithDoubleSlackesAndAlias_Succeeds)
 {
-    // ------------- Test NormalizeAndRemoveAlias --------------
-
     EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@test@\\my\\file.txt"), QString("my/file.txt"));
     EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@test@my\\file.txt"), QString("my/file.txt"));
     EXPECT_EQ(AssetUtilities::NormalizeAndRemoveAlias("@TeSt@my\\file.txt"), QString("my/file.txt")); // case sensitivity test!
@@ -145,6 +143,7 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
     QFile outputFile(outputFileName);
     outputFile.open(QFile::WriteOnly);
 
+    const int waitTimeInSeconds = 1; // Timeout for copying files
 #if defined(AZ_PLATFORM_WINDOWS)
     // this test is intentionally disabled on other platforms
     // because in general on other platforms its actually possible to delete and move
@@ -153,11 +152,16 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
     //Trying to copy when the output file is open for reading should fail.
     {
         UnitTestUtils::AssertAbsorber absorb;
-        EXPECT_FALSE(CopyFileWithTimeout(fileName, outputFileName, 1));
-        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 2); // 2 for each fail
-        //Trying to move when the output file is open for reading
-        EXPECT_FALSE(MoveFileWithTimeout(fileName, outputFileName, 1));
-        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 4);
+        EXPECT_FALSE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+        // Expected two warnings for copying files:
+        // 1) Failed to remove old files
+        // 2) Copy operation failed for the given timeout
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 1);
+        // Expected another two warnings for moving files:
+        // 1) Failed to remove old files
+        // 2) Move operation failed for the given timeout
+        EXPECT_FALSE(MoveFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 2);
     }
 #endif // AZ_PLATFORM_WINDOWS ONLY
 
@@ -165,11 +169,11 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
     outputFile.close();
 
     //Trying to copy when the output file is not open
-    EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 1));
+    EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
     EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, aznumeric_caster(-1)));//invalid timeout time
     // Trying to move when the output file is not open
-    EXPECT_TRUE(MoveFileWithTimeout(fileName, outputFileName, 1));
-    EXPECT_TRUE(MoveFileWithTimeout(outputFileName, fileName, 1));
+    EXPECT_TRUE(MoveFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
+    EXPECT_TRUE(MoveFileWithTimeout(outputFileName, fileName, waitTimeInSeconds));
 
     // Open the file and then close it in the near future
     AZStd::atomic_bool setupDone{ false };
@@ -194,11 +198,11 @@ TEST_F(UtilitiesUnitTests, CopyFileWithTimeout_FeedFilesInDifferentStates_Succee
     //Trying to copy when the output file is open,but will close before the timeout inputted
     {
         UnitTestUtils::AssertAbsorber absorb;
-        EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, 1));
+        EXPECT_TRUE(CopyFileWithTimeout(fileName, outputFileName, waitTimeInSeconds));
 #if defined(AZ_PLATFORM_WINDOWS)
         // only windows has an issue with moving files out that are in use.
         // other platforms do so without issue.
-        EXPECT_GT(absorb.m_numWarningsAbsorbed, 0);
+        EXPECT_EQ(absorb.m_numWarningsAbsorbed, 0);
 #endif // windows platform.
     }
 }
@@ -249,71 +253,105 @@ TEST_F(UtilitiesUnitTests, TestByteArrayStream_WriteToStream_Succeeds)
     // reserving does not alter the length.
     stream.Reserve(128);
     EXPECT_EQ(stream.GetLength(), 0);
-    EXPECT_EQ(stream.Write(7, tempReadBuffer), 7);
-    EXPECT_EQ(stream.GetCurPos(), 7);
-    EXPECT_EQ(stream.GetLength(), 7);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), tempReadBuffer, 7), 0);
-    EXPECT_EQ(stream.Write(7, tempReadBuffer), 7);
-    EXPECT_EQ(stream.GetLength(), 14);
-    EXPECT_EQ(stream.GetCurPos(), 14);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "This isThis is", 14), 0);
 
+    // Write 7 bytes from the buffer to the stream
+    AZ::IO::SizeType sizeInBytesToWrite = 7;
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, tempReadBuffer), sizeInBytesToWrite);
+    AZ::IO::SizeType expectedPosition = sizeInBytesToWrite;
+    AZ::IO::SizeType expectedLength = sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), tempReadBuffer, expectedLength), 0); 
 
-    stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin, without overrunning
-    EXPECT_EQ(stream.GetCurPos(), 0);
-    EXPECT_EQ(stream.Write(4, "that"), 4);
-    EXPECT_EQ(stream.GetLength(), 14);
-    EXPECT_EQ(stream.GetCurPos(), 4);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that isThis is", 14), 0);
+    // Write 7 bytes from the buffer to the stream again
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, tempReadBuffer), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "This isThis is", expectedLength), 0);
 
-    stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, without overrunning
-    EXPECT_EQ(stream.GetCurPos(), 6);
-    EXPECT_EQ(stream.Write(4, "1234"), 4);
-    EXPECT_EQ(stream.GetLength(), 14);
-    EXPECT_EQ(stream.GetCurPos(), 10);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i1234s is", 14), 0);
+    sizeInBytesToWrite = 4;
+    AZ::IO::SizeType offsite = 0;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin, without overrunning
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "that"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that isThis is", expectedLength), 0);
 
-    stream.Seek(-6, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, without overrunning
-    EXPECT_EQ(stream.GetCurPos(), 8);
-    EXPECT_EQ(stream.Write(4, "5555"), 4);
-    EXPECT_EQ(stream.GetCurPos(), 12);
-    EXPECT_EQ(stream.GetLength(), 14);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i125555is", 14), 0);
+    offsite = 2;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, without overrunning
+    expectedPosition += offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "1234"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i1234s is", expectedLength), 0);
 
-    stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin offset, with overrun:
-    EXPECT_EQ(stream.GetCurPos(), 2);
-    EXPECT_EQ(stream.GetLength(), 14);
-    EXPECT_EQ(stream.Write(14, "xxxxxxxxxxxxxx"), 14);
-    EXPECT_EQ(stream.GetLength(), 16);
-    EXPECT_EQ(stream.GetCurPos(), 16);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxxx", 16), 0);
+    offsite = AZ::IO::SizeType(-6);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, without overrunning
+    expectedPosition = expectedLength + offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "5555"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "that i125555is", expectedLength), 0);
 
+    offsite = 2;
+    sizeInBytesToWrite = 14;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN); // write at begin offset, with overrun:
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), offsite);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "xxxxxxxxxxxxxx"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxxx", expectedLength), 0);
+
+    offsite = 14;
+    sizeInBytesToWrite = 4;
     stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-    stream.Seek(14, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, with overrunning:
-    EXPECT_EQ(stream.GetCurPos(), 14);
-    EXPECT_EQ(stream.GetLength(), 16);
-    EXPECT_EQ(stream.Write(4, "yyyy"), 4);
-    EXPECT_EQ(stream.GetCurPos(), 18);
-    EXPECT_EQ(stream.GetLength(), 18);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyyy", 18), 0);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_CUR); // write in middle, with overrunning:
+    expectedPosition = offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "yyyy"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyyy", expectedLength), 0);
 
-    stream.Seek(-2, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, with overrunning
-    EXPECT_EQ(stream.GetCurPos(), 16);
-    EXPECT_EQ(stream.GetLength(), 18);
-    EXPECT_EQ(stream.Write(4, "ZZZZ"), 4);
-    EXPECT_EQ(stream.GetCurPos(), 20);
-    EXPECT_EQ(stream.GetLength(), 20);
-    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyZZZZ", 20), 0);
+    offsite = AZ::IO::SizeType(-2);
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_END); // write in end, negative offset, with overrunning
+    expectedPosition = expectedLength + offsite;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(stream.Write(sizeInBytesToWrite, "ZZZZ"), sizeInBytesToWrite);
+    expectedPosition += sizeInBytesToWrite;
+    expectedLength = expectedPosition;
+    EXPECT_EQ(stream.GetCurPos(), expectedPosition);
+    EXPECT_EQ(stream.GetLength(), expectedLength);
+    EXPECT_EQ(memcmp(stream.GetArray().constData(), "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0);
 
     // read test.
     stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-    EXPECT_EQ(stream.Read(20, tempReadBuffer), 20);
-    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", 20), 0);
-    EXPECT_EQ(stream.Read(20, tempReadBuffer), 0); // because its already at end.
-    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", 20), 0); // it should not have disturbed the buffer.
-    stream.Seek(2, AZ::IO::GenericStream::ST_SEEK_BEGIN);
-    EXPECT_EQ(stream.Read(20, tempReadBuffer), 18);
-    EXPECT_EQ(memcmp(tempReadBuffer, "xxxxxxxxxxxxyyZZZZZZ", 20), 0); // it should not have disturbed the buffer bits that it was not asked to touch.
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), expectedLength);
+    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0);
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), 0); // because its already at end.
+    EXPECT_EQ(memcmp(tempReadBuffer, "thxxxxxxxxxxxxyyZZZZ", expectedLength), 0); // it should not have disturbed the buffer.
+
+    offsite = 2;
+    stream.Seek(offsite, AZ::IO::GenericStream::ST_SEEK_BEGIN);
+    EXPECT_EQ(stream.Read(expectedLength, tempReadBuffer), expectedLength - offsite);
+    EXPECT_EQ(memcmp(tempReadBuffer, "xxxxxxxxxxxxyyZZZZZZ", expectedLength), 0); // it should not have disturbed the buffer bits that it was not asked to touch.
 }
 
 TEST_F(UtilitiesUnitTests, MatchFilePattern_FeedDifferentPatternsAndFilePaths_Succeeds)
@@ -441,7 +479,7 @@ TEST_F(UtilitiesUnitTests, GetFileHashFromStream_SmallFileForced_ReturnsExpected
 class FileWriteThrashTestJob : public AZ::Job
 {
 public:
-    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator, 0);
+    AZ_CLASS_ALLOCATOR(FileWriteThrashTestJob, AZ::ThreadPoolAllocator);
 
     FileWriteThrashTestJob(bool deleteWhenDone, AZ::JobContext* jobContext, AZ::IO::HandleType fileHandle, AZStd::string_view bufferToWrite)
         : Job(deleteWhenDone, jobContext),

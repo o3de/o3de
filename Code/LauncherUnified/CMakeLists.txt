@@ -64,6 +64,25 @@ if(PAL_TRAIT_BUILD_SERVER_SUPPORTED)
 
 endif()
 
+if(PAL_TRAIT_BUILD_UNIFIED_SUPPORTED)
+
+    ly_add_target(
+        NAME Launcher.Unified.Static STATIC
+        NAMESPACE AZ
+        FILES_CMAKE
+            launcher_unified_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                .
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzCore
+                AZ::AzGameFramework
+                Legacy::CryCommon
+    )
+
+endif()
+
 include(${CMAKE_CURRENT_LIST_DIR}/launcher_generator.cmake)
 
 ################################################################################
@@ -90,6 +109,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     ly_add_googletest(
         NAME AZ::Launcher.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()

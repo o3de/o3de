@@ -11,8 +11,13 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include "${Name}EditorSystemComponent.h"
 
+#include <${Name}/${Name}TypeIds.h>
+
 namespace ${SanitizedCppName}
 {
+    AZ_COMPONENT_IMPL(${SanitizedCppName}EditorSystemComponent, "${SanitizedCppName}EditorSystemComponent",
+        ${SanitizedCppName}EditorSystemComponentTypeId);
+
     void ${SanitizedCppName}EditorSystemComponent::Reflect(AZ::ReflectContext* context)
     {
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))

@@ -71,10 +71,10 @@ namespace AZ { class ReflectContext; }
 namespace AZ::MeshBuilder
 {
     using MeshBuilderVertexAttributeLayerColor = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::Color>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerColor, AZ::SystemAllocator)
         
     using MeshBuilderVertexAttributeLayerSkinInfluence = MeshBuilderVertexAttributeLayerT<AZ::SceneAPI::DataTypes::ISkinWeightData::Link>;
-    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL_TEMPLATE(MeshBuilderVertexAttributeLayerSkinInfluence, AZ::SystemAllocator)
 
 } // namespace AZ::MeshBuilder
 

@@ -32,6 +32,7 @@ class AssetBuilderApplication
     , public IBuilderApplication
 {
 public:
+    AZ_CLASS_ALLOCATOR(AssetBuilderApplication, AZ::SystemAllocator)
     AssetBuilderApplication(int* argc, char*** argv);
     ~AssetBuilderApplication();
 

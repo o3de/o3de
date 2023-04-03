@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <Prefab/PrefabTestDomUtils.h>
-#include <Prefab/PrefabTestUndoFixture.h>
-
-#include <Prefab/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndo.h>
+#include <AzToolsFramework/Prefab/Undo/PrefabUndoUpdateLink.h>
 
 #include <Prefab/PrefabTestComponent.h>
+#include <Prefab/PrefabTestDomUtils.h>
+#include <Prefab/PrefabTestUndoFixture.h>
 
 namespace UnitTest
 {
@@ -80,7 +80,7 @@ namespace UnitTest
 
         //generate a patch to add a component to the nested instance
         PrefabDom initialEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedContainerEntity->Deactivate();
         PrefabTestComponent* nestedTestComponent = nestedContainerEntity->CreateComponent<PrefabTestComponent>();
@@ -88,11 +88,11 @@ namespace UnitTest
         nestedContainerEntity->Activate();
 
         PrefabDom modifiedEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         PrefabDom patch;
         m_instanceToTemplateInterface->GeneratePatch(patch, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, nestedContainerEntityId);
 
         //apply the patch
         PrefabDom& templateDomReference = m_prefabSystemComponent->FindTemplateDom(nestedTemplateId);
@@ -107,11 +107,11 @@ namespace UnitTest
         AZStd::vector<InstanceAlias> aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
 
         //create patch for nesting
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
         nestedTestComponent->m_entityIdProperty = rootContainerEntityId;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
         m_instanceToTemplateInterface->GeneratePatch(patch, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, nestedContainerEntityId);
 
         //create an undo node to apply the patch and prep for undo
         PrefabUndoInstanceLink undoInstanceLinkNode("Undo Link Patch");
@@ -150,7 +150,7 @@ namespace UnitTest
 
         //add a component for testing to the instance that will be nested
         PrefabDom initialEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedContainerEntity->Deactivate();
         PrefabTestComponent* nestedTestComponent = nestedContainerEntity->CreateComponent<PrefabTestComponent>();
@@ -158,12 +158,12 @@ namespace UnitTest
         nestedContainerEntity->Activate();
 
         PrefabDom modifiedEntityDom;
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom patch;
         m_instanceToTemplateInterface->GeneratePatch(patch, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(patch, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(patch, nestedContainerEntityId);
         m_instanceToTemplateInterface->PatchTemplate(patch, nestedTemplateId);
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
 
@@ -181,16 +181,16 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //nest the second instance under the first instance
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         rootInstance->AddInstance(AZStd::move(nestedInstance));
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom linkPatch;
         m_instanceToTemplateInterface->GeneratePatch(linkPatch, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(linkPatch, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(linkPatch, nestedContainerEntityId);
 
         AZStd::vector<InstanceAlias> aliases = rootInstance->GetNestedInstanceAliases(nestedTemplateId);
 
@@ -219,20 +219,20 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //update the property on the nested component
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedTestComponent = nestedContainerEntity->FindComponent<PrefabTestComponent>();
         nestedTestComponent->m_boolProperty = true;
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom updatePatch;
         m_instanceToTemplateInterface->GeneratePatch(updatePatch, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatch, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(updatePatch, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoLinkUpdateNode("Undo Link Update");
+        PrefabUndoUpdateLink undoLinkUpdateNode("Undo Link Update");
         undoLinkUpdateNode.Capture(updatePatch, linkId);
         undoLinkUpdateNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();
@@ -296,20 +296,20 @@ namespace UnitTest
         ASSERT_TRUE(nestedContainerEntity);
 
         //update the property on the nested component
-        m_instanceToTemplateInterface->GenerateDomForEntity(initialEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(initialEntityDom, *nestedContainerEntity);
 
         nestedTestComponent = nestedContainerEntity->FindComponent<PrefabTestComponent>();
         nestedTestComponent->m_intProperty = 1;
 
-        m_instanceToTemplateInterface->GenerateDomForEntity(modifiedEntityDom, *nestedContainerEntity);
+        m_instanceToTemplateInterface->GenerateEntityDomBySerializing(modifiedEntityDom, *nestedContainerEntity);
 
         //create patch
         PrefabDom updatePatchIntField;
         m_instanceToTemplateInterface->GeneratePatch(updatePatchIntField, initialEntityDom, modifiedEntityDom);
-        m_instanceToTemplateInterface->AppendEntityAliasToPatchPaths(updatePatchIntField, nestedContainerEntityId);
+        m_instanceToTemplateInterface->PrependEntityAliasPathToPatchPaths(updatePatchIntField, nestedContainerEntityId);
 
         //create the update link undo/redo node
-        PrefabUndoLinkUpdate undoIntFieldNode("Undo Link Update");
+        PrefabUndoUpdateLink undoIntFieldNode("Undo Link Update");
         undoIntFieldNode.Capture(updatePatchIntField, linkId);
         undoIntFieldNode.Redo();
         m_instanceUpdateExecutorInterface->UpdateTemplateInstancesInQueue();

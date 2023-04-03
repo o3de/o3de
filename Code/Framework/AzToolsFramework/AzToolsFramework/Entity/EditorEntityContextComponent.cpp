@@ -51,6 +51,7 @@
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Undo/UndoCacheInterface.h>
 
+DECLARE_EBUS_INSTANTIATION(AzToolsFramework::EditorEntityContextRequests);
 
 namespace AzToolsFramework
 {
@@ -91,7 +92,6 @@ namespace AzToolsFramework
                     "Editor Entity Context", "System component responsible for owning the edit-time entity context")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ;
             }
         }
@@ -207,7 +207,7 @@ namespace AzToolsFramework
     //=========================================================================
     void EditorEntityContextComponent::ResetEditorContext()
     {
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnContextReset);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotificationBus::Events::OnPrepareForContextReset);
 
         if (m_isRunningGame)
         {
@@ -216,6 +216,8 @@ namespace AzToolsFramework
         }
 
         ResetContext();
+
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotificationBus::Events::OnContextReset);
     }
 
     //=========================================================================
@@ -637,7 +639,7 @@ namespace AzToolsFramework
     void EditorEntityContextComponent::PrepareForContextReset()
     {
         EntityContext::PrepareForContextReset();
-        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::PrepareForContextReset);
+        EditorEntityContextNotificationBus::Broadcast(&EditorEntityContextNotification::OnPrepareForContextReset);
     }
 
     //=========================================================================

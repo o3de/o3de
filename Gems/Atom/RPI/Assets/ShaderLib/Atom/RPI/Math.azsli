@@ -33,22 +33,47 @@ void swap(inout float a, inout float b)
 
 // ---------- Power -----------
 
-float Pow2(float x)
+float Pow2(float x)         // 1 multiplication
 {
     return x * x;
 }
-float Pow3(float x)
+float Pow3(float x)         // 2 multiplications
 {
     return x * x * x;
 }
-float Pow4(float x)
+float Pow4(float x)         // 2 multiplications
 {
     x *= x;
     return x * x;
 }
-float Pow5(float x)
+float Pow5(float x)         // 3 multiplications
 {
     return x * Pow4(x);
+}
+float Pow6(float x)         // 3 multiplications
+{
+    x *= x;
+    return x * x * x;
+}
+float Pow7(float x)         // 4 multiplications
+{
+    return x * Pow6(x);
+}
+float Pow8(float x)         // 3 multiplications
+{
+    x *= x;
+    x *= x;
+    return x * x;
+}
+float Pow9(float x)         // 4 multiplications
+{
+    x = x * x * x;
+    return x * x * x;
+}
+float Pow10(float x)        // 4 multiplications
+{
+    x = Pow5(x);
+    return x * x;
 }
 
 // ---------- Min & Max -----------

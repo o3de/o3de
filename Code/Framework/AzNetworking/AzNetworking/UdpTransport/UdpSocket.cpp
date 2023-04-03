@@ -185,7 +185,7 @@ namespace AzNetworking
         sockaddr_in from;
         socklen_t   fromLen = sizeof(from);
 
-        const int32_t receivedBytes = recvfrom(static_cast<int32_t>(m_socketFd), reinterpret_cast<char*>(outData), static_cast<int32_t>(size), 0, (sockaddr*)&from, &fromLen);
+        const int32_t receivedBytes = static_cast<int32_t>(recvfrom(static_cast<int32_t>(m_socketFd), reinterpret_cast<char*>(outData), static_cast<int32_t>(size), 0, (sockaddr*)&from, &fromLen));
 
         outAddress = IpAddress(ByteOrder::Network, from.sin_addr.s_addr, from.sin_port);
 
@@ -232,7 +232,7 @@ namespace AzNetworking
         destAddr.sin_family = AF_INET;
         destAddr.sin_addr.s_addr = address.GetAddress(ByteOrder::Network);
         destAddr.sin_port = address.GetPort(ByteOrder::Network);
-        return sendto(static_cast<int32_t>(m_socketFd), reinterpret_cast<const char*>(data), size, 0, (sockaddr*)&destAddr, sizeof(destAddr));
+        return static_cast<int32_t>(sendto(static_cast<int32_t>(m_socketFd), reinterpret_cast<const char*>(data), size, 0, (sockaddr*)&destAddr, sizeof(destAddr)));
     }
 
 #ifdef ENABLE_LATENCY_DEBUG

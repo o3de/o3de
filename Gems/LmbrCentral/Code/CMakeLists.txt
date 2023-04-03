@@ -26,6 +26,8 @@ ly_add_target(
         PRIVATE
             Legacy::CryCommon
             AZ::AzFramework
+        PUBLIC
+            Gem::AudioSystem.API
 )
 
 ly_add_target(
@@ -59,6 +61,7 @@ ly_add_target(
 # by default, load the above "Gem::LmbrCentral" module in Client and Server
 ly_create_alias(NAME LmbrCentral.Clients NAMESPACE Gem TARGETS Gem::LmbrCentral)
 ly_create_alias(NAME LmbrCentral.Servers NAMESPACE Gem TARGETS Gem::LmbrCentral)
+ly_create_alias(NAME LmbrCentral.Unified NAMESPACE Gem TARGETS Gem::LmbrCentral)
 
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -85,6 +88,7 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
                 Legacy::Editor.Headers
                 AZ::AzToolsFramework
                 AZ::AssetBuilderSDK
+                Gem::AudioSystem.API
     )
 
     ly_add_target(

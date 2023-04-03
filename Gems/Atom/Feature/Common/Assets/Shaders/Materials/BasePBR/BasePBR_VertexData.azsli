@@ -25,7 +25,9 @@ struct VsInput_BasePBR
     float3 position : POSITION;
     float3 normal : NORMAL;
     float4 tangent : TANGENT;
- 
+    // Bitangent is temporarily added back to fix the eye material screenshot test.
+    float3 bitangent : BITANGENT;
+
     // Extended fields (only referenced in this azsl file)...
     float2 uv0 : UV0;
     float2 uv1 : UV1;

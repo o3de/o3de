@@ -5,8 +5,10 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "native/utilities/AssetUtilEBusHelper.h"
-#include "native/utilities/ByteArrayStream.h"
+#pragma once
+
+#include <native/utilities/AssetUtilEBusHelper.h>
+#include <native/utilities/ByteArrayStream.h>
 #include <AzFramework/Asset/AssetProcessorMessages.h>
 #include <AzCore/Serialization/Utils.h>
 #include <AzCore/IO/GenericStreams.h>

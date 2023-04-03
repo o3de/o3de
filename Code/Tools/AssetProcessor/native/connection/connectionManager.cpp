@@ -185,7 +185,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
 
             if (priorCount == 0)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformConnected, thisPlatform.toUtf8().data());
             }
         }
     }
@@ -198,7 +199,8 @@ void ConnectionManager::OnStatusChanged(unsigned int connId)
             m_platformsConnected[thisPlatform] = priorCount - 1;
             if (priorCount == 1)
             {
-                EBUS_EVENT(AssetProcessorPlatformBus, AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
+                AssetProcessorPlatformBus::Broadcast(
+                    &AssetProcessorPlatformBus::Events::AssetProcessorPlatformDisconnected, thisPlatform.toUtf8().data());
             }
         }
     }

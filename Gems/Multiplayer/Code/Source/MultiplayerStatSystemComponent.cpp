@@ -54,7 +54,8 @@ namespace Multiplayer
             constexpr AZ::IO::OpenMode openMode = AZ::IO::OpenMode::ModeWrite | AZ::IO::OpenMode::ModeCreatePath;
 
             auto stream = AZStd::make_unique<AZ::IO::SystemFileStream>(metricsFilepath.c_str(), openMode);
-            auto eventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(stream));
+            AZ::Metrics::JsonTraceEventLoggerConfig config{ "Multiplayer" };
+            auto eventLogger = AZStd::make_unique<AZ::Metrics::JsonTraceEventLogger>(AZStd::move(stream), config);
             eventLoggerFactory->RegisterEventLogger(NetworkingMetricsId, AZStd::move(eventLogger));
         }
     }
@@ -196,9 +197,29 @@ namespace Multiplayer
         {
             if (const auto group = m_statGroups.Find(statIterator->second))
             {
-                if (auto stat = group->m_stats.Find(uniqueStatId))
+                if (CumulativeAverage* stat = group->m_stats.Find(uniqueStatId))
                 {
+                    stat->m_lastValue = value;
                     stat->m_average.PushEntry(value);
+                    return;
+                }
+            }
+        }
+
+        AZLOG_WARN("Stat with id %d has not been declared using DECLARE_PERFORMANCE_STAT", uniqueStatId);
+    }
+
+    void MultiplayerStatSystemComponent::IncrementStat(int uniqueStatId)
+    {
+        AZStd::lock_guard lock(m_access);
+        const auto statIterator = m_statIdToGroupId.find(uniqueStatId);
+        if (statIterator != m_statIdToGroupId.end())
+        {
+            if (const auto group = m_statGroups.Find(statIterator->second))
+            {
+                if (CumulativeAverage* stat = group->m_stats.Find(uniqueStatId))
+                {
+                    stat->m_counterValue++;
                     return;
                 }
             }
@@ -218,13 +239,29 @@ namespace Multiplayer
                 {
                     AZStd::vector<AZ::Metrics::EventField> argsContainer;
 
-                    AZStd::for_each(
-                        group.m_stats.m_items.begin(),
-                        group.m_stats.m_items.end(),
-                        [&argsContainer](const CumulativeAverage& stat)
+                    for (auto& stat : group.m_stats.m_items)
+                    {
+                        if (stat.m_average.GetNumRecorded() > 0)
                         {
+                            // If there are new entries, update the average.
                             argsContainer.emplace_back(stat.m_name.c_str(), stat.m_average.CalculateAverage());
-                        });
+                        }
+                        else if (stat.m_counterValue > 0)
+                        {
+                            // counter metric
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_counterValue);
+                            stat.m_counterValue = 0;
+                            stat.m_lastValue = 0;
+                        }
+                        else
+                        {
+                            // If there were no entries within the last collection period, report the last value received.
+                            argsContainer.emplace_back(stat.m_name.c_str(), stat.m_lastValue);
+                        }
+
+                        // Reset average in order to measure average over the save period.
+                        stat.m_average = CumulativeAverage::AverageWindowType{};
+                    }
 
                     AZ::Metrics::CounterArgs counterArgs;
                     counterArgs.m_name = "Stats";

@@ -7,6 +7,7 @@
  */
 
 #include <GemCatalog/GemCatalogScreen.h>
+#include <AzCore/Dependency/Dependency.h>
 #include <PythonBindingsInterface.h>
 #include <GemCatalog/GemCatalogHeaderWidget.h>
 #include <GemCatalog/GemFilterWidget.h>
@@ -23,6 +24,7 @@
 #include <AdjustableHeaderWidget.h>
 #include <ScreensCtrl.h>
 #include <CreateAGemScreen.h>
+#include <EditAGemScreen.h>
 
 #include <QVBoxLayout>
 #include <QHBoxLayout>
@@ -66,7 +68,7 @@ namespace O3DE::ProjectManager
 
         connect(m_gemModel, &GemModel::gemStatusChanged, this, &GemCatalogScreen::OnGemStatusChanged);
         connect(m_gemModel, &GemModel::dependencyGemStatusChanged, this, &GemCatalogScreen::OnDependencyGemStatusChanged);
-        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, [this]{ ShowInspector(); });
+        connect(m_gemModel->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemCatalogScreen::ShowInspector);
         connect(m_headerWidget, &GemCatalogHeaderWidget::RefreshGems, this, &GemCatalogScreen::Refresh);
         connect(m_headerWidget, &GemCatalogHeaderWidget::OpenGemsRepo, this, &GemCatalogScreen::HandleOpenGemRepo);
         connect(m_headerWidget, &GemCatalogHeaderWidget::CreateGem, this, &GemCatalogScreen::HandleCreateGem);
@@ -74,15 +76,7 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        ScreensCtrl* screensControl = qobject_cast<ScreensCtrl*>(parent);
-        if (screensControl)
-        {
-            ScreenWidget* createGemScreen = screensControl->FindScreen(ProjectManagerScreen::CreateGem);
-            if (createGemScreen)
-            {
-                connect(static_cast<CreateGem*>(createGemScreen), &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
-            }
-        }
+        SetUpScreensControl(parent);
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -93,9 +87,16 @@ namespace O3DE::ProjectManager
 
         m_gemInspector = new GemInspector(m_gemModel, m_rightPanelStack);
 
-        connect(m_gemInspector, &GemInspector::TagClicked, [=](const Tag& tag) { SelectGem(tag.id); });
+        connect(
+            m_gemInspector,
+            &GemInspector::TagClicked,
+            [=](const Tag& tag)
+            {
+                SelectGem(tag.id);
+            });
         connect(m_gemInspector, &GemInspector::UpdateGem, this, &GemCatalogScreen::UpdateGem);
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
+        connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);
@@ -110,20 +111,16 @@ namespace O3DE::ProjectManager
         constexpr int minHeaderSectionWidth = 100;
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
             QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Status") },
-            QVector<int>{
-                GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
-                -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
-                0, // Section is set to stretch to fit
-                GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth + GemItemDelegate::s_contentMargins.right()
-            },
+            QVector<int>{ GemPreviewImageWidth + AdjustableHeaderWidget::s_headerTextIndent,
+                          -GemPreviewImageWidth - AdjustableHeaderWidget::s_headerTextIndent + GemItemDelegate::s_defaultSummaryStartX - 30,
+                          0, // Section is set to stretch to fit
+                          GemItemDelegate::s_statusIconSize + GemItemDelegate::s_statusButtonSpacing + GemItemDelegate::s_buttonWidth +
+                              GemItemDelegate::s_contentMargins.right() },
             minHeaderSectionWidth,
-            QVector<QHeaderView::ResizeMode>
-            {
-                QHeaderView::ResizeMode::Fixed,
-                QHeaderView::ResizeMode::Interactive,
-                QHeaderView::ResizeMode::Stretch,
-                QHeaderView::ResizeMode::Fixed
-            },
+            QVector<QHeaderView::ResizeMode>{ QHeaderView::ResizeMode::Fixed,
+                                              QHeaderView::ResizeMode::Interactive,
+                                              QHeaderView::ResizeMode::Stretch,
+                                              QHeaderView::ResizeMode::Fixed },
             this);
 
         m_gemListView = new GemListView(m_proxyModel, m_proxyModel->GetSelectionModel(), listHeaderWidget, m_readOnly, this);
@@ -151,6 +148,27 @@ namespace O3DE::ProjectManager
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
+    }
+
+    void GemCatalogScreen::SetUpScreensControl(QWidget* parent)
+    {
+        m_screensControl = qobject_cast<ScreensCtrl*>(parent);
+        if (m_screensControl)
+        {
+            ScreenWidget* createGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::CreateGem);
+            if (createGemScreen)
+            {
+                CreateGem* createGem = static_cast<CreateGem*>(createGemScreen);
+                connect(createGem, &CreateGem::GemCreated, this, &GemCatalogScreen::HandleGemCreated);
+            }
+
+            ScreenWidget* editGemScreen = m_screensControl->FindScreen(ProjectManagerScreen::EditGem);
+            if (editGemScreen)
+            {
+                EditGem* editGem = static_cast<EditGem*>(editGemScreen);
+                connect(editGem, &EditGem::GemEdited, this, &GemCatalogScreen::HandleGemEdited);
+            }
+        }
     }
 
     void GemCatalogScreen::NotifyCurrentScreen()
@@ -583,24 +601,39 @@ namespace O3DE::ProjectManager
             m_notificationsEnabled = false;
 
             // Gather enabled gems for the given project.
-            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGemNames(projectPath);
+            constexpr bool includeDependencies = false;
+            const auto& enabledGemNamesResult = PythonBindingsInterface::Get()->GetEnabledGems(projectPath, includeDependencies);
             if (enabledGemNamesResult.IsSuccess())
             {
-                const QVector<AZStd::string>& enabledGemNames = enabledGemNamesResult.GetValue();
-                for (const AZStd::string& enabledGemName : enabledGemNames)
+                const auto& enabledGemNames = enabledGemNamesResult.GetValue();
+                for (auto itr = enabledGemNames.cbegin(); itr != enabledGemNames.cend(); itr++)
                 {
-                    const QModelIndex modelIndex = m_gemModel->FindIndexByNameString(enabledGemName.c_str());
+                    const QString& gemNameWithSpecifier = itr.key();
+                    const QString& gemPath = itr.value(); 
+
+                    AZ::Dependency<AZ::SemanticVersion::parts_count> dependency;
+                    auto parseOutcome = dependency.ParseVersions({ gemNameWithSpecifier.toUtf8().constData() });
+                    const QString& gemName = parseOutcome ? dependency.GetName().c_str() : gemNameWithSpecifier; 
+
+                    // First, try to find the gem by path
+                    QModelIndex modelIndex = m_gemModel->FindIndexByPath(gemPath);
+                    if (!modelIndex.isValid())
+                    {
+                        // Fall back to lookup by name 
+                        modelIndex = m_gemModel->FindIndexByNameString(gemName);
+                    }
+
                     if (modelIndex.isValid())
                     {
                         GemModel::SetWasPreviouslyAdded(*m_gemModel, modelIndex, true);
                         GemModel::SetIsAdded(*m_gemModel, modelIndex, true);
                     }
                     // ${Name} is a special name used in templates and is not really an error
-                    else if (enabledGemName != "${Name}")
+                    else if (gemName != "${Name}")
                     {
                         AZ_Warning("ProjectManager::GemCatalog", false,
                             "Cannot find entry for gem with name '%s'. The CMake target name probably does not match the specified name in the gem.json.",
-                            enabledGemName.c_str());
+                            gemName.toUtf8().constData());
                     }
                 }
             }
@@ -638,6 +671,20 @@ namespace O3DE::ProjectManager
     void GemCatalogScreen::HandleCreateGem()
     {
         emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
+    }
+
+    void GemCatalogScreen::HandleEditGem(const QModelIndex& currentModelIndex)
+    {
+        if (m_screensControl)
+        {
+            auto editGemScreen = qobject_cast<EditGem*>(m_screensControl->FindScreen(ProjectManagerScreen::EditGem));
+            if (editGemScreen)
+            {
+                m_curEditedIndex = currentModelIndex;
+                editGemScreen->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
+                emit ChangeScreenRequest(ProjectManagerScreen::EditGem);
+            }
+        }
     }
 
     void GemCatalogScreen::UpdateAndShowGemCart(QWidget* cartWidget)
@@ -718,6 +765,23 @@ namespace O3DE::ProjectManager
 
         // create Toast Notification for project gem catalog
         QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        ShowStandardToastNotification(notification);
+    }
+
+    void GemCatalogScreen::HandleGemEdited(const GemInfo& newGemInfo)
+    {
+        // This signal only occurs upon successful completion of editing a gem. As such, the gemInfo is assumed to be valid
+
+        // Make sure to update the current model index in the gem catalog model.
+        // The current edited index is only set by HandleEdit before editing a gem, and nowhere else.
+        // As such, the index should be valid.
+        m_gemModel->RemoveGem(m_curEditedIndex);
+        m_gemModel->AddGem(newGemInfo);
+
+        //gem inspector needs to have its selection updated to the newly added gem
+        SelectGem(newGemInfo.m_name);
+
+        QString notification = tr("%1 was edited.").arg(newGemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 

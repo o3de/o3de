@@ -44,8 +44,8 @@ ${NATIVE_CMAKE_SECTION_RELEASE_CONFIG}
     }
 
     compileOptions {
-        targetCompatibility JavaVersion.VERSION_1_7
-        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_1_8
     }
 
 ${NATIVE_CMAKE_SECTION_ANDROID}

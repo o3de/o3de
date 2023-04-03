@@ -27,14 +27,11 @@
 namespace UnitTest
 {
     class ArchiveTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
-        // Use an Immediately invoked function to initlaize the m_stackRecordLevels value of the AZ::SystemAllocator::Descriptor class
         ArchiveTestFixture()
-            : ScopedAllocatorSetupFixture(
-                []() { AZ::SystemAllocator::Descriptor desc; desc.m_stackRecordLevels = 30; return desc; }()
-            )
+            : LeakDetectionFixture()
             , m_application{ AZStd::make_unique<AzFramework::Application>() }
         {
         }
@@ -50,7 +47,9 @@ namespace UnitTest
             registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            m_application->Start({});
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start({}, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.

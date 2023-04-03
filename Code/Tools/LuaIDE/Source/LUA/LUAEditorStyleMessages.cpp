@@ -174,11 +174,11 @@ namespace LUAEditor
 
     void SyntaxStyleSettings::OnColorChange()
     {
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 
     void SyntaxStyleSettings::OnFontChange()
     {
-        EBUS_EVENT(LUAEditorMainWindowMessages::Bus, Repaint);
+        LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::Repaint);
     }
 }

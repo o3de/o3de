@@ -22,7 +22,7 @@ namespace AZ
         {
             using Base = RHI::BufferView;
         public:
-            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(BufferView, AZ::ThreadPoolAllocator);
             AZ_RTTI(BufferView, "{F83C1982-68ED-42B8-8A00-E9D7908B2792}", Base);
 
             static RHI::Ptr<BufferView> Create();
@@ -36,6 +36,12 @@ namespace AZ
 
             GpuVirtualAddress GetGpuAddress() const;
             ID3D12Resource* GetMemory() const;
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHI::BufferView
+            uint32_t GetBindlessReadIndex() const override;
+            uint32_t GetBindlessReadWriteIndex() const override;
+            //////////////////////////////////////////////////////////////////////////
 
         private:
             BufferView() = default;
@@ -52,6 +58,13 @@ namespace AZ
             DescriptorHandle m_clearDescriptor;
             DescriptorHandle m_constantDescriptor;
             GpuVirtualAddress m_gpuAddress = 0;
+
+            // The following indicies are offsets to the static descriptor associated with this
+            // resource view in the static region of the shader-visible descriptor heap
+            DescriptorHandle m_staticReadDescriptor;
+            DescriptorHandle m_staticReadWriteDescriptor;
+            DescriptorHandle m_staticConstantDescriptor;
+
             ID3D12Resource* m_memory = nullptr;
         };
     }

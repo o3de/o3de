@@ -5,12 +5,11 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include "VersionConverters.h"
 
 #include <AzCore/Asset/AssetSerializer.h>
 #include <AzCore/Serialization/Utils.h>
 
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Core/Contracts/DisallowReentrantExecutionContract.h>
 #include <ScriptCanvas/Core/Node.h>
 #include <ScriptCanvas/Core/NodeableNode.h>
@@ -19,6 +18,7 @@
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
 #include <ScriptCanvas/Libraries/Deprecated/Time/Repeater.h>
 #include <ScriptCanvas/Utils/SerializationUtils.h>
+#include <ScriptCanvas/Utils/VersionConverters.h>
 
 namespace ScriptCanvas
 {

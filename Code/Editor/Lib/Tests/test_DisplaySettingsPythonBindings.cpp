@@ -24,7 +24,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
 {
 
     class DisplaySettingsPythonBindingsFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -32,8 +32,9 @@ namespace DisplaySettingsPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsPythonFuncsHandler::CreateDescriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -58,7 +59,7 @@ namespace DisplaySettingsPythonBindingsUnitTests
     }
 
     class DisplaySettingsComponentFixture
-        : public ::UnitTest::ScopedAllocatorSetupFixture
+        : public ::UnitTest::LeakDetectionFixture
     {
     public:
         AzToolsFramework::ToolsApplication m_app;
@@ -66,8 +67,9 @@ namespace DisplaySettingsPythonBindingsUnitTests
         void SetUp() override
         {
             AzFramework::Application::Descriptor appDesc;
-
-            m_app.Start(appDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(appDesc, startupParameters);
             m_app.RegisterComponentDescriptor(AzToolsFramework::DisplaySettingsComponent::CreateDescriptor());
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is

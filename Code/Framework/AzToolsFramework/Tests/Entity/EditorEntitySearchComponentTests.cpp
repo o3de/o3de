@@ -7,9 +7,10 @@
  */
 
 #include <AzTest/AzTest.h>
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/UnitTest/TestTypes.h>
+#include <AzCore/UserSettings/UserSettingsComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Entity/EditorEntitySearchComponent.h>
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
@@ -142,12 +143,14 @@ namespace AzToolsFramework
     const float EntitySearch_TestComponent2::DefaultFloatValue = 5.0f;
 
     class EditorEntitySearchComponentTests
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
         {
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 

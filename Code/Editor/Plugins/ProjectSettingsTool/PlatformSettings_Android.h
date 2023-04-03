@@ -16,7 +16,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(AndroidIcons, "{D807ABEA-9C79-4EDD-B418-9A823E812C9A}");
-        AZ_CLASS_ALLOCATOR(AndroidIcons, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AndroidIcons, AZ::SystemAllocator);
 
         AndroidIcons()
             : m_default("")
@@ -41,7 +41,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(AndroidLandscapeSplashscreens, "{37888881-5050-47B6-9EB4-A408FD27D397}");
-        AZ_CLASS_ALLOCATOR(AndroidIcons, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AndroidIcons, AZ::SystemAllocator);
 
         AndroidLandscapeSplashscreens()
             : m_default("")
@@ -64,7 +64,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(AndroidPortraitSplashscreens, "{2AADA22F-B5A3-440C-A592-FB923BC66878}");
-        AZ_CLASS_ALLOCATOR(AndroidPortraitSplashscreens, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AndroidPortraitSplashscreens, AZ::SystemAllocator);
 
         AndroidPortraitSplashscreens()
             : m_default("")
@@ -87,7 +87,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(AndroidSplashscreens, "{95985732-F45B-436A-86BC-7AE5249FF520}");
-        AZ_CLASS_ALLOCATOR(AndroidSplashscreens, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AndroidSplashscreens, AZ::SystemAllocator);
 
         AndroidSplashscreens()
             : m_landscapeSplashscreens()
@@ -104,7 +104,7 @@ namespace ProjectSettingsTool
     {
     public:
         AZ_TYPE_INFO(AndroidSettings, "{5D57D014-4939-4D86-B862-AF35BAC705DC}");
-        AZ_CLASS_ALLOCATOR(AndroidSettings, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AndroidSettings, AZ::SystemAllocator);
 
         AndroidSettings()
             : m_packageName("")

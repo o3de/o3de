@@ -6,4 +6,4 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 # -------------------------------------------------------------------------
 
-__ALL__ = ['bootstrap','${NameLower}_dialog']
+__ALL__ = ['bootstrap','${SanitizedNameLower}_dialog']

@@ -11,7 +11,6 @@
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/IO/Streamer/StreamerComponent.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Slice/SliceComponent.h>
 #include <AzCore/Slice/SliceSystemComponent.h>
 #include <AzFramework/Application/Application.h>
@@ -35,7 +34,7 @@ class SpawnWatcher
     : public LmbrCentral::SpawnerComponentNotificationBus::Handler
 {
 public:
-    AZ_CLASS_ALLOCATOR(SpawnWatcher, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(SpawnWatcher, AZ::SystemAllocator);
 
     SpawnWatcher(AZ::EntityId spawnerEntityId)
     {
@@ -88,7 +87,6 @@ class SpawnerApplication
     AZ::ComponentTypeList GetRequiredSystemComponents() const override
     {
         return AZ::ComponentTypeList{
-            azrtti_typeid<AZ::MemoryComponent>(),
             azrtti_typeid<AZ::JobManagerComponent>(),
             azrtti_typeid<AZ::StreamerComponent>(),
             azrtti_typeid<AZ::AssetManagerComponent>(),
@@ -106,20 +104,20 @@ class SpawnerApplication
 };
 
 class SpawnerComponentTest
-    : public testing::Test
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
     {
         // start application
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create(AZ::SystemAllocator::Descriptor());
-
         AZ::ComponentApplication::Descriptor appDescriptor;
         appDescriptor.m_useExistingAllocator = true;
 
         m_application = aznew SpawnerApplication();
 
-        m_application->Start(appDescriptor, AZ::ComponentApplication::StartupParameters());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+        startupParameters.m_loadSettingsRegistry = false;
+        m_application->Start(appDescriptor, startupParameters);
 
         // create a dynamic slice in the asset system
         AZ::Entity* sliceAssetEntity = aznew AZ::Entity();
@@ -165,8 +163,6 @@ public:
         m_application->Stop();
         delete m_application;
         m_application = nullptr;
-
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 
     // Tick application until 'condition' function returns true.

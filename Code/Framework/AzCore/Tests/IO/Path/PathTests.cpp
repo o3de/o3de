@@ -16,7 +16,7 @@ namespace UnitTest
 #if !AZ_UNIT_TEST_SKIP_PATH_TESTS
 
     class PathFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {};
 
     TEST_F(PathFixture, AppendWithFixedPath_IsConstexpr_Compiles)
@@ -88,7 +88,7 @@ namespace UnitTest
         static_assert(IsAbsolute());
     }
 
-    // PathView::isRelative test
+    // PathView::IsRelative test
     TEST_F(PathFixture, IsRelative_ReturnsTrue)
     {
         using fixed_max_path = AZ::IO::FixedMaxPath;
@@ -141,8 +141,26 @@ namespace UnitTest
         static_assert(fullPathPosix.Extension() == AZ::IO::PathView(".txt", AZ::IO::PosixPathSeparator));
     }
 
+    TEST_F(PathFixture, AsUri_Succeeds)
+    {
+        constexpr AZ::IO::PathView fullPathWindows("C:/win path/with\\posix/separator.txt", AZ::IO::WindowsPathSeparator);
+        constexpr AZ::IO::PathView networkPathWindows(R"(\\server\share\path/with\separator.txt)", AZ::IO::WindowsPathSeparator);
+        AZ::IO::FixedMaxPath uriEncodedPath = fullPathWindows.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///C:/win%20path/with/posix/separator.txt"), uriEncodedPath);
+
+        uriEncodedPath = networkPathWindows.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file://server/share/path/with/separator.txt"), uriEncodedPath);
+
+        constexpr AZ::IO::PathView fullPathPosix("/home/posix path/with/separator.txt", AZ::IO::PosixPathSeparator);
+        uriEncodedPath = fullPathPosix.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///home/posix%20path/with/separator.txt"), uriEncodedPath);
+        constexpr AZ::IO::PathView otherPathPosix(R"(\\server\share\path/with\separator.txt)", AZ::IO::PosixPathSeparator);
+        uriEncodedPath = otherPathPosix.AsUri();
+        EXPECT_EQ(AZ::IO::PathView("file:///server/share/path/with/separator.txt"), uriEncodedPath);
+    }
+
     class PathParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<AZStd::tuple<AZStd::string_view, AZStd::string_view>>
     {};
 
@@ -279,7 +297,7 @@ namespace UnitTest
     };
 
     class PathHashCompareFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<PathHashCompareParams>
     {};
 
@@ -347,7 +365,7 @@ AZ_POP_DISABLE_WARNING
         ));
 
     class PathSingleParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<AZStd::tuple<AZStd::string_view>>
     {};
 
@@ -466,7 +484,7 @@ AZ_POP_DISABLE_WARNING
         bool expectedResult;
     };
     class PathCustomParamFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<TestParams>
     {};
 
@@ -587,7 +605,7 @@ AZ_POP_DISABLE_WARNING
         AZStd::fixed_vector<AZStd::string_view, 20> m_expectedValues;
     };
     class PathIteratorFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<PathIteratorParams>
     {};
 
@@ -677,7 +695,7 @@ AZ_POP_DISABLE_WARNING
     };
     template <typename ParamType>
     class PathLexicallyFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
         , public ::testing::WithParamInterface<ParamType>
     {};
 

@@ -26,7 +26,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphWidget, SystemAllocator, 0)
+            AZ_CLASS_ALLOCATOR_IMPL(SceneGraphWidget, SystemAllocator);
 
             SceneGraphWidget::SceneGraphWidget(const Containers::Scene& scene, QWidget* parent)
                 : QWidget(parent)

@@ -25,7 +25,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         PRIVATE
             AZ::AzCore
-            Gem::Multiplayer.Static
+            Gem::Multiplayer.Unified.Static
             3rdParty::AWSGameLiftServerSDK
     )
 
@@ -63,12 +63,13 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             PRIVATE
                 AZ::AzCore
                 AZ::AzTest
-                Gem::Multiplayer.Static
+                Gem::Multiplayer.Unified.Static
                 Gem::AWSGameLift.Server.Static
                 3rdParty::AWSGameLiftServerSDK
     )
     # Add AWSGameLift.Server.Tests to googletest
     ly_add_googletest(
         NAME Gem::AWSGameLift.Server.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

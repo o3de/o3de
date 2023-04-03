@@ -7,5 +7,12 @@
 #
 
 set(FILES
+    Source/AudioEngineWwiseGemSystemComponent.cpp
+    Source/AudioEngineWwiseGemSystemComponent.h
     Source/AudioEngineWwiseModule.cpp
+)
+
+# Skip the following file that is also used in the editor shared target so the compiler will recognize its the same symbol
+set(SKIP_UNITY_BUILD_INCLUSION_FILES
+    Source/AudioEngineWwiseGemSystemComponent.cpp
 )

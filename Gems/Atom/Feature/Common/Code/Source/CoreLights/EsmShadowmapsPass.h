@@ -42,7 +42,7 @@ namespace AZ
             using Base = RPI::ParentPass;
 
         public:
-            AZ_CLASS_ALLOCATOR(EsmShadowmapsPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(EsmShadowmapsPass, SystemAllocator);
             AZ_RTTI(EsmShadowmapsPass, "453E9AF0-C38F-4EBC-9871-8471C3D5369A", RPI::ParentPass);
 
             struct FilterParameter
@@ -61,10 +61,11 @@ namespace AZ
             static RPI::Ptr<EsmShadowmapsPass> Create(const RPI::PassDescriptor& descriptor);
 
             const Name& GetLightTypeName() const;
+            bool GetIsProjected() const;
 
             //! This sets the buffer of the table which enable to get shadowmap index
             //! from the coordinate in the atlas.
-            //! Note that shadowmpa index is shader light index for a spot light
+            //! Note that shadowmap index is shader light index for a spot light
             //! and it is cascade index for a directional light.
             void SetShadowmapIndexTableBuffer(const Data::Instance<RPI::Buffer>& tableBuffer);
 
@@ -74,22 +75,37 @@ namespace AZ
             //! This enable/disable children's computations.
             void SetEnabledComputation(bool enabled);
 
+            //! Sets the image to use as the output for all esm passes. This is needed so multiple pipelines in a scene can share the same resource.
+            void SetAtlasAttachmentImage(Data::Instance<RPI::AttachmentImage> atlasAttachmentIamge);
+
         private:
             EsmShadowmapsPass() = delete;
             explicit EsmShadowmapsPass(const RPI::PassDescriptor& descriptor);
 
-            // Pass Behaviour overrides...
+            // Pass Behavior overrides...
             void FrameBeginInternal(FramePrepareParams params) override;
+            void BuildInternal() override;
 
             void UpdateChildren();
-            // Parameters for both the depth exponentiation pass along with the kawase blur passes
+            // Parameters for both the depth exponentiation pass along with the Kawase blur passes
             void SetBlurParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t childPassIndex);
             void SetKawaseBlurSpecificParameters(Data::Instance<RPI::ShaderResourceGroup> srg, const uint32_t kawaseBlurIndex);
 
             bool m_computationEnabled = false;
+
+            enum class EsmLightType : uint8_t
+            {
+                Projected,
+                Directional,
+                Unknown,
+            };
+
+            EsmLightType m_lightType = EsmLightType::Unknown;
             Name m_lightTypeName;
             RHI::Size m_shadowmapImageSize;
             uint16_t m_shadowmapArraySize;
+
+            Data::Instance<RPI::AttachmentImage> m_atlasAttachmentImage;
 
             Data::Instance<RPI::Buffer> m_filterTableBuffer;
             AZStd::array<RHI::ShaderInputBufferIndex, EsmChildPassKindCount> m_filterTableBufferIndices;

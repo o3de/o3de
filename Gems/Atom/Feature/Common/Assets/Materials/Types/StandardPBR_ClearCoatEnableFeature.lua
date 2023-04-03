@@ -17,7 +17,7 @@ function GetMaterialPropertyDependencies()
 end
 
 function GetShaderOptionDependencies()
-    return { "o_clearCoat_feature_enabled" }
+    return { "o_clearCoat_feature_enabled", "o_materialUseForwardPassIBLSpecular" }
 end
  
 function Process(context)

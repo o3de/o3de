@@ -8,9 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
-#include <AzCore/std/function/function_base.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
+
+#include <AzToolsFramework/ActionManager/Action/EditorActionUtils.h>
 
 class QWidget;
 
@@ -31,7 +34,7 @@ namespace AzToolsFramework
 
         AZStd::string m_name; //!< The friendly name for the Action Context.
     };
-    
+
     //! Action Properties object.
     //! Used to streamline registration of an Action.
     struct ActionProperties
@@ -47,9 +50,12 @@ namespace AzToolsFramework
         AZStd::string m_iconPath; //!< The qrc path to the icon to be used in UI.
         //! Determines in which mode this action should be accessible.
         //! Empty means action will always appear regardless of the mode.
-        AZStd::vector<AZStd::string> m_modes = {}; 
-        bool m_hideFromMenusWhenDisabled = true; //!< Determines whether this actions should be hidden in menus when disabled.
-        bool m_hideFromToolBarsWhenDisabled = false; //!< Determines whether this actions should be hidden in toolbars when disabled.
+        AZStd::vector<AZStd::string> m_modes;
+
+        //! Determines visibility for this action in Menus.
+        ActionVisibility m_menuVisibility = ActionVisibility::HideWhenDisabled;
+        //! Determines visibility for this action in ToolBars.
+        ActionVisibility m_toolBarVisibility = ActionVisibility::OnlyInActiveMode;
     };
 
     //! Widget Action Properties object.
@@ -73,16 +79,12 @@ namespace AzToolsFramework
         AZ_RTTI(ActionManagerInterface, "{2E2A421E-0842-4F90-9F5C-DDE0C4F820DE}");
 
         //! Register a new Action Context to the Action Manager.
-        //! @param parentContextIdentifier The identifier for the action context the newly registered context should be parented to.
         //! @param contextIdentifier The identifier for the newly registered action context.
         //! @param properties The properties object for the newly registered action context.
-        //! @param widget The owning widget for the newly registered action context.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult RegisterActionContext(
-            const AZStd::string& parentContextIdentifier,
             const AZStd::string& contextIdentifier,
-            const ActionContextProperties& properties,
-            QWidget* widget
+            const ActionContextProperties& properties
         ) = 0;
 
         //! Returns whether an action context with the identifier queried is registered to the Action Manager.
@@ -174,6 +176,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult SetActionIconPath(const AZStd::string& actionIdentifier, const AZStd::string& iconPath) = 0;
 
+        //! Generates a sort key from the action's name that can be used to sort alphabetically.
+        //! @param actionIdentifier The action identifier to query.
+        //! @return A sortKey if the action was found, or the max integer otherwise.
+        virtual int GenerateActionAlphabeticalSortKey(const AZStd::string& actionIdentifier) = 0;
+
         //! Returns the enabled state for the action.
         //! @param actionIdentifier The action identifier to query.
         //! @return A successful outcome object with the enabled state, or a string with a message detailing the error in case of failure.
@@ -183,7 +190,7 @@ namespace AzToolsFramework
         //! @param actionIdentifier The identifier for the action to trigger.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult TriggerAction(const AZStd::string& actionIdentifier) = 0;
-        
+
         //! Installs an enabled state callback to an action that will set its enabled state when the action is updated.
         //! An action can only have a single enabled state callback. The function will fail if called multiple times.
         //! @param actionIdentifier The identifier for the action to install the callback to.
@@ -191,7 +198,7 @@ namespace AzToolsFramework
             const AZStd::string& actionIdentifier,
             AZStd::function<bool()> enabledStateCallback
         ) = 0;
-        
+
         //! Update the state of an Action via its identifier.
         //! This will update both the enabled and checked state.
         //! @param actionIdentifier The identifier for the action to update.
@@ -204,13 +211,13 @@ namespace AzToolsFramework
         //! @param actionUpdaterIdentifier The identifier for the newly registered action updater.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult RegisterActionUpdater(const AZStd::string& actionUpdaterIdentifier) = 0;
-        
+
         //! Adds an action identifier to the updater's list.
         //! @param actionUpdaterIdentifier The identifier for the updater to add the action to.
         //! @param actionIdentifier The identifier for the action to add the updater's list.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult AddActionToUpdater(const AZStd::string& actionUpdaterIdentifier, const AZStd::string& actionIdentifier) = 0;
-        
+
         //! Trigger an update on all actions registered to the Action Updater.
         //! @param actionUpdaterIdentifier The identifier for the action updater to trigger an update on.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
@@ -262,6 +269,11 @@ namespace AzToolsFramework
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ActionManagerOperationResult AssignModeToAction(
             const AZStd::string& modeIdentifier, const AZStd::string& actionIdentifier) = 0;
+
+        //! Returns whether the Action is active in the Mode its Action Context is currently in.
+        //! @param actionIdentifier The action to query.
+        //! @return A successful outcome object with the result, or a string with a message detailing the error in case of failure.
+        virtual ActionManagerBooleanResult IsActionActiveInCurrentMode(const AZStd::string& actionIdentifier) const = 0;
 
         //! Sets the active mode for an action context via its identifier.
         //! @param actionContextIdentifier The action context to set the active mode to.

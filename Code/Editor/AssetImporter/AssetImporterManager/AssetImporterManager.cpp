@@ -23,7 +23,6 @@
 
 // Editor
 #include "AssetImporter/UI/FilesAlreadyExistDialog.h"
-#include "AssetImporter/UI/ProcessingAssetsDialog.h"
 
 namespace AssetImporterManagerPrivate
 {
@@ -409,19 +408,6 @@ bool AssetImporterManager::ProcessFileMethod(ProcessFilesMethod processMethod, Q
     return false;
 }
 
-void AssetImporterManager::OnOpenProcessingAssetsDialog(int numberOfProcessedFiles)
-{
-    // make sure the dialog is opened in front of the Editor main window
-    QWidget* mainWindow = nullptr;
-    AzToolsFramework::EditorRequestBus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::GetMainWindow);
-
-    ProcessingAssetsDialog processingAssetsDialog(numberOfProcessedFiles, mainWindow);
-    connect(&processingAssetsDialog, &ProcessingAssetsDialog::OpenLogDialog, this, &AssetImporterManager::OnOpenLogDialog);
-    connect(&processingAssetsDialog, &ProcessingAssetsDialog::CloseProcessingAssetsDialog, this, &AssetImporterManager::reject);
-
-    processingAssetsDialog.exec();
-}
-
 void AssetImporterManager::ProcessCopyFiles()
 {
     int numberOfFiles = m_pathMap.size();
@@ -467,11 +453,7 @@ void AssetImporterManager::ProcessCopyFiles()
         numberOfFiles--;
     }
 
-    if (numberOfProcessedFiles > 0)
-    {
-        OnOpenProcessingAssetsDialog(numberOfProcessedFiles);
-    }
-    else
+    if (numberOfProcessedFiles == 0)
     {
         reject();
     }
@@ -522,11 +504,7 @@ void AssetImporterManager::ProcessMoveFiles()
         numberOfFiles--;
     }
 
-    if (numberOfProcessedFiles > 0)
-    {
-        OnOpenProcessingAssetsDialog(numberOfProcessedFiles);
-    }
-    else
+    if (numberOfProcessedFiles == 0)
     {
         reject();
     }

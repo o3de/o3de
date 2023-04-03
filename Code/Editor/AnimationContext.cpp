@@ -149,7 +149,10 @@ CAnimationContext::~CAnimationContext()
 //////////////////////////////////////////////////////////////////////////
 void CAnimationContext::Init()
 {
-    gEnv->pMovieSystem->SetCallback(&s_movieCallback);
+    if (gEnv->pMovieSystem)
+    {
+        gEnv->pMovieSystem->SetCallback(&s_movieCallback);
+    }
 
     REGISTER_COMMAND("mov_goToFrameEditor", (ConsoleCommandFunc)GoToFrameCmd, 0, "Make a specified sequence go to a given frame time in the editor.");
 }
@@ -365,7 +368,11 @@ void CAnimationContext::Pause()
         SetRecordingInternal(false);
     }
 
-    GetIEditor()->GetMovieSystem()->Pause();
+    if (GetIEditor()->GetMovieSystem())
+    {
+        GetIEditor()->GetMovieSystem()->Pause();
+    }
+
     if (m_pSequence)
     {
         m_pSequence->Pause();
@@ -381,7 +388,11 @@ void CAnimationContext::Resume()
     {
         SetRecordingInternal(true);
     }
-    GetIEditor()->GetMovieSystem()->Resume();
+
+    if (GetIEditor()->GetMovieSystem())
+    {
+        GetIEditor()->GetMovieSystem()->Resume();
+    }
 
     if (m_pSequence)
     {
@@ -425,43 +436,44 @@ void CAnimationContext::SetPlaying(bool playing)
     m_recording = false;
     SetRecordingInternal(false);
 
-    if (playing)
+    IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
+    if (pMovieSystem)
     {
-        IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-
-        pMovieSystem->Resume();
-        if (m_pSequence)
+        if (playing)
         {
-            m_pSequence->Resume();
+            pMovieSystem->Resume();
 
-            IMovieUser* pMovieUser = pMovieSystem->GetUser();
-
-            if (pMovieUser)
+            if (m_pSequence)
             {
-                m_pSequence->BeginCutScene(true);
+                m_pSequence->Resume();
+
+                IMovieUser* pMovieUser = pMovieSystem->GetUser();
+
+                if (pMovieUser)
+                {
+                    m_pSequence->BeginCutScene(true);
+                }
             }
+            pMovieSystem->ResumeCutScenes();
         }
-        pMovieSystem->ResumeCutScenes();
-    }
-    else
-    {
-        IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-
-        pMovieSystem->Pause();
-
-        if (m_pSequence)
+        else
         {
-            m_pSequence->Pause();
-        }
+            pMovieSystem->Pause();
 
-        pMovieSystem->PauseCutScenes();
-        if (m_pSequence)
-        {
-            IMovieUser* pMovieUser = pMovieSystem->GetUser();
-
-            if (pMovieUser)
+            if (m_pSequence)
             {
-                m_pSequence->EndCutScene();
+                m_pSequence->Pause();
+            }
+
+            pMovieSystem->PauseCutScenes();
+            if (m_pSequence)
+            {
+                IMovieUser* pMovieUser = pMovieSystem->GetUser();
+
+                if (pMovieUser)
+                {
+                    m_pSequence->EndCutScene();
+                }
             }
         }
     }
@@ -479,11 +491,17 @@ void CAnimationContext::Update()
     // If looking through camera object and recording animation, do not allow camera shake
     if ((GetIEditor()->GetViewManager()->GetCameraObjectId() != GUID_NULL) && GetIEditor()->GetAnimation()->IsRecording())
     {
-        GetIEditor()->GetMovieSystem()->EnableCameraShake(false);
+        if (GetIEditor()->GetMovieSystem())
+        {
+            GetIEditor()->GetMovieSystem()->EnableCameraShake(false);
+        }
     }
     else
     {
-        GetIEditor()->GetMovieSystem()->EnableCameraShake(true);
+        if (GetIEditor()->GetMovieSystem())
+        {
+            GetIEditor()->GetMovieSystem()->EnableCameraShake(true);
+        }
     }
 
     if (m_paused > 0 || !(m_playing || m_bAutoRecording))
@@ -495,7 +513,10 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->StillUpdate();
+            if (GetIEditor()->GetMovieSystem())
+            {
+                GetIEditor()->GetMovieSystem()->StillUpdate();
+            }
         }
 
         return;
@@ -512,8 +533,11 @@ void CAnimationContext::Update()
 
         if (!m_recording)
         {
-            GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
-            GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
+            if (GetIEditor()->GetMovieSystem())
+            {
+                GetIEditor()->GetMovieSystem()->PreUpdate(frameDeltaTime);
+                GetIEditor()->GetMovieSystem()->PostUpdate(frameDeltaTime);
+            }
         }
     }
     else
@@ -784,7 +808,11 @@ void CAnimationContext::OnEditorNotifyEvent(EEditorNotifyEvent event)
 
 void CAnimationContext::SetRecordingInternal(bool enableRecording)
 {
-    GetIEditor()->GetMovieSystem()->SetRecording(enableRecording);
+    if (GetIEditor()->GetMovieSystem())
+    {
+        GetIEditor()->GetMovieSystem()->SetRecording(enableRecording);
+    }
+
     if (m_pSequence)
     {
         m_pSequence->SetRecording(enableRecording);

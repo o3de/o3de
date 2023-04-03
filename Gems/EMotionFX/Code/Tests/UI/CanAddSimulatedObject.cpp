@@ -19,8 +19,9 @@
 #include <EMotionFX/Source/Actor.h>
 #include <Editor/ColliderContainerWidget.h>
 #include <EMotionStudio/EMStudioSDK/Source/EMStudioManager.h>
+#include <EMotionStudio/EMStudioSDK/Source/PluginManager.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/InputDialogValidatable.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
 
@@ -28,6 +29,7 @@
 #include <Tests/TestAssetCode/ActorFactory.h>
 #include <Tests/TestAssetCode/TestActorAssets.h>
 #include <Tests/PhysicsSetupUtils.h>
+#include <Tests/UI/SkeletonOutlinerTestFixture.h>
 #include <Editor/ReselectingTreeView.h>
 
 #include <AzQtComponents/Components/Widgets/CardHeader.h>
@@ -35,7 +37,7 @@
 namespace EMotionFX
 {
     class CanAddSimulatedObjectFixture
-        : public UIFixture
+        : public SkeletonOutlinerTestFixture
     {
     public:
         void TearDown() override
@@ -65,7 +67,7 @@ namespace EMotionFX
             EMStudio::GetMainWindow()->ApplicationModeChanged("SimulatedObjects");
 
             // Find the Simulated Object Manager and its button
-            m_simulatedObjectWidget = static_cast<EMotionFX::SimulatedObjectWidget*>(EMStudio::GetPluginManager()->FindActivePlugin(EMotionFX::SimulatedObjectWidget::CLASS_ID));
+            m_simulatedObjectWidget = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SimulatedObjectWidget>();
             ASSERT_TRUE(m_simulatedObjectWidget) << "Simulated Object plugin not found!";
 
             QPushButton* addSimulatedObjectButton = m_simulatedObjectWidget->GetDockWidget()->findChild<QPushButton*>("addSimulatedObjectButton");
@@ -138,11 +140,7 @@ namespace EMotionFX
         QModelIndexList m_indexList;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
-    TEST_F(CanAddSimulatedObjectFixture, DISABLED_CanAddSimulatedObject)
-#else
     TEST_F(CanAddSimulatedObjectFixture, CanAddSimulatedObject)
-#endif // AZ_TRAIT_DISABLE_FAILED_EMOTION_FX_EDITOR_TESTS
     {
         RecordProperty("test_case_id", "C13048820");
 
@@ -386,9 +384,10 @@ namespace EMotionFX
 
         SelectIndexes(indexList, treeView, 3, 3);
 
-        QDockWidget* simulatedObjectInspectorDock = EMStudio::GetMainWindow()->findChild<QDockWidget*>("EMFX.SimulatedObjectWidget.SimulatedObjectInspectorDock");
-        ASSERT_TRUE(simulatedObjectInspectorDock);
-        QPushButton* addColliderButton = simulatedObjectInspectorDock->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
+        QDockWidget* simulatedObjectWidget =  EMStudio::GetPluginManager()->FindActivePlugin<SimulatedObjectWidget>()->GetDockWidget();
+        ASSERT_TRUE(simulatedObjectWidget);
+        QPushButton* addColliderButton =
+            simulatedObjectWidget->findChild<QPushButton*>("EMFX.SimulatedObjectColliderWidget.AddColliderButton");
         ASSERT_TRUE(addColliderButton);
         // Send the left button click directly to the button
         QTest::mouseClick(addColliderButton, Qt::LeftButton);

@@ -21,7 +21,7 @@
 namespace AZ::IO
 {
     class Streamer_SchedulerTest
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         StreamerContext* m_streamerContext{ nullptr };
@@ -32,7 +32,7 @@ namespace AZ::IO
             using ::testing::_;
             using ::testing::AnyNumber;
 
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_mock = AZStd::make_shared<StreamStackEntryMock>();
             ON_CALL(*m_mock, PrepareRequest(_)).WillByDefault([this](FileRequest* request) { m_mock->ForwardPrepareRequest(request); });
@@ -72,7 +72,7 @@ namespace AZ::IO
             }
             m_mock.reset();
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         void MockForRead()

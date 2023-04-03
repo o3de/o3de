@@ -100,6 +100,18 @@ namespace AzNetworking
         m_serializerValid = false;
     }
 
+    #if AZ_TRAIT_COMPILER_INT64_T_IS_LONG
+    inline bool ISerializer::Serialize(AZ::s64& value, const char* name, AZ::s64 minValue, AZ::s64 maxValue)
+    {
+        return Serialize(reinterpret_cast<int64_t&>(value), name, static_cast<int64_t>(minValue), static_cast<int64_t>(maxValue));
+    }
+
+    inline bool ISerializer::Serialize(AZ::u64& value, const char* name, AZ::u64 minValue, AZ::u64 maxValue)
+    {
+        return Serialize(reinterpret_cast<uint64_t&>(value), name, static_cast<uint64_t>(minValue), static_cast<uint64_t>(maxValue));
+    }
+    #endif
+
     template <typename TYPE>
     inline bool ISerializer::Serialize(TYPE& value, const char* name)
     {

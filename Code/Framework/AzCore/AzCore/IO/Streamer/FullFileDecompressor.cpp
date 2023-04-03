@@ -534,7 +534,7 @@ namespace AZ::IO
                 size_t offsetAdjustment = info.m_offset - AZ_SIZE_ALIGN_DOWN(info.m_offset, aznumeric_cast<size_t>(m_alignment));
                 size_t bufferSize = AZ_SIZE_ALIGN_UP((info.m_compressedSize + offsetAdjustment), aznumeric_cast<size_t>(m_alignment));
                 m_readBuffers[i] = reinterpret_cast<Buffer>(AZ::AllocatorInstance<AZ::SystemAllocator>::Get().Allocate(
-                    bufferSize, m_alignment, 0, "AZ::IO::Streamer FullFileDecompressor", __FILE__, __LINE__));
+                    bufferSize, m_alignment));
                 m_memoryUsage += bufferSize;
 
                 FileRequest* archiveReadRequest = m_context->GetNewInternalRequest();

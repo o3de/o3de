@@ -38,20 +38,20 @@ namespace UnitTest
     }
 
     class AllocatorsWithTraceFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::Debug::TraceMessageBus::Handler
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
         }
 
         void TearDown() override
         {
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         bool OnPrintf(const char* window, const char* message) override

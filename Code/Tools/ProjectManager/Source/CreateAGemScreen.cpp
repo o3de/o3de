@@ -12,6 +12,12 @@
 #include <PythonBindingsInterface.h>
 #include <ScreenHeaderWidget.h>
 
+#include <FormFolderBrowseEditWidget.h>
+#include <FormLineEditWidget.h>
+#include <FormLineEditTagsWidget.h>
+#include <FormOptionsWidget.h>
+#include <FormComboBoxWidget.h>
+
 #include <QApplication>
 #include <QButtonGroup>
 #include <QComboBox>
@@ -37,18 +43,9 @@ namespace O3DE::ProjectManager
         screenLayout->setSpacing(0);
         screenLayout->setContentsMargins(0, 0, 0, 0);
 
-        ScreenHeader* m_header = new ScreenHeader();
+        m_header = new ScreenHeader();
         m_header->setSubTitle(tr("Create a new gem"));
-        connect(
-            m_header->backButton(),
-            &QPushButton::clicked,
-            this,
-            [&]()
-            {
-                emit GoToPreviousScreenRequest();
-            });
         screenLayout->addWidget(m_header);
-
         
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setSpacing(0);
@@ -78,11 +75,27 @@ namespace O3DE::ProjectManager
         m_backButton->setProperty("secondary", true);
         m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
 
-        connect(m_backButton, &QPushButton::clicked, this, &CreateGem::HandleBackButton);
-        connect(m_nextButton, &QPushButton::clicked, this, &CreateGem::HandleNextButton);
-
         setObjectName("createAGemBody");
         setLayout(screenLayout);
+
+        m_gemActionString = tr("Create");
+        m_indexBackLimit = GemTemplateSelectionScreen;
+    }
+
+    void CreateGem::Init()
+    {
+        //hookup connections
+        connect(
+            m_header->backButton(),
+            &QPushButton::clicked,
+            this,
+            [&]()
+            {
+                emit GoToPreviousScreenRequest();
+            });
+        
+        connect(m_backButton, &QPushButton::clicked, this, &CreateGem::HandleBackButton);
+        connect(m_nextButton, &QPushButton::clicked, this, &CreateGem::HandleNextButton);
     }
 
     QFrame* CreateGem::CreateTabButtonsFrame()
@@ -130,13 +143,13 @@ namespace O3DE::ProjectManager
     {
         m_stackWidget->setCurrentIndex(GemDetailsScreen);
         m_nextButton->setText(tr("Next"));
-        m_backButton->setVisible(true);
+        m_backButton->setVisible(m_stackWidget->currentIndex() != m_indexBackLimit);
     }
 
     void CreateGem::HandleGemCreatorDetailsTab()
     {
         m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
-        m_nextButton->setText(tr("Create"));
+        m_nextButton->setText(m_gemActionString);
         m_backButton->setVisible(true);
     }
 
@@ -212,6 +225,7 @@ namespace O3DE::ProjectManager
         gemSetupLayout->addWidget(rightPaneSubheader);
 
         LoadButtonsFromGemTemplatePaths(gemSetupLayout);
+
         m_formFolderRadioButton = new QRadioButton("Choose existing template");
         m_formFolderRadioButton->setObjectName("createAGem");
         m_radioButtonGroup->addButton(m_formFolderRadioButton);
@@ -220,6 +234,11 @@ namespace O3DE::ProjectManager
         m_gemTemplateLocation->setObjectName("createAGemRadioButtonSubFormField");
         gemSetupLayout->addWidget(m_formFolderRadioButton);
         gemSetupLayout->addWidget(m_gemTemplateLocation);
+        m_gemTemplateLocation->setEnabled(false);
+
+        connect(m_formFolderRadioButton, &QRadioButton::toggled, this, [=](bool checked){
+            m_gemTemplateLocation->setEnabled(checked);
+        });
 
         return gemSetupScrollArea;
     }
@@ -261,6 +280,21 @@ namespace O3DE::ProjectManager
 
         m_requirements = new FormLineEditWidget(tr("Requirements"), "", tr("Notice of any requirements your Gem. i.e. This requires X other gem"), "");
         gemDetailsLayout->addWidget(m_requirements);
+
+        QStringList platformOptions;
+        
+        //input the platform list in reverse alphabetical order
+        for(int i = GemInfo::NumPlatforms-1; i >= 0; i--)
+        {
+            const GemInfo::Platform platform = static_cast<GemInfo::Platform>(1 << i);
+            if(platform & m_platformSupportMask)
+            {
+                platformOptions << GemInfo::GetPlatformString(platform);
+            }
+        }
+
+        m_platformOptions = new FormOptionsWidget(tr("Target Platform(s)"), platformOptions, tr("All Platforms"), s_platformOptionItemSpacing);
+        gemDetailsLayout->addWidget(m_platformOptions);
 
         m_license = new FormLineEditWidget(
             tr("License*"), "", tr("License uses goes here: i.e. Apache-2.0 or MIT"), tr("License details are required."));
@@ -352,6 +386,11 @@ namespace O3DE::ProjectManager
         return gemSystemNameIsValid;
     }
 
+    bool CreateGem::ValidateGemLocation(const QDir& chosenGemLocation) const
+    {
+        return !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
+    }
+
     bool CreateGem::ValidateGemPath()
     {
         // This first isEmpty check is to check that the input field is not empty. If it is QDir will use the current
@@ -363,8 +402,9 @@ namespace O3DE::ProjectManager
         }
 
         QDir chosenGemLocation = QDir(m_gemLocation->lineEdit()->text());
+        
+        bool locationValid = ValidateGemLocation(chosenGemLocation);
 
-        bool locationValid = !chosenGemLocation.exists() || chosenGemLocation.isEmpty();
         m_gemLocation->setErrorLabelVisible(!locationValid);
         return locationValid;
     }
@@ -391,7 +431,7 @@ namespace O3DE::ProjectManager
 
     void CreateGem::HandleBackButton()
     {
-        if (m_stackWidget->currentIndex() > 0)
+        if (m_stackWidget->currentIndex() > m_indexBackLimit)
         {
             const int newIndex = m_stackWidget->currentIndex() - 1;
             m_stackWidget->setCurrentIndex(newIndex);
@@ -406,7 +446,7 @@ namespace O3DE::ProjectManager
             }
         }
 
-        if (m_stackWidget->currentIndex() == 0)
+        if (m_stackWidget->currentIndex() == m_indexBackLimit)
         {
             m_backButton->setVisible(false);
         }
@@ -414,73 +454,152 @@ namespace O3DE::ProjectManager
         m_nextButton->setText(tr("Next"));
     }
 
+    void CreateGem::ProceedToGemDetailsPage()
+    {
+        m_backButton->setVisible(true);
+        m_stackWidget->setCurrentIndex(GemDetailsScreen);
+        m_gemDetailsTab->setEnabled(true);
+        m_gemDetailsTab->setChecked(true);
+    }
+
+    void CreateGem::ProceedToGemCreatorDetailsPage()
+    {
+        bool gemNameValid = ValidateGemName();
+        bool gemDisplayNameValid = ValidateGemDisplayName();
+        bool licenseValid = ValidateFormNotEmpty(m_license);
+        bool gemPathValid = ValidateGemPath();
+        bool canProceedToDetailsPage = gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid; 
+        
+        if (canProceedToDetailsPage)
+        {
+            m_gemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
+            m_gemInfo.m_name = m_gemName->lineEdit()->text();
+            m_gemInfo.m_summary = m_gemSummary->lineEdit()->text();
+            m_gemInfo.m_requirement = m_requirements->lineEdit()->text();
+            m_gemInfo.m_platforms = GemInfo::GetPlatformsFromStringList(m_platformOptions->GetOptions());
+            m_gemInfo.m_licenseText = m_license->lineEdit()->text();
+            m_gemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
+            m_gemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
+            m_gemInfo.m_path = m_gemLocation->lineEdit()->text();
+            m_gemInfo.m_features = m_userDefinedGemTags->getTags();
+
+            m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
+            
+            m_gemCreatorDetailsTab->setEnabled(true);
+            m_gemCreatorDetailsTab->setChecked(true);
+
+            m_nextButton->setText(m_gemActionString);
+            
+            m_backButton->setVisible(true);
+        }
+    }
+
+    //here we handle the actual gem creation logic
+    void CreateGem::GemAction()
+    {
+        QString templateLocation;
+        if (m_formFolderRadioButton->isChecked())
+        {
+            templateLocation = m_gemTemplateLocation->lineEdit()->text();
+        }
+        else
+        {
+            const int templateID = m_radioButtonGroup->checkedId();
+            templateLocation = m_gemTemplates[templateID].m_path;
+        }
+
+        auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_gemInfo);
+        if (result.IsSuccess())
+        {
+            ClearFields();
+            SetupCreateWorkflow();
+            emit GemCreated(result.GetValue<GemInfo>());
+            emit GoToPreviousScreenRequest();
+        }
+        else
+        {
+            QMessageBox::critical(
+                this,
+                tr("Failed to create gem"),
+                tr("The gem failed to be created"));
+        }
+    }
+
+    void CreateGem::ProceedToGemAction()
+    {
+        bool originIsValid = ValidateFormNotEmpty(m_origin);
+        bool repoURLIsValid = ValidateRepositoryURL();
+        if (originIsValid && repoURLIsValid)
+        {
+            m_gemInfo.m_origin = m_origin->lineEdit()->text();
+            m_gemInfo.m_originURL = m_originURL->lineEdit()->text();
+            m_gemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
+            
+
+            GemAction();
+        }
+    }
+
     void CreateGem::HandleNextButton()
     {
         if (m_stackWidget->currentIndex() == GemTemplateSelectionScreen && ValidateGemTemplateLocation())
         {
-            m_backButton->setVisible(true);
-            m_stackWidget->setCurrentIndex(GemDetailsScreen);
-            m_gemDetailsTab->setEnabled(true);
-            m_gemDetailsTab->setChecked(true);
+            ProceedToGemDetailsPage();
         }
         else if (m_stackWidget->currentIndex() == GemDetailsScreen)
         {
-            bool gemNameValid = ValidateGemName();
-            bool gemDisplayNameValid = ValidateGemDisplayName();
-            bool licenseValid = ValidateFormNotEmpty(m_license);
-            bool gemPathValid = ValidateGemPath();
-            if (gemNameValid && gemDisplayNameValid && licenseValid && gemPathValid)
-            {
-                m_createGemInfo.m_displayName = m_gemDisplayName->lineEdit()->text();
-                m_createGemInfo.m_name = m_gemName->lineEdit()->text();
-                m_createGemInfo.m_summary = m_gemSummary->lineEdit()->text();
-                m_createGemInfo.m_requirement = m_requirements->lineEdit()->text();
-                m_createGemInfo.m_licenseText = m_license->lineEdit()->text();
-                m_createGemInfo.m_licenseLink = m_licenseURL->lineEdit()->text();
-                m_createGemInfo.m_documentationLink = m_documentationURL->lineEdit()->text();
-                m_createGemInfo.m_path = m_gemLocation->lineEdit()->text();
-                m_createGemInfo.m_features = m_userDefinedGemTags->getTags();
-
-                m_stackWidget->setCurrentIndex(GemCreatorDetailsScreen);
-                m_nextButton->setText(tr("Create"));
-                m_gemCreatorDetailsTab->setEnabled(true);
-                m_gemCreatorDetailsTab->setChecked(true);
-            }
+            ProceedToGemCreatorDetailsPage();
         }
         else if (m_stackWidget->currentIndex() == GemCreatorDetailsScreen)
         {
-            bool originIsValid = ValidateFormNotEmpty(m_origin);
-            bool repoURLIsValid = ValidateRepositoryURL();
-            if (originIsValid && repoURLIsValid)
-            {
-                m_createGemInfo.m_origin = m_origin->lineEdit()->text();
-                m_createGemInfo.m_originURL = m_originURL->lineEdit()->text();
-                m_createGemInfo.m_repoUri = m_repositoryURL->lineEdit()->text();
-                QString templateLocation;
-                if (m_formFolderRadioButton->isChecked())
-                {
-                    templateLocation = m_gemTemplateLocation->lineEdit()->text();
-                }
-                else
-                {
-                    int templateID = m_radioButtonGroup->checkedId();
-                    templateLocation = m_gemTemplates[templateID].m_path;
-                }
-                auto result = PythonBindingsInterface::Get()->CreateGem(templateLocation, m_createGemInfo);
-                if (result.IsSuccess())
-                {
-                    emit GemCreated(result.GetValue<GemInfo>());
-                    emit GoToPreviousScreenRequest();
-                }
-                else
-                {
-                    QMessageBox::critical(
-                        this,
-                        tr("Failed to create gem"),
-                        tr("The gem failed to be created"));
-                }
-            }
+            ProceedToGemAction();
         }
+    }
+
+    //this ignores the templates page
+    void CreateGem::ClearFields()
+    {
+        //details page
+        m_gemDisplayName->lineEdit()->clear();
+        m_gemDisplayName->setErrorLabelVisible(false);
+        
+        m_gemName->lineEdit()->clear();
+        m_gemName->setErrorLabelVisible(false);
+        
+        m_gemSummary->lineEdit()->clear();
+        m_requirements->lineEdit()->clear();
+        
+        m_platformOptions->Clear();
+        m_gemInfo.m_platforms = GemInfo::Platforms();
+
+        m_license->lineEdit()->clear();
+        m_license->setErrorLabelVisible(false);
+        
+        m_licenseURL->lineEdit()->clear();
+        m_documentationURL->lineEdit()->clear();
+        
+        m_gemLocation->lineEdit()->clear();
+        m_gemLocation->setErrorLabelVisible(false);
+        
+        m_gemIconPath->lineEdit()->clear();
+        m_userDefinedGemTags->clear();
+
+        //creator details page
+        m_origin->lineEdit()->clear();
+        m_origin->setErrorLabelVisible(false);
+        
+        m_originURL->lineEdit()->clear();
+        m_repositoryURL->lineEdit()->clear();
+    }
+
+    void CreateGem::SetupCreateWorkflow()
+    {
+        m_gemTemplateSelectionTab->setChecked(true);
+        m_gemDetailsTab->setEnabled(false);
+        m_gemCreatorDetailsTab->setEnabled(false);
+        m_stackWidget->setCurrentIndex(GemTemplateSelectionScreen);
+        m_nextButton->setText(tr("Next"));
+        m_backButton->setVisible(false);
     }
 
 } // namespace O3DE::ProjectManager

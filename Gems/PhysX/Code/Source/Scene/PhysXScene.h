@@ -28,7 +28,7 @@ namespace physx
 namespace PhysX
 {
     //! PhysX implementation of the AzPhysics::Scene.
-    class PhysXScene
+    class PhysXScene final
         : public AzPhysics::Scene
     {
     public:
@@ -58,6 +58,8 @@ namespace PhysX
         AzPhysics::Joint* GetJointFromHandle(AzPhysics::JointHandle jointHandle) override;
         void RemoveJoint(AzPhysics::JointHandle jointHandle) override;
         AzPhysics::SceneQueryHits QueryScene(const AzPhysics::SceneQueryRequest* request) override;
+        bool QueryScene(const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQueryHits& result) override;
+
         AzPhysics::SceneQueryHitsList QuerySceneBatch(const AzPhysics::SceneQueryRequests& requests) override;
         [[nodiscard]] bool QuerySceneAsync(AzPhysics::SceneQuery::AsyncRequestId requestId,
             const AzPhysics::SceneQueryRequest* request, AzPhysics::SceneQuery::AsyncCallback callback) override;
@@ -79,7 +81,28 @@ namespace PhysX
 
         physx::PxControllerManager* GetOrCreateControllerManager();
 
+        //! Apply batched transform sync events for the current simulation pass. 
+        //! This will clear the batched data for the next simulation pass.
+        void FlushTransformSync();
+        
     private:
+
+        //! Data structure for efficient unique vector functionality.
+        //! Body indices are inserted avoiding duplicated data and stored in a vector for efficient iteration.
+        class QueuedActiveBodyIndices
+        {
+        public:
+            void Insert(AzPhysics::SimulatedBodyIndex bodyIndex);
+            void IncreaseCapacity(size_t extraSize);
+            void Clear();
+            void Apply(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction);
+            void ApplyParallel(const AZStd::function<void(AzPhysics::SimulatedBodyIndex)>& applyFunction, physx::PxScene* pxScene);
+
+        private:
+            AZStd::unordered_set<AzPhysics::SimulatedBodyIndex> m_uniqueIndices;
+            AZStd::vector<AzPhysics::SimulatedBodyIndex> m_packedIndices;
+        };
+
         void EnableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
         void DisableSimulationOfBodyInternal(AzPhysics::SimulatedBody& body);
 
@@ -93,11 +116,24 @@ namespace PhysX
         void SyncActiveBodyTransform(const AzPhysics::SimulatedBodyHandleList& activeBodyHandles);
 
         bool m_isEnabled = true;
+
+        // Batch transform sync data. Here we store the indices of actors that have moved since the last simulation pass.
+        // After the full simulation pass (possibly made of multiple simulation sub-steps) is complete,
+        // we send the transform sync event once.
+        QueuedActiveBodyIndices m_queuedActiveBodyIndices;
+
+        // Accumulated delta time over multiple simulation sub-steps.
+        // When we run the batched transform sync, the accumulated simulation time is provided
+        // to tell how much time was simulated in this full pass.
+        float m_accumulatedDeltaTime = 0.0f;
+
         AzPhysics::SceneConfiguration m_config;
         AzPhysics::SceneHandle m_sceneHandle;
+
+        // Delta time for the current simulation sub-step
         float m_currentDeltaTime = 0.0f;
 
-        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies; //this will become a SimulatedBody with LYN-1334
+        AZStd::vector<AZStd::pair<AZ::Crc32, AzPhysics::SimulatedBody*>> m_simulatedBodies;
         AZStd::vector<AzPhysics::SimulatedBody*> m_deferredDeletions;
         AZStd::queue<AzPhysics::SimulatedBodyIndex> m_freeSceneSlots;
 
@@ -110,9 +146,9 @@ namespace PhysX
         static thread_local AZStd::vector<physx::PxRaycastHit> s_rayCastBuffer; //!< thread local structure to hold hits for a single raycast or shapecast.
         static thread_local AZStd::vector<physx::PxSweepHit> s_sweepBuffer; //!< thread local structure to hold hits for a single shapecast.
         static thread_local AZStd::vector<physx::PxOverlapHit> s_overlapBuffer; //!< thread local structure to hold hits for a single overlap query.
-        AZ::u64 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
-        AZ::u64 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
-        AZ::u64 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
+        AZ::u32 m_raycastBufferSize = 32; //!< Maximum number of hits that will be returned from a raycast.
+        AZ::u32 m_shapecastBufferSize = 32; //!< Maximum number of hits that can be returned from a shapecast.
+        AZ::u32 m_overlapBufferSize = 32; //!< Maximum number of overlaps that can be returned from an overlap query.
 
         SceneSimulationFilterCallback m_collisionFilterCallback; //!< Handles the filtering of collision pairs reported from PhysX.
         SceneSimulationEventCallback m_simulationEventCallback; //!< Handles the collision and trigger events reported from PhysX.

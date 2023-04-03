@@ -12,7 +12,6 @@
 #pragma once
 
 #include "ISystem.h"
-#include <CryCommon/CryLegacyAllocator.h>
 #include <StlUtils.h>
 
 //TODO: Pull most of this into a cpp file!
@@ -112,7 +111,7 @@ public:
         {
             BLOCK* temp = pBlock->next;
             g_nTotalAllocInXmlStringPools -= (offsetof(BLOCK, s) + pBlock->size * sizeof(char));
-            CryModuleFree(pBlock);
+            azfree(pBlock);
             pBlock = temp;
         }
         pBlock = m_free_blocks;
@@ -120,7 +119,7 @@ public:
         {
             BLOCK* temp = pBlock->next;
             g_nTotalAllocInXmlStringPools -= (offsetof(BLOCK, s) + pBlock->size * sizeof(char));
-            CryModuleFree(pBlock);
+            azfree(pBlock);
             pBlock = temp;
         }
         m_blocks = 0;
@@ -304,7 +303,7 @@ private:
         size_t nMallocSize = offsetof(BLOCK, s) + blockSize * sizeof(char);
         g_nTotalAllocInXmlStringPools += nMallocSize;
 
-        BLOCK* pBlock = (BLOCK*)CryModuleMalloc(nMallocSize);
+        BLOCK* pBlock = (BLOCK*)azmalloc(nMallocSize);
         ;
         assert(pBlock);
         pBlock->size = blockSize;
@@ -334,7 +333,7 @@ private:
         g_nTotalAllocInXmlStringPools += nMallocSize;
 
 
-        BLOCK* pBlock = (BLOCK*)CryModuleRealloc(pThisBlock, nMallocSize);
+        BLOCK* pBlock = (BLOCK*)azrealloc(pThisBlock, nMallocSize);
         assert(pBlock);
         pBlock->size = blockSize;
         pBlock->next = m_blocks;

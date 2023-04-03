@@ -1265,6 +1265,16 @@ namespace AzQtComponents
 
         QProxyStyle::unpolish(widget);
     }
+    
+    void Style::polish(QPalette& palette)
+    {
+        QProxyStyle::polish(palette);
+    }
+    
+    void Style::unpolish(QApplication* application)
+    {
+        QProxyStyle::unpolish(application);
+    }
 
     QPalette Style::standardPalette() const
     {
@@ -1349,7 +1359,7 @@ namespace AzQtComponents
         const auto borderAdjustment = borderRadius - borderWidth;
         QPainterPath pathRect;
 
-        if (borderRadius != CORNER_RECTANGLE)
+        if (borderRadius != BorderStyle::CORNER_RECTANGLE)
         {
             const auto radius = borderRadius + borderWidth;
             pathRect.addRoundedRect(contentsRect.adjusted(borderAdjustment,
@@ -1373,7 +1383,7 @@ namespace AzQtComponents
     {
         QPainterPath pathRect;
 
-        if (borderRadius != CORNER_RECTANGLE)
+        if (borderRadius != BorderStyle::CORNER_RECTANGLE)
         {
             pathRect.addRoundedRect(contentsRect.adjusted(borderWidth,
                                         borderWidth,

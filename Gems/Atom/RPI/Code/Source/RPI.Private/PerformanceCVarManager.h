@@ -20,6 +20,8 @@ namespace AZ
 
     namespace RPI
     {
+        class GpuPassProfiler;
+
         // A simple helper function.
         AZ::Debug::PerformanceCollector::DataLogType GetDataLogTypeFromCVar(const AZ::CVarFixedString& newCaptureType);
 
@@ -28,7 +30,7 @@ namespace AZ
         class IPerformanceCollectorOwner
         {
         public:
-            AZ_CLASS_ALLOCATOR(IPerformanceCollectorOwner, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(IPerformanceCollectorOwner, AZ::SystemAllocator);
             AZ_RTTI(IPerformanceCollectorOwner, "{D157F48E-8D9C-4F4F-93CE-961860371965}");
 
             IPerformanceCollectorOwner() = default;
@@ -37,6 +39,7 @@ namespace AZ
         protected:
             friend class PerformanceCvarManager;
             virtual AZ::Debug::PerformanceCollector* GetPerformanceCollector() { return nullptr; }
+            virtual GpuPassProfiler* GetGpuPassProfiler() { return nullptr;  }
         };
         using PerformanceCollectorOwner = AZ::Interface<IPerformanceCollectorOwner>;
 

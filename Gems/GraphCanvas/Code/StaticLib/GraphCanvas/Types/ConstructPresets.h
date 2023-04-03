@@ -23,7 +23,7 @@ namespace GraphCanvas
         friend class ConstructTypePresetBucket;
     public:
         AZ_RTTI(ConstructPreset, "{91FAF8E9-6EE9-4C75-B33F-5BA3B4A2066E}");
-        AZ_CLASS_ALLOCATOR(ConstructPreset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstructPreset, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* reflectContext);
 
@@ -55,7 +55,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(CommentPreset, "{7C2F56BB-6515-4F0F-BBDA-C4C6DBF2453F}", ConstructPreset);
-        AZ_CLASS_ALLOCATOR(CommentPreset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentPreset, AZ::SystemAllocator);
 
         CommentPreset() = default;
         ~CommentPreset() override = default;
@@ -69,7 +69,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(NodeGroupPreset, "{15958013-653B-4CA2-8FC9-5DEC48FFDFA4}", ConstructPreset);
-        AZ_CLASS_ALLOCATOR(NodeGroupPreset, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupPreset, AZ::SystemAllocator);
 
         NodeGroupPreset() = default;
         ~NodeGroupPreset() override = default;
@@ -91,7 +91,7 @@ namespace GraphCanvas
 
     public:
         AZ_RTTI(ConstructTypePresetBucket, "{D6C8F55A-E0C3-4460-8BE2-773AB5BE6F2D}");
-        AZ_CLASS_ALLOCATOR(ConstructTypePresetBucket, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstructTypePresetBucket, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
 
@@ -143,7 +143,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(CommentPresetBucket, "{B0765DB2-1EC0-4C18-810F-2F01AF9E4984}", ConstructTypePresetBucket);
-        AZ_CLASS_ALLOCATOR(CommentPresetBucket, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CommentPresetBucket, AZ::SystemAllocator);
 
         CommentPresetBucket() = default;
         ~CommentPresetBucket() override = default;
@@ -166,7 +166,7 @@ namespace GraphCanvas
     {
     public:
         AZ_RTTI(NodeGroupPresetBucket, "{1ED223B3-7E1F-418E-9DBF-EB345FCD1333}", ConstructTypePresetBucket);
-        AZ_CLASS_ALLOCATOR(NodeGroupPresetBucket, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(NodeGroupPresetBucket, AZ::SystemAllocator);
 
         NodeGroupPresetBucket() = default;
         ~NodeGroupPresetBucket() override = default;
@@ -189,7 +189,7 @@ namespace GraphCanvas
     {
     public:
 
-        AZ_CLASS_ALLOCATOR(EditorConstructPresets, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorConstructPresets, AZ::SystemAllocator);
         AZ_RTTI(EditorConstructPresets, "{3A975CAB-5CD8-4496-8B1F-092952B37953}");
 
         static void Reflect(AZ::ReflectContext* reflectContext);
@@ -230,7 +230,7 @@ namespace GraphCanvas
 
     protected:
 
-        ConstructTypePresetBucket* ModPresetBuckket(ConstructType presets);
+        ConstructTypePresetBucket* ModPresetBucket(ConstructType presets);
 
     private:
 

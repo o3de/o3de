@@ -91,6 +91,30 @@ namespace UnitTest
     {
         return SuppressExpectedErrors(window, message);
     }
+
+    void RegistryTestHelper::SetUp(AZStd::string_view path, bool value)
+    {
+        m_oldSettingsRegistry = AZ::SettingsRegistry::Get();
+        if (m_oldSettingsRegistry)
+        {
+            AZ::SettingsRegistry::Unregister(m_oldSettingsRegistry);
+        }
+
+        m_settingsRegistry = AZStd::make_unique<AZ::SettingsRegistryImpl>();
+        m_settingsRegistry->Set(path, value);
+        AZ::SettingsRegistry::Register(m_settingsRegistry.get());
+    }
+
+    void RegistryTestHelper::TearDown()
+    {
+        AZ::SettingsRegistry::Unregister(m_settingsRegistry.get());
+        if (m_oldSettingsRegistry)
+        {
+            AZ::SettingsRegistry::Register(m_oldSettingsRegistry);
+            m_oldSettingsRegistry = nullptr;
+        }
+        m_settingsRegistry.reset();
+    }
 }
 
 namespace AZ

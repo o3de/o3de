@@ -41,12 +41,12 @@ namespace UnitTest
     }
 
     class ScriptMathTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             behavior = aznew BehaviorContext();
             behavior->Method("AZTestAssert", &AZTestAssert);
@@ -64,7 +64,7 @@ namespace UnitTest
             delete script;
             delete behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* behavior = nullptr;

@@ -1,28 +1,27 @@
 {
-    "Source" : "INSERT_AZSL_HERE",
+    "Source": "TEMPLATE_AZSL_PATH",
 
-    "DepthStencilState" : { 
-        "Depth" : { "Enable" : true, "CompareFunc" : "LessEqual" }
+    "DepthStencilState": {
+        "Depth": { "Enable": true, "CompareFunc": "LessEqual" }
     },
-
-    "DrawList" : "shadow",
 
     // Note that lights now expose their own bias controls.
     // It may be worth increasing their default values in the future and reducing the depthBias values encoded here.
-    "RasterState" :
-    {
-        "depthBias" : "10",
-        "depthBiasSlopeScale" : "4"        
+    "RasterState": {
+        "depthBias": "10",
+        "depthBiasSlopeScale": "4"
+    },
+    
+    "Definitions" : ["SHADOWMAP=1"],
+
+    "ProgramSettings": {
+        "EntryPoints": [
+            {
+                "name": "VertexShader",
+                "type": "Vertex"
+            }
+        ]
     },
 
-    "ProgramSettings":
-    {
-      "EntryPoints":
-      [
-        {
-          "name": "MainVS",
-          "type": "Vertex"
-        }
-      ]
-    }
+    "DrawList": "shadow"
 }

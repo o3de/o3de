@@ -96,7 +96,7 @@ namespace UnitTest
 
     // Fixture for testing the viewport editor mode state tracker
     class ViewportEditorModeTrackerTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         ViewportEditorModeTracker m_viewportEditorModeTracker;
@@ -179,7 +179,7 @@ namespace UnitTest
 
     // Fixture for testing the integration of viewport editor mode state tracker
     class ViewportEditorModeTrackerIntegrationTestFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override
@@ -609,7 +609,7 @@ namespace UnitTest
         ExpectOnlyModeActive(*m_viewportEditorModes, ViewportEditorMode::Default);
     }
 
-    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndPickActive)
+    TEST_F(ViewportEditorModeTrackerIntegrationTestFixture, EnteringFocusModeAfterInitialStateHasViewportEditorModeDefaultAndFocusActive)
     {
         // When entering focus mode
         m_focusModeInterface->SetFocusRoot(AZ::EntityId{ 1 });

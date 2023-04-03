@@ -34,6 +34,7 @@ set(FILES
     Include/Atom/Feature/PostProcessing/SMAAFeatureProcessorInterface.h
     Include/Atom/Feature/PostProcess/PostFxLayerCategoriesConstants.h
     Include/Atom/Feature/ReflectionProbe/ReflectionProbeFeatureProcessorInterface.h
+    Include/Atom/Feature/SpecularReflections/SpecularReflectionsFeatureProcessorInterface.h
     Include/Atom/Feature/SkyBox/SkyBoxFogBus.h
     Include/Atom/Feature/SkyBox/SkyboxConstants.h
     Include/Atom/Feature/SkyBox/SkyBoxLUT.h
@@ -151,13 +152,17 @@ set(FILES
     Source/Material/Transform2DFunctor.h
     Source/Material/UseTextureFunctor.cpp
     Source/Material/UseTextureFunctor.h
-    Source/Material/DrawListFunctor.cpp
-    Source/Material/DrawListFunctor.h
     Source/Math/GaussianMathFilter.h
     Source/Math/GaussianMathFilter.cpp
     Source/Math/MathFilter.h
     Source/Math/MathFilter.cpp
     Source/Math/MathFilterDescriptor.h
+    Source/Mesh/MeshInstanceGroupKey.cpp
+    Source/Mesh/MeshInstanceGroupKey.h
+    Source/Mesh/MeshInstanceGroupList.cpp
+    Source/Mesh/MeshInstanceGroupList.h
+    Source/Mesh/MeshInstanceManager.cpp
+    Source/Mesh/MeshInstanceManager.h
     Source/Mesh/MeshFeatureProcessor.cpp
     Source/Mesh/ModelReloader.cpp
     Source/Mesh/ModelReloader.h
@@ -269,12 +274,18 @@ set(FILES
     Source/ReflectionProbe/ReflectionProbeFeatureProcessor.cpp
     Source/ReflectionProbe/ReflectionProbe.h
     Source/ReflectionProbe/ReflectionProbe.cpp
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.h
+    Source/SpecularReflections/SpecularReflectionsFeatureProcessor.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpacePass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpacePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceTracePass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceBlurChildPass.h
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.cpp
+    Source/ReflectionScreenSpace/ReflectionScreenSpaceFilterPass.h
     Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.cpp
     Source/ReflectionScreenSpace/ReflectionScreenSpaceCompositePass.h
     Source/ReflectionScreenSpace/ReflectionCopyFrameBufferPass.cpp
@@ -315,6 +326,10 @@ set(FILES
     Source/SkyAtmosphere/SkyAtmosphereParentPass.h
     Source/SkyAtmosphere/SkyAtmospherePass.cpp
     Source/SkyAtmosphere/SkyAtmospherePass.h
+    Source/SplashScreen/SplashScreenFeatureProcessor.cpp
+    Source/SplashScreen/SplashScreenFeatureProcessor.h
+    Source/SplashScreen/SplashScreenPass.cpp
+    Source/SplashScreen/SplashScreenPass.h
     Source/TransformService/TransformServiceFeatureProcessor.cpp
     Source/Utils/GpuBufferHandler.cpp
 )

@@ -18,7 +18,7 @@ namespace AZ
             : public RHI::PipelineLibrary
         {
         public:
-            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PipelineLibrary, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(PipelineLibrary);
 
             static RHI::Ptr<PipelineLibrary> Create();

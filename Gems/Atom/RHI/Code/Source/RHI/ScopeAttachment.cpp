@@ -142,6 +142,15 @@ namespace AZ
             case ScopeAttachmentUsage::InputAssembly:
                 return "InputAssembly";
 
+            case ScopeAttachmentUsage::ShadingRate:
+                return "ShadingRate";
+
+            case ScopeAttachmentUsage::Resolve:
+                return "Resolve";
+
+            case ScopeAttachmentUsage::Indirect:
+                return "Indirect";
+
             case ScopeAttachmentUsage::Uninitialized:
                 return "Uninitialized";
             }
@@ -218,6 +227,7 @@ namespace AZ
                     case ScopeAttachmentUsage::Predication:
                     case ScopeAttachmentUsage::Resolve:
                     case ScopeAttachmentUsage::InputAssembly:
+                    case ScopeAttachmentUsage::ShadingRate:
                         AZ_Assert(false, "ScopeAttachmentUsage::DepthStencil usage mixed with ScopeAttachmentUsage::%s for resource %s", GetTypeName(usageAndAccess), GetFrameAttachment().GetId().GetCStr());
                         break;
                     }
@@ -248,6 +258,7 @@ namespace AZ
                     case ScopeAttachmentUsage::Predication:
                     case ScopeAttachmentUsage::SubpassInput:
                     case ScopeAttachmentUsage::InputAssembly:
+                    case ScopeAttachmentUsage::ShadingRate:
                         AZ_Assert(false, "ScopeAttachmentUsage::Resolve usage mixed with ScopeAttachmentUsage::%s for resource %s", GetTypeName(usageAndAccess), GetFrameAttachment().GetId().GetCStr());
                         break;
                     }
@@ -266,6 +277,7 @@ namespace AZ
                     case ScopeAttachmentUsage::Resolve:
                     case ScopeAttachmentUsage::SubpassInput:
                     case ScopeAttachmentUsage::InputAssembly:
+                    case ScopeAttachmentUsage::ShadingRate:
                         AZ_Assert(false, "ScopeAttachmentUsage::Predication usage mixed with ScopeAttachmentUsage::%s for resource %s", GetTypeName(usageAndAccess), GetFrameAttachment().GetId().GetCStr());
                         break;
                     }
@@ -290,6 +302,23 @@ namespace AZ
                 case ScopeAttachmentUsage::InputAssembly:
                 {
                     AZ_Assert(false, "ScopeAttachmentUsage::InputAssembly usage mixed with ScopeAttachmentUsage::%s for resource %s", GetTypeName(usageAndAccess), GetFrameAttachment().GetId().GetCStr());
+                    break;
+                }
+                case ScopeAttachmentUsage::ShadingRate:
+                {
+                    switch (usageAndAccess.m_usage)
+                    {
+                    case ScopeAttachmentUsage::Resolve:
+                    case ScopeAttachmentUsage::Predication:
+                    case ScopeAttachmentUsage::InputAssembly:
+                    case ScopeAttachmentUsage::Indirect:
+                        AZ_Assert(
+                            false,
+                            "ScopeAttachmentUsage::ShadingRate usage mixed with ScopeAttachmentUsage::%s for resource %s",
+                            GetTypeName(usageAndAccess),
+                            GetFrameAttachment().GetId().GetCStr());
+                        break;
+                    }
                     break;
                 }
                 }

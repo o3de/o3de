@@ -87,6 +87,7 @@ ly_add_target(
 # use the above WhiteBox module in runtimes:
 ly_create_alias(NAME WhiteBox.Clients  NAMESPACE Gem TARGETS Gem::WhiteBox)
 ly_create_alias(NAME WhiteBox.Servers  NAMESPACE Gem TARGETS Gem::WhiteBox)
+ly_create_alias(NAME WhiteBox.Unified  NAMESPACE Gem TARGETS Gem::WhiteBox)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -162,6 +163,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::WhiteBox.Tests
+        LABELS REQUIRES_tiaf
     )
 
     if (PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -205,6 +207,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
         ly_add_googletest(
             NAME Gem::WhiteBox.Editor.Physics.Tests
+            LABELS REQUIRES_tiaf
         )
 
     endif()

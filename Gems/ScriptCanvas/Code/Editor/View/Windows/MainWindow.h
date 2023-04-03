@@ -96,6 +96,7 @@ namespace ScriptCanvasEditor
         , private UpgradeNotificationsBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptCanvasAssetBrowserModel, AZ::SystemAllocator);
 
         explicit ScriptCanvasAssetBrowserModel(QObject* parent = nullptr)
             : AzToolsFramework::AssetBrowser::AssetBrowserFilterModel(parent)
@@ -388,14 +389,6 @@ namespace ScriptCanvasEditor
         void OnViewStatisticsPanel();
         void OnViewPresetsEditor();
         void OnRestoreDefaultLayout();
-
-        // ScriptEvent Extension Actions
-        void OnScriptEventAddHelpers();
-        void OnScriptEventClearStatus();
-        void OnScriptEventMenuPreShow();
-        void OnScriptEventOpen();
-        void OnScriptEventParseAs();
-        void OnScriptEventSaveAs();
 
         void UpdateViewMenu();
         /////////////////////////////////////////////////////////////////////////////////////////////
@@ -765,7 +758,7 @@ namespace ScriptCanvasEditor
         AZStd::unique_ptr<VersionExplorer::FileSaver> m_fileSaver;
         VersionExplorer::FileSaveResult m_fileSaveResult;
         void OnSaveCallBack(const VersionExplorer::FileSaveResult& result);
-
+        SourceHandle OnSaveComplete(const SourceHandle& sourceHandle, const VersionExplorer::FileSaveResult& result);
         void ClearStaleSaves();
         bool IsRecentSave(const SourceHandle& handle) const;
         void MarkRecentSave(const SourceHandle& handle);

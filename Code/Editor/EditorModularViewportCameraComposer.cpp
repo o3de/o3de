@@ -192,7 +192,7 @@ namespace SandboxEditor
 
         m_firstPersonPanCamera->m_panSpeedFn = []
         {
-            return SandboxEditor::CameraPanSpeed();
+            return SandboxEditor::CameraPanSpeedScaled();
         };
 
         m_firstPersonPanCamera->m_invertPanXFn = []
@@ -212,7 +212,7 @@ namespace SandboxEditor
 
         m_firstPersonTranslateCamera->m_translateSpeedFn = []
         {
-            return SandboxEditor::CameraTranslateSpeed();
+            return SandboxEditor::CameraTranslateSpeedScaled();
         };
 
         m_firstPersonTranslateCamera->m_boostMultiplierFn = []
@@ -224,7 +224,7 @@ namespace SandboxEditor
 
         m_firstPersonScrollCamera->m_scrollSpeedFn = []
         {
-            return SandboxEditor::CameraScrollSpeed();
+            return SandboxEditor::CameraScrollSpeedScaled();
         };
 
         const auto focusPivotFn = []() -> AZStd::optional<AZ::Vector3>
@@ -268,6 +268,12 @@ namespace SandboxEditor
         m_orbitCamera->SetActivationEndedFn(
             [this]
             {
+                // when the orbit camera ends, ensure that the internal camera returns to a look state
+                // (internal offset value for camera is zero)
+                AtomToolsFramework::ModularViewportCameraControllerRequestBus::Event(
+                    m_viewportId,
+                    &AtomToolsFramework::ModularViewportCameraControllerRequestBus::Events::LookFromOrbit);
+
                 // when the orbit behavior ends the pivot point should fade out and no longer display
                 m_pivotDisplayState = PivotDisplayState::Hidden;
             });
@@ -347,7 +353,7 @@ namespace SandboxEditor
 
         m_orbitTranslateCamera->m_translateSpeedFn = []
         {
-            return SandboxEditor::CameraTranslateSpeed();
+            return SandboxEditor::CameraTranslateSpeedScaled();
         };
 
         m_orbitTranslateCamera->m_boostMultiplierFn = []
@@ -359,14 +365,14 @@ namespace SandboxEditor
 
         m_orbitScrollDollyCamera->m_scrollSpeedFn = []
         {
-            return SandboxEditor::CameraScrollSpeed();
+            return SandboxEditor::CameraScrollSpeedScaled();
         };
 
         m_orbitMotionDollyCamera = AZStd::make_shared<AzFramework::OrbitMotionDollyCameraInput>(SandboxEditor::CameraOrbitDollyChannelId());
 
         m_orbitMotionDollyCamera->m_motionSpeedFn = []
         {
-            return SandboxEditor::CameraDollyMotionSpeed();
+            return SandboxEditor::CameraDollyMotionSpeedScaled();
         };
 
         m_orbitPanCamera = AZStd::make_shared<AzFramework::PanCameraInput>(
@@ -374,7 +380,7 @@ namespace SandboxEditor
 
         m_orbitPanCamera->m_panSpeedFn = []
         {
-            return SandboxEditor::CameraPanSpeed();
+            return SandboxEditor::CameraPanSpeedScaled();
         };
 
         m_orbitPanCamera->m_invertPanXFn = []

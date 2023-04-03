@@ -277,7 +277,7 @@ function(ly_add_target)
     # For any target that depends on AzTest and is built as an executable, an additional 'AZ_TEST_EXECUTABLE' define will
     # enable the 'AZ_UNIT_TEST_HOOK' macro to also implement main() so that running the executable directly will run
     # the AZ_UNIT_TEST_HOOK function
-    if (${PAL_TRAIT_TEST_TARGET_TYPE} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
+    if (${linking_options} STREQUAL "EXECUTABLE" AND "AZ::AzTest" IN_LIST ly_add_target_BUILD_DEPENDENCIES)
         target_compile_definitions(${ly_add_target_NAME}
             PRIVATE
                 AZ_TEST_EXECUTABLE
@@ -568,6 +568,9 @@ endfunction()
 # \arg:ly_THIRD_PARTY_LIBRARIES name of the target libraries to validate existance of through the find_package command.
 #
 function(ly_parse_third_party_dependencies ly_THIRD_PARTY_LIBRARIES)
+    # Support for deprecated LY_VERSION_ENGINE_NAME used in 3p-package-source and misc 3p packages
+    set(LY_VERSION_ENGINE_NAME ${O3DE_ENGINE_NAME})
+
     # Interface dependencies may require to find_packages. So far, we are just using packages for 3rdParty, so we will
     # search for those and automatically bring those packages. The naming convention used is 3rdParty::PackageName::OptionalInterface
     foreach(dependency ${ly_THIRD_PARTY_LIBRARIES})

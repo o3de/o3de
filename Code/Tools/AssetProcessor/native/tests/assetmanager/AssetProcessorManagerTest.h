@@ -14,18 +14,20 @@
 #include <native/tests/AssetProcessorTest.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <AssetBuilderSDK/AssetBuilderSDK.h>
-#include "native/assetprocessor.h"
-#include "native/unittests/UnitTestRunner.h"
-#include "native/AssetManager/assetProcessorManager.h"
-#include "native/utilities/PlatformConfiguration.h"
-#include "native/unittests/MockApplicationManager.h"
+#include <native/assetprocessor.h>
+#include <native/unittests/UnitTestUtils.h>
+#include <native/AssetManager/assetProcessorManager.h>
+#include <native/utilities/PlatformConfiguration.h>
+#include <native/unittests/MockApplicationManager.h>
 #include <AssetManager/FileStateCache.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <QMetaObject>
 #include <AzCore/Jobs/JobContext.h>
 #include <AzCore/Jobs/JobManager.h>
+#if !defined(Q_MOC_RUN)
 #include <AzCore/UnitTest/TestTypes.h>
+#endif
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <tests/UnitTestUtilities.h>
 
@@ -172,15 +174,19 @@ protected:
     AZStd::unique_ptr<AssetProcessor::MockApplicationManager> m_mockApplicationManager;
     AssetProcessor::MockAssetDatabaseRequestsHandler m_databaseLocationListener;
     AZStd::unique_ptr<AssetProcessor::PlatformConfiguration> m_config;
+    ::UnitTests::MockVirtualFileIO m_virtualFileIO;
+    AzToolsFramework::UuidUtilComponent m_uuidUtil;
+    AzToolsFramework::MetadataManager m_metadataManager;
+    AssetProcessor::UuidManager m_uuidManager;
     QString m_gameName;
     QDir m_normalizedCacheRootDir;
     AZStd::atomic_bool m_isIdling;
     QMetaObject::Connection m_idleConnection;
 
-    AZ::Uuid m_aUuid = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
-    AZ::Uuid m_bUuid = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
-    AZ::Uuid m_cUuid = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
-    AZ::Uuid m_dUuid = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+    AZ::Uuid m_aUuid;
+    AZ::Uuid m_bUuid;
+    AZ::Uuid m_cUuid;
+    AZ::Uuid m_dUuid;
 
     struct StaticData
     {
@@ -217,6 +223,8 @@ struct AbsolutePathProductDependencyTest
 
 struct SourceFileDependenciesTest : AssetProcessorManagerTest
 {
+    void SetUp() override;
+
     void SetupData(
         const AZStd::vector<AssetBuilderSDK::SourceFileDependency>& sourceFileDependencies,
         const AZStd::vector<AssetBuilderSDK::JobDependency>& jobDependencies,
@@ -244,11 +252,11 @@ struct SourceFileDependenciesTest : AssetProcessorManagerTest
     const AssetProcessor::ScanFolderInfo* m_scanFolder = nullptr;
 
     AZ::Uuid m_dummyBuilderUuid;
-    AZ::Uuid m_sourceFileUuid = AssetUtilities::CreateSafeSourceUUIDFromName("assetProcessorManagerTest.txt");
-    AZ::Uuid m_uuidOfA = AssetUtilities::CreateSafeSourceUUIDFromName("a.txt");
-    AZ::Uuid m_uuidOfB = AssetUtilities::CreateSafeSourceUUIDFromName("b.txt");
-    AZ::Uuid m_uuidOfC = AssetUtilities::CreateSafeSourceUUIDFromName("c.txt");
-    AZ::Uuid m_uuidOfD = AssetUtilities::CreateSafeSourceUUIDFromName("d.txt");
+    AZ::Uuid m_sourceFileUuid;
+    AZ::Uuid m_uuidOfA;
+    AZ::Uuid m_uuidOfB;
+    AZ::Uuid m_uuidOfC;
+    AZ::Uuid m_uuidOfD;
 };
 
 

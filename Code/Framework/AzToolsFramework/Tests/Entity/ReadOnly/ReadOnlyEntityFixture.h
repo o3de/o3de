@@ -20,7 +20,7 @@
 namespace AzToolsFramework
 {
     class ReadOnlyEntityFixture
-        : public UnitTest::ToolsApplicationFixture
+        : public UnitTest::ToolsApplicationFixture<>
     {
     protected:
         void SetUpEditorFixtureImpl() override;

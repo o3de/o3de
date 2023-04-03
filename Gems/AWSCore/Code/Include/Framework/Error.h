@@ -11,24 +11,26 @@
 #include <AzCore/std/string/string.h>
 
 #include <AzCore/Memory/SystemAllocator.h>
-#include <AzCore/RTTI/BehaviorContext.h>
-#include <AzCore/Serialization/EditContext.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfo.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AWSCore
 {
-
     class JsonReader;
 
     //! Encapsulates the data produced when a service API call fails.
     struct Error
     {
         AZ_TYPE_INFO(Error, "{4256E22F-441A-4CDA-92D9-B943C97E92ED}")
-        AZ_CLASS_ALLOCATOR(Error, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(Error, AZ::SystemAllocator)
 
         /// Identifies the type of error. Intended for use by programs.
         ///
-        ///    NetworkError - if there was a problem sending the request or 
+        ///    NetworkError - if there was a problem sending the request or
         ///    receiving the response. e.g. due to timeouts or proxy issues.
         ///
         ///    ClientError - if the service determines that the client request
@@ -36,7 +38,7 @@ namespace AWSCore
         ///
         ///    ServiceError - if the service had trouble executing the request.
         ///
-        ///    ContentError - if an error occurs when producing or consuming 
+        ///    ContentError - if an error occurs when producing or consuming
         ///    JSON format content.
         ///
         /// Services may return other error types.

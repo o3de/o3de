@@ -54,13 +54,15 @@ namespace AzToolsFramework
             AZ::Interface<InstanceDomGeneratorInterface>::Unregister(this);
         }
 
-        void InstanceDomGenerator::GenerateInstanceDom(PrefabDom& instanceDom, const Instance& instance) const
+        void InstanceDomGenerator::GetInstanceDomFromTemplate(PrefabDom& instanceDom, const Instance& instance) const
         {
+            AZ_Assert(instanceDom.IsNull(), "GetInstanceDomFromTemplate must be called with an empty instance to generate into.");
+
             // Retrieves the focused instance.
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (!prefabFocusInterface)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "PrefabFocusInterface could not be found.");
                 return;
             }
@@ -68,7 +70,7 @@ namespace AzToolsFramework
             InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
             if (!focusedInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the focused instance. It should not be null.");
                 return;
             }
@@ -78,7 +80,7 @@ namespace AzToolsFramework
             const Instance* focusedOrRootInstance = climbUpResult.m_reachedInstance;
             if (!focusedOrRootInstance)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the focused or root instance. It should not be null.");
                 return;
             }
@@ -86,13 +88,13 @@ namespace AzToolsFramework
             // Copies the instance DOM, that is stored in the focused or root template DOM, into the output instance DOM.
             AZStd::string relativePathFromTop = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
             PrefabDomPath relativeDomPath(relativePathFromTop.c_str());
-            PrefabDom focusedOrRootTemplateDomCopy;
-            focusedOrRootTemplateDomCopy.CopyFrom(m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
-                instanceDom.GetAllocator());
-            const PrefabDomValue* instanceDomFromTemplate = relativeDomPath.Get(focusedOrRootTemplateDomCopy);
+            const PrefabDom& sourceDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId());
+            const PrefabDomValue* instanceDomFromTemplate = relativeDomPath.Get(sourceDom);
             if (!instanceDomFromTemplate)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateInstanceDom - "
+                AZ_Assert(
+                    false,
+                    "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - "
                     "Could not get the instance DOM stored in the focused or root template DOM.");
                 return;
             }
@@ -105,39 +107,51 @@ namespace AzToolsFramework
             // (i.e. the given instance DOM) with the one seen by the root.
             if (&instance == &(focusedInstance->get()))
             {
-                UpdateContainerEntityInDomFromRoot(instanceDom, focusedInstance->get());
+                UpdateContainerEntityInDomFromHighestAncestor(instanceDom, focusedInstance->get());
             }
             // If the focused instance is a descendant of the given instance, then update the corresponding
             // portion in the output instance DOM with the focused template DOM. Also, updates the container entity
             // in focused instance DOM with the one seen by the root.
             else if (PrefabInstanceUtils::IsDescendantInstance(focusedInstance->get(), instance))
             {
-                PrefabDom focusedTemplateDom;
-                focusedTemplateDom.CopyFrom(m_prefabSystemComponentInterface->FindTemplateDom(focusedInstance->get().GetTemplateId()),
-                    instanceDom.GetAllocator());
+                TemplateReference focusedTemplate = m_prefabSystemComponentInterface->FindTemplate(focusedInstance->get().GetTemplateId());
 
-                UpdateContainerEntityInDomFromRoot(focusedTemplateDom, focusedInstance->get());
+                if (!focusedTemplate.has_value())
+                {
+                    AZ_Assert(
+                        false,
+                        "Prefab - InstanceDomGenerator::GetInstanceDomFromTemplate - A focused instance was found but there is no "
+                        "corresponding prefab template associated with it.");
+                    return;
+                }
+                
+                // use instanceDom's allocator, because ultimately we will be setting this data back into
+                // instanceDom with move semantics.
+                PrefabDom focusedTemplateDomCopy(&instanceDom.GetAllocator());
 
-                // Forces a hard copy using the instanceDom's allocator.
-                PrefabDom focusedTemplateDomCopy;
-                focusedTemplateDomCopy.CopyFrom(focusedTemplateDom, instanceDom.GetAllocator());
+                focusedTemplateDomCopy.CopyFrom(focusedTemplate->get().GetPrefabDom(), instanceDom.GetAllocator());
+
+                UpdateContainerEntityInDomFromHighestAncestor(focusedTemplateDomCopy, focusedInstance->get());
 
                 // Stores the focused DOM into the instance DOM.
                 AZStd::string relativePathToFocus = PrefabInstanceUtils::GetRelativePathBetweenInstances(instance, focusedInstance->get());
                 PrefabDomPath relativeDomPathToFocus(relativePathToFocus.c_str());
-                relativeDomPathToFocus.Set(instanceDom, focusedTemplateDomCopy, instanceDom.GetAllocator());
+
+                // because focusedTemplateDomCopy is an non-const reference, its memory will be adopted into instanceDom without copying
+                relativeDomPathToFocus.Set(instanceDom, focusedTemplateDomCopy);
             }
             // Skips additional processing if the focused instance is a proper ancestor of the given instance, or
             // the focused instance has no hierarchy relation with the given instance.
         }
 
-        void InstanceDomGenerator::GenerateEntityDom(PrefabDom& entityDom, const AZ::Entity& entity) const
+        void InstanceDomGenerator::GetEntityDomFromTemplate(PrefabDom& entityDom, const AZ::Entity& entity) const
         {
+            AZ_Assert(entityDom.IsNull(), "GetEntityDomFromTemplate must be called with an empty entityDom to fill.");
             // Retrieves the focused instance.
             auto prefabFocusInterface = AZ::Interface<PrefabFocusInterface>::Get();
             if (!prefabFocusInterface)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "PrefabFocusInterface could not be found.");
                 return;
             }
@@ -145,7 +159,7 @@ namespace AzToolsFramework
             InstanceOptionalReference focusedInstance = prefabFocusInterface->GetFocusedPrefabInstance(s_editorEntityContextId);
             if (!focusedInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the focused instance. It should not be null.");
                 return;
             }
@@ -154,7 +168,7 @@ namespace AzToolsFramework
             InstanceOptionalReference owningInstance = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
             if (!owningInstance.has_value())
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the owning instance for the given entity id.");
                 return;
             }
@@ -165,7 +179,7 @@ namespace AzToolsFramework
             const Instance* focusedOrRootInstance = climbUpResult.m_reachedInstance;
             if (!focusedOrRootInstance)
             {
-                AZ_Assert(false, "Prefab - InstanceDomGenerator::GenerateEntityDom - "
+                AZ_Assert(false, "Prefab - InstanceDomGenerator::GetEntityDomFromTemplate - "
                     "Could not get the focused or root instance from climb-up. It should not be null.");
                 return;
             }
@@ -175,62 +189,133 @@ namespace AzToolsFramework
             relativePathFromTop.append(m_instanceToTemplateInterface->GenerateEntityAliasPath(entityId));
             PrefabDomPath relativeDomPathFromTopToEntity(relativePathFromTop.c_str());
 
-            // Retrieves the entity DOM from the template of the focused or root instance.
-            PrefabDom focusedOrRootTemplateDomCopy;
-            focusedOrRootTemplateDomCopy.CopyFrom(
-                m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId()),
-                entityDom.GetAllocator());
-
             // If it is the focused container entity, then replace the entity DOM's transform data (from template)
             // with the one seen from root.
             if (entityId == focusedInstance->get().GetContainerEntityId())
             {
-                UpdateContainerEntityInDomFromRoot(focusedOrRootTemplateDomCopy, focusedInstance->get());
+                GenerateContainerEntityDomFromHighestAncestorOrSelf(entityDom, focusedInstance->get());
             }
-
-            const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedOrRootTemplateDomCopy);
-            if (!entityDomFromTemplate)
+            else
             {
-                AZ_Warning("Prefab", false, "InstanceDomGenerator::GenerateEntityDom - "
-                    "The entity DOM cannot be found in the template DOM. Output DOM will be null.");
-                return;
-            }
+                // Retrieves the entity DOM from the template of the focused or root instance.
+                const PrefabDom& focusedTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom(focusedOrRootInstance->GetTemplateId());
+                const PrefabDomValue* entityDomFromTemplate = relativeDomPathFromTopToEntity.Get(focusedTemplateDom);
+                if (!entityDomFromTemplate)
+                {
+                    AZ_Warning(
+                        "Prefab",
+                        false,
+                        "InstanceDomGenerator::GetEntityDomFromTemplate - "
+                        "The entity DOM cannot be found in the template DOM. Output DOM will be null.");
+                    return;
+                }
 
-            entityDom.CopyFrom(*entityDomFromTemplate, entityDom.GetAllocator());
+                entityDom.CopyFrom(*entityDomFromTemplate, entityDom.GetAllocator());
+            }
         }
 
-        void InstanceDomGenerator::UpdateContainerEntityInDomFromRoot(PrefabDom& instanceDom, const Instance& instance) const
+        void InstanceDomGenerator::UpdateContainerEntityInDomFromHighestAncestor(PrefabDom& instanceDom, const Instance& instance) const
         {
             // TODO: Modifies the function so it updates the transform only.
 
             InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, nullptr);
-            const Instance* rootInstancePtr = climbUpResult.m_reachedInstance;
-            AZStd::string relativePathFromRoot = PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances);
 
             // No need to update the instance DOM if the given instance is the root instance.
-            if (rootInstancePtr == &instance)
+            if (climbUpResult.m_reachedInstance == &instance)
             {
                 return;
             }
 
-            // Creates a path from the root instance to container entity of the given insance.
-            const AZStd::string pathToContainerEntity =
-                AZStd::string::format("%s/%s", relativePathFromRoot.c_str(), PrefabDomUtils::ContainerEntityName);
-            PrefabDomPath domPathToContainerEntity(pathToContainerEntity.c_str());
-
-            // Retrieves the container entity DOM of the root template DOM.
-            PrefabDom containerEntityDom;
+            // use instanceDom's allocator, because ultimately we will be setting this data back into
+            // instanceDom with move semantics.
+            PrefabDom containerEntityDom(&(instanceDom.GetAllocator()));
+            GenerateContainerEntityDomFromClimbUpResult(containerEntityDom, climbUpResult);
+            if (containerEntityDom.IsObject())
             {
-                // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
-                // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
-                const PrefabDom& rootTemplateDom = m_prefabSystemComponentInterface->FindTemplateDom((*rootInstancePtr).GetTemplateId());
-                containerEntityDom.CopyFrom(*domPathToContainerEntity.Get(rootTemplateDom), instanceDom.GetAllocator());
+                // Sets the container entity DOM in the given instance DOM.
+                const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
+                PrefabDomPath containerEntityPath(containerEntityName.c_str());
+                // because containerEntityDom is an non-const reference, its memory will be adopted into instanceDom without copying
+                containerEntityPath.Set(instanceDom, containerEntityDom);
+            }
+            else
+            {
+                AZ_Assert(
+                    false,
+                    "Prefab - InstanceDomGenerator::UpdateContainerEntityInDomFromHighestAncestor - "
+                    "Couldn't find container entity DOM in any ancestor.");
+            }
+        }
+
+        void InstanceDomGenerator::GenerateContainerEntityDomFromHighestAncestorOrSelf(PrefabDom& containerEntityDom, const Instance& instance) const
+        {
+            InstanceClimbUpResult climbUpResult = PrefabInstanceUtils::ClimbUpToTargetOrRootInstance(instance, nullptr);
+            GenerateContainerEntityDomFromClimbUpResult(containerEntityDom, climbUpResult);
+        }
+
+        void InstanceDomGenerator::GenerateContainerEntityDomFromClimbUpResult(PrefabDom& containerEntityDom, const InstanceClimbUpResult& climbUpResult) const
+        {
+            // This function replaces the entire container entity DOM instead of just the transform component because right now, there is
+            // no good way to identify the transform component directly in a DOM. But essentially all we need to update here is the
+            // transform data and parent information in the transform component.
+
+            AZ_Assert(climbUpResult.m_reachedInstance,
+                "Prefab - InstanceDomGenerator::GenerateContainerEntityDomFromClimbUpResult - "
+                "Called with no intance.");
+
+            // Try and retrieve the instance's container entity DOM from the top-most ancestor that has it.
+            // An ancestor DOM may not have the data if it has deleted the instance as an override
+            if (!climbUpResult.m_climbedInstances.empty())
+            {
+                const AZStd::vector<const Instance*>& climbedInstances = climbUpResult.m_climbedInstances;
+                const Instance* topInstance = climbUpResult.m_reachedInstance;
+                const Instance* const bottomInstance = climbedInstances.front();
+                for (auto instanceIter = climbedInstances.crbegin(); instanceIter != climbedInstances.crend(); ++instanceIter)
+                {
+                    // Create a path from the current top instance to the container entity of the bottom instance.
+                    AZStd::string relativePathFromTopInstance =
+                        PrefabInstanceUtils::GetRelativePathBetweenInstances(*topInstance, *bottomInstance);
+                    const AZStd::string pathToContainerEntity =
+                        AZStd::string::format("%s/%s", relativePathFromTopInstance.c_str(), PrefabDomUtils::ContainerEntityName);
+                    PrefabDomPath domPathToContainerEntity(pathToContainerEntity.c_str());
+                    const PrefabDom& topInstanceTemplateDom =
+                        m_prefabSystemComponentInterface->FindTemplateDom((*topInstance).GetTemplateId());
+                    // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
+                    // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                    {
+                        const PrefabDomValue* containerEntityDomFromTop = domPathToContainerEntity.Get(topInstanceTemplateDom);
+                        if (containerEntityDomFromTop)
+                        {
+                            containerEntityDom.CopyFrom(*containerEntityDomFromTop, containerEntityDom.GetAllocator());
+                            break;
+                        }
+                    }
+
+                    topInstance = *instanceIter;
+                }
             }
 
-            // Sets the container entity DOM in the given instance DOM.
-            const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
-            PrefabDomPath containerEntityPath(containerEntityName.c_str());
-            containerEntityPath.Set(instanceDom, containerEntityDom, instanceDom.GetAllocator());
+            // Check if the container entity DOM has been found in an ancestor.
+            // Otherwise, retrieve the container entity DOM from the instance itself.
+            // The container entity DOM may not be found if the instance has no ancestors,
+            // or if all ancestors have deleted the instance as an override
+            if (!containerEntityDom.IsObject())
+            {
+                const AZStd::string containerEntityName = AZStd::string::format("/%s", PrefabDomUtils::ContainerEntityName);
+                PrefabDomPath containerEntityPath(containerEntityName.c_str());
+                {
+                    // DOM reference can't be relied upon if the original DOM gets modified after reference creation.
+                    // This scope is added to limit their usage and ensure DOM is not modified when it is being used.
+                    const PrefabDom& instanceTemplateDom =
+                        m_prefabSystemComponentInterface->FindTemplateDom((*climbUpResult.m_reachedInstance).GetTemplateId());
+                    containerEntityDom.CopyFrom(*containerEntityPath.Get(instanceTemplateDom), containerEntityDom.GetAllocator());
+                }
+            }
+
+            AZ_Assert(
+                containerEntityDom.IsObject(),
+                "Prefab - InstanceDomGenerator::GenerateContainerEntityDomFromClimbUpResult - "
+                "Couldn't find container entity DOM.");
         }
     } // namespace Prefab
 } // namespace AzToolsFramework

@@ -95,7 +95,6 @@ namespace ImGui
         virtual void SetDpiScalingFactor(float dpiScalingFactor) = 0;
         virtual float GetDpiScalingFactor() const = 0;
         virtual void Render() = 0;
-        virtual void WaitForRenderToFinish() = 0;
 
         using ImGuiSetEnabledEvent = AZ::Event<bool>;
         ImGuiSetEnabledEvent m_setEnabledEvent;

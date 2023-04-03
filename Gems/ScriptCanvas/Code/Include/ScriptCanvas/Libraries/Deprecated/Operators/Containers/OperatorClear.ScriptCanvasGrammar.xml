@@ -10,9 +10,7 @@
            Version="1"
            VersionConverter="OperatorClearVersionConverter"
            Deprecated="True"
-           Description="Eliminates all the elements in the container"
-           DeprecationUUID="{C1E3C9D0-42E3-4D00-AE73-2A881E7E76A8}"
-           ReplacementMethodName="Clear All Elements">
+           Description="Eliminates all the elements in the container">
       <In Name="In" Description=""/>
         <Out Name="Out" Description=""/>
         <DynamicDataSlot Name="Source"

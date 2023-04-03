@@ -7,15 +7,14 @@
  */
 
 #include <AzToolsFramework/ActionManager/Action/EditorActionContext.h>
+#include <AzToolsFramework/ActionManager/Action/EditorAction.h>
 
 namespace AzToolsFramework
 {
     EditorActionContext::EditorActionContext(
-        AZStd::string identifier, AZStd::string name, AZStd::string parentIdentifier, QWidget* widget)
+        AZStd::string identifier, AZStd::string name)
         : m_identifier(AZStd::move(identifier))
         , m_name(AZStd::move(name))
-        , m_parentIdentifier(AZStd::move(parentIdentifier))
-        , m_widget(widget)
     {
     }
 
@@ -42,9 +41,10 @@ namespace AzToolsFramework
         return modeChanged;
     }
 
-    void EditorActionContext::AddAction(AZStd::string actionIdentifier)
+    void EditorActionContext::AddAction(EditorAction* editorAction)
     {
-        m_actionIdentifiers.emplace(AZStd::move(actionIdentifier));
+        m_actionIdentifiers.emplace(AZStd::move(editorAction->GetActionIdentifier()));
+        m_actions.append(editorAction->GetAction());
     }
 
     void EditorActionContext::IterateActionIdentifiers(const AZStd::function<bool(const AZStd::string&)>& callback) const
@@ -58,9 +58,9 @@ namespace AzToolsFramework
         }
     }
 
-    QWidget* EditorActionContext::GetWidget()
+    const QList<QAction*>& EditorActionContext::GetActions()
     {
-        return m_widget;
+        return m_actions;
     }
 
 } // namespace AzToolsFramework

@@ -21,6 +21,7 @@ struct VSOutput_Eye
     float4 position : SV_Position;
     float3 normal: NORMAL;
     float4 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
     float3 worldPosition : UV0;
     float2 uvs[UvSetCount] : UV1;
 

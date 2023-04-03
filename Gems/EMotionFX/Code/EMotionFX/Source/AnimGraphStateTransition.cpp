@@ -28,9 +28,9 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::UniqueData, AnimGraphObjectUniqueDataAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphStateTransition::StateFilterLocal, AnimGraphAllocator)
 
     bool AnimGraphStateTransition::StateFilterLocal::IsEmpty() const
     {
@@ -1047,7 +1047,7 @@ namespace EMotionFX
             ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
             ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_isDisabled, "Disabled", "Is disabled? If yes the transition will not be used by the state machine.")
             ->Attribute(AZ::Edit::Attributes::ChangeNotify, &AnimGraphStateTransition::SyncVisualObject)
-            ->DataElement(AZ::Edit::UIHandlers::Default, &AnimGraphStateTransition::m_priority, "Priority", "The priority level of the transition.")
+            ->DataElement(AZ::Edit::UIHandlers::SpinBox, &AnimGraphStateTransition::m_priority, "Priority", "The priority level of the transition. Smaller values mean lower priority.")
             ->Attribute(AZ::Edit::Attributes::Min, 0)
             ->Attribute(AZ::Edit::Attributes::Max, std::numeric_limits<AZ::s32>::max())
             ->DataElement(AZ_CRC("TransitionStateFilterLocal", 0x7c4000ff), &AnimGraphStateTransition::m_allowTransitionsFrom, "Allow transitions from", "States and groups of states from which the wildcard transition can get activated.")

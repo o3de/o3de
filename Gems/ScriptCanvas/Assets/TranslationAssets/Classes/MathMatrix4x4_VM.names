@@ -10,7 +10,6 @@
             "methods": [
                 {
                     "base": "GetRow",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRow"
@@ -48,7 +47,6 @@
                 },
                 {
                     "base": "FromRotationXDegrees",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationXDegrees"
@@ -80,7 +78,6 @@
                 },
                 {
                     "base": "FromRotationZDegrees",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationZDegrees"
@@ -112,7 +109,6 @@
                 },
                 {
                     "base": "FromRows",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRows"
@@ -162,7 +158,6 @@
                 },
                 {
                     "base": "ToScale",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke ToScale"
@@ -194,7 +189,6 @@
                 },
                 {
                     "base": "FromQuaternion",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromQuaternion"
@@ -226,7 +220,6 @@
                 },
                 {
                     "base": "FromScale",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromScale"
@@ -258,7 +251,6 @@
                 },
                 {
                     "base": "FromTransform",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromTransform"
@@ -290,7 +282,6 @@
                 },
                 {
                     "base": "GetTranslation",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetTranslation"
@@ -322,7 +313,6 @@
                 },
                 {
                     "base": "FromQuaternionAndTranslation",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromQuaternionAndTranslation"
@@ -360,7 +350,6 @@
                 },
                 {
                     "base": "GetColumn",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColumn"
@@ -398,7 +387,6 @@
                 },
                 {
                     "base": "GetDiagonal",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetDiagonal"
@@ -430,7 +418,6 @@
                 },
                 {
                     "base": "Invert",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Invert"
@@ -462,7 +449,6 @@
                 },
                 {
                     "base": "IsClose",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsClose"
@@ -506,7 +492,6 @@
                 },
                 {
                     "base": "FromMatrix3x3",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromMatrix3x3"
@@ -538,7 +523,6 @@
                 },
                 {
                     "base": "GetColumns",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetColumns"
@@ -570,7 +554,6 @@
                 },
                 {
                     "base": "GetRows",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetRows"
@@ -602,7 +585,6 @@
                 },
                 {
                     "base": "MultiplyByMatrix",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByMatrix"
@@ -640,7 +622,6 @@
                 },
                 {
                     "base": "FromDiagonal",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromDiagonal"
@@ -672,7 +653,6 @@
                 },
                 {
                     "base": "FromRotationYDegrees",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromRotationYDegrees"
@@ -704,7 +684,6 @@
                 },
                 {
                     "base": "GetElement",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke GetElement"
@@ -748,7 +727,6 @@
                 },
                 {
                     "base": "Transpose",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Transpose"
@@ -780,7 +758,6 @@
                 },
                 {
                     "base": "FromColumns",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromColumns"
@@ -830,7 +807,6 @@
                 },
                 {
                     "base": "FromTranslation",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke FromTranslation"
@@ -862,7 +838,6 @@
                 },
                 {
                     "base": "IsFinite",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke IsFinite"
@@ -894,7 +869,6 @@
                 },
                 {
                     "base": "MultiplyByVector",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke MultiplyByVector"
@@ -932,7 +906,6 @@
                 },
                 {
                     "base": "Zero",
-                    "context": "MathMatrix4x4_VM",
                     "entry": {
                         "name": "In",
                         "tooltip": "When signaled, this will invoke Zero"

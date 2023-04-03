@@ -40,6 +40,7 @@ ly_add_target(
     COMPILE_DEFINITIONS
         PUBLIC
             EMFX_DEVELOPMENT_BUILD
+            EMFX_ANIMGRAPH_PROFILER_ENABLED
 )
 
 ly_add_target(
@@ -67,6 +68,7 @@ ly_add_target(
 # Clients and servers use the above EMotionFX module
 ly_create_alias(NAME EMotionFX.Clients NAMESPACE Gem TARGETS EMotionFX)
 ly_create_alias(NAME EMotionFX.Servers NAMESPACE Gem TARGETS EMotionFX)
+ly_create_alias(NAME EMotionFX.Unified NAMESPACE Gem TARGETS EMotionFX)
 
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     
@@ -203,7 +205,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     3rdParty::Qt::Test
                     3rdParty::Qt::Concurrent
                     Gem::EMotionFX.Editor.Static
-                    Gem::EMotionFX.Tests.Static
         )
         ly_add_googletest(
             NAME Gem::EMotionFX.Editor.Tests

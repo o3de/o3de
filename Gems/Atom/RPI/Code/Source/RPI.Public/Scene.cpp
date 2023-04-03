@@ -358,7 +358,7 @@ namespace AZ
                 return;
             }
 
-            pipeline->SetDrawFilterTag(m_drawFilterTagRegistry->AcquireTag(pipelineId));
+            pipeline->SetDrawFilterTags(m_drawFilterTagRegistry.get());
 
             m_pipelines.push_back(pipeline);
 
@@ -369,6 +369,7 @@ namespace AZ
             }
 
             pipeline->OnAddedToScene(this);
+            pipeline->ProcessQueuedPassChanges();
 
             TryApplyRenderPipelineChanges(pipeline.get());
 
@@ -396,7 +397,7 @@ namespace AZ
                         m_defaultPipeline = nullptr;
                     }
 
-                    m_drawFilterTagRegistry->ReleaseTag(pipelineToRemove->GetDrawFilterTag());
+                    pipelineToRemove->ReleaseDrawFilterTags(m_drawFilterTagRegistry.get());
 
                     pipelineToRemove->OnRemovedFromScene(this);
                     m_pipelines.erase(it);
@@ -483,6 +484,11 @@ namespace AZ
         void Scene::Simulate(RHI::JobPolicy jobPolicy, float simulationTime)
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: Simulate");
+
+            if (!m_activated)
+            {
+                return;
+            }
 
             m_prevSimulationTime = m_simulationTime;
             m_simulationTime = simulationTime;
@@ -705,6 +711,11 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "Scene: PrepareRender");
 
+            if (!m_activated)
+            {
+                return;
+            }
+
             if (m_taskGraphActive)
             {
                 WaitAndCleanTGEvent();
@@ -732,6 +743,8 @@ namespace AZ
                     }
                 }
             }
+
+            m_numActiveRenderPipelines = aznumeric_cast<uint16_t>(activePipelines.size());
 
             // the pipeline states might have changed during the OnStartFrame, rebuild the lookup
             if (m_pipelineStatesLookupNeedsRebuild)
@@ -854,10 +867,35 @@ namespace AZ
             {
                 fp->OnRenderEnd();
             }
+
+            for (auto& pipeline : m_pipelines)
+            {
+                for (auto& pipelineView : pipeline->GetPipelineViews())
+                {
+                    for (auto& view : pipelineView.second.m_views)
+                    {
+                        view->ClearAllFlags();
+                    }
+                }
+            }
         }
+
+        RHI::TagBitRegistry<uint32_t>& Scene::GetViewTagBitRegistry()
+        {
+            if (m_viewTagBitRegistry == nullptr)
+            {
+                m_viewTagBitRegistry = RHI::TagBitRegistry<uint32_t>::Create();
+            }
+            return *m_viewTagBitRegistry;
+        };
 
         void Scene::UpdateSrgs()
         {
+            if (!m_activated)
+            {
+                return;
+            }
+
             PrepareSceneSrg();
 
             for (auto& view : m_renderPacket.m_views)

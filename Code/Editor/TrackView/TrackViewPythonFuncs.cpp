@@ -398,14 +398,21 @@ namespace
             throw std::runtime_error("Couldn't find node");
         }
 
-        const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
-        CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
-        if (!pTrack)
+        if (GetIEditor()->GetMovieSystem())
         {
-            throw std::runtime_error("Track doesn't exist");
-        }
+            const CAnimParamType paramType = GetIEditor()->GetMovieSystem()->GetParamTypeFromString(paramName);
+            CTrackViewTrack* pTrack = pNode->GetTrackForParameter(paramType, index);
+            if (!pTrack)
+            {
+                throw std::runtime_error("Track doesn't exist");
+            }
 
-        return pTrack;
+            return pTrack;
+        }
+        else
+        {
+            throw std::runtime_error("MovieSystem does not exist");
+        }
     }
 
     std::set<float> GetKeyTimeSet(CTrackViewTrack* pTrack)

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <QWidget>
-#include <AzToolsFramework/UI/DocumentPropertyEditor/FilterAdapter.h>
+#include <AzToolsFramework/UI/DocumentPropertyEditor/ValueStringFilter.h>
 
 namespace Ui
 {

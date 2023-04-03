@@ -13,7 +13,7 @@ import collections
 import random
 
 def main():
-    paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingWildcard('*.materialcanvas.azasset')
+    paths = azlmbr.atomtools.util.GetPathsInSourceFoldersMatchingWildcard('*.materialgraph')
     for path in paths.copy():
         if 'cache' in path.lower():
             paths.remove(path)

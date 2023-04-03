@@ -6,6 +6,7 @@
  *
  */
 
+#include <Multiplayer/MultiplayerMetrics.h>
 #include <Multiplayer/MultiplayerPerformanceStats.h>
 #include <Multiplayer/MultiplayerStats.h>
 
@@ -129,6 +130,7 @@ namespace Multiplayer
     void MultiplayerStats::TickStats(AZ::TimeMs metricFrameTimeMs)
     {
         SET_PERFORMANCE_STAT(MultiplayerStat_EntityCount, m_entityCount);
+        SET_PERFORMANCE_STAT(MultiplayerStat_ClientConnectionCount, m_clientConnectionCount);
 
         m_totalHistoryTimeMs = metricFrameTimeMs * static_cast<AZ::TimeMs>(RingbufferSamples);
         m_recordMetricIndex = ++m_recordMetricIndex % RingbufferSamples;
@@ -259,6 +261,6 @@ namespace Multiplayer
 
     void MultiplayerStats::RecordFrameTime(AZ::TimeUs networkFrameTime)
     {
-        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTime, networkFrameTime);
+        SET_PERFORMANCE_STAT(MultiplayerStat_FrameTimeUs, networkFrameTime);
     }
 } // namespace Multiplayer

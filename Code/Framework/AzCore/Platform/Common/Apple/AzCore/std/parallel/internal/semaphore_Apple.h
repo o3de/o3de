@@ -23,7 +23,7 @@ namespace AZStd
     {
         // Clamp the semaphores initial value to prevent issues with the semaphore.
         int initSemCount = static_cast<int>(AZStd::min(initialCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
+        [[maybe_unused]] int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
 
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
@@ -36,7 +36,7 @@ namespace AZStd
         (void) name; // name is used only for debug, if we pass it to the semaphore it will become named semaphore
         // Clamp the semaphores initial value to prevent issues with the semaphore.
         int initSemCount = static_cast<int>(AZStd::min(initialCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));
-        int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
+        [[maybe_unused]] int result = semaphore_create(mach_task_self(), &m_semaphore, SYNC_POLICY_FIFO, initSemCount);
         AZ_Assert(result == 0, "semaphore_create error %s\n", strerror(errno));
 
         int maxSemCount = static_cast<int>(AZStd::min(maximumCount, static_cast<unsigned int>(semaphore::MAXIMUM_COUNT)));

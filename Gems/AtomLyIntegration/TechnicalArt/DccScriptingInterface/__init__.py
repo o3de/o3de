@@ -189,6 +189,7 @@ except NotADirectoryError as e:
                     f'{PATH_DCCSI_PYTHON_LIB.as_Posix()}')
     _LOGGER.warning(f'Pkg dependencies may not be available for import')
     _LOGGER.warning(f'Try using foundation.py to install pkg dependencies for the target python runtime')
+    _LOGGER.info(f'>.\python foundation.py -py="c:\path\to\som\python.exe"')
     PATH_DCCSI_PYTHON_LIB = None
     _LOGGER.error(f'{e} , traceback =', exc_info=True)
     PATH_DCCSIG = None
@@ -207,9 +208,12 @@ PATH_ENV_DEV = Path(PATH_DCCSIG, 'Tools', 'Dev', 'Windows', 'Env_Dev.bat')
 # a local settings file to overrides envars in config.py
 DCCSI_SETTINGS_LOCAL_FILENAME = 'settings.local.json'
 PATH_DCCSI_SETTINGS_LOCAL = Path.joinpath(PATH_DCCSIG,
-                                          DCCSI_SETTINGS_LOCAL_FILENAME)
+                                          DCCSI_SETTINGS_LOCAL_FILENAME).resolve()
+
 if PATH_DCCSI_SETTINGS_LOCAL.exists():
-    _LOGGER.info(f'local settings exist: {PATH_DCCSI_SETTINGS_LOCAL.as_posix()}')
+    _LOGGER.info(f'local settings exists: {PATH_DCCSI_SETTINGS_LOCAL.as_posix()}')
+else:
+    _LOGGER.info(f'does not exist: {PATH_DCCSI_SETTINGS_LOCAL.as_posix()}')
 
 # the o3de manifest data
 TAG_USER_O3DE = '.o3de'
@@ -322,12 +326,18 @@ except ImportError as e:
 # if the settings.local.json file doesn't exist
 # even though we are not raising the exception
 
+DCCSI_SETTINGS_DATA = None
 if not PATH_DCCSI_SETTINGS_LOCAL.exists():
     _LOGGER.warning(f'O3DE DCCsi settings does not exist: {PATH_DCCSI_SETTINGS_LOCAL}')
-    PATH_DCCSI_SETTINGS_LOCAL = None
+    _LOGGER.info(f'You may want to generate: {PATH_DCCSI_SETTINGS_LOCAL}')
+    _LOGGER.info(f'Open a CMD at root of DccScriptingInterface, then run:')
+    _LOGGER.info(f'>.\python config.py')
+    _LOGGER.info(f'Now open in text editor: {PATH_DCCSI_SETTINGS_LOCAL}')
 
-DCCSI_SETTINGS_DATA = None
-if PATH_DCCSI_SETTINGS_LOCAL:
+    # we don't actually want to clear this var to none.  code below reports about it.
+    #PATH_DCCSI_SETTINGS_LOCAL = None
+
+elif PATH_DCCSI_SETTINGS_LOCAL.exists():
     try:
         with open(PATH_DCCSI_SETTINGS_LOCAL, "r") as data:
             DCCSI_SETTINGS_DATA = json.load(data)
@@ -395,17 +405,16 @@ if not O3DE_DEV:
         # I  assume that would mainly happen only if manually edited?
 
         # if  this returns None,  section 'key'  doesn't exist
-        ENGINES_PATH = get_key_value(O3DE_MANIFEST_DATA, 'engines_path')
+        ENGINES = get_key_value(O3DE_MANIFEST_DATA, 'engines')
 
-        if ENGINES_PATH:
+        if ENGINES:
 
-            if len(ENGINES_PATH) < 1:
+            if len(ENGINES) < 1:
                 _LOGGER(f'no engines in o3de manifest')
 
-            # what if there are multiple "engines_path"s? We don't know which to use
-            elif len(ENGINES_PATH) == 1: # there can only be one
-                O3DE_ENGINENAME = list(ENGINES_PATH.items())[0][0]
-                O3DE_DEV = Path(list(ENGINES_PATH.items())[0][1])
+            # what if there are multiple engines? We don't know which to use
+            elif len(ENGINES) == 1: # there can only be one
+                O3DE_DEV = Path(ENGINES[0])
 
             else:
                 _LOGGER.warning(f'Manifest defines more then one engine: {O3DE_DEV.as_posix()}')
@@ -600,6 +609,7 @@ if not PATH_O3DE_BIN:
     if O3DE_EDITOR.stem.lower() in {"editor",
                                     "materialeditor",
                                     "materialcanvas",
+                                    "passcanvas",
                                     "assetprocessor",
                                     "assetbuilder"}:
         PATH_O3DE_BIN = O3DE_EDITOR.parent
@@ -666,6 +676,7 @@ if PATH_O3DE_BIN:
 
     try:
         PATH_O3DE_BIN.resolve(strict=True)
+        os.add_dll_directory(f'{PATH_O3DE_BIN}')
     except Exception as e:
         _LOGGER.warning(f'{ENVAR_PATH_O3DE_BIN} not defined: {PATH_O3DE_BIN}')
         _LOGGER.warning(f'Put "set {ENVAR_PATH_O3DE_BIN}=C:\\path\\to\\o3de" in: {PATH_ENV_DEV}')
@@ -797,7 +808,7 @@ except ImportError as e:
     _LOGGER.info(f'1. open a cmd prompt')
     _LOGGER.info(f'2. change directory to: {PATH_DCCSIG}')
     _LOGGER.info(f'3. run this command...')
-    _LOGGER.info(f'4. >python foundation.py -py="{sys.executable}"')
+    _LOGGER.info(f'4. >.\python foundation.py -py="{sys.executable}"')
     _LOGGER.error(f'{e} , traceback =', exc_info = True)
     pass # be forgiving
 

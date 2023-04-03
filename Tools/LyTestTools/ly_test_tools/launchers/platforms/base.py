@@ -121,14 +121,13 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         logger.debug(f"Performing automatic backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.backup_platform_settings(backup_path)
 
     def configure_settings(self):
         """
         Perform settings configuration, must be called after a backup of settings has been created with
         backup_settings(). Preferred ways to modify settings are:
 
-        self.workspace.settings.modify_platform_setting()
+        --regset="<key>=<value> arguments via the command line
 
         :return: None
         """
@@ -143,7 +142,6 @@ class Launcher(object):
         """
         backup_path = self.workspace.settings.get_temp_path()
         logger.debug(f"Restoring backup of bootstrap, platform and user settings in path {backup_path}")
-        self.workspace.settings.restore_platform_settings(backup_path)
 
     def teardown(self):
         """

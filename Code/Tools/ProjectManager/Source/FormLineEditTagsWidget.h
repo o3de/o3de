@@ -59,6 +59,14 @@ namespace O3DE::ProjectManager
             return m_tags;
         }
 
+        void setTags(const QStringList& tagList)
+        {
+            m_tags = tagList;
+            refreshTagFrame();
+        }
+
+        void clear();
+
     protected:
         //! The button that is placed on the right side of the line edit. Used to show the auto-completion menu.
         QPushButton* m_dropdownButton = nullptr;

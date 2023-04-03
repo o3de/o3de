@@ -18,13 +18,14 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputBufferDescriptor>()
-                    ->Version(4)
+                    ->Version(5)
                     ->Field("m_name", &ShaderInputBufferDescriptor::m_name)
                     ->Field("m_type", &ShaderInputBufferDescriptor::m_type)
                     ->Field("m_access", &ShaderInputBufferDescriptor::m_access)
                     ->Field("m_count", &ShaderInputBufferDescriptor::m_count)
                     ->Field("m_strideSize", &ShaderInputBufferDescriptor::m_strideSize)
-                    ->Field("m_registerId", &ShaderInputBufferDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputBufferDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputBufferDescriptor::m_spaceId);
             }
 
             ShaderInputBufferIndex::Reflect(context);
@@ -36,14 +37,15 @@ namespace AZ
             ShaderInputBufferType type,
             uint32_t bufferCount,
             uint32_t strideSize,
-            uint32_t registerId
-            )
-            : m_name{name}
-            , m_access{access}
-            , m_type{type}
-            , m_count{bufferCount}
+            uint32_t registerId,
+            uint32_t spaceId)
+            : m_name{ name }
+            , m_access{ access }
+            , m_type{ type }
+            , m_count{ bufferCount }
             , m_strideSize{ strideSize }
             , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputBufferDescriptor::GetHash(HashValue64 seed) const
@@ -62,12 +64,13 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputImageDescriptor>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("m_name", &ShaderInputImageDescriptor::m_name)
                     ->Field("m_type", &ShaderInputImageDescriptor::m_type)
                     ->Field("m_access", &ShaderInputImageDescriptor::m_access)
                     ->Field("m_count", &ShaderInputImageDescriptor::m_count)
-                    ->Field("m_registerId", &ShaderInputImageDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputImageDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputImageDescriptor::m_spaceId);
             }
 
             ShaderInputImageIndex::Reflect(context);
@@ -78,12 +81,14 @@ namespace AZ
             ShaderInputImageAccess access,
             ShaderInputImageType type,
             uint32_t imageCount,
-            uint32_t registerId)
-            : m_name{name}
-            , m_access{access}
-            , m_type{type}
-            , m_count{imageCount}
+            uint32_t registerId,
+            uint32_t spaceId)
+            : m_name{ name }
+            , m_access{ access }
+            , m_type{ type }
+            , m_count{ imageCount }
             , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputImageDescriptor::GetHash(HashValue64 seed) const
@@ -101,12 +106,13 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputBufferUnboundedArrayDescriptor>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_name", &ShaderInputBufferUnboundedArrayDescriptor::m_name)
                     ->Field("m_type", &ShaderInputBufferUnboundedArrayDescriptor::m_type)
                     ->Field("m_access", &ShaderInputBufferUnboundedArrayDescriptor::m_access)
                     ->Field("m_strideSize", &ShaderInputBufferUnboundedArrayDescriptor::m_strideSize)
-                    ->Field("m_registerId", &ShaderInputBufferUnboundedArrayDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputBufferUnboundedArrayDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputBufferUnboundedArrayDescriptor::m_spaceId);
             }
 
             ShaderInputBufferUnboundedArrayIndex::Reflect(context);
@@ -117,12 +123,14 @@ namespace AZ
             ShaderInputBufferAccess access,
             ShaderInputBufferType type,
             uint32_t strideSize,
-            uint32_t registerId)
+            uint32_t registerId,
+            uint32_t spaceId)
             : m_name{ name }
             , m_access{ access }
             , m_type{ type }
             , m_strideSize { strideSize }
             , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputBufferUnboundedArrayDescriptor::GetHash(HashValue64 seed) const
@@ -140,11 +148,12 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputImageUnboundedArrayDescriptor>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_name", &ShaderInputImageUnboundedArrayDescriptor::m_name)
                     ->Field("m_type", &ShaderInputImageUnboundedArrayDescriptor::m_type)
                     ->Field("m_access", &ShaderInputImageUnboundedArrayDescriptor::m_access)
-                    ->Field("m_registerId", &ShaderInputImageUnboundedArrayDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputImageUnboundedArrayDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputImageUnboundedArrayDescriptor::m_spaceId);
             }
 
             ShaderInputImageUnboundedArrayIndex::Reflect(context);
@@ -154,11 +163,13 @@ namespace AZ
             const Name& name,
             ShaderInputImageAccess access,
             ShaderInputImageType type,
-            uint32_t registerId)
+            uint32_t registerId,
+            uint32_t spaceId)
             : m_name{ name }
             , m_access{ access }
             , m_type { type }
             , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputImageUnboundedArrayDescriptor::GetHash(HashValue64 seed) const
@@ -175,10 +186,11 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputSamplerDescriptor>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("m_name", &ShaderInputSamplerDescriptor::m_name)
                     ->Field("m_count", &ShaderInputSamplerDescriptor::m_count)
-                    ->Field("m_registerId", &ShaderInputSamplerDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputSamplerDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputSamplerDescriptor::m_spaceId);
             }
 
             ShaderInputSamplerIndex::Reflect(context);
@@ -187,10 +199,12 @@ namespace AZ
         ShaderInputSamplerDescriptor::ShaderInputSamplerDescriptor(
             const Name& name,
             uint32_t samplerCount,
-            uint32_t registerId)
-            : m_name{name}
-            , m_count{samplerCount}
-            , m_registerId{registerId}
+            uint32_t registerId,
+            uint32_t spaceId)
+            : m_name{ name }
+            , m_count{ samplerCount }
+            , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputSamplerDescriptor::GetHash(HashValue64 seed) const
@@ -206,11 +220,12 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputConstantDescriptor>()
-                    ->Version(3)
+                    ->Version(4)
                     ->Field("m_name", &ShaderInputConstantDescriptor::m_name)
                     ->Field("m_constantByteOffset", &ShaderInputConstantDescriptor::m_constantByteOffset)
                     ->Field("m_constantByteCount", &ShaderInputConstantDescriptor::m_constantByteCount)
-                    ->Field("m_registerId", &ShaderInputConstantDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputConstantDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputConstantDescriptor::m_spaceId);
             }
 
             ShaderInputConstantIndex::Reflect(context);
@@ -220,11 +235,13 @@ namespace AZ
             const Name& name,
             uint32_t constantByteOffset,
             uint32_t constantByteCount,
-            uint32_t registerId)
-            : m_name{name}
-            , m_constantByteOffset{constantByteOffset}
-            , m_constantByteCount{constantByteCount}
-            , m_registerId{registerId}
+            uint32_t registerId,
+            uint32_t spaceId)
+            : m_name{ name }
+            , m_constantByteOffset{ constantByteOffset }
+            , m_constantByteCount{ constantByteCount }
+            , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputConstantDescriptor::GetHash(HashValue64 seed) const
@@ -241,20 +258,22 @@ namespace AZ
             if (SerializeContext* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderInputStaticSamplerDescriptor>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("m_name", &ShaderInputStaticSamplerDescriptor::m_name)
                     ->Field("m_samplerState", &ShaderInputStaticSamplerDescriptor::m_samplerState)
-                    ->Field("m_registerId", &ShaderInputStaticSamplerDescriptor::m_registerId);
+                    ->Field("m_registerId", &ShaderInputStaticSamplerDescriptor::m_registerId)
+                    ->Field("m_spaceId", &ShaderInputStaticSamplerDescriptor::m_spaceId);
             }
 
             ShaderInputStaticSamplerIndex::Reflect(context);
         }
 
         ShaderInputStaticSamplerDescriptor::ShaderInputStaticSamplerDescriptor(
-            const Name& name, const SamplerState& samplerState, uint32_t registerId)
+            const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId)
             : m_name{name}
             , m_samplerState{ samplerState }
             , m_registerId{ registerId }
+            , m_spaceId{ spaceId }
         {}
 
         HashValue64 ShaderInputStaticSamplerDescriptor::GetHash(HashValue64 seed) const

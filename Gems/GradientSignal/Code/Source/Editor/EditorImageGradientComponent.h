@@ -10,17 +10,25 @@
 
 #include <GradientSignal/Editor/EditorGradientComponentBase.h>
 #include <GradientSignal/Components/ImageGradientComponent.h>
-#include <GradientSignal/Editor/EditorGradientImageCreatorRequestBus.h>
 #include <GradientSignal/Editor/GradientPreviewer.h>
+#include <GradientSignal/Editor/PaintableImageAssetHelper.h>
 
-#include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
-#include <AzToolsFramework/Manipulators/PaintBrushManipulator.h>
-#include <AzToolsFramework/Manipulators/PaintBrushNotificationBus.h>
+#include <AzFramework/PaintBrush/PaintBrushNotificationBus.h>
 
-#include <Editor/EditorImageGradientRequestBus.h>
+#include <Editor/EditorImageGradientComponentMode.h>
 
 namespace GradientSignal
 {
+    class EditorImageGradientComponent;
+
+    // Due to the EditorImageGradientComponent having a member where it passes itself as the type below
+    // `PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>`
+    // The AzTypeInfo can't be queried due to EditorImageGradientComponent still be defined
+    // First the AzTypeInfo is defined using the forward declaration above
+    // Next the `AZ_RTTI_NO_TYPE_INFO_DECL` is used to declare the RTTI member and static functions within the class
+    // Finally the AZ_RTTI_NO_TYPE_INFO_IMPL is used to implement the RTTI functions in the cpp file
+    AZ_TYPE_INFO_SPECIALIZE(EditorImageGradientComponent, EditorImageGradientComponentTypeId);
+
     // This class inherits from EditorComponentBase instead of EditorGradientComponentBase / EditorWrappedComponentBase so that
     // we can have control over where the Editor-specific parameters for image creation and editing appear in the component
     // relative to the other runtime-only settings.
@@ -28,12 +36,13 @@ namespace GradientSignal
         : public AzToolsFramework::Components::EditorComponentBase
         , protected AzToolsFramework::EditorVisibilityNotificationBus::Handler
         , protected LmbrCentral::DependencyNotificationBus::Handler
-        , private GradientImageCreatorRequestBus::Handler
-        , private EditorImageGradientRequestBus::Handler
+        , private AzFramework::PaintBrushNotificationBus::Handler
     {
     public:
-        AZ_EDITOR_COMPONENT(
-            EditorImageGradientComponent, EditorImageGradientComponentTypeId, AzToolsFramework::Components::EditorComponentBase);
+        AZ_EDITOR_COMPONENT_INTRUSIVE_DESCRIPTOR_TYPE(EditorImageGradientComponent);
+        AZ_COMPONENT_BASE(EditorImageGradientComponent);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+
         static void Reflect(AZ::ReflectContext* context);
 
         static constexpr const char* const s_categoryName = "Gradients";
@@ -59,61 +68,32 @@ namespace GradientSignal
 
         // DependencyNotificationBus overrides ...
         void OnCompositionChanged() override;
-
-        //! GradientImageCreatorRequestBus overrides ...
-        AZ::Vector2 GetOutputResolution() const override;
-        void SetOutputResolution(const AZ::Vector2& resolution) override;
-        OutputFormat GetOutputFormat() const override;
-        void SetOutputFormat(OutputFormat outputFormat) override;
-        AZ::IO::Path GetOutputImagePath() const override;
-        void SetOutputImagePath(const AZ::IO::Path& outputImagePath) override;
+        void OnCompositionRegionChanged(const AZ::Aabb& dirtyRegion) override;
 
     protected:
-        enum class ImageCreationOrSelection : uint8_t
-        {
-            UseExistingImage,
-            CreateNewImage
-        };
+        bool SavePaintedData();
 
-        // EditorImageGradientRequestBus overrides ...
-        void StartImageModification() override;
-        void EndImageModification() override;
-        bool SaveImage() override;
+        // PaintBrushNotificationBus overrides
+        void OnPaintModeBegin() override;
+        void OnPaintModeEnd() override;
+        void OnBrushStrokeBegin(const AZ::Color& color) override;
+        void OnBrushStrokeEnd() override;
+        void OnPaint(const AZ::Color& color, const AZ::Aabb& dirtyArea, ValueLookupFn& valueLookupFn, BlendFn& blendFn) override;
+        void OnSmooth(
+            const AZ::Color& color,
+            const AZ::Aabb& dirtyArea,
+            ValueLookupFn& valueLookupFn,
+            AZStd::span<const AZ::Vector3> valuePointOffsets,
+            SmoothFn& smoothFn) override;
+        AZ::Color OnGetColor(const AZ::Vector3& brushCenter) const override;
 
-        bool GetSaveLocation(AZ::IO::Path& fullPath, AZStd::string& relativePath);
-        void CreateImage();
-        bool SaveImageInternal(
-            AZ::IO::Path& fullPath, AZStd::string& relativePath,
-            int imageResolutionX, int imageResolutionY, int channels, OutputFormat format, AZStd::span<const uint8_t> pixelBuffer);
-
-        AZ::u32 RefreshCreationSelectionChoice();
-        bool GetImageCreationVisibility() const;
-        AZ::Crc32 GetImageOptionsVisibility() const;
-        AZ::Crc32 GetPaintModeVisibility() const;
         bool GetImageOptionsReadOnly() const;
-
-        bool RefreshImageAssetStatus();
-        static bool ImageHasPendingJobs(const AZ::Data::AssetId& assetId);
-
-        bool InComponentMode() const;
-
-        ImageCreationOrSelection m_creationSelectionChoice = ImageCreationOrSelection::UseExistingImage;
-
-        // Parameters used for creating new source image assets
-        AZ::Vector2 m_outputResolution = AZ::Vector2(512.0f);
-        OutputFormat m_outputFormat = OutputFormat::R32;
-        AZ::IO::Path m_outputImagePath;
-
-        // Keep track of the image asset status so that we can know when it has changed.
-        AZ::Data::AssetData::AssetStatus m_currentImageAssetStatus = AZ::Data::AssetData::AssetStatus::NotLoaded;
-        bool m_currentImageJobsPending = false;
 
         AZ::u32 ConfigurationChanged();
 
     private:
-        //! Delegates the handling of component editing mode to a paint controller.
-        using ComponentModeDelegate = AzToolsFramework::ComponentModeFramework::ComponentModeDelegate;
-        ComponentModeDelegate m_componentModeDelegate;
+        ImageCreatorUtils::PaintableImageAssetHelper<EditorImageGradientComponent, EditorImageGradientComponentMode>
+            m_paintableImageAssetHelper;
 
         //! Preview of the gradient image
         GradientPreviewer m_previewer;
@@ -123,6 +103,5 @@ namespace GradientSignal
         ImageGradientConfig m_configuration;
         bool m_visible = true;
         bool m_runtimeComponentActive = false;
-
     };
 }

@@ -56,7 +56,7 @@ namespace AZ
 
             u32 OnConfigurationChanged() override;
 
-            AreaLightComponentConfig::LightType m_lightType; // Used to detect when the configuration's light type changes.
+            AreaLightComponentConfig::LightType m_lightType {AreaLightComponentConfig::LightType::Unknown}; // Used to detect when the configuration's light type changes.
         };
 
     } // namespace Render

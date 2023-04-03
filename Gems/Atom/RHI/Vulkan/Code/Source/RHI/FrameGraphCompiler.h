@@ -11,6 +11,7 @@
 #include <Atom/RHI/ScopeAttachment.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
+#include <RHI/Conversion.h>
 #include <RHI/Scope.h>
 #include <RHI/Semaphore.h>
 
@@ -34,7 +35,7 @@ namespace AZ
             using Base = RHI::FrameGraphCompiler;
 
         public:
-            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FrameGraphCompiler, AZ::SystemAllocator);
 
             static RHI::Ptr<FrameGraphCompiler> Create();
 
@@ -103,8 +104,8 @@ namespace AZ
             // Add VK_ACCESS_TRANSFER_WRITE_BIT in case we want to do a clear operation.
             if (HasExplicitClear(scopeAttachment, scopeAttachment.GetDescriptor()))
             {
-                srcAccessFlags |= VK_ACCESS_TRANSFER_WRITE_BIT;
-                srcAccessFlags = RHI::FilterBits(srcAccessFlags, GetSupportedAccessFlags(srcPipelineStageFlags));
+                srcPipelineStageFlags |= VK_PIPELINE_STAGE_TRANSFER_BIT;
+                srcAccessFlags = RHI::FilterBits(srcAccessFlags | VK_ACCESS_TRANSFER_WRITE_BIT, GetSupportedAccessFlags(srcPipelineStageFlags));
             }
         
             auto subresourceRange = GetSubresourceRange(scopeAttachment);

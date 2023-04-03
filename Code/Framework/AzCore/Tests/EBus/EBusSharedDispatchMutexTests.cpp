@@ -55,7 +55,7 @@ namespace UnitTest
     class SharedDispatchRequestHandler : public SharedDispatchRequestBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SharedDispatchRequestHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SharedDispatchRequestHandler, AZ::SystemAllocator);
 
         AZStd::semaphore m_querySemaphore; 
         AZStd::semaphore m_syncSemaphore;
@@ -113,7 +113,7 @@ namespace UnitTest
     };
 
     class EBusSharedDispatchMutexTestFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 

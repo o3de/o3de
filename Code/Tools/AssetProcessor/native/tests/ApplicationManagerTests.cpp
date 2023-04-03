@@ -12,17 +12,19 @@
 #include <tests/assetmanager/MockAssetProcessorManager.h>
 #include <tests/assetmanager/MockFileProcessor.h>
 #include <AzToolsFramework/Archive/ArchiveComponent.h>
+#include <native/FileWatcher/FileWatcher.h>
 #include <native/utilities/AssetServerHandler.h>
 #include <native/resourcecompiler/rcjob.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzCore/Settings/SettingsRegistryImpl.h>
+#include <unittests/UnitTestUtils.h>
 
 namespace UnitTests
 {
     void ApplicationManagerTest::SetUp()
     {
-        ScopedAllocatorSetupFixture::SetUp();
-        
+        LeakDetectionFixture::SetUp();
+
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         // We need a QCoreApplication to run the event loop
@@ -41,7 +43,7 @@ namespace UnitTests
         m_applicationManager->m_platformConfiguration->PopulatePlatformsForScanFolder(platforms);
         m_applicationManager->m_platformConfiguration->AddScanFolder(
             AssetProcessor::ScanFolderInfo{ assetRootDir.c_str(), "test", "test", true, true, platforms });
-        
+
         m_apmThread = AZStd::make_unique<QThread>(nullptr);
         m_apmThread->setObjectName("APM Thread");
         m_applicationManager->m_assetProcessorManager->moveToThread(m_apmThread.get());
@@ -55,30 +57,40 @@ namespace UnitTests
         m_applicationManager->m_fileProcessor = AZStd::move(fileProcessor); // The manager is taking ownership
         m_fileProcessorThread->start();
 
+        m_applicationManager->InitUuidManager();
+
         auto fileWatcher = AZStd::make_unique<FileWatcher>();
         m_fileWatcher = fileWatcher.get();
 
         // This is what we're testing, it will set up connections between the fileWatcher and the 2 QObject handlers we'll check
         m_applicationManager->InitFileMonitor(AZStd::move(fileWatcher)); // The manager is going to take ownership of the file watcher
+
+        m_applicationManager->InitUuidManager();
     }
 
     void ApplicationManagerTest::TearDown()
     {
-        m_apmThread->exit();
-        m_fileProcessorThread->exit();
+        m_applicationManager->DestroyFileMonitor();
+
+        m_apmThread->quit();
+        m_fileProcessorThread->quit();
+        m_apmThread->wait();
+        m_fileProcessorThread->wait();
         m_mockAPM = nullptr;
 
-        ScopedAllocatorSetupFixture::TearDown();
+        LeakDetectionFixture::TearDown();
     }
 
-    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread)
+    using BatchApplicationManagerTest = ::UnitTest::LeakDetectionFixture;
+
+    TEST_F(ApplicationManagerTest, FileWatcherEventsTriggered_ProperlySignalledOnCorrectThread_SUITE_sandbox)
     {
         AZ::IO::Path assetRootDir(m_databaseLocationListener.GetAssetRootDir());
 
         Q_EMIT m_fileWatcher->fileAdded((assetRootDir / "test").c_str());
         Q_EMIT m_fileWatcher->fileModified((assetRootDir / "test2").c_str());
         Q_EMIT m_fileWatcher->fileRemoved((assetRootDir / "test3").c_str());
-        
+
         EXPECT_TRUE(m_mockAPM->m_events[Added].WaitAndCheck()) << "APM Added event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Modified].WaitAndCheck()) << "APM Modified event failed";
         EXPECT_TRUE(m_mockAPM->m_events[Deleted].WaitAndCheck()) << "APM Deleted event failed";
@@ -98,8 +110,6 @@ namespace UnitTests
 
     TEST(AssetProcessorAssetServerHandler, AssetServerHandler_FutureCalls_FailsNoExceptions)
     {
-        UnitTest::ScopedAllocatorFixture fixture;
-
         char executablePath[AZ_MAX_PATH_LEN];
         AZ::Utils::GetExecutablePath(executablePath, AZ_MAX_PATH_LEN);
 

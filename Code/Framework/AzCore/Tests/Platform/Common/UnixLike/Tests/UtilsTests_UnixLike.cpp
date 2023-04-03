@@ -12,7 +12,7 @@
 namespace UnitTest
 {
     class UtilsUnixLikeTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     };
 

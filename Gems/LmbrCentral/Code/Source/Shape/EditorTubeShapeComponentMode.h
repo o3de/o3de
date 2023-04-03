@@ -12,6 +12,7 @@
 #include <AzToolsFramework/ComponentMode/EditorBaseComponentMode.h>
 #include <LmbrCentral/Shape/ShapeComponentBus.h>
 #include <LmbrCentral/Shape/EditorSplineComponentBus.h>
+#include <LmbrCentral/Shape/EditorTubeShapeComponentBus.h>
 #include <LmbrCentral/Shape/SplineComponentBus.h>
 
 namespace AzToolsFramework
@@ -28,9 +29,11 @@ namespace LmbrCentral
         , private ShapeComponentNotificationsBus::Handler
         , private SplineComponentNotificationBus::Handler
         , private EditorSplineComponentNotificationBus::Handler
+        , private EditorTubeShapeComponentModeRequestBus::Handler
     {
     public:
         AZ_CLASS_ALLOCATOR_DECL
+        AZ_RTTI(EditorTubeShapeComponentMode, "{E186EBDF-29C7-4CE9-90C4-7A7E32349580}", EditorBaseComponentMode)
 
         /// Data required per TubeShape manipulator.
         struct TubeManipulatorState
@@ -43,11 +46,18 @@ namespace LmbrCentral
             const AZ::EntityComponentIdPair& entityComponentIdPair, AZ::Uuid componentType);
         ~EditorTubeShapeComponentMode();
 
+        static void Reflect(AZ::ReflectContext* context);
+
+        static void RegisterActions();
+        static void BindActionsToModes();
+        static void BindActionsToMenus();
+
     private:
         // EditorBaseComponentMode
         void Refresh() override;
         AZStd::vector<AzToolsFramework::ActionOverride> PopulateActionsImpl() override;
         AZStd::string GetComponentModeName() const override;
+        AZ::Uuid GetComponentModeType() const override;
 
         // Manipulator handling
         void CreateManipulators();
@@ -70,6 +80,9 @@ namespace LmbrCentral
 
         // EditorSplineComponentNotificationBus
         void OnSplineTypeChanged() override;
+
+        // EditorTubeShapeComponentModeRequestBus overrides ...
+        void ResetRadii() override;
 
         void RefreshManipulatorsLocal(AZ::EntityId entityId);
 

@@ -73,7 +73,8 @@ namespace LegacyFramework
     {
         CustomMenusMessages::Bus::Handler::BusConnect();
 
-        EBUS_EVENT(LegacyFramework::CustomMenusRegistration::Bus, RegisterMenuEntries);
+        LegacyFramework::CustomMenusRegistration::Bus::Broadcast(
+            &LegacyFramework::CustomMenusRegistration::Bus::Events::RegisterMenuEntries);
     }
 
     void CustomMenusComponent::Deactivate()
@@ -92,7 +93,8 @@ namespace LegacyFramework
 
         if (hotkeyId != AZ::Crc32())
         {
-            EBUS_EVENT(AzToolsFramework::FrameworkMessages::Bus, RegisterActionToHotkey, hotkeyId, action);
+            AzToolsFramework::FrameworkMessages::Bus::Broadcast(
+                &AzToolsFramework::FrameworkMessages::Bus::Events::RegisterActionToHotkey, hotkeyId, action);
         }
     }
 

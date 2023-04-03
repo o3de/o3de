@@ -12,6 +12,7 @@
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzFramework/Physics/Shape.h>
+#include <AzFramework/Physics/PhysicsSystem.h>
 
 namespace AzPhysics
 {
@@ -21,18 +22,6 @@ namespace AzPhysics
         AZ::Crc32 GetPropertyVisibility(AZ::u16 flags, RigidBodyConfiguration::PropertyVisibility property)
         {
             return (flags & property) != 0 ? AZ::Edit::PropertyVisibility::Show : AZ::Edit::PropertyVisibility::Hide;
-        }
-
-        void SetPropertyVisibility(AZ::u16 flags, RigidBodyConfiguration::PropertyVisibility property, bool isVisible)
-        {
-            if (isVisible)
-            {
-                flags |= property;
-            }
-            else
-            {
-                flags &= ~property;
-            }
         }
 
         bool RigidBodyVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
@@ -104,7 +93,25 @@ namespace AzPhysics
         }
     }
 
-    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator, 0);
+    static constexpr AZStd::string_view KinematicDescription =
+        "Determines how the movement/position of the rigid body is controlled.";
+
+    static constexpr AZStd::string_view KinematicDescriptionReadOnly =
+        "Determines how the movement/position of the rigid body is controlled. \n"
+        "<b>The rigid body cannot be set as Kinematic if CCD is enabled, disable CCD to allow changes to be made.</b>";
+
+    static constexpr AZStd::string_view CcdDescription =
+        "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
+        "configuration.";
+
+    static constexpr AZStd::string_view CcdDescriptionReadOnly =
+        "When active, the rigid body has continuous collision detection (CCD). Use this to ensure accurate "
+        "collision detection, particularly for fast moving rigid bodies. CCD must be activated in the global PhysX "
+        "configuration.\n <b>CCD cannot be enabled if the rigid body is Kinematic, set the rigid body as Dynamic "
+        "to allow changes to be made.</b>";
+
+    AZ_CLASS_ALLOCATOR_IMPL(RigidBodyConfiguration, AZ::SystemAllocator);
 
     void RigidBodyConfiguration::Reflect(AZ::ReflectContext* context)
     {
@@ -112,6 +119,7 @@ namespace AzPhysics
         {
             serializeContext->Class<RigidBodyConfiguration, AzPhysics::SimulatedBodyConfiguration>()
                 ->Version(5, &Internal::RigidBodyVersionConverter)
+                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("Initial linear velocity", &RigidBodyConfiguration::m_initialLinearVelocity)
                 ->Field("Initial angular velocity", &RigidBodyConfiguration::m_initialAngularVelocity)
                 ->Field("Linear damping", &RigidBodyConfiguration::m_linearDamping)
@@ -120,7 +128,6 @@ namespace AzPhysics
                 ->Field("Start Asleep", &RigidBodyConfiguration::m_startAsleep)
                 ->Field("Interpolate Motion", &RigidBodyConfiguration::m_interpolateMotion)
                 ->Field("Gravity Enabled", &RigidBodyConfiguration::m_gravityEnabled)
-                ->Field("Kinematic", &RigidBodyConfiguration::m_kinematic)
                 ->Field("CCD Enabled", &RigidBodyConfiguration::m_ccdEnabled)
                 ->Field("Compute Mass", &RigidBodyConfiguration::m_computeMass)
                 ->Field("Lock Linear X", &RigidBodyConfiguration::m_lockLinearX)
@@ -138,6 +145,7 @@ namespace AzPhysics
                 ->Field("Include All Shapes In Mass", &RigidBodyConfiguration::m_includeAllShapesInMassCalculation)
                 ->Field("CCD Min Advance", &RigidBodyConfiguration::m_ccdMinAdvanceCoefficient)
                 ->Field("CCD Friction", &RigidBodyConfiguration::m_ccdFrictionEnabled)
+                ->Field("Open PhysX Configuration", &RigidBodyConfiguration::m_configButton)
                 ;
         }
     }
@@ -178,9 +186,28 @@ namespace AzPhysics
             MassComputeFlags::INCLUDE_ALL_SHAPES == (flags & MassComputeFlags::INCLUDE_ALL_SHAPES);
     }
 
-    bool RigidBodyConfiguration::IsCCDEnabled() const
+    bool RigidBodyConfiguration::IsCcdEnabled() const
     {
         return m_ccdEnabled;
+    }
+
+    bool RigidBodyConfiguration::CcdReadOnly() const
+    {
+        if (auto* physicsSystem = AZ::Interface<AzPhysics::SystemInterface>::Get())
+        {
+            return !physicsSystem->GetDefaultSceneConfiguration().m_enableCcd || m_kinematic;
+        }
+        return m_kinematic;
+    }
+
+    AZStd::string_view RigidBodyConfiguration::GetCcdTooltip() const
+    {
+        return m_kinematic ? CcdDescriptionReadOnly : CcdDescription;
+    }
+
+    AZStd::string_view RigidBodyConfiguration::GetKinematicTooltip() const
+    {
+        return m_ccdEnabled ? KinematicDescriptionReadOnly : KinematicDescription;
     }
 
     AZ::Crc32 RigidBodyConfiguration::GetInitialVelocitiesVisibility() const
@@ -236,7 +263,7 @@ namespace AzPhysics
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::Kinematic);
     }
 
-    AZ::Crc32 RigidBodyConfiguration::GetCCDVisibility() const
+    AZ::Crc32 RigidBodyConfiguration::GetCcdVisibility() const
     {
         return Internal::GetPropertyVisibility(m_propertyVisibilityFlags, RigidBodyConfiguration::PropertyVisibility::ContinuousCollisionDetection);
     }

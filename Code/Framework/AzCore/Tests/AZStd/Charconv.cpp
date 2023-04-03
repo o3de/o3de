@@ -15,7 +15,7 @@
 namespace UnitTest
 {
     class CharconvTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {};
 
     TEST_F(CharconvTestFixture, ToChars_CanConvertIntegralValue_Success)

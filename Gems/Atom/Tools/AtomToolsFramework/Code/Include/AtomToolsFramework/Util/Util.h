@@ -80,6 +80,19 @@ namespace AtomToolsFramework
     //! @returns a pointer to the application main window 
     QWidget* GetToolMainWindow();
 
+    //! Searches a vector of string values for the first non empty string.
+    //! @param values Container of strings to be searched.
+    //! @param defaultValue Value returned if no valid string was found.
+    //! @returns The first nonempty string or the default value
+    AZStd::string GetFirstNonEmptyString(const AZStd::vector<AZStd::string>& values, const AZStd::string& defaultValue = {});
+
+    // Find and replace a whole word or symbol using regular expressions.
+    void ReplaceSymbolsInContainer(
+        const AZStd::string& findText, const AZStd::string& replaceText, AZStd::vector<AZStd::string>& container);
+
+    void ReplaceSymbolsInContainer(
+        const AZStd::vector<AZStd::pair<AZStd::string, AZStd::string>>& substitutionSymbols, AZStd::vector<AZStd::string>& container);
+
     //! Converts input text into a code-friendly symbol name, removing special characters and replacing whitespace with underscores.
     //! @param text Input text that will be converted into a symbol name
     //! @returns the symbol name generated from the text
@@ -268,8 +281,20 @@ namespace AtomToolsFramework
     //! Collect a set of file paths contained within asset browser entry or URL mime data
     AZStd::set<AZStd::string> GetPathsFromMimeData(const QMimeData* mimeData);
 
+    //! Invokes a visitor function on every file contained in the initial folder, optionally recursing through subfolders and visiting those files as well.
+    void VisitFilesInFolder(const AZStd::string& folder, const AZStd::function<bool(const AZStd::string&)> visitorFn, bool recurse);
+
+    //! Invokes a visitor function on all files contained in asset scan folders.
+    void VisitFilesInScanFolders(const AZStd::function<bool(const AZStd::string&)> visitorFn);
+
+    // Visits all scan folders asynchronously, gathering all of the paths matching the filter. 
+    AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingFilter(const AZStd::function<bool(const AZStd::string&)> filterFn);
+
     //! Collect a set of file paths from all project safe folders matching a wild card
     AZStd::vector<AZStd::string> GetPathsInSourceFoldersMatchingWildcard(const AZStd::string& wildcard);
+
+    //! Return a list of all asset safe folders except for those underneath the cache folder, usually intermediate asset folders.
+    AZStd::vector<AZStd::string> GetNonCacheSourceFolders();
 
     //! Add menu actions for scripts specified in the settings registry
     //! @param menu The menu where the actions will be inserted
@@ -281,3 +306,4 @@ namespace AtomToolsFramework
     void ReflectUtilFunctions(AZ::ReflectContext* context);
 
 } // namespace AtomToolsFramework
+

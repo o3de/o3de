@@ -90,6 +90,8 @@ set(FILES
     Source/ScreenSpace/EditorDeferredFogComponent.cpp
     Source/ReflectionProbe/EditorReflectionProbeComponent.h
     Source/ReflectionProbe/EditorReflectionProbeComponent.cpp
+    Source/SpecularReflections/EditorSpecularReflectionsComponent.h
+    Source/SpecularReflections/EditorSpecularReflectionsComponent.cpp
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.h
     Source/SkinnedMesh/SkinnedMeshDebugDisplay.cpp
     Source/SkyAtmosphere/EditorSkyAtmosphereComponent.cpp

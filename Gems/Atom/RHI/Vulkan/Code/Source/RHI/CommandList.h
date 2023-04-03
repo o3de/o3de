@@ -47,7 +47,7 @@ namespace AZ
             friend class CommandPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandList, AZ::SystemAllocator);
             AZ_RTTI(CommandList, "138BB654-124A-47F7-8426-9ED2204BCDBD", Base);
 
             struct InheritanceInfo
@@ -87,6 +87,9 @@ namespace AZ
             void EndPredication() override;
             void BuildBottomLevelAccelerationStructure(const RHI::RayTracingBlas& rayTracingBlas) override;
             void BuildTopLevelAccelerationStructure(const RHI::RayTracingTlas& rayTracingTlas) override;
+            void SetFragmentShadingRate(
+                RHI::ShadingRate rate,
+                const RHI::ShadingRateCombinators& combinators = DefaultShadingRateCombinators) override;
             ////////////////////////////////////////////////////////////
 
             ///////////////////////////////////////////////////////////////////
@@ -143,6 +146,7 @@ namespace AZ
                 const Framebuffer* m_framebuffer = nullptr;
                 RHI::CommandListScissorState m_scissorState;
                 RHI::CommandListViewportState m_viewportState;
+                RHI::CommandListShadingRateState m_shadingRateState;
             };
 
             CommandList() = default;
@@ -160,6 +164,7 @@ namespace AZ
             void BindPipeline(const PipelineState* pipelineState);
             void CommitViewportState();
             void CommitScissorState();
+            void CommitShadingRateState();
 
             template <class Item>
             bool CommitShaderResource(const Item& item);

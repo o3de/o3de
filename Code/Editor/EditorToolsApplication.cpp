@@ -20,6 +20,7 @@
 
 // Editor
 #include "MainWindow.h"
+#include "Controls/ReflectedPropertyControl/ReflectedVar.h"
 #include "CryEdit.h"
 #include "DisplaySettingsPythonFuncs.h"
 #include "GameEngine.h"
@@ -128,6 +129,12 @@ namespace EditorInternal
     void EditorToolsApplication::Reflect(AZ::ReflectContext* context)
     {
         ToolsApplication::Reflect(context);
+
+        // Reflect property control classes to the serialize context...
+        if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
+        {
+            ReflectedVarInit::setupReflection(serializeContext);
+        }
 
         if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
         {

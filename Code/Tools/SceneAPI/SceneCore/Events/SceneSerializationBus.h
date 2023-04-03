@@ -39,11 +39,11 @@ namespace AZ
                 //! Loads a scene and its corresponding manifest if available, otherwise a new manifest
                 //! is created.
                 //! @param sceneFilePath The absolute or relative path to the scene file in the source folder.
-                //! @param sceneSourceGuid The source uuid for the scene file. If a null-uuid is given LoadScene 
-                //! will attempt to query the Asset Processor for the uuid.
+                //! @param sceneSourceGuid The source uuid for the scene file. If a null-uuid is given LoadScene will attempt to query the Asset Processor for the uuid.
+                //! @param watchFolder is the scan folder that it was found inside
                 //! @return The loaded scene or null if the file couldn't be fully resolved or an error 
                 //! occurred during loading.
-                virtual AZStd::shared_ptr<Containers::Scene> LoadScene(const AZStd::string& sceneFilePath, Uuid sceneSourceGuid) = 0;
+                virtual AZStd::shared_ptr<Containers::Scene> LoadScene(const AZStd::string& sceneFilePath, Uuid sceneSourceGuid, const AZStd::string& watchFolder) = 0;
 
                 //! The scene system caches loaded scenes. This checks if the given scene is valid and in the cache or not.
                 //! @param sceneFilePath The absolute or relative path to the scene file in the source folder.

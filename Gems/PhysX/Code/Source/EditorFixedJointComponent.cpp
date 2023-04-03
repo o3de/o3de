@@ -52,7 +52,7 @@ namespace PhysX
     void EditorFixedJointComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC_CE("TransformService"));
-        required.push_back(AZ_CRC_CE("PhysicsRigidBodyService"));
+        required.push_back(AZ_CRC_CE("PhysicsDynamicRigidBodyService"));
     }
 
     void EditorFixedJointComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
@@ -91,7 +91,7 @@ namespace PhysX
         gameEntity->CreateComponent<FixedJointComponent>(m_config.ToGameTimeConfig(), m_config.ToGenericProperties());
     }
 
-    AZStd::vector<JointsComponentModeCommon::SubModeParamaterState> EditorFixedJointComponent::GetSubComponentModesState()
+    AZStd::vector<JointsComponentModeCommon::SubModeParameterState> EditorFixedJointComponent::GetSubComponentModesState()
     {
         return EditorJointComponent::GetSubComponentModesState();
     }

@@ -15,6 +15,7 @@
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Entity/PrefabEditorEntityOwnershipInterface.h>
 #include <AzToolsFramework/Entity/SliceEditorEntityOwnershipServiceBus.h>
+#include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicHandler.h>
 #include <AzToolsFramework/Prefab/Spawnable/PrefabInMemorySpawnableConverter.h>
 
 namespace AzToolsFramework
@@ -22,6 +23,7 @@ namespace AzToolsFramework
     namespace Prefab
     {
         class Instance;
+        class InstanceEntityMapperInterface;
         class PrefabFocusInterface;
         class PrefabLoaderInterface;
         class PrefabSystemComponentInterface;
@@ -159,6 +161,8 @@ namespace AzToolsFramework
         void SetEntitiesRemovedCallback(OnEntitiesRemovedCallback onEntitiesRemovedCallback) override;
         void SetValidateEntitiesCallback(ValidateEntitiesCallback validateEntitiesCallback) override;
 
+        void HandleEntityBeingDestroyed(const AZ::EntityId& entityId) override;
+
         bool LoadFromStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         bool SaveToStream(AZ::IO::GenericStream& stream, AZStd::string_view filename) override;
         
@@ -219,8 +223,10 @@ namespace AzToolsFramework
 
         AZStd::string m_rootPath;
         AZStd::unique_ptr<Prefab::Instance> m_rootInstance;
+        Prefab::PrefabOverridePublicHandler m_prefabOverridePublicHandler;
 
         Prefab::PrefabFocusInterface* m_prefabFocusInterface = nullptr;
+        Prefab::InstanceEntityMapperInterface* m_instanceEntityMapperInterface = nullptr;
         Prefab::PrefabSystemComponentInterface* m_prefabSystemComponent = nullptr;
         Prefab::PrefabLoaderInterface* m_loaderInterface = nullptr;
         AzFramework::EntityContextId m_entityContextId;

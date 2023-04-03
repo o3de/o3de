@@ -8,12 +8,8 @@
 
 #include <AzCore/Math/Sha1.h>
 
-#include <AzCore/Casting/numeric_cast.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/limits.h>
-#include <AzCore/std/ranges/ranges_algorithm.h>
-#include <AzCore/std/ranges/ranges_to.h>
-#include <AzCore/std/string/fixed_string.h>
 
 namespace AZ::UuidInternal
 {
@@ -67,6 +63,11 @@ namespace AZ
     constexpr Uuid Uuid::CreateNull()
     {
         return Uuid{};
+    }
+
+    constexpr Uuid Uuid::CreateInvalid()
+    {
+        return Uuid{ "{00000BAD-0BAD-0BAD-0BAD-000000000BAD}" };
     }
 
     constexpr Uuid Uuid::CreateString(const char* string, size_t stringLength)
@@ -276,7 +277,7 @@ namespace AZ
     template<class StringType>
     constexpr StringType Uuid::ToString(bool isBrackets, bool isDashes) const
     {
-        return AZStd::ranges::to<StringType>(ToFixedString(isBrackets, isDashes));
+        return StringType{ AZStd::string_view(ToFixedString(isBrackets, isDashes)) };
     }
 
     /// For inplace version we require resize, data and size members.
@@ -353,12 +354,14 @@ namespace AZ
     constexpr bool Uuid::IsNull() const
     {
         constexpr AZStd::byte zeroBytes[16]{};
-        return AZStd::ranges::equal(m_data, zeroBytes);
+        return AZStd::equal(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(zeroBytes), AZStd::end(zeroBytes));
     }
 
     constexpr bool Uuid::operator==(const Uuid& rhs) const
     {
-        return AZStd::ranges::equal(m_data, rhs.m_data);
+        return AZStd::equal(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(rhs.m_data), AZStd::end(rhs.m_data));
     }
     constexpr bool Uuid::operator!=(const Uuid& rhs) const
     {
@@ -367,7 +370,8 @@ namespace AZ
 
     constexpr bool Uuid::operator<(const Uuid& rhs) const
     {
-        return AZStd::ranges::lexicographical_compare(m_data, rhs.m_data);
+        return AZStd::lexicographical_compare(AZStd::begin(m_data), AZStd::end(m_data),
+            AZStd::begin(rhs.m_data), AZStd::end(rhs.m_data));
     }
     constexpr bool Uuid::operator>(const Uuid& rhs) const
     {
@@ -440,8 +444,8 @@ namespace AZ
     {
         // Combines both Uuids into 1 single buffer
         AZStd::array<AZStd::byte, sizeof(Uuid::m_data) * 2> mergedData{AZStd::byte{}};
-        AZStd::ranges::copy(lhs, mergedData.begin());
-        AZStd::ranges::copy(rhs, mergedData.begin() + sizeof(Uuid::m_data));
+        AZStd::copy(lhs.begin(), lhs.end(), mergedData.begin());
+        AZStd::copy(rhs.begin(), rhs.end(), mergedData.begin() + sizeof(Uuid::m_data));
         return Uuid::CreateData(mergedData);
     }
 

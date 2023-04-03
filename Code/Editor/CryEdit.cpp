@@ -37,6 +37,7 @@ AZ_POP_DISABLE_WARNING
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QDialogButtonBox>
+#include <QUrlQuery>
 
 // AzCore
 #include <AzCore/Casting/numeric_cast.h>
@@ -55,14 +56,15 @@ AZ_POP_DISABLE_WARNING
 
 // AzFramework
 #include <AzFramework/Components/CameraBus.h>
-#include <AzFramework/Terrain/TerrainDataRequestBus.h>
 #include <AzFramework/Process/ProcessWatcher.h>
 #include <AzFramework/ProjectManager/ProjectManager.h>
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -93,7 +95,6 @@ AZ_POP_DISABLE_WARNING
 #include "MainWindow.h"
 
 #include "Core/QtEditorApplication.h"
-#include "StringDlg.h"
 #include "NewLevelDialog.h"
 #include "LayoutConfigDialog.h"
 #include "ViewManager.h"
@@ -163,6 +164,11 @@ static const char O3DEEditorClassName[] = "O3DEEditorClass";
 static const char O3DEApplicationName[] = "O3DEApplication";
 
 static AZ::EnvironmentVariable<bool> inEditorBatchMode = nullptr;
+
+namespace Platform
+{
+    bool OpenUri(const QUrl& uri);
+}
 
 RecentFileList::RecentFileList()
 {
@@ -525,8 +531,8 @@ public:
             {{"runpythonargs", "Command-line argument string to pass to the python script if --runpython or --runpythontest was used.", "runpythonargs"}, m_pythonArgs},
             {{"pythontestcase", "Test case name of python test script if --runpythontest was used.", "pythontestcase"}, m_pythonTestCase},
             {{"exec", "cfg file to run on startup, used for systems like automation", "exec"}, m_execFile},
-            {{"rhi", "Command-line argument to force which rhi to use", "dummyString"}, dummyString },
-            {{"rhi-device-validation", "Command-line argument to configure rhi validation", "dummyString"}, dummyString },
+            {{"rhi", "Command-line argument to force which rhi to use", "rhi"}, dummyString },
+            {{"rhi-device-validation", "Command-line argument to configure rhi validation", "rhi-device-validation"}, dummyString },
             {{"exec_line", "command to run on startup, used for systems like automation", "exec_line"}, m_execLineCmd},
             {{"regset", "Command-line argument to override settings registry values", "regset"}, dummyString},
             {{"regremove", "Deletes a value within the global settings registry at the JSON pointer path @key", "regremove"}, dummyString},
@@ -854,12 +860,12 @@ namespace
 
 QString FormatVersion([[maybe_unused]] const SFileVersion& v)
 {
-    if (QObject::tr("%1").arg(LY_VERSION_BUILD_NUMBER) == "0")
+    if (QObject::tr("%1").arg(O3DE_BUILD_VERSION) == "0")
     {
         return QObject::tr("Development Build");
     }
 
-    return QObject::tr("Version %1").arg(LY_VERSION_BUILD_NUMBER);
+    return QObject::tr("Version %1").arg(O3DE_BUILD_VERSION);
 }
 
 QString FormatRichTextCopyrightNotice()
@@ -1170,7 +1176,8 @@ void CCryEditApp::InitLevel(const CEditCommandLineInfo& cmdInfo)
         const bool runningPythonScript = cmdInfo.m_bRunPythonScript || cmdInfo.m_bRunPythonTestScript;
 
         AZ::EBusLogicalResult<bool, AZStd::logical_or<bool> > skipStartupUIProcess(false);
-        EBUS_EVENT_RESULT(skipStartupUIProcess, AzToolsFramework::EditorEvents::Bus, SkipEditorStartupUI);
+        AzToolsFramework::EditorEvents::Bus::BroadcastResult(
+            skipStartupUIProcess, &AzToolsFramework::EditorEvents::Bus::Events::SkipEditorStartupUI);
 
         if (!skipStartupUIProcess.value)
         {
@@ -1653,11 +1660,6 @@ bool CCryEditApp::InitInstance()
         return false;
     }
 
-    // Reflect property control classes to the serialize context...
-    AZ::SerializeContext* serializeContext = nullptr;
-    AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationRequests::GetSerializeContext);
-    AZ_Assert(serializeContext, "Serialization context not available");
-    ReflectedVarInit::setupReflection(serializeContext);
     RegisterReflectedVarHandlers();
 
     CreateSplashScreen();
@@ -1814,6 +1816,12 @@ bool CCryEditApp::InitInstance()
         QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
     }
 
+    // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
+    if (AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+    }
+
     CloseSplashScreen();
 
     // DON'T CHANGE ME!
@@ -1838,6 +1846,11 @@ bool CCryEditApp::InitInstance()
     if (!InitConsole())
     {
         return true;
+    }
+
+    if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
+    {
+        AZ::ComponentApplicationLifecycle::SignalEvent(*settingsRegistry, "LegacyCommandLineProcessed", R"({})");
     }
 
     if (IsInRegularEditorMode())
@@ -2054,7 +2067,7 @@ void CCryEditApp::OnDocumentationTutorials()
 
 void CCryEditApp::OnDocumentationGlossary()
 {
-    QString webLink = tr("https://docs.o3de.org/docs/user-guide/appendix/glossary/");
+    QString webLink = tr("https://o3de.org/docs/user-guide/appendix/glossary/");
     QDesktopServices::openUrl(QUrl(webLink));
 }
 
@@ -2195,7 +2208,8 @@ int CCryEditApp::ExitInstance(int exitCode)
     {
         // Ensure component entities are wiped prior to unloading plugins,
         // since components may be implemented in those plugins.
-        EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+            &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
         // vital, so that the Qt integration can unhook itself!
         m_pEditor->UnloadPlugins();
@@ -2319,11 +2333,11 @@ int CCryEditApp::IdleProcessing(bool bBackgroundUpdate)
         // launcher so this is only needed on windows.
         if (bActive)
         {
-            EBUS_EVENT(AzFramework::WindowsLifecycleEvents::Bus, OnSetFocus);
+            AzFramework::WindowsLifecycleEvents::Bus::Broadcast(&AzFramework::WindowsLifecycleEvents::Bus::Events::OnSetFocus);
         }
         else
         {
-            EBUS_EVENT(AzFramework::WindowsLifecycleEvents::Bus, OnKillFocus);
+            AzFramework::WindowsLifecycleEvents::Bus::Broadcast(&AzFramework::WindowsLifecycleEvents::Bus::Events::OnKillFocus);
         }
     #endif
     }
@@ -2529,7 +2543,7 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
         }
 
         CErrorsRecorder errRecorder(GetIEditor());
-        // If level not loaded first fast export terrain.
+        // If level not loaded first fast export the level.
         m_bIsExportingLegacyData = true;
         CGameExporter gameExporter;
         gameExporter.Export();
@@ -2544,17 +2558,6 @@ void CCryEditApp::ExportToGame(bool bNoMsgBox)
 void CCryEditApp::OnFileExportToGameNoSurfaceTexture()
 {
     UserExportToGame(false);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::DeleteSelectedEntities([[maybe_unused]] bool includeDescendants)
-{
-    GetIEditor()->BeginUndo();
-    CUndo undo("Delete Selected Object");
-    GetIEditor()->GetObjectManager()->DeleteSelection();
-    GetIEditor()->AcceptUndo("Delete Selection");
-    GetIEditor()->SetModifiedFlag();
-    GetIEditor()->SetModifiedModule(eModifiedBrushes);
 }
 
 void CCryEditApp::OnMoveObject()
@@ -2663,7 +2666,9 @@ void CCryEditApp::OnEditLevelData()
 //////////////////////////////////////////////////////////////////////////
 void CCryEditApp::OnFileEditLogFile()
 {
-    CFileUtil::EditTextFile(CLogFile::GetLogFileName(), 0, IFileUtil::FILE_TYPE_SCRIPT);
+    QString file = CLogFile::GetLogFileName();
+    QString fullPathName = Path::GamePathToFullPath(file);
+    QDesktopServices::openUrl(QUrl::fromLocalFile(fullPathName));
 }
 
 #ifdef ENABLE_SLICE_EDITOR
@@ -2899,7 +2904,7 @@ class SimulationModeCommand
     : public AzToolsFramework::UndoSystem::URSequencePoint
 {
 public:
-    AZ_CLASS_ALLOCATOR(SimulationModeCommand, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(SimulationModeCommand, AZ::SystemAllocator);
     AZ_RTTI(SimulationModeCommand, "{FB9FB958-5C56-47F6-B168-B5F564F70E69}");
 
     SimulationModeCommand(const AZStd::string& friendlyName);
@@ -3143,7 +3148,7 @@ CCryEditApp::ECreateLevelResult CCryEditApp::CreateLevel(const QString& levelNam
 
     if (!usePrefabSystemForLevels)
     {
-        // No terrain, but still need to export default octree and visarea data.
+        // export default octree and visarea data.
         CGameExporter gameExporter;
         gameExporter.Export(eExp_CoverSurfaces | eExp_SurfaceTexture, eLittleEndian, ".");
     }
@@ -3757,11 +3762,68 @@ CMainFrame * CCryEditApp::GetMainFrame() const
 }
 
 
+void CCryEditApp::OpenExternalLuaDebugger(AZStd::string_view luaDebuggerUri, AZStd::string_view projectPath, AZStd::string_view enginePath, const char* files)
+{
+    // Put together the whole Url Query String:
+    QUrlQuery query;
+    query.addQueryItem("projectPath", QString::fromUtf8(projectPath.data(), aznumeric_cast<int>(projectPath.size())));
+    if (!enginePath.empty())
+    {
+        query.addQueryItem("enginePath", QString::fromUtf8(enginePath.data(), aznumeric_cast<int>(enginePath.size())));
+    }
+
+    auto ParseFilesList = [&](AZStd::string_view filePath)
+    {
+        bool fullPathFound = false;
+        auto GetFullSourcePath = [&]
+        (AzToolsFramework::AssetSystem::AssetSystemRequest* assetSystemRequests)
+        {
+            AZ::IO::Path assetFullPath;
+            if(assetSystemRequests->GetFullSourcePathFromRelativeProductPath(filePath, assetFullPath.Native()))
+            {
+                fullPathFound = true;
+                query.addQueryItem("files[]", QString::fromUtf8(assetFullPath.c_str()));
+            }
+        };
+        AzToolsFramework::AssetSystemRequestBus::Broadcast(AZStd::move(GetFullSourcePath));
+        // If the full source path could be found through the Asset System, then
+        // attempt to resolve the path using the FileIO instance
+        if (!fullPathFound)
+        {
+            AZ::IO::FixedMaxPath resolvedFilePath;
+            if (auto fileIo = AZ::IO::FileIOBase::GetInstance();
+                fileIo != nullptr && fileIo->ResolvePath(resolvedFilePath, filePath)
+                && fileIo->Exists(resolvedFilePath.c_str()))
+            {
+                query.addQueryItem("files[]", QString::fromUtf8(resolvedFilePath.c_str()));
+            }
+        }
+    };
+    AZ::StringFunc::TokenizeVisitor(files, ParseFilesList, "|");
+
+    QUrl luaDebuggerUrl(QString::fromUtf8(luaDebuggerUri.data(), aznumeric_cast<int>(luaDebuggerUri.size())));
+    luaDebuggerUrl.setQuery(query);
+
+    AZ_VerifyError("CCryEditApp", Platform::OpenUri(luaDebuggerUrl),
+        "Failed to start external lua debugger with URI: %s", luaDebuggerUrl.toString().toUtf8().constData());
+
+}
+
 void CCryEditApp::OpenLUAEditor(const char* files)
 {
     AZ::IO::FixedMaxPathString enginePath = AZ::Utils::GetEnginePath();
-
     AZ::IO::FixedMaxPathString projectPath = AZ::Utils::GetProjectPath();
+
+    auto registry = AZ::SettingsRegistry::Get();
+    if (registry)
+    {
+        AZStd::string luaDebuggerUri;
+        if (registry->Get(luaDebuggerUri, LuaDebuggerUriRegistryKey))
+        {
+            OpenExternalLuaDebugger(luaDebuggerUri, projectPath, enginePath, files);
+            return;
+        }
+    }
 
     AZStd::string filename = "LuaIDE";
     AZ::IO::FixedMaxPath executablePath = AZ::Utils::GetExecutableDirectory();
@@ -3891,26 +3953,8 @@ extern "C"
 #pragma comment(lib, "Shell32.lib")
 #endif
 
-struct CryAllocatorsRAII
-{
-    CryAllocatorsRAII()
-    {
-        AZ_Assert(!AZ::AllocatorInstance<AZ::LegacyAllocator>::IsReady(), "Expected allocator to not be initialized, hunt down the static that is initializing it");
-
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Create();
-    }
-
-    ~CryAllocatorsRAII()
-    {
-        AZ::AllocatorInstance<AZ::LegacyAllocator>::Destroy();
-    }
-};
-
-
 extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
 {
-    CryAllocatorsRAII cryAllocatorsRAII;
-
     // Debugging utilities
     for (int i = 1; i < argc; ++i)
     {
@@ -3997,6 +4041,8 @@ extern "C" int AZ_DLL_EXPORT CryEditMain(int argc, char* argv[])
         AZ::SettingsRegistryInterface& registry = *AZ::SettingsRegistry::Get();
         AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddBuildSystemTargetSpecialization(
             registry, Editor::GetBuildTargetName());
+
+        AZ::Interface<AZ::IConsole>::Get()->PerformCommand("sv_isDedicated false");
 
         if (!AZToolsApp.Start())
         {

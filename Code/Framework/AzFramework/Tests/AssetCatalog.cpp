@@ -56,7 +56,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDependencyTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         AzFramework::AssetCatalog* m_assetCatalog;
 
@@ -70,9 +70,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             AZ::Data::AssetManager::Descriptor desc;
             AZ::Data::AssetManager::Create(desc);
 
@@ -152,9 +149,6 @@ namespace UnitTest
             AZ::TickBus::ClearQueuedEvents();
 
             AZ::Data::AssetManager::Destroy();
-
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
@@ -257,7 +251,7 @@ namespace UnitTest
     }
 
     class AssetCatalogDeltaTest :
-        public ScopedAllocatorSetupFixture
+        public LeakDetectionFixture
     {
     public:
         const char* path1 = "Asset1Path";
@@ -304,6 +298,7 @@ namespace UnitTest
 
             AZ::ComponentApplication::StartupParameters startupParameters;
             startupParameters.m_loadAssetCatalog = false;
+            startupParameters.m_loadSettingsRegistry = false;
             m_app->Start(desc, startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
@@ -419,6 +414,7 @@ namespace UnitTest
             deltaCatalog3.reset();
             m_app->Stop();
             m_app.reset();
+            AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GarbageCollect();
         }
 
         void CheckDirectDependencies(AZ::Data::AssetId assetId, AZStd::initializer_list<AZ::Data::AssetId> expectedDependencies)
@@ -831,7 +827,7 @@ namespace UnitTest
     }
 
     class AssetCatalogAPITest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
@@ -956,7 +952,6 @@ namespace UnitTest
         // actual lock inversion.
 
         // Set up job manager with one thread that we can use to set up the concurrent mutex access.
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
         AZ::JobManagerDesc desc;
         AZ::JobManagerThreadDesc threadDesc;
         desc.m_workerThreads.push_back(threadDesc);
@@ -1018,7 +1013,6 @@ namespace UnitTest
         AZ::JobContext::SetGlobalContext(nullptr);
         delete jobContext;
         delete jobManager;
-        AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
     }
 
 
@@ -1027,7 +1021,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetType1, AZ::SystemAllocator);
         AZ_RTTI(AssetType1, "{64ECE3AE-2BEB-4502-9243-D17425249E08}", AZ::Data::AssetData);
 
         AssetType1()
@@ -1054,7 +1048,7 @@ namespace UnitTest
         : public AZ::Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AssetType2, AZ::SystemAllocator);
         AZ_RTTI(AssetType2, "{F5EDAAAB-2398-4967-A2C7-6B7C9421C1CE}", AZ::Data::AssetData);
 
         AssetType2()
@@ -1078,7 +1072,7 @@ namespace UnitTest
     };
 
     class AssetCatalogDisplayNameTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
         virtual AZ::IO::IStreamer* CreateStreamer() { return aznew AZ::IO::Streamer(AZStd::thread_desc{}, AZ::StreamerComponent::CreateStreamerStack()); }
         virtual void DestroyStreamer(AZ::IO::IStreamer* streamer) { delete streamer; }
@@ -1092,9 +1086,6 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Create();
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Create();
-
             m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
             AZ::IO::FileIOBase::SetInstance(&m_fileIO);
 
@@ -1125,8 +1116,6 @@ namespace UnitTest
             DestroyStreamer(m_streamer);
 
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
-            AZ::AllocatorInstance<AZ::ThreadPoolAllocator>::Destroy();
-            AZ::AllocatorInstance<AZ::PoolAllocator>::Destroy();
         }
     };
 

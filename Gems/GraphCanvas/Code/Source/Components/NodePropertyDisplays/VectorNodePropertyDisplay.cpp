@@ -355,14 +355,14 @@ namespace GraphCanvas
         {
             m_proxyWidget = new QGraphicsProxyWidget();
 
-            QWidget* widgetContainer  = new QWidget(nullptr);
-            QHBoxLayout* layout = new QHBoxLayout(widgetContainer);
-            widgetContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
-            
+            m_widgetContainer = new QWidget();
+            QHBoxLayout* layout = new QHBoxLayout(m_widgetContainer);
+            m_widgetContainer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Fixed);
+
             layout->setAlignment(Qt::AlignLeft);
             layout->setContentsMargins(0, 0, 0, 0);
 
-            m_button = new QToolButton();
+            m_button = new QToolButton(m_widgetContainer);
             m_button->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
             m_button->setVisible(false);
             QObject::connect(m_button, &QToolButton::clicked, [this] () {
@@ -378,7 +378,7 @@ namespace GraphCanvas
             m_proxyWidget->setAcceptDrops(false);
 
             const int elementCount = m_dataInterface->GetElementCount();
-            m_propertyVectorCtrl = new AzQtComponents::VectorInput(nullptr, elementCount);
+            m_propertyVectorCtrl = new AzQtComponents::VectorInput(m_widgetContainer, elementCount);
 
             for (int i = 0; i < elementCount; ++i)
             {
@@ -394,8 +394,8 @@ namespace GraphCanvas
             QObject::connect(m_propertyVectorCtrl, &AzQtComponents::VectorInput::editingFinished, [this]() { SubmitValue(); });
 
             layout->addWidget(m_propertyVectorCtrl);
-            widgetContainer->setProperty("HasNoWindowDecorations", true);
-            m_proxyWidget->setWidget(widgetContainer);
+            m_widgetContainer->setProperty("HasNoWindowDecorations", true);
+            m_proxyWidget->setWidget(m_widgetContainer);
             
             UpdateDisplay();
             RefreshStyle();
@@ -408,14 +408,11 @@ namespace GraphCanvas
         if (m_propertyVectorCtrl)
         {
             UnregisterShortcutDispatcher(m_propertyVectorCtrl);
-            delete m_propertyVectorCtrl; // NB: this implicitly deletes m_proxy widget
+            delete m_widgetContainer; // NB: this implicitly deletes m_proxy widget
+            m_widgetContainer = nullptr;
             m_propertyVectorCtrl = nullptr;
+            m_button= nullptr;
             m_proxyWidget = nullptr;
-        }
-        if (m_button) 
-        {
-            delete m_button;
-            m_button = nullptr;
         }
     }
 

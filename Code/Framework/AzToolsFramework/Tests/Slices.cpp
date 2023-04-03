@@ -240,7 +240,8 @@ namespace UnitTest
                 azsnprintf(assetFile, AZ_ARRAY_SIZE(assetFile), "GeneratedSlices/Gen%zu_Descendent%zu_%zu.xml", generation, i, nextSliceIndex++);
 
                 AZ::Data::AssetId assetId;
-                EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetFile, azrtti_typeid<AZ::SliceAsset>(), true);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+                    assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath, assetFile, azrtti_typeid<AZ::SliceAsset>(), true);
 
                 AZ::Utils::SaveObjectToFile(assetFile, AZ::DataStream::ST_XML, entity);
 
@@ -286,7 +287,8 @@ namespace UnitTest
             // override from the parent.
 
             AZ::Data::AssetId assetId;
-            EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
 
             AZ::Data::Asset<AZ::SliceAsset> baseSliceAsset;
             baseSliceAsset.Create(assetId, false);
@@ -310,7 +312,8 @@ namespace UnitTest
                 azsnprintf(assetFile, AZ_ARRAY_SIZE(assetFile), "GeneratedSlices/Gen%zu_Descendent%zu_%zu.xml", generation, i, nextSliceIndex++);
 
                 AZ::Data::AssetId assetId;
-                EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, assetFile, azrtti_typeid<AZ::SliceAsset>(), true);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    assetFile, azrtti_typeid<AZ::SliceAsset>(), true);
 
                 if (assetId.IsValid())
                 {
@@ -377,7 +380,8 @@ namespace UnitTest
 
             // Preload all slice assets.
             AZ::Data::AssetId rootAssetId;
-            EBUS_EVENT_RESULT(rootAssetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
+            AZ::Data::AssetCatalogRequestBus::BroadcastResult(rootAssetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
             if (rootAssetId.IsValid())
             {
                 AZ::Data::AssetBus::MultiHandler::BusConnect(rootAssetId);
@@ -399,7 +403,7 @@ namespace UnitTest
                 while (m_stressLoadPending > 0)
                 {
                     AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(10));
-                    EBUS_EVENT(AZ::TickBus, OnTick, 0.3f, AZ::ScriptTimePoint());
+                    AZ::TickBus::Broadcast(&AZ::TickBus::Events::OnTick, 0.3f, AZ::ScriptTimePoint());
                 }
 
                 const AZStd::chrono::steady_clock::time_point assetLoadFinishTime = AZStd::chrono::steady_clock::now();
@@ -420,7 +424,8 @@ namespace UnitTest
             // Instantiate from the bottom generation up.
             {
                 AZ::Data::AssetId assetId;
-                EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    "GeneratedSlices/Gen0.xml", azrtti_typeid<AZ::SliceAsset>(), true);
 
                 AZ::Data::Asset<AZ::SliceAsset> baseSliceAsset;
                 baseSliceAsset.Create(assetId, false);
@@ -438,8 +443,8 @@ namespace UnitTest
                             return true;
                         };
 
-                    AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords()->EnumerateAllocations(cb);
-                    totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords()->RequestedAllocs();
+                    AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->EnumerateAllocations(cb);
+                    totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->RequestedAllocs();
                     AZ_TracePrintf("StressTest", "Allocs Before Inst: %u live, %u total\n", liveAllocs, totalAllocs);
 
                     const AZStd::chrono::steady_clock::time_point startTime = AZStd::chrono::steady_clock::now();
@@ -448,8 +453,8 @@ namespace UnitTest
 
                     liveAllocs = 0;
                     totalAllocs = 0;
-                    AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords()->EnumerateAllocations(cb);
-                    totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::GetAllocator().GetRecords()->RequestedAllocs();
+                    AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->EnumerateAllocations(cb);
+                    totalAllocs = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().GetRecords()->RequestedAllocs();
                     AZ_TracePrintf("StressTest", "Allocs AfterInst: %u live, %u total\n", liveAllocs, totalAllocs);
                     // 1023 slices, 2046 entities
                     // Before         -> After          = Delta
@@ -481,7 +486,8 @@ namespace UnitTest
             static AZ::u32 sliceCounter = 1;
 
             AzToolsFramework::EntityIdList selected;
-            EBUS_EVENT_RESULT(selected, AzToolsFramework::ToolsApplicationRequests::Bus, GetSelectedEntities);
+            AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                selected, &AzToolsFramework::ToolsApplicationRequests::Bus::Events::GetSelectedEntities);
 
             AZ::SliceComponent* rootSlice = nullptr;
             AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::BroadcastResult(
@@ -500,7 +506,7 @@ namespace UnitTest
                 for (AZ::EntityId id : selected)
                 {
                     AZ::Entity* entity = nullptr;
-                    EBUS_EVENT_RESULT(entity, AZ::ComponentApplicationBus, FindEntity, id);
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
                     if (entity)
                     {
                         AZ::SliceComponent::SliceInstanceAddress sliceAddress = rootSlice->FindSlice(entity);
@@ -557,7 +563,8 @@ namespace UnitTest
             if (!loadFrom.isEmpty())
             {
                 AZ::Data::AssetId assetId;
-                EBUS_EVENT_RESULT(assetId, AZ::Data::AssetCatalogRequestBus, GetAssetIdByPath, loadFrom.toUtf8().constData(), azrtti_typeid<AZ::SliceAsset>(), true);
+                AZ::Data::AssetCatalogRequestBus::BroadcastResult(assetId, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetIdByPath,
+                    loadFrom.toUtf8().constData(), azrtti_typeid<AZ::SliceAsset>(), true);
 
                 AZ::Data::Asset<AZ::SliceAsset> baseSliceAsset;
                 baseSliceAsset.Create(assetId, true);
@@ -659,7 +666,7 @@ namespace UnitTest
     }
 
     class SortTransformParentsBeforeChildrenTest
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     protected:
         AZStd::vector<AZ::Entity*> m_unsorted;
@@ -1043,7 +1050,7 @@ namespace UnitTest
 
 
     class SliceCompilerTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         AzToolsFramework::ToolsApplication m_app;
@@ -1064,7 +1071,9 @@ namespace UnitTest
             registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            m_app.Start(AzFramework::Application::Descriptor());
+        AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(AzFramework::Application::Descriptor(), startupParameters);
 
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash

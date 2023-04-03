@@ -14,6 +14,11 @@
 
 namespace AZ
 {
+    namespace RHI
+    {
+        class ShaderPlatformInterface;
+    }
+
     namespace RPI
     {
         class ShaderAssetCreator
@@ -91,7 +96,8 @@ namespace AZ
 
             void Clone(const Data::AssetId& assetId,
                        const ShaderAsset& sourceShaderAsset,
-                       const ShaderSupervariants& supervariants);
+                       const ShaderSupervariants& supervariants,
+                       const AZStd::vector<RHI::ShaderPlatformInterface*>& platformInterfaces);
 
         private:
 

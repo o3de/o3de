@@ -62,9 +62,11 @@ namespace O3DE::ProjectManager
         void UpdateGemDependencies();
 
         QModelIndex FindIndexByNameString(const QString& nameString) const;
+        QModelIndex FindIndexByPath(const QString& path) const;
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
+        static const GemInfo GetGemInfo(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
         static QString GetCreator(const QModelIndex& modelIndex);
@@ -125,6 +127,7 @@ namespace O3DE::ProjectManager
         QStringList GetDependingGems(const QModelIndex& modelIndex);
 
         QHash<QString, QModelIndex> m_nameToIndexMap;
+        QHash<QString, QModelIndex> m_pathToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
         QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
         QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;

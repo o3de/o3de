@@ -33,9 +33,12 @@
 
 #include <GraphCanvas/Widgets/NodePalette/NodePaletteTreeView.h>
 
-#include <Editor/Plugins/SimulatedObject/SimulatedObjectColliderWidget.h>
+#include <Editor/Plugins/ColliderWidgets/SimulatedObjectColliderWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedObjectWidget.h>
 #include <Editor/Plugins/SimulatedObject/SimulatedJointWidget.h>
+#include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+
+
 
 #include <Editor/ReselectingTreeView.h>
 
@@ -83,6 +86,9 @@ namespace EMotionFX
         {
             EMStudio::GetPluginManager()->CreateWindowOfType(plugin->GetName());
         }
+        m_skeletonOutlinerPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SkeletonOutlinerPlugin>();
+        m_simulatedObjectPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMotionFX::SimulatedObjectWidget>();
+        m_animGraphPlugin = EMStudio::GetPluginManager()->FindActivePlugin<EMStudio::AnimGraphPlugin>();
     }
 
     void UIFixture::ReflectMockedSystems()
@@ -111,7 +117,6 @@ namespace EMotionFX
         ReflectMockedSystems();
         SetupPluginWindows();
 
-        m_animGraphPlugin = static_cast<EMStudio::AnimGraphPlugin*>(EMStudio::GetPluginManager()->FindActivePlugin(EMStudio::AnimGraphPlugin::CLASS_ID));
         ON_CALL(m_assetSystemRequestMock, GetFullSourcePathFromRelativeProductPath(_, _))
             .WillByDefault(Return(true));
         m_assetSystemRequestMock.BusConnect();
@@ -247,6 +252,7 @@ namespace EMotionFX
 
     void UIFixture::CloseAllPlugins()
     {
+        m_skeletonOutlinerPlugin = nullptr;
         const EMStudio::PluginManager::PluginVector plugins = EMStudio::GetPluginManager()->GetActivePlugins();
         for (EMStudio::EMStudioPlugin* plugin : plugins)
         {

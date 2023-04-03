@@ -22,6 +22,7 @@ namespace ScriptEvents
         : public ScriptEventsSystemComponentImpl
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptEventsSystemComponentEditorImpl, AZ::SystemAllocator)
 
         ~ScriptEventsSystemComponentEditorImpl() override
         {

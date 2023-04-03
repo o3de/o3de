@@ -185,7 +185,6 @@ namespace UnitTest
                     editContext->Class<Inspector_TestComponent3>("InspectorTestComponent3", "Component 3 for AZ Tools Framework Unit Tests")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::AddableByUser, true)
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ->Attribute(AZ::Edit::Attributes::Category, "Inspector Test Components")
                         ->Attribute(AZ::Edit::Attributes::Icon, "Icons/Components/Tag.png")
                         ->Attribute(AZ::Edit::Attributes::ViewportIcon, "Icons/Components/Viewport/Tag.png")
@@ -256,11 +255,11 @@ namespace UnitTest
     }
 
     class ComponentPaletteTests
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
     {
     public:
         ComponentPaletteTests()
-            : AllocatorsTestFixture()
+            : LeakDetectionFixture()
         { }
 
         void SetUp() override
@@ -268,7 +267,9 @@ namespace UnitTest
             AZ::ComponentApplication::Descriptor componentApplicationDesc;
             componentApplicationDesc.m_useExistingAllocator = true;
             m_application = aznew ToolsTestApplication("ComponentPaletteTests");
-            m_application->Start(componentApplicationDesc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(componentApplicationDesc, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash 
             // in the unit tests.

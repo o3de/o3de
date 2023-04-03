@@ -44,7 +44,7 @@ namespace EMStudio
     class AnimViewportRenderer
     {
     public:
-        AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AnimViewportRenderer, AZ::SystemAllocator);
 
         AnimViewportRenderer(AZ::RPI::ViewportContextPtr viewportContext, const RenderOptions* renderOptions);
         ~AnimViewportRenderer();

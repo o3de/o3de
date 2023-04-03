@@ -53,6 +53,8 @@
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/sort.h>
 #include <AzFramework/API/ApplicationAPI.h>
+
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
@@ -150,6 +152,8 @@ namespace EMStudio
         m_textEdit->setText(text.c_str());
     }
 
+    constexpr AZStd::string_view AnimationEditorActionContextIdentifier = "o3de.context.animationEditor";
+
     MainWindow::MainWindow(QWidget* parent, Qt::WindowFlags flags)
         : AzQtComponents::DockMainWindow(parent, flags)
         , m_prevSelectedActor(nullptr)
@@ -180,10 +184,22 @@ namespace EMStudio
         m_unselectCallback               = nullptr;
         m_clearSelectionCallback        = nullptr;
         m_saveWorkspaceCallback          = nullptr;
+
+        // Register this window as the widget for the Animation Editor Action Context.
+        if(auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->AssignWidgetToActionContext(AnimationEditorActionContextIdentifier, this);
+        }
     }
 
     MainWindow::~MainWindow()
     {
+        // Unregister this window as the widget for the Animation Editor Action Context.
+        if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
+        {
+            hotKeyManagerInterface->RemoveWidgetFromActionContext(AnimationEditorActionContextIdentifier, this);
+        }
+
         DisableUpdatingPlugins();
 
         if (m_nativeEventFilter)
@@ -1298,16 +1314,23 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 
         AZStd::string animgraphFilename;
-        EBUS_EVENT_RESULT(animgraphFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, animgraphId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            animgraphFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, animgraphId);
         bool found;
         if (!animgraphFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, animgraphFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                animgraphFilename.c_str(),
+                filename);
+
             if (found)
             {
                 animgraphFilename = filename;
@@ -1315,10 +1338,16 @@ namespace EMStudio
         }
 
         AZStd::string motionSetFilename;
-        EBUS_EVENT_RESULT(motionSetFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, motionSetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            motionSetFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, motionSetId);
         if (!motionSetFilename.empty())
         {
-            EBUS_EVENT_RESULT(found, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, motionSetFilename.c_str(), filename);
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                found,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+                motionSetFilename.c_str(),
+                filename);
+
             if (found)
             {
                 motionSetFilename = filename;
@@ -2250,7 +2279,8 @@ namespace EMStudio
         AzFramework::StringFunc::AssetDatabasePath::Normalize(cachePath);
 
         AZStd::string actorFilename;
-        EBUS_EVENT_RESULT(actorFilename, AZ::Data::AssetCatalogRequestBus, GetAssetPathById, actorAssetId);
+        AZ::Data::AssetCatalogRequestBus::BroadcastResult(
+            actorFilename, &AZ::Data::AssetCatalogRequestBus::Events::GetAssetPathById, actorAssetId);
         AzFramework::StringFunc::AssetDatabasePath::Join(cachePath.c_str(), actorFilename.c_str(), filename);
         actorFilename = filename;
 

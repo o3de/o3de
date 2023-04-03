@@ -1,5 +1,6 @@
 {
     "gem_name": "Compression",
+    "version": "0.0.0",
     "display_name": "Compression",
     "license": "Apache-2.0 Or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
@@ -17,5 +18,7 @@
     "requirements": "",
     "documentation_url": "",
     "dependencies": [],
-    "restricted": "Compression"
+    "restricted": "Compression",
+    "external_subdirectories": [
+    ]
 }

@@ -21,7 +21,7 @@ namespace AZ
             : public AZ::Module
         {
         public:
-            AZ_RTTI(DebugCameraModule, "{C4F5D301-5C7F-42C2-8326-08F685B2D7A3}", AZ::Module);
+            AZ_RTTI(CameraModule, "{C4F5D301-5C7F-42C2-8326-08F685B2D7A3}", AZ::Module);
             
             CameraModule()
             {

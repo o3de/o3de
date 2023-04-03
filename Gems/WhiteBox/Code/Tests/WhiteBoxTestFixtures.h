@@ -28,13 +28,13 @@
 namespace UnitTest
 {
     class WhiteBoxTestFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
         , private TraceBusRedirector
     {
     public:
         void SetUp() override final
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::Debug::TraceMessageBus::Handler::BusConnect();
 
             m_whiteBox = WhiteBox::Api::CreateWhiteBoxMesh();
@@ -49,7 +49,7 @@ namespace UnitTest
             m_whiteBox.reset();
 
             AZ::Debug::TraceMessageBus::Handler::BusDisconnect();
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         virtual void SetUpEditorFixtureImpl() {}
@@ -58,7 +58,7 @@ namespace UnitTest
         WhiteBox::Api::WhiteBoxMeshPtr m_whiteBox;
     };
 
-    class EditorWhiteBoxComponentTestFixture : public ToolsApplicationFixture
+    class EditorWhiteBoxComponentTestFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

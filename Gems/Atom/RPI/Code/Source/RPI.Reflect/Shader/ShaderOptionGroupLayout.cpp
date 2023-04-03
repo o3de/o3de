@@ -109,8 +109,13 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Storage, AZ::Script::Attributes::StorageType::RuntimeOwn)
                     ->Method("GetName", &ShaderOptionDescriptor::GetName)
                     ->Method("GetDefaultValue", &ShaderOptionDescriptor::GetDefaultValue)
-                    ->Method("GetValueName", &ShaderOptionDescriptor::GetValueName)
+                    ->Method("GetValueName", static_cast<Name (ShaderOptionDescriptor::*)(ShaderOptionValue) const>(&ShaderOptionDescriptor::GetValueName))
                     ->Method("FindValue", &ShaderOptionDescriptor::FindValue)
+                    ->Method("GetMinValue", &ShaderOptionDescriptor::GetMinValue)
+                    ->Method("GetMaxValue", &ShaderOptionDescriptor::GetMaxValue)
+                    ->Method("GetValuesCount", &ShaderOptionDescriptor::GetValuesCount)
+                    ->Method("GetType", &ShaderOptionDescriptor::GetType)
+                    ->Method("GetValueNameByIndex", static_cast<Name (ShaderOptionDescriptor::*)(uint32_t) const>(&ShaderOptionDescriptor::GetValueName))
                     ;
             }   
         }
@@ -362,8 +367,28 @@ namespace AZ
 
         Name ShaderOptionDescriptor::GetValueName(ShaderOptionValue value) const
         {
+            if (m_type == ShaderOptionType::IntegerRange)
+            {
+                // We can just return the value here, as IntegerRange's values' ids must be equal to their numerical value, this had been checked in AddValue()
+                // We can't use m_nameReflectionForValues, since it only contains min and max value
+                uint32_t value_uint = value.GetIndex();
+                if (m_minValue.GetIndex() <= value_uint && value_uint <= m_maxValue.GetIndex())
+                {
+                    return Name(AZStd::to_string(value_uint));
+                }
+                else
+                {
+                    // mimic the behavior of RHI::NameIdReflectionMap's Find function
+                    return {};
+                }
+            }
             auto name = m_nameReflectionForValues.Find(value);
             return name;
+        }
+
+        Name ShaderOptionDescriptor::GetValueName(uint32_t valueIndex) const
+        {
+            return GetValueName(ShaderOptionValue{ valueIndex });
         }
 
         void ShaderOptionDescriptor::EncodeBits(ShaderVariantKey& shaderVariantKey, uint32_t value) const
@@ -385,7 +410,7 @@ namespace AZ
         {
             shaderVariantKey >>= m_bitOffset;
             shaderVariantKey &= AZ_BIT_MASK(m_bitCount);
-            uint32_t value = shaderVariantKey.to_ulong();
+            uint32_t value = static_cast<uint32_t>(shaderVariantKey.to_ulong());
             return value;
         }
         

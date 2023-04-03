@@ -11,10 +11,12 @@
 #include <AzCore/base.h>
 #include <AzCore/Outcome/Outcome.h>
 #include <AzCore/Platform.h>
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/containers/variant.h>
+#include <AzCore/std/string/fixed_string.h>
 #include <AzCore/std/string/string_view.h>
 #include <AzCore/std/utils.h>
 
@@ -23,8 +25,56 @@ namespace AZ::IO
     class GenericStream;
 }
 
+namespace AZ::Metrics::Internal
+{
+    //! Wraps the Metrics settings prefix key of "/O3DE/Metrics"
+    //! which is used as the parent object of any "/O3DE/Metrics/<EventLoggerName>" keys
+    //! The "/O3DE/Metrics/<EventLoggerName>" is the anchor object where settings
+    //! for an Event Logger are queried.
+    //! Currently  supports the following settings
+    //!
+    //! * "/O3DE/Metrics/<EventLoggerName>/Active" - If set to false, the event logger will not record new events
+    //!   If not set or true, the event logger will record events
+    struct SettingsKey_t
+    {
+        using StringType = AZStd::fixed_string<128>;
+
+        constexpr StringType operator()(AZStd::string_view name) const
+        {
+            constexpr size_t MaxTotalKeySize = StringType{}.max_size();
+            // The +1 is for the '/' separator
+            [[maybe_unused]] const size_t maxNameSize = MaxTotalKeySize - (MetricsSettingsPrefix.size() + 1);
+
+            AZ_Assert(name.size() <= maxNameSize,
+                R"(The size of the event logger name "%.*s" is too long. It must be <= %zu characters)",
+                AZ_STRING_ARG(name), maxNameSize);
+            StringType settingsKey(MetricsSettingsPrefix);
+            settingsKey += '/';
+            settingsKey += name;
+
+            return settingsKey;
+        }
+
+        constexpr operator AZStd::string_view() const
+        {
+            return MetricsSettingsPrefix;
+        }
+
+    private:
+        AZStd::string_view MetricsSettingsPrefix = "/O3DE/Metrics";
+    };
+}
+
 namespace AZ::Metrics
 {
+    //! Settings key object which supports a call operator
+    //! which accepts the name of an event logger and returns
+    //! a fixed_string acting as an anchor object for all settings
+    //! associated with an event logger using that name
+    constexpr Internal::SettingsKey_t SettingsKey{};
+
+    //! Represents the "args" field where key, value entries
+    //! within the per event data is stored
     constexpr AZStd::string_view ArgsKey = "args";
 
     //! Event fields structure that can be used to record event argument data
@@ -95,10 +145,11 @@ namespace AZ::Metrics
             AZ::s64,
             AZ::u64,
             double,
-            EventArray, // Used to encapsulate a span of <EventAValue> to represent arguments to output to the Google Trace format "args" object
-            EventObject  // Used to encapsulate a span of <EventArgsValue> to represent arguments to output to the Google Trace format "args" object
+            EventArray, // Used to encapsulate a span of <EventValue> to represent arguments to output to the Google Trace format "args" object
+            EventObject  // Used to encapsulate a span of <EventField> to represent arguments to output to the Google Trace format "args" object
         >;
 
+        //! Variant instance for storing the value of an event entry(string, bool integer, double, array, object)
         ArgsVariant m_value;
     };
 
@@ -108,35 +159,40 @@ namespace AZ::Metrics
         constexpr EventField();
         constexpr EventField(AZStd::string_view name, EventValue value);
 
+        //! Name of the field
         AZStd::string_view m_name;
+        //! Value of the field
         EventValue m_value;
     };
 
+    // Helper Type aliases that can be used to provide storage for JSON array and JSON object types inside of a function
+    // The fixed_vector capacity can be upped if more storage is needed
+    using EventArrayStorage = AZStd::fixed_vector<AZ::Metrics::EventValue, 32>;
+    using EventObjectStorage = AZStd::fixed_vector<AZ::Metrics::EventField, 32>;
 
-    enum class EventPhase : char
-    {
-        DurationBegin = 'B',
-        DurationEnd = 'E',
-        Complete = 'X',
-        Instant = 'i',
-        Counter = 'C',
-        AsyncStart = 'b',
-        AsyncInstant = 'n',
-        AsyncEnd = 'e',
-        FlowStart = 's',
-        FlowInstant = 't',
-        FlowEnd = 'f',
-        ObjectCreated = 'N',
-        ObjectSnapshot = 'O',
-        ObjectDestroyed = 'D',
-        Metadata = 'M',
-        MemoryDumpGlobal = 'V',
-        MemoryDumpProcess = 'v',
-        Mark = 'R',
-        ClockSync = 'c',
-        ContextEnter = '(',
-        ContentLeave = ')'
-    };
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(EventPhase, char,
+        (DurationBegin, 'B'),
+        (DurationEnd, 'E'),
+        (Complete, 'X'),
+        (Instant, 'i'),
+        (Counter, 'C'),
+        (AsyncStart, 'b'),
+        (AsyncInstant, 'n'),
+        (AsyncEnd, 'e'),
+        (FlowStart, 's'),
+        (FlowInstant, 't'),
+        (FlowEnd, 'f'),
+        (ObjectCreated, 'N'),
+        (ObjectSnapshot, 'O'),
+        (ObjectDestroyed, 'D'),
+        (Metadata, 'M'),
+        (MemoryDumpGlobal, 'V'),
+        (MemoryDumpProcess, 'v'),
+        (Mark, 'R'),
+        (ClockSync, 'c'),
+        (ContextEnter, '('),
+        (ContentLeave, ')')
+        );
 
     struct EventDesc
     {
@@ -246,12 +302,11 @@ namespace AZ::Metrics
     };
 
     //! Enums used to populate the scope key for instant events
-    enum class InstantEventScope : char
-    {
-        Global = 'g',
-        Process = 'p',
-        Thread = 't'
-    };
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(InstantEventScope, char,
+        (Global, 'g'),
+        (Process, 'p'),
+        (Thread, 't')
+    );
 
     //! Structure which represents arguments associated with the complete instant events
     //! Instant events are used to record an event that has no duration associated with it
@@ -295,6 +350,16 @@ namespace AZ::Metrics
     public:
         AZ_RTTI(IEventLogger, "{D39D09FA-DEA0-4874-BC45-4B310C3DD52E}");
         virtual ~IEventLogger() = default;
+
+        //! Provides a qualified name for the Event Logger
+        //! This is used to as part of the for the "/O3DE/Metrics/<Name>"
+        //! to contain settings associated with any event logger with the name
+        virtual void SetName([[maybe_unused]] AZStd::string_view name) {}
+
+        //! Returns the qualified name for the Event Logger
+        //! This can be used to query settings from event loggers with the name
+        //! through queury the "/O3DE/Metrics/<Name>" object
+        virtual AZStd::string_view GetName() const { return {}; }
 
         //! Provides a hook for implemented Event Loggers to flush recorded metrics
         //! to an associated stream(disk stream, network stream, etc...)

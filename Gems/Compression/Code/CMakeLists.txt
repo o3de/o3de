@@ -76,10 +76,12 @@ ly_add_target(
 # active in Clients or Servers by default, delete one of both of the following lines:
 ly_create_alias(NAME Compression.Clients NAMESPACE Gem TARGETS Gem::Compression)
 ly_create_alias(NAME Compression.Servers NAMESPACE Gem TARGETS Gem::Compression)
+ly_create_alias(NAME Compression.Unified NAMESPACE Gem TARGETS Gem::Compression)
 
 # For the Client and Server variants of Compression Gem, an alias to the Compression.API target will be made
 ly_create_alias(NAME Compression.Clients.API NAMESPACE Gem TARGETS Gem::Compression.API)
 ly_create_alias(NAME Compression.Servers.API NAMESPACE Gem TARGETS Gem::Compression.API)
+ly_create_alias(NAME Compression.Unified.API NAMESPACE Gem TARGETS Gem::Compression.API)
 
 # If we are on a host platform, we want to add the host tools targets like the Compression.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -163,6 +165,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 PRIVATE
                     Tests
                     Source
+                    Include
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
@@ -170,11 +173,9 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     Gem::Compression.Private.Object
         )
 
-        # Add Compression.Tests to googletest
-        # Commented out as currently there are no Compression tests
-        #ly_add_googletest(
-            #NAME Gem::Compression.Tests
-        #)
+        ly_add_googletest(
+            NAME Gem::Compression.Tests
+        )
     endif()
 
     # If we are a host platform we want to add tools test like editor tests here
@@ -192,17 +193,16 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                     PRIVATE
                         Tests
                         Source
+                        Include
                 BUILD_DEPENDENCIES
                     PRIVATE
                         AZ::AzTest
-                        Gem::Compression.Private.Object
+                        Gem::Compression.Editor.Private.Object
             )
 
-            # Add Compression.Editor.Tests to googletest
-            # Commented out as currently there are no Compression Editor tests
-            # ly_add_googletest(
-                # NAME Gem::Compression.Editor.Tests
-            # )
+            ly_add_googletest(
+                NAME Gem::Compression.Editor.Tests
+            )
         endif()
     endif()
 endif()

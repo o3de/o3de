@@ -233,6 +233,8 @@ namespace AzToolsFramework
         // Install a global event filter to ensure we don't miss mouse and key release events.
         QApplication::instance()->installEventFilter(this);
         AzFramework::InputChannelNotificationBus::Handler::BusConnect();
+
+        m_viewportId = syntheticDeviceId;
     }
 
     bool QtEventToAzInputMapper::HandlesInputEvent(const AzFramework::InputChannel& channel) const
@@ -337,11 +339,19 @@ namespace AzToolsFramework
             // ensures cursor positions are refreshed correctly with context menu focus changes)
             if (eventType == QEvent::FocusIn)
             {
+                ViewportInteraction::ViewportInteractionNotificationBus::Event(
+                    m_viewportId, &ViewportInteraction::ViewportInteractionNotificationBus::Events::OnViewportFocusIn);
+
                 const auto globalCursorPosition = QCursor::pos();
                 if (m_sourceWidget->geometry().contains(m_sourceWidget->mapFromGlobal(globalCursorPosition)))
                 {
                     HandleMouseMoveEvent(globalCursorPosition);
                 }
+            }
+            else if (eventType == QEvent::FocusOut)
+            {
+                ViewportInteraction::ViewportInteractionNotificationBus::Event(
+                    m_viewportId, &ViewportInteraction::ViewportInteractionNotificationBus::Events::OnViewportFocusOut);
             }
         }
         // Map key events to input channels.

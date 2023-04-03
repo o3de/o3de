@@ -22,7 +22,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(SimulateMouseButtonAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SimulateMouseButtonAction, AZ::SystemAllocator);
         AZ_RTTI(SimulateMouseButtonAction, "{89D4E6F5-983C-4877-9A32-0929F7D2BB8E}", EditorAutomationAction);
 
         enum class MouseAction
@@ -41,8 +41,8 @@ namespace ScriptCanvas::Developer
 
         QWidget* m_targetDispatch = nullptr;
 
-        MouseAction m_mouseAction;
-        Qt::MouseButton m_mouseButton = Qt::LeftButton;
+        [[maybe_unused]] MouseAction m_mouseAction;
+        [[maybe_unused]] Qt::MouseButton m_mouseButton = Qt::LeftButton;
         Qt::KeyboardModifiers m_keyboardModifiers = Qt::NoModifier;
     };
 
@@ -53,7 +53,7 @@ namespace ScriptCanvas::Developer
         : public SimulateMouseButtonAction 
     {
     public:
-        AZ_CLASS_ALLOCATOR(PressMouseButtonAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PressMouseButtonAction, AZ::SystemAllocator);
         AZ_RTTI(PressMouseButtonAction, "{DA89D548-3506-4DB1-BCCF-6C03ABD75FFB}", SimulateMouseButtonAction);
         
         PressMouseButtonAction(Qt::MouseButton mouseButton = Qt::LeftButton)
@@ -69,7 +69,7 @@ namespace ScriptCanvas::Developer
         : public SimulateMouseButtonAction 
     {
     public:
-        AZ_CLASS_ALLOCATOR(ReleaseMouseButtonAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReleaseMouseButtonAction, AZ::SystemAllocator);
         AZ_RTTI(ReleaseMouseButtonAction, "{448D4A65-5BF8-4643-AE31-E979F176C3AF}", SimulateMouseButtonAction);
         
         ReleaseMouseButtonAction(Qt::MouseButton mouseButton = Qt::LeftButton)
@@ -85,7 +85,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MouseClickAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MouseClickAction, AZ::SystemAllocator);
         AZ_RTTI(MouseClickAction, "{AEA337E8-0B2F-443B-AFFB-5688CB996D8E}", CompoundAction);
         
         MouseClickAction(Qt::MouseButton mouseButton);
@@ -115,7 +115,7 @@ namespace ScriptCanvas::Developer
         : public EditorAutomationAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MouseMoveAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MouseMoveAction, AZ::SystemAllocator);
         AZ_RTTI(MouseMoveAction, "{AEA337E8-0B2F-443B-AFFB-5688CB996D8E}", EditorAutomationAction);
         
         MouseMoveAction(QPoint targetPosition, int ticks = 20);
@@ -141,7 +141,7 @@ namespace ScriptCanvas::Developer
         : public CompoundAction
     {
     public:
-        AZ_CLASS_ALLOCATOR(MouseDragAction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MouseDragAction, AZ::SystemAllocator);
         AZ_RTTI(MouseDragAction, "{0B704B80-1BCB-4396-99A6-C5CAC462A7DB}", CompoundAction);
 
         MouseDragAction(QPoint startPosition, QPoint endPosition, Qt::MouseButton holdButton = Qt::MouseButton::LeftButton);

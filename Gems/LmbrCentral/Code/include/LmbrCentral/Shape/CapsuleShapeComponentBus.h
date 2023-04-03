@@ -23,7 +23,7 @@ namespace LmbrCentral
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CapsuleShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CapsuleShapeConfig, "{00931AEB-2AD8-42CE-B1DC-FA4332F51501}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -53,6 +53,7 @@ namespace LmbrCentral
 
         float m_height = 1.0f; ///< The end to end height of capsule, this includes the cylinder and both caps.
         float m_radius = 0.25f; ///< The radius of this capsule.
+        AZ::Vector3 m_translationOffset = AZ::Vector3::CreateZero(); ///< Translation offset from the entity position.
     };
 
     struct CapsuleInternalEndPoints

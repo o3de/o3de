@@ -37,7 +37,7 @@ namespace AzToolsFramework
     class EntityOutlinerDragAndDropContext : public AzQtComponents::DragAndDropContextBase
     {
     public:
-        AZ_CLASS_ALLOCATOR(EntityOutlinerDragAndDropContext, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EntityOutlinerDragAndDropContext, AZ::SystemAllocator);
         AZ_RTTI(EntityOutlinerDragAndDropContext, "{5CF08C17-C5C0-48C5-873F-702E9402D162}", AzQtComponents::DragAndDropContextBase);
 
         //! If m_parentEntity is the Invalid Entity Id, it should be considered

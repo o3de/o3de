@@ -1,5 +1,5 @@
 {
-    "Source" : "INSERT_AZSL_HERE",
+    "Source" : "TEMPLATE_AZSL_PATH",
 
     "DepthStencilState" : { 
         "Depth" : { "Enable" : true, "CompareFunc" : "GreaterEqual" }
@@ -10,7 +10,7 @@
         "EntryPoints":
         [
             {
-                "name": "DepthPassVS",
+                "name": "VertexShader",
                 "type" : "Vertex"
             }
         ] 

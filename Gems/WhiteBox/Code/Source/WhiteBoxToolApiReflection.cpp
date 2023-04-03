@@ -81,6 +81,10 @@ namespace WhiteBox
             behaviorContext->Class<WhiteBoxMeshHandle>("WhiteBoxMeshHandle")
                 ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
                 ->Attribute(AZ::Script::Attributes::Module, "whitebox.api")
+                ->Method("IsValid", [](WhiteBoxMeshHandle* whiteBoxMeshHandle) 
+                {
+                    return WhiteBoxMeshFromHandle(*whiteBoxMeshHandle) != nullptr;
+                })
                 ->Method(
                     "InitializeAsUnitCube",
                     [](WhiteBoxMeshHandle* whiteBoxMeshHandle)

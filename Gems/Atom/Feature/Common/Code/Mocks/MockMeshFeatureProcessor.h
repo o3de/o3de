@@ -23,12 +23,13 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetDrawPackets, const AZ::RPI::MeshDrawPacketLods&(const MeshHandle&));
         MOCK_CONST_METHOD1(GetObjectSrgs, const AZStd::vector<AZStd::intrusive_ptr<AZ::RPI::ShaderResourceGroup>>&(const MeshHandle&));
         MOCK_CONST_METHOD1(QueueObjectSrgForCompile, void(const MeshHandle&));
-        MOCK_CONST_METHOD1(GetMaterialAssignmentMap, const AZ::Render::MaterialAssignmentMap&(const MeshHandle&));
+        MOCK_CONST_METHOD1(GetCustomMaterials, const AZ::Render::CustomMaterialMap&(const MeshHandle&));
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD3(SetTransform, void(const MeshHandle&, const AZ::Transform&, const AZ::Vector3&));
-        MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
-        MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));
-        MOCK_METHOD2(SetMaterialAssignmentMap, void(const MeshHandle&, const AZ::Render::MaterialAssignmentMap&));
+        MOCK_METHOD2(SetIsAlwaysDynamic, void(const MeshHandle&, bool));
+        MOCK_CONST_METHOD1(GetIsAlwaysDynamic, bool(const MeshHandle&));
+        MOCK_METHOD2(SetCustomMaterials, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));
+        MOCK_METHOD2(SetCustomMaterials, void(const MeshHandle&, const AZ::Render::CustomMaterialMap&));
         MOCK_METHOD1(GetTransform, AZ::Transform(const MeshHandle&));
         MOCK_METHOD1(GetNonUniformScale, AZ::Vector3(const MeshHandle&));
         MOCK_METHOD2(SetLocalAabb, void(const MeshHandle&, const AZ::Aabb&));
@@ -37,12 +38,15 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetSortKey, AZ::RHI::DrawItemSortKey(const MeshHandle&));
         MOCK_METHOD2(SetMeshLodConfiguration, void(const MeshHandle&, const AZ::RPI::Cullable::LodConfiguration&));
         MOCK_CONST_METHOD1(GetMeshLodConfiguration, AZ::RPI::Cullable::LodConfiguration(const MeshHandle&));
-        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Render::MaterialAssignmentMap&));
+        MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Render::CustomMaterialMap&));
         MOCK_METHOD2(AcquireMesh, MeshHandle (const AZ::Render::MeshHandleDescriptor&, const AZ::Data::Instance<AZ::RPI::Material>&));
         MOCK_METHOD2(SetRayTracingEnabled, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetRayTracingEnabled, bool(const MeshHandle&));
+        MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
+        MOCK_CONST_METHOD1(GetExcludeFromReflectionCubeMaps, bool(const MeshHandle&));
         MOCK_METHOD2(SetVisible, void (const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetVisible, bool(const MeshHandle&));
-        MOCK_METHOD2(SetUseForwardPassIblSpecular, void (const MeshHandle&, bool));
+        MOCK_METHOD2(SetUseForwardPassIblSpecular, void(const MeshHandle&, bool));
+        MOCK_METHOD1(SetRayTracingDirty, void(const MeshHandle&));
     };
 } // namespace UnitTest

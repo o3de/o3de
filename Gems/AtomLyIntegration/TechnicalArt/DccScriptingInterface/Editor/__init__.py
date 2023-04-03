@@ -8,3 +8,16 @@
 #
 #
 # -------------------------------------------------------------------------
+"""! @brief: <DCCsi>/Editor/__init__.py"""
+from pathlib import Path
+import logging as _logging
+
+# -------------------------------------------------------------------------
+# global scope
+_DCCSI_SLUG = 'DccScriptingInterface'
+_PACKAGENAME = 'DCCsi.Editor'
+_LOGGER = _logging.getLogger(_PACKAGENAME)
+_LOGGER.debug('Initializing: {0}.'.format({_PACKAGENAME}))
+_MODULE_PATH = Path(__file__) # thos module should not be used as an entry
+
+__ALL__ = ['Scripts']

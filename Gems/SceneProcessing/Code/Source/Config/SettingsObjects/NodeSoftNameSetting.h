@@ -17,7 +17,7 @@ namespace AZ
         class NodeSoftNameSetting : public SoftNameSetting
         {
         public:
-            AZ_CLASS_ALLOCATOR(NodeSoftNameSetting, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(NodeSoftNameSetting, SystemAllocator);
             AZ_RTTI(NodeSoftNameSetting, "{74629DAE-641A-4BCE-B6D5-3F7DD9F647FA}", SoftNameSetting);
 
             NodeSoftNameSetting() = default;
@@ -27,6 +27,8 @@ namespace AZ
             ~NodeSoftNameSetting() override = default;
 
             bool IsVirtualType(const SceneAPI::Containers::Scene& scene, SceneAPI::Containers::SceneGraph::NodeIndex node) const override;
+
+            const AZ::Uuid GetTypeId() const override;
 
             static void Reflect(AZ::ReflectContext* context);
 

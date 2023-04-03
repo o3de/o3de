@@ -57,20 +57,6 @@ set(FILES
     Source/Document/AtomToolsDocumentTypeInfo.cpp
     Source/Document/CreateDocumentDialog.cpp
 
-    Include/AtomToolsFramework/DynamicNode/DynamicNode.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodeConfig.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodeManager.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodeManagerRequestBus.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodePaletteItem.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodeSlotConfig.h
-    Include/AtomToolsFramework/DynamicNode/DynamicNodeUtil.h
-    Source/DynamicNode/DynamicNode.cpp
-    Source/DynamicNode/DynamicNodeConfig.cpp
-    Source/DynamicNode/DynamicNodeManager.cpp
-    Source/DynamicNode/DynamicNodePaletteItem.cpp
-    Source/DynamicNode/DynamicNodeSlotConfig.cpp
-    Source/DynamicNode/DynamicNodeUtil.cpp
-
     Include/AtomToolsFramework/DynamicProperty/DynamicProperty.h
     Include/AtomToolsFramework/DynamicProperty/DynamicPropertyGroup.h
     Source/DynamicProperty/DynamicProperty.cpp
@@ -95,11 +81,43 @@ set(FILES
     Source/EntityPreviewViewport/EntityPreviewViewportToolBar.cpp
     Source/EntityPreviewViewport/EntityPreviewViewportWidget.cpp
 
-    Include/AtomToolsFramework/GraphView/GraphView.h
-    Include/AtomToolsFramework/GraphView/GraphViewConfig.h
-    Source/GraphView/GraphView.cpp
-    Source/GraphView/GraphView.qrc
-    Source/GraphView/GraphView.qss
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNode.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodeConfig.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodeManager.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodeManagerRequestBus.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodePaletteItem.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodeSlotConfig.h
+    Include/AtomToolsFramework/Graph/DynamicNode/DynamicNodeUtil.h
+    Source/Graph/DynamicNode/DynamicNode.cpp
+    Source/Graph/DynamicNode/DynamicNodeConfig.cpp
+    Source/Graph/DynamicNode/DynamicNodeManager.cpp
+    Source/Graph/DynamicNode/DynamicNodePaletteItem.cpp
+    Source/Graph/DynamicNode/DynamicNodeSlotConfig.cpp
+    Source/Graph/DynamicNode/DynamicNodeUtil.cpp
+
+    Include/AtomToolsFramework/Graph/GraphCompiler.h
+    Include/AtomToolsFramework/Graph/GraphDocument.h
+    Include/AtomToolsFramework/Graph/GraphDocumentNotificationBus.h
+    Include/AtomToolsFramework/Graph/GraphDocumentRequestBus.h
+    Include/AtomToolsFramework/Graph/GraphDocumentView.h
+    Include/AtomToolsFramework/Graph/GraphTemplateFileData.h
+    Include/AtomToolsFramework/Graph/GraphTemplateFileDataCache.h
+    Include/AtomToolsFramework/Graph/GraphTemplateFileDataCacheRequestBus.h
+    Include/AtomToolsFramework/Graph/GraphUtil.h
+    Include/AtomToolsFramework/Graph/GraphView.h
+    Include/AtomToolsFramework/Graph/GraphViewConstructPresets.h
+    Include/AtomToolsFramework/Graph/GraphViewSettings.h
+    Source/Graph/GraphCompiler.cpp
+    Source/Graph/GraphDocument.cpp
+    Source/Graph/GraphDocumentView.cpp
+    Source/Graph/GraphTemplateFileData.cpp
+    Source/Graph/GraphTemplateFileDataCache.cpp
+    Source/Graph/GraphUtil.cpp
+    Source/Graph/GraphView.cpp
+    Source/Graph/GraphView.qrc
+    Source/Graph/GraphView.qss
+    Source/Graph/GraphViewConstructPresets.cpp
+    Source/Graph/GraphViewSettings.cpp
 
     Include/AtomToolsFramework/Inspector/InspectorGroupHeaderWidget.h
     Include/AtomToolsFramework/Inspector/InspectorGroupWidget.h
@@ -176,7 +194,6 @@ set(FILES
     Source/Viewport/ViewportInteractionImpl.cpp
 
     Include/AtomToolsFramework/Window/AtomToolsMainWindow.h
-    Include/AtomToolsFramework/Window/AtomToolsMainWindowNotificationBus.h
     Include/AtomToolsFramework/Window/AtomToolsMainWindowRequestBus.h
     Source/Window/AtomToolsMainWindow.cpp
     Source/Window/AtomToolsMainWindowSystemComponent.cpp

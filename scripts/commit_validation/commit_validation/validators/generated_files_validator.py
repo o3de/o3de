@@ -33,7 +33,6 @@ MSVS_FILE_EXTENSIONS = [
     ".idb",
     ".ilk",
     ".lastbuildstate",
-    ".meta",
     ".ncb",
     ".obj",
     ".opensdf",

@@ -34,6 +34,8 @@
 #include <SceneAPI/SceneData/GraphData/RootBoneData.h>
 #include <SceneAPI/SceneData/GraphData/TransformData.h>
 
+extern "C" AZ_DLL_EXPORT void CleanUpSceneDataGenericClassInfo();
+
 namespace AZ
 {
     namespace SceneAPI
@@ -229,7 +231,7 @@ namespace AZ
             };
 
             class GraphDataBehaviorScriptTest
-                : public UnitTest::AllocatorsFixture
+                : public UnitTest::LeakDetectionFixture
             {
             public:
                 AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext;
@@ -253,7 +255,7 @@ namespace AZ
 
                 void SetUp() override
                 {
-                    UnitTest::AllocatorsFixture::SetUp();
+                    UnitTest::LeakDetectionFixture::SetUp();
                     AZ::NameDictionary::Create();
 
                     m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
@@ -277,8 +279,10 @@ namespace AZ
                     m_serializeContext.reset();
                     m_behaviorContext.reset();
 
+                    CleanUpSceneDataGenericClassInfo();
+
                     AZ::NameDictionary::Destroy();
-                    UnitTest::AllocatorsFixture::TearDown();
+                    UnitTest::LeakDetectionFixture::TearDown();
                 }
 
                 void ExpectExecute(AZStd::string_view script)

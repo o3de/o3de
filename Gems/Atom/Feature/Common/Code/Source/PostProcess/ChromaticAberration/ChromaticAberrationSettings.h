@@ -37,7 +37,7 @@ namespace AZ
                 "{A0AF24C8-EDC2-48A2-B256-95E26A53C0E6}",
                 AZ::Render::ChromaticAberrationSettingsInterface,
                 AZ::Render::PostProcessBase);
-            AZ_CLASS_ALLOCATOR(ChromaticAberrationSettings, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ChromaticAberrationSettings, SystemAllocator);
 
             ChromaticAberrationSettings(PostProcessFeatureProcessor* featureProcessor);
             ~ChromaticAberrationSettings() = default;

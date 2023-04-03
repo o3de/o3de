@@ -13,7 +13,7 @@ namespace UnitTest
 {
     template <typename FileIOType>
     class FileReaderTestFixture
-        : public ScopedAllocatorSetupFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

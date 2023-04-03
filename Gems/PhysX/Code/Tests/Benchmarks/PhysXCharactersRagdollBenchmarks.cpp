@@ -13,8 +13,6 @@
 #include <AzTest/Utils.h>
 
 #include <AzCore/Math/MathUtils.h>
-#include <AzCore/Settings/SettingsRegistryImpl.h>
-#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <Benchmarks/PhysXBenchmarksCommon.h>
 #include <Benchmarks/PhysXBenchmarksUtilities.h>
@@ -23,6 +21,7 @@
 #include <AzFramework/Physics/SystemBus.h>
 
 #include <RagdollTestData.h>
+#include <RagdollConfiguration.h>
 #include <AzFramework/Physics/RagdollPhysicsBus.h>
 #include <PhysXCharacters/API/Ragdoll.h>
 #include <PhysXCharacters/API/CharacterUtils.h>
@@ -119,7 +118,7 @@ namespace PhysX::Benchmarks
         PhysX::EntityPtr m_terrainEntity;
     };
 
-    Physics::RagdollState GetTPose(const AZ::Vector3& position, Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(const AZ::Vector3& position, Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         Physics::RagdollState ragdollState;
         for (int nodeIndex = 0; nodeIndex < RagdollTestData::NumNodes; nodeIndex++)
@@ -134,25 +133,19 @@ namespace PhysX::Benchmarks
         return ragdollState;
     }
 
-    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         return GetTPose(AZ::Vector3::CreateZero(), simulationType);
     }
 
     PhysX::Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
-        using FixedValueString = AZ::SettingsRegistryInterface::FixedValueString;
-        AZ::SettingsRegistryImpl localRegistry;
-        localRegistry.Set(AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder, AZ::Test::GetEngineRootPath());
-
-        // Look up the path to the PhysX Gem root
-        AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ManifestGemsPaths(localRegistry);
-        AZ::IO::Path physXGemFolder;
-        localRegistry.Get(physXGemFolder.Native(), FixedValueString::format("%s/PhysX/Path",
-            AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey));
-
-        Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>((physXGemFolder / "Code/Tests/RagdollConfiguration.xml").Native());
+        Physics::RagdollConfiguration* configuration = AZ::Utils::LoadObjectFromBuffer<Physics::RagdollConfiguration>(
+            RagdollTestData::RagdollConfiguration.data(), RagdollTestData::RagdollConfiguration.size());
+        if (!configuration)
+        {
+            return nullptr;
+        }
 
         configuration->m_initialState = GetTPose();
         configuration->m_parentIndices.reserve(configuration->m_nodes.size());
@@ -263,7 +256,7 @@ namespace PhysX::Benchmarks
             const float x = washingMachineCentre.GetX() + RagdollConstants::WashingMachine::CylinderRadius * u * std::sin(theta);
             const float y = washingMachineCentre.GetY() + RagdollConstants::WashingMachine::CylinderRadius * u * std::cos(theta);
             const float z = washingMachineCentre.GetZ() + 1.0f + (0.3f * idx);
-            auto kinematicTPose = GetTPose(AZ::Vector3(x, y, z), Physics::SimulationType::Dynamic);
+            auto kinematicTPose = GetTPose(AZ::Vector3(x, y, z), Physics::SimulationType::Simulated);
             ragdoll->EnableSimulation(kinematicTPose);
             ragdoll->SetState(kinematicTPose);
             idx++;
@@ -299,7 +292,7 @@ namespace PhysX::Benchmarks
         ->RangeMultiplier(RagdollConstants::BenchmarkSettings::RangeMultipler)
         ->Ranges({
             {RagdollConstants::BenchmarkSettings::StartRange, RagdollConstants::BenchmarkSettings::EndRange},
-            {static_cast<int>(Physics::SimulationType::Kinematic), static_cast<int>(Physics::SimulationType::Dynamic)}
+            {static_cast<int>(Physics::SimulationType::Kinematic), static_cast<int>(Physics::SimulationType::Simulated)}
             })
         ->Unit(benchmark::kMillisecond)
         ->Iterations(RagdollConstants::BenchmarkSettings::NumIterations)

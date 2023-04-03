@@ -29,7 +29,7 @@ namespace UnitTest
     class ShaderStageFunction : public RHI::ShaderStageFunction
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderStageFunction, SystemAllocator);
 
         ShaderStageFunction(uint64_t hash, RHI::ShaderStage shaderStage)
             : RHI::ShaderStageFunction(shaderStage)
@@ -147,10 +147,10 @@ namespace UnitTest
 
             // The values here are just arbitrary.
             layout->SetBindingSlot(0);
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputA"), 0, 12, 0});
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputB"), 12, 12, 0 });
-            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputC"), 24, 76, 0 });
-            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name("StaticSamplerA"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 1 });
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputA"), 0, 12, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputB"), 12, 12, 0, 0});
+            layout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name("InputC"), 24, 76, 0, 0});
+            layout->AddStaticSampler(RHI::ShaderInputStaticSamplerDescriptor{ Name("StaticSamplerA"), RHI::SamplerState::CreateAnisotropic(16, RHI::AddressMode::Wrap), 1, 1});
             layout->Finalize();
 
             return layout;
@@ -160,7 +160,7 @@ namespace UnitTest
         {
             RHI::ShaderResourceGroupBindingInfo bindingInfo;
             bindingInfo.m_constantDataBindingInfo.m_registerId = 0;
-            bindingInfo.m_resourcesRegisterMap.insert({ "StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1} });
+            bindingInfo.m_resourcesRegisterMap.insert({ "StaticSamplerA", RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, 1, 1} });
 
             return bindingInfo;
         }
@@ -199,8 +199,7 @@ namespace UnitTest
                 subpassLayout.m_rendertargetCount = 1;
                 subpassLayout.m_subpassInputCount = 2;
                 subpassLayout.m_rendertargetDescriptors[0] = RHI::RenderAttachmentDescriptor{ 0, 1, RHI::AttachmentLoadStoreAction() };
-                subpassLayout.m_subpassInputIndices[0] = 2;
-                subpassLayout.m_subpassInputIndices[0] = 3;
+                subpassLayout.m_subpassInputDescriptors[0].m_attachmentIndex = 3;
             }
         }
 

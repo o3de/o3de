@@ -24,7 +24,7 @@ namespace UnitTest
     using namespace AssetBuilderSDK;
 
     class LuaBuilderTests
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
         void SetUp() override
         {
@@ -36,7 +36,9 @@ namespace UnitTest
             registry->Set(projectPathKey, (enginePath / "AutomatedTesting").Native());
             AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*registry);
 
-            m_app.Start(m_descriptor);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app.Start(m_descriptor, startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.

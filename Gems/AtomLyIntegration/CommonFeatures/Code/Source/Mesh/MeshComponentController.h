@@ -8,25 +8,20 @@
 
 #pragma once
 
-#include <AzCore/Component/Component.h>
-#include <AzCore/Component/ComponentBus.h>
-#include <AzCore/Component/TransformBus.h>
-#include <AzCore/Component/NonUniformScaleBus.h>
-
-#include <AtomCore/Instance/InstanceDatabase.h>
-
-#include <AzFramework/Render/GeometryIntersectionBus.h>
-#include <AzFramework/Visibility/BoundsBus.h>
-
-#include <Atom/RPI.Public/Model/Model.h>
-
 #include <Atom/Feature/Mesh/MeshFeatureProcessorInterface.h>
-#include <Atom/Feature/Material/MaterialAssignment.h>
-
+#include <Atom/RPI.Public/Model/Model.h>
+#include <AtomCore/Instance/InstanceDatabase.h>
+#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
+#include <AtomLyIntegration/CommonFeatures/Material/MaterialAssignment.h>
 #include <AtomLyIntegration/CommonFeatures/Material/MaterialComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshComponentBus.h>
 #include <AtomLyIntegration/CommonFeatures/Mesh/MeshHandleStateBus.h>
-#include <AtomLyIntegration/AtomImGuiTools/AtomImGuiToolsBus.h>
+#include <AzCore/Component/Component.h>
+#include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/NonUniformScaleBus.h>
+#include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Render/GeometryIntersectionBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 namespace AZ
 {
@@ -38,7 +33,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(AZ::Render::MeshComponentConfig, "{63737345-51B1-472B-9355-98F99993909B}", ComponentConfig);
-            AZ_CLASS_ALLOCATOR(MeshComponentConfig, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshComponentConfig, SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
             // Editor helper functions
@@ -51,6 +46,7 @@ namespace AZ
             Data::Asset<RPI::ModelAsset> m_modelAsset = { AZ::Data::AssetLoadBehavior::QueueLoad };
             RHI::DrawItemSortKey m_sortKey = 0;
             bool m_excludeFromReflectionCubeMaps = false;
+            bool m_isAlwaysDynamic = false;
             bool m_useForwardPassIblSpecular = false;
             bool m_isRayTracingEnabled = true;
             RPI::Cullable::LodType m_lodType = RPI::Cullable::LodType::Default;
@@ -72,7 +68,7 @@ namespace AZ
         public:
             friend class EditorMeshComponent;
 
-            AZ_CLASS_ALLOCATOR(MeshComponentController, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(MeshComponentController, AZ::SystemAllocator);
             AZ_RTTI(AZ::Render::MeshComponentController, "{D0F35FAC-4194-4C89-9487-D000DDB8B272}");
 
             ~MeshComponentController();
@@ -111,6 +107,9 @@ namespace AZ
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
 
+            void SetIsAlwaysDynamic(bool isAlwaysDynamic) override;
+            bool GetIsAlwaysDynamic() const override;
+
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
 
@@ -128,6 +127,9 @@ namespace AZ
 
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
+
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
 
             // BoundsRequestBus and MeshComponentRequestBus overrides ...
             AZ::Aabb GetWorldBounds() override;
@@ -148,6 +150,7 @@ namespace AZ
 
             // MaterialComponentNotificationBus::Handler overrides ...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             //! Check if the model asset requires to be cloned (e.g. cloth) for unique model instances.
             //! @param modelAsset The model asset to check.
@@ -157,6 +160,7 @@ namespace AZ
             static bool RequiresCloning(const Data::Asset<RPI::ModelAsset>& modelAsset);
 
             void HandleModelChange(Data::Instance<RPI::Model> model);
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
             void RegisterModel();
             void UnregisterModel();
             void RefreshModelRegistration();
@@ -178,6 +182,11 @@ namespace AZ
             MeshFeatureProcessorInterface::ModelChangedEvent::Handler m_changeEventHandler
             {
                 [&](Data::Instance<RPI::Model> model) { HandleModelChange(model); }
+            };
+            
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
             };
 
             AZ::NonUniformScaleChangedEvent::Handler m_nonUniformScaleChangedHandler

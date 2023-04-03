@@ -19,7 +19,7 @@
 namespace UnitTest
 {
     class SliceStabilityTest
-        : public ToolsApplicationFixture,
+        : public ToolsApplicationFixture<>,
           public AzToolsFramework::AssetSystemRequestBus::Handler,
           public AzToolsFramework::EditorRequestBus::Handler,
           public AzToolsFramework::SliceEditorEntityOwnershipServiceNotificationBus::Handler
@@ -154,6 +154,7 @@ namespace UnitTest
         bool IsAssetPlatformEnabled([[maybe_unused]] const char* platform) override { return false; }
         int GetPendingAssetsForPlatform([[maybe_unused]] const char* platform) override { return -1; }
         bool GetAssetsProducedBySourceUUID([[maybe_unused]] const AZ::Uuid& sourceUuid, [[maybe_unused]] AZStd::vector<AZ::Data::AssetInfo>& productsAssetInfo) override { return false; }
+        bool ClearFingerprintForAsset([[maybe_unused]] const AZStd::string& sourcePath) override { return false; }
 
         AZStd::unique_ptr<testing::NiceMock<AZ::IO::MockFileIOBase>> m_fileIOMock;
         AZ::IO::FileIOBase* m_priorFileIO = nullptr;

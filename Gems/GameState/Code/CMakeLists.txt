@@ -39,6 +39,7 @@ ly_add_target(
 # Clients and Servers use the above module.  There is no editor or tools module required.
 ly_create_alias(NAME GameState.Clients  NAMESPACE Gem TARGETS GameState)
 ly_create_alias(NAME GameState.Servers  NAMESPACE Gem TARGETS GameState)
+ly_create_alias(NAME GameState.Unified  NAMESPACE Gem TARGETS GameState)
 
 ################################################################################
 # Tests
@@ -61,5 +62,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::GameState.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

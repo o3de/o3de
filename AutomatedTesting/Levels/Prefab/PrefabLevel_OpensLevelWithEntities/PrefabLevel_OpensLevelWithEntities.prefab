@@ -1,12 +1,12 @@
 {
-    "Source": "Levels/Prefab/PrefabLevel_OpensLevelWithEntities/PrefabLevel_OpensLevelWithEntities.prefab",
     "ContainerEntity": {
         "Id": "Entity_[403811863694]",
         "Name": "Level",
         "Components": {
-            "Component_[10582285743525614098]": {
-                "$type": "SelectionComponent",
-                "Id": 10582285743525614098
+            "Component_[1200881636784745799]": {
+                "$type": "LocalViewBookmarkComponent",
+                "Id": 1200881636784745799,
+                "LocalBookmarkFileName": "PrefabLevel_OpensLevelWithEntities_16663026060720181.setreg"
             },
             "Component_[12253783095375428046]": {
                 "$type": "EditorInspectorComponent",
@@ -15,12 +15,15 @@
             "Component_[13764860261821571747]": {
                 "$type": "{27F1E1A1-8D9D-4C3B-BD3A-AFB9762449C0} TransformComponent",
                 "Id": 13764860261821571747,
-                "Parent Entity": "",
-                "Cached World Transform Parent": ""
+                "Parent Entity": ""
             },
             "Component_[15844324401733835865]": {
                 "$type": "EditorEntitySortComponent",
-                "Id": 15844324401733835865
+                "Id": 15844324401733835865,
+                "Child Entity Order": [
+                    "Entity_[438171602062]",
+                    "Entity_[532660882574]"
+                ]
             },
             "Component_[1605854641405361768]": {
                 "$type": "EditorLockComponent",
@@ -50,8 +53,7 @@
                 "$type": "EditorEntityIconComponent",
                 "Id": 9585901769691795481
             }
-        },
-        "IsDependencyReady": true
+        }
     },
     "Entities": {
         "Entity_[438171602062]": {
@@ -62,6 +64,10 @@
                     "$type": "EditorPendingCompositionComponent",
                     "Id": 11161653124805884473
                 },
+                "Component_[11880342253837797716]": {
+                    "$type": "EditorStaticRigidBodyComponent",
+                    "Id": 11880342253837797716
+                },
                 "Component_[13116773315299882093]": {
                     "$type": "EditorOnlyEntityComponent",
                     "Id": 13116773315299882093
@@ -70,13 +76,22 @@
                     "$type": "EditorVisibilityComponent",
                     "Id": 15820915681461536711
                 },
-                "Component_[2222061938345834243]": {
-                    "$type": "SelectionComponent",
-                    "Id": 2222061938345834243
-                },
                 "Component_[3861913165076405600]": {
                     "$type": "EditorEntitySortComponent",
                     "Id": 3861913165076405600
+                },
+                "Component_[7103333782129541775]": {
+                    "$type": "EditorMeshColliderComponent",
+                    "Id": 7103333782129541775,
+                    "ColliderConfiguration": {
+                        "MaterialSlots": {
+                            "Slots": [
+                                {
+                                    "Name": "Entire object"
+                                }
+                            ]
+                        }
+                    }
                 },
                 "Component_[7118587015611303204]": {
                     "$type": "EditorLockComponent",
@@ -105,13 +120,8 @@
                 "Component_[8988181228601932779]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 8988181228601932779
-                },
-                "Component_[7103333782129541775]": {
-                    "$type": "EditorColliderComponent",
-                    "Id": 7103333782129541775
                 }
-            },
-            "IsDependencyReady": true
+            }
         },
         "Entity_[532660882574]": {
             "Id": "Entity_[532660882574]",
@@ -128,10 +138,6 @@
                 "Component_[16773275259304187949]": {
                     "$type": "EditorInspectorComponent",
                     "Id": 16773275259304187949
-                },
-                "Component_[17283539636910567200]": {
-                    "$type": "SelectionComponent",
-                    "Id": 17283539636910567200
                 },
                 "Component_[250004123617033400]": {
                     "$type": "EditorLockComponent",
@@ -165,8 +171,7 @@
                     "$type": "EditorDisabledCompositionComponent",
                     "Id": 7072085777705148766
                 }
-            },
-            "IsDependencyReady": true
+            }
         }
     }
 }

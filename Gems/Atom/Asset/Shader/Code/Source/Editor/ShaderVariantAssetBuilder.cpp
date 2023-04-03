@@ -28,6 +28,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/Debug/TraceContext.h>
@@ -35,6 +36,8 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Platform/PlatformDefaults.h>
+#include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzFramework/Process/ProcessWatcher.h>
 
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/JSON/document.h>
@@ -79,7 +82,7 @@ namespace AZ
 
             bool found = false;
 
-            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDepenencyPaths(currentFilePath, referencedParentPath);
+            AZStd::vector<AZStd::string> possibleDependencies = RPI::AssetUtils::GetPossibleDependencyPaths(currentFilePath, referencedParentPath);
             for (auto& file : possibleDependencies)
             {
                 AssetBuilderSDK::SourceFileDependency sourceFileDependency;
@@ -100,40 +103,6 @@ namespace AZ
             }
 
             return found;
-        }
-
-
-        //! Returns true if @sourceFileFullPath starts with a valid asset processor scan folder, false otherwise.
-        //! In case of true, it splits @sourceFileFullPath into @scanFolderFullPath and @filePathFromScanFolder.
-        //! @sourceFileFullPath The full path to a source asset file.
-        //! @scanFolderFullPath [out] Gets the full path of the scan folder where the source file is located.
-        //! @filePathFromScanFolder [out] Get the file path relative to  @scanFolderFullPath.
-        static bool SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(const AZStd::string& sourceFileFullPath, AZStd::string& scanFolderFullPath, AZStd::string& filePathFromScanFolder)
-        {
-            AZStd::vector<AZStd::string> scanFolders;
-            bool success = false;
-            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success, &AzToolsFramework::AssetSystem::AssetSystemRequest::GetAssetSafeFolders, scanFolders);
-            if (!success)
-            {
-                AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folders");
-                return false;
-            }
-
-            for (AZStd::string scanFolder : scanFolders)
-            {
-                AZ::StringFunc::Path::Normalize(scanFolder);
-                if (!AZ::StringFunc::StartsWith(sourceFileFullPath, scanFolder))
-                {
-                    continue;
-                }
-                const size_t scanFolderSize = scanFolder.size();
-                const size_t sourcePathSize = sourceFileFullPath.size();
-                scanFolderFullPath = scanFolder;
-                filePathFromScanFolder = sourceFileFullPath.substr(scanFolderSize + 1, sourcePathSize - scanFolderSize - 1);
-                return true;
-            }
-
-            return false;
         }
 
         //! Validates if a given .shadervariantlist file is located at the correct path for a given .shader full path.
@@ -159,7 +128,11 @@ namespace AZ
         {
             AZStd::string scanFolderFullPath;
             AZStd::string shaderProductFileRelativePath;
-            if (!SplitSourceAssetPathIntoScanFolderFullPathAndRelativeFilePath(shaderFileFullPath, scanFolderFullPath, shaderProductFileRelativePath))
+            bool success = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(success
+                , &AzToolsFramework::AssetSystem::AssetSystemRequest::GenerateRelativeSourcePath
+                , shaderFileFullPath, shaderProductFileRelativePath, scanFolderFullPath);
+            if (!success)
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Couldn't get the scan folder for shader [%s]", shaderFileFullPath.c_str());
                 return false;
@@ -297,7 +270,10 @@ namespace AZ
                 response.m_result = AssetBuilderSDK::CreateJobsResultCode::Failed;
                 return;
             }
-            
+
+            // Even if the shader file doesn't exist yet, when calling LocateReferencedSourceFile() the source
+            // asset dependency list will be populated. This will cause to re-run this builder
+            // when the source *.shader file comes into existence.
             AZStd::string foundShaderFile;
             LocateReferencedSourceFile(variantListFullPath, shaderVariantList.m_shaderFilePath, response.m_sourceFileDependencyList, foundShaderFile);
 
@@ -310,7 +286,11 @@ namespace AZ
 
                     jobDescriptor.m_priority = -5000;
                     jobDescriptor.m_critical = false;
-                    jobDescriptor.m_jobKey = ShaderVariantAssetBuilderJobKey;
+                    // We are going to create a fake job that we know will fail.
+                    // We need to use a job key of a real product (In this case we are using the job key for the ShaderVariantTreeAsset).
+                    // Using a real product job key will guarantee to clear old errors in the future, because a successful product build will
+                    // replace the lingering error thanks to matching job keys.
+                    jobDescriptor.m_jobKey = GetShaderVariantTreeAssetJobKey();
                     jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
                     
                     if (!foundShaderFile.empty())
@@ -516,7 +496,6 @@ namespace AZ
             const AssetBuilderSDK::PlatformInfo& platformInfo,
             const AzslCompiler& azslCompiler, const AZStd::string& shaderSourceFileFullPath,
             const RPI::SupervariantIndex supervariantIndex,
-            const bool platformUsesRegisterSpaces,
             RPI::ShaderResourceGroupLayoutList& srgLayoutList,
             RootConstantData& rootConstantData)
         {
@@ -542,7 +521,7 @@ namespace AZ
                 return false;
             }
             // Add all Shader Resource Group Assets that were defined in the shader code to the shader asset
-            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, platformUsesRegisterSpaces, srgLayoutList))
+            if (!SrgLayoutUtility::LoadShaderResourceGroupLayouts(ShaderVariantAssetBuilderName, srgData, srgLayoutList))
             {
                 AZ_Error(ShaderVariantAssetBuilderName, false, "Failed to load ShaderResourceGroupLayouts");
                 return false;
@@ -667,7 +646,6 @@ namespace AZ
                 return;
             }
 
-
             // set the input file for eventual error messages, but the compiler won't be called on it.
             AZStd::string azslFullPath;
             ShaderBuilderUtility::GetAbsolutePathToAzslFile(shaderSourceFileFullPath, shaderSourceDescriptor.m_source, azslFullPath);
@@ -727,6 +705,7 @@ namespace AZ
             AZ_TracePrintf(ShaderVariantAssetBuilderName, "Shader Variant Tree Asset [%s] compiled successfully.\n", assetPath.c_str());
 
             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+ 
         }
 
         void ShaderVariantAssetBuilder::ProcessShaderVariantJob(const AssetBuilderSDK::ProcessJobRequest& request, AssetBuilderSDK::ProcessJobResponse& response) const
@@ -866,17 +845,12 @@ namespace AZ
                     //! It is important to keep this refcounted pointer outside of the if block to prevent it from being destroyed.
                     RHI::Ptr<RHI::PipelineLayoutDescriptor> pipelineLayoutDescriptor;
                     if (shaderPlatformInterface->VariantCompilationRequiresSrgLayoutData())
-                    {
-                        const auto& azslcArguments = buildArgsManager.GetCurrentArguments().m_azslcArguments;
-                        const bool platformUsesRegisterSpaces = RHI::ShaderBuildArguments::HasArgument(azslcArguments, "--use-spaces");
-                    
+                    {                    
                         RPI::ShaderResourceGroupLayoutList srgLayoutList;
                         RootConstantData rootConstantData;
                         if (!LoadSrgLayoutListFromShaderAssetBuilder(
                             shaderPlatformInterface, request.m_platformInfo, azslc, shaderSourceFileFullPath, supervariantIndex,
-                            platformUsesRegisterSpaces,
-                            srgLayoutList,
-                            rootConstantData))
+                            srgLayoutList, rootConstantData))
                         {
                             response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
                             return;
@@ -917,6 +891,11 @@ namespace AZ
                         shaderStemNamePrefix,
                         hlslSourcePath, hlslCode
                     };
+
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto shaderVariantAssetOutcome = CreateShaderVariantAsset(variantInfo, shaderVariantCreationContext, outputByproducts);
@@ -1140,10 +1119,163 @@ namespace AZ
                 }
             }
 
+            if (shaderVariantInfo.m_enableRegisterAnalysis)
+            {
+                if (creationContext.m_shaderPlatformInterface.GetAPIName().GetStringView() == "vulkan")
+                {
+                    AZ::IO::FixedMaxPath projectBuildPath = AZ::Utils::GetExecutableDirectory();
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // profile
+                    projectBuildPath = projectBuildPath.RemoveFilename(); // bin
+
+                    AZ::IO::FixedMaxPath spirvPath(AZStd::string_view(creationContext.m_tempDirPath));
+                    spirvPath /= AZ::IO::FixedMaxPathString::format(
+                        "%s_vulkan_%u.spirv.bin", creationContext.m_shaderStemNamePrefix.c_str(), shaderVariantInfo.m_stableId);
+
+                    AZStd::string rgaCommand = AZStd::string::format(
+                        "-s vk-spv-offline --isa ./disassem_%u.txt --livereg ./livereg_%u.txt --asic %s",
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_stableId,
+                        shaderVariantInfo.m_asic.c_str());
+
+                    AZStd::string RgaPath;
+                    if (creationContext.m_platformInfo.m_identifier == "pc")
+                    {
+                        RgaPath = "\\_deps\\rga-src\\rga.exe";
+                    }
+                    else
+                    {
+                        RgaPath = "/_deps/rga-src/rga";
+                    }
+
+                    AZStd::string command = AZStd::string::format(
+                        "%s%s %s %s", projectBuildPath.c_str(), RgaPath.c_str(), rgaCommand.c_str(), spirvPath.c_str());
+                    AZ_TracePrintf(ShaderVariantAssetBuilderName, "Rga command %s\n", command.c_str());
+
+                    AZStd::vector<AZStd::string> fullCommand;
+                    fullCommand.push_back(command);
+                    AZStd::string failMessage;
+                    if (LaunchRadeonGPUAnalyzer(fullCommand, creationContext.m_tempDirPath, failMessage))
+                    {
+                        // add rga output to the by product list
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_disassem_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                        outputByproducts->m_intermediatePaths.insert(AZStd::string::format(
+                            "./%s_livereg_%u_frag.txt", shaderVariantInfo.m_asic.c_str(), shaderVariantInfo.m_stableId));
+                    }
+                    else
+                    {
+                        AZ_Warning(ShaderVariantAssetBuilderName, false, "%s", failMessage.c_str());
+                    }
+                }
+                else
+                {
+                    AZ_Warning(
+                        ShaderVariantAssetBuilderName,
+                        false,
+                        "Current platform is %s, register analysis is only available on Vulkan for now.",
+                        creationContext.m_shaderPlatformInterface.GetAPIName().GetCStr());
+                }
+            }
+
             Data::Asset<RPI::ShaderVariantAsset> shaderVariantAsset;
             variantCreator.End(shaderVariantAsset);
             return AZ::Success(AZStd::move(shaderVariantAsset));
         }
 
+        bool ShaderVariantAssetBuilder::LaunchRadeonGPUAnalyzer(AZStd::vector<AZStd::string> command, const AZStd::string& workingDirectory, AZStd::string& failMessage)
+        {
+            AzFramework::ProcessLauncher::ProcessLaunchInfo processLaunchInfo;
+            processLaunchInfo.m_commandlineParameters.emplace<AZStd::vector<AZStd::string>>(AZStd::move(command));
+            processLaunchInfo.m_workingDirectory = workingDirectory;
+            processLaunchInfo.m_showWindow = false;
+            AzFramework::ProcessWatcher* watcher =
+                AzFramework::ProcessWatcher::LaunchProcess(processLaunchInfo, AzFramework::COMMUNICATOR_TYPE_STDINOUT);
+            if (!watcher)
+            {
+                failMessage = AZStd::string("Rga executable can not be launched");
+                return false;
+            }
+
+            AZStd::unique_ptr<AzFramework::ProcessWatcher> watcherPtr = AZStd::unique_ptr<AzFramework::ProcessWatcher>(watcher);
+
+            AZStd::string errorMessages;
+            AZStd::string outputMessages;
+            auto pumpOuputStreams = [&watcherPtr, &errorMessages, &outputMessages]()
+            {
+                auto communicator = watcherPtr->GetCommunicator();
+
+                // Instead of collecting all the output in a giant string, it would be better to report
+                // the chunks of messages as they arrive, but this should be good enough for now.
+                if (auto byteCount = communicator->PeekError())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadError(chunk.data(), byteCount);
+                    errorMessages += chunk;
+                }
+
+                if (auto byteCount = communicator->PeekOutput())
+                {
+                    AZStd::string chunk;
+                    chunk.resize(byteCount);
+                    communicator->ReadOutput(chunk.data(), byteCount);
+                    outputMessages += chunk;
+                }
+            };
+
+            uint32_t exitCode = 0;
+            bool timedOut = false;
+
+            const AZStd::sys_time_t maxWaitTimeSeconds = 5;
+            const AZStd::sys_time_t startTimeSeconds = AZStd::GetTimeNowSecond();
+
+            while (watcherPtr->IsProcessRunning(&exitCode))
+            {
+                const AZStd::sys_time_t currentTimeSeconds = AZStd::GetTimeNowSecond();
+                if (currentTimeSeconds - startTimeSeconds > maxWaitTimeSeconds)
+                {
+                    timedOut = true;
+                    static const uint32_t TimeOutExitCode = 121;
+                    exitCode = TimeOutExitCode;
+                    watcherPtr->TerminateProcess(TimeOutExitCode);
+                    break;
+                }
+                else
+                {
+                    pumpOuputStreams();
+                }
+            }
+
+            AZ_Assert(!watcherPtr->IsProcessRunning(), "Rga execution failed to terminate");
+
+            // Pump one last time to make sure the streams have been flushed
+            pumpOuputStreams();
+
+            if (timedOut)
+            {
+                failMessage = AZStd::string("Rga execution timed out");
+                return false;
+            }
+
+            if (exitCode != 0)
+            {
+                failMessage = AZStd::string::format("Rga process failed, exit code %u", exitCode);
+                return false;
+            }
+
+            if (!errorMessages.empty())
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", errorMessages.c_str());
+                return false;
+            }
+
+            if (!outputMessages.empty() && outputMessages.contains("Error"))
+            {
+                failMessage = AZStd::string::format("Rga report error message %s", outputMessages.c_str());
+                return false;
+            }
+
+            return true;
+        }
     } // ShaderBuilder
 } // AZ

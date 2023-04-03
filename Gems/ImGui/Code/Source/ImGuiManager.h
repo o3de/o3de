@@ -75,7 +75,6 @@ namespace ImGui
         void SetDpiScalingFactor(float dpiScalingFactor) override;
         float GetDpiScalingFactor() const override;
         void Render() override;
-        void WaitForRenderToFinish() override;
         void ToggleThroughImGuiVisibleState() override;
         void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------

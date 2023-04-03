@@ -8,16 +8,164 @@
                     }
                 }
             },
-            "LyShine": {
+            "InAppPurchases": {
                 "Targets": {
-                    "LyShine.Editor": {
+                    "InAppPurchases": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Editor": {
+                        "AutoLoad": false
+                    },
+                    "InAppPurchases.Tools": {
                         "AutoLoad": false
                     }
                 }
             },
-            "AWSGameLift": {
+            "Stars": {
                 "Targets": {
-                    "AWSGameLift.Editor": {
+                    "Stars": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Editor": {
+                        "AutoLoad": false
+                    },
+                    "Stars.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShine": {
+                "Targets": {
+                    "LyShine": {
+                        "AutoLoad": false
+                    },
+                    "LyShine.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShine.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "LyShineExamples": {
+                "Targets": {
+                    "LyShineExamples": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Editor": {
+                        "AutoLoad": false
+                    },
+                    "LyShineExamples.Tools": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Vegetation": {
+                "Targets": {
+                    "Vegetation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Terrain": {
+                "Targets": {
+                    "Terrain.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "FastNoise": {
+                "Targets": {
+                    "FastNoise.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "GradientSignal": {
+                "Targets": {
+                    "GradientSignal.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SurfaceData": {
+                "Targets": {
+                    "SurfaceData.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "PrefabBuilder": {
+                "Targets": {
+                    "PrefabBuilder.Builders": {
+                        "AutoLoad": false
+                    },
+                    "PrefabBuilder.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "SceneProcessing": {
+                "Targets": {
+                    "SceneProcessing.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ScriptEvents": {
+                "Targets": {
+                    "ScriptEvents.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "ExpressionEvaluation": {
+                "Targets": {
+                    "ExpressionEvaluation": {
+                        "AutoLoad": false
+                    },
+                    "ExpressionEvaluation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AtomTressFX": {
+                "Targets": {
+                    "AtomTressFX": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AtomTressFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Maestro": {
+                "Targets": {
+                    "Maestro.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "MotionMatching": {
+                "Targets": {
+                    "MotionMatching.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX": {
+                "Targets": {
+                    "EMotionFX.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EMotionFX_Atom": {
+                "Targets": {
+                    "EMotionFX_Atom.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -31,7 +179,44 @@
             },
             "Gestures": {
                 "Targets": {
+                    "Gestures": {
+                        "AutoLoad": false
+                    },
                     "Gestures.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "EditorModeFeedback": {
+                "Targets": {
+                    "EditorModeFeedback": {
+                        "AutoLoad": false
+                    },
+                    "EditorModeFeedback.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "RecastNavigation": {
+                "Targets": {
+                    "RecastNavigation.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AudioSystem": {
+                "Targets": {
+                    "AudioSystem.Editor": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "Metastream": {
+                "Targets": {
+                    "Metastream": {
+                        "AutoLoad": false
+                    },
+                    "Metastream.Editor": {
                         "AutoLoad": false
                     }
                 }
@@ -64,16 +249,12 @@
                     }
                 }
             },
-            "Blast": {
+            "NvCloth": {
                 "Targets": {
-                    "Blast.Editor": {
+                    "NvCloth.Editor": {
                         "AutoLoad": false
-                    }
-                }
-            },
-            "NVCloth": {
-                "Targets": {
-                    "NVCloth.Editor": {
+                    },
+                    "NvCloth.Editor.Gem": {
                         "AutoLoad": false
                     }
                 }
@@ -141,6 +322,24 @@
                     },
                     "AWSCore.Editor": {
                         "AutoLoad": false
+                    },
+                    "AWSCore.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSCore.Tests": {
+                        "AutoLoad": false
                     }
                 }
             },
@@ -151,6 +350,49 @@
                     },
                     "AWSClientAuth.Editor": {
                         "AutoLoad": false
+                    },
+                    "AWSClientAuth.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSClientAuth.Tests": {
+                        "AutoLoad": false
+                    }
+                }
+            },
+            "AWSGameLift": {
+                "Targets": {
+                    "AWSGameLift": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Editor": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSGameLift.Builders": {
+                        "AutoLoad": false
                     }
                 }
             },
@@ -160,6 +402,24 @@
                         "AutoLoad": false
                     },
                     "AWSMetrics.Editor": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Servers": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Clients": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Unified": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Tools": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Builders": {
+                        "AutoLoad": false
+                    },
+                    "AWSMetrics.Tests": {
                         "AutoLoad": false
                     }
                 }

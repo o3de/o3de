@@ -14,6 +14,11 @@ namespace Multiplayer
     {
         NetComponentId netComponentId = m_nextNetComponentId++;
         m_componentData[netComponentId] = componentData;
+
+        // add all the component hashes together to create an system-wide hash
+        m_componentVersionHashes[componentData.m_componentName] = componentData.m_versionHash;
+        m_systemVersionHash += componentData.m_versionHash;
+
         return netComponentId;
     }
 
@@ -70,8 +75,32 @@ namespace Multiplayer
         return nullComponentData;
     }
 
+    AZ::HashValue64 MultiplayerComponentRegistry::GetSystemVersionHash() const
+    {
+        return m_systemVersionHash;
+    }
+
+    bool MultiplayerComponentRegistry::FindComponentVersionHashByName(const AZ::Name& multiplayerComponentName, AZ::HashValue64& hash) const
+    {
+        const auto it = m_componentVersionHashes.find(multiplayerComponentName);
+        if (it != m_componentVersionHashes.end())
+        {
+            hash = it->second;
+            return true;
+        }
+
+        return false;
+    }
+
+    const Multiplayer::ComponentVersionMap& MultiplayerComponentRegistry::GetMultiplayerComponentVersionHashes() const
+    {
+        return m_componentVersionHashes;
+    }
+
     void MultiplayerComponentRegistry::Reset()
     {
         m_componentData.clear();
+        m_componentVersionHashes.clear();
+        m_systemVersionHash = AZ::HashValue64{ 0 };
     }
 }

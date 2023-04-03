@@ -11,8 +11,7 @@
 #include <AzCore/Component/Entity.h>
 #include <AzFramework/Components/ComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/EditorComponentAdapter.h>
-
-#include <AzCore/UnitTest/TestTypes.h>
+#include <CustomSerializeContextTestFixture.h>
 
 namespace UnitTest
 {
@@ -23,13 +22,14 @@ namespace UnitTest
         : public AZ::ComponentConfig
     {
         AZ_RTTI(TestConfig, "{835CF711-77DB-4DF2-A364-936227A7AF5F}", AZ::ComponentConfig);
+        AZ_CLASS_ALLOCATOR(TestConfig, AZ::SystemAllocator)
+
         uint32_t m_testValue = 0;
     };
 
     class TestController
     {
     public:
-
         AZ_TYPE_INFO(TestController, "{89C1FED9-C306-4B00-9EA4-577862D9277D}");
 
         static void Reflect(AZ::ReflectContext* context)
@@ -89,7 +89,7 @@ namespace UnitTest
     };
 
     class WrappedComponentTest
-        : public AllocatorsFixture
+        : public CustomSerializeContextTestFixture
     {
 
         AZStd::unique_ptr<AZ::SerializeContext> m_serializeContext;
@@ -99,12 +99,10 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            CustomSerializeContextTestFixture::SetUp();
 
             s_activateCalled = false;
             s_deactivateCalled = false;
-
-            m_serializeContext = AZStd::make_unique<AZ::SerializeContext>();
 
             m_testRuntimeComponentDescriptor.reset(TestRuntimeComponent::CreateDescriptor());
             m_testRuntimeComponentDescriptor->Reflect(&(*m_serializeContext));
@@ -117,9 +115,8 @@ namespace UnitTest
         {
             m_testEditorComponentDescriptor.reset();
             m_testRuntimeComponentDescriptor.reset();
-            m_serializeContext.reset();
 
-            AllocatorsFixture::TearDown();
+            CustomSerializeContextTestFixture::TearDown();
         }
     };
 

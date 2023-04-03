@@ -34,9 +34,10 @@ namespace GraphModelIntegration
         AZ_TYPE_INFO(GraphModelSerialization, "{0D4D420B-5D9E-429C-A567-DF8596439F5F}");
 
         using SerializedSlotMapping = AZStd::unordered_map<GraphModel::SlotId, GraphCanvas::SlotId>;
+        using SerializedNodeBuffer = AZStd::vector<AZ::u8>;
 
         //! Keep track of any nodes and their slots that have been serialized
-        AZStd::unordered_map<GraphCanvas::NodeId, GraphModel::NodePtr> m_serializedNodes;
+        AZStd::unordered_map<GraphCanvas::NodeId, SerializedNodeBuffer> m_serializedNodes;
         AZStd::unordered_map<GraphCanvas::NodeId, SerializedSlotMapping> m_serializedSlotMappings;
 
         //! Mapping of serialized nodeIds to their wrapper (parent) nodeId and layout order so they can be restored after deserialization
@@ -122,22 +123,22 @@ namespace GraphModelIntegration
         //! Create a new connection between the specified source and target specified slots
         virtual GraphModel::ConnectionPtr AddConnectionBySlotId(
             GraphModel::NodePtr sourceNode,
-            GraphModel::SlotId sourceSlotId,
+            const GraphModel::SlotId& sourceSlotId,
             GraphModel::NodePtr targetNode,
-            GraphModel::SlotId targetSlotId) = 0;
+            const GraphModel::SlotId& targetSlotId) = 0;
 
         //! Check if there is a connection between the specified source and target specified slots
         virtual bool AreSlotsConnected(
             GraphModel::NodePtr sourceNode,
-            GraphModel::SlotId sourceSlotId,
+            const GraphModel::SlotId& sourceSlotId,
             GraphModel::NodePtr targetNode,
-            GraphModel::SlotId targetSlotId) const = 0;
+            const GraphModel::SlotId& targetSlotId) const = 0;
 
         //! Remove the specified connection
         virtual bool RemoveConnection(GraphModel::ConnectionPtr connection) = 0;
 
         //! Extend the given Slot on the specified node
-        virtual GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, GraphModel::SlotName slotName) = 0;
+        virtual GraphModel::SlotId ExtendSlot(GraphModel::NodePtr node, const GraphModel::SlotName& slotName) = 0;
 
         //! Returns a GraphModel::Node that corresponds to the Graph Canvas Node Id
         virtual GraphModel::NodePtr GetNodeById(const GraphCanvas::NodeId& nodeId) = 0;

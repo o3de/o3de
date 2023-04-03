@@ -14,6 +14,7 @@
 namespace AZ::DocumentPropertyEditor
 {
     class CvarAdapter;
+    class ValueStringSort;
 }
 
 namespace AzToolsFramework
@@ -26,5 +27,6 @@ namespace AzToolsFramework
 
     protected:
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::CvarAdapter> m_cvarAdapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringSort> m_sortAdapter;
     };
 } // namespace AzToolsFramework

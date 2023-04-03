@@ -49,19 +49,8 @@ namespace SimulatedObjectSetupTests
     using namespace EMotionFX;
 
     class SimulatedObjectSetupTestsFixture
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            UnitTest::AllocatorsTestFixture::SetUp();
-            AZ::AllocatorInstance<ActorAllocator>::Create();
-        }
-        void TearDown() override
-        {
-            AZ::AllocatorInstance<ActorAllocator>::Destroy();
-            UnitTest::AllocatorsTestFixture::TearDown();
-        }
     };
 
     TEST_F(SimulatedObjectSetupTestsFixture, TestSimulatedObjectSetup_AddSimulatedObject)

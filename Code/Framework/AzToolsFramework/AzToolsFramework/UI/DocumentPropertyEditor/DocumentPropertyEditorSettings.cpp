@@ -24,11 +24,22 @@ namespace AzToolsFramework
             .ReplaceExtension(SettingsRegistrar::SettingsRegistryFileExt);
 
         m_wereSettingsLoaded = LoadExpanderStates();
+        m_shouldSettingsPersist = true;
     }
 
     DocumentPropertyEditorSettings::~DocumentPropertyEditorSettings()
     {
         SaveAndCleanExpanderStates();
+    }
+
+    void DocumentPropertyEditorSettings::Reflect(AZ::ReflectContext* context)
+    {
+        AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
+        if (serializeContext)
+        {
+            serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
+                "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
+        }
     }
 
     void DocumentPropertyEditorSettings::SaveExpanderStates()
@@ -85,14 +96,14 @@ namespace AzToolsFramework
             }
         }
 
-        if (!m_expandedElementStates.empty())
+        if (m_shouldSettingsPersist && !m_expandedElementStates.empty())
         {
             SaveExpanderStates();
         }
     }
 
     void DocumentPropertyEditorSettings::SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded)
-    {      
+    {
         m_expandedElementStates[rowPath.ToString()] = isExpanded;
     }
 

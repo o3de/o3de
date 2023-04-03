@@ -7,14 +7,14 @@
  */
 #pragma once
 
-#include <AzCore/Math/Aabb.h>
-#include <AzCore/Math/Vector3.h>
-#include <AzCore/Math/Color.h>
-#include <AzCore/Math/Transform.h>
-#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/EBus/EBusSharedDispatchTraits.h>
-
+#include <AzCore/Math/Aabb.h>
+#include <AzCore/Math/Color.h>
+#include <AzCore/Math/Transform.h>
+#include <AzCore/Math/Vector3.h>
+#include <AzCore/Settings/SettingsRegistry.h>
+#include <AzCore/std/parallel/shared_mutex.h>
 #include <AzFramework/Viewport/ViewportColors.h>
 
 namespace AZ
@@ -174,6 +174,18 @@ namespace LmbrCentral
             return false;
         }
 
+        /// Get the translation offset for the shape relative to its entity.
+        virtual AZ::Vector3 GetTranslationOffset() const
+        {
+            return AZ::Vector3::CreateZero();
+        }
+
+        /// Set the translation offset for the shape relative to its entity.
+        virtual void SetTranslationOffset([[maybe_unused]] const AZ::Vector3& translationOffset)
+        {
+            AZ_WarningOnce("ShapeComponentRequests", false, "SetTranslationOffset not implemented");
+        }
+
         virtual ~ShapeComponentRequests() = default;
     };
 
@@ -215,7 +227,7 @@ namespace LmbrCentral
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShapeComponentConfig, AZ::SystemAllocator);
         AZ_RTTI(ShapeComponentConfig, "{32683353-0EF5-4FBC-ACA7-E220C58F60F5}", AZ::ComponentConfig);
 
         static void Reflect(AZ::ReflectContext* context);

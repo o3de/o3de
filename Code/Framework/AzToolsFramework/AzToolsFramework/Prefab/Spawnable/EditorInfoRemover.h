@@ -34,7 +34,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         : public PrefabProcessor
     {
     public:
-        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(EditorInfoRemover, AZ::SystemAllocator);
         AZ_RTTI(AzToolsFramework::Prefab::PrefabConversionUtils::EditorInfoRemover,
             "{50B48C7E-C9DE-48DE-8438-1A186A8EEAC8}", PrefabProcessor);
 
@@ -69,7 +69,7 @@ namespace AzToolsFramework::Prefab::PrefabConversionUtils
         using RemoveEditorOnlyEntitiesResult = AZ::Outcome<void, AZStd::string>;
         RemoveEditorOnlyEntitiesResult RemoveEditorOnlyEntities(EntityList& entities);
 
-        using ExportEntityResult = AZ::Outcome<AZ::Entity*, AZStd::string>;
+        using ExportEntityResult = AZ::Outcome<AZStd::unique_ptr<AZ::Entity>, AZStd::string>;
         ExportEntityResult ExportEntity(AZ::Entity* sourceEntity, PrefabProcessorContext& context);
 
         using ResolveExportedComponentResult = AZ::Outcome<AZ::ExportedComponent, AZStd::string>;

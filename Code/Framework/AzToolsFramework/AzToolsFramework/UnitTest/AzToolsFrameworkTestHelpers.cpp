@@ -549,10 +549,10 @@ namespace UnitTest
 
         entity->Deactivate();
 
-        // add required components for the Editor entity
-        entity->CreateComponent<Components::TransformComponent>();
-        entity->CreateComponent<Components::EditorLockComponent>();
-        entity->CreateComponent<Components::EditorVisibilityComponent>();
+        // Add required components for the Editor entity if they are not added.
+        CreateComponentIfMissing<Components::TransformComponent>(entity);
+        CreateComponentIfMissing<Components::EditorLockComponent>(entity);
+        CreateComponentIfMissing<Components::EditorVisibilityComponent>(entity);
 
         // This is necessary to prevent a warning in the undo system.
         AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -650,6 +650,44 @@ namespace UnitTest
         }
 
         sliceAssets.clear();
+    }
+
+    const AZStd::unordered_map<AzToolsFramework::ViewportUi::ClusterId, AZStd::shared_ptr<ViewportUiManagerTestable::ButtonGroup>>&
+    ViewportUiManagerTestable::GetClusterMap()
+    {
+        return m_clusterButtonGroups;
+    }
+
+    ViewportUiManagerTestable::ViewportUiDisplay* ViewportUiManagerTestable::GetViewportUiDisplay()
+    {
+        return m_viewportUi.get();
+    }
+
+    void ViewportManagerWrapper::Create()
+    {
+        m_viewportManager = AZStd::make_unique<ViewportUiManagerTestable>();
+        m_viewportManager->ConnectViewportUiBus(AzToolsFramework::ViewportUi::DefaultViewportId);
+        m_mockRenderOverlay = AZStd::make_unique<QWidget>();
+        m_parentWidget = AZStd::make_unique<QWidget>();
+        m_viewportManager->InitializeViewportUi(m_parentWidget.get(), m_mockRenderOverlay.get());
+    }
+
+    void ViewportManagerWrapper::Destroy()
+    {
+        m_viewportManager->DisconnectViewportUiBus();
+        m_viewportManager.reset();
+        m_mockRenderOverlay.reset();
+        m_parentWidget.reset();
+    }
+
+    ViewportUiManagerTestable* ViewportManagerWrapper::GetViewportManager()
+    {
+        return m_viewportManager.get();
+    }
+
+    QWidget* ViewportManagerWrapper::GetMockRenderOverlay()
+    {
+        return m_mockRenderOverlay.get();
     }
 } // namespace UnitTest
 

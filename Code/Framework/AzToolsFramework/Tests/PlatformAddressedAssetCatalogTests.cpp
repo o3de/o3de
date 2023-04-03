@@ -29,7 +29,7 @@ namespace
 namespace UnitTest
 {
     class PlatformAddressedAssetCatalogManagerTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
 
@@ -48,7 +48,9 @@ namespace UnitTest
             argContainer.push_back(projectPathOverride.data());
             m_application = new ToolsTestApplication("AddressedAssetCatalogManager", aznumeric_caster(argContainer.size()), argContainer.data());
 
-            m_application->Start(AzFramework::Application::Descriptor());
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_application->Start(AzFramework::Application::Descriptor(), startupParameters);
             // Without this, the user settings component would attempt to save on finalize/shutdown. Since the file is
             // shared across the whole engine, if multiple tests are run in parallel, the saving could cause a crash
             // in the unit tests.
@@ -161,6 +163,7 @@ namespace UnitTest
     class PlatformAddressedAssetCatalogMessageTest : public AzToolsFramework::PlatformAddressedAssetCatalog
     {
     public:
+        AZ_CLASS_ALLOCATOR(PlatformAddressedAssetCatalogMessageTest, AZ::SystemAllocator)
         PlatformAddressedAssetCatalogMessageTest(AzFramework::PlatformId platformId) :  AzToolsFramework::PlatformAddressedAssetCatalog(platformId)
         {
 
@@ -180,7 +183,7 @@ namespace UnitTest
     };
 
     class MessageTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override

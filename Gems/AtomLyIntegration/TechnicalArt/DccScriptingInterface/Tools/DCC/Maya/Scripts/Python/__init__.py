@@ -13,4 +13,4 @@ from DccScriptingInterface.Tools.DCC.Maya.Scripts import _PACKAGENAME
 _PACKAGENAME = f'{_PACKAGENAME}.Python'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 
-__all__ = ['export']
+__all__ = ['scene_exporter']

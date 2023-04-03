@@ -55,18 +55,8 @@ namespace UnitTest
         }
     };
 
-    class StringifySerializerTests : public AllocatorsFixture
+    class StringifySerializerTests : public LeakDetectionFixture
     {
-    public:
-        void SetUp() override
-        {
-            SetupAllocator();
-        }
-
-        void TearDown() override
-        {
-            TeardownAllocator();
-        }
     };
 
     TEST_F(StringifySerializerTests, TestHashSerialization)
@@ -91,4 +81,22 @@ namespace UnitTest
         stringifySerializer.ClearTrackedChangesFlag(); // NO-OP
         EXPECT_FALSE(stringifySerializer.GetTrackedChangesFlag());
     }
-}
+
+    TEST_F(StringifySerializerTests, SerializedDataMustHaveUniqueNames)
+    {
+        AzNetworking::StringifySerializer stringifySerializer;
+        EXPECT_EQ(stringifySerializer.GetSerializerMode(), AzNetworking::SerializerMode::ReadFromObject);
+
+        bool boolValue = true;
+        EXPECT_TRUE(stringifySerializer.Serialize(boolValue, "Bool"));
+
+        // Multiple serializations of the same key/value pair are allowed.
+        EXPECT_TRUE(stringifySerializer.Serialize(boolValue, "Bool"));
+
+        // Serialization of the same key with a different value should assert.
+        boolValue = false;
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        stringifySerializer.Serialize(boolValue, "Bool");
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+    }
+} // namespace UnitTest

@@ -20,6 +20,7 @@ namespace AZ
             : public ComponentConfig
         {
         public:
+            AZ_CLASS_ALLOCATOR(ExposureControlComponentConfig, SystemAllocator)
             AZ_RTTI(AZ::Render::ExposureControlComponentConfig, "{3FBB712B-EA05-43DA-A2F5-9C8DA61AA787}", AZ::ComponentConfig);
 
             static void Reflect(ReflectContext* context);

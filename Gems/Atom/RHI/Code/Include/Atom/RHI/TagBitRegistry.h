@@ -26,7 +26,7 @@ namespace AZ
             : public AZStd::intrusive_base
         {
         public:
-            AZ_CLASS_ALLOCATOR(TagBitRegistry, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(TagBitRegistry, AZ::SystemAllocator);
             AZ_DISABLE_COPY_MOVE(TagBitRegistry);
 
             using TagType = Handle<IndexType>;

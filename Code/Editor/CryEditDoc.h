@@ -200,7 +200,6 @@ protected:
     QString m_pathName;
     QString m_slicePathName;
     QString m_title;
-    float m_terrainSize;
     const char* m_envProbeSliceRelativePath = "EngineAssets/Slices/DefaultLevelSetup.slice";
     const float m_envProbeHeight = 200.0f;
     bool m_hasErrors = false; ///< This is used to warn the user that they may lose work when they go to save.

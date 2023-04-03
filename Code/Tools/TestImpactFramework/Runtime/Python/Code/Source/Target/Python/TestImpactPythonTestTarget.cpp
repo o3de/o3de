@@ -10,6 +10,12 @@
 
 namespace TestImpact
 {
+    namespace SupportedTestFrameworks
+    {
+        //! The CTest label for the PyTest framework.
+        inline constexpr auto PyTest = "FRAMEWORK_pytest";
+    } // namespace SupportedTestFrameworks
+
     PythonTestTarget::PythonTestTarget(TargetDescriptor&& descriptor, PythonTestTargetMeta&& testMetaData)
         : TestTarget(AZStd::move(descriptor), AZStd::move(testMetaData.m_testTargetMeta))
         , m_scriptMetaData(AZStd::move(testMetaData.m_scriptMeta))
@@ -24,5 +30,10 @@ namespace TestImpact
     const AZStd::string& PythonTestTarget::GetCommand() const
     {
         return m_scriptMetaData.m_testCommand;
+    }
+
+     bool PythonTestTarget::CanEnumerate() const
+    {
+        return GetSuiteLabelSet().contains(SupportedTestFrameworks::PyTest);
     }
 } // namespace TestImpact

@@ -45,10 +45,12 @@ namespace O3DE::ProjectManager
 
         // Gem
         AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) override;
+        AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) override;
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
-        AZ::Outcome<QVector<AZStd::string>, AZStd::string> GetEnabledGemNames(const QString& projectPath) const override;
+        AZ::Outcome<QHash<QString /*gem name with specifier*/, QString /* gem path */>, AZStd::string> GetEnabledGems(
+            const QString& projectPath, bool includeDependencies) const override;
         AZ::Outcome<void, AZStd::string> RegisterGem(const QString& gemPath, const QString& projectPath = {}) override;
         AZ::Outcome<void, AZStd::string> UnregisterGem(const QString& gemPath, const QString& projectPath = {}) override;
 
@@ -58,10 +60,13 @@ namespace O3DE::ProjectManager
         AZ::Outcome<QVector<ProjectInfo>> GetProjects() override;
         AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<ProjectInfo>, AZStd::string> GetProjectsForAllRepos() override;
-        bool AddProject(const QString& path) override;
-        bool RemoveProject(const QString& path) override;
+        DetailedOutcome AddProject(const QString& path) override;
+        DetailedOutcome RemoveProject(const QString& path) override;
         AZ::Outcome<void, AZStd::string> UpdateProject(const ProjectInfo& projectInfo) override;
-        AZ::Outcome<void, AZStd::string> AddGemToProject(const QString& gemPath, const QString& projectPath) override;
+        AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(
+            const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) override;
+        DetailedOutcome AddGemsToProject(
+            const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) override;
         AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
         bool RemoveInvalidProjects() override;
 
@@ -103,6 +108,7 @@ namespace O3DE::ProjectManager
         GemInfo GemInfoFromPath(pybind11::handle path, pybind11::handle pyProjectPath);
         GemRepoInfo GetGemRepoInfo(pybind11::handle repoUri);
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
+        ProjectInfo ProjectInfoFromDict(pybind11::handle projectData, const QString& path = {});
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path) const;
         TemplateInfo TemplateInfoFromPath(pybind11::handle path) const;
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
@@ -114,14 +120,15 @@ namespace O3DE::ProjectManager
         AZ::IO::FixedMaxPath m_enginePath;
         mutable AZStd::recursive_mutex m_lock;
 
+        pybind11::handle m_gemProperties;
         pybind11::handle m_engineTemplate;
         pybind11::handle m_engineProperties;
-        pybind11::handle m_cmake;
         pybind11::handle m_register;
         pybind11::handle m_manifest;
         pybind11::handle m_enableGemProject;
         pybind11::handle m_disableGemProject;
         pybind11::handle m_editProjectProperties;
+        pybind11::handle m_projectManagerInterface;
         pybind11::handle m_download;
         pybind11::handle m_repo;
         pybind11::handle m_pathlib;

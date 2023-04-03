@@ -42,6 +42,7 @@ end-license-attribution */
 
 #pragma once
 
+#include <Atom/Features/PBR/LightingOptions.azsli>
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 
 // Generates UV coords for LTC lookup table

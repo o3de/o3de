@@ -103,7 +103,7 @@ namespace AZ::IO
     //
 
     class Streamer_StorageDriveWindowsTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::SetRestoreFileIOBaseRAII
     {
     public:

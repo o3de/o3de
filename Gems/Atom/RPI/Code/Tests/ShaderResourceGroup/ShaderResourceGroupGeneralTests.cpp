@@ -30,14 +30,14 @@ namespace UnitTest
 
             srgLayout->SetName(Name(nameId));
             srgLayout->SetBindingSlot(0);
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 1 });
-            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 2 });
-            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 3 });
-            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 4 });
-            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerA" }, 1, 5 });
-            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerB" }, 1, 6 });
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatA" }, 0, 4, 0 });
-            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatB" }, 4, 4, 0 });
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferA" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 1, 1});
+            srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{ Name{ "MyBufferB" }, RHI::ShaderInputBufferAccess::ReadWrite, RHI::ShaderInputBufferType::Raw, 1, 4, 2, 2});
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageA" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 3, 3});
+            srgLayout->AddShaderInput(RHI::ShaderInputImageDescriptor{ Name{ "MyImageB" }, RHI::ShaderInputImageAccess::Read, RHI::ShaderInputImageType::Image2D, 1, 4, 4});
+            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerA" }, 1, 5, 5});
+            srgLayout->AddShaderInput(RHI::ShaderInputSamplerDescriptor{ Name{ "MySamplerB" }, 1, 6, 6});
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatA" }, 0, 4, 0, 0});
+            srgLayout->AddShaderInput(RHI::ShaderInputConstantDescriptor{ Name{ "MyFloatB" }, 4, 4, 0, 0});
             srgLayout->Finalize();
 
             return srgLayout;

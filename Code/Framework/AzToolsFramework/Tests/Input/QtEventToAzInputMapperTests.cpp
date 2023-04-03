@@ -22,7 +22,7 @@ namespace UnitTest
     }
 
     class QtEventToAzInputMapperFixture
-        : public AllocatorsTestFixture
+        : public LeakDetectionFixture
         , public AzFramework::InputChannelNotificationBus::Handler
         , public AzFramework::InputTextNotificationBus::Handler
     {
@@ -32,7 +32,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsTestFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_rootWidget = AZStd::make_unique<QWidget>();
             m_rootWidget->setFixedSize(WidgetSize);
@@ -78,7 +78,7 @@ namespace UnitTest
 
             m_rootWidget.reset();
 
-            AllocatorsTestFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         void OnInputChannelEvent(const AzFramework::InputChannel& inputChannel, bool& hasBeenConsumed) override

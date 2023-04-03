@@ -38,6 +38,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(Splat3Functor, SystemAllocator)
             AZ_RTTI(Splat3Functor, "{4719BBAD-21A1-4909-88E9-C190208BDD00}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -50,7 +51,7 @@ namespace UnitTest
             }
 
             using AZ::RPI::MaterialFunctor::Process;
-            void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
+            void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
                 float f = context.GetMaterialPropertyValue(m_floatIndex).GetValue<float>();
@@ -67,6 +68,7 @@ namespace UnitTest
             : public AZ::RPI::MaterialFunctor
         {
         public:
+            AZ_CLASS_ALLOCATOR(DummyShaderCollectionFunctor, SystemAllocator)
             AZ_RTTI(DummyShaderCollectionFunctor, "{6ED031DC-DADC-4A47-B858-DDA9748700A6}", AZ::RPI::MaterialFunctor);
 
             static void Reflect(AZ::SerializeContext* serializeContext)
@@ -78,7 +80,7 @@ namespace UnitTest
             }
 
             using AZ::RPI::MaterialFunctor::Process;
-            void Process(AZ::RPI::MaterialFunctor::RuntimeContext& context) override
+            void Process(AZ::RPI::MaterialFunctorAPI::RuntimeContext& context) override
             {
                 // This code isn't actually called in the unit test, but we include it here just to demonstrate what a real functor might look like.
 
@@ -105,6 +107,16 @@ namespace UnitTest
                     { Name{ "from" }, AZStd::string(from) },
                     { Name{ "to"   }, AZStd::string(to)   }
                 } ));
+        };
+
+        static void AddRenamePrefixAction(MaterialVersionUpdate& versionUpdate, const char* from, const char* to)
+        {
+            versionUpdate.AddAction(MaterialVersionUpdate::Action(
+                AZ::Name{"renamePrefix"},
+                {
+                    { Name{ "from" }, AZStd::string(from) },
+                    { Name{ "to"   }, AZStd::string(to)   }
+                }));
         };
 
         static void AddSetValueAction(MaterialVersionUpdate& versionUpdate, const char* name, const MaterialPropertyValue& val)
@@ -388,14 +400,6 @@ namespace UnitTest
         // shaders with a given option simply skips shaders that don't have that option
         materialTypeCreator.AddShader(CreateTestShaderAsset(Uuid::CreateRandom(), m_testMaterialSrgLayout));
 
-        materialTypeCreator.BeginMaterialProperty(Name{"Quality"}, MaterialPropertyDataType::UInt);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_quality"}, 0); // Only connects to the first shader
-        materialTypeCreator.EndMaterialProperty();
-
-        materialTypeCreator.BeginMaterialProperty(Name{"LightCount"}, MaterialPropertyDataType::UInt);
-        materialTypeCreator.ConnectMaterialPropertyToShaderOption(Name{"o_lightCount"}, 1); // Only connects to the second shader
-        materialTypeCreator.EndMaterialProperty();
-
         materialTypeCreator.BeginMaterialProperty(Name{"Debug"}, MaterialPropertyDataType::Bool);
         materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"}); // Connects to both shaders automatically
         materialTypeCreator.EndMaterialProperty();
@@ -404,25 +408,41 @@ namespace UnitTest
 
         const MaterialPropertiesLayout* propertyLayout = materialTypeAsset->GetMaterialPropertiesLayout();
 
-        EXPECT_EQ(3, propertyLayout->GetPropertyCount());
+        EXPECT_EQ(1, propertyLayout->GetPropertyCount());
 
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections().size(), 1);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections().size(), 2);
         EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderOption);
         EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_itemIndex.GetIndex(), 1);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_itemIndex.GetIndex(), 0);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[1].m_type, MaterialPropertyOutputType::ShaderOption);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[1].m_containerIndex.GetIndex(), 1);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[1].m_itemIndex.GetIndex(), 0);
+    }
 
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{1})->GetOutputConnections().size(), 1);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{1})->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderOption);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{1})->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{1})->GetOutputConnections()[0].m_itemIndex.GetIndex(), 2);
+    TEST_F(MaterialTypeAssetTests, ConnectToShaderEnabled)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
 
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections().size(), 2);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderOption);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[0].m_containerIndex.GetIndex(), 0);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[0].m_itemIndex.GetIndex(), 0);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[1].m_type, MaterialPropertyOutputType::ShaderOption);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[1].m_containerIndex.GetIndex(), 1);
-        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{2})->GetOutputConnections()[1].m_itemIndex.GetIndex(), 0);
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"first"});
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"second"});
+        materialTypeCreator.AddShader(m_testShaderAsset, AZ::RPI::ShaderVariantId{}, Name{"third"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"SecondShaderEnabled"}, MaterialPropertyDataType::Bool);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"second"});
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        const MaterialPropertiesLayout* propertyLayout = materialTypeAsset->GetMaterialPropertiesLayout();
+
+        EXPECT_EQ(1, propertyLayout->GetPropertyCount());
+
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections().size(), 1);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderEnabled);
+        EXPECT_EQ(propertyLayout->GetPropertyDescriptor(MaterialPropertyIndex{0})->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
     }
 
     TEST_F(MaterialTypeAssetTests, Error_SetPropertyInvalidInputs)
@@ -586,22 +606,22 @@ namespace UnitTest
         MaterialAssetCreator materialCreator;
 
         Data::Asset<MaterialAsset> materialAssetV1;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAssetV1));
 
         Data::Asset<MaterialAsset> materialAssetV3;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(3);
         EXPECT_TRUE(materialCreator.End(materialAssetV3));
 
         Data::Asset<MaterialAsset> materialAssetV6;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(6);
         EXPECT_TRUE(materialCreator.End(materialAssetV6));
 
         Data::Asset<MaterialAsset> materialAssetV9;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(9);
         EXPECT_TRUE(materialCreator.End(materialAssetV9));
 
@@ -691,7 +711,7 @@ namespace UnitTest
         // Add the MaterialTypeAsset to a MaterialAsset to trigger the value updates
         Data::Asset<MaterialAsset> materialAsset;
         MaterialAssetCreator materialCreator;
-        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset, true);
+        materialCreator.Begin(Uuid::CreateRandom(), materialTypeAsset);
         materialCreator.SetMaterialTypeVersion(1);
         EXPECT_TRUE(materialCreator.End(materialAsset));
 
@@ -778,6 +798,599 @@ namespace UnitTest
         propertyId = AZ::Name{"otherGroup.bazB"};
         EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
         EXPECT_STREQ(propertyId.GetCStr(), "otherGroup.bazB");
+    }
+
+    TEST_F(MaterialTypeAssetTests, ApplyPropertyRenamePrefixes)
+    {
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(Uuid::CreateRandom());
+
+        // Version updates
+        materialTypeCreator.SetVersion(10);
+
+        MaterialVersionUpdate versionUpdate2(2);
+        AddRenamePrefixAction(versionUpdate2, "layer1_", "layer1.");
+        AddRenamePrefixAction(versionUpdate2, "layer2_", "layer2.");
+        materialTypeCreator.AddVersionUpdate(versionUpdate2);
+
+        MaterialVersionUpdate versionUpdate4(4);
+        AddRenamePrefixAction(versionUpdate4, "layer1.", "layerA.");
+        AddRenamePrefixAction(versionUpdate4, "layer2.", "layerB.");
+        materialTypeCreator.AddVersionUpdate(versionUpdate4);
+
+        materialTypeCreator.BeginMaterialProperty(Name{"blend.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerA.baseColor.color"}, MaterialPropertyDataType::Color);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerA.baseColor.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerB.baseColor.color"}, MaterialPropertyDataType::Color);
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"layerB.baseColor.factor"}, MaterialPropertyDataType::Float);
+        materialTypeCreator.EndMaterialProperty();
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        AZ::Name propertyId;
+
+        // Handle version 1 style names
+
+        propertyId = AZ::Name{"layer1_baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.color");
+
+        propertyId = AZ::Name{"layer1_baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.factor");
+
+        propertyId = AZ::Name{"layer2_baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.color");
+
+        propertyId = AZ::Name{"layer2_baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.factor");
+
+        // Handle version 2 style names
+
+        propertyId = AZ::Name{"layer1.baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.color");
+
+        propertyId = AZ::Name{"layer1.baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.baseColor.factor");
+
+        propertyId = AZ::Name{"layer2.baseColor.color"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.color");
+
+        propertyId = AZ::Name{"layer2.baseColor.factor"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerB.baseColor.factor");
+
+        // Other cases...
+
+        propertyId = AZ::Name{"doesNotExist"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "doesNotExist");
+
+        propertyId = AZ::Name{"blend.factor"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "blend.factor");
+
+        propertyId = AZ::Name{"shouldNotBeRenamed_layer1_isNotAPrefix"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "shouldNotBeRenamed_layer1_isNotAPrefix");
+
+        // The first "layer1_" is a prefix but the other is not
+        propertyId = AZ::Name{"layer1_theNext_layer1_isNotAPrefix"};
+        EXPECT_TRUE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "layerA.theNext_layer1_isNotAPrefix");
+
+        // The replacement is case sensitive
+        propertyId = AZ::Name{"Layer1_foo"};
+        EXPECT_FALSE(materialTypeAsset->ApplyPropertyRenames(propertyId));
+        EXPECT_STREQ(propertyId.GetCStr(), "Layer1_foo");
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InternalPipelineProperty_ConnectToSRG)
+    {
+        // Internal properties of the material pipeline do not have access to the MaterialSRG because
+        // the material type and material pipeline are decoupled.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        // Include a shader for both MaterialPipelineNone and "TestPipeline" because it doesn't matter where the ShaderResourceGroup
+        // appears, the material pipeline should not have access to it. 
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"TestPipeline"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"materialPipelineBoolProperty"}, MaterialPropertyDataType::Bool, Name{"TestPipeline"});
+
+        ErrorMessageFinder errorMessageFinder("Material property 'materialPipelineBoolProperty': Connection type 'ShaderInput' is not supported by internal material pipeline properties.");
+        errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
+        materialTypeCreator.ConnectMaterialPropertyToShaderInput(Name{"m_bool"});
+        materialTypeCreator.EndMaterialProperty();
+        errorMessageFinder.CheckExpectedErrorsFound();
+
+        EXPECT_EQ(materialTypeCreator.GetMaterialPropertiesLayout(Name{"TestPipeline"})->GetPropertyCount(), 0);
+    }
+
+    TEST_F(MaterialTypeAssetTests, MaterialProperty_ConnectToShaderOption_AccessesMaterialPipelineShaders)
+    {
+        // Normal material property connections to ShaderOption will apply to every shader in the material type,
+        // including any shaders that are inside MaterialPipeline(s).
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"debug"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount(), 1);
+        const MaterialPropertyDescriptor* property = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{0});
+        EXPECT_EQ(property->GetOutputConnections().size(), 6);
+
+        ShaderOptionIndex shaderOptionIndex = m_testShaderAsset->GetShaderOptionGroupLayout()->FindShaderOptionIndex(Name{"o_debug"});
+
+        auto checkShaderOption = [property, shaderOptionIndex](size_t connectionIndex, Name materialPipelineName, uint32_t shaderIndex)
+        {
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_type, MaterialPropertyOutputType::ShaderOption);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_materialPipelineName, materialPipelineName);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_containerIndex.GetIndex(), shaderIndex);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_itemIndex.GetIndex(), shaderOptionIndex.GetIndex());
+        };
+
+        checkShaderOption(0, MaterialPipelineNone, 0);
+        checkShaderOption(1, MaterialPipelineNone, 1);
+        checkShaderOption(2, Name{"PipelineA"}, 0);
+        checkShaderOption(3, Name{"PipelineA"}, 1);
+        checkShaderOption(4, Name{"PipelineB"}, 0);
+        checkShaderOption(5, Name{"PipelineB"}, 1);
+    }
+
+    TEST_F(MaterialTypeAssetTests, InternalPipelineProperty_ConnectToShaderOption_AccessesLocalShadersOnly)
+    {
+        // Internal material properties that are part of a material pipeline should only set shader options
+        // on the shaders that are part of that pipeline.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"debug"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        auto pipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name{"PipelineA"});
+        EXPECT_TRUE(pipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+        EXPECT_EQ(pipelineIter->second.m_materialPropertiesLayout->GetPropertyCount(), 1);
+        const MaterialPropertyDescriptor* property = pipelineIter->second.m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex{0});
+        EXPECT_EQ(property->GetOutputConnections().size(), 2);
+
+        ShaderOptionIndex shaderOptionIndex = m_testShaderAsset->GetShaderOptionGroupLayout()->FindShaderOptionIndex(Name{"o_debug"});
+
+        auto checkShaderOption = [property, shaderOptionIndex](size_t connectionIndex, Name materialPipelineName, uint32_t shaderIndex)
+        {
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_type, MaterialPropertyOutputType::ShaderOption);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_materialPipelineName, materialPipelineName);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_containerIndex.GetIndex(), shaderIndex);
+            EXPECT_EQ(property->GetOutputConnections()[connectionIndex].m_itemIndex.GetIndex(), shaderOptionIndex.GetIndex());
+        };
+
+        checkShaderOption(0, Name{"PipelineA"}, 0);
+        checkShaderOption(1, Name{"PipelineA"}, 1);
+    }
+
+    TEST_F(MaterialTypeAssetTests, MaterialProperty_ConnectToShaderEnable_AccessesGeneralShadersOnly)
+    {
+        // Normal material property connections to ShaderEnable will only apply to the general ShaderCollection,
+        // not any of the shaders within individual material pipelines.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineB"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"enable"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"shaderB"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount(), 1);
+        const MaterialPropertyDescriptor* property = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{0});
+        EXPECT_EQ(property->GetOutputConnections().size(), 1);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderEnabled);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_materialPipelineName, MaterialPipelineNone);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
+        EXPECT_FALSE(property->GetOutputConnections()[0].m_itemIndex.IsValid());
+    }
+
+    TEST_F(MaterialTypeAssetTests, InternalPipelineProperty_ConnectToShaderEnable_AccessesLocalShadersOnly)
+    {
+        // Internal material properties that are part of a material pipeline should only enable/disable
+        // shaders that are part of that pipeline.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, MaterialPipelineNone);
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderA"}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shaderB"}, Name{"PipelineB"});
+
+        materialTypeCreator.BeginMaterialProperty(Name{"enable"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"shaderB"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        auto pipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name{"PipelineA"});
+        EXPECT_TRUE(pipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+        EXPECT_EQ(pipelineIter->second.m_materialPropertiesLayout->GetPropertyCount(), 1);
+        const MaterialPropertyDescriptor* property = pipelineIter->second.m_materialPropertiesLayout->GetPropertyDescriptor(MaterialPropertyIndex {0});
+        EXPECT_EQ(property->GetOutputConnections().size(), 1);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::ShaderEnabled);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_materialPipelineName, Name {"PipelineA"});
+        EXPECT_EQ(property->GetOutputConnections()[0].m_containerIndex.GetIndex(), 1);
+        EXPECT_FALSE(property->GetOutputConnections()[0].m_itemIndex.IsValid());
+    }
+
+    TEST_F(MaterialTypeAssetTests, MaterialProperty_ConnectToInternalProperties)
+    {
+        // Material properties can connect to internal properties to pass data along to the MaterialPipelinePayload(s).
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineC"});
+
+        // PipelineA properties
+        materialTypeCreator.BeginMaterialProperty(Name{"unused1"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"unused2"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // PipelineB properties
+        materialTypeCreator.BeginMaterialProperty(Name{"unused1"}, MaterialPropertyDataType::Bool, Name{"PipelineB"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"unused2"}, MaterialPropertyDataType::Bool, Name{"PipelineB"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // PipelineC properties
+        materialTypeCreator.BeginMaterialProperty(Name{"unused1"}, MaterialPropertyDataType::Bool, Name{"PipelineC"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"PipelineC"});
+        materialTypeCreator.EndMaterialProperty();
+        materialTypeCreator.BeginMaterialProperty(Name{"unused2"}, MaterialPropertyDataType::Bool, Name{"PipelineC"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This main property has the same name as the ones in the material pipelines, but will not be connected because it is not
+        // an "internal" property.
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.EndMaterialProperty();
+
+        // This is the main enableShadows property that will connect to the others
+        materialTypeCreator.BeginMaterialProperty(Name{"general.enableShadows"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"castShadows"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.End(materialTypeAsset);
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPipelinePayloads().size(), 3);
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyCount(), 2);
+        const MaterialPropertyDescriptor* property = materialTypeAsset->GetMaterialPropertiesLayout()->GetPropertyDescriptor(MaterialPropertyIndex{1});
+        EXPECT_EQ(property->GetName(), Name("general.enableShadows"));
+        EXPECT_EQ(property->GetOutputConnections().size(), 2);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_type, MaterialPropertyOutputType::InternalProperty);
+        EXPECT_EQ(property->GetOutputConnections()[0].m_materialPipelineName, Name {"PipelineA"});
+        EXPECT_FALSE(property->GetOutputConnections()[0].m_containerIndex.IsValid());
+        EXPECT_EQ(property->GetOutputConnections()[0].m_itemIndex.GetIndex(), 2);
+        EXPECT_EQ(property->GetOutputConnections()[1].m_type, MaterialPropertyOutputType::InternalProperty);
+        EXPECT_EQ(property->GetOutputConnections()[1].m_materialPipelineName, Name {"PipelineC"});
+        EXPECT_FALSE(property->GetOutputConnections()[1].m_containerIndex.IsValid());
+        EXPECT_EQ(property->GetOutputConnections()[1].m_itemIndex.GetIndex(), 1);
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_InternalPropertyCannotConnectToInternalProperties)
+    {
+        // Internal material properties can connect to other internal properties.
+
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineB"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineC"});
+
+        // PipelineA property
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"PipelineA"});
+        materialTypeCreator.EndMaterialProperty();
+
+        ErrorMessageFinder errorMessageFinder("Material property 'otherCastShadows': Internal properties cannot be connected to other internal properties.");
+        errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
+
+        // PipelineB property tries to connect to pipelineA's property
+        materialTypeCreator.BeginMaterialProperty(Name{"otherCastShadows"}, MaterialPropertyDataType::Bool, Name{"PipelineB"});
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"castShadows"});
+        materialTypeCreator.EndMaterialProperty();
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_MaterialProperty_ConnectToInternalPropertiesWithWrongDataType)
+    {
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+
+        // PipelineA property is a int
+        materialTypeCreator.BeginMaterialProperty(Name{"someInt"}, MaterialPropertyDataType::UInt, Name{"PipelineA"});
+        materialTypeCreator.EndMaterialProperty();
+
+        ErrorMessageFinder errorMessageFinder("Material property 'someFloat': Cannot connect to internal property 'someInt' because the data types do not match.");
+        errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
+
+        // This main property is a float, so it cannot connect
+        materialTypeCreator.BeginMaterialProperty(Name{"someFloat"}, MaterialPropertyDataType::Float, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"someInt"});
+        materialTypeCreator.EndMaterialProperty();
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
+    TEST_F(MaterialTypeAssetTests, Error_MaterialProperty_ConnectToInternalPropertyThatDoesNotExist)
+    {
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{}, Name{"PipelineA"});
+
+        // PipelineA property
+        materialTypeCreator.BeginMaterialProperty(Name{"enableSomething"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.EndMaterialProperty();
+
+        ErrorMessageFinder errorMessageFinder("Material property 'someBool': Material contains no internal property 'doesNotExist'");
+        errorMessageFinder.AddIgnoredErrorMessage("Cannot continue building", true);
+
+        // This property connects to something that doers not exist
+        materialTypeCreator.BeginMaterialProperty(Name{"someBool"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"doesNotExist"});
+        materialTypeCreator.EndMaterialProperty();
+
+        errorMessageFinder.CheckExpectedErrorsFound();
+    }
+
+    TEST_F(MaterialTypeAssetTests, CreateWithMaterialPipelines)
+    {
+        using namespace AZ;
+        using namespace AZ::RPI;
+
+        Data::Asset<MaterialTypeAsset> materialTypeAsset;
+
+        Data::AssetId assetId(Uuid::CreateRandom());
+
+        MaterialTypeAssetCreator materialTypeCreator;
+        materialTypeCreator.Begin(assetId);
+
+        // The test will set up a structure like this:
+        //   Properties
+        //       "general.enableShadows" connects to "castShadows" in each pipeline
+        //   Material pipelines
+        //       "MainPipeline"
+        //           Properties
+        //               "castShadows" connects to enable the local "shadows" shader
+        //           Shaders
+        //               "depth"
+        //               "shadows"
+        //               "forward"
+        //       "DeferredPipeline"
+        //           Properties
+        //               "unused"
+        //               "castShadows" doesn't have any direct connections
+        //           Functors
+        //               DummyShaderCollectionFunctor reads "castShadows" to enable the local "shadows" shader
+        //           Shaders
+        //               "shadows"
+        //               "deferred"
+        //       "LowEndPipeline"
+        //           Properties are empty
+        //           Shaders
+        //               "forward"
+
+        // Note we just use the same shader asset repeatedly for simplicity, not realism.
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"depth"}, Name{"MainPipeline"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shadows"}, Name{"MainPipeline"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"forward"}, Name{"MainPipeline"});
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"shadows"}, Name{"DeferredPipeline"});
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"deferred"}, Name{"DeferredPipeline"});
+
+        materialTypeCreator.AddShader(m_testShaderAsset, ShaderVariantId{}, Name{"forward"}, Name{"LowEndPipeline"});
+
+        // This internal property enables the shadow shader via direct connection
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"MainPipeline"});
+        materialTypeCreator.ConnectMaterialPropertyToShaderEnabled(Name{"shadows"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This property is just shifting the property index for more interesting testing
+        materialTypeCreator.BeginMaterialProperty(Name{"unused"}, MaterialPropertyDataType::Bool, Name{"DeferredPipeline"});
+        materialTypeCreator.EndMaterialProperty();
+
+        // This internal property enables the shadow shader via material functor
+        materialTypeCreator.BeginMaterialProperty(Name{"castShadows"}, MaterialPropertyDataType::Bool, Name{"DeferredPipeline"});
+        materialTypeCreator.EndMaterialProperty();
+        Ptr<DummyShaderCollectionFunctor> shaderCollectionFunctor = aznew DummyShaderCollectionFunctor;
+        shaderCollectionFunctor->m_enableIndex = materialTypeCreator.GetMaterialPropertiesLayout(Name{"DeferredPipeline"})->FindPropertyIndex(Name{"castShadows"});
+        materialTypeCreator.AddMaterialFunctor(shaderCollectionFunctor, Name{"DeferredPipeline"});
+
+        // This external property connects to the ther internal properties via direct "InternalProperty" connection
+        materialTypeCreator.BeginMaterialProperty(Name{"general.enableShadows"}, MaterialPropertyDataType::Bool, MaterialPipelineNone);
+        materialTypeCreator.ConnectMaterialPropertyToInternalProperty(Name{"castShadows"});
+        materialTypeCreator.EndMaterialProperty();
+
+        materialTypeCreator.SetPropertyValue(Name{"castShadows"}, MaterialPropertyValue{true}, Name{"MainPipeline"});
+        materialTypeCreator.SetPropertyValue(Name{"castShadows"}, MaterialPropertyValue{false}, Name{"DeferredPipeline"});
+        materialTypeCreator.SetPropertyValue(Name{"general.enableShadows"}, MaterialPropertyValue{true}, MaterialPipelineNone);
+
+        EXPECT_TRUE(materialTypeCreator.End(materialTypeAsset));
+
+        EXPECT_EQ(materialTypeAsset->GetMaterialPipelinePayloads().size(), 3);
+
+        auto mainPipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name{"MainPipeline"});
+        auto deferredPipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name{"DeferredPipeline"});
+        auto lowEndPipelineIter = materialTypeAsset->GetMaterialPipelinePayloads().find(Name{"LowEndPipeline"});
+        EXPECT_TRUE(mainPipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+        EXPECT_TRUE(deferredPipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+        EXPECT_TRUE(lowEndPipelineIter != materialTypeAsset->GetMaterialPipelinePayloads().end());
+
+        // Check the "MainPipeline" internal shadow property
+        const MaterialPropertiesLayout* layout = mainPipelineIter->second.m_materialPropertiesLayout.get();
+        EXPECT_EQ(layout->GetPropertyCount(), 1);
+        MaterialPropertyIndex propertyIndex = layout->FindPropertyIndex(Name("castShadows"));
+        EXPECT_EQ(propertyIndex.GetIndex(), 0);
+        EXPECT_EQ(layout->GetPropertyDescriptor(propertyIndex)->GetName(), Name("castShadows"));
+        EXPECT_EQ(mainPipelineIter->second.m_defaultPropertyValues[propertyIndex.GetIndex()], MaterialPropertyValue(true));
+        EXPECT_EQ(mainPipelineIter->second.m_materialFunctors.size(), 0);
+
+        // Check the "MainPipeline" internal shadow property connections
+        MaterialPropertyDescriptor::OutputList connections = layout->GetPropertyDescriptor(propertyIndex)->GetOutputConnections();
+        EXPECT_EQ(connections.size(), 1);
+        EXPECT_EQ(connections[0].m_materialPipelineName, Name("MainPipeline"));
+        EXPECT_EQ(connections[0].m_type, MaterialPropertyOutputType::ShaderEnabled);
+        EXPECT_EQ(connections[0].m_containerIndex.GetIndex(), 1);
+        EXPECT_FALSE(connections[0].m_itemIndex.IsValid());
+
+        // Check the "DeferredPipeline" internal shadow property
+        layout = deferredPipelineIter->second.m_materialPropertiesLayout.get();
+        EXPECT_EQ(layout->GetPropertyCount(), 2);
+        propertyIndex = layout->FindPropertyIndex(Name("castShadows"));
+        EXPECT_EQ(propertyIndex.GetIndex(), 1);
+        EXPECT_EQ(layout->GetPropertyDescriptor(propertyIndex)->GetName(), Name("castShadows"));
+        EXPECT_EQ(deferredPipelineIter->second.m_defaultPropertyValues[propertyIndex.GetIndex()], MaterialPropertyValue(false));
+        EXPECT_EQ(layout->GetPropertyDescriptor(propertyIndex)->GetOutputConnections().size(), 0);
+        EXPECT_EQ(deferredPipelineIter->second.m_materialFunctors.size(), 1);
+
+        // Check the "LowEndPipeline" internal properties empty
+        EXPECT_EQ(lowEndPipelineIter->second.m_materialPropertiesLayout->GetPropertyCount(), 0);
+
+        // Check the external shadow property
+        layout = materialTypeAsset->GetMaterialPropertiesLayout();
+        EXPECT_EQ(layout->GetPropertyCount(), 1);
+        propertyIndex = layout->FindPropertyIndex(Name("general.enableShadows"));
+        EXPECT_EQ(propertyIndex.GetIndex(), 0);
+        EXPECT_EQ(layout->GetPropertyDescriptor(propertyIndex)->GetName(), Name("general.enableShadows"));
+        EXPECT_EQ(materialTypeAsset->GetDefaultPropertyValues()[propertyIndex.GetIndex()], MaterialPropertyValue(true));
+
+        // Check the external shadow property connections
+        connections = layout->GetPropertyDescriptor(propertyIndex)->GetOutputConnections();
+        EXPECT_EQ(connections.size(), 2);
+        EXPECT_EQ(connections[0].m_type, MaterialPropertyOutputType::InternalProperty);
+        EXPECT_EQ(connections[1].m_type, MaterialPropertyOutputType::InternalProperty);
+        EXPECT_EQ(connections[0].m_materialPipelineName, Name("MainPipeline"));
+        EXPECT_EQ(connections[1].m_materialPipelineName, Name("DeferredPipeline"));
+        EXPECT_EQ(connections[0].m_itemIndex.GetIndex(), 0);
+        EXPECT_EQ(connections[1].m_itemIndex.GetIndex(), 1);
+        EXPECT_FALSE(connections[0].m_containerIndex.IsValid());
+        EXPECT_FALSE(connections[1].m_containerIndex.IsValid());
     }
 
     TEST_F(MaterialTypeAssetTests, Error_InvalidMaterialVersionUpdate_NoOperation)
@@ -1314,19 +1927,21 @@ namespace UnitTest
         tester.SerializeOut(materialTypeAsset.Get());
         materialTypeAsset = tester.SerializeIn(Data::AssetId(Uuid::CreateRandom()));
 
-        EXPECT_EQ(3, materialTypeAsset->GetShaderCollection().size());
-        EXPECT_EQ(shaderA, materialTypeAsset->GetShaderCollection()[0].GetShaderAsset());
-        EXPECT_EQ(shaderB, materialTypeAsset->GetShaderCollection()[1].GetShaderAsset());
-        EXPECT_EQ(shaderC, materialTypeAsset->GetShaderCollection()[2].GetShaderAsset());
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
+        EXPECT_EQ(3, shaderCollection.size());
+        EXPECT_EQ(shaderA, shaderCollection[0].GetShaderAsset());
+        EXPECT_EQ(shaderB, shaderCollection[1].GetShaderAsset());
+        EXPECT_EQ(shaderC, shaderCollection[2].GetShaderAsset());
+
+        EXPECT_EQ(shaderCollection[0].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
             m_testShaderOptionsLayout->FindValue(Name{"o_quality"}, Name{"Med"}).GetIndex());
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[0].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 5);
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[1].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
+        EXPECT_EQ(shaderCollection[0].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 5);
+        EXPECT_EQ(shaderCollection[1].GetShaderOptions()->GetValue(Name{"o_quality"}).GetIndex(),
             m_testShaderOptionsLayout->FindValue(Name{"o_quality"}, Name{"High"}).GetIndex());
-        EXPECT_EQ(materialTypeAsset->GetShaderCollection()[1].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 3);
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[2].GetShaderOptions()->GetValue(Name{"o_quality"}).IsValid());
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[2].GetShaderOptions()->GetValue(Name{"o_lightCount"}).IsValid());
+        EXPECT_EQ(shaderCollection[1].GetShaderOptions()->GetValue(Name{"o_lightCount"}).GetIndex(), 3);
+        EXPECT_FALSE(shaderCollection[2].GetShaderOptions()->GetValue(Name{"o_quality"}).IsValid());
+        EXPECT_FALSE(shaderCollection[2].GetShaderOptions()->GetValue(Name{"o_lightCount"}).IsValid());
 
         EXPECT_EQ(m_testMaterialSrgLayout, materialTypeAsset->GetMaterialSrgLayout());
 
@@ -1553,19 +2168,6 @@ namespace UnitTest
         EXPECT_EQ(1, creator.GetErrorCount());
     }
 
-    TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderOption)
-    {
-        MaterialTypeAssetCreator creator;
-        creator.Begin(Uuid::CreateRandom());
-        creator.AddShader(m_testShaderAsset);
-
-        AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderOption(Name{"o_debug"}, 0);
-        AZ_TEST_STOP_ASSERTTEST(1);
-
-        EXPECT_EQ(1, creator.GetErrorCount());
-    }
-
     TEST_F(MaterialTypeAssetTests, Error_NoBeginMaterialProperty_BeforeConnectMaterialPropertyToShaderOptions)
     {
         MaterialTypeAssetCreator creator;
@@ -1599,7 +2201,7 @@ namespace UnitTest
         creator.BeginMaterialProperty(Name{"color"}, MaterialPropertyDataType::Color);
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderOption(Name{"o_debug"}, 0);
+        creator.ConnectMaterialPropertyToShaderOptions(Name{"o_debug"});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -1613,21 +2215,7 @@ namespace UnitTest
         creator.BeginMaterialProperty(Name{"bool"}, MaterialPropertyDataType::Bool);
 
         AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderOption(Name{"DoesNotExist"}, 0);
-        AZ_TEST_STOP_ASSERTTEST(1);
-
-        EXPECT_EQ(1, creator.GetErrorCount());
-    }
-
-    TEST_F(MaterialTypeAssetTests, Error_ConnectMaterialPropertyToShaderOption_InvalidShaderIndex)
-    {
-        MaterialTypeAssetCreator creator;
-        creator.Begin(Uuid::CreateRandom());
-        creator.AddShader(m_testShaderAsset);
-        creator.BeginMaterialProperty(Name{"bool"}, MaterialPropertyDataType::Bool);
-
-        AZ_TEST_START_ASSERTTEST;
-        creator.ConnectMaterialPropertyToShaderOption(Name{"o_debug"}, 1000);
+        creator.ConnectMaterialPropertyToShaderOptions(Name{"DoesNotExist"});
         AZ_TEST_STOP_ASSERTTEST(1);
 
         EXPECT_EQ(1, creator.GetErrorCount());
@@ -1684,19 +2272,21 @@ namespace UnitTest
 
         // Check ownership results...
 
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+        const ShaderCollection& shaderCollection = materialTypeAsset->GetGeneralShaderCollection();
 
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
-        EXPECT_TRUE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
-        EXPECT_FALSE(materialTypeAsset->GetShaderCollection()[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
+        EXPECT_TRUE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[0].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
+
+        EXPECT_TRUE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderA"}));
+        EXPECT_TRUE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_materialOption_inShaderB"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inBothShaders"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderA"}));
+        EXPECT_FALSE(shaderCollection[1].MaterialOwnsShaderOption(Name{"o_globalOption_inShaderB"}));
     }
 
 }

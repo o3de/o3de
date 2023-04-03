@@ -185,6 +185,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED AND PAL_TRAIT_BUILD_HOST_TOOLS)
     )
     ly_add_googletest(
         NAME Gem::Atom_RPI.Tests
+        LABELS REQUIRES_tiaf
     )
 
 endif()
@@ -300,6 +301,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         )
         ly_add_googletest(
             NAME Gem::Atom_RPI.Builders.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

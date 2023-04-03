@@ -11,7 +11,7 @@
 #include <native/resourcecompiler/rccontroller.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
 #include <native/unittests/RCcontrollerUnitTests.h>
-#include <native/unittests/UnitTestRunner.h>
+#include <native/unittests/UnitTestUtils.h>
 
 #include <QCoreApplication>
 
@@ -31,6 +31,8 @@ namespace
     constexpr int MaxProcessingWaitTimeMs = 60 * 1000; // Wait up to 1 minute.  Give a generous amount of time to allow for slow CPUs
     const ScanFolderInfo TestScanFolderInfo("c:/samplepath", "sampledisplayname", "samplekey", false, false);
     const AZ::Uuid BuilderUuid = AZ::Uuid::CreateRandom();
+    constexpr int MinRCJobs = 1;
+    constexpr int MaxRCJobs = 4;
 }
 
 class MockRCJob
@@ -57,7 +59,7 @@ void RCcontrollerUnitTests::FinishJob(AssetProcessor::RCJob* rcJob)
     m_rcController->FinishJob(rcJob);
 }
 
-void RCcontrollerUnitTests::PrepareRCJobListModelTest()
+void RCcontrollerUnitTests::PrepareRCJobListModelTest(int& numJobs)
 {
     // Create 6 jobs
     using namespace AssetProcessor;
@@ -72,6 +74,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     RCJob* job0 = new RCJob(m_rcJobListModel);
     job0->Init(jobDetails);
     m_rcJobListModel->addNewJob(job0);
+    ++numJobs;
 
     RCJob* job1 = new RCJob(m_rcJobListModel);
     jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile1.txt");
@@ -79,6 +82,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job1->Init(jobDetails);
     m_rcJobListModel->addNewJob(job1);
+    ++numJobs;
 
     RCJob* job2 = new RCJob(m_rcJobListModel);
     jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile2.txt");
@@ -86,6 +90,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job2->Init(jobDetails);
     m_rcJobListModel->addNewJob(job2);
+    ++numJobs;
 
     RCJob* job3 = new RCJob(m_rcJobListModel);
     jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile3.txt");
@@ -93,6 +98,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job3->Init(jobDetails);
     m_rcJobListModel->addNewJob(job3);
+    ++numJobs;
 
     RCJob* job4 = new RCJob(m_rcJobListModel);
     jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile4.txt");
@@ -100,6 +106,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job4->Init(jobDetails);
     m_rcJobListModel->addNewJob(job4);
+    ++numJobs;
 
     RCJob* job5 = new RCJob(m_rcJobListModel);
     jobDetails.m_jobEntry.m_sourceAssetReference = AssetProcessor::SourceAssetReference("c:/somerandomfolder/someFile5.txt");
@@ -107,6 +114,7 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     jobDetails.m_jobEntry.m_jobKey = "Text files";
     job5->Init(jobDetails);
     m_rcJobListModel->addNewJob(job5);
+    ++numJobs;
 
     // Complete 1 job
     RCJob* rcJob = job0;
@@ -121,43 +129,13 @@ void RCcontrollerUnitTests::PrepareRCJobListModelTest()
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 }
 
-void RCcontrollerUnitTests::PrepareCompileGroupTests(bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus)
+void RCcontrollerUnitTests::PrepareCompileGroupTests(const QStringList& tempJobNames, bool& gotCreated, bool& gotCompleted, AssetProcessor::NetworkRequestID& gotGroupID, AzFramework::AssetSystem::AssetStatus& gotStatus)
 {
-    QStringList tempJobNames;
-
     // Note that while this is an OS-SPECIFIC path, this test does not actually invoke the file system
     // or file operators, so is purely doing in-memory testing.  So the path does not actually matter and the
     // test should function on other operating systems too.
 
-    // test - exact match
-    tempJobNames << "c:/somerandomfolder/dev/blah/test.dds";
-    tempJobNames << "c:/somerandomfolder/dev/blah/test.cre"; // must not match
-
-    // test - NO MATCH
-    tempJobNames << "c:/somerandomfolder/dev/wap/wap.wap";
-
-    // test - Multiple match, ignoring extensions
-    tempJobNames << "c:/somerandomfolder/dev/abc/123.456";
-    tempJobNames << "c:/somerandomfolder/dev/abc/123.567";
-    tempJobNames << "c:/somerandomfolder/dev/def/123.456"; // must not match
-    tempJobNames << "c:/somerandomfolder/dev/def/123.567"; // must not match
-
-    // test - Multiple match, wide search, ignoring extensions and postfixes like underscore
-    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.456";
-    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.567";
-    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.890";
-    tempJobNames << "c:/somerandomfolder/dev/aaa/ccc/123.567"; // must not match!
-    tempJobNames << "c:/somerandomfolder/dev/aaa/ccc/456.567"; // must not match
-
-    // test - compile group fails the moment any file in it fails
-    tempJobNames << "c:/somerandomfolder/mmmnnnoo/123.456";
-    tempJobNames << "c:/somerandomfolder/mmmnnnoo/123.567";
-
-    // test - compile group by uuid is always an exact match.  Its the same code path
-    // as the others in terms of success/failure.
-    tempJobNames << "c:/somerandomfolder/pqr/123.456";
-
-    // test - compile group for an exact ID succeeds when that exact ID is called.
+    // Compile group for an exact ID succeeds when that exact ID is called.
     for (QString name : tempJobNames)
     {
         AZ::Uuid uuidOfSource = AZ::Uuid::CreateName(name.toUtf8().constData());
@@ -254,7 +232,8 @@ void RCcontrollerUnitTests::ConnectJobSignalsAndSlots(bool& allJobsCompleted, Jo
 void RCcontrollerUnitTests::SetUp()
 {
     UnitTest::AssetProcessorUnitTestBase::SetUp();
-    m_rcController = AZStd::make_unique<AssetProcessor::RCController>(1, 4);
+
+    m_rcController = AZStd::make_unique<AssetProcessor::RCController>(MinRCJobs, MaxRCJobs);
 
     QDir assetRootPath(m_assetDatabaseRequestsHandler->GetAssetRootDir().c_str());
 
@@ -283,10 +262,11 @@ void RCcontrollerUnitTests::TearDown()
 
 TEST_F(RCcontrollerUnitTests, TestRCJobListModel_AddJobEntries_Succeeds)
 {
-    PrepareRCJobListModelTest();
+    int numJobs = 0;
+    PrepareRCJobListModelTest(numJobs);
 
     int returnedCount = m_rcJobListModel->rowCount(QModelIndex());
-    int expectedCount = 5; // Finished jobs should be removed, so they shouldn't show up
+    int expectedCount = numJobs - 1; // Finished jobs should be removed, so they shouldn't show up
 
     ASSERT_EQ(returnedCount, expectedCount) << AZStd::string::format("RCJobListModel has %d elements, which is invalid. Expected %d", returnedCount, expectedCount).c_str();
 
@@ -313,9 +293,11 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestExactMatchCompileGroup_Suc
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/dev/blah/test.dds";
+    tempJobNames << "c:/somerandomfolder/dev/blah/test.cre"; // must not match
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
-    // EXACT MATCH TEST (with prefixes and such)
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "@products@/blah/test.dds", AZ::Data::AssetId());
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -349,7 +331,9 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestNoMatchCompileGroup_Succee
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/dev/wap/wap.wap";
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
     // give it a name that for sure does not match:
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "bibbidybobbidy.boo", AZ::Data::AssetId());
@@ -367,7 +351,9 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestCompileGroupWithInvalidPla
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/dev/blah/test.cre"; // must not match
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
     // give it a name that for sure does not match due to platform.
     m_rcController->OnRequestCompileGroup(RequestID, "aaaaaa", "blah/test.cre", AZ::Data::AssetId());
@@ -388,7 +374,12 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_FinishEachAssetsInGroup_Succeeds)
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/dev/abc/123.456";
+    tempJobNames << "c:/somerandomfolder/dev/abc/123.567";
+    tempJobNames << "c:/somerandomfolder/dev/def/123.456"; // must not match
+    tempJobNames << "c:/somerandomfolder/dev/def/123.567"; // must not match
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "abc/123.nnn", AZ::Data::AssetId());
     QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -398,13 +389,14 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_FinishEachAssetsInGroup_Succeeds)
     EXPECT_EQ(gotGroupID, RequestID);
     EXPECT_EQ(gotStatus, AssetStatus_Queued);
 
-    // complete one of them.  It should still be a busy group
+    // complete one of them. It should still be a busy group.
+    int IndexOfJobToComplete = 0;
     gotCreated = false;
     gotCompleted = false;
-    m_rcJobListModel->markAsProcessing(m_createdJobs[3]);
-    m_createdJobs[3]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[3]);
-    m_rcController->OnJobComplete(m_createdJobs[3]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToComplete]);
+    m_createdJobs[IndexOfJobToComplete]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToComplete]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToComplete]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -413,12 +405,14 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_FinishEachAssetsInGroup_Succeeds)
     EXPECT_FALSE(gotCompleted);
 
     // finish the other
+    ++IndexOfJobToComplete;
+    EXPECT_LT(IndexOfJobToComplete, m_createdJobs.size());
     gotCreated = false;
     gotCompleted = false;
-    m_rcJobListModel->markAsProcessing(m_createdJobs[4]);
-    m_createdJobs[4]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[4]);
-    m_rcController->OnJobComplete(m_createdJobs[4]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToComplete]);
+    m_createdJobs[IndexOfJobToComplete]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToComplete]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToComplete]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -430,12 +424,17 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_FinishEachAssetsInGroup_Succeeds)
 
 TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestWideSearchCompileGroup_Succeeds)
 {
-    // Multiple match, wide search, ignoring extensions and postfixes like underscore.
     bool gotCreated = false;
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.456";
+    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.567";
+    tempJobNames << "c:/somerandomfolder/dev/aaa/bbb/123.890";
+    tempJobNames << "c:/somerandomfolder/dev/aaa/ccc/123.567"; // must not match!
+    tempJobNames << "c:/somerandomfolder/dev/aaa/ccc/456.567"; // must not match
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "aaa/bbb/123_45.abc", AZ::Data::AssetId());
     QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -446,18 +445,21 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestWideSearchCompileGroup_Suc
     EXPECT_EQ(gotStatus, AssetStatus_Queued);
 
     // complete two of them.  It should still be a busy group!
+    int IndexOfJobToComplete = 0;
     gotCreated = false;
     gotCompleted = false;
 
-    m_rcJobListModel->markAsProcessing(m_createdJobs[7]);
-    m_createdJobs[7]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[7]);
-    m_rcController->OnJobComplete(m_createdJobs[7]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToComplete]);
+    m_createdJobs[IndexOfJobToComplete]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToComplete]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToComplete]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
-    m_rcJobListModel->markAsProcessing(m_createdJobs[8]);
-    m_createdJobs[8]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[8]);
-    m_rcController->OnJobComplete(m_createdJobs[8]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    ++IndexOfJobToComplete;
+    EXPECT_LT(IndexOfJobToComplete, m_createdJobs.size());
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToComplete]);
+    m_createdJobs[IndexOfJobToComplete]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToComplete]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToComplete]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -465,10 +467,12 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestWideSearchCompileGroup_Suc
     EXPECT_FALSE(gotCompleted);
 
     // finish the final one
-    m_rcJobListModel->markAsProcessing(m_createdJobs[9]);
-    m_createdJobs[9]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[9]);
-    m_rcController->OnJobComplete(m_createdJobs[9]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    ++IndexOfJobToComplete;
+    EXPECT_LT(IndexOfJobToComplete, m_createdJobs.size());
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToComplete]);
+    m_createdJobs[IndexOfJobToComplete]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToComplete]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToComplete]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -485,7 +489,10 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_GroupMemberFails_GroupFails)
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/mmmnnnoo/123.456";
+    tempJobNames << "c:/somerandomfolder/mmmnnnoo/123.567";
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "mmmnnnoo/123.ZZZ", AZ::Data::AssetId()); // should match exactly 2 elements
     QCoreApplication::processEvents(QEventLoop::AllEvents);
@@ -498,10 +505,11 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_GroupMemberFails_GroupFails)
     gotCreated = false;
     gotCompleted = false;
 
-    m_rcJobListModel->markAsProcessing(m_createdJobs[12]);
-    m_createdJobs[12]->SetState(RCJob::failed);
-    FinishJob(m_createdJobs[12]);
-    m_rcController->OnJobComplete(m_createdJobs[12]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Failed);
+    int IndexOfJobToFail = 0;
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToFail]);
+    m_createdJobs[IndexOfJobToFail]->SetState(RCJob::failed);
+    FinishJob(m_createdJobs[IndexOfJobToFail]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToFail]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Failed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -520,9 +528,12 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestCompileGroupWithUuid_Succe
     bool gotCompleted = false;
     NetworkRequestID gotGroupID;
     AssetStatus gotStatus = AssetStatus_Unknown;
-    PrepareCompileGroupTests(gotCreated, gotCompleted, gotGroupID, gotStatus);
+    QStringList tempJobNames;
+    tempJobNames << "c:/somerandomfolder/pqr/123.456";
+    PrepareCompileGroupTests(tempJobNames, gotCreated, gotCompleted, gotGroupID, gotStatus);
 
-    AZ::Data::AssetId sourceDataID(m_createdJobs[14]->GetJobEntry().m_sourceFileUUID);
+    int IndexOfJobToRequest = 0;
+    AZ::Data::AssetId sourceDataID(m_createdJobs[IndexOfJobToRequest]->GetJobEntry().m_sourceFileUUID);
     m_rcController->OnRequestCompileGroup(RequestID, "pc", "", sourceDataID); // should match exactly 1 element.
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 
@@ -534,10 +545,10 @@ TEST_F(RCcontrollerUnitTests, TestCompileGroup_RequestCompileGroupWithUuid_Succe
     gotCreated = false;
     gotCompleted = false;
 
-    m_rcJobListModel->markAsProcessing(m_createdJobs[14]);
-    m_createdJobs[14]->SetState(RCJob::completed);
-    FinishJob(m_createdJobs[14]);
-    m_rcController->OnJobComplete(m_createdJobs[14]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
+    m_rcJobListModel->markAsProcessing(m_createdJobs[IndexOfJobToRequest]);
+    m_createdJobs[IndexOfJobToRequest]->SetState(RCJob::completed);
+    FinishJob(m_createdJobs[IndexOfJobToRequest]);
+    m_rcController->OnJobComplete(m_createdJobs[IndexOfJobToRequest]->GetJobEntry(), AzToolsFramework::AssetSystem::JobStatus::Completed);
 
     QCoreApplication::processEvents(QEventLoop::AllEvents);
 

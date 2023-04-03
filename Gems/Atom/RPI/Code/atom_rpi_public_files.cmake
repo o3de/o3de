@@ -8,6 +8,8 @@
 
 set(FILES
     Include/Atom/RPI.Public/AssetInitBus.h
+    Include/Atom/RPI.Public/AssetQuality.h
+    Include/Atom/RPI.Public/AssetTagBus.h
     Include/Atom/RPI.Public/Base.h
     Include/Atom/RPI.Public/BlockCompression.h
     Include/Atom/RPI.Public/Culling.h
@@ -46,17 +48,18 @@ set(FILES
     Include/Atom/RPI.Public/Image/AttachmentImagePool.h
     Include/Atom/RPI.Public/Image/ImageSystem.h
     Include/Atom/RPI.Public/Image/ImageSystemInterface.h
+    Include/Atom/RPI.Public/Image/ImageTagSystemComponent.h
     Include/Atom/RPI.Public/Image/StreamingImage.h
     Include/Atom/RPI.Public/Image/StreamingImageContext.h
     Include/Atom/RPI.Public/Image/StreamingImageController.h
     Include/Atom/RPI.Public/Image/StreamingImagePool.h
     Include/Atom/RPI.Public/Material/Material.h
-    Include/Atom/RPI.Public/Material/MaterialReloadNotificationBus.h
     Include/Atom/RPI.Public/Material/MaterialSystem.h
     Include/Atom/RPI.Public/Model/Model.h
     Include/Atom/RPI.Public/Model/ModelLod.h
     Include/Atom/RPI.Public/Model/ModelLodUtils.h
     Include/Atom/RPI.Public/Model/ModelSystem.h
+    Include/Atom/RPI.Public/Model/ModelTagSystemComponent.h
     Include/Atom/RPI.Public/Model/UvStreamTangentBitmask.h
     Include/Atom/RPI.Public/Pass/AttachmentReadback.h
     Include/Atom/RPI.Public/Pass/ComputePass.h
@@ -78,6 +81,7 @@ set(FILES
     Include/Atom/RPI.Public/Pass/MSAAResolvePass.h
     Include/Atom/RPI.Public/Pass/SlowClearPass.h
     Include/Atom/RPI.Public/Pass/Specific/DownsampleMipChainPass.h
+    Include/Atom/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.h
     Include/Atom/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.h
     Include/Atom/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.h
     Include/Atom/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.h
@@ -99,6 +103,7 @@ set(FILES
     Include/Atom/RPI.Public/GpuQuery/Query.h
     Include/Atom/RPI.Public/GpuQuery/QueryPool.h
     Include/Atom/RPI.Public/GpuQuery/TimestampQueryPool.h
+    Include/Atom/RPI.Public/GpuQuery/GpuPassProfiler.h
     Include/Atom/RPI.Public/XR/XRRenderingInterface.h
     Source/RPI.Public/Culling.cpp
     Source/RPI.Public/FeatureProcessor.cpp
@@ -126,6 +131,7 @@ set(FILES
     Source/RPI.Public/Image/AttachmentImage.cpp
     Source/RPI.Public/Image/AttachmentImagePool.cpp
     Source/RPI.Public/Image/ImageSystem.cpp
+    Source/RPI.Public/Image/ImageTagSystemComponent.cpp
     Source/RPI.Public/Image/StreamingImage.cpp
     Source/RPI.Public/Image/StreamingImageContext.cpp
     Source/RPI.Public/Image/StreamingImageController.cpp
@@ -136,6 +142,7 @@ set(FILES
     Source/RPI.Public/Model/ModelLod.cpp
     Source/RPI.Public/Model/ModelLodUtils.cpp
     Source/RPI.Public/Model/ModelSystem.cpp
+    Source/RPI.Public/Model/ModelTagSystemComponent.cpp
     Source/RPI.Public/Model/UvStreamTangentBitmask.cpp
     Source/RPI.Public/Pass/AttachmentReadback.cpp
     Source/RPI.Public/Pass/ComputePass.cpp
@@ -155,6 +162,7 @@ set(FILES
     Source/RPI.Public/Pass/MSAAResolvePass.cpp
     Source/RPI.Public/Pass/SlowClearPass.cpp
     Source/RPI.Public/Pass/Specific/DownsampleMipChainPass.cpp
+    Source/RPI.Public/Pass/Specific/DownsampleSinglePassLuminancePass.cpp
     Source/RPI.Public/Pass/Specific/ImageAttachmentPreviewPass.cpp
     Source/RPI.Public/Pass/Specific/EnvironmentCubeMapPass.cpp
     Source/RPI.Public/Pass/Specific/MSAAResolveFullScreenPass.cpp
@@ -178,4 +186,5 @@ set(FILES
     Source/RPI.Public/GpuQuery/Query.cpp
     Source/RPI.Public/GpuQuery/QueryPool.cpp
     Source/RPI.Public/GpuQuery/TimestampQueryPool.cpp
+    Source/RPI.Public/GpuQuery/GpuPassProfiler.cpp
 )

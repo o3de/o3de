@@ -157,7 +157,6 @@ SEditorSettings::SEditorSettings()
     wheelZoomSpeed = 1;
     invertYRotation = false;
     invertPan = false;
-    fBrMultiplier = 2;
     bPreviewGeometryWindow = true;
     bBackupOnSave = true;
     backupOnSaveMaxCount = 3;
@@ -191,8 +190,6 @@ SEditorSettings::SEditorSettings()
     textureEditor = "";
 #endif
     animEditor = "";
-
-    terrainTextureExport = "";
 
     sTextureBrowserSettings.nCellSize = 128;
 
@@ -442,7 +439,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     SaveValue("Settings", "InvertYRotation", invertYRotation);
     SaveValue("Settings", "InvertPan", invertPan);
-    SaveValue("Settings", "BrMultiplier", fBrMultiplier);
     SaveValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     SaveValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -508,8 +504,6 @@ void SEditorSettings::Save(bool isEditorClosing)
     SaveValue("Settings\\Snap", "GridUserDefined", snap.bGridUserDefined);
     SaveValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
-
-    SaveValue("Settings", "TerrainTextureExport", terrainTextureExport);
 
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
@@ -630,7 +624,6 @@ void SEditorSettings::Load()
     LoadValue("Settings", "WheelZoomSpeed", wheelZoomSpeed);
     LoadValue("Settings", "InvertYRotation", invertYRotation);
     LoadValue("Settings", "InvertPan", invertPan);
-    LoadValue("Settings", "BrMultiplier", fBrMultiplier);
     LoadValue("Settings", "CameraFastMoveSpeed", cameraFastMoveSpeed);
     LoadValue("Settings", "PreviewGeometryWindow", bPreviewGeometryWindow);
 
@@ -702,8 +695,6 @@ void SEditorSettings::Load()
     LoadValue("Settings\\Snap", "GridUserDefined", snap.bGridUserDefined);
     LoadValue("Settings\\Snap", "GridGetFromSelected", snap.bGridGetFromSelected);
     //////////////////////////////////////////////////////////////////////////
-
-    LoadValue("Settings", "TerrainTextureExport", terrainTextureExport);
 
     //////////////////////////////////////////////////////////////////////////
     // Texture browser settings
@@ -871,30 +862,6 @@ void SEditorSettings::LoadDefaultGamePaths()
     iconsPath /= "Editor/UI/Icons";
     iconsPath.MakePreferred();
     searchPaths[EDITOR_PATH_UI_ICONS].push_back(iconsPath.c_str());
-}
-
-//////////////////////////////////////////////////////////////////////////
-bool SEditorSettings::BrowseTerrainTexture(bool bIsSave)
-{
-    QString path;
-
-    if (!terrainTextureExport.isEmpty())
-    {
-        path = Path::GetPath(terrainTextureExport);
-    }
-    else
-    {
-        path = Path::GetEditingGameDataFolder().c_str();
-    }
-
-    if (bIsSave)
-    {
-        return CFileUtil::SelectSaveFile("Bitmap Image File (*.bmp)", "bmp", path, terrainTextureExport);
-    }
-    else
-    {
-        return CFileUtil::SelectFile("Bitmap Image File (*.bmp)", path, terrainTextureExport);
-    }
 }
 
 void EnableSourceControl(bool enable)

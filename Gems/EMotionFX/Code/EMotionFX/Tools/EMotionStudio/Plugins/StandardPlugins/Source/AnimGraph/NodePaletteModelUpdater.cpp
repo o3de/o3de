@@ -55,9 +55,10 @@ namespace EMStudio
             if (categoryNodeIt != m_categoryNodes.end())
             {
                 const EMotionFX::AnimGraphNode* nodePrototype = static_cast<const EMotionFX::AnimGraphNode*>(objectPrototype);
-                const auto typeString = azrtti_typeid(nodePrototype).ToString<QString>();
+                const auto typeString = azrtti_typeid(nodePrototype).ToFixedString();
                 auto* node = categoryNodeIt->second->CreateChildNode<EMStudio::BlendGraphNodePaletteTreeItem>(
-                    nodePrototype->GetPaletteName(), typeString, AnimGraphEditorId, nodePrototype->GetVisualColor());
+                    nodePrototype->GetPaletteName(), QString::fromUtf8(typeString.c_str(), static_cast<int>(typeString.size())),
+                    AnimGraphEditorId, nodePrototype->GetVisualColor());
 
                 const bool nodeEnabled = focusNode && m_plugin->CheckIfCanCreateObject(focusNode, objectPrototype, categoryNodeIt->first);
                 node->SetEnabled(nodeEnabled);

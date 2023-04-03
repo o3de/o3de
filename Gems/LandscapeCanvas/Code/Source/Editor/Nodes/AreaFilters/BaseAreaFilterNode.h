@@ -22,7 +22,7 @@ namespace LandscapeCanvas
     class BaseAreaFilterNode : public BaseNode
     {
     public:
-        AZ_CLASS_ALLOCATOR(BaseAreaFilterNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BaseAreaFilterNode, AZ::SystemAllocator);
         AZ_RTTI(BaseAreaFilterNode, "{53A10ED3-5ECF-421B-B824-84D4C052E92B}", BaseNode);
 
         static void Reflect(AZ::ReflectContext* context);

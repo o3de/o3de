@@ -73,20 +73,7 @@ namespace AzToolsFramework
 
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
         fullSettingsPath /= relativeFilepath;
-
-        if (!AZ::IO::SystemFile::Exists(fullSettingsPath.c_str()))
-        {
-            return AZ::Failure(AZStd::string::format("Settings file does not exist: '%s'", fullSettingsPath.c_str()));
-        }
-
-        if (registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey))
-        {
-            return AZ::Success();
-        }
-        else
-        {
-            return AZ::Failure(AZStd::string::format("Failed to merge settings file '%s': check log for errors", fullSettingsPath.c_str()));
-        }
+        return registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey);
     }
 
     bool SettingsRegistrar::RemoveSettingFromRegistry(AZStd::string_view registryPath, AZ::SettingsRegistryInterface* registry) const

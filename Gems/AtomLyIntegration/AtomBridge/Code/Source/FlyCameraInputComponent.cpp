@@ -100,8 +100,8 @@ void FlyCameraInputComponent::Reflect(AZ::ReflectContext* reflection)
             editContext->Class<FlyCameraInputComponent>("Fly Camera Input", "The Fly Camera Input allows you to control the camera")
                 ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                 ->Attribute("Category", "Gameplay")
-                ->Attribute("Icon", "Icons/Components/FlyCameraInput.svg")
-                ->Attribute("ViewportIcon", "Icons/Components/Viewport/FlyCameraInput.svg")
+                ->Attribute("Icon", "Editor/Icons/Components/FlyCameraInput.svg")
+                ->Attribute("ViewportIcon", "Editor/Icons/Components/Viewport/FlyCameraInput.svg")
                 ->Attribute(AZ::Edit::Attributes::HelpPageURL, "https://o3de.org/docs/user-guide/components/reference/gameplay/fly-camera-input/")
                 ->Attribute("AutoExpand", true)
                 ->Attribute("AppearsInAddComponentMenu", AZ_CRC("Game", 0x232b318c))
@@ -172,7 +172,7 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     }
 
     AZ::Transform worldTransform = AZ::Transform::Identity();
-    EBUS_EVENT_ID_RESULT(worldTransform, GetEntityId(), AZ::TransformBus, GetWorldTM);
+    AZ::TransformBus::EventResult(worldTransform, GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
 
     // Update movement
     const float moveSpeed = m_moveSpeed * deltaTime;
@@ -192,7 +192,7 @@ void FlyCameraInputComponent::OnTick(float deltaTime, AZ::ScriptTimePoint /*time
     const AZ::Quaternion newOrientation = LYQuaternionToAZQuaternion(Quat(newRotation));
     worldTransform.SetRotation(newOrientation);
 
-    EBUS_EVENT_ID(GetEntityId(), AZ::TransformBus, SetWorldTM, worldTransform);
+    AZ::TransformBus::Event(GetEntityId(), &AZ::TransformBus::Events::SetWorldTM, worldTransform);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

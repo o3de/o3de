@@ -69,7 +69,7 @@ DCCSI_PYTHON_REQUIREMENTS = f'{PATH_DCCSIG}\\requirements.txt'
 # https://www.regnareb.com/pro/2021/05/new-environment-variables-in-maya-2022/
 
 OBJ_DCCSI_MAINMENU = 'O3deDCCsiMainMenu'
-TAG_DCCSI_MAINMENU = 'O3DE(DCCsi)'
+TAG_DCCSI_MAINMENU = 'O3DE'
 
 # mimicing all values from: "DccScriptingInterface\Tools\Dev\Windows\Env_DCC_Maya.bat"
 

@@ -4,15 +4,9 @@
             "RPI": {
                 "MaterialPipelineFiles": [
                     "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MainPipeline/MainPipeline.materialpipeline",
-                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/LowEndPipeline/LowEndPipeline.materialpipeline"
-                ],
-                "MaterialTypeBuilder": {
-                    // This setting is needed temporarily while we address some issues in the Asset Processor.
-                    // https://github.com/o3de/o3de/issues/12745
-                    // So for now the material pipeline system is enabled by default, but we will disable it in
-                    // the AumatedTesting project so it does not cause Automated Review (AR) failures on Jeknins.
-                    "EnableMaterialPipelineSystem": false
-                }
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/LowEndPipeline/LowEndPipeline.materialpipeline",
+                    "@gemroot:Atom_Feature_Common@/Assets/Materials/Pipelines/MultiView/MultiViewPipeline.materialpipeline"
+                ]
             }
         }
     }

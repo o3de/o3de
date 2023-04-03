@@ -16,6 +16,8 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
+    Include/ScriptCanvas/Asset/RuntimeInputs.h
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAsset.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h
@@ -383,6 +385,7 @@ set(FILES
     Include/ScriptCanvas/Utils/NodeUtils.h
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h
+    Include/ScriptCanvas/Utils/VersioningUtils.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
     Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )

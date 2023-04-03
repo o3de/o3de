@@ -59,63 +59,13 @@
             }
         ]
     },
-    "shaders": [
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_ForwardPass.shader",
-            "tag": "ForwardPass"
-        },
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_ForwardPass_EDS.shader",
-            "tag": "ForwardPass_EDS"
-        },
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_LowEndForward.shader",
-            "tag": "LowEndForward"
-        },
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_LowEndForward_EDS.shader",
-            "tag": "LowEndForward_EDS"
-        },
-        {
-            "file": "Shaders/Shadow/Shadowmap.shader",
-            "tag": "Shadowmap"
-        },
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_Shadowmap_WithPS.shader",
-            "tag": "Shadowmap_WithPS"
-        },
-        {
-            "file": "Shaders/Depth/DepthPass.shader",
-            "tag": "DepthPass"
-        },
-        {
-            "file": "Shaders/Materials/StandardPBR/StandardPBR_DepthPass_WithPS.shader",
-            "tag": "DepthPass_WithPS"
-        },
-        {
-            "file": "Shaders/MotionVector/MeshMotionVector.shader",
-            "tag": "MeshMotionVector"
-        },
-        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMin.shader",
-            "tag": "DepthPassTransparentMin"
-        },
-        {
-            "file": "Shaders/Depth/DepthPassTransparentMax.shader",
-            "tag": "DepthPassTransparentMax"
-        }        
-    ],
+    "lightingModel": "Standard",
+    "materialShaderCode": "StandardPBR.azsli",
     "functors": [
-        {
-            "type": "Lua",
-            "args": {
-                "file": "Materials/Types/StandardPBR_ShaderEnable.lua"
-            }
-        }
     ],
     "uvNameMap": {
         "UV0": "Tiled",
         "UV1": "Unwrapped"
     }
 }
+

@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Sha1.h>
 #include <AzCore/std/string/string.h>
 #include <Atom/RHI.Reflect/ShaderStages.h>
 #include <Atom/RHI.Edit/ShaderPlatformInterface.h>
@@ -22,15 +23,15 @@ namespace AZ
         struct ShaderCompilerProfiling
         {
             AZ_TYPE_INFO(ShaderCompilerProfiling, "{4DEB54A4-0EB7-4ADF-9229-E9F6724C4D60}");
-            AZ_CLASS_ALLOCATOR(ShaderCompilerProfiling, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ShaderCompilerProfiling, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
             //! An entry in the shader compiler profiling data.
             struct Entry
             {
-                AZ_TYPE_INFO(ShaderCompilerProfilingEntry, "{DBE390C8-8A06-492A-8494-93AAE0A938E0}");
-                AZ_CLASS_ALLOCATOR(Entry, AZ::SystemAllocator, 0);
+                AZ_TYPE_INFO(Entry, "{DBE390C8-8A06-492A-8494-93AAE0A938E0}");
+                AZ_CLASS_ALLOCATOR(Entry, AZ::SystemAllocator);
 
                 static void Reflect(AZ::ReflectContext* context);
 
@@ -42,8 +43,8 @@ namespace AZ
             AZStd::vector<Entry> m_entries;
         };
 
-        static constexpr int Md5NumBytes = 16;
-        typedef unsigned char ArrayOfCharForMd5[Md5NumBytes];
+        static constexpr int Sha1NumBytes = sizeof(AZ::Sha1::DigestType);
+        typedef unsigned char ArrayOfCharForSha1[Sha1NumBytes];
 
         struct PrependArguments
         {
@@ -52,7 +53,7 @@ namespace AZ
             const char* m_addSuffixToFileName = nullptr; //!< optional
             const char* m_destinationFolder = nullptr;  //!< optional. if not set, will just use sourceFile's folder
             AZStd::string* m_destinationStringOpt = nullptr;  //!< when not null, PrependFile() will dump the result in that string rather than on disk.
-            ArrayOfCharForMd5* m_digest = nullptr; //! optionally run a hash
+            ArrayOfCharForSha1* m_digest = nullptr; //! optionally run a hash
         };
 
         //! Prepends prependFile to sourceFile and saves the result in a new file whose path is then returned.
@@ -113,11 +114,11 @@ namespace AZ
         {
             //! @param commandLineString: A string with command line arguments of the form:
             //!             "-<arg1> --<arg2> --<arg3>[=<value3>] ..."
-            //!             Example: "--use-spaces --namespace=vk -W1"
+            //!             Example: "--srg --namespace=vk -W1"
             //! Returns: A list with just the [-|--]<argument name>:
             //!          ["-<arg1>", "--<arg2>", "--arg3"]
             //!          For the example shown above it will return this vector:
-            //!          ["--use-spaces", "--namespace", "-W1]
+            //!          ["--srg", "--namespace", "-W1]
             AZStd::vector<AZStd::string> GetListOfArgumentNames(AZStd::string_view commandLineString);
 
             //! Takes a list of names of command line arguments and removes those arguments from @commandLineString.

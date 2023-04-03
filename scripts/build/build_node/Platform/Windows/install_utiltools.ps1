@@ -21,7 +21,16 @@ git config --global "credential.helper" "!aws codecommit credential-helper $@"
 git config --global "credential.UseHttpPath" "true"
 
 # Install Java (for Jenkins)
+choco install corretto11jdk -y --ia INSTALLDIR="c:\jdk11" # Custom directory to handle cases where whitespace in the path is not quote wrapped
+
+# Install Java (for Android)
 choco install corretto8jdk -y --ia INSTALLDIR="c:\jdk8" # Custom directory to handle cases where whitespace in the path is not quote wrapped
+
+# Set JDK_PATH for Android
+[Environment]::SetEnvironmentVariable("JDK_PATH", "c:\jdk8", [EnvironmentVariableTarget]::Machine)
+    
+# Set Java path for Jenkins node agent
+[Environment]::SetEnvironmentVariable("JENKINS_JAVA_CMD", "c:\jdk11", [EnvironmentVariableTarget]::Machine)
 
 # Install CMake
 choco install cmake --version=3.24.0 -y --installargs 'ADD_CMAKE_TO_PATH=System'

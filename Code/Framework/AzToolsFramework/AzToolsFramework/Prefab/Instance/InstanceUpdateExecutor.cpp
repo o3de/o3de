@@ -157,6 +157,7 @@ namespace AzToolsFramework
             LazyConnectGameModeEventHandler();
 
             bool isUpdateSuccessful = true;
+            bool updatedInstances = false;
             if (!m_updatingTemplateInstancesInQueue && !m_shouldPausePropagation)
             {
                 m_updatingTemplateInstancesInQueue = true;
@@ -180,6 +181,7 @@ namespace AzToolsFramework
                     // make sure to end the loop once the queue is empty, regardless of what the initial size was.
                     for (int i = 0; (i < instanceCountToUpdateInBatch) && !m_instancesUpdateQueue.empty(); ++i)
                     {
+                        updatedInstances = true;
                         Instance* instanceToUpdate = m_instancesUpdateQueue.front();
                         m_instancesUpdateQueue.pop_front();
                         AZ_Assert(instanceToUpdate != nullptr, "Invalid instance on update queue.");
@@ -218,9 +220,9 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Generates instance DOM for a given instance object from focused or root prefab template.
+                        // Gets a copy of instance DOM from focused or root prefab template.
                         PrefabDom instanceDom;
-                        m_instanceDomGeneratorInterface->GenerateInstanceDom(instanceDom, *instanceToUpdate);
+                        m_instanceDomGeneratorInterface->GetInstanceDomFromTemplate(instanceDom, *instanceToUpdate);
 
                         if (!instanceDom.IsObject())
                         {
@@ -233,7 +235,7 @@ namespace AzToolsFramework
                             continue;
                         }
 
-                        // Loads instance obejct from the generated instance DOM.
+                        // Loads instance object from the generated instance DOM.
                         EntityList newEntities;
                         if (PrefabDomUtils::LoadInstanceFromPrefabDom(*instanceToUpdate, newEntities, instanceDom,
                             PrefabDomUtils::LoadFlags::UseSelectiveDeserialization))
@@ -287,13 +289,17 @@ namespace AzToolsFramework
                     // Notify Propagation has ended, then update selection (which is frozen during propagation, so this order matters)
                     PrefabPublicNotificationBus::Broadcast(&PrefabPublicNotifications::OnPrefabInstancePropagationEnd);
                     ToolsApplicationRequestBus::Broadcast(&ToolsApplicationRequests::SetSelectedEntities, selectedEntityIds);
-
-                    // after an instance update operation finishes, garbage collect to reclaim memory.
-                    AZ::AllocatorManager::Instance().GarbageCollect();
-                    AZ_MALLOC_TRIM(0);
                 }
 
                 m_updatingTemplateInstancesInQueue = false;
+            }
+            
+            // this logic avoids calling garbage collect on every frame when no instances have been updated or when 
+            // we are still processing the update queue (if in a mode where the processing queue is emptied slowly over time).
+            if ( (updatedInstances) && (m_instancesUpdateQueue.empty()) )
+            {
+                AZ::AllocatorManager::Instance().GarbageCollect();
+                AZ_MALLOC_TRIM(0);
             }
 
             return isUpdateSuccessful;

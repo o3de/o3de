@@ -10,6 +10,7 @@
 
 #if !defined(Q_MOC_RUN)
 #include <ScreenWidget.h>
+#include <ScreensCtrl.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
 #include <GemCatalog/GemInfo.h>
@@ -61,19 +62,25 @@ namespace O3DE::ProjectManager
         void UpdateGem(const QModelIndex& modelIndex);
         void UninstallGem(const QModelIndex& modelIndex);
         void HandleGemCreated(const GemInfo& gemInfo);
+        void HandleGemEdited(const GemInfo& newGemInfo);
 
     protected:
         void hideEvent(QHideEvent* event) override;
         void showEvent(QShowEvent* event) override;
         void resizeEvent(QResizeEvent* event) override;
         void moveEvent(QMoveEvent* event) override;
+        virtual void SetUpScreensControl(QWidget* parent);
 
         GemModel* m_gemModel = nullptr;
         QSet<QString> m_gemsToRegisterWithProject;
+        ScreensCtrl* m_screensControl = nullptr;
+
+
 
     private slots:
         void HandleOpenGemRepo();
         void HandleCreateGem();
+        void HandleEditGem(const QModelIndex& currentModelIndex);
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 
@@ -98,5 +105,8 @@ namespace O3DE::ProjectManager
         bool m_notificationsEnabled = true;
         QString m_projectPath;
         bool m_readOnly;
+
+        QModelIndex m_curEditedIndex;
+
     };
 } // namespace O3DE::ProjectManager

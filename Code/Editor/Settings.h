@@ -279,8 +279,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     void PostInitApply();
 
-    bool BrowseTerrainTexture(bool bIsSave);
-
     //////////////////////////////////////////////////////////////////////////
     // Variables.
     //////////////////////////////////////////////////////////////////////////
@@ -370,9 +368,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
 
     SGUI_Settings gui;
 
-    //! Terrain Texture Export/Import filename.
-    QString terrainTextureExport;
-
     // Read only parameter.
     // Refects the status of GetIEditor()->GetOperationMode
     // To change current operation mode use GetIEditor()->SetOperationMode
@@ -389,9 +384,6 @@ AZ_POP_DISABLE_DLL_EXPORT_BASECLASS_WARNING
     SAssetBrowserSettings sAssetBrowserSettings;
 
     SSelectObjectDialogSettings selectObjectDialog;
-
-    // For Terrain Texture Generation Multiplier.
-    float fBrMultiplier;
 
     AzToolsFramework::ConsoleColorTheme consoleBackgroundColorTheme;
 

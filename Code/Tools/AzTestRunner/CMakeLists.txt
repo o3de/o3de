@@ -43,6 +43,7 @@ if(PAL_TRAIT_AZTESTRUNNER_SUPPORTED AND NOT LY_MONOLITHIC_GAME)
 
         ly_add_googletest(
             NAME AZ::AzTestRunner.Tests
+            LABELS REQUIRES_tiaf
         )
 
     endif()

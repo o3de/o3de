@@ -8,17 +8,22 @@
 
 #pragma once
 
-#include <utilities/BatchApplicationManager.h>
 #include <AzCore/UnitTest/TestTypes.h>
+#include <AzToolsFramework/Metadata/MetadataManager.h>
+#include <native/utilities/BatchApplicationManager.h>
 #include <native/tests/MockAssetDatabaseRequestsHandler.h>
-#include "assetmanager/MockAssetProcessorManager.h"
-#include "assetmanager/MockFileProcessor.h"
+#include <native/tests/assetmanager/MockAssetProcessorManager.h>
+#include <native/tests/assetmanager/MockFileProcessor.h>
+#include <native/tests/UnitTestUtilities.h>
 
 namespace UnitTests
 {
     struct MockBatchApplicationManager : BatchApplicationManager
     {
         using ApplicationManagerBase::InitFileMonitor;
+        using ApplicationManagerBase::DestroyFileMonitor;
+        using ApplicationManagerBase::InitFileStateCache;
+        using ApplicationManagerBase::InitUuidManager;
         using ApplicationManagerBase::m_assetProcessorManager;
         using ApplicationManagerBase::m_fileProcessor;
         using ApplicationManagerBase::m_fileStateCache;
@@ -26,7 +31,7 @@ namespace UnitTests
         using BatchApplicationManager::BatchApplicationManager;
     };
 
-    struct ApplicationManagerTest : ::UnitTest::ScopedAllocatorSetupFixture
+    struct ApplicationManagerTest : ::UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override;
@@ -39,6 +44,10 @@ namespace UnitTests
         AZStd::unique_ptr<QThread> m_apmThread;
         AZStd::unique_ptr<QThread> m_fileProcessorThread;
         AZStd::unique_ptr<MockAssetProcessorManager> m_mockAPM;
+
+        MockVirtualFileIO m_virtualFileIO;
+        AzToolsFramework::UuidUtilComponent m_uuidUtil;
+        AzToolsFramework::MetadataManager m_metadataManager;
 
         // These are just aliases, no need to manage/delete them
         FileWatcher* m_fileWatcher{};

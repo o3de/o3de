@@ -251,31 +251,6 @@ float ImGui::ImGuiManager::GetDpiScalingFactor() const
 
 void ImGui::ImGuiManager::Render()
 {
-    m_renderJobCompletion = aznew AZ::JobCompletion();
-
-    const auto jobLambda = [this]([[maybe_unused]] AZ::Job& owner)
-    {
-        this->RenderJob();
-    };
-
-    AZ::Job* renderJob = AZ::CreateJobFunction(AZStd::move(jobLambda), true, nullptr);  //auto-deletes
-    renderJob->SetDependent(m_renderJobCompletion);
-    renderJob->Start();
-}
-
-void ImGui::ImGuiManager::WaitForRenderToFinish()
-{
-    if (m_renderJobCompletion)
-    {
-        AZ_PROFILE_SCOPE(ImGui, "ImGuiManager::WaitForRenderToFinish");
-        m_renderJobCompletion->StartAndWaitForCompletion();
-        delete m_renderJobCompletion;
-        m_renderJobCompletion = nullptr;
-    }
-}
-
-void ImGui::ImGuiManager::RenderJob()
-{
     AZ_PROFILE_FUNCTION(ImGui);
 
     if (m_clientMenuBarState == DisplayState::Hidden && m_editorWindowState == DisplayState::Hidden)
@@ -765,7 +740,7 @@ void ImGuiManager::RenderImGuiBuffers(const ImVec2& scaleRects)
     ImGui::ImGuiContextScope contextScope(m_imguiContext);
 
     // Trigger all listeners to run their updates
-    EBUS_EVENT(ImGuiUpdateListenerBus, OnImGuiUpdate);
+    ImGuiUpdateListenerBus::Broadcast(&ImGuiUpdateListenerBus::Events::OnImGuiUpdate);
 
     // Run imgui's internal render and retrieve resulting draw data
     ImGui::Render();

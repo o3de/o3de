@@ -32,6 +32,10 @@ If applicable, add screenshots and/or a video to help explain your problem.
 **Found in Branch**
 Name of or link to the branch where the issue occurs.
 
+**Commit ID from [o3de/o3de](https://github.com/o3de/o3de) Repository**
+Please provide the SHA/hash that identifies the latest commit from the o3de/o3de repository if the issue is reproducible in the development or other official branches. 
+You can get the commit ID by running the `git rev-parse HEAD` command on your current branch.
+
 **Desktop/Device (please complete the following information):**
  - Device: [e.g. PC, Mac, iPhone, Samsung] 
  - OS: [e.g. Windows, macOS, iOS, Android]

@@ -1,0 +1,269 @@
+{
+    "template_name": "UnifiedMultiplayerGem",
+    "template_restricted_platform_relative_path": "Templates/UnifiedMultiplayerGem",
+    "restricted_name": "o3de",
+    "restricted_platform_relative_path": "Templates/UnifiedMultiplayerGem",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "display_name": "Unified Multiplayer Gem Template",
+    "summary": "A Multiplayer dependent Gem that can implement different behavior on the GameLauncher, ServerLauncher and UnifiedLauncher.",
+    "canonical_tags": [
+        "Template",
+        "Gem"
+    ],
+    "user_tags": [
+        "UnifiedMultiplayerGem"
+    ],
+    "icon_path": "preview.png",
+    "copyFiles": [
+        {
+            "file": ".gitignore",
+            "isTemplated": false
+        },
+        {
+            "file": "CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_editor_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/${NameLower}_tests_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/CMakeLists.txt",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}Bus.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Include/${Name}/${Name}TypeIds.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Android/PAL_android.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Linux/PAL_linux.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Mac/PAL_mac.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_editor_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/Windows/PAL_windows.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_api_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_private_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/${NameLower}_shared_files.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Platform/iOS/PAL_ios.cmake",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/${Name}ModuleInterface.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Unified/${Name}Module.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Unified/${Name}SystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Unified/${Name}SystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorModule.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Source/Tools/${Name}EditorSystemComponent.h",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Tests/Unified/${Name}Test.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Code/Tests/Tools/${Name}EditorTest.cpp",
+            "isTemplated": true
+        },
+        {
+            "file": "Registry/assetprocessor_settings.setreg",
+            "isTemplated": true
+        },
+        {
+            "file": "gem.json",
+            "isTemplated": true
+        },
+        {
+            "file": "preview.png",
+            "isTemplated": false
+        }
+    ],
+    "createDirectories": [
+        {
+            "dir": "Assets"
+        },
+        {
+            "dir": "Code"
+        },
+        {
+            "dir": "Code/Include"
+        },
+        {
+            "dir": "Code/Include/${Name}"
+        },
+        {
+            "dir": "Code/Platform"
+        },
+        {
+            "dir": "Code/Platform/Android"
+        },
+        {
+            "dir": "Code/Platform/Linux"
+        },
+        {
+            "dir": "Code/Platform/Mac"
+        },
+        {
+            "dir": "Code/Platform/Windows"
+        },
+        {
+            "dir": "Code/Platform/iOS"
+        },
+        {
+            "dir": "Code/Source"
+        },
+        {
+            "dir": "Code/Source/Unified"
+        },
+        {
+            "dir": "Code/Source/Tools"
+        },
+        {
+            "dir": "Code/Tests"
+        },
+        {
+            "dir": "Code/Tests/Unified"
+        },
+        {
+            "dir": "Code/Tests/Tools"
+        },
+        {
+            "dir": "Registry"
+        }
+    ]
+}

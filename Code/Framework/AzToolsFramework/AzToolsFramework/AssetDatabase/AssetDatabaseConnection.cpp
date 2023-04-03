@@ -10,6 +10,7 @@
 
 #include <sqlite3.h>
 
+#include <AzCore/IO/Path/Path.h>
 #include <AzCore/IO/SystemFile.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/SQLite/SQLiteConnection.h>
@@ -400,6 +401,20 @@ namespace AzToolsFramework
             static const auto s_queryProductBySourcename = MakeSqlQuery(QUERY_PRODUCT_BY_SOURCENAME, QUERY_PRODUCT_BY_SOURCENAME_STATEMENT, LOG_NAME,
                     SqlParam<const char*>(":sourcename"));
 
+            static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID = "AzToolsFramework::AssetDatabase::QueryProductBySourceNameScanFolderID";
+            static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_STATEMENT =
+                "SELECT Products.*, Jobs.* FROM Sources LEFT JOIN Jobs "
+                                                                       "ON Sources.SourceID = Jobs.SourcePK INNER JOIN Products "
+                                                                       "ON Jobs.JobID = Products.JobPK WHERE "
+                                                                       "Sources.SourceName = :sourcename AND Sources.ScanFolderPK = :scanfolderid;";
+
+            static const auto s_queryProductBySourcenameScanFolderId = MakeSqlQuery(
+                QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID,
+                QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_STATEMENT,
+                LOG_NAME,
+                SqlParam<const char*>(":sourcename"),
+                SqlParam<AZ::s64>(":scanfolderid"));
+
             //add sql statement for querying everything by source name
             static const char* QUERY_PRODUCT_BY_SOURCENAME_PLATFORM = "AzToolsFramework::AssetDatabase::QueryProductBySourceNamePlatform";
             static const char* QUERY_PRODUCT_BY_SOURCENAME_PLATFORM_STATEMENT =
@@ -412,6 +427,22 @@ namespace AzToolsFramework
             static const auto s_queryProductBySourcenamePlatform = MakeSqlQuery(QUERY_PRODUCT_BY_SOURCENAME_PLATFORM, QUERY_PRODUCT_BY_SOURCENAME_PLATFORM_STATEMENT, LOG_NAME,
                     SqlParam<const char*>(":sourcename"),
                     SqlParam<const char*>(":platform"));
+
+            static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM = "AzToolsFramework::AssetDatabase::QueryProductBySourceNameScanFolderIDPlatform";
+            static const char* QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM_STATEMENT =
+                "SELECT Products.*, Jobs.* FROM Sources LEFT JOIN Jobs "
+                "ON Sources.SourceID = Jobs.SourcePK INNER JOIN Products "
+                "ON Jobs.JobID = Products.JobPK WHERE "
+                "Jobs.Platform = :platform AND "
+                "Sources.SourceName = :sourcename AND Sources.ScanFolderPK = :scanfolderid;";
+
+            static const auto s_queryProductBySourcenameScanFolderIdPlatform = MakeSqlQuery(
+                QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM,
+                QUERY_PRODUCT_BY_SOURCENAME_SCANFOLDERID_PLATFORM_STATEMENT,
+                LOG_NAME,
+                SqlParam<const char*>(":sourcename"),
+                SqlParam<const char*>(":platform"),
+                SqlParam<AZ::s64>(":scanfolderid"));
 
             //add sql statement for querying everything by source name
             static const char* QUERY_PRODUCT_LIKE_SOURCENAME = "AzToolsFramework::AssetDatabase::QueryProductLikeSourceName";
@@ -681,6 +712,11 @@ namespace AzToolsFramework
             static const auto s_queryCombinedLikeProductnamePlatform = MakeSqlQuery(QUERY_COMBINED_LIKE_PRODUCTNAME_PLATFORM, QUERY_COMBINED_LIKE_PRODUCTNAME_PLATFORM_STATEMENT, LOG_NAME,
                     SqlParam<const char*>(":productname"),
                     SqlParam<const char*>(":platform"));
+
+            static const char* QUERY_SOURCEDEPENDENCY = "AzToolsFramework::AssetDatabase::QuerySourceDependency";
+            static const char* QUERY_SOURCEDEPENDENCY_STATEMENT = "SELECT * FROM SourceDependency";
+
+            static const auto s_querySourceDependency = MakeSqlQuery(QUERY_SOURCEDEPENDENCY, QUERY_SOURCEDEPENDENCY_STATEMENT, LOG_NAME);
 
             static const char* QUERY_SOURCEDEPENDENCY_BY_SOURCEDEPENDENCYID = "AzToolsFramework::AssetDatabase::QuerySourceDependencyBySourceDependencyID";
             static const char* QUERY_SOURCEDEPENDENCY_BY_SOURCEDEPENDENCYID_STATEMENT =
@@ -1208,7 +1244,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         //SourceFileDependencyEntry
 
-        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, AZ::u32 fromAssetId, const char* subIds)
+        SourceFileDependencyEntry::SourceFileDependencyEntry(AZ::Uuid builderGuid, AZ::Uuid sourceGuid, PathOrUuid dependsOnSource, SourceFileDependencyEntry::TypeOfDependency dependencyType, bool fromAssetId, const char* subIds)
             : m_builderGuid(builderGuid)
             , m_sourceGuid(sourceGuid)
             , m_dependsOnSource(AZStd::move(dependsOnSource))
@@ -1409,6 +1445,14 @@ namespace AzToolsFramework
                    m_hash == other.m_hash &&
                    AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str()) &&
                    m_flags == other.m_flags;//don't compare legacy guid
+        }
+
+        bool ProductDatabaseEntry::IsSameLogicalProductAs(const ProductDatabaseEntry& other) const
+        {
+            return m_jobPK == other.m_jobPK &&
+                m_subID == other.m_subID &&
+                m_assetType == other.m_assetType &&
+                AzFramework::StringFunc::Equal(m_productName.c_str(), other.m_productName.c_str());
         }
 
         AZStd::string ProductDatabaseEntry::ToString() const
@@ -1727,7 +1771,7 @@ namespace AzToolsFramework
         AZStd::string AssetDatabaseConnection::GetAssetDatabaseFilePath()
         {
             AZStd::string databaseLocation;
-            EBUS_EVENT(AssetDatabaseRequests::Bus, GetAssetDatabaseLocation, databaseLocation);
+            AssetDatabaseRequests::Bus::Broadcast(&AssetDatabaseRequests::Bus::Events::GetAssetDatabaseLocation, databaseLocation);
             if (databaseLocation.empty())
             {
                 databaseLocation = "assetdb.sqlite";
@@ -1858,7 +1902,9 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryProductLikeProductnamePlatform);
 
             AddStatement(m_databaseConnection, s_queryProductBySourcename);
+            AddStatement(m_databaseConnection, s_queryProductBySourcenameScanFolderId);
             AddStatement(m_databaseConnection, s_queryProductBySourcenamePlatform);
+            AddStatement(m_databaseConnection, s_queryProductBySourcenameScanFolderIdPlatform);
             AddStatement(m_databaseConnection, s_queryProductLikeSourcename);
             AddStatement(m_databaseConnection, s_queryProductLikeSourcenamePlatform);
             AddStatement(m_databaseConnection, s_queryProductByJobIdSubId);
@@ -1891,6 +1937,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryCombinedLikeProductname);
             AddStatement(m_databaseConnection, s_queryCombinedLikeProductnamePlatform);
 
+            AddStatement(m_databaseConnection, s_querySourceDependency);
             AddStatement(m_databaseConnection, s_querySourcedependencyBySourcedependencyid);
             AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSource);
             AddStatement(m_databaseConnection, s_querySourceDependencyByDependsOnSourceWildcard);
@@ -2265,6 +2312,25 @@ namespace AzToolsFramework
             return s_queryProductBySourcename.BindAndThen(*m_databaseConnection, handler, exactSourceName).Query(&GetProductResult, builderGuid, jobKey, status);
         }
 
+        bool AssetDatabaseConnection::QueryProductBySourceNameScanFolderID(
+            const char* exactSourceName,
+            AZ::s64 scanFolderID,
+            productHandler handler,
+            AZ::Uuid builderGuid,
+            const char* jobKey,
+            const char* platform,
+            AssetSystem::JobStatus status)
+        {
+            if (platform && strlen(platform))
+            {
+                return s_queryProductBySourcenameScanFolderIdPlatform.BindAndThen(*m_databaseConnection, handler, exactSourceName, platform, scanFolderID)
+                    .Query(&GetProductResult, builderGuid, jobKey, status);
+            }
+
+            return s_queryProductBySourcenameScanFolderId.BindAndThen(*m_databaseConnection, handler, exactSourceName, scanFolderID)
+                .Query(&GetProductResult, builderGuid, jobKey, status);
+        }
+
         bool AssetDatabaseConnection::QueryProductLikeSourceName(const char* likeSourceName, LikeType likeType, productHandler handler, AZ::Uuid builderGuid, const char* jobKey, const char* platform, AssetSystem::JobStatus status)
         {
             AZStd::string actualSearchTerm = GetLikeActualSearchTerm(likeSourceName, likeType);
@@ -2448,11 +2514,23 @@ namespace AzToolsFramework
                     [&](JobDatabaseEntry& entry)
                     {
                         AzToolsFramework::AssetSystem::JobInfo jobinfo;
+                        AZ::s64 scanFolderId{};
+
                         succeeded = QuerySourceBySourceID(entry.m_sourcePK,
                                 [&](SourceDatabaseEntry& sourceEntry)
                                 {
                                     found = true;
                                     jobinfo.m_sourceFile = AZStd::move(sourceEntry.m_sourceName);
+                                    scanFolderId = sourceEntry.m_scanFolderPK;
+                                    return true;
+                                });
+
+                        succeeded = succeeded && found &&
+                            QueryScanFolderByScanFolderID(
+                                scanFolderId,
+                                [&jobinfo](AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder)
+                                {
+                                    jobinfo.m_watchFolder = scanfolder.m_scanFolder;
                                     return true;
                                 });
 
@@ -2543,7 +2621,13 @@ namespace AzToolsFramework
             return found && succeeded;
         }
 
-        bool AssetDatabaseConnection::QuerySourceDependencyBySourceDependencyId(AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler)
+        bool AssetDatabaseConnection::QuerySourceDependencies(sourceFileDependencyHandler handler)
+        {
+            return s_querySourceDependency.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult);
+        }
+
+        bool AssetDatabaseConnection::QuerySourceDependencyBySourceDependencyId(
+            AZ::s64 sourceDependencyID, sourceFileDependencyHandler handler)
         {
             return s_querySourcedependencyBySourcedependencyid.BindAndQuery(*m_databaseConnection, handler, &GetSourceDependencyResult, sourceDependencyID);
         }

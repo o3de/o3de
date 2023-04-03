@@ -14,19 +14,11 @@
 
 namespace PhysX
 {
-    //! Used for caching whether the character controller is touching the ground.
-    enum class CharacterGroundState
-    {
-        NotYetDetermined,
-        NotTouching,
-        Touching,
-    };
-
     //! Configuration for storing character gameplay settings.
     class CharacterGameplayConfiguration
     {
     public:
-        AZ_CLASS_ALLOCATOR(CharacterGameplayConfiguration, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CharacterGameplayConfiguration, AZ::SystemAllocator);
         AZ_TYPE_INFO(CharacterGameplayConfiguration, "{A9E559C7-9436-462A-8A5D-304ACFFC7F90}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -76,7 +68,6 @@ namespace PhysX
 
     private:
         void OnSceneSimulationStart(float physicsTimestep);
-        void OnSceneSimulationFinish();
         void OnGravityChanged(const AZ::Vector3& gravity);
         void ApplyGravity(float deltaTime);
         void DetermineCachedGroundState() const;
@@ -87,8 +78,6 @@ namespace PhysX
         float m_groundDetectionBoxHeight = 0.02f; //!< Vertical size of box to use when testing for ground contact.
 
         AzPhysics::SceneEvents::OnSceneSimulationStartHandler m_sceneSimulationStartHandler;
-        AzPhysics::SceneEvents::OnSceneSimulationFinishHandler m_sceneSimulationFinishHandler;
         AzPhysics::SceneEvents::OnSceneGravityChangedEvent::Handler m_onGravityChangedHandler;
-        mutable CharacterGroundState m_cachedGroundState = CharacterGroundState::NotYetDetermined;
     };
 } // namespace PhysX

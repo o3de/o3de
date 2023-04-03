@@ -7,8 +7,7 @@
            Uuid="{60CF8540-E51A-434D-A32C-461C41D68AF9}"
            Base="ScriptCanvas::Node"
            Version="2"
-           DeprecationUUID="{32A4BEDC-C207-4472-61DE-9A716402620A}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            Description="Provides a time value.">
         <In Name="Start" Description="Starts the timer."/>
         <In Name="Stop" Description="Stops the timer."/>

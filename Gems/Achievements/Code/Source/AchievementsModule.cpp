@@ -18,7 +18,7 @@ namespace Achievements
     {
     public:
         AZ_RTTI(AchievementsModule, "{67B7EBC3-69DE-447C-B006-776C2C1A4583}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AchievementsModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AchievementsModule, AZ::SystemAllocator);
 
         AchievementsModule()
             : AZ::Module()

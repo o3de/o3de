@@ -155,7 +155,9 @@ public:
     void RefreshStyle();
 
     //! Reset timers used for auto saving.
-    void ResetAutoSaveTimers(bool bForceInit = false);
+    void StopAutoSaveTimers();
+    void StartAutoSaveTimers();
+    void ResetAutoSaveTimers();
     void ResetBackgroundUpdateTimer();
 
     void UpdateToolsMenu();

@@ -5,9 +5,12 @@
 #
 
 set(FILES
+    Source/CompressionModuleInterface.cpp
     Source/CompressionModuleInterface.h
     Source/Clients/CompressionSystemComponent.cpp
     Source/Clients/CompressionSystemComponent.h
-    Source/Clients/DecompressionFactoryImpl.cpp
-    Source/Clients/DecompressionFactoryImpl.h
+    Source/Clients/DecompressionRegistrarImpl.cpp
+    Source/Clients/DecompressionRegistrarImpl.h
+    Source/Clients/DecompressorLZ4Impl.cpp
+    Source/Clients/DecompressorLZ4Impl.h
 )

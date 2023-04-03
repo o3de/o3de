@@ -53,7 +53,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = transform.TransformPoint(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq());
 
         // rotating about the X axis should not affect the X component
         EXPECT_NEAR(rotatedVector.GetX(), vector.GetX(), AZ::Constants::Tolerance);
@@ -74,7 +74,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = transform.TransformPoint(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq());
 
         // rotating about the Y axis should not affect the Y component
         EXPECT_NEAR(rotatedVector.GetY(), vector.GetY(), AZ::Constants::Tolerance);
@@ -95,7 +95,7 @@ namespace UnitTest
         const AZ::Vector3 vector(1.5f, -0.2f, 2.7f);
         const AZ::Vector3 rotatedVector = transform.TransformPoint(vector);
         // rotating a vector should not affect its length
-        EXPECT_TRUE(AZ::IsClose(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq()));
+        EXPECT_NEAR(rotatedVector.GetLengthSq(), vector.GetLengthSq(), AZ::Constants::Tolerance * vector.GetLengthSq());
 
         // rotating about the Z axis should not affect the Z component
         EXPECT_NEAR(rotatedVector.GetZ(), vector.GetZ(), AZ::Constants::Tolerance);
@@ -191,7 +191,7 @@ namespace UnitTest
         const AZ::Vector3 from(2.5f, 0.2f, 3.6f);
         // to and from are the same, should generate an error
         AZ_TEST_START_TRACE_SUPPRESSION;
-        EXPECT_TRUE(AZ::Transform::CreateLookAt(from, from).IsClose(AZ::Transform::Identity()));
+        EXPECT_THAT(AZ::Transform::CreateLookAt(from, from), IsClose(AZ::Transform::Identity()));
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
 
         // to - from is parallel to usual up direction
@@ -217,11 +217,11 @@ namespace UnitTest
         AZ::Transform transform5 = transform1;
         transform5 *= transform4;
         const AZ::Vector3 vector(1.9f, 2.3f, 0.2f);
-        EXPECT_TRUE((transform1 * (transform2 * transform3)).IsClose((transform1 * transform2) * transform3));
+        EXPECT_THAT((transform1 * (transform2 * transform3)), IsClose((transform1 * transform2) * transform3));
         EXPECT_THAT((transform3 * transform4).TransformPoint(vector), IsClose(transform3.TransformPoint((transform4.TransformPoint(vector)))));
-        EXPECT_TRUE((transform2 * AZ::Transform::Identity()).IsClose(transform2));
-        EXPECT_TRUE((transform3 * AZ::Transform::Identity()).IsClose(AZ::Transform::Identity() * transform3));
-        EXPECT_TRUE(transform5.IsClose(transform1 * transform4));
+        EXPECT_THAT((transform2 * AZ::Transform::Identity()), IsClose(transform2));
+        EXPECT_THAT((transform3 * AZ::Transform::Identity()), IsClose(AZ::Transform::Identity() * transform3));
+        EXPECT_THAT(transform5, IsClose(transform1 * transform4));
     }
 
     TEST(MATH_Transform, TranslationCorrectInTransformHierarchy)
@@ -289,7 +289,7 @@ namespace UnitTest
         const AZ::Vector3 vector(0.9f, 3.2f, -1.4f);
         EXPECT_THAT((inverse * transform).TransformPoint(vector), IsClose(vector));
         EXPECT_THAT((transform * inverse).TransformPoint(vector), IsClose(vector));
-        EXPECT_TRUE((inverse * transform).IsClose(AZ::Transform::Identity()));
+        EXPECT_THAT((inverse * transform), IsClose(AZ::Transform::Identity()));
     }
 
     TEST_P(TransformInvertFixture, Invert)
@@ -300,7 +300,7 @@ namespace UnitTest
         const AZ::Vector3 vector(2.8f, -1.3f, 2.6f);
         EXPECT_THAT((inverse * transform).TransformPoint(vector), IsClose(vector));
         EXPECT_THAT((transform * inverse).TransformPoint(vector), IsClose(vector));
-        EXPECT_TRUE((inverse * transform).IsClose(AZ::Transform::Identity()));
+        EXPECT_THAT((inverse * transform), IsClose(AZ::Transform::Identity()));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformInvertFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
@@ -344,9 +344,9 @@ namespace UnitTest
         const AZ::Transform rotX = AZ::Transform::CreateRotationX(eulerRadians.GetX());
         const AZ::Transform rotY = AZ::Transform::CreateRotationY(eulerRadians.GetY());
         const AZ::Transform rotZ = AZ::Transform::CreateRotationZ(eulerRadians.GetZ());
-        EXPECT_TRUE(transform.IsClose(rotX * rotY * rotZ));
+        EXPECT_THAT(transform, IsClose(rotX * rotY * rotZ));
         transform.SetFromEulerDegrees(eulerDegrees);
-        EXPECT_TRUE(transform.IsClose(rotX * rotY * rotZ));
+        EXPECT_THAT(transform, IsClose(rotX * rotY * rotZ));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformSetFromEulerDegreesFixture, ::testing::ValuesIn(MathTestData::EulerAnglesDegrees));
@@ -361,7 +361,7 @@ namespace UnitTest
         const AZ::Transform rotX = AZ::Transform::CreateRotationX(eulerRadians.GetX());
         const AZ::Transform rotY = AZ::Transform::CreateRotationY(eulerRadians.GetY());
         const AZ::Transform rotZ = AZ::Transform::CreateRotationZ(eulerRadians.GetZ());
-        EXPECT_TRUE(transform.IsClose(rotX * rotY * rotZ));
+        EXPECT_THAT(transform, IsClose(rotX * rotY * rotZ));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformSetFromEulerRadiansFixture, ::testing::ValuesIn(MathTestData::EulerAnglesRadians));
@@ -378,39 +378,41 @@ namespace UnitTest
         const AZ::Vector3 eulerDegrees = transform.GetEulerDegrees();
         AZ::Transform eulerTransform;
         eulerTransform.SetFromEulerDegrees(eulerDegrees);
-        EXPECT_TRUE(eulerTransform.IsClose(transform));
+        EXPECT_THAT(eulerTransform, IsClose(transform));
         const AZ::Vector3 eulerRadians = transform.GetEulerRadians();
         eulerTransform = AZ::Transform::Identity();
         eulerTransform.SetFromEulerRadians(eulerRadians);
-        EXPECT_TRUE(eulerTransform.IsClose(transform));
+        EXPECT_THAT(eulerTransform, IsClose(transform));
     }
 
     INSTANTIATE_TEST_CASE_P(MATH_Transform, TransformGetEulerFixture, ::testing::ValuesIn(MathTestData::OrthogonalTransforms));
 
     class MATH_TransformApplicationFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         MATH_TransformApplicationFixture()
-            : AllocatorsFixture()
+            : LeakDetectionFixture()
         {
         }
 
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             AZ::ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
             m_app.reset(aznew AZ::ComponentApplication);
-            m_app->Create(desc);
+            AZ::ComponentApplication::StartupParameters startupParameters;
+            startupParameters.m_loadSettingsRegistry = false;
+            m_app->Create(desc, startupParameters);
         }
 
         void TearDown() override
         {
             m_app->Destroy();
             m_app.reset();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<AZ::ComponentApplication> m_app;

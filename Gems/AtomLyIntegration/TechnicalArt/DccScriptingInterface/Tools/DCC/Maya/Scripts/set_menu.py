@@ -64,7 +64,7 @@ def export_scene_materials(args):
     from DccScriptingInterface.azpy.dcc.maya.helpers import convert_aiStandard_material
     from DccScriptingInterface.azpy.dcc.maya.helpers import convert_stingray_material
     from DccScriptingInterface.azpy import general_utils
-    from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.export import materials
+    from DccScriptingInterface.Tools.DCC.Maya.Scripts.Python.scene_exporter import export_tool
 
     reload(maya_materials_conversion)
     reload(material_utilities)
@@ -73,8 +73,8 @@ def export_scene_materials(args):
     reload(convert_aiStandard_material)
     reload(convert_stingray_material)
     reload(general_utils)
-    reload(materials)
-    materials.MaterialsHelper('convert')
+    reload(export_tool)
+    export_tool.SceneExporter('convert')
 # -------------------------------------------------------------------------
 
 
@@ -97,13 +97,13 @@ def set_main_menu(obj_name=OBJ_DCCSI_MAINMENU, label=TAG_DCCSI_MAINMENU):
 
     # Conversion Section (sub-menu)
     _LOGGER.info('A')
-    pm.menuItem(label='Conversion Utilities',
+    pm.menuItem(label='Scene Export',
                 subMenu=True,
                 parent=_custom_tools_menu,
                 tearOff=True)
 
     # Conversion Section Menu Items
-    pm.menuItem(label='Export Scene Materials', command=export_scene_materials)
+    pm.menuItem(label='Export Scene FBX Models and Materials', command=export_scene_materials)
 
     return _custom_tools_menu
 

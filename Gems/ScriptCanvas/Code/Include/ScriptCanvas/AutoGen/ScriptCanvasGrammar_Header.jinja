@@ -63,8 +63,6 @@ namespace {{attribute_Namespace}}
 {% set classUuid = className|createHashGuid %}
 {% endif %}
 
-{% set deprecationUuid = Class.attrib['DeprecationUUID'] %}
-
 // The following will be injected directly into the source header file for which AZ AutoGen is being run.
 // You must #include the generated header into the source header
 #define SCRIPTCANVAS_NODE_{{ className }} \
@@ -74,8 +72,6 @@ public: \
     void ConfigureSlots() override; \
     bool RequiresDynamicSlotOrdering() const override; \
     bool IsDeprecated() const override; \
-{% if deprecationUuid is defined %}    ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override; \
-{% endif %}
     using Node::FindDatum; \
 {% if Class.attrib['GraphEntryPoint'] is defined %}    bool IsEntryPoint() const override { return {%if Class.attrib['GraphEntryPoint'] == "True" %}true{%else%}false{%endif%}; } \
 {% endif %}

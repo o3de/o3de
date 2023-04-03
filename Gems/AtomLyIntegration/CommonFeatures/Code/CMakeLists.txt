@@ -75,6 +75,11 @@ ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Servers NAMESPACE Gem
         Gem::AtomLyIntegration_CommonFeatures
         Gem::GradientSignal.Servers
 )
+ly_create_alias(NAME AtomLyIntegration_CommonFeatures.Unified NAMESPACE Gem
+    TARGETS
+        Gem::AtomLyIntegration_CommonFeatures
+        Gem::GradientSignal.Unified
+)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -176,6 +181,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         )
         ly_add_googletest(
             NAME Gem::AtomLyIntegration_CommonFeatures.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()
@@ -184,4 +190,3 @@ endif()
 # due to the AZ::Render::EditorDirectionalLightComponent, AZ::Render::EditorMeshComponent,
 # AZ::Render::EditorGridComponent, AZ::Render::EditorHDRiSkyboxComponent,
 # AZ::Render::EditorImageBasedLightComponent being saved as part of the DefaultLevel.prefab
-ly_enable_gems(GEMS AtomLyIntegration_CommonFeatures)

@@ -16,8 +16,8 @@
 #include <AzFramework/Script/ScriptComponent.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <Builder/ScriptCanvasBuilderWorker.h>
-#include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
-#include <ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h>
+#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Assets/ScriptCanvasFileHandling.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorGraphVariableManagerComponent.h>
@@ -98,6 +98,9 @@ namespace ScriptCanvasBuilder
                 AZStd::hash_combine(fingerprint, nodeComponent->GenerateFingerprint());
             }
         }
+
+        // Include the base node version in the hash, so when it changes, script canvas jobs are reprocessed.
+        AZStd::hash_combine(fingerprint, ScriptCanvas::Node::GetNodeVersion());
 
         AZ::SerializeContext* serializeContext{};
         AZ::ComponentApplicationBus::BroadcastResult(serializeContext, &AZ::ComponentApplicationBus::Events::GetSerializeContext);

@@ -33,7 +33,7 @@ namespace UnitTest
     class TestAssetType : public AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetType, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetType, AZ::SystemAllocator);
         AZ_RTTI(TestAssetType, "{73D60606-BDE5-44F9-9420-5649FE7BA5B8}", AssetData);
 
         TestAssetType()
@@ -46,7 +46,7 @@ namespace UnitTest
     {
     public:
         AZ_INSTANCE_DATA(TestInstanceA, "{65CBF1C8-F65F-4A84-8A11-B510BC435DB0}");
-        AZ_CLASS_ALLOCATOR(TestInstanceA, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestInstanceA, AZ::SystemAllocator);
 
         TestInstanceA(TestAssetType* asset)
             : m_asset{ asset, AZ::Data::AssetLoadBehavior::Default }
@@ -60,7 +60,7 @@ namespace UnitTest
     {
     public:
         AZ_INSTANCE_DATA(TestInstanceB, "{4ED0A8BF-7800-44B2-AC73-2CB759C61C37}");
-        AZ_CLASS_ALLOCATOR(TestInstanceB, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestInstanceB, AZ::SystemAllocator);
 
         TestInstanceB(TestAssetType* asset)
             : m_asset{ asset, AZ::Data::AssetLoadBehavior::Default }
@@ -84,7 +84,7 @@ namespace UnitTest
     class MyAssetHandler : public AssetHandler
     {
     public:
-        AZ_CLASS_ALLOCATOR(MyAssetHandler, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MyAssetHandler, AZ::SystemAllocator);
 
         AssetPtr CreateAsset(const AssetId& id, const AssetType& type) override
         {
@@ -114,7 +114,7 @@ namespace UnitTest
         }
     };
 
-    class InstanceDatabaseTest : public AllocatorsFixture
+    class InstanceDatabaseTest : public LeakDetectionFixture
     {
     protected:
         MyAssetHandler<TestAssetType>* m_assetHandler;
@@ -122,9 +122,7 @@ namespace UnitTest
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
-            AllocatorInstance<PoolAllocator>::Create();
-            AllocatorInstance<ThreadPoolAllocator>::Create();
+            LeakDetectionFixture::SetUp();
 
             // create the asset database
             {
@@ -155,9 +153,7 @@ namespace UnitTest
 
             InstanceDatabase<TestInstanceA>::Destroy();
 
-            AllocatorInstance<ThreadPoolAllocator>::Destroy();
-            AllocatorInstance<PoolAllocator>::Destroy();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
     };
 

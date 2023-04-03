@@ -91,7 +91,6 @@ namespace AZ
             void OnTick(float timeDelta) override;
             void DebugDraw(const EMotionFX::ActorRenderFlags& renderFlags);
             void UpdateBounds() override;
-            void SetMaterials(const EMotionFX::Integration::ActorAsset::MaterialList& materialPerLOD) override { AZ_UNUSED(materialPerLOD); };
             void SetSkinningMethod(EMotionFX::Integration::SkinningMethod emfxSkinningMethod) override;
             SkinningMethod GetAtomSkinningMethod() const;
             void SetIsVisible(bool isVisible) override;
@@ -133,6 +132,7 @@ namespace AZ
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MaterialComponentNotificationBus::Handler overrides...
             void OnMaterialsUpdated(const MaterialAssignmentMap& materials) override;
+            void OnMaterialPropertiesUpdated(const MaterialAssignmentMap& materials) override;
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             // MeshComponentRequestBus::Handler overrides...
@@ -145,6 +145,8 @@ namespace AZ
             AZ::Data::Instance<RPI::Model> GetModel() const override;
             void SetSortKey(RHI::DrawItemSortKey sortKey) override;
             RHI::DrawItemSortKey GetSortKey() const override;
+            void SetIsAlwaysDynamic([[maybe_unused]] bool isAlwaysDynamic) override {}
+            bool GetIsAlwaysDynamic() const { return true; }
             void SetLodType(RPI::Cullable::LodType lodType) override;
             RPI::Cullable::LodType GetLodType() const override;
             void SetLodOverride(RPI::Cullable::LodOverride lodOverride) override;
@@ -157,6 +159,8 @@ namespace AZ
             bool GetVisibility() const override;
             void SetRayTracingEnabled(bool enabled) override;
             bool GetRayTracingEnabled() const override;
+            void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) override;
+            bool GetExcludeFromReflectionCubeMaps() const override;
             // GetWorldBounds/GetLocalBounds already overridden by BoundsRequestBus::Handler
 
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -198,6 +202,8 @@ namespace AZ
             void InitWrinkleMasks();
             void UpdateWrinkleMasks();
 
+            void HandleObjectSrgCreate(const Data::Instance<RPI::ShaderResourceGroup>& objectSrg);
+
             // Debug geometry rendering
             AZStd::unique_ptr<AtomActorDebugDraw> m_atomActorDebugDraw;
 
@@ -218,6 +224,11 @@ namespace AZ
 
             AZStd::vector<Data::Instance<RPI::Image>> m_wrinkleMasks;
             AZStd::vector<float> m_wrinkleMaskWeights;
+            
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent::Handler m_objectSrgCreatedHandler
+            {
+                [&](const Data::Instance<RPI::ShaderResourceGroup>& objectSrg) { HandleObjectSrgCreate(objectSrg); }
+            };
         };
 
     } // namespace Render

@@ -15,6 +15,8 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAsset.cpp
     Include/ScriptCanvas/Asset/RuntimeAsset.cpp
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.cpp
+    Include/ScriptCanvas/Asset/RuntimeInputs.cpp
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAsset.cpp
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.cpp
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.cpp
     Include/ScriptCanvas/Core/Connection.cpp

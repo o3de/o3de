@@ -277,14 +277,22 @@ namespace AZ
                 &AzToolsFramework::ToolsApplicationEvents::InvalidatePropertyDisplay, AzToolsFramework::Refresh_AttributesAndValues);
         }
 
-        void EditorMaterialComponent::OnMaterialInstanceCreated(const MaterialAssignment& materialAssignment)
+        void EditorMaterialComponent::OnMaterialsCreated(const MaterialAssignmentMap& materials)
         {
-            // PSO-impacting property changes are allowed in the editor
-            // because the saved slice data can be analyzed to pre-compile the necessary PSOs.
-            if (materialAssignment.m_materialInstance)
+            // PSO-impacting property changes are allowed in the editor because the saved data can be analyzed to pre-compile the necessary PSOs.
+            for (auto& materialAssignment : materials)
             {
-                materialAssignment.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+                if (materialAssignment.second.m_materialInstance)
+                {
+                    materialAssignment.second.m_materialInstance->SetPsoHandlingOverride(AZ::RPI::MaterialPropertyPsoHandling::Allowed);
+                }
             }
+        }
+
+        void EditorMaterialComponent::OnEntityVisibilityChanged(bool visibility)
+        {
+            EditorRenderComponentAdapter::OnEntityVisibilityChanged(visibility);
+            UpdateMaterialSlots();
         }
 
         AZ::u32 EditorMaterialComponent::OnConfigurationChanged()

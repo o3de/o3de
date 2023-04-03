@@ -8,12 +8,12 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import logging
 import pytest
 
+from ly_test_tools import LINUX
 from ly_test_tools.o3de.atom_tools_test import AtomToolsBatchedTest, AtomToolsTestSuite
 
 logger = logging.getLogger(__name__)
 
 
-@pytest.mark.skip(reason="GHI #12152 - Non-zero exit code on test success.")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ['windows_atom_tools'])
 class TestMaterialCanvas(AtomToolsTestSuite):
@@ -28,3 +28,8 @@ class TestMaterialCanvas(AtomToolsTestSuite):
     class MaterialCanvas_Atom_LaunchMaterialCanvas_2(AtomToolsBatchedTest):
 
         from Atom.tests import MaterialCanvas_Atom_LaunchMaterialCanvas as test_module
+
+    @pytest.mark.skipif(LINUX, reason="https://github.com/o3de/o3de/issues/14565")
+    class MaterialCanvas_Atom_BasicTests(AtomToolsBatchedTest):
+
+        from Atom.tests import MaterialCanvas_Atom_BasicTests as test_module

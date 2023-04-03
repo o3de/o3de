@@ -17,7 +17,7 @@
 
 namespace UnitTest
 {
-    class IndirectCallViewportInteractionIntersectionFixture : public ToolsApplicationFixture
+    class IndirectCallViewportInteractionIntersectionFixture : public ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override

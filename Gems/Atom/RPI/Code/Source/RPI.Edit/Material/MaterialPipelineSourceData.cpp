@@ -7,6 +7,7 @@
  */
 
 #include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/SerializeContext.h>
@@ -23,49 +24,20 @@ namespace AZ
                     ->Version(1)
                     ->Field("shader", &ShaderTemplate::m_shader)
                     ->Field("azsli", &ShaderTemplate::m_azsli)
+                    ->Field("tag", &ShaderTemplate::m_shaderTag)
+                    ;
+
+                serializeContext->Class<RuntimeControls>()
+                    ->Version(1)
+                    ->Field("properties", &RuntimeControls::m_materialTypeInternalProperties)
+                    ->Field("functors", &RuntimeControls::m_materialFunctorSourceData)
                     ;
 
                 serializeContext->Class<MaterialPipelineSourceData>()
                     ->Version(1)
                     ->Field("shaderTemplates", &MaterialPipelineSourceData::m_shaderTemplates)
-                    ;
-
-                if (auto editContext = serializeContext->GetEditContext())
-                {
-                    editContext->Class<ShaderTemplate>("ShaderTemplate", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_shader, "Shader", "The template used to create the .shader file.")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &ShaderTemplate::m_azsli, "AZSLi", "The azsli file that should stitched together with material shader code.")
-                        ;
-
-                    editContext->Class<MaterialPipelineSourceData>("MaterialPipelineSourceData", "")
-                        ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
-                        ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &MaterialPipelineSourceData::m_shaderTemplates, "Shader Templates", "List of templates used to generate material-specific shaders.")
-                        ;
-                }
-            }
-
-            if (auto behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
-            {
-                behaviorContext->Class<ShaderTemplate>("ShaderTemplate")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
-                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
-                    ->Constructor()
-                    ->Constructor<const ShaderTemplate&>()
-                    ->Property("shader", BehaviorValueProperty(&ShaderTemplate::m_shader))
-                    ->Property("azsli", BehaviorValueProperty(&ShaderTemplate::m_azsli))
-                    ;
-
-                behaviorContext->Class<MaterialPipelineSourceData>("MaterialPipelineSourceData")
-                    ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Automation)
-                    ->Attribute(AZ::Script::Attributes::Category, "RPI")
-                    ->Attribute(AZ::Script::Attributes::Module, "rpi")
-                    ->Constructor()
-                    ->Constructor<const MaterialPipelineSourceData&>()
-                    ->Property("shaderTemplates", BehaviorValueProperty(&MaterialPipelineSourceData::m_shaderTemplates))
+                    ->Field("runtime", &MaterialPipelineSourceData::m_runtimeControls)
+                    ->Field("pipelineScript", &MaterialPipelineSourceData::m_pipelineScript)
                     ;
             }
         }

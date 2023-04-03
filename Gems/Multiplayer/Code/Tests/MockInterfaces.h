@@ -36,6 +36,7 @@ namespace UnitTest
         MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
         MOCK_METHOD1(AddLevelLoadBlockedHandler, void(Multiplayer::LevelLoadBlockedEvent::Handler&));
         MOCK_METHOD1(AddNoServerLevelLoadedHandler, void(Multiplayer::NoServerLevelLoadedEvent::Handler&));
+        MOCK_METHOD1(AddVersionMismatchHandler, void(Multiplayer::VersionMismatchEvent::Handler&));
         MOCK_METHOD5(SendNotifyClientMigrationEvent, void(AzNetworking::ConnectionId, const Multiplayer::HostId&, uint64_t, Multiplayer::ClientInputId, Multiplayer::NetEntityId));
         MOCK_METHOD2(SendNotifyEntityMigrationEvent, void(const Multiplayer::ConstNetworkEntityHandle&, const Multiplayer::HostId&));
         MOCK_METHOD1(SendReadyForEntityUpdates, void(bool));
@@ -72,6 +73,7 @@ namespace UnitTest
         MOCK_METHOD3(SetupNetEntity, void(AZ::Entity*, Multiplayer::PrefabEntityId, Multiplayer::NetEntityRole));
         MOCK_CONST_METHOD0(GetEntityCount, uint32_t());
         MOCK_METHOD2(AddEntityToEntityMap, Multiplayer::NetworkEntityHandle(Multiplayer::NetEntityId, AZ::Entity*));
+        MOCK_METHOD1(RemoveEntityFromEntityMap, void(Multiplayer::NetEntityId));
         MOCK_METHOD1(MarkForRemoval, void(const Multiplayer::ConstNetworkEntityHandle&));
         MOCK_CONST_METHOD1(IsMarkedForRemoval, bool(const Multiplayer::ConstNetworkEntityHandle&));
         MOCK_METHOD1(ClearEntityFromRemovalList, void(const Multiplayer::ConstNetworkEntityHandle&));

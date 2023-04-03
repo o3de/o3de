@@ -13,7 +13,7 @@
 
 namespace AZ
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JsonAnySerializer, SystemAllocator);
     JsonSerializationResult::Result JsonAnySerializer::Load(
         void* outputValue,
         [[maybe_unused]] const Uuid& outputValueTypeId,

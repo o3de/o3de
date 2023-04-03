@@ -34,7 +34,7 @@ namespace AZ
             using Base = RHI::DeviceObject;
 
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorSetLayout, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorSetLayout, AZ::ThreadPoolAllocator);
             AZ_RTTI(DescriptorSetLayout, "25C09E30-F46B-424D-B97A-7F32592A76D7", Base);
 
             struct Descriptor
@@ -76,7 +76,7 @@ namespace AZ
             const AZStd::vector<VkDescriptorBindingFlags>& GetNativeBindingFlags() const;
             const RHI::ShaderResourceGroupLayout* GetShaderResourceGroupLayout() const;
 
-            static const uint32_t MaxUnboundedArrayDescriptors = 900000; //Using this number as it needs to be less than maxDescriptorSetSampledImages limit of 1048576
+            static const uint32_t MaxUnboundedArrayDescriptors = 100000; //Using this number as it needs to be less than maxDescriptorSetSampledImages limit of 1048576
             bool GetHasUnboundedArray() const { return m_hasUnboundedArray; }
 
         private:
@@ -94,6 +94,7 @@ namespace AZ
 
             RHI::ResultCode BuildNativeDescriptorSetLayout();
             RHI::ResultCode BuildDescriptorSetLayoutBindings();
+            bool IsBindlessSRGLayout();
 
             bool ValidateUniformBufferDeviceLimits(const RHI::ShaderInputBufferDescriptor& desc);
 

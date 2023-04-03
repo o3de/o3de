@@ -20,6 +20,7 @@
 #include <AzCore/Component/ComponentBus.h>
 #include <AzCore/Component/EntityBus.h>
 #include <AzCore/Component/TickBus.h>
+#include <AzCore/Console/IConsoleTypes.h>
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzToolsFramework/UI/PropertyEditor/PropertyEditorAPI.h>
 #include <AzToolsFramework/Undo/UndoSystem.h>
@@ -61,6 +62,7 @@ namespace AZ
 
 namespace AzToolsFramework
 {
+    class ActionManagerInterface;
     class ComponentEditor;
     class ComponentPaletteWidget;
     class ComponentModeCollectionInterface;
@@ -119,7 +121,7 @@ namespace AzToolsFramework
         , public AzToolsFramework::PropertyEditorEntityChangeNotificationBus::MultiHandler
         , private AzToolsFramework::ViewportEditorModeNotificationsBus::Handler
         , public EditorInspectorComponentNotificationBus::MultiHandler
-        , private AzToolsFramework::ComponentModeFramework::EditorComponentModeNotificationBus::Handler
+        , private ComponentModeFramework::EditorComponentModeNotificationBus::Handler
         , public AZ::EntitySystemBus::Handler
         , public AZ::TickBus::Handler
         , private EditorWindowUIRequestBus::Handler
@@ -129,7 +131,7 @@ namespace AzToolsFramework
         Q_OBJECT;
     public:
 
-        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(EntityPropertyEditor, AZ::SystemAllocator)
 
         enum class ReorderState
         {
@@ -225,14 +227,16 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
 
         //////////////////////////////////////////////////////////////////////////
-        /// AzToolsFramework::EditorEntityContextNotificationBus implementation
+        /// AzToolsFramework::EditorEntityContextNotificationBus overrides ...
         void OnStartPlayInEditor() override;
         void OnStopPlayInEditor() override;
-        void OnContextReset() override;
+        void OnPrepareForContextReset() override;
         //////////////////////////////////////////////////////////////////////////
 
+        // PropertyEditorEntityChangeNotificationBus overrides ...
         void OnEntityComponentPropertyChanged(AZ::ComponentId /*componentId*/) override;
 
+        // EditorInspectorComponentNotificationBus overides ...
         void OnComponentOrderChanged() override;
 
         //////////////////////////////////////////////////////////////////////////
@@ -245,24 +249,25 @@ namespace AzToolsFramework
         void OnEntityStartStatusChanged(const AZ::EntityId& entityId) override;
         //////////////////////////////////////////////////////////////////////////
 
-        // EditorComponentModeNotificationBus
-        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
-
         // ViewportEditorModeNotificationsBus overrides ...
         void OnEditorModeActivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
         void OnEditorModeDeactivated(
             const AzToolsFramework::ViewportEditorModesInterface& editorModeState, AzToolsFramework::ViewportEditorMode mode) override;
 
-        // EntityPropertEditorRequestBus
+        // EditorComponentModeNotificationBus overrides ...
+        void ActiveComponentModeChanged(const AZ::Uuid& componentType) override;
+
+        // EntityPropertEditorRequestBus overrides ...
         void GetSelectedAndPinnedEntities(EntityIdList& selectedEntityIds) override;
         void GetSelectedEntities(EntityIdList& selectedEntityIds) override;
         void SetNewComponentId(AZ::ComponentId componentId) override;
+        void VisitComponentEditors(const VisitComponentEditorsCallback& callback) const override;
 
-        // TickBus
+        // TickBus overrides ...
         void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
 
-        // EditorWindowRequestBus overrides
+        // EditorWindowRequestBus overrides ...
         void SetEditorUiEnabled(bool enable) override;
 
         // ReadOnlyEntityPublicNotificationBus overrides ...
@@ -398,7 +403,8 @@ namespace AzToolsFramework
         QAction* m_actionToMoveComponentsDown = nullptr;
         QAction* m_actionToMoveComponentsTop = nullptr;
         QAction* m_actionToMoveComponentsBottom = nullptr;
-        QAction* m_resetToSliceAction = nullptr;
+
+        AzToolsFramework::ActionManagerInterface* m_actionManagerInterface = nullptr;
 
         void CreateActions();
         void UpdateActions();
@@ -487,6 +493,7 @@ namespace AzToolsFramework
         AZStd::unordered_map<AZ::ComponentId, ComponentEditorSaveState> m_componentEditorSaveStateTable;
 
         void UpdateOverlay();
+        void UpdateOverrideVisualization(ComponentEditor& componentEditor);
 
         friend class EntityPropertyEditorOverlay;
         class EntityPropertyEditorOverlay* m_overlay = nullptr;
@@ -635,6 +642,7 @@ namespace AzToolsFramework
         QStandardItem* m_comboItems[StatusItems];
         EntityIdSet m_overrideSelectedEntityIds;
 
+        // Prefab interfaces
         Prefab::PrefabPublicInterface* m_prefabPublicInterface = nullptr;
         Prefab::InstanceUpdateExecutorInterface* m_instanceUpdateExecutorInterface = nullptr;
         bool m_prefabsAreEnabled = false;
@@ -658,8 +666,6 @@ namespace AzToolsFramework
         float m_moveFadeSecondsRemaining;
         AZStd::vector<int> m_indexMapOfMovedRow;
 
-        AzToolsFramework::ComponentModeCollectionInterface* m_componentModeCollection = nullptr;
-
         // When m_initiatingPropertyChangeNotification is set to true, it means this EntityPropertyEditor is
         // broadcasting a change to all listeners about a property change for a given entity.  This is needed
         // so that we don't update the values twice for this inspector
@@ -673,6 +679,8 @@ namespace AzToolsFramework
         //! Stores a component id to be focused on next time the UI updates.
         AZStd::optional<AZ::ComponentId> m_newComponentId;
 
+        AZ::ConsoleCommandInvokedEvent::Handler m_commandInvokedHandler;
+
     private slots:
         void OnPropertyRefreshRequired(); // refresh is needed for a property.
         void UpdateContents();
@@ -683,6 +691,7 @@ namespace AzToolsFramework
         void OnStatusChanged(int index);
         void OnSearchContextMenu(const QPoint& pos);
         void BuildEntityIconMenu();
+        void OnComponentOverrideContextMenu(const QPoint& position);
 
         void OnSearchTextChanged();
         void ClearSearchFilter();

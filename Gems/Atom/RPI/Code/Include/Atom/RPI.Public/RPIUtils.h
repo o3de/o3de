@@ -110,6 +110,17 @@ namespace AZ
         //! @returns An optional with a render pipeline descriptor if there was not errors.
         AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const AZStd::string& pipelineAssetPath, AZStd::string_view nameSuffix = "");
 
+        //! Loads a render pipeline asset and returns its descriptor.
+        //! @param pipelineAssetId ID of the render pipeline asset.
+        //! @param nameSuffix Optional parameter to specify a suffix for the name of the pipeline returned.
+        //! @returns An optional with a render pipeline descriptor if there was not errors.
+        AZStd::optional<RenderPipelineDescriptor> GetRenderPipelineDescriptorFromAsset(const Data::AssetId& pipelineAssetId, AZStd::string_view nameSuffix = "");
+
+        void AddPassRequestToRenderPipeline(
+            AZ::RPI::RenderPipeline* renderPipeline,
+            const char* passRequestAssetFilePath,
+            const char* referencePass,
+            bool beforeReferencePass);
     }   // namespace RPI
 }   // namespace AZ
 

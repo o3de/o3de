@@ -243,7 +243,7 @@ namespace AZ
                     {
                         if (size_t commentOffset = line.find(commentPrefix); commentOffset != AZStd::string_view::npos)
                         {
-                            return line.substr(0, commentOffset);
+                            line = line.substr(0, commentOffset);
                         }
                     }
                     return line;

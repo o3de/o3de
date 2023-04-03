@@ -36,17 +36,16 @@ namespace AzToolsFramework
             : public PrefabPublicInterface
         {
         public:
-            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(PrefabPublicHandler, AZ::SystemAllocator);
             AZ_RTTI(PrefabPublicHandler, "{35802943-6B60-430F-9DED-075E3A576A25}", PrefabPublicInterface);
 
             void RegisterPrefabPublicHandlerInterface();
             void UnregisterPrefabPublicHandlerInterface();
 
             // PrefabPublicInterface...
-            CreatePrefabResult CreatePrefabInDisk(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
-            CreatePrefabResult CreatePrefabInMemory(
-                const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabAndSaveToDisk(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
+            CreatePrefabResult CreatePrefabInMemory(const EntityIdList& entityIds, AZ::IO::PathView filePath) override;
             InstantiatePrefabResult InstantiatePrefab(
                 AZStd::string_view filePath, AZ::EntityId parentId, const AZ::Vector3& position) override;
             PrefabOperationResult SavePrefab(AZ::IO::Path filePath) override;
@@ -79,11 +78,6 @@ namespace AzToolsFramework
             //! Sanitizes an EntityIdList to remove entities that should not be affected by prefab operations.
             //! It will identify and exclude the container entity of the root prefab instance, and all read-only entities.
             EntityIdList SanitizeEntityIdList(const EntityIdList& entityIds) const;
-
-            //! Copies the entity DOM from owning template into the given map if the map sees
-            //! the entity id for the first time.
-            void CaptureInitialEntityDomFromOwningTemplate(AZStd::unordered_map<AZ::EntityId, PrefabDom>& entityIdDomMap,
-                const AZ::EntityId entityId, const PrefabDom& owningTemplateDom) const;
 
             InstanceOptionalReference GetOwnerInstanceByEntityId(AZ::EntityId entityId) const;
             void AddNewEntityToSortOrder(Instance& owningInstance, PrefabDom& domToAddEntityUnder,

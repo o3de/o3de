@@ -31,7 +31,8 @@
 
 namespace AWSCore
 {
-    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat1 = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat2 = "display_version";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
@@ -287,15 +288,37 @@ namespace AWSCore
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(engineVersion, AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey);
+                constexpr auto rootKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey);
+                if(!settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat2))
+                {
+                    // fallback to using the old json key
+                    settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat1);
+                }
             }
         }
         return engineVersion;
     }
 
+    AZStd::string AWSAttributionManager::MapPlatform(AZ::PlatformID platform)
+    {
+        // Only map platforms running the editor to Attributions enums
+        // PC, Linux, Mac are supported values for now
+        switch (platform)
+        {
+        case AZ::PlatformID::PLATFORM_WINDOWS_64:
+            return "PC";
+        case AZ::PlatformID::PLATFORM_LINUX_64:
+            return "Linux";
+        case AZ::PlatformID::PLATFORM_APPLE_MAC:
+            return "Mac";
+        default:
+            return "Other";
+        }
+    }
+
     AZStd::string AWSAttributionManager::GetPlatform() const
     {
-        return AZ::GetPlatformName(AZ::g_currentPlatform);
+        return MapPlatform(AZ::g_currentPlatform);
     }
 
     void AWSAttributionManager::GetActiveAWSGems(AZStd::vector<AZStd::string>& gems)

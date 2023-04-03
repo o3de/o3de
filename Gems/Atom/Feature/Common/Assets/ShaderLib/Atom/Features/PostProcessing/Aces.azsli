@@ -391,7 +391,7 @@ float3 PerceptualQuantizerFwdF3(float3 In)
 ////////////////////////////////////////////////////////////////////////////////
 // Below implementation ported from ACES_tonescales.hlsl on the NVIDIA's HDR sample.
 
-float Pow10(float f)
+float Exp10(float f)
 {
     return pow(10.0f, f);
 }
@@ -463,7 +463,7 @@ float SegmentedSplineC5Fwd (float x,  SegmentedSplineParamsC5 C = RRT_PARAMS)
         logy = logx * C.slopeHigh + (log10(C.maxPoint.y) - C.slopeHigh * log10(C.maxPoint.x));
     }
 
-    return Pow10(logy);
+    return Exp10(logy);
 }
 
 float SegmentedSplineC9Fwd(float x, SegmentedSplineParamsC9 C)
@@ -514,7 +514,7 @@ float SegmentedSplineC9Fwd(float x, SegmentedSplineParamsC9 C)
         logy = logx * C.slopeHigh + (log10(C.maxPoint.y) - C.slopeHigh * log10(C.maxPoint.x));
     }
 
-    return Pow10(logy);
+    return Exp10(logy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

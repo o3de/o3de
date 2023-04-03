@@ -239,10 +239,18 @@ namespace Editor
         // Initialize our stylesheet here to allow Gems to register stylesheets when their system components activate.
         AZ::IO::FixedMaxPath engineRootPath;
         {
-            // Create a ComponentApplication to initialize the AZ::SystemAllocator and initialize the SettingsRegistry
-            AZ::ComponentApplication application(argc, argv);
-            auto settingsRegistry = AZ::SettingsRegistry::Get();
-            settingsRegistry->Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
+            using namespace AZ::SettingsRegistryMergeUtils;
+            constexpr bool executeRegDumpCommands = false;
+            AZ::SettingsRegistryImpl settingsRegistry;
+            AZ::CommandLine commandLine;
+            commandLine.Parse(argc, argv);
+
+            ParseCommandLine(commandLine);
+            StoreCommandLineToRegistry(settingsRegistry, commandLine);
+            MergeSettingsToRegistry_CommandLine(settingsRegistry, commandLine, executeRegDumpCommands);
+            MergeSettingsToRegistry_AddRuntimeFilePaths(settingsRegistry);
+
+            settingsRegistry.Get(engineRootPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_EngineRootFolder);
         }
         m_stylesheet->initialize(this, engineRootPath);
     }
@@ -265,7 +273,7 @@ namespace Editor
     void EditorQtApplication::LoadSettings()
     {
         AZ::SerializeContext* context;
-        EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+        AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
         AZ_Assert(context, "No serialize context");
         char resolvedPath[AZ_MAX_PATH_LEN];
         AZ::IO::FileIOBase::GetInstance()->ResolvePath("@user@/EditorUserSettings.xml", resolvedPath, AZ_MAX_PATH_LEN);
@@ -291,7 +299,7 @@ namespace Editor
         if (m_activatedLocalUserSettings)
         {
             AZ::SerializeContext* context;
-            EBUS_EVENT_RESULT(context, AZ::ComponentApplicationBus, GetSerializeContext);
+            AZ::ComponentApplicationBus::BroadcastResult(context, &AZ::ComponentApplicationBus::Events::GetSerializeContext);
             AZ_Assert(context, "No serialize context");
 
             char resolvedPath[AZ_MAX_PATH_LEN];

@@ -74,6 +74,7 @@ namespace ScriptCanvasEditor
                 assetFilterModel.setSourceModel(assetBrowserModel);
 
                 ScannerCpp::TraverseTree(QModelIndex(), assetFilterModel, m_result);
+                ModelNotificationsBus::Broadcast(&ModelNotificationsTraits::OnScanBegin, m_result.m_catalogAssets.size());
             }
 
             AZ::SystemTickBus::Handler::BusConnect();

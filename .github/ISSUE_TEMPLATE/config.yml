@@ -1,8 +1,5 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Security Vulnerabilities
-    about: Report a security issue in O3DE. See the O3DE security policy for reporting guidance
-    url: https://www.o3de.org/docs/contributing/security
   - name: Documentation Issues
     about: Report issues with the documentation for O3DE
     url: https://github.com/o3de/o3de.org/issues/new/choose 

@@ -23,6 +23,7 @@
 #include <SceneAPI/SceneCore/Utilities/SceneGraphSelector.h>
 #include <SceneAPI/SceneData/Groups/MeshGroup.h>
 #include <SceneAPI/SceneCore/Containers/Utilities/SceneGraphUtilities.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <Source/Pipeline/MeshBehavior.h>
 #include <Source/Pipeline/MeshGroup.h>
@@ -59,6 +60,31 @@ namespace PhysX
             if (AZ::SceneAPI::Utilities::DoesSceneGraphContainDataLike<AZ::SceneAPI::DataTypes::IMeshData>(scene, false))
             {
                 categories.emplace_back("PhysX", MeshGroup::TYPEINFO_Uuid());
+            }
+        }
+
+        void MeshBehavior::GetAvailableModifiers(
+            AZ::SceneAPI::Events::ManifestMetaInfo::ModifiersList& modifiers,
+            [[maybe_unused]] const AZ::SceneAPI::Containers::Scene& scene,
+            const AZ::SceneAPI::DataTypes::IManifestObject& target)
+        {
+            if (!target.RTTI_IsTypeOf(MeshGroup::TYPEINFO_Uuid()))
+            {
+                return;
+            }
+
+            const MeshGroup* group = azrtti_cast<const MeshGroup*>(&target);
+            const AZ::SceneAPI::Containers::RuleContainer& rules = group->GetRuleContainerConst();
+
+            AZStd::unordered_set<AZ::Uuid> existingRules;
+            const size_t ruleCount = rules.GetRuleCount();
+            for (size_t i = 0; i < ruleCount; ++i)
+            {
+                existingRules.insert(rules.GetRule(i)->RTTI_GetType());
+            }
+            if (existingRules.find(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>()) == existingRules.end())
+            {
+                modifiers.push_back(azrtti_typeid<AZ::SceneAPI::SceneData::CoordinateSystemRule>());
             }
         }
 
@@ -129,7 +155,7 @@ namespace PhysX
 
             group->SetSceneGraph(&scene.GetGraph());
 
-            EBUS_EVENT(AZ::SceneAPI::Events::ManifestMetaInfoBus, InitializeObject, scene, *group);
+            AZ::SceneAPI::Events::ManifestMetaInfoBus::Broadcast(&AZ::SceneAPI::Events::ManifestMetaInfoBus::Events::InitializeObject, scene, *group);
             scene.GetManifest().AddEntry(AZStd::move(group));
 
             return AZ::SceneAPI::Events::ProcessingResult::Success;

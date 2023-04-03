@@ -19,6 +19,7 @@ namespace EMStudio
         m_headerWidget = new ContentHeaderWidget(this);
 
         m_layout = new QVBoxLayout();
+        m_layout->setContentsMargins(0, 0, 0, 0);
         m_layout->setAlignment(Qt::AlignTop);
         m_layout->addWidget(m_headerWidget);
         setLayout(m_layout);

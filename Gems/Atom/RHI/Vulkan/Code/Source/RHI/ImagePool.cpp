@@ -65,7 +65,7 @@ namespace AZ
             memoryAllocDescriptor.m_heapMemoryLevel = heapMemoryLevel;
             memoryAllocDescriptor.m_memoryTypeBits = memoryTypeBits;
             memoryAllocDescriptor.m_getHeapMemoryUsageFunction = [&]() { return &heapMemoryUsage; };
-            memoryAllocDescriptor.m_recycleOnCollect = true;
+            memoryAllocDescriptor.m_recycleOnCollect = false;
             memoryAllocDescriptor.m_collectLatency = RHI::Limits::Device::FrameCountMax;
             m_memoryAllocator.Init(memoryAllocDescriptor);
 
@@ -84,18 +84,16 @@ namespace AZ
             // Add copy write flag since images can be copy into or clear using a command list.
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
 
-            RHI::ResultCode result = image->Init(device, imageDescriptor);
+            RHI::ResultCode result = image->Init(device, imageDescriptor, false);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
-            MemoryView memoryView = m_memoryAllocator.Allocate(image->m_memoryRequirements.size, image->m_memoryRequirements.alignment);
+            MemoryView memoryView = m_memoryAllocator.Allocate(image->m_memoryRequirements.size, image->m_memoryRequirements.alignment, false);
 
             if (!memoryView.IsValid())
             {
                 return RHI::ResultCode::OutOfMemory;
             }
-            result = image->BindMemoryView(
-                memoryView,
-                m_memoryAllocator.GetDescriptor().m_heapMemoryLevel);
+            result = image->BindMemoryView(memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
             image->SetResidentSizeInBytes(memoryView.GetSize());

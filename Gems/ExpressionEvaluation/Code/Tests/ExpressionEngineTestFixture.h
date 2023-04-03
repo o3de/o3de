@@ -17,13 +17,13 @@
 namespace ExpressionEvaluation
 {
     class ExpressionEngineTestFixture
-        : public UnitTest::AllocatorsFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             // Faking the setup to avoid needing to re-implement these features somewhere else.
             m_systemComponent = aznew ExpressionEvaluationSystemComponent();
@@ -36,7 +36,7 @@ namespace ExpressionEvaluation
             m_systemComponent->Deactivate();
             delete m_systemComponent;
 
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         template<typename T>

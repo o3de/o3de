@@ -141,7 +141,11 @@ namespace EMStudio
         // Get the full file path for the asset source file based on the product filename.
         bool fullPathFound = false;
         AZStd::string sourceAssetFilename;
-        EBUS_EVENT_RESULT(fullPathFound, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, productFilename, sourceAssetFilename);
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            fullPathFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+            productFilename,
+            sourceAssetFilename);
 
         // Generate meta data command for all changes being made to the actor.
         const AZStd::string metaDataString = CommandSystem::MetaData::GenerateActorMetaData(actor);
@@ -156,7 +160,7 @@ namespace EMStudio
 
         // Load the manifest from disk.
         AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
-        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull(), "");
         if (!scene)
         {
             AZ_Error("EMotionFX", false, "Unable to save meta data to manifest due to failed scene loading.");
@@ -295,11 +299,14 @@ namespace EMStudio
         // Get the full file path for the asset source file based on the product filename.
         bool fullPathFound = false;
         AZStd::string sourceAssetFilename;
-        EBUS_EVENT_RESULT(fullPathFound, AzToolsFramework::AssetSystemRequestBus, GetFullSourcePathFromRelativeProductPath, productFilename, sourceAssetFilename);
-
+        AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+            fullPathFound,
+            &AzToolsFramework::AssetSystemRequestBus::Events::GetFullSourcePathFromRelativeProductPath,
+            productFilename,
+            sourceAssetFilename);
         // Load the manifest from disk.
         AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene> scene;
-        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull());
+        AZ::SceneAPI::Events::SceneSerializationBus::BroadcastResult(scene, &AZ::SceneAPI::Events::SceneSerializationBus::Events::LoadScene, sourceAssetFilename, AZ::Uuid::CreateNull(), "");
         if (!scene)
         {
             AZ_Error("EMotionFX", false, "Unable to save meta data to manifest due to failed scene loading.");
@@ -462,7 +469,7 @@ namespace EMStudio
             outResult = AZStd::string::format("Motion set cannot be saved. Unable to find source asset path for (%s)", filename.c_str());
             return false;
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         if (!CheckOutFile(parameters, filename.c_str(), outResult, false))
         {
@@ -568,7 +575,7 @@ namespace EMStudio
             outResult = AZStd::string::format("Animation graph cannot be saved. Unable to find source asset path for (%s)", filename.c_str());
             return false;
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         AZStd::string companyName;
         parameters.GetValue("companyName", this, companyName);
@@ -675,7 +682,7 @@ namespace EMStudio
             outResult = AZStd::string::format("Workspace cannot be saved. Unable to find source asset path for (%s)", filename.c_str());
             return false;
         }
-        EBUS_EVENT(AzFramework::ApplicationRequests::Bus, NormalizePathKeepCase, filename);
+        AzFramework::ApplicationRequests::Bus::Broadcast(&AzFramework::ApplicationRequests::Bus::Events::NormalizePathKeepCase, filename);
 
         const bool fileExisted = AZ::IO::FileIOBase::GetInstance()->Exists(filename.c_str());
 

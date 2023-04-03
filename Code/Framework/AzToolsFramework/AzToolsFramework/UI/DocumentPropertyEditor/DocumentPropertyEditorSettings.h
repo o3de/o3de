@@ -8,8 +8,14 @@
 
 #pragma once
 
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/SettingsRegistrar.h>
+
+namespace AZ
+{
+    class ReflectContext;
+}
 
 namespace AzToolsFramework
 {
@@ -22,21 +28,14 @@ namespace AzToolsFramework
         using ExpanderStateMap = AZStd::unordered_map<AZStd::string, bool>;
         using CleanExpanderStateCallback = AZStd::function<bool(ExpanderStateMap&)>;
 
-        // Default ctor is required by SerializeContext but is not intended for use otherwise
+        //! Use this constructor when temporary in-memory only storage is desired
         DocumentPropertyEditorSettings() = default;
+        //! Use this constructor when storing settings in a persistent registry file on-disk
         DocumentPropertyEditorSettings(const AZStd::string& settingsRegistryKey, const AZStd::string& propertyEditorName);
 
         virtual ~DocumentPropertyEditorSettings();
 
-        static void Reflect(AZ::ReflectContext* context)
-        {
-            AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
-            if (serializeContext)
-            {
-                serializeContext->Class<DocumentPropertyEditorSettings>()->Version(0)->Field(
-                    "ExpandedElements", &DocumentPropertyEditorSettings::m_expandedElementStates);
-            }
-        }
+        static void Reflect(AZ::ReflectContext* context);
 
         void SetExpanderStateForRow(const AZ::Dom::Path& rowPath, bool isExpanded);
         bool GetExpanderStateForRow(const AZ::Dom::Path& rowPath);
@@ -66,6 +65,7 @@ namespace AzToolsFramework
         CleanExpanderStateCallback m_cleanExpanderStateCallback;
 
         bool m_wereSettingsLoaded = false;
+        bool m_shouldSettingsPersist = false;
 
         SettingsRegistrar m_settingsRegistrar;
 

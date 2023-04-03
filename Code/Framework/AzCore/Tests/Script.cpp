@@ -29,7 +29,6 @@
 
 // Components
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
 #include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
@@ -141,7 +140,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(BehaviorTestClass, "{26398112-E4F1-4912-80E6-D81152116D02}");
-        AZ_CLASS_ALLOCATOR(BehaviorTestClass, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorTestClass, AZ::SystemAllocator);
 
         BehaviorTestClass()
             : m_data(1)
@@ -267,6 +266,7 @@ namespace UnitTest
     class BehaviorDerivedTestClass : public BehaviorTestClass
     {
     public:
+        AZ_CLASS_ALLOCATOR(BehaviorDerivedTestClass, AZ::SystemAllocator)
         AZ_RTTI(BehaviorDerivedTestClass, "{dba8a4e3-8fab-4223-94a6-874c6cff88e5}", BehaviorTestClass);
         int m_data;
 
@@ -553,7 +553,7 @@ namespace UnitTest
     class BehaviorTestSmartPtr
     {
     public:
-        AZ_CLASS_ALLOCATOR(BehaviorTestSmartPtr, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorTestSmartPtr, AZ::SystemAllocator);
         AZ_TYPE_INFO(BehaviorTestSmartPtr, "{b59d3416-a77c-4e71-b638-4212705a07e6}");
 
         BehaviorTestSmartPtr()
@@ -630,7 +630,7 @@ namespace UnitTest
 
     struct BehaviorClassAfterBind
     {
-        AZ_CLASS_ALLOCATOR(BehaviorClassAfterBind, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(BehaviorClassAfterBind, AZ::SystemAllocator);
         AZ_TYPE_INFO(BehaviorClassAfterBind, "{72de521d-5880-43b7-93e9-ab06a3770946}");
         int m_data;
     };
@@ -1510,7 +1510,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ScriptClass, "{7b91cb47-a271-4031-8114-56d38efabc4f}");
-        AZ_CLASS_ALLOCATOR(ScriptClass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass, SystemAllocator);
 
         enum LocalEnum
         {
@@ -1586,7 +1586,7 @@ namespace UnitTest
     void* ScriptClassAllocate(void* userData)
     {
         (void)userData;
-        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator,"ScriptClass");
+        return azmalloc(sizeof(ScriptClass),AZStd::alignment_of<ScriptClass>::value,AZ::SystemAllocator);
     }
 
     void ScriptClassFree(void* obj, void* userData)
@@ -1598,7 +1598,7 @@ namespace UnitTest
     class ScriptClass1
     {
     public:
-        AZ_CLASS_ALLOCATOR(ScriptClass1, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass1, SystemAllocator);
 
         ScriptClass1()
             : m_data(0.0f) {}
@@ -1611,7 +1611,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ScriptClass2, "{b4482151-b246-4c95-9ab3-db4589b3ffa0}");
-        AZ_CLASS_ALLOCATOR(ScriptClass2, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass2, SystemAllocator);
 
         ScriptClass2(int data)
             : m_data(data)
@@ -1667,7 +1667,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ScriptClass3, "{058b255b-1abf-4831-9ea9-8b8cb6a7a634}");
-        AZ_CLASS_ALLOCATOR(ScriptClass3, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass3, SystemAllocator);
 
         ScriptClass3()
         {
@@ -1727,7 +1727,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ScriptClass4, "{4ecb714f-c73d-4a80-84d4-b55b145c3033}");
-        AZ_CLASS_ALLOCATOR(ScriptClass4, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass4, SystemAllocator);
 
         ScriptClass4(int data)
             : m_data(data)
@@ -1758,7 +1758,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(ScriptClass5, "{99a1e378-d457-45d0-bd49-72b21d3368c5}");
-        AZ_CLASS_ALLOCATOR(ScriptClass5, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptClass5, SystemAllocator);
 
         ScriptClass5(int data)
             : m_data(data)
@@ -1801,7 +1801,7 @@ namespace UnitTest
     struct ScriptValueClass
     {
         AZ_TYPE_INFO(ScriptValueClass, "{78b1baa9-483b-42c7-8c1e-4eba903bd529}");
-        AZ_CLASS_ALLOCATOR(ScriptValueClass, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptValueClass, SystemAllocator);
 
         ScriptValueClass()
             : m_data(10)
@@ -1820,7 +1820,7 @@ namespace UnitTest
     struct ScriptValueHolder
     {
         AZ_TYPE_INFO(ScriptValueHolder, "{86887e28-dfc6-4619-87d8-3658da0996ec}");
-        AZ_CLASS_ALLOCATOR(ScriptValueHolder, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ScriptValueHolder, SystemAllocator);
 
         ScriptValueHolder()
         {
@@ -1878,7 +1878,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(ScriptRegisteredBaseClass, "{73c2f822-d1ef-4abc-accb-cb36599f6b66}");
-        AZ_CLASS_ALLOCATOR(ScriptRegisteredBaseClass, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScriptRegisteredBaseClass, SystemAllocator);
 
         ScriptRegisteredBaseClass()
             : m_baseData(2) {}
@@ -1899,7 +1899,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(ScriptRegisteredDerivedClass, "{9f42df41-fdcc-44aa-909f-1f675804653c}", ScriptRegisteredBaseClass);
-        AZ_CLASS_ALLOCATOR(ScriptRegisteredDerivedClass, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(ScriptRegisteredDerivedClass, SystemAllocator);
 
         ScriptRegisteredDerivedClass()
             : m_derivedData(11) {}
@@ -1927,7 +1927,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(AbstractImplementation, "{62e1514d-57be-49c5-b829-d937f07276cd}", AbstractClass);
-        AZ_CLASS_ALLOCATOR(AbstractImplementation, SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AbstractImplementation, SystemAllocator);
 
         int PureCall() override { return 5; }
     };
@@ -2739,7 +2739,7 @@ namespace UnitTest
     }
 
     class ScriptContextTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -3117,7 +3117,7 @@ namespace UnitTest
     }
 
     class ScriptDebugTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
         int m_numBreakpointHits;
 
@@ -3652,7 +3652,7 @@ namespace UnitTest
     //    );
 
     class ScriptedBusTest
-        : public AllocatorsFixture {
+        : public LeakDetectionFixture {
     public:
         void run()
         {
@@ -3730,23 +3730,23 @@ namespace UnitTest
             // Test sending messages from C++ to LUA handler
             script.Execute("handler = TestBus.Connect(MyBusHandlerMetaTable1)");
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, Set);
+            TestBus::Broadcast(&TestBus::Events::Set);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            EBUS_EVENT(TestBus, SetNotImplemented); // nothing should happen here
+            TestBus::Broadcast(&TestBus::Events::SetNotImplemented); // nothing should happen here
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum1, 1);
-            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-            AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum2, 1, 2);
+            TestBus::Broadcast(&TestBus::Events::SetSum1, 1);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum3, 1, 2, 3);
+            TestBus::Broadcast(&TestBus::Events::SetSum2, 1, 2);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum4, 1, 2, 3, 4);
+            TestBus::Broadcast(&TestBus::Events::SetSum3, 1, 2, 3);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT(TestBus, SetSum5, 1, 2, 3, 4, 5);
+            TestBus::Broadcast(&TestBus::Events::SetSum4, 1, 2, 3, 4);
+            AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+            AZ_TEST_START_TRACE_SUPPRESSION;
+            TestBus::Broadcast(&TestBus::Events::SetSum5, 1, 2, 3, 4, 5);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             script.Execute("handler:Disconnect()");
 
@@ -3872,7 +3872,7 @@ namespace UnitTest
     // RamenShopNotifications
 
     class ScriptBehaviorHandlerIsConnectedTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         static void TestAssert([[maybe_unused]] bool check)
@@ -3882,7 +3882,7 @@ namespace UnitTest
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behaviorContext = aznew BehaviorContext();
             m_behaviorContext->Method("TestAssert", &ScriptBehaviorHandlerIsConnectedTest::TestAssert);
@@ -3905,7 +3905,7 @@ namespace UnitTest
             delete m_scriptContext;
             delete m_behaviorContext;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         ScriptContext* m_scriptContext;
@@ -3996,7 +3996,7 @@ ramenShop.handler:Connect(4);
     };
 
     class ScriptedIdBusTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void run()
@@ -4034,16 +4034,16 @@ ramenShop.handler:Connect(4);
 
             // Test sending messages from C++ to two LUA handlers on different bus ids
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT_ID(1, TestIdBus, VoidFunc0);
+            TestIdBus::Event(1, &TestIdBus::Events::VoidFunc0);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             AZ_TEST_START_TRACE_SUPPRESSION;
-            EBUS_EVENT_ID(2, TestIdBus, VoidFunc0);
+            TestIdBus::Event(2, &TestIdBus::Events::VoidFunc0);
             AZ_TEST_STOP_TRACE_SUPPRESSION(1);
             float ret = 0.f;
-            EBUS_EVENT_ID_RESULT(ret, 1, TestIdBus, Pick, 1.f, 2.f, 3.f);
+            TestIdBus::EventResult(ret, 1, &TestIdBus::Events::Pick, 1.f, 2.f, 3.f);
             AZ_TEST_ASSERT(ret == 1.f);
             ret = 0;
-            EBUS_EVENT_ID_RESULT(ret, 2, TestIdBus, Pick, 1.f, 2.f, 3.f);
+            TestIdBus::EventResult(ret, 2, &TestIdBus::Events::Pick, 1.f, 2.f, 3.f);
             AZ_TEST_ASSERT(ret == 2.f);
             script.Execute("handler1:Disconnect()");
             script.Execute("handler2:Disconnect()");
@@ -4089,7 +4089,7 @@ ramenShop.handler:Connect(4);
     }
 
     class AnyScriptBindTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         struct DataContainer
@@ -4114,7 +4114,7 @@ ramenShop.handler:Connect(4);
 
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             s_wasCalled = false;
 
@@ -4137,7 +4137,7 @@ ramenShop.handler:Connect(4);
             delete m_script;
             delete m_behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* m_behavior;
@@ -4152,12 +4152,12 @@ ramenShop.handler:Connect(4);
     }
 
     class BaseScriptTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behavior = aznew BehaviorContext();
             m_behavior->Method("AZTestAssert", &AZTestAssert);
@@ -4171,7 +4171,7 @@ ramenShop.handler:Connect(4);
         {
             delete m_script;
             delete m_behavior;
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         BehaviorContext* m_behavior;
@@ -4220,12 +4220,12 @@ ramenShop.handler:Connect(4);
     }
 
     class ScriptTypeidTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behavior = aznew BehaviorContext();
 
@@ -4248,7 +4248,7 @@ ramenShop.handler:Connect(4);
             delete m_script;
             delete m_behavior;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         template <typename T>
@@ -4300,12 +4300,12 @@ ramenShop.handler:Connect(4);
     }
 
     class ScriptCacheTableTest
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_script = aznew ScriptContext();
             m_lua = m_script->NativeContext();
@@ -4316,7 +4316,7 @@ ramenShop.handler:Connect(4);
             m_lua = nullptr;
             delete m_script;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         ScriptContext* m_script = nullptr;
@@ -4436,7 +4436,7 @@ ramenShop.handler:Connect(4);
     public:
         struct UnregisteredType
         {
-            AZ_CLASS_ALLOCATOR(UnregisteredType, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(UnregisteredType, SystemAllocator);
             AZ_TYPE_INFO(UnregisteredType, "{6C5C91A6-A9F6-470D-8841-179201A0D9E6}");
         };
 

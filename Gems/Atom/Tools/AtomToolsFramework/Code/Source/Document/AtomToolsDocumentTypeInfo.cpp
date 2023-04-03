@@ -43,7 +43,7 @@ namespace AtomToolsFramework
             supportedExtensions.begin(), supportedExtensions.end(),
             [&](const auto& supportedExtension)
             {
-                return AZ::StringFunc::EndsWith(path.c_str(), supportedExtension.second.c_str());
+                return path.ends_with(supportedExtension.second);
             });
     }
 

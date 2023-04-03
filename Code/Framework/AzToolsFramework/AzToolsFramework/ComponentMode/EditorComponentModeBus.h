@@ -38,6 +38,9 @@ namespace AzToolsFramework
             /// The type of the underlying Component this mode is for.
             virtual AZ::Uuid GetComponentType() const = 0;
 
+            /// The type of the Component Mode.
+            virtual AZ::Uuid GetComponentModeType() const = 0;
+
             /// The Id of the underlying Component this mode is associated with.
             virtual AZ::ComponentId GetComponentId() const = 0;
 
@@ -263,3 +266,6 @@ namespace AzToolsFramework
         }
     } // namespace ComponentModeFramework
 } // namespace AzToolsFramework
+
+DECLARE_EBUS_EXTERN(AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests);
+DECLARE_EBUS_EXTERN_WITH_TRAITS(AzToolsFramework::ComponentModeFramework::ComponentModeDelegateRequests, AzToolsFramework::ComponentModeFramework::ComponentModeMouseViewportRequests)

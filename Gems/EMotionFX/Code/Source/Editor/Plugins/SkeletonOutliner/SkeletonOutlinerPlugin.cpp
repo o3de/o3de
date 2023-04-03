@@ -6,6 +6,10 @@
  *
  */
 
+#include <AzToolsFramework/UI/Notifications/ToastNotificationsView.h>
+#include <AzQtComponents/Components/ToastNotification.h>
+#include <AzQtComponents/Components/ToastNotificationConfiguration.h>
+#include <UI/Notifications/ToastNotificationsView.h>
 #include <EMotionFX/Source/ActorManager.h>
 #include <EMotionFX/CommandSystem/Source/CommandManager.h>
 #include <EMotionFX/CommandSystem/Source/ColliderCommands.h>
@@ -17,11 +21,12 @@
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/NodeInfo.h>
 #include <EMotionStudio/Plugins/StandardPlugins/Source/NodeWindow/SubMeshInfo.h>
 #include <Editor/Plugins/SkeletonOutliner/SkeletonOutlinerPlugin.h>
+#include <Editor/ColliderHelpers.h>
 #include <Editor/ReselectingTreeView.h>
-#include <QLabel>
 #include <QVBoxLayout>
 #include <QHeaderView>
 #include <QEvent>
+#include <QLabel>
 
 namespace EMotionFX
 {
@@ -66,6 +71,8 @@ namespace EMotionFX
     bool SkeletonOutlinerPlugin::Init()
     {
         m_mainWidget = new QWidget(m_dock);
+        [[maybe_unused]] auto* toastNotificationsView =
+            new AzToolsFramework::ToastNotificationsView(m_mainWidget, AZ_CRC("SkeletonOutliner"));
 
         QVBoxLayout* mainLayout = new QVBoxLayout();
         m_mainWidget->setLayout(mainLayout);

@@ -89,7 +89,7 @@ namespace AZ
 
         void Image::GetSubresourceLayoutsInternal(
             const RHI::ImageSubresourceRange& subresourceRange,
-            RHI::ImageSubresourceLayoutPlaced* subresourceLayouts,
+            RHI::ImageSubresourceLayout* subresourceLayouts,
             size_t* totalSizeInBytes) const
         {
             const RHI::ImageDescriptor& imageDescriptor = GetDescriptor();
@@ -104,7 +104,8 @@ namespace AZ
                     {
                         const RHI::ImageSubresourceLayout& subresourceLayout = m_subresourceLayoutsPerMipChain[mipSlice];
                         const uint32_t subresourceIndex = RHI::GetImageSubresourceIndex(mipSlice, arraySlice, imageDescriptor.m_mipLevels);
-                        subresourceLayouts[subresourceIndex] = RHI::ImageSubresourceLayoutPlaced{subresourceLayout, byteOffset};
+                        subresourceLayouts[subresourceIndex] = subresourceLayout;
+                        subresourceLayouts[subresourceIndex].m_offset = byteOffset;
                         byteOffset = RHI::AlignUp(byteOffset + subresourceLayout.m_bytesPerImage * subresourceLayout.m_size.m_depth, D3D12_TEXTURE_DATA_PLACEMENT_ALIGNMENT);
                     }
                 }
@@ -143,14 +144,14 @@ namespace AZ
             // Write only states
             const bool renderTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::Color);
             const bool copyDest = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyWrite);
+            const bool depthTarget = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
 
-            // Write Only States
+            // Read Only States
             const bool shaderResource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::ShaderRead);
-            const bool depthRead = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::DepthStencil);
             const bool copySource = RHI::CheckBitsAny(bindFlags, RHI::ImageBindFlags::CopyRead);
 
-            const bool writeState = renderTarget || copyDest;
-            const bool readState = shaderResource || depthRead || copySource;
+            const bool writeState = renderTarget || copyDest || depthTarget;
+            const bool readState = shaderResource || copySource;
 
             // If any write only state is set, only write only resource states can be applied
             if (writeState)
@@ -162,6 +163,10 @@ namespace AZ
                 else if (copyDest)
                 {
                     m_initialResourceState |= D3D12_RESOURCE_STATE_COPY_DEST;
+                }
+                else if (depthTarget)
+                {
+                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_WRITE;
                 }
             }
             // If any read only state is set, only read only resource states can be applied
@@ -177,11 +182,6 @@ namespace AZ
                     {
                         m_initialResourceState |= D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
                     }
-                }
-
-                if (depthRead)
-                {
-                    m_initialResourceState |= D3D12_RESOURCE_STATE_DEPTH_READ;
                 }
 
                 if (copySource)

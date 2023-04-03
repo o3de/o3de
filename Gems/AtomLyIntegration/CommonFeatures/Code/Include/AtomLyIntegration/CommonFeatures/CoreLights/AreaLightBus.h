@@ -145,6 +145,14 @@ namespace AZ
             //! @param normalShadowBias Sets the amount of normal shadow bias to apply.
             virtual void SetNormalShadowBias(float normalShadowBias) = 0;
 
+            //! Gets the current shadow caching mode. Cached shadows use persistent textures and only update
+            //! when they detect a change. Regular shadows use transient textures but re-render every frame.
+            virtual AreaLightComponentConfig::ShadowCachingMode GetShadowCachingMode() const = 0;
+
+            //! Sets the current shadow caching mode. Cached shadows use persistent textures and only update
+            //! when they detect a change. Regular shadows use transient textures but re-render every frame.
+            virtual void SetShadowCachingMode(AreaLightComponentConfig::ShadowCachingMode cachingMode) = 0;
+
             // Global Illumination
 
             //! Returns true if this light affects global illumination.
