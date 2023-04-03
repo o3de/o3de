@@ -14,8 +14,6 @@
 
 #include <${Name}/${Name}FeatureProcessorInterface.h>
 
-#include <Components/${Name}ComponentConstants.h>
-
 namespace ${Name}
 {
     class ${Name}ComponentConfig final

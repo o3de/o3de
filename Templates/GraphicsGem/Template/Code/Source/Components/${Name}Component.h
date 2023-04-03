@@ -9,7 +9,6 @@
 #pragma once
 
 #include <Components/${Name}ComponentController.h>
-#include <Components/${Name}ComponentConstants.h>
 #include <AzFramework/Components/ComponentAdapter.h>
 
 namespace ${Name}
