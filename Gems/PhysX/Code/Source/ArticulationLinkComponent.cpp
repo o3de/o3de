@@ -263,6 +263,19 @@ namespace PhysX
         //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
     }
 
+    void setInboundJointDriveParams(
+        physx::PxArticulationJointReducedCoordinate* inboundJoint,
+        physx::PxArticulationAxis articulationAxis,
+        const ArticulationJointMotorProperties& motorProperties)
+    {
+        physx::PxArticulationDrive drive;
+        drive.driveType = physx::PxArticulationDriveType::eFORCE;
+        drive.maxForce = motorProperties.m_driveForceLimit;
+        drive.damping = motorProperties.m_driveDamping;
+        drive.stiffness = motorProperties.m_driveStiffness;
+        inboundJoint->setDriveParams(physx::PxArticulationAxis::eTWIST, drive);
+    }
+
     void ArticulationLinkComponent::CreateChildArticulationLinks(
         physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData)
     {

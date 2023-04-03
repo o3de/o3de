@@ -41,7 +41,7 @@ namespace PhysX
         bool m_useWorldFrame = false; //!< If true, the output will be reported in world space, otherwise in the local space of the sensor.
     };
 
-    //! Configuration articulation motor
+    //! Configuration of the articulation joint motor
     struct ArticulationJointMotorProperties
     {
         AZ_CLASS_ALLOCATOR_DECL;
@@ -50,10 +50,10 @@ namespace PhysX
 
         ArticulationJointMotorProperties() = default;
 
-        bool m_useMotor = false; ///< Enables joint actuation.
-        float m_driveForceLimit = 1.0f; ///< Force/torque limit applied by motor.
-        float m_driveStiffness = 1.0f; ///< Stiffness of motor servo.
-        float m_driveDamping = 1.0f; ///< Damping of motor servo.
+        bool m_useMotor = false; //!< Enables joint actuation.
+        float m_driveForceLimit = 1.0f; //!< Force/torque limit applied by motor.
+        float m_driveStiffness = 1.0f; //!< Stiffness of motor servo.
+        float m_driveDamping = 1.0f; //!< Damping of motor servo.
     };
 
     //! Configuration used to Add Articulations to a Scene.
