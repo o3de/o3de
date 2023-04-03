@@ -19,7 +19,7 @@
 
 namespace GraphicsGem_AR_Test
 {
-    inline constexpr AZ::TypeId EditorComponentTypeId { "{2E715EC1-EA37-4940-A932-2CD8C4324A4E}" };
+    inline constexpr AZ::TypeId EditorComponentTypeId { "{F5C1B6AF-B792-4A82-996C-DAFE207E3D2A}" };
 
     class EditorGraphicsGem_AR_TestComponent final
         : public AzToolsFramework::Components::EditorComponentAdapter<GraphicsGem_AR_TestComponentController, GraphicsGem_AR_TestComponent, GraphicsGem_AR_TestComponentConfig>

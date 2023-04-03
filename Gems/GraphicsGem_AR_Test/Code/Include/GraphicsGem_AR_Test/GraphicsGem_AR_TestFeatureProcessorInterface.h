@@ -22,7 +22,7 @@ namespace GraphicsGem_AR_Test
         : public AZ::RPI::FeatureProcessor
     {
     public:
-        AZ_RTTI(GraphicsGem_AR_TestFeatureProcessorInterface, "{E921495F-92A8-48E3-B502-0CC81AFE7B96}", AZ::RPI::FeatureProcessor);
+        AZ_RTTI(GraphicsGem_AR_TestFeatureProcessorInterface, "{D953101A-E1AD-4A6A-BAF3-2DCBA69F340A}", AZ::RPI::FeatureProcessor);
 
     };
 }

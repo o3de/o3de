@@ -20,7 +20,7 @@ namespace GraphicsGem_AR_Test
         : public AZ::ComponentConfig
     {
     public:
-        AZ_RTTI(GraphicsGem_AR_TestComponentConfig, "{7E83D779-1CC4-42D9-8FE6-DB319D692B7B}", ComponentConfig);
+        AZ_RTTI(GraphicsGem_AR_TestComponentConfig, "{769A36B6-BC93-4C78-842B-AB38FC17F410}", ComponentConfig);
         AZ_CLASS_ALLOCATOR(GraphicsGem_AR_TestComponentConfig, AZ::SystemAllocator);
         static void Reflect(AZ::ReflectContext* context);
 
@@ -36,7 +36,7 @@ namespace GraphicsGem_AR_Test
     public:
         friend class EditorGraphicsGem_AR_TestComponent;
 
-        AZ_RTTI(GraphicsGem_AR_TestComponentController, "{98D8A75C-65AF-419C-99CA-2E13035FC32B}");
+        AZ_RTTI(GraphicsGem_AR_TestComponentController, "{5533CEB4-E361-4266-A2B0-F6EAD934CC3C}");
         AZ_CLASS_ALLOCATOR(GraphicsGem_AR_TestComponentController, AZ::SystemAllocator);
 
         static void Reflect(AZ::ReflectContext* context);
