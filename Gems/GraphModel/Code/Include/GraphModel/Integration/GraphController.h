@@ -148,6 +148,7 @@ namespace GraphModelIntegration
         // GraphCanvas::SceneNotificationBus, connections
         void OnNodeAdded(const AZ::EntityId& nodeUiId, bool isPaste) override;
         void OnNodeRemoved(const AZ::EntityId& nodeUiId) override;
+        void OnConnectionAdded(const AZ::EntityId& connectionUiId) override;
         void OnConnectionRemoved(const AZ::EntityId& connectionUiId) override;
         void OnEntitiesSerialized(GraphCanvas::GraphSerialization& serializationTarget) override;
         void OnEntitiesDeserialized(const GraphCanvas::GraphSerialization& serializationSource) override;
