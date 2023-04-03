@@ -65,6 +65,9 @@ namespace Multiplayer
     NetworkTransformComponent::NetworkTransformComponent()
         : m_entityPreRenderEventHandler([this](float deltaTime) { OnPreRender(deltaTime); })
         , m_entityCorrectionEventHandler([this]() { OnCorrection(); })
+        , m_rotationChangedEventHandler([this](AZ::Quaternion) { OnTransformChanged(); })
+        , m_translationChangedEventHandler([this](AZ::Vector3) { OnTransformChanged(); })
+        , m_scaleChangedEventHandler([this](float) { OnTransformChanged(); })
         , m_parentChangedEventHandler([this](NetEntityId parentId) { OnParentChanged(parentId); })
         , m_resetCountChangedEventHandler([this]([[maybe_unused]] uint8_t resetCount) { m_syncTransformImmediate = true; })
     {
@@ -80,6 +83,9 @@ namespace Multiplayer
     {
         GetNetBindComponent()->AddEntityPreRenderEventHandler(m_entityPreRenderEventHandler);
         GetNetBindComponent()->AddEntityCorrectionEventHandler(m_entityCorrectionEventHandler);
+        RotationAddEvent(m_rotationChangedEventHandler);
+        TranslationAddEvent(m_translationChangedEventHandler);
+        ScaleAddEvent(m_scaleChangedEventHandler);
         ParentEntityIdAddEvent(m_parentChangedEventHandler);
         ResetCountAddEvent(m_resetCountChangedEventHandler);
 
@@ -167,6 +173,11 @@ namespace Multiplayer
                 transformComponent->SetLocalTM(targetTransform);
             }
         }
+    }
+
+    void NetworkTransformComponent::OnTransformChanged()
+    {
+        OnPreRender(0.0f);
     }
 
     void NetworkTransformComponent::OnParentChanged(NetEntityId parentId)
