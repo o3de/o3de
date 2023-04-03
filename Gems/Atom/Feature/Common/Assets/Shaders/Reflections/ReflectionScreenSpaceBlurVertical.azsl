@@ -20,9 +20,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     float m_invOutputScale;
 }
 
-// The shader variant system needs a fallback, using UnusedFallbackDrawSrg for this.
-#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
-
 // Pixel Shader
 struct PSOutput
 {    
