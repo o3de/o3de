@@ -35,14 +35,14 @@ namespace AZ
             constexpr uintptr_t s_D3d12maAllocationPrivateData = 0x1200A110C;
 
             // utility functions to forward cpu mem allocations to o3de memory systems
-            static void* D3d12maAllocate(size_t size, size_t alignment, void* privateData)
+            static void* D3d12maAllocate(size_t size, size_t alignment, [[maybe_unused]] void* privateData)
             {
                 AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_D3d12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory allocation");
                 void* memory = AZ::AllocatorInstance<AZ::SystemAllocator>::Get().allocate(size, alignment);
                 return memory;
             }
 
-            static void D3d12maFree(void* memory, void* privateData)
+            static void D3d12maFree(void* memory, [[maybe_unused]] void* privateData)
             {
                 AZ_Assert(reinterpret_cast<uintptr_t>(privateData) == s_D3d12maAllocationPrivateData, "Incorrect private data value passed from D3D12MA during memory deallocation");
                 if(memory)
