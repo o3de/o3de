@@ -383,6 +383,8 @@ namespace AtomToolsFramework
             });
 
             graphCompiler->CompileGraph(graph, graphName, graphPath);
+            graphCompiler->SetStateChangeHandler({});
+            graph.reset();
         };
 
         auto job = AZ::CreateJobFunction(compileJobFn, true);
