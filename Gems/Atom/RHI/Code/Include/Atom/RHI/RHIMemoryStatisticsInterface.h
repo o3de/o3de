@@ -24,6 +24,8 @@ namespace AZ
 {
     namespace RHI
     {
+        // Forward declares
+        struct TransientAttachmentStatistics;
         class RHIMemoryStatisticsInterface
         {
         public:
