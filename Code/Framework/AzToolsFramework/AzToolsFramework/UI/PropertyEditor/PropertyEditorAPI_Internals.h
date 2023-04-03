@@ -274,8 +274,34 @@ namespace AzToolsFramework
                 }
                 else
                 {
+                    // Assign a custom reporting callback to ignore unregistered types
+                    AZ::JsonDeserializerSettings settings;
+                    AZStd::string scratchBuffer;
+                    settings.m_reporting = [&scratchBuffer](
+                        AZStd::string_view message, AZ::JsonSerializationResult::ResultCode result, AZStd::string_view path) -> auto
+                    {
+                        // Unregistered types are acceptable and do not require a warning
+                        if (result.GetTask() != AZ::JsonSerializationResult::Tasks::RetrieveInfo ||
+                            result.GetOutcome() != AZ::JsonSerializationResult::Outcomes::Unknown)
+                        {
+                            // Default Json serialization issue reporting
+                            if (result.GetProcessing() != AZ::JsonSerializationResult::Processing::Completed)
+                            {
+                                scratchBuffer.append(message.begin(), message.end());
+                                scratchBuffer.append("\n    Reason: ");
+                                result.AppendToString(scratchBuffer, path);
+                                scratchBuffer.append(".");
+                                AZ_Warning("JSON Serialization", false, "%s", scratchBuffer.c_str());
+
+                                scratchBuffer.clear();
+                            }
+                        }
+
+                        return result;
+                    };
+
                     AZ::JsonSerializationResult::ResultCode loadResult =
-                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value());
+                        AZ::Dom::Utils::LoadViaJsonSerialization(m_proxyValue, value.value(), settings);
                     if (loadResult.GetProcessing() == AZ::JsonSerializationResult::Processing::Halted)
                     {
                         m_proxyValue = AZ::Dom::Utils::ValueToType<WrappedType>(value.value()).value_or(m_proxyValue);

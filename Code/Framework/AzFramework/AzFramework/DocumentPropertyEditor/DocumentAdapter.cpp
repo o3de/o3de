@@ -178,7 +178,7 @@ namespace AZ::DocumentPropertyEditor
     {
         Dom::Value result(Dom::Type::Object);
         result[s_typeField] = Dom::Value(s_typeName, false);
-        result[s_adapterField] = Dom::Utils::ValueFromType(m_adapter);
+        result[s_adapterField] = Dom::Value::FromOpaqueValue(AZStd::any(m_adapter));
         result[s_messageNameField] = Dom::Value(m_messageName.GetStringView(), true);
         result[s_messageOriginField] = Dom::Value(m_messageOrigin.ToString(), true);
         result[s_contextDataField] = m_contextData;
