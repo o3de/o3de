@@ -238,6 +238,12 @@ namespace AZ
             // that the memory won't be relocated when new entries are added.
             AZStd::fixed_vector<ModelLod::StreamBufferViewList, RHI::DrawPacketBuilder::DrawItemCountMax> streamBufferViewsPerShader;
 
+            // The root constants are shared by all draw items in the draw packet. We must populate them with default values.
+            // The draw packet builder needs to know where the data is coming from during appendShader, but it's not actually read
+            // until drawPacketBuilder.End(), so store the default data out here.
+            AZStd::vector<uint8_t> rootConstants;
+            bool isFirstShaderItem = true;
+
             m_perDrawSrgs.clear();
 
             auto appendShader = [&](const ShaderCollection::Item& shaderItem, const Name& materialPipelineName)
@@ -369,22 +375,24 @@ namespace AZ
                     return false;
                 }
 
-                if(!m_rootConstantsLayout)
+                if(isFirstShaderItem)
                 {
                     const RHI::ConstantsLayout* rootConstantsLayout = pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
                     if (rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0)
                     {
                         m_rootConstantsLayout = rootConstantsLayout;
-                        AZStd::vector<uint8_t> constants(m_rootConstantsLayout->GetDataSize());
-                        drawPacketBuilder.SetRootConstants(constants);
+                        rootConstants.resize(m_rootConstantsLayout->GetDataSize());
+                        drawPacketBuilder.SetRootConstants(rootConstants);
                     }
+
+                    isFirstShaderItem = false;
                 }
                 else
                 {
                     AZ_Error(
                         "MeshDrawPacket",
-                        m_rootConstantsLayout->GetHash() ==
-                            pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash(),
+                        (!m_rootConstantsLayout && !pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()) ||
+                        m_rootConstantsLayout->GetHash() == pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash(),
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.");
                 }
