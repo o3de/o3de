@@ -26,7 +26,6 @@ namespace UnitTest
         MOCK_CONST_METHOD1(GetCustomMaterials, const AZ::Render::CustomMaterialMap&(const MeshHandle&));
         MOCK_METHOD2(ConnectModelChangeEventHandler, void(const MeshHandle&, ModelChangedEvent::Handler&));
         MOCK_METHOD3(SetTransform, void(const MeshHandle&, const AZ::Transform&, const AZ::Vector3&));
-        MOCK_METHOD2(SetExcludeFromReflectionCubeMaps, void(const MeshHandle&, bool));
         MOCK_METHOD2(SetIsAlwaysDynamic, void(const MeshHandle&, bool));
         MOCK_CONST_METHOD1(GetIsAlwaysDynamic, bool(const MeshHandle&));
         MOCK_METHOD2(SetCustomMaterials, void(const MeshHandle&, const AZ::Data::Instance<AZ::RPI::Material>&));

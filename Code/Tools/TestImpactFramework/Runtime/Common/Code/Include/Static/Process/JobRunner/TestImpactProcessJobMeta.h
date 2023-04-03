@@ -16,7 +16,7 @@
 namespace TestImpact
 {
     //! Result of a job that was run.
-    enum class JobResult
+    enum class JobResult : AZ::u8
     {
         NotExecuted, //!< The job was not executed (e.g. the job runner terminated before the job could be executed).
         FailedToExecute, //!< The job failed to execute (e.g. due to the arguments used to execute the job being invalid).

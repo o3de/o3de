@@ -98,10 +98,15 @@ def PlatformMkdir(path) {
     }
 }
 
-def PlatformRm(path) {
+def PlatformRm(path, sudo=false) {
     if (env.IS_UNIX) {
-        sh label: "Removing ${path}",
-           script: "rm ${path}"
+        if (sudo) {
+           sh label: "Removing ${path}",
+              script: "sudo rm ${path}"
+        } else {
+            sh label: "Removing ${path}",
+              script: "rm ${path}"
+        }
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
@@ -109,10 +114,15 @@ def PlatformRm(path) {
     }
 }
 
-def PlatformRmDir(path) {
+def PlatformRmDir(path, sudo=false) {
     if (env.IS_UNIX) {
-        sh label: "Removing ${path}",
-           script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
+        if (sudo) {
+           sh label: "Removing ${path}",
+              script: "if [ -d ${path} ]; then sudo rm -rf ${path}; fi"
+        } else {
+           sh label: "Removing ${path}",
+              script: "if [ -d ${path} ]; then rm -rf ${path}; fi"
+        }
     } else {
         def win_path = path.replace('/','\\')
         bat label: "Removing ${win_path}",
@@ -529,7 +539,7 @@ def PreBuildCommonSteps(Map pipelineConfig, Map params, String snapshot, String 
     if(env.CLEAN_WORKSPACE?.toBoolean() || fileExists("${workspace}/.git")) {
         if(fileExists(workspace)) {
             echo 'Clean workspace...'
-            PlatformRmDir(workspace)
+            PlatformRmDir(workspace, true)
         }
     }
     

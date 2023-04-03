@@ -32,10 +32,10 @@ namespace AZ
             return Interface<RHISystemInterface>::Get();
         }
 
-        void RHISystem::InitDevice()
+        ResultCode RHISystem::InitDevice()
         {
             Interface<RHISystemInterface>::Register(this);
-            InitInternalDevices();
+            return InitInternalDevices();
         }
     
         void RHISystem::Init()
@@ -88,7 +88,7 @@ namespace AZ
             m_frameScheduler.Init(*m_devices[MultiDevice::DefaultDeviceIndex], frameSchedulerDescriptor);
         }
 
-        void RHISystem::InitInternalDevices()
+        ResultCode RHISystem::InitInternalDevices()
         {
             RHI::PhysicalDeviceList physicalDevices = RHI::Factory::Get().EnumeratePhysicalDevices();
 
@@ -97,7 +97,7 @@ namespace AZ
             if (physicalDevices.empty())
             {
                 AZ_Printf("RHISystem", "Unable to initialize RHI! No supported physical device found.\n");
-                return;
+                return ResultCode::Fail;
             }
 
             static const char* MultiGPUCommandLineOption = "rhi-multiple-devices";
@@ -191,7 +191,9 @@ namespace AZ
             if (m_devices.empty())
             {
                 AZ_Error("RHISystem", false, "Failed to initialize RHI device.");
+                return ResultCode::Fail;
             }
+            return ResultCode::Success;
         }
 
         void RHISystem::Shutdown()
@@ -294,6 +296,16 @@ namespace AZ
             return m_frameScheduler.GetTransientAttachmentPoolDescriptor();
         }
 
+        void RHISystem::SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines)
+        {
+            m_numActiveRenderPipelines = numActiveRenderPipelines;
+        }
+
+        uint16_t RHISystem::GetNumActiveRenderPipelines() const
+        {
+            return m_numActiveRenderPipelines;
+        }
+
         ConstPtr<PlatformLimitsDescriptor> RHISystem::GetPlatformLimitsDescriptor(int deviceIndex) const
         {
             return m_devices[deviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
@@ -304,14 +316,20 @@ namespace AZ
             m_frameScheduler.QueueRayTracingShaderTableForBuild(rayTracingShaderTable);
         }
 
-        void RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)
+        bool RHISystem::RegisterXRSystem(XRRenderingInterface* xrRenderingInterface)
         {
             AZ_Assert(!m_xrSystem, "XR System is already registered");
-            m_xrSystem = xrRenderingInterface;
+            if (RHI::Factory::Get().SupportsXR())
+            {
+                m_xrSystem = xrRenderingInterface;
+                return true;
+            }
+            return false;
         }
 
         void RHISystem::UnregisterXRSystem()
         {
+            AZ_Assert(m_xrSystem, "XR System is already null");
             m_xrSystem = nullptr;
         }
 

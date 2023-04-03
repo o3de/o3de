@@ -20,6 +20,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/Console/Console.h>
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <Mesh/MeshInstanceManager.h>
 #include <RayTracing/RayTracingFeatureProcessor.h>
 
 namespace AZ
@@ -29,6 +30,7 @@ namespace AZ
         class TransformServiceFeatureProcessor;
         class RayTracingFeatureProcessor;
         class ReflectionProbeFeatureProcessor;
+        class MeshFeatureProcessor;
 
         class ModelDataInstance
         {
@@ -36,8 +38,14 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+            using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
+
+            ModelDataInstance();
+
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
+
+            ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
 
         private:
             class MeshLoader
@@ -71,37 +79,49 @@ namespace AZ
                 ModelDataInstance* m_parent = nullptr;
             };
 
-            void DeInit(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
+            // Free all the resources owned by this mesh handle
+            void DeInit(MeshFeatureProcessor* meshFeatureProcessor);
+            // Clear all the data that is created by the MeshFeatureProcessor, such as the draw packets, cullable, and ray-tracing data,
+            // but preserve all the settings such as the model, material assignment, etc., then queue it for re-initialization
+            void ReInit(MeshFeatureProcessor* meshFeatureProcessor);
             void QueueInit(const Data::Instance<RPI::Model>& model);
-            void Init();
-            void BuildDrawPacketList(size_t modelLodIndex);
-            void SetRayTracingData(
-                RayTracingFeatureProcessor* rayTracingFeatureProcessor,
-                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
+            void Init(MeshFeatureProcessor* meshFeatureProcessor);
+            void BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex);
+            void SetRayTracingData(MeshFeatureProcessor* meshFeatureProcessor);
             void RemoveRayTracingData(RayTracingFeatureProcessor* rayTracingFeatureProcessor);
             void SetIrradianceData(
                 RayTracingFeatureProcessor::SubMesh& subMesh,
                 const Data::Instance<RPI::Material> material,
                 const Data::Instance<RPI::Image> baseColorImage);
             void SetRayTracingReflectionProbeData(
-                TransformServiceFeatureProcessor* transformServiceFeatureProcessor,
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
+                MeshFeatureProcessor* meshFeatureProcessor, 
                 RayTracingFeatureProcessor::Mesh::ReflectionProbe& reflectionProbe);
-            void SetSortKey(RHI::DrawItemSortKey sortKey);
+            void SetSortKey(MeshFeatureProcessor* meshFeatureProcessor, RHI::DrawItemSortKey sortKey);
             RHI::DrawItemSortKey GetSortKey() const;
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
-            void BuildCullable();
-            void UpdateCullBounds(const TransformServiceFeatureProcessor* transformService);
-            void UpdateObjectSrg(
-                ReflectionProbeFeatureProcessor* reflectionProbeFeatureProcessor,
-                TransformServiceFeatureProcessor* transformServiceFeatureProcessor);
+            void BuildCullable(MeshFeatureProcessor* meshFeatureProcessor);
+            void UpdateCullBounds(const MeshFeatureProcessor* meshFeatureProcessor);
+            void UpdateObjectSrg(MeshFeatureProcessor* meshFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
             void SetVisible(bool isVisible);
             CustomMaterialInfo GetCustomMaterialWithFallback(const CustomMaterialId& id) const;
+            void HandleDrawPacketUpdate();
 
+            // When instancing is disabled, draw packets are owned by the ModelDataInstance
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
+            
+            // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
+            // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles
+            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
+            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
+            AZStd::vector<InstanceGroupHandleList> m_instanceGroupHandlesByLod;
+            
+            // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
+            // This is used to trigger an update to the cullable to use the new draw packet
+            using UpdateDrawPacketHandlerList = AZStd::vector<AZ::Event<>::Handler>;
+            AZStd::vector<UpdateDrawPacketHandlerList> m_updateDrawPacketEventHandlersByLod;
 
             size_t m_lodBias = 0;
 
@@ -115,6 +135,7 @@ namespace AZ
 
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
             RHI::DrawItemSortKey m_sortKey;
@@ -124,15 +145,21 @@ namespace AZ
 
             Aabb m_aabb = Aabb::CreateNull();
 
-            bool m_cullBoundsNeedsUpdate = false;
-            bool m_cullableNeedsRebuild = false;
-            bool m_needsInit = false;
-            bool m_objectSrgNeedsUpdate = true;
-            bool m_isAlwaysDynamic = false;
-            bool m_visible = true;
-            bool m_hasForwardPassIblSpecularMaterial = false;
-            bool m_needsSetRayTracingData = false;
-            bool m_hasRayTracingReflectionProbe = false;
+            struct Flags
+            {
+                bool m_cullBoundsNeedsUpdate : 1;
+                bool m_cullableNeedsRebuild : 1;
+                bool m_needsInit : 1;
+                bool m_objectSrgNeedsUpdate : 1;
+                bool m_isAlwaysDynamic : 1;
+                bool m_dynamic : 1;                             // True if the model's transformation was changed than the initial position
+                bool m_isDrawMotion : 1;                        // Whether draw to the motion vector
+                bool m_visible : 1;
+                bool m_useForwardPassIblSpecular : 1;
+                bool m_hasForwardPassIblSpecularMaterial : 1;
+                bool m_needsSetRayTracingData : 1;
+                bool m_hasRayTracingReflectionProbe : 1;
+            } m_flags;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -179,6 +206,7 @@ namespace AZ
             void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) override;
             const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
+            void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
@@ -212,6 +240,14 @@ namespace AZ
 
             void ReportShaderOptionFlags(const AZ::ConsoleCommandContainer& arguments);
 
+            // Quick functions to get other relevant feature processors that have already been cached by the MeshFeatureProcessor
+            // without needing to go through the RPI's list of feature processors
+            RayTracingFeatureProcessor* GetRayTracingFeatureProcessor() const;
+            ReflectionProbeFeatureProcessor* GetReflectionProbeFeatureProcessor() const;
+            TransformServiceFeatureProcessor* GetTransformServiceFeatureProcessor() const;
+
+            MeshInstanceManager& GetMeshInstanceManager();
+            bool IsMeshInstancingEnabled() const;
         private:
             MeshFeatureProcessor(const MeshFeatureProcessor&) = delete;
 
@@ -226,9 +262,18 @@ namespace AZ
 
             // RPI::SceneNotificationBus::Handler overrides...
             void OnRenderPipelineChanged(AZ::RPI::RenderPipeline* pipeline, RPI::SceneNotification::RenderPipelineChangeType changeType) override;
-                        
+
+            void CheckForInstancingCVarChange();
+            AZStd::vector<AZ::Job*> CreateInitJobQueue();
+            AZStd::vector<AZ::Job*> CreatePerInstanceGroupJobQueue();
+            AZStd::vector<AZ::Job*> CreateUpdateCullingJobQueue();
+            void ExecuteSimulateJobQueue(AZStd::span<Job*> jobQueue, Job* parentJob);
+            void ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob);
+
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
+
+            MeshInstanceManager m_meshInstanceManager;
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
@@ -236,9 +281,11 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+            RHI::DrawListTag m_meshMotionDrawListTag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;
+            bool m_enableMeshInstancing = false;
         };
     } // namespace Render
 } // namespace AZ

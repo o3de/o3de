@@ -451,14 +451,16 @@ class AssetProcessor(object):
 
     def batch_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
                       extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
-                      expect_failure=False, scan_folder_pattern=None, create_temp_log=True):
+                      expect_failure=False, scan_folder_pattern=None, create_temp_log=True, debug_output=False,
+                      skip_atom_output=False):
         if create_temp_log:
             self.create_temp_log_root()
         ap_path = self._workspace.paths.asset_processor_batch()
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_params, add_gem_scan_folders=add_gem_scan_folders,
                                         add_config_scan_folders=add_config_scan_folders,
-                                        scan_folder_pattern=scan_folder_pattern)
+                                        scan_folder_pattern=scan_folder_pattern, debug_output=debug_output,
+                                        skip_atom_output=skip_atom_output)
         return self.run_ap_process_command(command, timeout=timeout, capture_output=capture_output, decode=decode,
                                            expect_failure=expect_failure)
 
@@ -467,7 +469,7 @@ class AssetProcessor(object):
     def gui_process(self, timeout=DEFAULT_TIMEOUT_SECONDS, fastscan=True, capture_output=False, platforms=None,
                     extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None, decode=True,
                     expect_failure=False, quitonidle=False, connect_to_ap=False, accept_input=True, run_until_idle=True,
-                    scan_folder_pattern=None, create_temp_log=True):
+                    scan_folder_pattern=None, create_temp_log=True, debug_output=False, skip_atom_output=False):
         ap_path = os.path.abspath(self._workspace.paths.asset_processor())
         ap_exe_path = os.path.dirname(ap_path)
         extra_gui_params = []
@@ -502,7 +504,8 @@ class AssetProcessor(object):
         command = self.build_ap_command(ap_path=ap_path, fastscan=fastscan, platforms=platforms,
                                         extra_params=extra_gui_params, add_gem_scan_folders=add_gem_scan_folders,
                                         add_config_scan_folders=add_config_scan_folders,
-                                        scan_folder_pattern=scan_folder_pattern)
+                                        scan_folder_pattern=scan_folder_pattern, debug_output=debug_output,
+                                        skip_atom_output=skip_atom_output)
 
         # If the AP is quitting on idle just run it like AP batch.
         if quitonidle:
@@ -550,7 +553,7 @@ class AssetProcessor(object):
 
     def build_ap_command(self, ap_path, fastscan=True, platforms=None,
                          extra_params=None, add_gem_scan_folders=None, add_config_scan_folders=None,
-                         scan_folder_pattern=None):
+                         scan_folder_pattern=None, debug_output=False, skip_atom_output=False):
         """
         Launch asset processor batch and wait for it to complete or until the timeout expires.
         Returns true on success and False if an error is reported.
@@ -561,6 +564,8 @@ class AssetProcessor(object):
             if scan folder overrides are set, on if not
         :param add_config_scan_folders: Should config scan folders be added to the processing - by default this is off
             if scan folder overrides are set, on if not
+        :param debug_output: Enables builder debug output of dbgsg files
+        :param skip_atom_output: Disables builder output of atom product assets, such as azmeshes, azlods, materials, ect.
         :return: Command list ready to pass to subprocess
         """
         logger.debug(f"Starting {ap_path}")
@@ -608,6 +613,12 @@ class AssetProcessor(object):
             command.append(f'--platforms={platforms}')
         for key, value in self._enabled_platform_overrides.items():
             command.append(f'--regset="f{ASSET_PROCESSOR_SETTINGS_ROOT_KEY}/Platforms/{key}={value}"')
+
+        if debug_output:
+            command.append("--debugOutput")
+
+        if skip_atom_output:
+            command.append("--regset=\"/O3DE/SceneAPI/AssetImporter/SkipAtomOutput=true\"")
 
         if extra_params:
             if isinstance(extra_params, list):
@@ -1089,5 +1100,9 @@ def get_num_failed_processed_assets(output):
     return -1 if not result else int(result)
 
 
-def has_invalid_server_address(output):
-    return parse_output_value(output, 'Invalid server address') is not None
+def has_invalid_server_address(output, serverAddress):
+    address_invalid_warning = f"({serverAddress}) is invalid"
+    for line in output:
+        if address_invalid_warning in line:
+            return True
+    return False
