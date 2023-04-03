@@ -45,5 +45,5 @@ ly_add_target(
 
 ly_add_googletest(
     NAME AZ::AzManipulatorTestFramework.Tests
-    LABELS REQUIRES_tiaf;TIAF_shard_test
+    LABELS REQUIRES_tiaf
 )

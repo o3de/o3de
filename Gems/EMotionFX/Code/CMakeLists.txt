@@ -178,7 +178,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::EMotionFX.Tests
-        LABELS REQUIRES_tiaf;TIAF_shard_fixture
+        LABELS REQUIRES_tiaf
     )
 
     list(APPEND testTargets EMotionFX.Tests)
@@ -209,7 +209,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::EMotionFX.Editor.Tests
-            LABELS REQUIRES_tiaf;TIAF_shard_test
+            LABELS REQUIRES_tiaf
         )
 
         list(APPEND testTargets EMotionFX.Editor.Tests)
