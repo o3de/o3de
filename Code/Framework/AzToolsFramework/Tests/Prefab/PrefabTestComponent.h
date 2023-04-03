@@ -45,4 +45,20 @@ namespace UnitTest
         UnReflectedType m_unReflectedType;
         int             m_reflectedType = 52;
     };
+
+    class PrefabNonEditorComponent : public AZ::Component
+    {
+    public:
+        AZ_COMPONENT(PrefabNonEditorComponent, "{47475C6F-3E69-493F-9EDA-B16E672BEF25}");
+
+        PrefabNonEditorComponent() = default;
+
+        static void Reflect(AZ::ReflectContext* reflection);
+
+        void Activate() override;
+        void Deactivate() override;
+
+        int m_intProperty = 0;
+    };
+    
 }

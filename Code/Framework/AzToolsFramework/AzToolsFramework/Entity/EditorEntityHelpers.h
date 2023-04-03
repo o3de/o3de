@@ -100,6 +100,7 @@ namespace AzToolsFramework
     AZ::Uuid GetComponentTypeId(const AZ::Component* component);
     const AZ::SerializeContext::ClassData* GetComponentClassData(const AZ::Component* component);
     const AZ::SerializeContext::ClassData* GetComponentClassDataForType(const AZ::Uuid& componentTypeId);
+    AZStd::string GetNameFromComponentClassData(const AZ::Component* component);
     AZStd::string GetFriendlyComponentName(const AZ::Component* component);
     const char* GetFriendlyComponentDescription(const AZ::Component* component);
     AZ::ComponentDescriptor* GetComponentDescriptor(const AZ::Component* component);

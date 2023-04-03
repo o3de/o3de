@@ -372,7 +372,7 @@ namespace AZ
                         // acceleration structure descriptor is added as the pNext in the VkWriteDescriptorSet
                         VkWriteDescriptorSetAccelerationStructureKHR writeAccelerationStructure = {};
                         writeAccelerationStructure.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET_ACCELERATION_STRUCTURE_KHR;
-                        writeAccelerationStructure.accelerationStructureCount = 1;
+                        writeAccelerationStructure.accelerationStructureCount = interval.m_max - interval.m_min;
                         writeAccelerationStructure.pAccelerationStructures = updateData.m_accelerationStructures.data() + interval.m_min;
                         writeAccelerationStructureDescs.push_back(AZStd::move(writeAccelerationStructure));
 
@@ -416,6 +416,7 @@ namespace AZ
                     case VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER:
                     case VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER:
                     case VK_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                    case VK_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
                         unboundedArraySize = aznumeric_cast<uint32_t>(updateData.m_bufferViewsInfo.size());
                         break;
                     case VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE:

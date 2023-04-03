@@ -136,7 +136,7 @@ namespace AzToolsFramework
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
                     settingsRegistry->Get(assetPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-                    assetPath /= fileDatabaseEntry.m_fileName + ".metadata.json";
+                    assetPath /= fileDatabaseEntry.m_fileName + ".abdata.json";
 
                     auto result = AZ::JsonSerializationUtils::ReadJsonFile(assetPath.Native());
 

@@ -115,7 +115,7 @@ PSOutput MainPS(VSOutput IN)
     positionVS /= positionVS.w;
 
     // normalize the viewspace position to get the camera-to-position vector
-    float3 cameraToPositionVS = normalize(positionVS);  
+    float3 cameraToPositionVS = normalize(positionVS.xyz);
 
     // retrieve surface normal
     float4 encodedNormal = PassSrg::m_normal.Load(fullScreenCoords, 0);
@@ -137,7 +137,7 @@ PSOutput MainPS(VSOutput IN)
     }
     else
     {
-        foundHit = TraceRayScreenSpace(positionVS, reflectDirVS, fullScreenDimensions, hitCoords);
+        foundHit = TraceRayScreenSpace(positionVS.xyz, reflectDirVS, fullScreenDimensions, hitCoords);
     }
     
     float4 result = float4(0.0f, 0.0f, 0.0f, 0.0f);

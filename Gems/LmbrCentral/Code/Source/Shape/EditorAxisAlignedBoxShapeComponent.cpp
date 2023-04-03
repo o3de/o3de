@@ -22,6 +22,8 @@ namespace LmbrCentral
 {
     void EditorAxisAlignedBoxShapeComponent::Reflect(AZ::ReflectContext* context)
     {
+        EditorAxisAlignedBoxShapeComponentMode::Reflect(context);
+
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<EditorAxisAlignedBoxShapeComponent, EditorBaseShapeComponent>()

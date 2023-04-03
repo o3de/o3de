@@ -46,6 +46,7 @@ set(FILES
     native/tests/assetmanager/DelayRelocationTests.h
     native/tests/assetmanager/SourceDependencyTests.cpp
     native/tests/assetmanager/SourceDependencyTests.h
+    native/tests/assetmanager/InitialScanSkippingTests.cpp
     native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.cpp
     native/tests/assetmanager/Validators/LfsPointerFileValidatorTests.h
     native/tests/utilities/assetUtilsTest.cpp

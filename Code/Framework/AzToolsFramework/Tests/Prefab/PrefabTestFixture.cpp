@@ -65,6 +65,7 @@ namespace UnitTest
         AzToolsFramework::EditorRequestBus::Handler::BusConnect();
 
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponent::CreateDescriptor());
+        GetApplication()->RegisterComponentDescriptor(PrefabNonEditorComponent::CreateDescriptor());
         GetApplication()->RegisterComponentDescriptor(PrefabTestComponentWithUnReflectedTypeMember::CreateDescriptor());
 
         // Gets undo stack.
