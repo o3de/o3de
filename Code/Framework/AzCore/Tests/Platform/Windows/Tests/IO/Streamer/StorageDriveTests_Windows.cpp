@@ -271,7 +271,20 @@ namespace AZ::IO
     private:
         void PrepareTestFilepath()
         {
-            AZStd::string filePath = m_tempDirectory.GetDirectory();
+            char exePath[AZ_MAX_PATH_LEN] = { 0 };
+            auto result = AZ::Utils::GetExecutablePath(exePath, AZ_MAX_PATH_LEN);
+            if (result.m_pathStored != AZ::Utils::ExecutablePathResult::Success)
+            {
+                return;
+            }
+
+            AZStd::string filePath(exePath);
+
+            if (result.m_pathIncludesFilename)
+            {
+                AZ::StringFunc::Path::StripFullName(filePath);
+            }
+
             AZ::StringFunc::Path::Join(filePath.c_str(), "TestFiles", filePath);
 
             // Create the "TestFiles" dir in the bin directory if it doesn't exist...
@@ -285,8 +298,6 @@ namespace AZ::IO
 
             AZ::StringFunc::Path::Join(filePath.c_str(), s_dummyFilename, m_dummyFilepath);
         }
-
-        AZ::Test::ScopedAutoTempDirectory m_tempDirectory;
     };
 
     TEST_F(Streamer_StorageDriveWindowsTestFixture, SanityCheck)
