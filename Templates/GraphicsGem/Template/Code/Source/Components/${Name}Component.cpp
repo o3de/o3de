@@ -18,8 +18,6 @@ namespace ${Name}
 
     void ${Name}Component::Reflect(AZ::ReflectContext* context)
     {
-        ${Name}ComponentController::Reflect(context);
-
         BaseClass::Reflect(context);
 
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
