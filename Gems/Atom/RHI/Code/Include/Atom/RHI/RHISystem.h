@@ -29,7 +29,7 @@ namespace AZ
         public:
             //! This function just initializes the native device and RHI::Device as a result.
             //! We can use this device to then query for device capabilities.
-            void InitDevice();
+            ResultCode InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
             void Init();
@@ -42,7 +42,7 @@ namespace AZ
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
             //! Register/Unregister xr system
-            void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
+            bool RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
             void UnregisterXRSystem();
 
             //! Get/Set functions for the number of active pipelines in use in a frame 
@@ -68,7 +68,7 @@ namespace AZ
         private:
 
             //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            void InitInternalDevices();
+            ResultCode InitInternalDevices();
 
             AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;

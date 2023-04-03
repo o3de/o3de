@@ -11,7 +11,32 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <sys/ioctl.h>
+#include <sys/epoll.h>
+
 #include <AzFramework/Process/ProcessCommunicator.h>
+#include <AzCore/Memory/SystemAllocator.h>
+
+namespace ProcessCommunicatorLinuxInternal
+{
+
+    class CommunicatorDataImpl : public AzFramework::StdInOutProcessCommunicatorData
+    {
+    public:
+        AZ_CLASS_ALLOCATOR(CommunicatorDataImpl, AZ::SystemAllocator);
+        CommunicatorDataImpl() = default;
+        virtual ~CommunicatorDataImpl()
+        {
+            if (m_stdInAndOutPollHandle != -1)
+            {
+                close(m_stdInAndOutPollHandle);
+            }
+        }
+        int m_stdInAndOutPollHandle = -1;
+        
+        AZ_DISABLE_COPY_MOVE(CommunicatorDataImpl);
+    };
+
+}
 
 namespace AzFramework
 {
@@ -30,6 +55,11 @@ namespace AzFramework
         return m_handle;
     }
 
+    int CommunicatorHandleImpl::GetEPollHandle() const
+    {
+        return m_epollHandle;
+    }
+
     void CommunicatorHandleImpl::Break()
     {
         m_broken = true;
@@ -37,13 +67,45 @@ namespace AzFramework
 
     void CommunicatorHandleImpl::Close()
     {
-        close(m_handle);
-        m_handle = -1;
+        if (m_handle != -1)
+        {
+            close(m_handle);
+            m_handle = -1;
+        }
+
+        if (m_epollHandle != -1)
+        {
+            close(m_epollHandle);
+            m_epollHandle = -1;
+        }
     }
 
-    void CommunicatorHandleImpl::SetHandle(int handle)
+    bool CommunicatorHandleImpl::SetHandle(int handle, bool createEPollHandle)
     {
         m_handle = handle;
+        // also create an epoll handle
+        if ( (handle != -1) && (createEPollHandle) )
+        {
+            int m_epollHandle = epoll_create1(0);
+
+            AZ_Assert(m_epollHandle -1, "Failed to create epoll handle. errno: %d", errno);
+            if (m_epollHandle == -1) 
+            {
+                return false;
+            }
+            struct epoll_event event;
+
+            event.events = EPOLLIN;
+            event.data.fd = GetHandle();
+            if(epoll_ctl(m_epollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
+            {
+                AZ_Assert(false, "Unable to add a file descriptor to epoll. errno: %d", errno);
+                close(m_epollHandle);
+                m_epollHandle = -1;
+                return false;
+            }
+        }
+        return true;
     }
 
     AZ::u32 StdInOutCommunication::PeekHandle(StdProcessCommunicatorHandle& handle)
@@ -71,25 +133,15 @@ namespace AzFramework
             return 0;
         }
 
-        //Block if buffersize == 0
+        // Block until data is ready if buffersize == 0
         if (bufferSize == 0)
         {
-            fd_set set;
-            FD_ZERO(&set);
-            FD_SET(handle->GetHandle(), &set);
-
-            [[maybe_unused]] int numReady = select(handle->GetHandle() + 1, &set, nullptr, nullptr, nullptr);
-
-            // if numReady == -1 and errno == EINTR then the child process died unexpectedly and
-            // the handle was closed. Not something to assert about in regards to trying to read
-            // data from the child as there is not anything useful we can say or do in that case.
-            // Normal code/data flow will work and we as the parent will know that the child is
-            // dead and return any error codes the child may have written to the error stream.
-            AZ_Assert(numReady != -1 || errno == EINTR, "Could not determine if any data is available for reading due to an error. Errno: %d", errno);
-
-            [[maybe_unused]] const bool wasSet = FD_ISSET(handle->GetHandle(), &set);
-            AZ_Assert(wasSet, "handle was not set when we selected it for read");
-
+            if (handle->GetEPollHandle() == -1)
+            {
+                return 0;
+            }
+            struct epoll_event event;
+            epoll_wait(handle->GetEPollHandle(), &event, 1, -1);
             return 0;
         }
 
@@ -97,7 +149,7 @@ namespace AzFramework
         bytesRead = read(handle->GetHandle(), readBuffer, bufferSize);
         if (bytesRead < 0)
         {
-            AZ_Assert(errno != EIO, "ReadFile performed unexpected async io");
+            AZ_Assert(errno != EIO, "ReadFile performed unexpected async io. errno: %d", errno);
             if (errno == EBADF || errno == EINVAL)
             {
                 // Child process exited, we may have read something, so return amount
@@ -128,7 +180,7 @@ namespace AzFramework
         const ssize_t bytesWritten = write(handle->GetHandle(), writeBuffer, bytesToWrite);
         if (bytesWritten < 0)
         {
-            AZ_Assert(errno != EIO, "Parent performed unexpected async io when trying to write to child process.");
+            AZ_Assert(errno != EIO, "Parent performed unexpected async io when trying to write to child process (errno=%d EIO).", errno);
             if (errno == EPIPE)
             {
                 // Child process exited, may have written something, so return amount
@@ -144,6 +196,7 @@ namespace AzFramework
 
     bool StdInOutProcessCommunicator::CreatePipesForProcess(ProcessData* processData)
     {
+        using namespace ProcessCommunicatorLinuxInternal;
         int pipeFileDescriptors[2] = { 0 };
 
         // Create a pipe to monitor process std in (output from us)
@@ -155,7 +208,14 @@ namespace AzFramework
         }
 
         processData->m_startupInfo.m_inputHandleForChild = pipeFileDescriptors[0];
-        m_stdInWrite->SetHandle(pipeFileDescriptors[1]);
+        // we don't need to create an epoll handle for the child's stdin, since we don't use
+        // epoll for it.
+        if (!m_stdInWrite->SetHandle(pipeFileDescriptors[1], /*create epoll handle*/false))
+        {
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
 
         // Create a pipe to monitor process std out (input to us)
         result = pipe(pipeFileDescriptors);
@@ -164,12 +224,16 @@ namespace AzFramework
         {
             processData->m_startupInfo.CloseAllHandles();
             CloseAllHandles();
-
             return false;
         }
 
-        m_stdOutRead->SetHandle(pipeFileDescriptors[0]);
         processData->m_startupInfo.m_outputHandleForChild = pipeFileDescriptors[1];
+        if (!m_stdOutRead->SetHandle(pipeFileDescriptors[0], /*create epoll handle*/true))
+        {
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
 
         // Create a pipe to monitor process std error (input to us)
         result = pipe(pipeFileDescriptors);
@@ -178,61 +242,104 @@ namespace AzFramework
         {
             processData->m_startupInfo.CloseAllHandles();
             CloseAllHandles();
-
             return false;
         }
 
-        m_stdErrRead->SetHandle(pipeFileDescriptors[0]);
         processData->m_startupInfo.m_errorHandleForChild = pipeFileDescriptors[1];
+        if (!m_stdErrRead->SetHandle(pipeFileDescriptors[0], /*create epoll handle*/true))
+        {
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
+
+        // create an epoll file descriptor for both inputs (stderr and stdout)
+        m_communicatorData.reset(aznew CommunicatorDataImpl());
+        CommunicatorDataImpl* platformImpl = static_cast<CommunicatorDataImpl*>(m_communicatorData.get());
+        platformImpl->m_stdInAndOutPollHandle = epoll_create1(0);
+
+        AZ_Assert(platformImpl->m_stdInAndOutPollHandle != -1, "Failed to create epoll handle to monitor output process, errno = %d", errno);
+        if (platformImpl->m_stdInAndOutPollHandle == -1) 
+        {
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
+        
+        struct epoll_event event;
+        event.events = EPOLLIN;
+        event.data.fd = m_stdOutRead->GetHandle();
+        if(epoll_ctl(platformImpl->m_stdInAndOutPollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
+        {
+            AZ_Assert(false, "Unable to add a file descriptor for stdOut to epoll, errno = %d", errno);
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
+
+        event.events = EPOLLIN;
+        event.data.fd = m_stdErrRead->GetHandle();
+        if(epoll_ctl(platformImpl->m_stdInAndOutPollHandle, EPOLL_CTL_ADD, event.data.fd, &event))
+        {
+            AZ_Assert(false, "Unable to add a file descriptor for stdErr to epoll, errno = %d", errno);
+            processData->m_startupInfo.CloseAllHandles();
+            CloseAllHandles();
+            return false;
+        }
 
         m_initialized = true;
         return true;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status) const
+    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status)
     {
+        using namespace ProcessCommunicatorLinuxInternal;
+
         status.outputDeviceReady = m_stdOutRead->IsValid() && !m_stdOutRead->IsBroken();
         status.errorsDeviceReady = m_stdErrRead->IsValid() && !m_stdErrRead->IsBroken();
         status.shouldReadOutput = status.shouldReadErrors = false;
 
+        CommunicatorDataImpl* platformImpl = static_cast<CommunicatorDataImpl*>(m_communicatorData.get());
         if (status.outputDeviceReady || status.errorsDeviceReady)
         {
-            fd_set readSet;
-            int maxHandle = 0;
-
-            FD_ZERO(&readSet);
-
-            if (status.outputDeviceReady)
+            struct epoll_event events[2];
+            if (int numberSignalled = epoll_wait(platformImpl->m_stdInAndOutPollHandle, events, 1, -1) > -1)
             {
-                int currentHandle = m_stdOutRead->GetHandle();
-                FD_SET(currentHandle, &readSet);
-                maxHandle = currentHandle > maxHandle ? currentHandle : maxHandle;
-            }
-
-            if (status.errorsDeviceReady)
-            {
-                int currentHandle = m_stdErrRead->GetHandle();
-                FD_SET(currentHandle, &readSet);
-                maxHandle = currentHandle > maxHandle ? currentHandle : maxHandle;
-            }
-
-            if (select(maxHandle + 1, &readSet, nullptr, nullptr, nullptr) != -1)
-            {
-                status.shouldReadOutput = (status.outputDeviceReady && FD_ISSET(m_stdOutRead->GetHandle(), &readSet));
-                status.shouldReadErrors = (status.errorsDeviceReady && FD_ISSET(m_stdErrRead->GetHandle(), &readSet));
+                for (int readEventIndex = 0; readEventIndex < numberSignalled; ++ readEventIndex)
+                {
+                    if (events[readEventIndex].data.fd == m_stdOutRead->GetHandle())
+                    {
+                        status.shouldReadOutput = true;
+                    }
+                    else if (events[readEventIndex].data.fd == m_stdErrRead->GetHandle())
+                    {
+                        status.shouldReadErrors = true;
+                    }
+                }
             }
         }
     }
 
     bool StdInOutProcessCommunicatorForChildProcess::AttachToExistingPipes()
     {
-        m_stdInRead->SetHandle(STDIN_FILENO);
+        m_initialized = false;
+
+        if (!m_stdInRead->SetHandle(STDIN_FILENO,/*create epoll handle*/false))
+        {
+            return false;
+        }
         AZ_Assert(m_stdInRead->IsValid(), "In read handle is invalid");
 
-        m_stdOutWrite->SetHandle(STDOUT_FILENO);
+        if (!m_stdOutWrite->SetHandle(STDOUT_FILENO, /*create epoll handle*/ true))
+        {
+            return false;
+        }
         AZ_Assert(m_stdOutWrite->IsValid(), "Output write handle is invalid");
 
-        m_stdErrWrite->SetHandle(STDERR_FILENO);
+        if (!m_stdErrWrite->SetHandle(STDERR_FILENO, /*create epoll handle*/ true))
+        {
+            return false;
+        }
         AZ_Assert(m_stdErrWrite->IsValid(), "Error write handle is invalid");
 
         m_initialized = m_stdInRead->IsValid() && m_stdOutWrite->IsValid() && m_stdErrWrite->IsValid();

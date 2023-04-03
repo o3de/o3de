@@ -66,6 +66,7 @@ CLevelFileDialog::CLevelFileDialog(bool openDialog, QWidget* parent)
     if (m_bOpenDialog)
     {
         setWindowTitle(tr("Open Level"));
+        ui->treeView->expandToDepth(1);
         ui->newFolderButton->setVisible(false);
         ui->buttonBox->button(QDialogButtonBox::Ok)->setText(tr("Open"));
     }
