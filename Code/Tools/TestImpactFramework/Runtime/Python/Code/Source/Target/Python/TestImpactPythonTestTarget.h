@@ -28,6 +28,9 @@ namespace TestImpact
         //! Returns the command to execute this test.
         const AZStd::string& GetCommand() const;
 
+        // TestTarget overrides ...
+        bool CanEnumerate() const override;
+
     private:
         PythonTargetScriptMeta m_scriptMetaData;
     };
