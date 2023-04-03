@@ -177,7 +177,11 @@ PSOutput MainPS(VSOutput input)
 #endif
     {
         color = real3(SceneSrg::m_skyboxCubemap.Sample(PassSrg::LinearSampler, GetCubemapCoords(input.m_cubemapCoord)).rgb);
+
+        //No need to go to acescg if the tonemap will be applied right away.
+#if !ENABLE_MERGE_FILMIC_TONEMAP
         color = TransformColor(color, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
+#endif
 
         // apply the exposure for HDRi texture
         real exposureFactor = pow(2.0, real(SceneSrg::m_cubemapExposure));
@@ -190,9 +194,6 @@ PSOutput MainPS(VSOutput input)
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
     color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
-    
-    //Convert to linearsrg space as we are in acescg space and we will not be applying aces tonemap
-    color = AcesCg_To_LinearSrgb(color);
 
     // We could add Aces support here as well if perf allows.
     color = ApplyFilmicTonemap(color);
