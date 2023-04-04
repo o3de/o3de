@@ -52,7 +52,7 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(componentInstance, "PrefabComponentAdapter::SetComponent - component is null.")
         m_componentAlias = componentInstance->GetSerializedIdentifier();
 
-        // Do not assert on empty alias for disbaled or pending component.
+        // Do not assert on empty alias for disabled or pending components.
         // See GHI: https://github.com/o3de/o3de/issues/15546
         if (!IsComponentDisabled(componentInstance) && !IsComponentPending(componentInstance))
         {
@@ -276,8 +276,8 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(component, "Unable to check a component that is nullptr");
 
         bool result = false;
-        AzToolsFramework::EditorDisabledCompositionRequestBus::EventResult(
-            result, component->GetEntityId(), &AzToolsFramework::EditorDisabledCompositionRequests::IsComponentDisabled, component);
+        EditorDisabledCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorDisabledCompositionRequests::IsComponentDisabled, component);
         return result;
     }
 
@@ -286,8 +286,8 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(component, "Unable to check a component that is nullptr");
 
         bool result = false;
-        AzToolsFramework::EditorPendingCompositionRequestBus::EventResult(
-            result, component->GetEntityId(), &AzToolsFramework::EditorPendingCompositionRequests::IsComponentPending, component);
+        EditorPendingCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorPendingCompositionRequests::IsComponentPending, component);
         return result;
     }
 
