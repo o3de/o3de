@@ -52,6 +52,8 @@ namespace AzToolsFramework::Prefab
         AZ_Assert(componentInstance, "PrefabComponentAdapter::SetComponent - component is null.")
         m_componentAlias = componentInstance->GetSerializedIdentifier();
 
+        // Do not assert on empty alias for disbaled or pending component.
+        // See GHI: https://github.com/o3de/o3de/issues/15546
         if (!IsComponentDisabled(componentInstance) && !IsComponentPending(componentInstance))
         {
             AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
