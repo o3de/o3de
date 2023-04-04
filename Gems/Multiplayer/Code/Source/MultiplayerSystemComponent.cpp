@@ -160,60 +160,31 @@ namespace Multiplayer
             behaviorContext->Class<MultiplayerSystemComponent>("MultiplayerSystemComponent")
                 ->Attribute(AZ::Script::Attributes::Module, "multiplayer")
                 ->Attribute(AZ::Script::Attributes::Category, "Multiplayer")
-                ->Method("GetOnEndpointDisconnectedEvent", [](AZ::EntityId id) -> EndpointDisconnectedEvent*
+                ->Method("GetOnEndpointDisconnectedEvent", []() -> EndpointDisconnectedEvent*
                 {
-                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
-                    if (!entity)
-                    {
-                        AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
-                            "The entity with id %s doesn't exist, please provide a valid entity id.",
-                            id.ToString().c_str());
-                        return nullptr;
-                    }
-
-                    MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
+                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
                     if (!mpComponent)
                     {
-                        AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent GetOnEndpointDisconnectedEvent failed."
-                            "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to this entity.",
-                            entity->GetName().c_str(), id.ToString().c_str());
+                        AZ_Assert(false, "GetOnEndpointDisconnectedEvent failed to find the multiplayer system component. Please update behavior context to properly retrieve the event.");
                         return nullptr;
                     }
 
                     return &mpComponent->m_endpointDisconnectedEvent;
                 })
-                    ->Attribute(AZ::Script::Attributes::AzEventDescription,
-                        AZ::BehaviorAzEventDescription{"On Endpoint Disconnected Event", {"Type of Multiplayer Agent that disconnected"}})
-                ->Method("ClearAllEntities", [](AZ::EntityId id)
+                    ->Attribute(
+                        AZ::Script::Attributes::AzEventDescription,
+                        AZ::BehaviorAzEventDescription{ "On Endpoint Disconnected Event", { "Type of Multiplayer Agent that disconnected" } })
+                ->Method("ClearAllEntities", []()
                 {
-                    AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(id);
-                    if (!entity)
-                    {
-                        AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent MarkForRemoval failed."
-                            "The entity with id %s doesn't exist, please provide a valid entity id.",
-                            id.ToString().c_str());
-                        return;
-                    }
-
-                    MultiplayerSystemComponent* mpComponent = entity->FindComponent<MultiplayerSystemComponent>();
+                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
                     if (!mpComponent)
                     {
-                        AZ_Warning("Multiplayer Property", false,
-                            "MultiplayerSystemComponent MarkForRemoval failed."
-                            "Entity '%s' (id: %s) is missing MultiplayerSystemComponent, be sure to add MultiplayerSystemComponent to "
-                            "this entity.",
-                            entity->GetName().c_str(), id.ToString().c_str());
+                        AZ_Assert( false, "ClearAllEntities failed to find the multiplayer system component. Please update behavior context to properly clear all entities.");
                         return;
                     }
 
                     mpComponent->GetNetworkEntityManager()->ClearAllEntities();
                 })
-                ->Attribute(
-                    AZ::Script::Attributes::AzEventDescription,
-                    AZ::BehaviorAzEventDescription{"On Client Disconnected Event"})
                 ->Method("GetCurrentBlendFactor", []()
                     {
                         if (GetMultiplayer())
