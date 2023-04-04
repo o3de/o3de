@@ -58,7 +58,7 @@ bool buttonHasMenu(Button* button)
 void PushButton::initialize()
 {
     auto styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
-    AZ_Assert(styleManagerInterface, "ToolButton - could not get StyleManagerInterface on PushButton initialization.");
+    AZ_Assert(styleManagerInterface, "PushButton - could not get StyleManagerInterface on PushButton initialization.");
 
     if (styleManagerInterface->IsStylePropertyDefined("ButtonFrameHeight"))
     {

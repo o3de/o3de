@@ -134,7 +134,7 @@ AzQtComponents--TabBar.Secondary::tab:hover
 {
     background: rgba(255,255,255,0.15);
     border-bottom: 3px solid $BackgroundColor;
-    color: $Color;
+    color: $TextColor;
 }
 
 AzQtComponents--TabBar.Secondary.Bordered::tab
@@ -146,5 +146,5 @@ AzQtComponents--TabBar.Secondary.Bordered::tab
 AzQtComponents--TabBar.Secondary::tab:selected
 {
     border-bottom: 3px solid #008DE5;
-    color: $Color;
+    color: $TextColor;
 }
