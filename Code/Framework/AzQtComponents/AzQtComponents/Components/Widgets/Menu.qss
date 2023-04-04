@@ -13,7 +13,7 @@ QMenu
 
 QMenu::item
 {
-    color: $Color;
+    color: $TextColor;
     font-size: $FontSize;
     font-family: "$FontFamily";
 

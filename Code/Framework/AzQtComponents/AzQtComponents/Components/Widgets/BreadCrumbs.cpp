@@ -9,8 +9,8 @@
 #include <AzCore/std/algorithm.h>
 #include <AzCore/std/numeric.h>
 #include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
-#include <AzQtComponents/Components/ConfigHelpers.h>
 #include <AzQtComponents/Components/Style.h>
+#include <AzQtComponents/Components/StyleManagerInterface.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251, "-Wunknown-warning-option") // 4251: 'QLayoutItem::align': class 'QFlags<Qt::AlignmentFlag>' needs to have dll-interface to be used by clients of class 'QLayoutItem'
 #include <QHBoxLayout>
@@ -66,7 +66,6 @@ namespace AzQtComponents
 
     BreadCrumbs::BreadCrumbs(QWidget* parent)
         : QFrame(parent)
-        , m_config(defaultConfig())
     {
         // WARNING: If you add any any new widget to the layout, make sure that it's accounted for in ::sizeHint() and ::fillLabel()
         
@@ -115,6 +114,22 @@ namespace AzQtComponents
 
     BreadCrumbs::~BreadCrumbs()
     {
+    }
+
+    void BreadCrumbs::initialize()
+    {
+        auto styleManagerInterface = AZ::Interface<StyleManagerInterface>::Get();
+        AZ_Assert(styleManagerInterface, "BreadCrumbs - could not get StyleManagerInterface on BreadCrumbs initialization.");
+
+        if (styleManagerInterface->IsStylePropertyDefined("TextDisabledColor"))
+        {
+            s_disabledLinkColor = styleManagerInterface->GetStylePropertyAsColor("TextDisabledColor");
+        }
+
+        if (styleManagerInterface->IsStylePropertyDefined("TextColor"))
+        {
+            s_linkColor = styleManagerInterface->GetStylePropertyAsColor("TextColor");
+        }
     }
 
     bool BreadCrumbs::isBackAvailable() const
@@ -532,7 +547,7 @@ namespace AzQtComponents
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
         AZ_POP_DISABLE_WARNING
 
-        QString linkColor = isEnabled() ? m_config.linkColor : m_config.disabledLinkColor;
+        QString linkColor = isEnabled() ? s_linkColor.name() : s_disabledLinkColor.name();
         auto formatLink = [linkColor](const QString& fullPath, const QString& shortPath) -> QString
         {
             return QString("<a href=\"%1\" style=\"color: %2\">%3</a>").arg(fullPath, linkColor, shortPath);
@@ -635,32 +650,11 @@ namespace AzQtComponents
         }
     }
 
-    BreadCrumbs::Config BreadCrumbs::loadConfig(QSettings& settings)
-    {
-        Config config = defaultConfig();
-
-        ConfigHelpers::read<QString>(settings, QStringLiteral("DisabledLinkColor"), config.disabledLinkColor);
-        ConfigHelpers::read<QString>(settings, QStringLiteral("LinkColor"), config.linkColor);
-
-        return config;
-    }
-
-    BreadCrumbs::Config BreadCrumbs::defaultConfig()
-    {
-        Config config;
-
-        config.disabledLinkColor = QStringLiteral("#999999");
-        config.linkColor = QStringLiteral("white");
-
-        return config;
-    }
-
-    bool BreadCrumbs::polish(Style* style, QWidget* widget, const Config& config)
+    bool BreadCrumbs::polish(Style* style, QWidget* widget)
     {
         BreadCrumbs* breadCrumbs = qobject_cast<BreadCrumbs*>(widget);
         if (breadCrumbs != nullptr)
         {
-            breadCrumbs->m_config = config;
             breadCrumbs->fillLabel();
 
             style->repolishOnSettingsChange(breadCrumbs);

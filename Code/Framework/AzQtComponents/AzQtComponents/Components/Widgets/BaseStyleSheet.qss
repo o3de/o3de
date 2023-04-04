@@ -13,7 +13,7 @@
 *
 {
     background-color: transparent;
-    color: $Color;
+    color: $TextColor;
     font-family: "$FontFamily";
     font-weight: 400;
 }

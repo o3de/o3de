@@ -8,6 +8,7 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Settings/SettingsRegistryImpl.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzQtComponents/Components/StyleManager.h>
 
@@ -237,7 +238,13 @@ namespace AzQtComponents
         m_autoCustomWindowDecorations = new AutoCustomWindowDecorations(this);
         m_autoCustomWindowDecorations->setMode(AutoCustomWindowDecorations::Mode_AnyWindow);
 
-        InitializeThemeProperties(nullptr, "D:\\GitRepos\\O3DE\\o3de\\Code\\Framework\\AzQtComponents\\AzQtComponents\\Themes\\O3DE_Light\\o3de_light.json");
+        AZStd::string themeName = "O3DE_Original";
+
+        AZStd::string themePropertiesPath = AZStd::string::format(
+            "D:\\GitRepos\\O3DE\\o3de\\Code\\Framework\\AzQtComponents\\AzQtComponents\\Themes\\%s\\themeProperties.json",
+             themeName.c_str());
+
+        InitializeThemeProperties(nullptr, themePropertiesPath.c_str());
 
         // Style is chained as: Style -> QStyleSheetStyle -> native, meaning any CSS limitation can be tackled in Style.cpp
         m_styleSheetStyle = new QStyleSheetStyle(createBaseStyle());

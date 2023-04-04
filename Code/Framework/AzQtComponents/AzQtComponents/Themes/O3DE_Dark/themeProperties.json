@@ -1,40 +1,44 @@
 {
-	"theme_id": "o3de_light",
-	"theme_name": "O3DE Light Theme (Default)",
-	"theme_description": "A sample O3DE light theme if you like your monitor to light up your face in meetings.",
+	"theme_id": "o3de_dark",
+	"theme_name": "O3DE Dark Theme",
+	"theme_description": "A darker theme with higher contrast",
 	"theme_base": "",
 	"theme_properties":
 	{
-		"BackgroundColor": "#CCCCCC",
-		"SecondaryBackgroundColor": "#DDDDDD",
-		"Color": "#000000",
+		"BackgroundColor": "#2D2D30",
+		"SecondaryBackgroundColor": "#323232",
 		"FontFamily": "OpenSans",
 		"FontSize": "12px",
+		"Text":
+		{
+			"Color": "#FFFFFF",
+			"DisabledColor": "#999999"
+		},
 		"Separator":
 		{
 			"Thickness": "2",
-			"Color": "#A2A2A2",
+			"Color": "#27272B",
 			"HoveredColor": "#1E70EB"
 		},
 		"Window":
 		{
-			"BackgroundColor": "#888888",
-			"BorderColor": "#999999",
-			"CloseButtonHoveredBackgroundColor": "#666666"
+			"BackgroundColor": "#27272B",
+			"BorderColor": "#000000",
+			"CloseButtonHoveredBackgroundColor": "#B80D1C"
 		},
 		"Menu":
 		{
-			"BackgroundColor": "#CCCCCC",
-			"SeparatorColor": "#DDDDDD",
+			"BackgroundColor": "#222222",
+			"SeparatorColor": "#2D2D30",
 			"Item":
 			{
 				"Selected":
 				{
-					"BackgroundColor": "#CCCCCC"
+					"BackgroundColor": "#2D2D30"
 				},
 				"Disabled":
 				{
-					"Color": "#AAAAAA"
+					"Color": "#555555"
 				}
 			}
 		},
@@ -68,13 +72,13 @@
 				},
 				"Focused":
 				{
-					"BorderThickness": "1",
+					"BorderThickness": 1,
 					"BorderColor": "#4B8CEF"
 				},
 				"Sunken":
 				{
-					"BackgroundGradientStartColor": "#444444",
-					"BackgroundGradientEndColor": "#444444"
+					"BackgroundGradientStartColor": "#2D2D30",
+					"BackgroundGradientEndColor": "#2D2D30"
 				}
 			},
 			"Primary":
@@ -139,7 +143,7 @@
 				"CheckedStateBackgroundColor": "#1E70EB",
 				"":
 				{
-					"Color": "#666666"
+					"Color": "#FFFFFF"
 				},
 				"Active":
 				{
@@ -179,7 +183,7 @@
 		},
 		"Input":
 		{
-			"BackgroundColor": "#FFFFFF",
+			"BackgroundColor": "#CCCCCC",
 			"BorderColor": "#e9e9e9"
 		}
 	}

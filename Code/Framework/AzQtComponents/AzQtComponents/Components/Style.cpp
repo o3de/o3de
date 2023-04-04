@@ -5,45 +5,46 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
-#include <QtGlobal>
 
 #include <AzQtComponents/Components/Style.h>
 #include <AzQtComponents/Components/StyleHelpers.h>
+
 #include <AzQtComponents/Components/ConfigHelpers.h>
+#include <AzQtComponents/Components/FilteredSearchWidget.h>
+#include <AzQtComponents/Components/StyledBusyLabel.h>
+#include <AzQtComponents/Components/Titlebar.h>
+#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
+#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
+#include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
+#include <AzQtComponents/Components/Widgets/BrowseEdit.h>
+#include <AzQtComponents/Components/Widgets/Card.h>
+#include <AzQtComponents/Components/Widgets/CheckBox.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker.h>
+#include <AzQtComponents/Components/Widgets/ColorPicker/PaletteView.h>
+#include <AzQtComponents/Components/Widgets/ComboBox.h>
 #include <AzQtComponents/Components/Widgets/DialogButtonBox.h>
 #include <AzQtComponents/Components/Widgets/DragAndDrop.h>
-#include <AzQtComponents/Components/Widgets/PushButton.h>
-#include <AzQtComponents/Components/Widgets/CheckBox.h>
-#include <AzQtComponents/Components/Widgets/RadioButton.h>
-#include <AzQtComponents/Components/Widgets/ProgressBar.h>
-#include <AzQtComponents/Components/Widgets/Slider.h>
-#include <AzQtComponents/Components/Widgets/Card.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker.h>
 #include <AzQtComponents/Components/Widgets/Eyedropper.h>
-#include <AzQtComponents/Components/Widgets/ColorPicker/PaletteView.h>
 #include <AzQtComponents/Components/Widgets/LineEdit.h>
-#include <AzQtComponents/Components/Widgets/ComboBox.h>
-#include <AzQtComponents/Components/Widgets/BrowseEdit.h>
-#include <AzQtComponents/Components/Widgets/BreadCrumbs.h>
-#include <AzQtComponents/Components/Widgets/SpinBox.h>
-#include <AzQtComponents/Components/Widgets/ScrollBar.h>
-#include <AzQtComponents/Components/Widgets/StatusBar.h>
-#include <AzQtComponents/Components/Widgets/TabWidget.h>
-#include <AzQtComponents/Components/Widgets/TableView.h>
-#include <AzQtComponents/Components/Widgets/TreeView.h>
 #include <AzQtComponents/Components/Widgets/Menu.h>
+#include <AzQtComponents/Components/Widgets/ProgressBar.h>
+#include <AzQtComponents/Components/Widgets/PushButton.h>
+#include <AzQtComponents/Components/Widgets/RadioButton.h>
+#include <AzQtComponents/Components/Widgets/ScrollBar.h>
+#include <AzQtComponents/Components/Widgets/Slider.h>
+#include <AzQtComponents/Components/Widgets/SpinBox.h>
+#include <AzQtComponents/Components/Widgets/StatusBar.h>
+#include <AzQtComponents/Components/Widgets/TableView.h>
+#include <AzQtComponents/Components/Widgets/TabWidget.h>
 #include <AzQtComponents/Components/Widgets/Text.h>
 #include <AzQtComponents/Components/Widgets/ToolBar.h>
 #include <AzQtComponents/Components/Widgets/ToolButton.h>
+#include <AzQtComponents/Components/Widgets/TreeView.h>
 #include <AzQtComponents/Components/Widgets/VectorInput.h>
-#include <AzQtComponents/Components/FilteredSearchWidget.h>
-#include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
-#include <AzQtComponents/Components/Titlebar.h>
-#include <AzQtComponents/Components/StyledBusyLabel.h>
-#include <AzQtComponents/Components/TitleBarOverdrawHandler.h>
 #include <AzQtComponents/Utilities/TextUtilities.h>
 
 AZ_PUSH_DISABLE_WARNING(4251, "-Wunknown-warning-option") // 4251: class '...' needs to have dll-interface to be used by clients of class '...'
+#include <QtGlobal>
 #include <QApplication>
 #include <QCheckBox>
 #include <QComboBox>
@@ -106,7 +107,6 @@ namespace AzQtComponents
         LineEdit::Config lineEditConfig;
         ComboBox::Config comboBoxConfig;
         BrowseEdit::Config browseEditConfig;
-        BreadCrumbs::Config breadCrumbsConfig;
         SpinBox::Config spinBoxConfig;
         ScrollBar::Config scrollBarConfig;
         TabWidget::Config tabWidgetConfig;
@@ -174,7 +174,6 @@ namespace AzQtComponents
         loadConfig<LineEdit::Config, LineEdit>(this, &m_data->watcher, &m_data->lineEditConfig, "LineEditConfig.ini");
         loadConfig<ComboBox::Config, ComboBox>(this, &m_data->watcher, &m_data->comboBoxConfig, "ComboBoxConfig.ini");
         loadConfig<BrowseEdit::Config, BrowseEdit>(this, &m_data->watcher, &m_data->browseEditConfig, "BrowseEditConfig.ini");
-        loadConfig<BreadCrumbs::Config, BreadCrumbs>(this, &m_data->watcher, &m_data->breadCrumbsConfig, "BreadCrumbsConfig.ini");
         loadConfig<SpinBox::Config, SpinBox>(this, &m_data->watcher, &m_data->spinBoxConfig, "SpinBoxConfig.ini");
         loadConfig<ScrollBar::Config, ScrollBar>(this, &m_data->watcher, &m_data->scrollBarConfig, "ScrollBarConfig.ini");
         loadConfig<TabWidget::Config, TabWidget>(this, &m_data->watcher, &m_data->tabWidgetConfig, "TabWidgetConfig.ini");
@@ -189,6 +188,7 @@ namespace AzQtComponents
         loadConfig<ToolBar::Config, ToolBar>(this, &m_data->watcher, &m_data->toolBarConfig, "ToolBarConfig.ini");
         loadConfig<TreeView::Config, TreeView>(this, &m_data->watcher, &m_data->treeViewConfig, "TreeViewConfig.ini");
 
+        BreadCrumbs::initialize();
         PushButton::initialize();
         StatusBar::initialize();
         ToolButton::initialize();
@@ -1200,7 +1200,7 @@ namespace AzQtComponents
             polishedAlready = polishedAlready || Card::polish(this, widget, m_data->cardConfig);
             polishedAlready = polishedAlready || ColorPicker::polish(this, widget, m_data->colorPickerConfig);
             polishedAlready = polishedAlready || Eyedropper::polish(this, widget, m_data->eyedropperConfig);
-            polishedAlready = polishedAlready || BreadCrumbs::polish(this, widget, m_data->breadCrumbsConfig);
+            polishedAlready = polishedAlready || BreadCrumbs::polish(this, widget);
             polishedAlready = polishedAlready || PaletteView::polish(this, widget, m_data->paletteViewConfig);
             polishedAlready = polishedAlready || VectorElement::polish(this, widget, m_data->spinBoxConfig);
             polishedAlready = polishedAlready || SpinBox::polish(this, widget, m_data->spinBoxConfig);
