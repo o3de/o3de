@@ -137,7 +137,7 @@ namespace AzToolsFramework
             const int m_scUpdateInterval = 100;
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
-            AssetBrowserExpandedTableView* m_attachedExpendedTableView = nullptr;
+            AssetBrowserExpandedTableView* m_attachedExpandedTableView = nullptr;
 
             QString m_name;
 

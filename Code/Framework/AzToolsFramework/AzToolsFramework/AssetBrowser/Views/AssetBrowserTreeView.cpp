@@ -683,7 +683,7 @@ namespace AzToolsFramework
 
         void AssetBrowserTreeView::SetAttachedExpandedTableView(AssetBrowserExpandedTableView* tableView)
         {
-            m_attachedExpendedTableView = tableView;
+            m_attachedExpandedTableView = tableView;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
