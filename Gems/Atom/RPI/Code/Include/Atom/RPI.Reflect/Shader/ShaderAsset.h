@@ -110,6 +110,9 @@ namespace AZ
             //! Note that this will append the system supervariant name from RPI::ShaderSystem when searching.
             SupervariantIndex GetSupervariantIndex(const AZ::Name& supervariantName) const;
 
+            //! If a Supervariant with such index doesn't exist, returns the default supervariant name "".
+            const AZ::Name& GetSupervariantName(SupervariantIndex supervariantIndex) const;
+
             //! This function should be your one stop shop to get a ShaderVariantAsset.
             //! Finds and returns the best matching ShaderVariantAsset given a ShaderVariantId.
             //! If the ShaderVariantAsset is not fully loaded and ready at the moment, this function
