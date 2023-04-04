@@ -373,8 +373,12 @@ namespace AssetBuilderSDK
 
         //! This is similiar to Order where the dependent job should only run after all the jobs it depends on are processed by the Asset Processor.
         //! The difference is that here only those dependent jobs matter that have never been processed by the Asset Processor.
-        //! Also important to note is the fingerprint of the dependent jobs will not alter the the fingerprint of the job.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
         OrderOnce,
+
+        //! Similar to Order, except that the dependent jobs do not rebuild when the jobs they depend on are processed.
+        //! Also important to note is the fingerprint of the dependent jobs will not alter the fingerprint of the job.
+        OrderOnly,
     };
 
     //! Job dependency information that the builder will send to the Asset Processor.
