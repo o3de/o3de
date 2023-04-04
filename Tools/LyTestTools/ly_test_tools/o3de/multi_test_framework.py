@@ -898,8 +898,15 @@ class MultiTestSuite(object):
             return_code = executable.get_returncode()
             executable_log_content = log_content_function(run_id, log_name, workspace)
             # Save the executable log.
+            workspace.artifact_manager.set_dest_path(request.node.originalname)
             workspace.artifact_manager.save_artifact(
                 os.path.join(log_path_function(run_id, workspace), log_name), f'({run_id}){log_name}')
+            server_log_name = os.path.join(workspace.paths.project_log(), 'Server.log')
+            game_log_name = os.path.join(workspace.paths.project_log(), 'Game.log')
+            if os.path.exists(server_log_name) and os.path.getsize(server_log_name):
+                workspace.artifact_manager.save_artifact(server_log_name)
+            if os.path.exists(game_log_name) and os.path.getsize(game_log_name):
+                workspace.artifact_manager.save_artifact(game_log_name)
             if return_code == 0:
                 test_result = Result.Pass(test_spec, output, executable_log_content)
             else:

@@ -107,6 +107,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::LandscapeCanvas.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()
