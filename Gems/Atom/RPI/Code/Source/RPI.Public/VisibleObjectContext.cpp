@@ -25,20 +25,21 @@ namespace AZ
 
         void VisibleObjectContext::AddVisibleObject(const void* userData, float depth)
         {
-            if (Validation::IsEnabled())
+            if (userData)
             {
-                if (!userData)
-                {
-                    AZ_Error("VisibleObjectContext", false, "Null userData was added to a VisibleObjectContext. This is not permitted and will crash if validation is disabled.");
-                    return;
-                }
+                VisibleObjectList& visibleObjectList = m_visibleObjectListContext.GetStorage();
+                VisibleObjectProperties visibleObject;
+                visibleObject.m_userData = userData;
+                visibleObject.m_depth = depth;
+                visibleObjectList.push_back(visibleObject);
             }
-
-            VisibleObjectList& visibleObjectList = m_visibleObjectListContext.GetStorage();
-            VisibleObjectProperties visibleObject;
-            visibleObject.m_userData = userData;
-            visibleObject.m_depth = depth;
-            visibleObjectList.push_back(visibleObject);
+            else
+            {
+                AZ_Error(
+                    "VisibleObjectContext",
+                    false,
+                    "Null userData was added to a VisibleObjectContext. Visible object will be ignored.");
+            }
         }
 
         void VisibleObjectContext::FinalizeLists()

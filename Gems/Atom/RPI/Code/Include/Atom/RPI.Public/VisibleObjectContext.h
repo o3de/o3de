@@ -60,7 +60,9 @@ namespace AZ
             VisibleObjectListView GetList() const;
 
         private:
+            // Thread local storage of visible objects during the append phase
             RHI::ThreadLocalContext<VisibleObjectList> m_visibleObjectListContext;
+            // Combined results from the thread local list to be used during the consume phase
             VisibleObjectList m_finalizedVisibleObjectList;
         };
     }
