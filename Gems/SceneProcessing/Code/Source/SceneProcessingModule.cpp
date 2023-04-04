@@ -44,11 +44,11 @@ namespace AZ
                     SceneProcessingConfig::SoftNameBehavior::CreateDescriptor(),
                     SceneBuilder::BuilderPluginComponent::CreateDescriptor(),
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
-                        AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
-                        AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
-                        AZ::SceneGenerationComponents::UVsPreExportComponent::CreateDescriptor(),
-                        AZ::SceneGenerationComponents::UVsGenerateComponent::CreateDescriptor(),
-                        AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsGenerateComponentDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsPreExportComponentDescriptor(),
+                    AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
                 });
 
                 // This is an internal Amazon gem, so register it's components for metrics tracking, otherwise the name of the component won't get sent back.

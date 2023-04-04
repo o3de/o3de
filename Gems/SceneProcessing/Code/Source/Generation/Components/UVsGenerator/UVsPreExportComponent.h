@@ -8,27 +8,16 @@
 
 #pragma once
 
-#include <SceneAPI/SceneCore/Components/GenerationComponent.h>
-#include <SceneAPI/SceneCore/Containers/Scene.h>
-
-#include <AzCore/RTTI/RTTI.h>
-
-namespace AZ::SceneAPI::Events { class GenerateAdditionEventContext; }
+namespace AZ
+{
+    class ComponentDescriptor;
+}
 
 namespace AZ::SceneGenerationComponents
 {
-    //! This is the component responsible for actually hooking into the scene API's processing flow
-    //! during the generation step.
-    class UVsPreExportComponent
-        : public AZ::SceneAPI::SceneCore::GenerationComponent
-    {
-    public:
-        AZ_COMPONENT(UVsPreExportComponent, "{64F79C1E-CED6-42A9-8229-6607F788C731}", AZ::SceneAPI::SceneCore::GenerationComponent)
+    inline constexpr const char* s_UVsPreExportComponentTypeId = "{64F79C1E-CED6-42A9-8229-6607F788C731}";
 
-        UVsPreExportComponent();
-
-        static void Reflect(AZ::ReflectContext* context);
-
-        AZ::SceneAPI::Events::ProcessingResult Register(AZ::SceneAPI::Events::GenerateAdditionEventContext& context);
-    };
+    //! This function will be called by the module class to get the descriptor.  Doing it this way saves
+    //! it from having to actually see the entire component declaration here, it can all be in the implementation file.
+    AZ::ComponentDescriptor* CreateUVsPreExportComponentDescriptor();
 } // namespace AZ::SceneGenerationComponents

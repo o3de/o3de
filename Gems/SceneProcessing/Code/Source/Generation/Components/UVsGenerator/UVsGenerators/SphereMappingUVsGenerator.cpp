@@ -33,7 +33,7 @@ namespace AZ::UVsGeneration::Mesh::SphericalMapping
 
         // calculate mesh center by bounding box center.
         AZ::Aabb meshAabb = AZ::Aabb::CreateNull();
-        for (unsigned int vertexIndex = 0; vertexIndex < vertexCount ; ++vertexIndex)
+        for (unsigned int vertexIndex = 0; vertexIndex < vertexCount; ++vertexIndex)
         {
             meshAabb.AddPoint(meshData->GetPosition(vertexIndex));
         }

@@ -8,14 +8,25 @@
 
 #pragma once
 
-#include <SceneAPI/SceneCore/Components/GenerationComponent.h>
-#include <SceneAPI/SceneCore/Containers/Scene.h>
-#include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <AzCore/RTTI/RTTI.h>
+#include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
+#include <SceneAPI/SceneCore/Containers/Scene.h>
 
-namespace AZ::SceneAPI::DataTypes { class IMeshData; }
-namespace AZ::SceneAPI::DataTypes { class IMeshVertexUVData; }
-namespace AZ::SceneData::GraphData { class MeshVertexUVData;  }
+namespace AZ
+{
+    namespace SceneAPI::DataTypes
+    {
+        class IMeshData;
+        class IMeshVertexUVData;
+    }
+
+    namespace SceneData::GraphData
+    {
+        class MeshVertexUVData;
+    }
+
+    class ComponentDescriptor;
+} // namespace AZ
 
 namespace AZ::SceneGenerationComponents
 {
@@ -35,40 +46,9 @@ namespace AZ::SceneGenerationComponents
         AZ::SceneAPI::Containers::Scene& m_scene;
     };
 
-    //! Check whether UVs are to be generated, and if so, generate them.
-    class UVsGenerateComponent
-        : public AZ::SceneAPI::SceneCore::GenerationComponent
-    {
-    public:
-        AZ_COMPONENT(UVsGenerateComponent, "{49121BDD-C7E5-4D39-89BC-28789C90057F}", AZ::SceneAPI::SceneCore::GenerationComponent);
-        UVsGenerateComponent();
+    inline constexpr const char* s_UVsGenerateComponentTypeId = "{49121BDD-C7E5-4D39-89BC-28789C90057F}";
 
-        static void Reflect(AZ::ReflectContext* context);
-
-        // Invoked by the CallProcessorBinder flow.  This is essentially the entry point for this operation.
-        AZ::SceneAPI::Events::ProcessingResult GenerateUVsData(UVsGenerateContext& context);
-    private:
-        bool GenerateUVsForMesh(
-            AZ::SceneAPI::Containers::Scene& scene,
-            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
-            AZ::SceneAPI::DataTypes::IMeshData* meshData,
-            const AZ::SceneAPI::DataTypes::UVsGenerationMethod generationMethod,
-            const bool replaceExisting);
-
-        //! How many UV Sets already exist on the mesh?
-        size_t CalcUvSetCount(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const;
-
-        //! find the Nth UV Set on the mesh and return it.
-        AZ::SceneAPI::DataTypes::IMeshVertexUVData* FindUvData(AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex, AZ::u64 uvSet) const;
-
-        //! Return the UV Rule (the modifier on the mesh group) or nullptr if no such modifier is applied.
-        const AZ::SceneAPI::SceneData::UVsRule* GetUVsRule(const AZ::SceneAPI::Containers::Scene& scene) const;
-
-        //! Create a new UV set and hook it into the scene graph
-        bool CreateUVsLayer(
-            AZ::SceneAPI::Containers::SceneManifest& manifest,
-            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
-            AZ::SceneAPI::Containers::SceneGraph& graph,
-            SceneData::GraphData::MeshVertexUVData** outUVsData);
-    };
+    //! This function will be called by the module class to get the descriptor.  Doing it this way saves
+    //! it from having to actually see the entire component declaration here, it can all be in the implementation file.
+    AZ::ComponentDescriptor* CreateUVsGenerateComponentDescriptor();
 } // namespace AZ::SceneGenerationComponents

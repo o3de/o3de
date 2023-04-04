@@ -55,7 +55,7 @@ namespace AZ
                             AZ_Warning(
                                 AZ::SceneAPI::Utilities::WarningWindow,
                                 false,
-                                "'" AZ_STRING_FORMAT "' is not a valid default UV generation method. Check the value of %s in your "
+                                "'%s' is not a valid default UV generation method. Check the value of " AZ_STRING_FORMAT " in your "
                                 "settings registry, and change "
                                 "it to 'LeaveSceneDataAsIs' or 'SphericalProjection'",
                                 stringFromRegistry.c_str(),
@@ -100,7 +100,7 @@ namespace AZ
                 }
 
                 serializeContext->Class<UVsRule, DataTypes::IRule>()
-                    ->Version(2)
+                    ->Version(1)
                     ->Field("generationMethod", &UVsRule::m_generationMethod)
                     ->Field("replaceExisting", &UVsRule::m_replaceExisting);
 

@@ -11,21 +11,67 @@
 
 #include <AzCore/std/smart_ptr/make_shared.h>
 
+#include <SceneAPI/SceneCore/Components/GenerationComponent.h>
 #include <SceneAPI/SceneCore/Containers/Views/PairIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphDownwardsIterator.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphChildIterator.h>
-
 #include <SceneAPI/SceneCore/DataTypes/DataTypeUtilities.h>
 #include <SceneAPI/SceneCore/DataTypes/Groups/IGroup.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshData.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMeshVertexUVData.h>
-
 #include <SceneAPI/SceneData/GraphData/MeshVertexUVData.h>
-
+#include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
 
 namespace AZ::SceneGenerationComponents
 {
+    //! Check whether UVs are to be generated, and if so, generate them.
+    class UVsGenerateComponent : public AZ::SceneAPI::SceneCore::GenerationComponent
+    {
+    public:
+        AZ_COMPONENT(UVsGenerateComponent, s_UVsGenerateComponentTypeId, SceneAPI::SceneCore::GenerationComponent);
+
+        UVsGenerateComponent();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        // Invoked by the CallProcessorBinder flow.  This is essentially the entry point for this operation.
+        AZ::SceneAPI::Events::ProcessingResult GenerateUVsData(UVsGenerateContext& context);
+
+    private:
+        bool GenerateUVsForMesh(
+            AZ::SceneAPI::Containers::Scene& scene,
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            AZ::SceneAPI::DataTypes::IMeshData* meshData,
+            const AZ::SceneAPI::DataTypes::UVsGenerationMethod generationMethod,
+            const bool replaceExisting);
+
+        //! How many UV Sets already exist on the mesh?
+        size_t CalcUvSetCount(
+            AZ::SceneAPI::Containers::SceneGraph& graph, const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex) const;
+
+        //! find the Nth UV Set on the mesh and return it.
+        AZ::SceneAPI::DataTypes::IMeshVertexUVData* FindUvData(
+            AZ::SceneAPI::Containers::SceneGraph& graph,
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            AZ::u64 uvSet) const;
+
+        //! Return the UV Rule (the modifier on the mesh group) or nullptr if no such modifier is applied.
+        const AZ::SceneAPI::SceneData::UVsRule* GetUVsRule(const AZ::SceneAPI::Containers::Scene& scene) const;
+
+        //! Create a new UV set and hook it into the scene graph
+        bool CreateUVsLayer(
+            AZ::SceneAPI::Containers::SceneManifest& manifest,
+            const AZ::SceneAPI::Containers::SceneGraph::NodeIndex& nodeIndex,
+            AZ::SceneAPI::Containers::SceneGraph& graph,
+            SceneData::GraphData::MeshVertexUVData** outUVsData);
+    };
+
+    AZ::ComponentDescriptor* CreateUVsGenerateComponentDescriptor()
+    {
+        return UVsGenerateComponent::CreateDescriptor();
+    }
+
     UVsGenerateComponent::UVsGenerateComponent()
     {
         BindToCall(&UVsGenerateComponent::GenerateUVsData);
@@ -161,7 +207,7 @@ namespace AZ::SceneGenerationComponents
             // for future expansion - add new methods here if you want to support additional methods of UV auto generation.
         default:
             {
-                AZ_Assert(false, "Unknown UVs generation method selected (%d) cannot generate UVs.\n", static_cast<AZ::u32>(generationMethod));
+                AZ_Assert(false, "Unknown UVs generation method selected (%u) cannot generate UVs.\n", static_cast<AZ::u32>(generationMethod));
                 allSuccess = false;
             }
         }

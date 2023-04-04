@@ -7,13 +7,36 @@
  */
 
 #include <Generation/Components/UVsGenerator/UVsPreExportComponent.h>
-#include <Generation/Components/UVsGenerator/UVsGenerateComponent.h>
+
+#include <AzCore/RTTI/RTTI.h>
+
+#include <Generation/Components/UVsGenerator/UVsGenerateComponent.h> // for the context
+#include <SceneAPI/SceneCore/Components/GenerationComponent.h>
+#include <AzCore/Serialization/SerializeContext.h>
 #include <SceneAPI/SceneCore/Events/GenerateEventContext.h>
 #include <SceneAPI/SceneCore/Events/ProcessingResult.h>
 #include <SceneAPI/SceneCore/Events/CallProcessorBus.h>
 
 namespace AZ::SceneGenerationComponents
 {
+    //! This is the component responsible for actually hooking into the scene API's processing flow
+    //! during the generation step.
+    class UVsPreExportComponent : public AZ::SceneAPI::SceneCore::GenerationComponent
+    {
+    public:
+        AZ_COMPONENT(UVsPreExportComponent, s_UVsPreExportComponentTypeId, AZ::SceneAPI::SceneCore::GenerationComponent);
+        UVsPreExportComponent();
+
+        static void Reflect(AZ::ReflectContext* context);
+
+        AZ::SceneAPI::Events::ProcessingResult Register(AZ::SceneAPI::Events::GenerateAdditionEventContext& context);
+    };
+
+    AZ::ComponentDescriptor* CreateUVsPreExportComponentDescriptor()
+    {
+        return UVsPreExportComponent::CreateDescriptor();
+    }
+
     namespace SceneEvents = AZ::SceneAPI::Events;
 
     UVsPreExportComponent::UVsPreExportComponent()
