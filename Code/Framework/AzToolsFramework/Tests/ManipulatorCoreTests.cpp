@@ -12,6 +12,7 @@
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/Application/ToolsApplication.h>
 #include <AzToolsFramework/Manipulators/LinearManipulator.h>
+#include <AzToolsFramework/Manipulators/ManipulatorBus.h>
 #include <AzToolsFramework/ToolsComponents/EditorLockComponent.h>
 #include <AzToolsFramework/ToolsComponents/EditorVisibilityComponent.h>
 #include <AzToolsFramework/ToolsComponents/TransformComponent.h>
@@ -169,7 +170,8 @@ namespace UnitTest
         AzToolsFramework::ManipulatorViews views;
         views.emplace_back(AzToolsFramework::CreateManipulatorViewSphere(
             // note: use a small radius for the manipulator view/bounds to ensure precise mouse movement
-            AZ::Color{}, 0.001f,
+            AZ::Color{},
+            0.001f,
             [](const AzToolsFramework::ViewportInteraction::MouseInteraction&, bool, const AZ::Color&)
             {
                 return AZ::Color{};
@@ -209,5 +211,48 @@ namespace UnitTest
 
         // ensure final world positions match
         EXPECT_THAT(finalManipulatorTransform, IsCloseTolerance(finalTransformWorld, 0.01f));
+    }
+
+    TEST_F(ManipulatorCoreInteractionFixture, MouseUpOfOtherMouseButtonDoesNotEndManipulatorInteraction)
+    {
+        // setup viewport/camera
+        m_cameraState.m_viewportSize = AzFramework::ScreenSize(1280, 720);
+        AzFramework::SetCameraTransform(m_cameraState, AZ::Transform::CreateIdentity());
+
+        AzToolsFramework::ManipulatorViews views;
+        views.emplace_back(AzToolsFramework::CreateManipulatorViewSphere(
+            // note: use a small radius for the manipulator view/bounds to ensure precise mouse movement
+            AZ::Color{},
+            0.001f,
+            [](const AzToolsFramework::ViewportInteraction::MouseInteraction&, bool, const AZ::Color&)
+            {
+                return AZ::Color{};
+            }));
+
+        m_linearManipulator->SetViews(views);
+        m_linearManipulator->Register(m_viewportManipulatorInteraction->GetManipulatorManagerId());
+
+        // the transform of the manipulator in world space
+        const auto transformWorld = AZ::Transform::CreateTranslation(AZ::Vector3(0.0f, 10.0f, 0.0f));
+        // the position of the manipulator in screen space
+        const auto positionScreen = AzFramework::WorldToScreen(transformWorld.GetTranslation(), m_cameraState);
+
+        m_linearManipulator->SetSpace(AZ::Transform::CreateIdentity());
+        m_linearManipulator->SetLocalTransform(transformWorld);
+
+        // press and drag the mouse (starting where the surface manipulator is)
+        m_actionDispatcher->CameraState(m_cameraState)
+            ->MousePosition(positionScreen)
+            ->MouseLButtonDown()
+            ->MouseRButtonDown()
+            ->MouseRButtonUp();
+
+        bool interacting = false;
+        AzToolsFramework::ManipulatorManagerRequestBus::EventResult(
+            interacting,
+            m_viewportManipulatorInteraction->GetManipulatorManagerId(),
+            &AzToolsFramework::ManipulatorManagerRequestBus::Events::Interacting);
+
+        EXPECT_THAT(interacting, ::testing::IsTrue());
     }
 } // namespace UnitTest
