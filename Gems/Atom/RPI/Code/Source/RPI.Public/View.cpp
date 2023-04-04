@@ -94,6 +94,7 @@ namespace AZ
         {
             m_drawListMask.reset();
             m_drawListContext.Shutdown();
+            m_visibleObjectContext.Shutdown();
             m_passesByDrawList = nullptr;
         }
 
