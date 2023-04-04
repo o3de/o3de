@@ -392,7 +392,7 @@ namespace AZ
                     AZ_Error(
                         "MeshDrawPacket",
                         (!m_rootConstantsLayout && !pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()) ||
-                        m_rootConstantsLayout->GetHash() == pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash(),
+                        (m_rootConstantsLayout && m_rootConstantsLayout->GetHash() == pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash()),
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.");
                 }
