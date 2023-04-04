@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
+#if ENABLE_SPHERE_LIGHTS
 int GetPointLightShadowCubemapFace(const float3 targetPos, const float3 lightPos)
 {
     const float3 toPoint = targetPos - lightPos;    
@@ -184,7 +185,6 @@ void ValidatePointLight(ViewSrg::PointLight light, Surface surface, inout Lighti
 
 void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_SPHERE_LIGHTS
     if (o_enableSphereLights)
     {
         ViewSrg::PointLight light = ViewSrg::m_pointLights[lightIndex];
@@ -200,7 +200,6 @@ void ApplyPointLightInternal(uint lightIndex, Surface surface, inout LightingDat
             ApplyPointLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_SPHERE_LIGHTS
 }
 
 void ApplyPointLights(Surface surface, inout LightingData lightingData)
@@ -222,3 +221,11 @@ void ApplyPointLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyPointLights(Surface surface, inout LightingData lightingData)
+{
+    //Not Enabled
+}
+#endif
