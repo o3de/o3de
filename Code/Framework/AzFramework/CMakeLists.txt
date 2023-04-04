@@ -102,7 +102,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME AZ::AzFramework.Tests
-            LABELS REQUIRES_tiaf;TIAF_shard_test
+            LABELS REQUIRES_tiaf;TIAF_shard_fixture
         )
 
         include(${test_pal_dir}/platform_specific_test_targets.cmake)
