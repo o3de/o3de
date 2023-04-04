@@ -196,8 +196,12 @@ namespace TestImpact
     ShardedTestJobInfo<TestJobRunner> NativeShardedTestRunJobInfoGeneratorBase<TestJobRunner>::GenerateJobInfo(
         const TestTargetAndEnumeration& testTargetAndEnumeration, typename TestJobRunner::JobInfo::Id startingId)
     {
+        // If the target can shard and has more than one test, and the max concurrency is greater than 1, we will shard
         if (const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
-            m_maxConcurrency > 1 && testEnumeration.has_value() && testEnumeration->GetNumEnabledTests() > 1)
+            testTarget->CanShard()
+            && m_maxConcurrency > 1
+            && testEnumeration.has_value()
+            && testEnumeration->GetNumEnabledTests() > 1)
         {
             return GenerateJobInfoImpl(testTargetAndEnumeration, startingId);
         }
