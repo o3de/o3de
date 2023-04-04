@@ -40,6 +40,7 @@ namespace AssetBundler
         const AZStd::vector<AZStd::string>& defaultSeeds,
         const AzFramework::PlatformFlags& platforms)
         : QAbstractTableModel(parent)
+        , m_errorImage(QStringLiteral(":/stylesheet/img/logging/error.svg"))
     {
         m_seedListManager.reset(new AzToolsFramework::AssetSeedManager());
 
@@ -74,6 +75,13 @@ namespace AssetBundler
             platformList = QString(m_seedListManager->GetReadablePlatformList(seed).c_str());
 
             m_additionalSeedInfoMap[seed.m_assetId].reset(new AdditionalSeedInfo(assetInfo.m_relativePath.c_str(), platformList));
+
+            // Missing assets still show up in the seed list view. Display An error message where the blank filename would otherwise be.
+            if (!assetInfo.m_assetId.IsValid())
+            {
+                const AZStd::string assetIdStr(seed.m_assetId.ToString<AZStd::string>());
+                m_additionalSeedInfoMap[seed.m_assetId]->m_errorMessage = tr("Missing asset: path hint '%1', asset ID '%2'").arg(seed.m_assetRelativePath.c_str()).arg(assetIdStr.c_str());
+            }
         }
     }
 
@@ -224,10 +232,24 @@ namespace AssetBundler
 
         switch (role)
         {
+        case Qt::DecorationRole:
+            if (index.column() == Column::ColumnRelativePath)
+            {
+                if (!additionalSeedInfoOutcome.GetValue()->m_errorMessage.isEmpty())
+                {
+                    return m_errorImage;
+                }
+            }
+            break;
         case Qt::DisplayRole:
         {
             if (index.column() == Column::ColumnRelativePath)
             {
+                // If this seed has an error, display that instead of the path.
+                if (!additionalSeedInfoOutcome.GetValue()->m_errorMessage.isEmpty())
+                {
+                    return additionalSeedInfoOutcome.GetValue()->m_errorMessage;
+                }
                 return additionalSeedInfoOutcome.GetValue()->m_relativePath;
             }
             else if (index.column() == Column::ColumnPlatformList)
