@@ -272,6 +272,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
             const bool selectFirstFilteredIndex = false;
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
+            m_ui->m_expandedTableViewButton->setDisabled(hasFilter);
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -655,11 +656,13 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_searchWidget->setDisabled(false);
     }
     else if (qobject_cast<AssetBrowserExpandedTableView*>(viewToShow))
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(true);
+        m_ui->m_searchWidget->setDisabled(true);
     }
 }
 
