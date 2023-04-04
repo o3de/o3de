@@ -71,7 +71,7 @@ namespace PhysX
             else
             {
                 linkData->m_jointLeadLocalFrame = AZ::Transform::CreateFromQuaternionAndTranslation(
-                    AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_leadLocalPosition),
+                    AZ::Quaternion::CreateFromEulerAnglesDegrees(articulationLinkComponent->m_config.m_LeadLocalRotation),
                     articulationLinkComponent->m_config.m_leadLocalPosition);
             }
         }

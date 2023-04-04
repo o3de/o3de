@@ -263,6 +263,19 @@ namespace PhysX
         //      eCOMPUTE_JOINT_FORCES //!< Enable in order to be able to query joint solver .
     }
 
+    void setInboundJointDriveParams(
+        physx::PxArticulationJointReducedCoordinate* inboundJoint,
+        physx::PxArticulationAxis articulationAxis,
+        const ArticulationJointMotorProperties& motorProperties)
+    {
+        physx::PxArticulationDrive drive;
+        drive.driveType = physx::PxArticulationDriveType::eFORCE;
+        drive.maxForce = motorProperties.m_driveForceLimit;
+        drive.damping = motorProperties.m_driveDamping;
+        drive.stiffness = motorProperties.m_driveStiffness;
+        inboundJoint->setDriveParams(physx::PxArticulationAxis::eTWIST, drive);
+    }
+
     void ArticulationLinkComponent::CreateChildArticulationLinks(
         physx::PxArticulationLink* parentLink, const ArticulationLinkData& thisLinkData)
     {
@@ -347,6 +360,15 @@ namespace PhysX
                     inboundJoint->setMotion(
                         physx::PxArticulationAxis::eTWIST, physx::PxArticulationMotion::eFREE); // free on the x rotation axis (eTWIST)
                 }
+                if (articulationLinkConfiguration.m_motorConfiguration.m_useMotor)
+                {
+                    physx::PxArticulationDrive drive;
+                    drive.driveType = physx::PxArticulationDriveType::eFORCE;
+                    drive.maxForce = articulationLinkConfiguration.m_motorConfiguration.m_driveForceLimit;
+                    drive.damping = articulationLinkConfiguration.m_motorConfiguration.m_driveDamping;
+                    drive.stiffness = articulationLinkConfiguration.m_motorConfiguration.m_driveStiffness;
+                    inboundJoint->setDriveParams(physx::PxArticulationAxis::eTWIST, drive);
+                }
                 break;
             case ArticulationJointType::Prismatic:
                 inboundJoint->setJointType(physx::PxArticulationJointType::ePRISMATIC);
@@ -375,6 +397,15 @@ namespace PhysX
                 {
                     inboundJoint->setMotion(
                         physx::PxArticulationAxis::eX, physx::PxArticulationMotion::eFREE); // free on the x movement axis (eX)
+                }
+                if (articulationLinkConfiguration.m_motorConfiguration.m_useMotor)
+                {
+                    physx::PxArticulationDrive drive;
+                    drive.driveType = physx::PxArticulationDriveType::eFORCE;
+                    drive.maxForce = articulationLinkConfiguration.m_motorConfiguration.m_driveForceLimit;
+                    drive.damping = articulationLinkConfiguration.m_motorConfiguration.m_driveDamping;
+                    drive.stiffness = articulationLinkConfiguration.m_motorConfiguration.m_driveStiffness;
+                    inboundJoint->setDriveParams(physx::PxArticulationAxis::eX, drive);
                 }
                 break;
             default:
