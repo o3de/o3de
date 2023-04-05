@@ -8,12 +8,17 @@
 #pragma once
 
 // RHIUtils is for dumping common functionality that is used in several places across the RHI
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/string/string.h>
+#include <AzCore/JSON/document.h>
+#include <AzCore/Outcome/Outcome.h>
  
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 #include <Atom/RHI.Reflect/Base.h>
 #include <Atom/RHI.Reflect/Format.h>
 
 #include <Atom/RHI/Device.h>
+#include <Atom/RHI/RHISystemInterface.h>
 
 namespace AZ
 {
@@ -40,11 +45,31 @@ namespace AZ
         //! Returns true if the command line option is set
         bool QueryCommandLineOption(const AZStd::string& commandLineOption);
 
-        //! Returns if the current bakcend is null 
+        //! Returns true if the current backend is null 
         bool IsNullRHI();
 
         //! Returns true if the Atom/GraphicsDevMode settings registry key is set
         bool IsGraphicsDevModeEnabled();
+
+        //! Utility function to write captured pool data to a json document
+        //! Ensure the passed pool won't be modified during the call to this function
+        //! Available externally to the RHI through the RHIMemoryStatisticsInterface
+        void WritePoolsToJson(
+            const AZStd::vector<MemoryStatistics::Pool>& pools, 
+            rapidjson::Document& doc);
+
+        //! Utility function to write captured pool data to a json document
+        //! Available externally to the RHI through the RHIMemoryStatisticsInterface
+        AZ::Outcome<void, AZStd::string> LoadPoolsFromJson(
+            AZStd::vector<MemoryStatistics::Pool>& pools,
+            AZStd::vector<AZ::RHI::MemoryStatistics::Heap>& heaps,
+            rapidjson::Document& doc,
+            const AZStd::string& fileName);
+
+        //! Utility function to trigger an emergency dump of pool information to json.
+        //! Intended to be used for gpu memory failure debugging.
+        //! Available externally to the RHI through the RHIMemoryStatisticsInterface
+        void DumpPoolInfoToJson();
     }
 }
 

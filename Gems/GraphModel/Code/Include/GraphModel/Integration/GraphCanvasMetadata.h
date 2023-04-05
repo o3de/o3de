@@ -12,6 +12,9 @@
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/std/containers/map.h>
 
+// Graph Canvas
+#include <GraphCanvas/Types/EntitySaveData.h>
+
 // Graph Model
 #include <GraphModel/Model/Common.h>
 
@@ -36,20 +39,20 @@ namespace GraphModelIntegration
     {
     public:
         AZ_RTTI(GraphCanvasMetadata, "{BD95C3EB-CD09-4F82-9724-032BD1827B95}");
+        AZ_CLASS_ALLOCATOR(GraphCanvasMetadata, AZ::SystemAllocator);
+        static void Reflect(AZ::ReflectContext* context);
 
+        GraphCanvasMetadata() = default;
         virtual ~GraphCanvasMetadata() = default;
-
-        static void Reflect(AZ::ReflectContext* reflectContext);
 
     private:
         friend class GraphController;
 
         // I tried using a unique_ptr but SerializeContext didn't like it
-        typedef AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer> EntitySaveDataContainerPtr;
+        using EntitySaveDataContainerPtr = AZStd::shared_ptr<GraphCanvas::EntitySaveDataContainer>;
 
         // Using a map instead of unordered_map for simpler xml diffs
-        typedef AZStd::map<GraphModel::NodeId, EntitySaveDataContainerPtr> NodeMetadataMap;
-        typedef AZStd::map<AZ::EntityId, EntitySaveDataContainerPtr> OtherMetadataMap;
+        using NodeMetadataMap = AZStd::map<GraphModel::NodeId, EntitySaveDataContainerPtr>;
 
         //! Graph Canvas metadata that pertains to the entire scene
         EntitySaveDataContainerPtr m_sceneMetadata;
@@ -58,4 +61,18 @@ namespace GraphModelIntegration
         //! the position of each node.
         NodeMetadataMap m_nodeMetadata;
     };
-}
+
+    //! Structure used to serialize the selection state for nodes and constructs so that it can be restored when loading and undoing operations
+    class GraphCanvasSelectionData : public GraphCanvas::ComponentSaveData
+    {
+    public:
+        AZ_RTTI(GraphCanvasSelectionData, "{FC18625B-1E97-415D-9832-B222DE054680}", GraphCanvas::ComponentSaveData);
+        AZ_CLASS_ALLOCATOR(GraphCanvasSelectionData, AZ::SystemAllocator);
+        static void Reflect(AZ::ReflectContext* context);
+
+        GraphCanvasSelectionData() = default;
+        virtual ~GraphCanvasSelectionData() = default;
+        bool m_selected = {};
+    };
+
+} // namespace GraphModelIntegration

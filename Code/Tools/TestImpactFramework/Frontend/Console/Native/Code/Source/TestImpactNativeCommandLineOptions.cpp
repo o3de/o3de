@@ -14,47 +14,36 @@
 
 namespace TestImpact
 {
-    namespace
+    namespace NativeOptions
     {
-        enum NativeOptions
+        enum Fields
         {
             // Options
-            TestShardingPolicyKey,
             MaxConcurrencyKey,
+            // Checksum
+            _CHECKSUM_
         };
 
-        constexpr const char* OptionKeys[] = {
+        constexpr const char* Keys[] = {
             // Options
-            "shard",
             "maxconcurrency",
         };
 
-        Policy::TestSharding ParseTestShardingPolicy(const AZ::CommandLine& cmd)
-        {
-            const BinaryStateValue<Policy::TestSharding> states = { Policy::TestSharding::Never, Policy::TestSharding::Always };
+    } // namespace NativeOptions
 
-            return ParseOnOffOption(OptionKeys[TestShardingPolicyKey], states, cmd).value_or(Policy::TestSharding::Never);
-        }
-
-        AZStd::optional<size_t> ParseMaxConcurrency(const AZ::CommandLine& cmd)
-        {
-            return ParseUnsignedIntegerOption(OptionKeys[MaxConcurrencyKey], cmd);
-        }
-    } // namespace
+    AZStd::optional<size_t> ParseMaxConcurrency(const AZ::CommandLine& cmd)
+    {
+        return ParseUnsignedIntegerOption(NativeOptions::Keys[NativeOptions::Fields::MaxConcurrencyKey], cmd);
+    }
 
     NativeCommandLineOptions::NativeCommandLineOptions(int argc, char** argv)
         : CommandLineOptions(argc, argv)
     {
+        static_assert(NativeOptions::_CHECKSUM_ == AZStd::size(NativeOptions::Keys));
         AZ::CommandLine cmd;
         cmd.Parse(argc, argv);
 
-        m_testShardingPolicy = ParseTestShardingPolicy(cmd);
         m_maxConcurrency = ParseMaxConcurrency(cmd);
-    }
-
-    Policy::TestSharding NativeCommandLineOptions::GetTestShardingPolicy() const
-    {
-        return m_testShardingPolicy;
     }
 
     const AZStd::optional<size_t>& NativeCommandLineOptions::GetMaxConcurrency() const
@@ -66,8 +55,6 @@ namespace TestImpact
     {
         AZStd::string help = CommandLineOptions::GetCommandLineUsageString();
         help +=
-            "    -shard=<on,off>                                             Break any test targets with a sharding policy into the number of \n"
-            "                                                                shards according to the maximum concurrency value.\n"
             "    -maxconcurrency=<number>                                    The maximum number of concurrent test targets/shards to be in flight at \n"
             "                                                                any given moment.\n";
 

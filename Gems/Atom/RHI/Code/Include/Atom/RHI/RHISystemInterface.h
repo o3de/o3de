@@ -60,10 +60,6 @@ namespace AZ
 
             virtual uint16_t GetNumActiveRenderPipelines() const = 0;
 
-            virtual const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const = 0;
-
-            virtual const RHI::MemoryStatistics* GetMemoryStatistics() const = 0;
-
             virtual const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const = 0;
 
             virtual ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const = 0;

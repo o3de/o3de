@@ -21,9 +21,9 @@
 Surface EvaluateSurface_MaterialGraphName(
     VsOutput IN,
     float3 positionWS,
-    float3 normalWS,
-    float3 tangents[UvSetCount],
-    float3 bitangents[UvSetCount],
+    real3 normalWS,
+    real3 tangents[UvSetCount],
+    real3 bitangents[UvSetCount],
     float2 uvs[UvSetCount],
     bool isFrontFace)
 {
@@ -39,11 +39,11 @@ Surface EvaluateSurface_MaterialGraphName(
     #define O3DE_MC_UV(index) uvs[clamp(index, 0, UvSetCount-1)];
 
     // O3DE_GENERATED_INSTRUCTIONS_BEGIN: inNormal, inBaseColor, inMetallic, inRoughness, inSpecularF0Factor
-    float3 inNormal = normalWS;
-    float3 inBaseColor = {1.0, 1.0, 1.0};
-    float inMetallic = 0.0;
-    float inRoughness = 0.0;
-    float inSpecularF0Factor = 0.0;
+    real3 inNormal = normalWS;
+    real3 inBaseColor = {1.0, 1.0, 1.0};
+    real inMetallic = 0.0;
+    real inRoughness = 0.0;
+    real inSpecularF0Factor = 0.0;
     // O3DE_GENERATED_INSTRUCTIONS_END
 
     #undef O3DE_MC_UV
@@ -51,7 +51,8 @@ Surface EvaluateSurface_MaterialGraphName(
     Surface surface;
     surface.position = positionWS;
     surface.vertexNormal = normalWS;
-    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((float2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+    surface.normal = normalize(o_normal_override_enabled ? GetWorldSpaceNormal((real2)inNormal, normalWS, tangents[0], bitangents[0]) : normalWS);
+
     surface.roughnessLinear = inRoughness;
     surface.SetAlbedoAndSpecularF0(inBaseColor, inSpecularF0Factor, inMetallic);
     surface.CalculateRoughnessA();
