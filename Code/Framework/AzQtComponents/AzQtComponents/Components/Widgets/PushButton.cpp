@@ -347,7 +347,7 @@ bool PushButton::drawPushButtonBevel(const Style* style, const QStyleOption* opt
             borderThickness = s_buttonBorderFocusedThickness;
         }
 
-        float radius = s_buttonFrameRadius;
+        float radius = aznumeric_cast<float>(s_buttonFrameRadius);
         drawFilledFrame(painter, r, gradientStartColor, gradientEndColor, borderColor, borderThickness, radius);
     }
 
