@@ -63,9 +63,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-// The shader variant system needs a fallback, using UnusedFallbackDrawSrg for this.
-#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
-
 #include "ReflectionCommon.azsli"
 
 // Vertex Shader

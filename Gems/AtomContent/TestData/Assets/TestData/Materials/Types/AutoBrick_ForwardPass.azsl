@@ -129,11 +129,11 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
-    float3x3 objectToWorldIT = ObjectSrg::GetWorldMatrixInverseTranspose();
+    real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
+    real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
 
     float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(IN.m_normal, IN.m_tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     float3x3 identityUvMatrix = 
         { 1,0,0,

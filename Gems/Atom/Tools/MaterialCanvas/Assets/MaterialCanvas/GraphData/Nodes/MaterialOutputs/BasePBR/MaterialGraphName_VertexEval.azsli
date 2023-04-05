@@ -26,8 +26,8 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float2 uv1,
     uint instanceId)
 {
-    const real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(instanceId));
-    const real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(instanceId));
+    const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
     const real3 bitangent = cross(normal, tangent.xyz);
 
