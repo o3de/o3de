@@ -23,17 +23,18 @@ namespace UnitTest
         ASSERT_TRUE(m_prefabOverridePublicInterface);
     }
 
-    bool PrefabUndoComponentPropertyTestFixture::CreateWheelEntityHierarchy(EntityInfo& wheelEntityInfo)
+    void PrefabUndoComponentPropertyTestFixture::CreateWheelEntityHierarchy(EntityInfo& wheelEntityInfo)
     {
         AZ::EntityId wheelEntityId = CreateEditorEntityUnderRoot(WheelEntityName);
+        ASSERT_TRUE(wheelEntityId.IsValid());
+
         EntityAlias wheelEntityAlias = FindEntityAliasInInstance(GetRootContainerEntityId(), WheelEntityName);
-        EXPECT_FALSE(wheelEntityAlias.empty());
+        ASSERT_FALSE(wheelEntityAlias.empty());
 
         wheelEntityInfo = { wheelEntityId, wheelEntityAlias };
-        return true;
     }
 
-    bool PrefabUndoComponentPropertyTestFixture::CreateCarPrefabHierarchy(
+    void PrefabUndoComponentPropertyTestFixture::CreateCarPrefabHierarchy(
         InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo)
     {
         AZ::IO::Path engineRootPath;
@@ -43,27 +44,30 @@ namespace UnitTest
 
         // Create the Car prefab
         AZ::EntityId wheelEntityId = CreateEditorEntityUnderRoot(WheelEntityName);
+        ASSERT_TRUE(wheelEntityId.IsValid());
+
         AZ::EntityId carContainerId = CreateEditorPrefab(carPrefabFilepath, { wheelEntityId });
+        ASSERT_TRUE(carContainerId.IsValid());
 
         InstanceAlias carInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), CarPrefabName);
-        EXPECT_FALSE(carInstanceAlias.empty());
+        ASSERT_FALSE(carInstanceAlias.empty());
 
         EntityAlias wheelEntityAlias = FindEntityAliasInInstance(carContainerId, WheelEntityName);
-        EXPECT_FALSE(wheelEntityAlias.empty());
+        ASSERT_FALSE(wheelEntityAlias.empty());
 
         // Retrieve the Wheel entity id after adding it to Car instance
         InstanceOptionalReference carInstance = m_instanceEntityMapperInterface->FindOwningInstance(carContainerId);
-        EXPECT_TRUE(carInstance.has_value());
+        ASSERT_TRUE(carInstance.has_value());
         EntityOptionalReference wheelEntity = carInstance->get().GetEntity(wheelEntityAlias);
-        EXPECT_TRUE(wheelEntity.has_value());
+        ASSERT_TRUE(wheelEntity.has_value());
         wheelEntityId = wheelEntity->get().GetId();
+        ASSERT_TRUE(wheelEntityId.IsValid());
 
         carInstanceInfo = { carContainerId, carInstanceAlias };
         wheelEntityInfo = { wheelEntityId, wheelEntityAlias };
-        return true;
     }
 
-    bool PrefabUndoComponentPropertyTestFixture::CreateSuperCarPrefabHierarchy(
+    void PrefabUndoComponentPropertyTestFixture::CreateSuperCarPrefabHierarchy(
         InstanceInfo& superCarInstanceInfo, InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo)
     {
         // Create the Car prefab
@@ -76,30 +80,31 @@ namespace UnitTest
 
         // Create the SuperCar prefab
         AZ::EntityId superCarContainerId = CreateEditorPrefab(superCarPrefabFilepath, { carInstanceInfo.m_containerEntityId });
+        ASSERT_TRUE(superCarContainerId.IsValid());
 
         InstanceAlias superCarInstanceAlias = FindNestedInstanceAliasInInstance(GetRootContainerEntityId(), SuperCarPrefabName);
-        EXPECT_FALSE(superCarInstanceAlias.empty());
+        ASSERT_FALSE(superCarInstanceAlias.empty());
 
         superCarInstanceInfo = { superCarContainerId, superCarInstanceAlias };
 
         // Retrieve the Car instance info after adding it to SuperCar instance
         InstanceAlias newCarInstanceAlias = FindNestedInstanceAliasInInstance(superCarContainerId, CarPrefabName);
-        EXPECT_FALSE(newCarInstanceAlias.empty());
+        ASSERT_FALSE(newCarInstanceAlias.empty());
 
         InstanceOptionalReference superCarInstance = m_instanceEntityMapperInterface->FindOwningInstance(superCarContainerId);
-        EXPECT_TRUE(superCarInstance.has_value());
+        ASSERT_TRUE(superCarInstance.has_value());
 
         InstanceOptionalReference carInstance = superCarInstance->get().FindNestedInstance(newCarInstanceAlias);
-        EXPECT_TRUE(carInstance.has_value());
+        ASSERT_TRUE(carInstance.has_value());
 
         carInstanceInfo = { carInstance->get().GetContainerEntityId(), newCarInstanceAlias };
 
         // Retrieve the Wheel entity id after adding the Car instance to SuperCar instance
         EntityOptionalReference wheelEntity = carInstance->get().GetEntity(wheelEntityInfo.m_entityAlias);
-        EXPECT_TRUE(wheelEntity.has_value());
+        ASSERT_TRUE(wheelEntity.has_value());
 
         wheelEntityInfo.m_entityId = wheelEntity->get().GetId();
-        return true;
+        ASSERT_TRUE(wheelEntityInfo.m_entityId.IsValid());
     }
     
     auto PrefabUndoComponentPropertyTestFixture::MakeTransformTranslationPropertyChangePatch(

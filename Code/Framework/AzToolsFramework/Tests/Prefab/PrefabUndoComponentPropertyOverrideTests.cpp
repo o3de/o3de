@@ -18,7 +18,7 @@ namespace UnitTest
     {
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
-        ASSERT_TRUE(CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo));
+        CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
 
         const bool defaultStaticValue = false;
         const bool overriddenStaticValue = true;
@@ -77,7 +77,7 @@ namespace UnitTest
     {
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
-        ASSERT_TRUE(CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo));
+        CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
 
         const bool defaultStaticValue = false;
 
@@ -116,7 +116,7 @@ namespace UnitTest
     {
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
-        ASSERT_TRUE(CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo));
+        CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
 
         const AZ::Vector3 defaultTranslation(0.0f, 0.0f, 0.0f);
         const AZ::Vector3 overriddenTranslation(10.0f, 20.0f, 0.0f);
@@ -178,7 +178,7 @@ namespace UnitTest
         InstanceInfo superCarInstanceInfo;
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
-        ASSERT_TRUE(CreateSuperCarPrefabHierarchy(superCarInstanceInfo, carInstanceInfo, wheelEntityInfo));
+        CreateSuperCarPrefabHierarchy(superCarInstanceInfo, carInstanceInfo, wheelEntityInfo);
 
         // Modify the transform component as override
         AZ::TransformBus::Event(wheelEntityInfo.m_entityId, &AZ::TransformInterface::SetLocalTranslation, overriddenTranslation);
@@ -231,7 +231,7 @@ namespace UnitTest
     {
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
-        ASSERT_TRUE(CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo));
+        CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
 
         const AZ::Vector3 defaultTranslation(0.0f, 0.0f, 0.0f);
         const AZ::Vector3 overriddenTranslation(10.0f, 20.0f, 0.0f);

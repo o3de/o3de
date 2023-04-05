@@ -48,11 +48,10 @@ namespace UnitTest
         void SetUpEditorFixtureImpl() override;
 
         //! Creates entities and prefabs for testing. SuperCar prefab owns a Car prefab. Car prefab owns a Wheel entity.
-        //! Returns true if the entities and prefabs are created successfully.
         //! @{
-        bool CreateWheelEntityHierarchy(EntityInfo& wheelEntityInfo);
-        bool CreateCarPrefabHierarchy(InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo);
-        bool CreateSuperCarPrefabHierarchy(InstanceInfo& superCarInstanceInfo, InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo);
+        void CreateWheelEntityHierarchy(EntityInfo& wheelEntityInfo);
+        void CreateCarPrefabHierarchy(InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo);
+        void CreateSuperCarPrefabHierarchy(InstanceInfo& superCarInstanceInfo, InstanceInfo& carInstanceInfo, EntityInfo& wheelEntityInfo);
         //! @}
 
         //! Generates property change patch for various properties.
