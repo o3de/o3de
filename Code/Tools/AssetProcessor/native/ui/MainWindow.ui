@@ -2268,6 +2268,47 @@
           </item>
          </layout>
         </widget>
+         <widget class="QWidget" name="AssetRelocationPage">
+           <layout class="QVBoxLayout" name="AssetRelocationVerticalLayout">
+             <item>
+               <widget class="QLabel" name="AssetRelocationScreenTitle">
+                 <property name="font">
+                   <font>
+                     <pointsize>10</pointsize>
+                     <weight>75</weight>
+                     <bold>true</bold>
+                   </font>
+                 </property>
+                 <property name="text">
+                   <string># Asset Relocation</string>
+                 </property>
+                 <property name="textFormat">
+                   <enum>Qt::MarkdownText</enum>
+                 </property>
+               </widget>
+             </item>
+             <item>
+               <widget class="QLabel" name="AssetRelocationDescriptionLabel">
+                 <property name="text">
+                   <string>This is the list of currently enabled extensions for asset relocation. You can read more about relocating assets &lt;a href=&quot;TODO-LINK-LEAVE-IN-DRAFT-UNTIL-AVAILABLE&quot;&gt;here.&lt;/a&gt;</string>
+                 </property>
+                 <property name="openExternalLinks">
+                   <bool>true</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                   <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                 </property>
+               </widget>
+             </item>
+             <item>
+               <widget class="QListView" name="AssetRelocationExtensionListView">
+                 <property name="showDropIndicator" stdset="0">
+                   <bool>false</bool>
+                 </property>
+               </widget>
+             </item>
+           </layout>
+         </widget>
        </widget>
       </item>
      </layout>
