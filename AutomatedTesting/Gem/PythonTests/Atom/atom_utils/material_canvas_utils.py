@@ -8,6 +8,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 import azlmbr.atomtools as atomtools
 import azlmbr.editor.graph as graph
 import azlmbr.math as math
+import azlmbr.object
 import azlmbr.bus as bus
 
 import Atom.atom_utils.atom_tools_utils as atom_tools_utils
@@ -52,7 +53,21 @@ class Graph(object):
         node_object = self._create_node_by_name(node_name)
         node_id = graph.GraphControllerRequestBus(
             bus.Event, GraphControllerRequestBusEvents.ADD_NODE, self.graph_id, node_object, position)
+        if not node_id:
+            return  # If the node isn't valid, don't add it.
         self.nodes.append(Node(node_object, node_id, node_name, self.graph_id, position))
+
+
+class Slot(object):
+    """
+    Represents a slot that is part of a Node (required).
+    """
+
+    def __init__(self, slot_name):
+        self.slot_name = slot_name
+        self.id = graph.GraphModelSlotId(slot_name)
+        if not self.id:
+            self.id = None
 
 
 class Node(object):
@@ -66,45 +81,36 @@ class Node(object):
         self.node_name = node_name
         self.graph_id = graph_id
         self.position = position
-        self.outbound_slot = graph.GraphModelSlotId('outPosition')
-        self.inbound_slot = graph.GraphModelSlotId('inPositionOffset')
+        self.slots = []
 
-    def connect_to_node_outbound_slot(self, target_node: Node) -> object:
+    def add_slot(self, slot_name: str) -> None:
         """
-        Adds a new connection between this node's inbound slot to target_node's outbound slot.
-        :param target_node: A Node() object for the target node to connect to.
+        Adds a new Slot object to this Node to identify one of its existing slots.
+        :param slot_name: Name of the slot to lookup using graph.GraphModelSlotId().
+        :return: None, but adds the new slot to the self.slots list.
+        """
+        self.slots.append(Slot(slot_name))
+
+    def connect_slots(self, source_slot: Slot, target_node: (), target_slot: Slot) -> azlmbr.object.PythonProxyObject:
+        """
+        Connects a starting source_slot to a destination target_slot.
+        :param source_slot: A Slot() object for the source_node in a given Node() object.
+        :param target_node: A Node() object for the target node that holds the target_slot we are connecting to.
+        :param target_slot: A Slot() object for the slot we are connecting to from the source_node.
         :return: azlmbr.object.PythonProxyObject representing a C++ AZStd::shared_ptr<Connection> object.
         """
         return graph.GraphControllerRequestBus(
             bus.Event, GraphControllerRequestBusEvents.ADD_CONNECTION_BY_SLOT_ID, self.graph_id,
-            self.node_object, self.inbound_slot, target_node, target_node.outbound_slot)
+            self.node_object, source_slot.id, target_node.node_object, target_slot.id)
 
-    def connect_to_node_inbound_slot(self, target_node: Node) -> object:
+    def are_slots_connected(self, source_slot: Slot, target_node: (), target_slot: Slot) -> bool:
         """
-        Adds a new connection between this node's outbound slot to target_node's inbound slot.
-        :param target_node: A Node() object for the target node to connect to.
-        :return: azlmbr.object.PythonProxyObject representing a C++ AZStd::shared_ptr<Connection> object.
-        """
-        return graph.GraphControllerRequestBus(
-            bus.Event, GraphControllerRequestBusEvents.ADD_CONNECTION_BY_SLOT_ID, self.graph_id,
-            self.node_object, self.outbound_slot, target_node, target_node.inbound_slot)
-
-    def is_connected_to_node_outbound_slot(self, target_node: Node) -> bool:
-        """
-        Determines if self.node_object's inbound slot is connected to the target_node's outbound slot.
-        :param target_node: A Node() object for the target node to connect to.
-        :return: bool representing success (True) or failure (False)
+        Determines if the source_slot is connected to the target_slot on the target_node.
+        :param source_slot: A Slot() object for the source_node in a given Node() object.
+        :param target_node: A Node() object for the target node that should be connected to the source node.
+        :param target_slot: A Slot() object for the slot we should be connected to from the source_node.
+        :return: True if the source_slot and target_slot are connected, False otherwise.
         """
         return graph.GraphControllerRequestBus(
             bus.Event, GraphControllerRequestBusEvents.ARE_SLOTS_CONNECTED, self.graph_id,
-            self.node_object, self.inbound_slot, target_node, target_node.outbound_slot)
-
-    def is_connected_to_node_inbound_slot(self, target_node: Node) -> bool:
-        """
-        Determines if self.node_object's outbound slot is connected to the target_node's inbound slot.
-        :param target_node: A Node() object for the target node to connect to.
-        :return: bool representing success (True) or failure (False)
-        """
-        return graph.GraphControllerRequestBus(
-            bus.Event, GraphControllerRequestBusEvents.ARE_SLOTS_CONNECTED, self.graph_id,
-            self.node_object, self.outbound_slot, target_node, target_node.inbound_slot)
+            self.node_object, source_slot.id, target_node.node_object, target_slot.id)

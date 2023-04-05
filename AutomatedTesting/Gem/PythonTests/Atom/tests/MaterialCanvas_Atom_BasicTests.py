@@ -68,7 +68,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
     import azlmbr.math as math
 
     import Atom.atom_utils.atom_tools_utils as atom_tools_utils
-    from Atom.atom_utils.material_canvas_utils import Graph, Node
+    from Atom.atom_utils.material_canvas_utils import Graph
     from editor_python_test_tools.utils import Report, Tracer, TestHelper
 
     with Tracer() as error_tracer:
@@ -113,18 +113,18 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             test_material_graph = Graph(material_graph_document_file)
             Report.result(Tests.verify_all_material_graphs_are_opened,
                           atom_tools_utils.is_document_open(test_material_graph.document_id) is True)
-            test_material_graphs.append(test_material_graph.document_id)
+            test_material_graphs.append(test_material_graph)
 
         # 5. Use the CloseAllDocumentsExcept bus call to close all but test_1_material_graph.
         test_1_material_graph = test_material_graphs[0]
         atom_tools_utils.close_all_except_selected(test_1_material_graph.document_id)
         Report.result(
             Tests.close_all_opened_material_graphs_except_one,
-            atom_tools_utils.is_document_open(test_1_material_graph) is True and
-            atom_tools_utils.is_document_open(test_material_graphs[1]) is False and
-            atom_tools_utils.is_document_open(test_material_graphs[2]) is False and
-            atom_tools_utils.is_document_open(test_material_graphs[3]) is False and
-            atom_tools_utils.is_document_open(test_material_graphs[4]) is False)
+            atom_tools_utils.is_document_open(test_1_material_graph.document_id) is True and
+            atom_tools_utils.is_document_open(test_material_graphs[1].document_id) is False and
+            atom_tools_utils.is_document_open(test_material_graphs[2].document_id) is False and
+            atom_tools_utils.is_document_open(test_material_graphs[3].document_id) is False and
+            atom_tools_utils.is_document_open(test_material_graphs[4].document_id) is False)
 
         # 6. Verify Node Palette pane visibility.
         atom_tools_utils.set_pane_visibility("Node Palette", True)
@@ -152,8 +152,11 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             standard_pbr_node.node_object.typename == "AZStd::shared_ptr<Node>")
 
         # 10. Create a node connection between world_position_node outbound slot and standard_pbr_node inbound slot.
-        world_position_node.connect_to_node_inbound_slot(standard_pbr_node)
-        are_slots_connected = world_position_node.is_connected_to_node_inbound_slot(standard_pbr_node)
+        world_position_node.add_slot('outPosition')
+        standard_pbr_node.add_slot('inPositionOffset')
+        world_position_node.connect_slots(world_position_node.slots[0], standard_pbr_node, standard_pbr_node.slots[0])
+        are_slots_connected = world_position_node.are_slots_connected(
+            world_position_node.slots[0], standard_pbr_node, standard_pbr_node.slots[0])
         Report.result(Tests.nodes_connected, are_slots_connected is True)
 
         # 11. Look for errors and asserts.
