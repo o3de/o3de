@@ -17,33 +17,44 @@ QPushButton:focus {
     border:1px solid #1e70eb;
 }
 
-QPushButton[secondary="true"],
-QPushButton[class="Secondary"] {
+QPushButton[primary="true"] {
+    qproperty-flat: true;
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
+}
+QPushButton[primary="true"]:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
+}
+QPushButton[primary="true"]:pressed {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                            stop: 0 #0085e2, stop: 1.0 #0e60db);
+}
+
+QPushButton[secondary="true"] {
     qproperty-flat: true;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #888888, stop: 1.0 #555555);
 }
-QPushButton[secondary="true"]:hover,
-QPushButton[class="Secondary"]:hover {
+QPushButton[secondary="true"]:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #999999, stop: 1.0 #666666);
 }
-QPushButton[secondary="true"]:pressed,
-QPushButton[class="Secondary"]:pressed {
-    qproperty-flat: true;
+QPushButton[secondary="true"]:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #555555, stop: 1.0 #777777);
 }
 
-QPushButton[class="Danger"] {
+QPushButton[danger="true"] {
+    qproperty-flat: true;
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #E32C27, stop: 1.0 #951D21);
 }
-QPushButton[class="Danger"]:hover {
+QPushButton[danger="true"]:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #FD3129, stop: 1.0 #AF2221);
 }
-QPushButton[class="Danger"]:pressed {
+QPushButton[danger="true"]:pressed {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                             stop: 0 #951D1F, stop: 1.0 #C92724);
 }
@@ -454,53 +465,11 @@ QTabBar::tab:focus {
 }
 
 #footer > QPushButton {
-    qproperty-flat: true;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #0095f2, stop: 1.0 #1e70eb);
     border-radius: 3px;
     min-height: 28px;
     max-height: 28px;
     min-width: 150px;
     margin-right:30px;
-}
-#footer > QPushButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #10A5f2, stop: 1.0 #2e80eb);
-}
-#footer > QPushButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #0085e2, stop: 1.0 #0e60db);
-}
-
-#footer > QPushButton[class="Secondary"],
-#footer > QPushButton[secondary="true"] {
-    margin-right: 10px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-}
-#footer > QPushButton[secondary="true"]:hover,
-#footer > QPushButton[class="Secondary"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-
-#footer > QPushButton[class="Secondary"]:pressed,
-#footer > QPushButton[secondary="true"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
-}
-
-#footer > QPushButton[class="Danger"] {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#footer > QPushButton[class="Danger"]:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#footer > QPushButton[class="Danger"]:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
 }
 
 #dialogSubTitle {
@@ -615,9 +584,6 @@ QTabBar::tab:focus {
 }
 
 #projectSettingsTab::tab-bar > QPushButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-    qproperty-flat: true;
     margin-right:30px;
     margin-bottom:12px;
     margin-top:0px;
@@ -628,14 +594,6 @@ QTabBar::tab:focus {
     border-radius: 3px;
     text-align:center;
     font-size:13px;
-}
-#projectSettingsTab::tab-bar > QPushButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#projectSettingsTab::tab-bar > QPushButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 #projectSettingsTopFrame {
@@ -765,19 +723,8 @@ QTabBar::tab:focus {
 }
 
 #labelButton #projectActionCancelButton{
-    qproperty-flat: true;
     border-radius: 3px;
     margin-left: 1px;
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #E32C27, stop: 1.0 #951D21);
-}
-#labelButton #projectActionCancelButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #FD3129, stop: 1.0 #AF2221);
-}
-#labelButton #projectActionCancelButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #951D1F, stop: 1.0 #C92724);
 }
 
 #labelButtonOverlay {
@@ -1084,9 +1031,6 @@ QProgressBar::chunk {
 }
 
 #gemRepoAddButton {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #888888, stop: 1.0 #555555);
-    qproperty-flat: true;
     min-width:120px;
     max-width:120px;
     min-height:24px;
@@ -1095,14 +1039,6 @@ QProgressBar::chunk {
     text-align:center;
     font-size:12px;
     font-weight:600;
-}
-#gemRepoAddButton:hover {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #999999, stop: 1.0 #666666);
-}
-#gemRepoAddButton:pressed {
-    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                            stop: 0 #555555, stop: 1.0 #777777);
 }
 
 #gemRepoInspector {

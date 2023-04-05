@@ -64,6 +64,7 @@ namespace O3DE::ProjectManager
         QPushButton* cancelButton = dialogButtons->addButton(tr("Cancel"), QDialogButtonBox::RejectRole);
         cancelButton->setProperty("secondary", true);
         QPushButton* continueButton = dialogButtons->addButton(tr("Continue"), QDialogButtonBox::AcceptRole);
+        continueButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(continueButton, &QPushButton::clicked, this, &QDialog::accept);

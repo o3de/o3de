@@ -186,6 +186,7 @@ namespace O3DE::ProjectManager
         // Seperate buttons are used to avoid stutter from reloading style after changing object name
         m_actionCancelButton = new QPushButton(tr("Cancel Project Action"), this);
         m_actionCancelButton->setObjectName("projectActionCancelButton");
+        m_actionCancelButton->setProperty("danger", true);
         m_actionCancelButton->setVisible(false);
         verticalButtonLayout->addWidget(m_actionCancelButton);
 
