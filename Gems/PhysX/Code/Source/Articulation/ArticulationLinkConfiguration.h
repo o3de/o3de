@@ -103,6 +103,9 @@ namespace PhysX
         float m_angularLimitPositive = 45.0f;
         float m_angularLimitNegative = -45.0f;
 
+        float m_jointFriction = 0.f;
+        AZ::Vector3 m_armature {0.f};
+
         ArticulationJointMotorProperties m_motorConfiguration;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();

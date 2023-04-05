@@ -196,6 +196,14 @@ namespace PhysX
                         0, &ArticulationLinkConfiguration::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
+                    ->DataElement(
+                        0, &ArticulationLinkConfiguration::m_jointFriction, "Joint Friction", "Joint's friction coefficient.")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
+
+                    ->DataElement(
+                        0, &ArticulationLinkConfiguration::m_armature, "Armature", "Mass for prismatic joints, inertia for hinge")
+                    ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
+
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                     ->DataElement(0, &ArticulationLinkConfiguration::m_sensorConfigs, "Sensor Configurations", "Sensor configurations")

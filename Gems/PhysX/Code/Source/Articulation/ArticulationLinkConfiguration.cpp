@@ -122,6 +122,8 @@ namespace PhysX
                 ->Field("Angular Limit Negative", &ArticulationLinkConfiguration::m_angularLimitNegative)
                 ->Field("Angular Limit Positive", &ArticulationLinkConfiguration::m_angularLimitPositive)
                 ->Field("Motor configuration", &ArticulationLinkConfiguration::m_motorConfiguration)
+                ->Field("Armature", &ArticulationLinkConfiguration::m_armature)
+                ->Field("Friction", &ArticulationLinkConfiguration::m_jointFriction)
                 ->Field("Sensor Configurations", &ArticulationLinkConfiguration::m_sensorConfigs);
         }
     }
