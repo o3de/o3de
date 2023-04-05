@@ -53,11 +53,13 @@ namespace AZ::DocumentPropertyEditor
                 AZ::SerializeContext::IDataContainer* parentContainer,
                 void* parentContainerInstance,
                 AZ::SerializeContext::IDataContainer* container,
-                void* containerInstance)
+                void* containerInstance,
+                void* overrideInstance)
                 : m_parentContainer(parentContainer)
                 , m_parentContainerInstance(parentContainerInstance)
                 , m_container(container)
                 , m_containerInstance(containerInstance)
+                , m_elementOverrideInstance(overrideInstance)
             {
             }
 
@@ -76,23 +78,28 @@ namespace AZ::DocumentPropertyEditor
                     auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
                     auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceValue);
 
+                    // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
+                    // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
+                    // editable item who pretends that they can be removed directly from the container
+                    void* overrideInstance = nullptr;
+                    auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
+                    if (containerElementOverrideValue)
+                    {
+                        overrideInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
+                    }
+
                     if (containerValue)
                     {
                         auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerValue);
 
                         // This is a nested container, so store data to both the parent container and nested container
-                        return BoundContainer(parentContainer, parentContainerInstance, container, instance);
+                        return BoundContainer(parentContainer, parentContainerInstance, container, instance, overrideInstance);
                     }
                     else
                     {
-                        // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
-                        // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
-                        // editable item who pretends that they can be removed directly from the container
-                        auto containerElementOverrideValue =
-                            attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
-                        if (containerElementOverrideValue)
+                        if (overrideInstance)
                         {
-                            instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
+                            instance = overrideInstance;
                         }
 
                         // This is a non-container child element, so we only store data for the parent container and the element
@@ -216,20 +223,33 @@ namespace AZ::DocumentPropertyEditor
 
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                auto parentBoundContainer = impl->m_containers.ValueAtPath(path, Dom::PrefixTreeMatch::ExactPath);
-                if (parentBoundContainer)
-                {
-
-                }
-
+                void* instanceToRemove = nullptr;
                 if (m_elementInstance == nullptr)
                 {
-                    m_parentContainer->RemoveElement(m_parentContainerInstance, m_containerInstance, impl->m_serializeContext);
+                    instanceToRemove = m_containerInstance;
+                    auto associativeContainer = m_parentContainer->GetAssociativeContainerInterface();
+                    if (associativeContainer)
+                    {
+                        // Use the override instance if specified since it represents the
+                        // element pair instance that the IDataContainer API is expecting
+                        void* keyInstance = m_elementOverrideInstance ? m_elementOverrideInstance : m_containerInstance;
+                        const AZ::SerializeContext::ClassElement* containerClassElement =
+                            m_parentContainer->GetElement(m_parentContainer->GetDefaultElementNameCrc());
+                        instanceToRemove =
+                            associativeContainer->GetElementByKey(m_parentContainerInstance, containerClassElement, keyInstance);
+                    }
                 }
                 else
                 {
-                    m_parentContainer->RemoveElement(m_parentContainerInstance, m_elementInstance, impl->m_serializeContext);
+                    instanceToRemove = m_elementInstance;
+                    auto associativeContainer = m_parentContainer->GetAssociativeContainerInterface();
+                    if (associativeContainer)
+                    {
+                        instanceToRemove = associativeContainer->GetElementByKey(m_parentContainerInstance, nullptr, m_elementInstance);
+                    }
                 }
+
+                m_parentContainer->RemoveElement(m_parentContainerInstance, instanceToRemove, impl->m_serializeContext);
 
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
@@ -273,7 +293,10 @@ namespace AZ::DocumentPropertyEditor
 
             void* m_elementInstance = nullptr;
 
+            // An element instance reserved through the IDataContainer API
             void* m_reservedElementInstance = nullptr;
+            // If specified, a more specific instance for associative container elements
+            void* m_elementOverrideInstance = nullptr;
         };
 
         // Lookup table of containers and their elements for handling container operations
