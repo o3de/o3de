@@ -47,7 +47,7 @@ namespace AzToolsFramework
 
         void PrefabUndoComponentPropertyOverride::CaptureAndRedo(
             Instance& owningInstance,
-            AZ::Dom::Path relativePathFromOwningPrefab,
+            const AZ::Dom::Path pathToPropertyFromOwningPrefab,
             const PrefabDomValue& afterStateOfComponentProperty)
         {
             InstanceOptionalReference focusedInstance =
@@ -77,7 +77,7 @@ namespace AzToolsFramework
             // Configure paths from focused and top templates. The top template is the source template of the link.
             AZ::Dom::Path pathToPropertyFromTopPrefab =
                 AZ::Dom::Path(PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true)) /
-                relativePathFromOwningPrefab;
+                pathToPropertyFromOwningPrefab;
             AZ::Dom::Path pathToPropertyFromFocusedPrefab(PrefabDomUtils::InstancesName);
             pathToPropertyFromFocusedPrefab /= climbUpResult.m_climbedInstances.back()->GetInstanceAlias(); // top instance alias
             pathToPropertyFromFocusedPrefab /= pathToPropertyFromTopPrefab;
@@ -92,7 +92,7 @@ namespace AzToolsFramework
             {
                 PrefabDom changePatches;
                 m_instanceToTemplateInterface->GeneratePatch(changePatches, *currentPropertyDomValue, afterStateOfComponentProperty);
-                m_changed = !changePatches.GetArray().Empty();
+                m_changed = !(changePatches.GetArray().Empty());
             }
             else
             {
