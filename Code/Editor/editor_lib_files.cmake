@@ -473,8 +473,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/PixmapLabelPreview.h
-    QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
