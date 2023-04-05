@@ -376,9 +376,7 @@ namespace Multiplayer
             return;
         }
         
-        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
-
 
         AZStd::vector<uint8_t> buffer;
         AZ::IO::ByteContainerStream byteStream(&buffer);
@@ -400,6 +398,11 @@ namespace Multiplayer
 
         // Read the buffer into EditorServerLevelData packets until we've flushed the whole thing
         byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
+        // Send an initial notification showing how much data will be sent.
+        MultiplayerEditorServerNotificationBus::Broadcast(
+            &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+            0, aznumeric_cast<uint32_t>(byteStream.GetLength()));
 
         while (byteStream.GetCurPos() < byteStream.GetLength())
         {
@@ -441,9 +444,22 @@ namespace Multiplayer
 
                     // Force the networking buffers to try and flush before sending the packet again.
                     AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
+
+                    // Also, process the trace printing communication from server->client. Without this, if the piped trace
+                    // buffer is completely full, the server process will be completely halted waiting to send more trace
+                    // information. All retries here would fail indefinitely waiting for the server process to become available
+                    // again. With the Pump(), the trace pipes can be kept flowing, and retries can be processed by the server
+                    // in a timely manner.
+                    m_serverProcessTracePrinter->Pump();
                 }
             }
             AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
+
+            // Update our information to track the current amount of data sent.
+            MultiplayerEditorServerNotificationBus::Broadcast(
+                &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+                aznumeric_cast<uint32_t>(byteStream.GetCurPos()),
+                aznumeric_cast<uint32_t>(byteStream.GetLength()));
         }
     }
 

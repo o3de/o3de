@@ -201,6 +201,6 @@ bool OverrideMetallicEnabled()
     return IsDebuggingEnabled() && GetDebugOption( RenderDebugOptions::OverrideMetallic );
 }
 
-float3 GetBaseColorOverride() { return SceneSrg::m_debugOverrideBaseColor; }
-float GetRoughnessOverride() { return SceneSrg::m_debugOverrideRoughness; }
-float GetMetallicOverride() { return SceneSrg::m_debugOverrideMetallic; }
+real3 GetBaseColorOverride() { return real3(SceneSrg::m_debugOverrideBaseColor); }
+real GetRoughnessOverride() { return real(SceneSrg::m_debugOverrideRoughness); }
+real GetMetallicOverride() { return real(SceneSrg::m_debugOverrideMetallic); }

@@ -322,7 +322,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.menuIcon";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Menu";
+        actionProperties.m_name = "Options";
         actionProperties.m_iconPath = ":/Menu/menu.svg";
 
         m_actionManagerInterface->RegisterAction(
@@ -331,7 +331,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             actionProperties,
             []
             {
-            });
+            }
+        );
     }
 
     // Viewport Debug Information
