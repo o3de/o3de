@@ -33,26 +33,26 @@ option bool prefix##o_clearCoat_factor_useTexture;    \
 option bool prefix##o_clearCoat_roughness_useTexture; \
 option bool prefix##o_clearCoat_normal_useTexture;
 
-void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, float clearCoatFactor, bool useInfluenceMap,
-                        Texture2D roughnessMap, float2 roughnessUV, float roughness, bool useRoughnessMap,
-                        Texture2D normalMap, float2 normalUV, float3 normal, bool useNormalMap, float normalStrength,
-                        float3x3 uvMatrix, float3 tangent, float3 bitangent,
+void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, real clearCoatFactor, bool useInfluenceMap,
+                        Texture2D roughnessMap, float2 roughnessUV, real roughness, bool useRoughnessMap,
+                        Texture2D normalMap, float2 normalUV, real3 normal, bool useNormalMap, real normalStrength,
+                        real3x3 uvMatrix, real3 tangent, real3 bitangent,
                         sampler mapSampler, bool isFrontFace,
-                        inout float finalClearCoatFactor, inout float clearCoatRoughness, inout float3 clearCoatNormal)
+                        inout real finalClearCoatFactor, inout real clearCoatRoughness, inout real3 clearCoatNormal)
 {
     if(useInfluenceMap)
     {
-        clearCoatFactor *= influenceMap.Sample(mapSampler, influenceUV).r;
+        clearCoatFactor *= real(influenceMap.Sample(mapSampler, influenceUV).r);
     }
     
     if(useRoughnessMap)
     {
-        roughness *= roughnessMap.Sample(mapSampler, roughnessUV).r;
+        roughness *= real(roughnessMap.Sample(mapSampler, roughnessUV).r);
     }
     
     if (useNormalMap)
     {  
-        float4 sampledValue = normalMap.Sample(mapSampler, normalUV);
+        real4 sampledValue = real4(normalMap.Sample(mapSampler, normalUV));
         clearCoatNormal = GetWorldSpaceNormal(sampledValue.xy, normal, tangent, bitangent, uvMatrix, normalStrength);
     }
     else
@@ -61,7 +61,7 @@ void GetClearCoatInputs(Texture2D influenceMap, float2 influenceUV, float clearC
     }
     
     // Flip normal if back face is rendered   
-    clearCoatNormal *= mad(isFrontFace, 2.0, -1.0);
+    clearCoatNormal *= real(mad(isFrontFace, 2.0, -1.0));
     finalClearCoatFactor = clearCoatFactor;
     clearCoatRoughness = max(roughness, 1e-3);
 }

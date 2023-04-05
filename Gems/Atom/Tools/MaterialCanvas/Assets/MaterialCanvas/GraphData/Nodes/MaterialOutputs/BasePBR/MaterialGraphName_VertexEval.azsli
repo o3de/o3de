@@ -20,19 +20,19 @@
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
-    float3 normal,
-    float4 tangent,
+    real3 normal,
+    real4 tangent,
     float2 uv0,
     float2 uv1,
     uint instanceId)
 {
-    const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
-    const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
+    const real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(instanceId));
+    const real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(instanceId));
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
-    const float3 bitangent = cross(normal, (float3)tangent);
+    const real3 bitangent = cross(normal, tangent.xyz);
 
-    float3 normalWS, tangentWS, bitangentWS;
-    ConstructTBN(normal, tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
+    real3 normalWS, tangentWS, bitangentWS;
+    ConstructTBN(real3(normal), real4(tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
 
     const float3 O3DE_MC_POSITION = position;
     const float3 O3DE_MC_NORMAL = normal;
@@ -65,8 +65,8 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
-        IN.normal,
-        IN.tangent,
+        real3(IN.normal),
+        real4(IN.tangent),
         IN.uv0,
         IN.uv1,
         SV.m_instanceId);

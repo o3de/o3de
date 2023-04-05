@@ -268,7 +268,10 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     endif()
 
     # there are some tests in the main suite, and some in periodic.
-    ly_add_googletest(NAME AZ::AssetProcessor.Tests)
+    ly_add_googletest(
+        NAME AZ::AssetProcessor.Tests
+        LABELS REQUIRES_tiaf
+    )
     ly_add_googletest(NAME AZ::AssetProcessor.Tests.Periodic
         TARGET AZ::AssetProcessor.Tests 
         TEST_SUITE periodic)

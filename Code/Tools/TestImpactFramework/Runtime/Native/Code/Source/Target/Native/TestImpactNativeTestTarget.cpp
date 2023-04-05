@@ -19,8 +19,21 @@ namespace TestImpact
     NativeTestTarget::NativeTestTarget(
         TargetDescriptor&& descriptor, NativeTestTargetMeta&& testMetaData)
         : TestTarget(AZStd::move(descriptor), AZStd::move(testMetaData.m_testTargetMeta))
+        , m_canEnumerate(GetSuiteLabelSet().contains(SupportedTestFrameworks::GTest))
         , m_launchMeta(AZStd::move(testMetaData.m_launchMeta))
     {
+        // Target must be able to enumerate as well as being opted in to test sharding in order to shard
+        if (CanEnumerate())
+        {
+            if (GetSuiteLabelSet().contains(TiafShardingTestInterleavedLabel))
+            {
+                m_shardConfiguration = ShardingConfiguration::TestInterleaved;
+            }
+            else if (GetSuiteLabelSet().contains(TiafShardingFixtureInterleavedLabel))
+            {
+                m_shardConfiguration = ShardingConfiguration::FixtureInterleaved;
+            }
+        }
     }
 
     const AZStd::string& NativeTestTarget::GetCustomArgs() const
@@ -35,12 +48,16 @@ namespace TestImpact
 
     bool NativeTestTarget::CanShard() const
     {
-        // Target must be able to enumerate as well as being opted in to test sharding in order to shard
-        return CanEnumerate() && GetSuiteLabelSet().contains(TiafShardingLabel);
+        return m_shardConfiguration != ShardingConfiguration::None;
+    }
+
+    ShardingConfiguration NativeTestTarget::GetShardingConfiguration() const
+    {
+        return m_shardConfiguration;
     }
 
     bool NativeTestTarget::CanEnumerate() const
     {
-        return GetSuiteLabelSet().contains(SupportedTestFrameworks::GTest);
+        return m_canEnumerate;
     }
 } // namespace TestImpact

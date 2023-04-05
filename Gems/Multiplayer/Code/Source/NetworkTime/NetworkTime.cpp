@@ -50,6 +50,7 @@ namespace Multiplayer
         AZ_Assert(!IsTimeRewound(), "Incrementing the global application frameId is unsupported under a rewound time scope");
         ++m_unalteredFrameId;
         m_hostFrameId = m_unalteredFrameId;
+        m_hostTimeMs = AZ::GetElapsedTimeMs();
     }
 
     AZ::TimeMs NetworkTime::GetHostTimeMs() const

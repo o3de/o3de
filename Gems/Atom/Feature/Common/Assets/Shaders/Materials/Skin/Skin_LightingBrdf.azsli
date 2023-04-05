@@ -26,9 +26,9 @@
 #endif
 
 // Then define the Diffuse and Specular lighting functions
-float3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
+real3 GetDiffuseLighting_Skin(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    float3 diffuse;
+    real3 diffuse;
     if(o_enableSubsurfaceScattering)
     {
         // Use diffuse brdf containing double Fresnel (enter/exit surface) terms if subsurface scattering is enabled

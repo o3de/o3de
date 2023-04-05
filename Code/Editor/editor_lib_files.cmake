@@ -327,8 +327,6 @@ set(FILES
     Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/ImageHistogramCtrl.cpp
-    Controls/ImageHistogramCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -473,8 +471,6 @@ set(FILES
     PythonEditorFuncs.h
     QtUI/QCollapsibleGroupBox.h
     QtUI/QCollapsibleGroupBox.cpp
-    QtUI/PixmapLabelPreview.h
-    QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp

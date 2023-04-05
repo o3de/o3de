@@ -11,6 +11,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/EditContext.h>
 #include <AzCore/Serialization/EditContextConstants.inl>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RPI.Public/Pass/PassSystemInterface.h>
 #include <AzFramework/Components/ConsoleBus.h>
 #include <ImGuiBus.h>
@@ -88,7 +89,7 @@ namespace AtomImGuiTools
         }
         if (m_showTransientAttachmentProfiler)
         {
-            auto* transientStats = AZ::RHI::RHISystemInterface::Get()->GetTransientAttachmentStatistics();
+            auto* transientStats = AZ::RHI::RHIMemoryStatisticsInterface::Get()->GetTransientAttachmentStatistics();
             if (transientStats)
             {
                 m_showTransientAttachmentProfiler = m_imguiTransientAttachmentProfiler.Draw(*transientStats);

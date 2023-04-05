@@ -14,23 +14,23 @@
  void MultilayerSetPixelDepth(
      float3 vertexBlendMask,
      inout float3 worldPosition,
-     float3 normal,
-     float3 tangents[UvSetCount],
-     float3 bitangents[UvSetCount],
+     real3 normal,
+     real3 tangents[UvSetCount],
+     real3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     float4x4 objectToWorld,
+     real4x4 objectToWorld,
      inout float depthNDC,
      inout float depthCS,
      out bool isClipped)
 {
-    float3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrix : CreateIdentity3x3();
-    float3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? MaterialSrg::m_uvMatrixInverse : CreateIdentity3x3();
+    real3x3 uvMatrix = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrix) : real3x3(CreateIdentity3x3());
+    real3x3 uvMatrixInverse = MaterialSrg::m_parallaxUvIndex == 0 ? real3x3(MaterialSrg::m_uvMatrixInverse) : real3x3(CreateIdentity3x3());
 
-    float parallaxOverallOffset = MaterialSrg::m_displacementMax;
-    float parallaxOverallFactor = MaterialSrg::m_displacementMax - MaterialSrg::m_displacementMin;
+    real parallaxOverallOffset = real(MaterialSrg::m_displacementMax);
+    real parallaxOverallFactor = real(MaterialSrg::m_displacementMax) - real(MaterialSrg::m_displacementMin);
     
-    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, MaterialSrg::m_parallax_pdo_shadowFactor);
+    AdjustParallaxShadowCaster(parallaxOverallFactor, parallaxOverallOffset, real(MaterialSrg::m_parallax_pdo_shadowFactor));
     
     s_blendMaskFromVertexStream = vertexBlendMask;
     
@@ -44,12 +44,12 @@
  void MultilayerSetPixelDepth(
      float3 vertexBlendMask,
      inout float3 positionWS,
-     float3 normal,
-     float3 tangents[UvSetCount],
-     float3 bitangents[UvSetCount],
+     real3 normal,
+     real3 tangents[UvSetCount],
+     real3 bitangents[UvSetCount],
      inout float2 uvs[UvSetCount],
      bool isFrontFace,
-     float4x4 objectToWorld,
+     real4x4 objectToWorld,
      inout float depthNDC)
 {
     // Dummy variables to call the above function
