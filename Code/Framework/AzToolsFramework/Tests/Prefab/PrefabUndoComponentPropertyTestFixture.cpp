@@ -21,9 +21,6 @@ namespace UnitTest
 
         m_prefabOverridePublicInterface = AZ::Interface<PrefabOverridePublicInterface>::Get();
         ASSERT_TRUE(m_prefabOverridePublicInterface);
-
-        m_prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
-        ASSERT_TRUE(m_prefabFocusPublicInterface);
     }
 
     bool PrefabUndoComponentPropertyTestFixture::CreateWheelEntityHierarchy(EntityInfo& wheelEntityInfo)

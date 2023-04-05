@@ -11,7 +11,6 @@
 #include <Prefab/PrefabTestFixture.h>
 
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
-#include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
 
 namespace UnitTest
 {
@@ -67,6 +66,5 @@ namespace UnitTest
         void ConvertToPrefabDomValue(PrefabDom& outputDom, const AZ::Dom::Value& domValue);
 
         PrefabOverridePublicInterface* m_prefabOverridePublicInterface = nullptr;
-        PrefabFocusPublicInterface* m_prefabFocusPublicInterface = nullptr;
     };
 } // namespace UnitTest
