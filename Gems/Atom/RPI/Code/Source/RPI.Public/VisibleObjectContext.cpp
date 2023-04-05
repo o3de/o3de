@@ -46,6 +46,17 @@ namespace AZ
         {
             AZ_PROFILE_SCOPE(RPI, "VisibleObjectContext: FinalizeLists");
             m_finalizedVisibleObjectList.clear();
+
+            // Reserve enough memory for all the visible objects
+            size_t objectCount = 0;
+            m_visibleObjectListContext.ForEach(
+                [&objectCount](const VisibleObjectList& visibleObjectList)
+                {
+                    objectCount += visibleObjectList.size();
+                });
+            m_finalizedVisibleObjectList.reserve(objectCount);
+
+            // Concatenate all the per-thread lists into a single list
             m_visibleObjectListContext.ForEach(
                 [this](VisibleObjectList& visibleObjectList)
                 {

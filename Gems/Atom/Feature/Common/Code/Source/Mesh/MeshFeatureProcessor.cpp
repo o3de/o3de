@@ -438,10 +438,10 @@ namespace AZ
             // In a follow up commit, we will process the lists properly and generate actual instanced draw calls
             for (const RPI::VisibleObjectProperties& visibleObject : view->GetVisibleObjectList())
             {
-                const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
-                    reinterpret_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
-                if (instanceGroupHandles)
+                if (visibleObject.m_userData)
                 {
+                    const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
+                        reinterpret_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
                     // For the initial commit, we naively add each draw packet for each visible object to the view.
                     // This will be replaced with generating instance buffers for each view to use with instanced draw calls.
                     for (auto& instanceGroupHandle : *instanceGroupHandles)

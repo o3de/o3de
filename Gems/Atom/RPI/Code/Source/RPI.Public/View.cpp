@@ -114,7 +114,7 @@ namespace AZ
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition)
+        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
@@ -127,7 +127,7 @@ namespace AZ
             m_visibleObjectContext.AddVisibleObject(userData, depth);
         }
 
-        void View::AddVisibleObject(const void* userData, Vector3 worldPosition)
+        void View::AddVisibleObject(const void* userData, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());

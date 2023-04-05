@@ -75,7 +75,7 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, float depth = 0.0f);
 
             //! Similar to previous AddDrawPacket() but calculates depth from packet position
-            void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
+            void AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition);
             
             //! Similar to AddDrawPacket, but the view will not submit any draw items for rendering. It will just
             //! maintain a list of visible objects for the current frame, and the caller must get that list, reinterpret the
@@ -83,7 +83,7 @@ namespace AZ
             void AddVisibleObject(const void* userData, float depth = 0.0f);
 
             //! Similar to previous AddVisibleObject() but calculates depth from object position
-            void AddVisibleObject(const void* userData, Vector3 worldPosition);
+            void AddVisibleObject(const void* userData, const Vector3& worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
