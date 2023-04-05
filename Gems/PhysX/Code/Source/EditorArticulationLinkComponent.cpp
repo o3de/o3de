@@ -196,12 +196,12 @@ namespace PhysX
                         0, &ArticulationLinkConfiguration::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
-                    ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_jointFriction, "Joint Friction", "Joint's friction coefficient.")
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_jointFriction, "Joint Friction", "Joint's friction coefficient.")
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
-                    ->DataElement(
-                        0, &ArticulationLinkConfiguration::m_armature, "Armature", "Mass for prismatic joints, inertia for hinge")
+                    ->DataElement(0, &ArticulationLinkConfiguration::m_armature, "Armature", "Mass for prismatic joints, inertia for hinge")
+                    ->Attribute(AZ::Edit::Attributes::ChangeValidate, &EditorArticulationLinkConfiguration::ValidateArtmature)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
@@ -582,5 +582,20 @@ namespace PhysX
 
         debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
+    }
+
+    AZ::Outcome<void, AZStd::string> EditorArticulationLinkConfiguration::ValidateArtmature(void* newValue, const AZ::Uuid& valueType)
+    {
+        if (azrtti_typeid<AZ::Vector3>() != valueType)
+        {
+            return AZ::Failure(AZStd::string("Unexpected field type: the valid is AZ::Vector3"));
+        }
+
+        const AZ::Vector3& vector(*reinterpret_cast<const AZ::Vector3*>(newValue));
+        if (vector.GetX() >= 0 && vector.GetY() >= 0 && vector.GetZ() >= 0)
+        {
+            return AZ::Success();
+        };
+        return AZ::Failure(AZStd::string("Armature cannot be negative"));
     }
 } // namespace PhysX
