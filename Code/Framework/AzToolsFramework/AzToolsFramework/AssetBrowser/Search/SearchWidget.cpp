@@ -243,7 +243,6 @@ namespace AzToolsFramework
             return entries;
         }
 
-
         void SearchWidget::AddFolderFilter()
         {
             if (!m_filter->GetSubFilters().contains(m_folderFilter))
