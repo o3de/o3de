@@ -43,7 +43,6 @@ namespace AzQtComponents
 
         ParseState state = ParseState::Normal;
         QString out;
-        // TODO - change varName to AZStd::string?
         QString varName;
 
         auto i = stylesheetData.cbegin();

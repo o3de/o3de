@@ -13,7 +13,7 @@ ActionWidget #LinkButton
 
 AzAssetBrowserWindow #previewWidgetWrapper
 {
-    background-color: #CCCCCC;
+    background-color: #323232;
     border: 0 none;
 }
 
