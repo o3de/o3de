@@ -186,6 +186,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
 
     ly_add_googletest(
         NAME Gem::PhysX.Tests
+        LABELS REQUIRES_tiaf
     )
 
     # Only add the physx benchmarks if this flag is set. The benchmark code is still built, as it is part of the PhysX.Tests project.
@@ -227,6 +228,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         )
         ly_add_googletest(
             NAME Gem::PhysX.Editor.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

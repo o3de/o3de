@@ -25,6 +25,8 @@ namespace AzToolsFramework
         Q_PROPERTY(bool searchEnabled READ searchEnabled WRITE setSearchEnabled)
     public:
         explicit ConsoleTextEdit(QWidget* parent = nullptr);
+        ~ConsoleTextEdit();
+
         virtual bool event(QEvent* theEvent) override;
 
         bool searchEnabled();

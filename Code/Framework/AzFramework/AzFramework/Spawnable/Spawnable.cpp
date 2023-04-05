@@ -27,113 +27,12 @@ namespace AzFramework
             m_sourceIndex < other.m_sourceIndex;
     }
 
-
-    //
-    // EntityAliasVisitorBase
-    //
-
-    bool Spawnable::EntityAliasVisitorBase::IsValid(const EntityAliasList* aliases) const
-    {
-        return aliases != nullptr;
-    }
-
-    bool Spawnable::EntityAliasVisitorBase::HasAliases(const EntityAliasList* aliases) const
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        return !aliases->empty();
-    }
-
-    bool Spawnable::EntityAliasVisitorBase::AreAllSpawnablesReady(const EntityAliasList* aliases) const
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        for (const EntityAlias& alias : *aliases)
-        {
-            if (!alias.m_queueLoad ||
-                alias.m_aliasType == Spawnable::EntityAliasType::Original ||
-                alias.m_aliasType == Spawnable::EntityAliasType::Disable)
-            {
-                continue;
-            }
-            if (!alias.m_spawnable.IsReady() && !alias.m_spawnable.IsError())
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    auto Spawnable::EntityAliasVisitorBase::begin(const EntityAliasList* aliases) const -> EntityAliasList::const_iterator
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        return aliases->cbegin();
-    }
-
-    auto Spawnable::EntityAliasVisitorBase::end(const EntityAliasList* aliases) const -> EntityAliasList::const_iterator
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        return aliases->cend();
-    }
-
-    auto Spawnable::EntityAliasVisitorBase::cbegin(const EntityAliasList* aliases) const -> EntityAliasList::const_iterator
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        return aliases->cbegin();
-    }
-
-    auto Spawnable::EntityAliasVisitorBase::cend(const EntityAliasList* aliases) const -> EntityAliasList::const_iterator
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        return aliases->cend();
-    }
-
-    void Spawnable::EntityAliasVisitorBase::ListTargetSpawnables(
-        const EntityAliasList* aliases, const ListTargetSpawanblesCallback& callback) const
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
-        for (const Spawnable::EntityAlias& alias : *aliases)
-        {
-            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
-            if (alias.m_spawnable.GetId().IsValid())
-            {
-                auto it = spawnableIds.find(alias.m_spawnable.GetId());
-                if (it == spawnableIds.end())
-                {
-                    callback(alias.m_spawnable);
-                    spawnableIds.emplace(alias.m_spawnable.GetId());
-                }
-            }
-        }
-    }
-
-    void Spawnable::EntityAliasVisitorBase::ListTargetSpawnables(
-        const EntityAliasList* aliases, AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const
-    {
-        AZ_Assert(aliases, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
-        for (const Spawnable::EntityAlias& alias : *aliases)
-        {
-            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
-            if (alias.m_tag == tag && alias.m_spawnable.GetId().IsValid())
-            {
-                auto it = spawnableIds.find(alias.m_spawnable.GetId());
-                if (it == spawnableIds.end())
-                {
-                    callback(alias.m_spawnable);
-                    spawnableIds.emplace(alias.m_spawnable.GetId());
-                }
-            }
-        }
-    }
-
-
     //
     // EntityAliasVisitor
     //
 
     Spawnable::EntityAliasVisitor::EntityAliasVisitor(Spawnable& owner, EntityAliasList* entityAliasList)
-        : m_owner(owner)
-        , m_entityAliasList(entityAliasList)
+        : EntityAliasConstVisitor(owner, entityAliasList)
     {
     }
 
@@ -147,20 +46,18 @@ namespace AzFramework
                 m_owner.m_shareState == ShareState::ReadWrite, "Attempting to unlock a spawnable that's not in the locked state (%i).",
                 m_owner.m_shareState.load());
             m_owner.m_shareState = ShareState::NotShared;
+            m_entityAliasList = nullptr;
         }
     }
 
     Spawnable::EntityAliasVisitor::EntityAliasVisitor(EntityAliasVisitor&& rhs)
-        : m_owner(rhs.m_owner)
-        , m_entityAliasList(rhs.m_entityAliasList)
+        : m_dirty(rhs.m_dirty)
+        , EntityAliasConstVisitor(AZStd::move(rhs))
     {
-        m_dirty = rhs.m_dirty;
-
-        rhs.m_entityAliasList = nullptr;
         rhs.m_dirty = false;
     }
 
-    auto Spawnable::EntityAliasVisitor::operator=(EntityAliasVisitor&& rhs) -> EntityAliasVisitor&
+    Spawnable::EntityAliasVisitor& Spawnable::EntityAliasVisitor::operator=(EntityAliasVisitor&& rhs)
     {
         if (this != &rhs)
         {
@@ -168,56 +65,6 @@ namespace AzFramework
             new(this) EntityAliasVisitor(AZStd::move(rhs));
         }
         return *this;
-    }
-
-    bool Spawnable::EntityAliasVisitor::IsValid() const
-    {
-        return EntityAliasVisitorBase::IsValid(m_entityAliasList);
-    }
-
-    bool Spawnable::EntityAliasVisitor::HasAliases() const
-    {
-        if (m_entityAliasList == nullptr)
-        {
-            return false;
-        }
-
-        return EntityAliasVisitorBase::HasAliases(m_entityAliasList);
-    }
-
-    bool Spawnable::EntityAliasVisitor::AreAllSpawnablesReady() const
-    {
-        return EntityAliasVisitorBase::AreAllSpawnablesReady(m_entityAliasList);
-    }
-
-    auto Spawnable::EntityAliasVisitor::begin() const -> EntityAliasList::const_iterator
-    {
-        return EntityAliasVisitorBase::begin(m_entityAliasList);
-    }
-
-    auto Spawnable::EntityAliasVisitor::end() const -> EntityAliasList::const_iterator
-    {
-        return EntityAliasVisitorBase::end(m_entityAliasList);
-    }
-
-    auto Spawnable::EntityAliasVisitor::cbegin() const -> EntityAliasList::const_iterator
-    {
-        return EntityAliasVisitorBase::cbegin(m_entityAliasList);
-    }
-
-    auto Spawnable::EntityAliasVisitor::cend() const -> EntityAliasList::const_iterator
-    {
-        return EntityAliasVisitorBase::cend(m_entityAliasList);
-    }
-
-    void Spawnable::EntityAliasVisitor::ListTargetSpawnables(const ListTargetSpawanblesCallback& callback) const
-    {
-        EntityAliasVisitorBase::ListTargetSpawnables(m_entityAliasList, callback);
-    }
-
-    void Spawnable::EntityAliasVisitor::ListTargetSpawnables(AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const
-    {
-        EntityAliasVisitorBase::ListTargetSpawnables(m_entityAliasList, tag, callback);
     }
 
     void Spawnable::EntityAliasVisitor::AddAlias(
@@ -228,7 +75,7 @@ namespace AzFramework
         Spawnable::EntityAliasType aliasType,
         bool queueLoad)
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
         AZ_Assert(sourceIndex < m_owner.GetEntities().size(), "Invalid source index (%i) for entity alias", sourceIndex);
         if (targetSpawnable.IsReady())
         {
@@ -237,14 +84,14 @@ namespace AzFramework
                 targetSpawnable.GetHint().c_str());
         }
 
-        m_entityAliasList->push_back(Spawnable::EntityAlias{ targetSpawnable, tag, sourceIndex, targetIndex, aliasType, queueLoad });
+        GetEntityAliasList()->push_back(Spawnable::EntityAlias{ targetSpawnable, tag, sourceIndex, targetIndex, aliasType, queueLoad });
         m_dirty = true;
     }
 
     void Spawnable::EntityAliasVisitor::ListSpawnablesRequiringLoad(const ListSpawnablesRequiringLoadCallback& callback)
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        for (Spawnable::EntityAlias& alias : *m_entityAliasList)
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        for (Spawnable::EntityAlias& alias : *GetEntityAliasList())
         {
             if (alias.m_queueLoad &&
                 alias.m_aliasType != Spawnable::EntityAliasType::Original &&
@@ -260,8 +107,8 @@ namespace AzFramework
 
     void Spawnable::EntityAliasVisitor::UpdateAliases(const UpdateCallback& callback)
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        for (Spawnable::EntityAlias& alias : *m_entityAliasList)
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        for (Spawnable::EntityAlias& alias : *GetEntityAliasList())
         {
             AZ::Data::Asset<Spawnable> targetSpawnable(alias.m_spawnable);
             callback(alias.m_aliasType, alias.m_queueLoad, targetSpawnable, alias.m_tag, alias.m_sourceIndex, alias.m_targetIndex);
@@ -271,8 +118,8 @@ namespace AzFramework
 
     void Spawnable::EntityAliasVisitor::UpdateAliases(AZ::Crc32 tag, const UpdateCallback& callback)
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
-        for (Spawnable::EntityAlias& alias : *m_entityAliasList)
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        for (Spawnable::EntityAlias& alias : *GetEntityAliasList())
         {
             if (alias.m_tag == tag)
             {
@@ -285,21 +132,21 @@ namespace AzFramework
 
     void Spawnable::EntityAliasVisitor::UpdateAliasType(uint32_t index, Spawnable::EntityAliasType newType)
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
         AZ_Assert(
-            index < m_entityAliasList->size(), "Unable to update entity alias at index %i as there are only %zu aliases in spawnable.",
-            index, m_entityAliasList->size());
-        (*m_entityAliasList)[index].m_aliasType = newType;
+            index < GetEntityAliasList()->size(), "Unable to update entity alias at index %i as there are only %zu aliases in spawnable.",
+            index, GetEntityAliasList()->size());
+        (*GetEntityAliasList())[index].m_aliasType = newType;
         m_dirty = true;
     }
 
     void Spawnable::EntityAliasVisitor::Optimize()
     {
-        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        AZ_Assert(GetEntityAliasList(), "Attempting to visit entity aliases on a spawnable that wasn't locked.");
         if (m_dirty)
         {
             AZStd::stable_sort(
-                m_entityAliasList->begin(), m_entityAliasList->end(),
+                GetEntityAliasList()->begin(), GetEntityAliasList()->end(),
                 [](const Spawnable::EntityAlias& lhs, const Spawnable::EntityAlias& rhs)
                 {
                     // Sort by source index from smallest to largest so during spawning the entities can be iterated linearly over.
@@ -315,16 +162,16 @@ namespace AzFramework
             uint32_t previousIndex = AZStd::numeric_limits<uint32_t>::max();
             Spawnable::EntityAliasType previousType =
                 static_cast<Spawnable::EntityAliasType>(AZStd::numeric_limits<AZStd::underlying_type_t<Spawnable::EntityAliasType>>::max());
-            Spawnable::EntityAlias* it = m_entityAliasList->begin();
-            Spawnable::EntityAlias* end = m_entityAliasList->end();
+            Spawnable::EntityAlias* it = GetEntityAliasList()->begin();
+            Spawnable::EntityAlias* end = GetEntityAliasList()->end();
             while (it < end)
             {
                 // If there's a switch to a new source index and the previous index only had an original it can
                 // be removed.
                 if (previousType == Spawnable::EntityAliasType::Original && previousIndex != it->m_sourceIndex)
                 {
-                    it = m_entityAliasList->erase(it - 1);
-                    end = m_entityAliasList->end();
+                    it = GetEntityAliasList()->erase(it - 1);
+                    end = GetEntityAliasList()->end();
                     if (it == end)
                     {
                         break;
@@ -348,8 +195,8 @@ namespace AzFramework
                         previousIndex = it->m_sourceIndex;
                         previousType = it->m_aliasType;
                         // Erase instead of a swap-and-pop in order to preserver the order.
-                        it = m_entityAliasList->erase(it - 1) + 1;
-                        end = m_entityAliasList->end();
+                        it = GetEntityAliasList()->erase(it - 1) + 1;
+                        end = GetEntityAliasList()->end();
                     }
                     else
                     {
@@ -376,9 +223,9 @@ namespace AzFramework
                         previousType = it->m_aliasType;
 
                         // Insert to maintain the order.
-                        it = m_entityAliasList->insert(it, AZStd::move(insert));
+                        it = GetEntityAliasList()->insert(it, AZStd::move(insert));
                         it += 2;
-                        end = m_entityAliasList->end();
+                        end = GetEntityAliasList()->end();
                     }
                     else
                     {
@@ -393,17 +240,26 @@ namespace AzFramework
             }
 
             // Check if the last entry is an "Original" in which case it can be removed.
-            if (!m_entityAliasList->empty() && m_entityAliasList->back().m_aliasType == Spawnable::EntityAliasType::Original)
+            if (!GetEntityAliasList()->empty() && GetEntityAliasList()->back().m_aliasType == Spawnable::EntityAliasType::Original)
             {
-                m_entityAliasList->pop_back();
+                GetEntityAliasList()->pop_back();
             }
 
             // Reclaim memory because after this point the aliases will not change anymore.
-            m_entityAliasList->shrink_to_fit();
+            GetEntityAliasList()->shrink_to_fit();
             m_dirty = false;
         }
     }
 
+    Spawnable::EntityAliasList* Spawnable::EntityAliasVisitor::GetEntityAliasList() const
+    {
+        // The only way to construct an EntityAliasVisitor is with a non-const
+        // EntityAliasList*. At construction time, it is stored in the base
+        // class's const EntityAliasList member. But because a non-const
+        // EntityAliasList* was used to construct this instance, accessing it
+        // in a non-const way is allowed.
+        return const_cast<EntityAliasList*>(m_entityAliasList);
+    }
 
 
     //
@@ -427,52 +283,114 @@ namespace AzFramework
         }
     }
 
+    Spawnable::EntityAliasConstVisitor::EntityAliasConstVisitor(EntityAliasConstVisitor&& rhs)
+        : m_owner(rhs.m_owner)
+        , m_entityAliasList(rhs.m_entityAliasList)
+    {
+        rhs.m_entityAliasList = nullptr;
+    }
+
+    auto Spawnable::EntityAliasConstVisitor::operator=(EntityAliasConstVisitor&& rhs) -> EntityAliasConstVisitor&
+    {
+        if (this != &rhs)
+        {
+            this->~EntityAliasConstVisitor();
+            new(this) EntityAliasConstVisitor(AZStd::move(rhs));
+        }
+        return *this;
+    }
+
     bool Spawnable::EntityAliasConstVisitor::IsValid() const
     {
-        return EntityAliasVisitorBase::IsValid(m_entityAliasList);
+        return m_entityAliasList != nullptr;
     }
 
     bool Spawnable::EntityAliasConstVisitor::HasAliases() const
     {
-        return EntityAliasVisitorBase::HasAliases(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        return !m_entityAliasList->empty();
     }
 
     bool Spawnable::EntityAliasConstVisitor::AreAllSpawnablesReady() const
     {
-        return EntityAliasVisitorBase::AreAllSpawnablesReady(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        for (const EntityAlias& alias : *m_entityAliasList)
+        {
+            if (!alias.m_queueLoad ||
+                alias.m_aliasType == Spawnable::EntityAliasType::Original ||
+                alias.m_aliasType == Spawnable::EntityAliasType::Disable)
+            {
+                continue;
+            }
+            if (!alias.m_spawnable.IsReady() && !alias.m_spawnable.IsError())
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     auto Spawnable::EntityAliasConstVisitor::begin() const -> EntityAliasList::const_iterator
     {
-        return EntityAliasVisitorBase::begin(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        return m_entityAliasList->cbegin();
     }
 
     auto Spawnable::EntityAliasConstVisitor::end() const -> EntityAliasList::const_iterator
     {
-        return EntityAliasVisitorBase::end(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        return m_entityAliasList->cend();
     }
 
     auto Spawnable::EntityAliasConstVisitor::cbegin() const -> EntityAliasList::const_iterator
     {
-        return EntityAliasVisitorBase::cbegin(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        return m_entityAliasList->cbegin();
     }
 
     auto Spawnable::EntityAliasConstVisitor::cend() const -> EntityAliasList::const_iterator
     {
-        return EntityAliasVisitorBase::cend(m_entityAliasList);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        return m_entityAliasList->cend();
     }
 
     void Spawnable::EntityAliasConstVisitor::ListTargetSpawnables(const ListTargetSpawanblesCallback& callback) const
     {
-        EntityAliasVisitorBase::ListTargetSpawnables(m_entityAliasList, callback);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
+        for (const Spawnable::EntityAlias& alias : *m_entityAliasList)
+        {
+            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
+            if (alias.m_spawnable.GetId().IsValid())
+            {
+                auto it = spawnableIds.find(alias.m_spawnable.GetId());
+                if (it == spawnableIds.end())
+                {
+                    callback(alias.m_spawnable);
+                    spawnableIds.emplace(alias.m_spawnable.GetId());
+                }
+            }
+        }
     }
 
     void Spawnable::EntityAliasConstVisitor::ListTargetSpawnables(AZ::Crc32 tag, const ListTargetSpawanblesCallback& callback) const
     {
-        EntityAliasVisitorBase::ListTargetSpawnables(m_entityAliasList, tag, callback);
+        AZ_Assert(m_entityAliasList, "Attempting to visit entity aliases on a spawnable that wasn't locked.");
+        AZStd::unordered_set<AZ::Data::AssetId> spawnableIds;
+        for (const Spawnable::EntityAlias& alias : *m_entityAliasList)
+        {
+            // If the spawnable id is not valid it means that the alias is referencing the spawnable it's stored on.
+            if (alias.m_tag == tag && alias.m_spawnable.GetId().IsValid())
+            {
+                auto it = spawnableIds.find(alias.m_spawnable.GetId());
+                if (it == spawnableIds.end())
+                {
+                    callback(alias.m_spawnable);
+                    spawnableIds.emplace(alias.m_spawnable.GetId());
+                }
+            }
+        }
     }
-
-
 
     //
     // Spawnable

@@ -220,20 +220,23 @@ namespace Multiplayer
             Multiplayer::GetNetworkTime()->SyncEntitiesToRewindState(entitySweptBounds);
         }
 
-        if ((GetParent().m_physicsCharacter == nullptr) || (velocity.GetLengthSq() <= 0.0f))
+        if (GetParent().m_physicsCharacter != nullptr)
         {
-            return GetEntity()->GetTransform()->GetWorldTranslation();
+            GetParent().m_physicsCharacter->SetRotation(GetEntity()->GetTransform()->GetWorldRotationQuaternion());
+
+            if (velocity.GetLengthSq() > 0.0f)
+            {
+                GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
+                GetEntity()->GetTransform()->SetWorldTM(GetParent().m_physicsCharacter->GetTransform());
+                AZLOG(
+                    NET_Movement,
+                    "Moved to position %f x %f x %f",
+                    GetParent().m_physicsCharacter->GetBasePosition().GetX(),
+                    GetParent().m_physicsCharacter->GetBasePosition().GetY(),
+                    GetParent().m_physicsCharacter->GetBasePosition().GetZ());
+            }
         }
-        GetParent().m_physicsCharacter->Move(velocity * deltaTime, deltaTime);
-        GetEntity()->GetTransform()->SetWorldTranslation(GetParent().m_physicsCharacter->GetBasePosition());
-        AZLOG
-        (
-            NET_Movement,
-            "Moved to position %f x %f x %f",
-            GetParent().m_physicsCharacter->GetBasePosition().GetX(),
-            GetParent().m_physicsCharacter->GetBasePosition().GetY(),
-            GetParent().m_physicsCharacter->GetBasePosition().GetZ()
-        );
+
         return GetEntity()->GetTransform()->GetWorldTranslation();
     }
 }

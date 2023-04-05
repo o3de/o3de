@@ -24,7 +24,7 @@ namespace AZ::Render
 
         //! Increase the ref-count for an instance group if one already exists for the given key, or add a new instance group if it doesn't exist.
         //! Returns an InsertResult with a weak handle to the data and the ref-count for the instance group after adding this instance.
-        MeshInstanceManager::InsertResult AddInstance(MeshInstanceGroupKey meshInstanceGroupData);
+        InsertResult AddInstance(MeshInstanceGroupKey meshInstanceGroupData);
 
         //! Decrease the ref-count for an instance group, and remove it if the ref-count drops to 0.
         //! The MeshInstanceManager keeps a copy of the MeshInstanceGroupKey alongside the data, so

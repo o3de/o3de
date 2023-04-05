@@ -95,6 +95,6 @@ endif()
 # algorithm, which gets broken by the fast-math optimizations.
 ly_add_source_properties(
     SOURCES ${CMAKE_CURRENT_LIST_DIR}/../../AzCore/Math/IntersectSegment.cpp
-    PROPERTY COMPILE_FLAGS
-    VALUES -fno-fast-math
+    PROPERTY COMPILE_OPTIONS
+    VALUES -fno-fast-math -Wno-overriding-t-option
 )

@@ -289,6 +289,12 @@ namespace AZ
             }
         }
 
+        void EditorMaterialComponent::OnEntityVisibilityChanged(bool visibility)
+        {
+            EditorRenderComponentAdapter::OnEntityVisibilityChanged(visibility);
+            UpdateMaterialSlots();
+        }
+
         AZ::u32 EditorMaterialComponent::OnConfigurationChanged()
         {
             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;

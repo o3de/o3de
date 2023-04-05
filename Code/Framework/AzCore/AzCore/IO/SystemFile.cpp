@@ -380,8 +380,10 @@ namespace AZ::IO
         }
         AZ::IO::PosixInternal::Write(targetFileDescriptor, data, size);
     }
+} // namespace AZ::IO
 
-
+namespace AZ::IO
+{
     // Captures File Descriptor output through a pipe
     FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
         : m_sourceDescriptor(sourceDescriptor)
@@ -393,33 +395,10 @@ namespace AZ::IO
         Reset();
     }
 
-    void FileDescriptorCapturer::Reset()
+    void FileDescriptorCapturer::Stop()
     {
-        if (m_redirectToPipe)
-        {
-            // Close the write end of the pipe first
-            if (m_pipe[WriteEnd] != -1)
-            {
-                PosixInternal::Close(m_pipe[WriteEnd]);
-                m_pipe[WriteEnd] = -1;
-            }
-            // Close the read end of the pipe after the write end is closed
-            if (m_pipe[ReadEnd] != -1)
-            {
-                PosixInternal::Close(m_pipe[ReadEnd]);
-                m_pipe[ReadEnd] = -1;
-            }
-            // Take the duplicate of the original source descriptor and restore it
-            // Afterwards close the duplicate descriptor
-            if (m_dupSourceDescriptor != -1)
-            {
-                PosixInternal::Dup2(m_dupSourceDescriptor, m_sourceDescriptor);
-                PosixInternal::Close(m_dupSourceDescriptor);
-                m_dupSourceDescriptor = -1;
-            }
-
-            m_redirectToPipe = false;
-        }
+        // Closes the pipe and resets the descriptor
+        Reset();
     }
 
     int FileDescriptorCapturer::WriteBypassingCapture(const void* data, unsigned int size)

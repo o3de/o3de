@@ -3481,7 +3481,10 @@ namespace AssetProcessor
             m_fileModTimes.clear();
             m_fileHashes.clear();
 
-            QueueIdleCheck();
+            // place a message in the queue that will cause us to transition
+            // into a "no longer scanning" state and then continue with the next phase
+            QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
+
             m_initialScanSkippingFeature = false;
             return;
         }
@@ -3535,7 +3538,7 @@ namespace AssetProcessor
 
         // place a message in the queue that will cause us to transition
         // into a "no longer scanning" state and then continue with the next phase
-        // we place this at the end of the queue rather than calling it immediately, becuase
+        // we place this at the end of the queue rather than calling it immediately, because
         // other messages may still be in the queue such as the incoming file list.
         QMetaObject::invokeMethod(this, "FinishAssetScan", Qt::QueuedConnection);
     }
@@ -5030,7 +5033,7 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Error("AssetProcessor", false, "%s", outcome.GetError().c_str());
+                        AZ_Error(AssetProcessor::ConsoleChannel, false, "%s", outcome.GetError().c_str());
                         return {};
                     }
                 }

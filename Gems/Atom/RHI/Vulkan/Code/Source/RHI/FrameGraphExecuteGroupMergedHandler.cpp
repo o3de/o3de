@@ -23,7 +23,7 @@ namespace AZ
             AZ_Assert(executeGroups.size() == 1, "Too many execute groups when initializing context");
             FrameGraphExecuteGroupMerged* group = static_cast<FrameGraphExecuteGroupMerged*>(executeGroups.back());
             AZ_Assert(group, "Invalid execute group for FrameGraphExecuteGroupMergedHandler");
-            // Creates the renderpasses and framebufers that will be used.
+            // Creates the renderpasses and framebuffers that will be used.
             auto groupScopes = group->GetScopes();
             m_renderPassContexts.resize(groupScopes.size());
             for (uint32_t i = 0; i < groupScopes.size(); ++i)

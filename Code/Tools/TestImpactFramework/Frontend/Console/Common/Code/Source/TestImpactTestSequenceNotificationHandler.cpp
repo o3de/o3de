@@ -132,7 +132,7 @@ namespace TestImpact
             const size_t numTestRunsCompleted,
             const size_t totalNumTestRuns)
         {
-            if (m_consoleOutputMode == ConsoleOutputMode::Buffered)
+            if (m_consoleOutputMode == ConsoleOutputMode::Buffered && testRun.GetResult() != Client::TestRunResult::AllTestsPass)
             {
                 if (!testRun.GetStdOutput().empty())
                 {

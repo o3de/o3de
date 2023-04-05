@@ -61,11 +61,18 @@ namespace AZ
             const RHI::DrawPacket* GetRHIDrawPacket() const;
             const RHI::ConstPtr<RHI::ConstantsLayout> GetRootConstantsLayout() const;
 
-            void SetStencilRef(uint8_t stencilRef) { m_stencilRef = stencilRef; }
-            void SetSortKey(RHI::DrawItemSortKey sortKey) { m_sortKey = sortKey; };
+            void SetStencilRef(uint8_t stencilRef);
+            void SetSortKey(RHI::DrawItemSortKey sortKey);
             bool SetShaderOption(const Name& shaderOptionName, RPI::ShaderOptionValue value);
             bool UnsetShaderOption(const Name& shaderOptionName);
             void ClearShaderOptions();
+
+            // Enable/disable draw filter for a specific draw list tag.
+            // If disabled, any draw items with this drawListTag won't be added to the DrawPacket when updated
+            void SetEnableDraw(RHI::DrawListTag drawListTag, bool enableDraw);
+            RHI::DrawListMask GetDrawListFilter();
+            // Remove the draw list filter and enable render for all draw items
+            void ClearDrawListFilter();
 
             Data::Instance<Material> GetMaterial() const;
             const ModelLod::Mesh& GetMesh() const;
@@ -119,6 +126,12 @@ namespace AZ
             typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
             typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
             ShaderOptionVector m_shaderOptions;
+
+            //! A draw list mask which is used to filter draw items which are packed into the DrawPacket
+            RHI::DrawListMask m_drawListFilter;
+
+            //! A flag to indicate if the DrawPacket need to be rebuild when updating
+            bool m_needUpdate = true;
         };
         
         using MeshDrawPacketList = AZStd::vector<RPI::MeshDrawPacket>;
