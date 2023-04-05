@@ -263,9 +263,31 @@ namespace AZ
                 }
             }
 
-            bool success = SUCCEEDED(hr);
-            AZ_Assert(success, "HRESULT not a success %x", hr);
-            return success;
+            if (FAILED(hr))
+            {
+                char* msgBuf = nullptr;
+
+                if (FormatMessage(
+                        FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                        FORMAT_MESSAGE_FROM_SYSTEM |
+                        FORMAT_MESSAGE_IGNORE_INSERTS,
+                        NULL,
+                        hr,
+                        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                        (LPTSTR) &msgBuf,
+                        0,
+                        NULL))
+                {
+                    AZ_Assert(false, "HRESULT not a success %x, error msg = %s", hr, msgBuf);
+                    LocalFree(msgBuf);
+                }
+                else
+                {
+                    AZ_Assert(false, "HRESULT not a success %x, Unable to retrieve error msg", hr);
+                }
+                return false;
+            }
+            return true;
         }
     }
 }
