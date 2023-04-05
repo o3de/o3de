@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/PBR/Lights/PointLight.azsli>
 
+#if ENABLE_CAPSULE_LIGHTS
 // Get a uniformly distributed point on the surface of a capsule from the provided uniformly distributed 2d point. Uses
 // capsRatio to determine if the point should be on the caps or cylinder to ensure an even distribution. 
 void SampleCapsule(float2 randomPoint, ViewSrg::CapsuleLight light, float capToCylinderAreaRatio, float3x3 localToWorld, out float3 outPosition, out float3 outDirection)
@@ -229,7 +230,6 @@ void ValidateCapsuleLight(ViewSrg::CapsuleLight light, Surface surface, inout Li
 
 void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_CAPSULE_LIGHTS
     if (o_enableCapsuleLights)
     {
         ViewSrg::CapsuleLight light = ViewSrg::m_capsuleLights[lightIndex];
@@ -245,7 +245,6 @@ void ApplyCapsuleLightInternal(uint lightIndex, Surface surface, inout LightingD
             ApplyCapsuleLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_CAPSULE_LIGHTS
 }
 
 void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
@@ -267,3 +266,10 @@ void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+#else
+void ApplyCapsuleLights(Surface surface, inout LightingData lightingData)
+{    
+    //Not Enabled
+}
+#endif
+

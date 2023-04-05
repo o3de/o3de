@@ -231,8 +231,10 @@ namespace AZ
 
         bool MaterialTypeAsset::PostLoadInit()
         {
-            [[maybe_unused]] bool success = InitializeNonSerializedData();
-            AZ_Assert(success, "Failed to InitializeNonSerializedData");
+            // Attempt to initialize non-serialized data. The referenced shader assets in the ShaderCollection
+            // may not be ready right now, but in the future the system will retry when said assets
+            // are ready.
+            InitializeNonSerializedData();
 
             for (const auto& shaderItem : m_generalShaderCollection)
             {

@@ -683,7 +683,6 @@ namespace GraphModelIntegration
         {
             CreateConnectionUi(newConnection);
         }
-
         return newConnection;
     }
 
@@ -932,15 +931,25 @@ namespace GraphModelIntegration
         }
     }
 
+    void GraphController::OnConnectionAdded(const AZ::EntityId& connectionUiId)
+    {
+        if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
+        {
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        }
+    }
+
     void GraphController::OnConnectionRemoved(const AZ::EntityId& connectionUiId)
     {
         if (const GraphModel::ConnectionPtr connection = m_elementMap.Find<GraphModel::Connection>(connectionUiId))
         {
-            m_graph->RemoveConnection(connection);
-            m_elementMap.Remove(connection);
-
             GraphControllerNotificationBus::Event(
                 m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionRemoved, connection);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+            m_graph->RemoveConnection(connection);
+            m_elementMap.Remove(connection);
         }
     }
 
@@ -1166,10 +1175,12 @@ namespace GraphModelIntegration
             // No need to clean up the maps here because the OnConnectionRemoved() callback will handle that
         }
 
-        GraphModel::ConnectionPtr newConnection = m_graph->AddConnection(sourceSlot, targetSlot);
+        GraphModel::ConnectionPtr connection = m_graph->AddConnection(sourceSlot, targetSlot);
         GraphControllerNotificationBus::Event(
-            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, newConnection);
-        return newConnection;
+            m_graphCanvasSceneId, &GraphControllerNotifications::OnGraphModelConnectionAdded, connection);
+        GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetSourceNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        GraphCanvas::NodeUIRequestBus::Event(m_elementMap.Find(connection->GetTargetNode()), &GraphCanvas::NodeUIRequests::AdjustSize);
+        return connection;
     }
 
     bool GraphController::CreateConnection(

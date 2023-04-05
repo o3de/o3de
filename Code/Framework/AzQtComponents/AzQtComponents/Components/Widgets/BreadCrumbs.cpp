@@ -567,8 +567,6 @@ namespace AzQtComponents
         }
 
         // last section is not clickable
-        plainTextPath = m_truncatedPaths.takeLast();
-
         int index = m_currentPathSize - 1;
 
         // to estimate how much the rendered html will take, we need to take icons into account
@@ -576,8 +574,16 @@ namespace AzQtComponents
 
         const QString firstIconHtml = generateIconHtml(index);
         totalIconsWidth += firstIconHtml.isEmpty() ? .0 : iconSpaceWidth;
-        htmlString.prepend(generateIconHtml(index) + plainTextPath);
+
+        if ((fm.horizontalAdvance(m_truncatedPaths.last()) + totalIconsWidth) > availableWidth)
+        {
+            m_label->clear();
+            return;
+        }
+        htmlString.prepend(firstIconHtml + m_truncatedPaths.takeLast());
         --index;
+
+        QString plainTextPath;
 
         if (!m_truncatedPaths.isEmpty())
         {
@@ -692,7 +698,7 @@ namespace AzQtComponents
     void BreadCrumbs::showTruncatedPathsMenu()
     {
         QMenu hiddenPaths;
-        for (int i = m_truncatedPaths.size() - 1; i >= 0; i--)
+        for (int i = 0; i < m_truncatedPaths.size(); ++i)
         {
             hiddenPaths.addAction(m_truncatedPaths.at(i), [this, i]() {
                 onLinkActivated(buildPathFromList(m_truncatedPaths, i + 1));

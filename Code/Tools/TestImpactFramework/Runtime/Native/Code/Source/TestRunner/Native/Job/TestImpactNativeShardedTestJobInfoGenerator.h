@@ -107,8 +107,8 @@ namespace TestImpact
         virtual ShardedTestJobInfo<TestJobRunner> GenerateJobInfoImpl(
             const TestTargetAndEnumeration& testTargetAndEnumeration, typename TestJobRunner::JobInfo::Id startingId) const = 0;
 
-        //! Interleaves the enumerated tests across the shards.
-        ShardedTestsList ShardTestInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const;
+        //! Generates the sharded test list according to the test target's sharding configuration.
+        ShardedTestsList GenerateShardedTestsList(const TestTargetAndEnumeration& testTargetAndEnumeration) const;
 
         //! Converts the raw shard test lists to the test framework specific filters.
         ShardedTestsFilter TestListsToTestFilters(const ShardedTestsList& shardedTestList) const;
@@ -129,6 +129,13 @@ namespace TestImpact
         RepoPath m_targetBinaryDir; //!< Path to the test target binaries.
         NativeShardedArtifactDir m_artifactDir; //!< Path to the sharded artifact directories.
         RepoPath m_testRunnerBinary; //!< Path to the test runner binary.
+
+    private:
+        //! Interleaves the enumerated tests across the shards.
+        ShardedTestsList ShardTestInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const;
+
+        //! Interleaves the enumerated fixtures across the shards.
+        ShardedTestsList ShardFixtureInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const;
     };
 
     //! Job info generator for the instrumented sharded test runner.
@@ -214,6 +221,31 @@ namespace TestImpact
 
     template<typename TestJobRunner>
     typename NativeShardedTestRunJobInfoGeneratorBase<TestJobRunner>::ShardedTestsList NativeShardedTestRunJobInfoGeneratorBase<
+        TestJobRunner>::GenerateShardedTestsList(const TestTargetAndEnumeration& testTargetAndEnumeration) const
+    {
+        if (testTargetAndEnumeration.first->GetShardingConfiguration() == ShardingConfiguration::TestInterleaved)
+        {
+            return ShardTestInterleaved(testTargetAndEnumeration);
+        }
+        if (testTargetAndEnumeration.first->GetShardingConfiguration() == ShardingConfiguration::FixtureInterleaved)
+        {
+            return ShardFixtureInterleaved(testTargetAndEnumeration);
+        }
+        else
+        {
+            // This shouldn't be reachable but leave here to signpost where additional sharding configuration options should go
+            AZ_Error(
+                "NativeShardedTestRunJobInfoGeneratorBase",
+                false,
+                AZStd::string::format(
+                    "Unexpected sharding configuration for test target '%s'", testTargetAndEnumeration.first->GetName().c_str()).c_str());
+
+            return ShardedTestsList{};
+        }
+    }
+
+    template<typename TestJobRunner>
+    typename NativeShardedTestRunJobInfoGeneratorBase<TestJobRunner>::ShardedTestsList NativeShardedTestRunJobInfoGeneratorBase<
         TestJobRunner>::ShardTestInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const
     {
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
@@ -239,6 +271,30 @@ namespace TestImpact
                 shardTestList[testIndex++ % numShards].emplace_back(
                     AZStd::string::format("%s.%s", fixture.m_name.c_str(), test.m_name.c_str()));
             }
+        }
+
+        return shardTestList;
+    }
+
+    template<typename TestJobRunner>
+    typename NativeShardedTestRunJobInfoGeneratorBase<TestJobRunner>::ShardedTestsList NativeShardedTestRunJobInfoGeneratorBase<
+        TestJobRunner>::ShardFixtureInterleaved(const TestTargetAndEnumeration& testTargetAndEnumeration) const
+    {
+        const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
+        const auto numTests = testEnumeration->GetNumEnabledTests();
+        const auto numShards = std::min(m_maxConcurrency, numTests);
+        ShardedTestsList shardTestList(numShards);
+
+        size_t fixtureIndex = 0;
+        for (const auto fixture : testEnumeration->GetTestSuites())
+        {
+            if (!fixture.m_enabled)
+            {
+                continue;
+            }
+
+            shardTestList[fixtureIndex++ % numShards].emplace_back(
+                AZStd::string::format("%s.*", fixture.m_name.c_str()));
         }
 
         return shardTestList;
