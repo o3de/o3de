@@ -337,7 +337,61 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QSplitter" name="jobDialogSplitter">
+         <widget class="QWidget" name="WelcomePage">
+           <layout class="QVBoxLayout" name="WelcomeVerticalLayout">
+             <item>
+              <widget class="QLabel" name="welcomeScreenTitle">
+               <property name="font">
+                <font>
+                 <pointsize>10</pointsize>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string># Welcome to the O3DE Asset Processor</string>
+               </property>
+               <property name="textFormat">
+                <enum>Qt::MarkdownText</enum>
+               </property>
+              </widget>
+             </item>
+             <item>
+               <widget class="QLabel" name="WelcomeDescriptionLabel">
+                 <property name="text">
+                   <string>This tool converts an O3DE project's source assets to game ready content.</string>
+                 </property>
+               </widget>
+             </item>
+             <item>
+               <widget class="QLabel" name="WelcomeDescriptionLabel">
+                 <property name="text">
+                   <string>You can read more about the Asset Processor &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/asset-processor/&quot;&gt;here.&lt;/a&gt;</string>
+                 </property>
+                 <property name="openExternalLinks">
+                   <bool>true</bool>
+                 </property>
+                 <property name="textInteractionFlags">
+                   <set>Qt::LinksAccessibleByKeyboard|Qt::LinksAccessibleByMouse</set>
+                 </property>
+               </widget>
+             </item>
+             <item>
+               <spacer name="welcomeScreenVerticalSpacer">
+                 <property name="orientation">
+                   <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                   <size>
+                     <width>16</width>
+                     <height>40</height>
+                   </size>
+                 </property>
+               </spacer>
+             </item>
+           </layout>
+         </widget>
+         <widget class="QSplitter" name="jobDialogSplitter">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
          </property>
