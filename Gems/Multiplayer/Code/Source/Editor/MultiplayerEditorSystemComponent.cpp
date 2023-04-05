@@ -349,8 +349,10 @@ namespace Multiplayer
                 // editor data over to the server.
                 m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
                     m_serverProcessWatcher->GetCommunicator(), "EditorServer", ProcessCommunicatorTracePrinter::TraceProcessing::Threaded);
-                AZ::TickBus::Handler::BusConnect();
             }
+
+            // Connect to the tick bus to listen for unexpected server process disconnections
+            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
