@@ -4581,6 +4581,147 @@ TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnce_MultipleJobs_EmitOK)
     EXPECT_STREQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str(), secondSourceFile.toUtf8().constData()); // there should only be one job dependency
 }
 
+
+TEST_F(AssetProcessorManagerTest, JobDependencyOrderOnly_MultipleJobs_EmitOK)
+{
+    using namespace AssetProcessor;
+    using namespace AssetBuilderSDK;
+
+    QString watchFolderPath = m_assetRootDir.absoluteFilePath("subfolder1");
+    const ScanFolderInfo* scanFolder = m_config->GetScanFolderByPath(watchFolderPath);
+    ASSERT_NE(scanFolder, nullptr);
+    const char relSourceFileName[] = "a.dummy";
+    const char secondRelSourceFile[] = "b.dummy";
+    QString sourceFileName = m_assetRootDir.absoluteFilePath("subfolder1/a.dummy");
+    QString secondSourceFile = m_assetRootDir.absoluteFilePath("subfolder1/b.dummy");
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(sourceFileName, QString("tempdata\n")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(secondSourceFile, QString("tempdata\n")));
+
+    AssetBuilderSDK::AssetBuilderDesc builderDescriptor;
+    builderDescriptor.m_name = "Test Dummy Builder";
+    builderDescriptor.m_patterns.push_back(AssetBuilderSDK::AssetBuilderPattern("*.dummy", AssetBuilderSDK::AssetBuilderPattern::PatternType::Wildcard));
+    builderDescriptor.m_busId = AZ::Uuid::CreateRandom();
+    builderDescriptor.m_createJobFunction = [&](const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response)
+    {
+        AssetBuilderSDK::JobDescriptor jobDescriptor;
+        jobDescriptor.m_jobKey = builderDescriptor.m_name;
+        jobDescriptor.SetPlatformIdentifier("pc");
+        if (AzFramework::StringFunc::EndsWith(request.m_sourceFile.c_str(), relSourceFileName))
+        {
+            AssetBuilderSDK::SourceFileDependency dep = { secondRelSourceFile , AZ::Uuid::CreateNull() };
+            AssetBuilderSDK::JobDependency jobDep(builderDescriptor.m_name, "pc", AssetBuilderSDK::JobDependencyType::OrderOnly, dep);
+            jobDescriptor.m_jobDependencyList.emplace_back(jobDep);
+        }
+        response.m_createJobOutputs.emplace_back(jobDescriptor);
+        response.m_result = AssetBuilderSDK::CreateJobsResultCode::Success;
+    };
+    builderDescriptor.m_processJobFunction = [](const AssetBuilderSDK::ProcessJobRequest& /*request*/, AssetBuilderSDK::ProcessJobResponse& response)
+    {
+        response.m_resultCode = AssetBuilderSDK::ProcessJobResultCode::ProcessJobResult_Success;
+    };
+
+    MockApplicationManager::BuilderFilePatternMatcherAndBuilderDesc builderFilePatternMatcher;
+    builderFilePatternMatcher.m_builderDesc = builderDescriptor;
+    builderFilePatternMatcher.m_internalBuilderName = builderDescriptor.m_name;
+    builderFilePatternMatcher.m_internalUuid = builderDescriptor.m_busId;
+    builderFilePatternMatcher.m_matcherBuilderPattern = AssetUtilities::BuilderFilePatternMatcher(builderDescriptor.m_patterns.back(), builderDescriptor.m_busId);
+    m_mockApplicationManager->m_matcherBuilderPatterns.emplace_back(builderFilePatternMatcher);
+
+    // Capture the job details as the APM inspects the file.
+    AZStd::vector<JobDetails> jobDetails;
+    auto connection = QObject::connect(m_assetProcessorManager.get(), &AssetProcessorManager::AssetToProcess, [&jobDetails](JobDetails job)
+        {
+            jobDetails.emplace_back(job);
+        });
+
+    // Tell the APM about the file:
+    m_isIdling = false;
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileName));
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    // Although we have processed a.dummy first, APM should send us notification of b.dummy job first and than of a.dummy job
+    EXPECT_EQ(jobDetails.size(), 2);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
+    EXPECT_EQ(jobDetails[1].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
+    EXPECT_EQ(jobDetails[1].m_jobDependencyList.size(), 1); // there should only be one job dependency
+    EXPECT_EQ(jobDetails[1].m_jobDependencyList[0].m_jobDependency.m_sourceFile.m_sourceFileDependencyPath, secondSourceFile.toUtf8().constData()); // there should only be one job dependency
+
+    // Process jobs in APM
+    auto destination = jobDetails[0].m_cachePath;
+    QString productAFileName = (destination / "aoutput.txt").AsPosix().c_str();
+    QString productBFileName = (destination / "boutput.txt").AsPosix().c_str();
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(productBFileName, QString("tempdata\n")));
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(productAFileName, QString("tempdata\n")));
+
+    AssetBuilderSDK::ProcessJobResponse responseB;
+    responseB.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+    responseB.m_outputProducts.push_back(AssetBuilderSDK::JobProduct("boutput.txt", AZ::Uuid::CreateNull(), 1));
+
+    AssetBuilderSDK::ProcessJobResponse responseA;
+    responseA.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
+    responseA.m_outputProducts.push_back(AssetBuilderSDK::JobProduct("aoutput.txt", AZ::Uuid::CreateNull(), 1));
+
+    m_isIdling = false;
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetails[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, responseB));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    m_isIdling = false;
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetails[1].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, responseA));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    jobDetails.clear();
+    m_isIdling = false;
+
+    // Modify source file b.dummy, we should only see one job with source file b.dummy getting processed again because a.dummy job has an order only job dependency on it .
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(secondSourceFile, QString("temp\n")));
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    EXPECT_EQ(jobDetails.size(), 1);
+    EXPECT_STREQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile.toUtf8().constData());
+
+    jobDetails.clear();
+    m_isIdling = false;
+    // Modify source file a.dummy, we should only see one job with source file a.dummy getting processed in this case.
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(sourceFileName, QString("temp\n")));
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, sourceFileName));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    EXPECT_EQ(jobDetails.size(), 1);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), sourceFileName);
+    EXPECT_EQ(jobDetails[0].m_jobDependencyList.size(), 1); // there should be one job dependency since APM has already processed b.dummy before but a.dummy has OrderOnly dependency on it.
+
+    m_isIdling = false;
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetProcessed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetails[0].m_jobEntry), Q_ARG(AssetBuilderSDK::ProcessJobResponse, responseA));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    jobDetails.clear();
+    m_isIdling = false;
+    // Here first fail the b.dummy job and than tell APM about the modified file
+    // This should NOT cause a.dummy job to get emitted again
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(secondSourceFile, QString("tempData\n")));
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    EXPECT_EQ(jobDetails.size(), 1);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
+
+    responseB.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
+    m_isIdling = false;
+
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssetFailed", Qt::QueuedConnection, Q_ARG(JobEntry, jobDetails[0].m_jobEntry));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+
+    jobDetails.clear();
+    m_isIdling = false;
+
+    // Modify source file b.dummy
+    ASSERT_TRUE(UnitTestUtils::CreateDummyFile(secondSourceFile, QString("temp\n")));
+    QMetaObject::invokeMethod(m_assetProcessorManager.get(), "AssessModifiedFile", Qt::QueuedConnection, Q_ARG(QString, secondSourceFile));
+    ASSERT_TRUE(BlockUntilIdle(5000));
+    EXPECT_EQ(jobDetails.size(), 1);
+    EXPECT_EQ(jobDetails[0].m_jobEntry.m_sourceAssetReference.AbsolutePath().c_str(), secondSourceFile);
+}
+
+
 TEST_F(AssetProcessorManagerTest, SourceFile_With_NonASCII_Characters_Fail_Job_OK)
 {
     // This test ensures that asset processor manager detects a source file that has non-ASCII characters
