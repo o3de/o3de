@@ -103,6 +103,8 @@ namespace AzToolsFramework
 
             void SetShowIndexAfterUpdate(QModelIndex index);
 
+            void SetApplySnapshot(bool applySnapshot);
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -125,6 +127,8 @@ namespace AzToolsFramework
             EntryDelegate* m_delegate = nullptr;
 
             bool m_expandToEntriesByDefault = false;
+
+            bool m_applySnapshot = true;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;

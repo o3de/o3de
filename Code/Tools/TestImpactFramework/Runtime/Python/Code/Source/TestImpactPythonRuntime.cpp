@@ -195,7 +195,6 @@ namespace TestImpact
         policyState.m_integrityFailurePolicy = m_integrationFailurePolicy;
         policyState.m_targetOutputCapture = m_targetOutputCapture;
         policyState.m_testFailurePolicy = m_testFailurePolicy;
-        policyState.m_testShardingPolicy = Policy::TestSharding::Never;
 
         return policyState;
     }

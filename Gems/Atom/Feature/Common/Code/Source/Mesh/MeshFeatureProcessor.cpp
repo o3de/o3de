@@ -560,6 +560,7 @@ namespace AZ
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_flags.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
+            meshDataHandle->m_flags.m_isDrawMotion = descriptor.m_isAlwaysDynamic;
 
             if (descriptor.m_excludeFromReflectionCubeMaps)
             {
@@ -1321,7 +1322,6 @@ namespace AZ
         {
             m_model = model;
             m_flags.m_needsInit = true;
-            m_flags.m_isDrawMotion = m_flags.m_isAlwaysDynamic;
             m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 

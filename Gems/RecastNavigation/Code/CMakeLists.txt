@@ -257,6 +257,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         # Add RecastNavigation.Tests to googletest
         ly_add_googletest(
             NAME Gem::RecastNavigation.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 

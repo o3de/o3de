@@ -12,7 +12,7 @@
                 "Width": 64,
                 "Height": 64
             },
-            "Format": 24
+            "Format": "R8_UINT"
         },
         "Name": "$VrsTexture",
         "IsUniqueName": true

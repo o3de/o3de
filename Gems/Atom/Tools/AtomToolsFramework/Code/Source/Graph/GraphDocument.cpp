@@ -383,6 +383,8 @@ namespace AtomToolsFramework
             });
 
             graphCompiler->CompileGraph(graph, graphName, graphPath);
+            graphCompiler->SetStateChangeHandler({});
+            graph.reset();
         };
 
         auto job = AZ::CreateJobFunction(compileJobFn, true);
@@ -562,9 +564,21 @@ namespace AtomToolsFramework
                         // Set up the change call back to apply the value of the property from the inspector to the slot. This could
                         // also send a document modified notifications and queue regeneration of shader and material assets but the
                         // compilation process and going through the ap is not responsive enough for this to matter.
-                        propertyConfig.m_dataChangeCallback = [currentSlot](const AZStd::any& value)
+                        propertyConfig.m_dataChangeCallback = [currentSlot, graphId = m_graphId](const AZStd::any& value)
                         {
                             currentSlot->SetValue(value);
+
+                            // Retrieve and refresh the node property displays with the updated slot value.
+                            GraphCanvas::SlotId slotId{};
+                            GraphModelIntegration::GraphControllerRequestBus::EventResult(
+                                slotId, graphId, &GraphModelIntegration::GraphControllerRequests::GetSlotIdBySlot, currentSlot);
+
+                            GraphCanvas::NodePropertyRequestBus::Event(slotId, [](GraphCanvas::NodePropertyRequests* nodePropertyRequests) {
+                                if (auto display = nodePropertyRequests->GetNodePropertyDisplay())
+                                {
+                                    display->UpdateDisplay();
+                                }
+                            });
                             return AZ::Edit::PropertyRefreshLevels::AttributesAndValues;
                         };
 

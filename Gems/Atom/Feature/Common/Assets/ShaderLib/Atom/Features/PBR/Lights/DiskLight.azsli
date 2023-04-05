@@ -11,6 +11,7 @@
 #include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
 #include <Atom/Features/Shadow/ProjectedShadow.azsli>
 
+#if ENABLE_DISK_LIGHTS
 enum DiskLightFlag
 {
     UseConeAngle = 1,
@@ -213,7 +214,6 @@ void ValidateDiskLight(ViewSrg::DiskLight light, Surface surface, inout Lighting
 
 void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_DISK_LIGHTS
     if (o_enableDiskLights)
     {
         ViewSrg::DiskLight light = ViewSrg::m_diskLights[lightIndex];
@@ -229,7 +229,6 @@ void ApplyDiskLightInternal(uint lightIndex, Surface surface, inout LightingData
             ApplyDiskLight(light, surface, lightingData);
         }
     }
-#endif // ENABLE_DISK_LIGHTS
 }
 
 void ApplyDiskLights(Surface surface, inout LightingData lightingData)
@@ -251,3 +250,12 @@ void ApplyDiskLights(Surface surface, inout LightingData lightingData)
     }
 #endif
 }
+
+#else
+
+void ApplyDiskLights(Surface surface, inout LightingData lightingData)
+{    
+    //Not Enabled
+}
+
+#endif

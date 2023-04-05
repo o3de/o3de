@@ -8,7 +8,7 @@
 
 #pragma once
 
-#define EPSILON 10e-5f
+#define EPSILON 10e-5
 
  
 float4x4 CreateIdentity4x4()
