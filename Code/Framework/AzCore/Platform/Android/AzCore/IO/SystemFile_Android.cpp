@@ -457,7 +457,7 @@ namespace AZ::IO
                 // to log an error using a file descriptor such as stdout or stderr
                 // since it may be the descriptor that is being redirected
                 // Normally if the return value is -1 errno has been set to an error
-            } while (m_redirectState == RedirectState::Active);
+            } while (m_redirectState < RedirectState::DisconnectedPipe);
         };
         m_flushThread = AZStd::thread(PumpReadQueue);
 

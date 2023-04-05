@@ -215,6 +215,9 @@ namespace AZ
 
             //! Redirects file descriptor to a visitor callback
             //! Internally a pipe is used to send output to the visitor
+            //! 
+            //! NOTE: This function will be called on a different thread than the one used to invoke Start()
+            //! The caller is responsible for ensuring thread safety with the callback function
             using OutputRedirectVisitor = AZStd::function<void(AZStd::span<AZStd::byte>)>;
 
             //! Starts capture of file descriptor
@@ -241,11 +244,14 @@ namespace AZ
             //! returns true if the flush operation has succeeded
             bool Flush();
 
+            // Any RedirectState value above DisconnectePipe
+            // will cause the flush thread to exit
             enum class RedirectState : AZ::u8
             {
-                Idle,
-                Active,
-                Resetting
+                Active = 0,
+                ClosingPipeWriteSide = 64,
+                DisconnectedPipe = 128,
+                Idle = 255,
             };
             void Reset();
             int m_sourceDescriptor = -1;

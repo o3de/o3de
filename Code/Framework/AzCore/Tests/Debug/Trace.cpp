@@ -139,7 +139,7 @@ namespace UnitTest
         ASSERT_TRUE(m_printf);
     }
 
-    TEST_F(TraceTests, RedirectToRawOutputToStderr_DoesNotOutputToStdout)
+    TEST_F(TraceTests, RedirectRawOutputToStderr_DoesNotOutputToStdout)
     {
         // Invoke the Trace::Init() function to create AZ environment variables
         auto& traceInstance = AZ::Debug::Trace::Instance();
@@ -184,7 +184,7 @@ namespace UnitTest
         traceInstance.Destroy();
     }
 
-    TEST_F(TraceTests, RedirectToRawOutputNone_DoesNotOutputToStdout_NorStderr)
+    TEST_F(TraceTests, RedirectRawOutputToDevNull_DoesNotOutputToStdout_NorStderr)
     {
         // Invoke the Trace::Init() function to create AZ environment variables
         auto& traceInstance = AZ::Debug::Trace::Instance();

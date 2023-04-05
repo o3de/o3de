@@ -610,7 +610,7 @@ namespace AZ::IO
                         }
                     }
                 }
-            } while (m_redirectState == RedirectState::Active);
+            } while (m_redirectState < RedirectState::DisconnectedPipe);
         };
         m_flushThread = AZStd::thread(ReadFromPipeAsync);
     }
@@ -647,7 +647,7 @@ namespace AZ::IO
     void FileDescriptorCapturer::Reset()
     {
         if (auto expectedState = RedirectState::Active;
-            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::Resetting))
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::ClosingPipeWriteSide))
         {
             // Since the descriptor capturer is not active return
             return;
@@ -656,24 +656,27 @@ namespace AZ::IO
         // Close the write end of the pipe first
         if (m_pipe[WriteEnd] != -1)
         {
+            // Retrieve OS Handle from file descriptor
+            HANDLE writeEndHandle = reinterpret_cast<HANDLE>(_get_osfhandle(static_cast<int>(m_pipe[WriteEnd])));
+
+            // Flush the write end of the pipe to make sure the read end receives any partial data at this point
+            FlushFileBuffers(writeEndHandle);
+
+            // Disconnect the pipe. This also signals the read end of the pipe if it is in an alertible wait
+            DisconnectNamedPipe(writeEndHandle);
+
             // Using _close on Windows since the write end of the pipe is represented by a file descriptor
             PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
         }
 
-        auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(m_pipeData);
+        // Set the pipe state to disconnected
+        m_redirectState = RedirectState::DisconnectedPipe;
+        // At this point the the flush thread can now join without a deadlock occuring
+        // As the pipe is disconnected at this point
 
-        // Join the flush thread to make sure any pending data left in the read end of the pipe is read
         if (m_flushThread.joinable())
         {
-            // Cancel any pending IO operations for the read end of the pipe
-            // This prevents a race condition where the Thread callback function
-            // is stuck waiting in the GetOverlappedResultEx function to be signaled
-
-            // Signal the asynchronous event to allow the flush thread to complete
-            // This is done after the write end of the pipe has closed
-            SetEvent(asyncPipeData->m_asyncIO.hEvent);
-
-            // Join the flush thread, now that it has been signaled and the RedirectState is no longer active
+            // Join the flush thread, now that that it is in disconnected pipe state
             m_flushThread.join();
         }
 
@@ -690,7 +693,8 @@ namespace AZ::IO
         // Reset the redirect callback
         m_redirectCallback = {};
 
-        if (asyncPipeData != nullptr)
+        if (auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(m_pipeData);
+            asyncPipeData != nullptr)
         {
             // Deallocate the OVERLAPPED IO structure if it was allocated in the m_waitHandle
             delete asyncPipeData;
@@ -712,6 +716,8 @@ namespace AZ::IO
             m_dupSourceDescriptor = -1;
         }
 
+        // Reset the redirect state to Idle
         m_redirectState = RedirectState::Idle;
+        // At this point it is now safe to call Start() again on this Capturer
     }
 } // namespace AZ::IO

@@ -259,7 +259,7 @@ namespace AZ::IO
     void FileDescriptorCapturer::Reset()
     {
         if (auto expectedState = RedirectState::Active;
-            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::Resetting))
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::ClosingPipeWriteSide))
         {
             // Since the descriptor capturer is not active return
             return;
@@ -270,6 +270,11 @@ namespace AZ::IO
         {
             PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
         }
+
+        // Set the pipe state to disconnected
+        m_redirectState = RedirectState::DisconnectedPipe;
+        // At this point the the flush thread can now join without a deadlock occuring
+        // As the pipe is disconnected at this point
 
         if (m_flushThread.joinable())
         {
@@ -303,5 +308,6 @@ namespace AZ::IO
         }
 
         m_redirectState = RedirectState::Idle;
+        // At this point it is now safe to call Start() again on this Capturer
     }
 }
