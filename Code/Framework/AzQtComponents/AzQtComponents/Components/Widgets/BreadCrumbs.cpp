@@ -546,6 +546,7 @@ namespace AzQtComponents
         AZ_PUSH_DISABLE_WARNING(4566, "-Wunknown-warning-option")//4566:character represented by universal-character-name 'u00a0' and 'u203a' cannot be represented in the current code page (ex.cp932)
         const qreal iconSpaceWidth = g_iconWidth + fm.horizontalAdvance(QStringLiteral("\u00a0\u00a0"));
         AZ_POP_DISABLE_WARNING
+
         QString plainTextPath;
         QString linkColor = isEnabled() ? s_linkColor.name() : s_disabledLinkColor.name();
         auto formatLink = [linkColor](const QString& fullPath, const QString& shortPath) -> QString
@@ -582,8 +583,6 @@ namespace AzQtComponents
         }
         htmlString.prepend(firstIconHtml + m_truncatedPaths.takeLast());
         --index;
-
-        QString plainTextPath;
 
         if (!m_truncatedPaths.isEmpty())
         {
