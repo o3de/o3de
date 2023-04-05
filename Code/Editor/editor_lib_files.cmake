@@ -327,8 +327,6 @@ set(FILES
     Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/ImageHistogramCtrl.cpp
-    Controls/ImageHistogramCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
