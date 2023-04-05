@@ -158,6 +158,7 @@ namespace DPEDebugView
         int m_readOnlyInt = 33;
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
+        AZStd::vector<AZStd::vector<int>> m_vectorOfVectors;
         AZStd::map<AZStd::string, float> m_map;
         AZStd::map<AZStd::string, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
@@ -189,6 +190,7 @@ namespace DPEDebugView
                     ->Field("simpleInt", &TestContainer::m_simpleInt)
                     ->Field("doubleSlider", &TestContainer::m_doubleSlider)
                     ->Field("vector", &TestContainer::m_vector)
+                    ->Field("vectorOfVectors", &TestContainer::m_vectorOfVectors)
                     ->Field("map", &TestContainer::m_map)
                     ->Field("unorderedMap", &TestContainer::m_unorderedMap)
                     ->Field("simpleEnum", &TestContainer::m_simpleEnumMap)
@@ -226,6 +228,7 @@ namespace DPEDebugView
                         ->ClassElement(AZ::Edit::ClassElements::Group, "Containers")
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, false)
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vector, "vector<string>", "")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_vectorOfVectors, "vector<vector<int>>", "")
                         ->DataElement(AZ::Edit::UIHandlers::Default, &TestContainer::m_map, "map<string, float>", "")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
@@ -336,6 +339,9 @@ int main(int argc, char** argv)
     testContainer.m_vector.push_back("one");
     testContainer.m_vector.push_back("two");
     testContainer.m_vector.push_back("the third");
+
+    testContainer.m_vectorOfVectors.push_back({ 0, 1 });
+    testContainer.m_vectorOfVectors.push_back({ 2, 3 });
 
     testContainer.m_map["One"] = 1.f;
     testContainer.m_map["Two"] = 2.f;
