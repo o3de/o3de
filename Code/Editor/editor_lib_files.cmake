@@ -469,8 +469,6 @@ set(FILES
     Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
-    QtUI/QCollapsibleGroupBox.h
-    QtUI/QCollapsibleGroupBox.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
