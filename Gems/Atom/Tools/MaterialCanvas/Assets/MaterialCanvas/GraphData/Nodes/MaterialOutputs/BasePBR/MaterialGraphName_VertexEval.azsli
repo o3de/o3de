@@ -16,6 +16,7 @@
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
@@ -25,8 +26,8 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float2 uv1,
     uint instanceId)
 {
-    const float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
-    const float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(instanceId);
+    const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
     const float3 bitangent = cross(normal, (float3)tangent);
 

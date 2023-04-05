@@ -10,6 +10,7 @@
 #include <scenesrg.srgi>
 #include <viewsrg.srgi>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 struct VertexInput
 {
@@ -23,7 +24,7 @@ struct VertexOutput
 
 VertexOutput MainVS(VertexInput input, uint instanceId : SV_InstanceID)
 {
-    const float4x4 worldMatrix = DrawSrg::GetWorldMatrix(instanceId);
+    const float4x4 worldMatrix = GetObjectToWorldMatrix(instanceId);
     VertexOutput output;
     
     const float3 worldPosition = mul(worldMatrix, float4(input.m_position, 1.0)).xyz;

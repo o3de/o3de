@@ -8,6 +8,8 @@
 
 #include "MaterialGraphName_Common.azsli"
 
+#include <Atom/Features/InstancedTransforms.azsli>
+
 struct VSInput
 {
     float3 m_position : POSITION;
@@ -42,16 +44,16 @@ VSOutput MainVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    OUT.m_worldPos = mul(DrawSrg::GetWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
+    OUT.m_worldPos = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPos, 1.0));
 
     if (o_prevPosition_isBound)
     {
-        OUT.m_worldPosPrev = mul(DrawSrg::GetWorldMatrixPrev(instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+        OUT.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
     }
     else
     {
-        OUT.m_worldPosPrev = mul(DrawSrg::GetWorldMatrixPrev(instanceId), float4(IN.m_position, 1.0)).xyz;
+        OUT.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(instanceId), float4(IN.m_position, 1.0)).xyz;
     }
 
     return OUT;

@@ -10,7 +10,7 @@
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-#include <viewsrg.srgi>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 struct VSInput
 {
@@ -26,7 +26,7 @@ VSDepthOutput DepthPassVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSDepthOutput OUT;
  
-    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(instanceId);
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
 

@@ -16,6 +16,7 @@
 #endif
 
 #include "../BasePBR/BasePBR_PixelGeometryEval.azsli"
+#include <Atom/Features/InstancedTransforms.azsli>
 
 PixelGeometryData EvaluatePixelGeometry_Skin(
     float3 positionWS,
@@ -39,8 +40,8 @@ PixelGeometryData EvaluatePixelGeometry_Skin(
 
 PixelGeometryData EvaluatePixelGeometry_Skin(VsOutput IN, bool isFrontFace)
 {
-    float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
-    float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
+    float4x4 objectToWorld = GetObjectToWorldMatrix(IN.m_instanceId);
+    float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId);
 
     float3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);

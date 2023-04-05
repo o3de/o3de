@@ -10,6 +10,7 @@
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 #include <Atom/Feature/Common/Assets/Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli>
 
@@ -154,8 +155,8 @@ option enum class OpacityMode {Opaque, Cutout, Blended, TintedTransparent} o_opa
     
     PixelGeometryData EvaluatePixelGeometry_StandardMultilayerPBR(inout VsOutput IN, bool isFrontFace)
     {
-        float4x4 objectToWorld = DrawSrg::GetWorldMatrix(IN.m_instanceId);
-        float3x3 objectToWorldIT = DrawSrg::GetWorldMatrixInverseTranspose(IN.m_instanceId);
+        float4x4 objectToWorld = GetObjectToWorldMatrix(IN.m_instanceId);
+        float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId);
 
         float3 normalWS, tangentWS, bitangentWS;
         ConstructTBN(IN.normal, IN.tangent, objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);

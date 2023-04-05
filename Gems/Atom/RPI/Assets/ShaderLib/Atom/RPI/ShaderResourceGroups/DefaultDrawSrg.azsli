@@ -10,53 +10,10 @@
 
 #include <Atom/Features/SrgSemantics.azsli>
 
-option bool o_meshInstancingIsEnabled = false;
-
-rootconstant uint m_rootConstantInstanceDataOffset;
-
 ShaderResourceGroup DrawSrg : SRG_PerDraw
 {
     // This SRG is unique per draw packet
     uint m_uvStreamTangentBitmask;
-    
-    //! Returns the matrix for transforming points from Object Space to World Space.
-    float4x4 GetWorldMatrix(uint instanceId)
-    {
-        if(o_meshInstancingIsEnabled)
-        {
-            return SceneSrg::GetObjectToWorldMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
-        }
-        else
-        {
-            return ObjectSrg::GetWorldMatrix();
-        }
-    }
-
-    //! Returns the inverse-transpose of the world matrix.
-    //! Commonly used to transform normals while supporting non-uniform scale.
-    float3x3 GetWorldMatrixInverseTranspose(uint instanceId)
-    {
-        if(o_meshInstancingIsEnabled)
-        {
-            return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
-        }
-        else
-        {
-            return ObjectSrg::GetWorldMatrixInverseTranspose();
-        }
-    }
-
-    float4x4 GetWorldMatrixPrev(uint instanceId)
-    {
-        if(o_meshInstancingIsEnabled)
-        {
-            return SceneSrg::GetObjectToWorldMatrixPrev(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
-        }
-        else
-        {
-            return ObjectSrg::GetWorldMatrixPrev();
-        }
-    }
 
     uint GetTangentAtUv(uint uvIndex)
     {
