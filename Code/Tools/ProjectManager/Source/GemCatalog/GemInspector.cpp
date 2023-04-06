@@ -126,7 +126,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemInspector::Update(const QModelIndex& modelIndex, const QString& version, const QString& path)
+    void GemInspector::Update(const QPersistentModelIndex& modelIndex, const QString& version, const QString& path)
     {
         m_curModelIndex = modelIndex;
 

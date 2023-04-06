@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         explicit GemInspector(GemModel* model, QWidget* parent, bool readOnly = false);
         ~GemInspector();
 
-        void Update(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        void Update(const QPersistentModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
 
         // Fonts
@@ -89,7 +89,7 @@ namespace O3DE::ProjectManager
         GemModel* m_model = nullptr;
         QWidget* m_mainWidget = nullptr;
         QVBoxLayout* m_mainLayout = nullptr;
-        QModelIndex m_curModelIndex;
+        QPersistentModelIndex m_curModelIndex;
         QThread m_workerThread;
         GemInspectorWorker m_worker;
 

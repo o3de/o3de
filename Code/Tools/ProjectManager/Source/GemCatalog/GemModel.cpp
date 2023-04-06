@@ -164,7 +164,7 @@ namespace O3DE::ProjectManager
             auto modelIndex = FindIndexByNameString(gemInfo.m_name);
             if (modelIndex.isValid())
             {
-                auto gemItem = item(modelIndex.row(), modelIndex.column());
+                auto gemItem = itemFromIndex(modelIndex);
                 AZ_Assert(gemItem, "Failed to retrieve existing gem item from model index");
 
                 // if this is a greater version than the existing version
@@ -237,7 +237,7 @@ namespace O3DE::ProjectManager
                         const auto& variantGemInfo = versionVariant.value<GemInfo>();
                         if (QDir(gemPath) == QDir(variantGemInfo.m_path))
                         {
-                            QStandardItem* gemItem = item(modelIndex.row(), modelIndex.column());
+                            QStandardItem* gemItem = itemFromIndex(modelIndex);
                             AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
                             SetItemDataFromGemInfo(gemItem, variantGemInfo);
                             break;
@@ -308,7 +308,7 @@ namespace O3DE::ProjectManager
         {
             if (!version.isEmpty() || !path.isEmpty())
             {
-                const bool removedAllVersions = RemoveGemInfoVersion(item(nameFind->row(), nameFind->column()), version, path);
+                const bool removedAllVersions = RemoveGemInfoVersion(itemFromIndex(nameFind.value()), version, path);
                 if (removedAllVersions)
                 {
                     removeRow(nameFind->row());
@@ -360,7 +360,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex, const QString& version, const QString& path)
+    const GemInfo GemModel::GetGemInfo(const QPersistentModelIndex& modelIndex, const QString& version, const QString& path)
     {
         const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
         const QString& gemVersion = modelIndex.data(RoleVersion).toString();
@@ -623,11 +623,13 @@ namespace O3DE::ProjectManager
         gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
-    void GemModel::UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version, const QString& path)
+    void GemModel::UpdateWithVersion(QAbstractItemModel& model, const QPersistentModelIndex& modelIndex, const QString& version, const QString& path)
     {
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
-        auto gemItem = gemModel->item(modelIndex.row(), modelIndex.column());
+        AZ_Assert(&model == modelIndex.model(), "Model is different - did you use the proxy or selection model instead of source?");
+        AZ_Assert(modelIndex.isValid(), "Invalid model index");
+        auto gemItem = gemModel->itemFromIndex(modelIndex);
         AZ_Assert(gemItem, "Failed to obtain gem model item");
         SetItemDataFromGemInfo(gemItem, GetGemInfo(modelIndex, version, path), /*metaDataOnly*/ true);
     }

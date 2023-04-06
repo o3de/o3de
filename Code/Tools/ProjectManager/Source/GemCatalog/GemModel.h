@@ -54,7 +54,7 @@ namespace O3DE::ProjectManager
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
-        static const GemInfo GetGemInfo(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        static const GemInfo GetGemInfo(const QPersistentModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         static const QList<QVariant> GetGemVersions(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
@@ -81,7 +81,7 @@ namespace O3DE::ProjectManager
         static bool HasUpdates(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
         static void UpdateWithVersion(
-            QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version, const QString& path = "");
+            QAbstractItemModel& model, const QPersistentModelIndex& modelIndex, const QString& version, const QString& path = "");
         static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 

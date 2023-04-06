@@ -217,7 +217,7 @@ namespace O3DE::ProjectManager
 
         QModelIndex firstProxyIndex = m_proxyModel->index(0, 0);
         m_proxyModel->GetSelectionModel()->setCurrentIndex(firstProxyIndex, QItemSelectionModel::ClearAndSelect);
-        m_gemInspector->Update(firstProxyIndex);
+        m_gemInspector->Update(m_proxyModel->mapToSource(firstProxyIndex));
     }
 
     void GemCatalogScreen::OnAddGemClicked()
@@ -323,14 +323,25 @@ namespace O3DE::ProjectManager
         m_proxyModel->InvalidateFilter();
         m_filterWidget->UpdateAllFilters(/*clearAllCheckboxes=*/false);
 
-        m_gemInspector->Update(m_proxyModel->GetSelectionModel()->currentIndex());
+        auto selectedIndex = m_proxyModel->GetSelectionModel()->currentIndex();
+        // be careful to not pass in the proxy model index, we want the source model index
+        if (selectedIndex.isValid())
+        {
+            m_gemInspector->Update(m_proxyModel->mapToSource(selectedIndex));
+        }
+        else
+        {
+            QModelIndex firstProxyIndex = m_proxyModel->index(0, 0);
+            m_proxyModel->GetSelectionModel()->setCurrentIndex(firstProxyIndex, QItemSelectionModel::ClearAndSelect);
+            m_gemInspector->Update(m_proxyModel->mapToSource(firstProxyIndex));
+        }
     }
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
     {
         if (m_notificationsEnabled)
         {
-            QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
+            auto modelIndex = m_gemModel->FindIndexByNameString(gemName);
             bool added = GemModel::IsAdded(modelIndex);
             bool dependency = GemModel::IsAddedDependency(modelIndex);
 
@@ -396,7 +407,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnDependencyGemStatusChanged(const QString& gemName)
     {
-        QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
+        auto modelIndex = m_gemModel->FindIndexByNameString(gemName);
         bool added = GemModel::IsAddedDependency(modelIndex);
         if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
             (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
@@ -408,7 +419,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::SelectGem(const QString& gemName)
     {
-        QModelIndex modelIndex = m_gemModel->FindIndexByNameString(gemName);
+        auto modelIndex = m_gemModel->FindIndexByNameString(gemName);
         if (!m_proxyModel->filterAcceptsRow(modelIndex.row(), QModelIndex()))
         {
             m_proxyModel->ResetFilters();
@@ -536,7 +547,7 @@ namespace O3DE::ProjectManager
 
                 Refresh();
 
-                const QModelIndex gemIndex = m_gemModel->FindIndexByNameString(gemName);
+                const auto gemIndex = m_gemModel->FindIndexByNameString(gemName);
                 QModelIndex proxyIndex;
                 if (gemIndex.isValid())
                 {
@@ -689,7 +700,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
     {
-        const QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
+        const auto index = m_gemModel->FindIndexByNameString(gemName);
         if (succeeded)
         {
             Refresh();
