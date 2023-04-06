@@ -825,6 +825,23 @@ namespace AZ
             }
 
             {
+                AZ_PROFILE_SCOPE(RPI, "Scene FinalizeVisibleObjectLists");
+
+                for (auto& view : m_renderPacket.m_views)
+                {
+                    view->FinalizeVisibleObjectList();
+                }
+            }
+
+            {
+                AZ_PROFILE_SCOPE(RPI, "Scene OnEndCulling");
+                for (auto& fp : m_featureProcessors)
+                {
+                    fp->OnEndCulling(m_renderPacket);
+                }
+            }
+
+            {
                 AZ_PROFILE_SCOPE(RPI, "FinalizeDrawLists");
                 if (jobPolicy == RHI::JobPolicy::Serial || 
                     m_renderPacket.m_views.size() <= 1) // FinalizeDrawListsX both immediately wait for the job to complete, skip job if only 1 job would be generated

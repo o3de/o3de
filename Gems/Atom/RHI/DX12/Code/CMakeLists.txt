@@ -8,6 +8,7 @@
 
 o3de_pal_dir(pal_include_dir ${CMAKE_CURRENT_LIST_DIR}/Include/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 o3de_pal_dir(pal_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
+o3de_pal_dir(common_source_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/Common "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
 include(${pal_source_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake) # PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED
 
@@ -69,6 +70,18 @@ if(NOT PAL_TRAIT_ATOM_RHI_DX12_SUPPORTED)
 endif()
 
 ly_add_target(
+    NAME Amd_DX12MA STATIC
+    NAMESPACE Gem
+    FILES_CMAKE
+        amd_dx12ma_files.cmake
+    PLATFORM_INCLUDE_FILES
+        ${common_source_dir}/${PAL_TRAIT_COMPILER_ID}/amd_dx12ma_${PAL_TRAIT_COMPILER_ID_LOWERCASE}.cmake
+    INCLUDE_DIRECTORIES
+        INTERFACE
+            ../External/AMD_D3D12MemoryAllocator/v2.0.1
+)
+
+ly_add_target(
     NAME Atom_RHI_DX12.Reflect STATIC
     NAMESPACE Gem
     FILES_CMAKE
@@ -106,6 +119,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_DX12.Reflect
+            Gem::Amd_DX12MA
             3rdParty::d3dx12
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 

@@ -1,0 +1,58 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+  
+#pragma once
+
+// Functions to support getting object transforms via an instance buffer, which use
+// the ObjectSrg as a fallback if instancing is not enabled.
+// Including this header in a shader indicates that the shader itself will use these
+// functions to handle instanced draw calls.
+
+option bool o_meshInstancingIsEnabled = false;
+
+rootconstant uint m_rootConstantInstanceDataOffset;
+
+//! Returns the matrix for transforming points from Object Space to World Space.
+float4x4 GetObjectToWorldMatrix(uint instanceId)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
+    }
+    else
+    {
+        return ObjectSrg::GetWorldMatrix();
+    }
+}
+
+//! Returns the inverse-transpose of the world matrix.
+//! Commonly used to transform normals while supporting non-uniform scale.
+float3x3 GetObjectToWorldMatrixInverseTranspose(uint instanceId)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldInverseTransposeMatrix(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
+    }
+    else
+    {
+        return ObjectSrg::GetWorldMatrixInverseTranspose();
+    }
+}
+
+//! Returns the previous frame's object to world matrix
+float4x4 GetObjectToWorldMatrixPrev(uint instanceId)
+{
+    if(o_meshInstancingIsEnabled)
+    {
+        return SceneSrg::GetObjectToWorldMatrixPrev(ViewSrg::m_instanceData[m_rootConstantInstanceDataOffset + instanceId]);
+    }
+    else
+    {
+        return ObjectSrg::GetWorldMatrixPrev();
+    }
+}
