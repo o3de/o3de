@@ -908,8 +908,8 @@ QProgressBar::chunk {
     background-color: #333333;
     padding:3px;
     font-size:12px;
+    text-align:center;
     border-radius: 3px;
-    margin-right: 3px;
 }
 
 /************** Gems SubWidget **************/
@@ -928,6 +928,17 @@ QProgressBar::chunk {
 
 #GemCatalogInspector {
     background-color: #444444;
+}
+
+/* IMPORTANT DO NOT REMOVE min/max-width 
+ * FlowLayout inside TagWidgetContainer can provide 
+ * incorrect height when the width isn't static and the
+ * tag widgets have padding (see #TagWidget)
+ * resulting in bottom widgets getting cut off
+ */
+#GemCatalogInspector #TagWidgetContainer {
+    min-width:210px;
+    max-width:210px;
 }
 
 #GemCatalogInspector QLabel {
