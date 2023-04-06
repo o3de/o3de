@@ -102,10 +102,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         FinishedEdit,
     };
 
+    //! Container: A node representing a container instance.
     struct Container : NodeWithVisiblityControl
     {
+        // These notify callback attributes may be invoked when a container is modified and handled
+        // alongside other messages in the adapter's message handler.
         static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
-        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void()>("RemoveNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t /*index*/)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 

@@ -28,6 +28,8 @@ namespace AZ::DocumentPropertyEditor
 
         static constexpr AZStd::string_view InspectorOverrideManagementKey = "/O3DE/Preferences/Prefabs/EnableInspectorOverrideManagement";
 
+        //! This represents a container or associative container instance and has methods
+        //! for interacting with the container.
         struct BoundContainer
         {
             // For constructing non-nested containers
@@ -37,116 +39,33 @@ namespace AZ::DocumentPropertyEditor
             {
             }
 
-            // For constructing non-container elements
-            BoundContainer(
-                AZ::SerializeContext::IDataContainer* container,
-                void* containerInstance,
-                void* elementInstance)
-                : m_parentContainer(container)
-                , m_parentContainerInstance(containerInstance)
-                , m_elementInstance(elementInstance)
-            {
-            }
-
-            // For constructing nested containers
-            BoundContainer(
-                AZ::SerializeContext::IDataContainer* parentContainer,
-                void* parentContainerInstance,
-                AZ::SerializeContext::IDataContainer* container,
-                void* containerInstance,
-                void* overrideInstance)
-                : m_parentContainer(parentContainer)
-                , m_parentContainerInstance(parentContainerInstance)
-                , m_container(container)
-                , m_containerInstance(containerInstance)
-                , m_elementOverrideInstance(overrideInstance)
-            {
-            }
-
-            static BoundContainer CreateBoundContainer(
+            static AZStd::unique_ptr<BoundContainer> CreateBoundContainer(
                 void* instance, // This instance might be a container, a nested container element, or a non-container element
                 const Reflection::IAttributes& attributes)
             {
                 AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a BoundContainer");
 
                 auto containerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
-                auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
-                if (parentContainerValue)
-                {
-                    auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerValue);
-
-                    auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
-                    auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceValue);
-
-                    // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
-                    // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
-                    // editable item who pretends that they can be removed directly from the container
-                    void* overrideInstance = nullptr;
-                    auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
-                    if (containerElementOverrideValue)
-                    {
-                        overrideInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
-                    }
-
-                    if (containerValue)
-                    {
-                        auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerValue);
-
-                        // This is a nested container, so store data to both the parent container and nested container
-                        return BoundContainer(parentContainer, parentContainerInstance, container, instance, overrideInstance);
-                    }
-                    else
-                    {
-                        if (overrideInstance)
-                        {
-                            instance = overrideInstance;
-                        }
-
-                        // This is a non-container child element, so we only store data for the parent container and the element
-                        return BoundContainer(parentContainer, parentContainerInstance, instance);
-                    }
-                }
-                else
+                if (containerValue && !containerValue->IsNull())
                 {
                     auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerValue);
-
-                    // This is a non-nested container, so we only need to store its facade and instance data
-                    return BoundContainer(container, instance);
+                    return AZStd::make_unique<BoundContainer>(container, instance);
                 }
+                return nullptr;
             }
 
             Dom::Value GetContainerNode(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
                 Dom::Value containerRow;
-                AZ::Dom::DomPrefixTree<BoundContainer>::VisitorFunction findContainerProcedure;
-
-                // Use this visitor if searching from a non-container element or a nested-container element
-                if (m_elementInstance || m_parentContainerInstance)
-                {
-                    findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const BoundContainer& container)
+                const auto& findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const ContainerEntry& containerEntry)
                     {
-                        if (containerRow.IsNull() && container.m_container == m_parentContainer && container.m_elementInstance == nullptr)
-                        {
-                            containerRow = impl->m_adapter->GetContents()[nodePath];
-                            return false; // We've found our container row, so stop the visitor
-                        }
-                        return true;
-                    };
-                }
-                // Use this visitor if searching from the container's row
-                else
-                {
-                    findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const BoundContainer& container)
-                    {
-                        if (containerRow.IsNull() && container.m_container == m_container &&
-                            container.m_parentContainer == m_parentContainer && container.m_elementInstance == nullptr)
+                    if (containerRow.IsNull() && containerEntry.container && containerEntry.container->m_container == m_container)
                         {
                             containerRow = impl->m_adapter->GetContents()[nodePath];
                             return false;
                         }
                         return true;
                     };
-                }
 
                 // Find the row that contains the PropertyEditor for our actual container (if it exists)
                 auto visitorFlags =
@@ -191,8 +110,8 @@ namespace AZ::DocumentPropertyEditor
                 const AZ::SerializeContext::ClassElement* containerClassElement =
                     m_container->GetElement(m_container->GetDefaultElementNameCrc());
 
-                // dataAddress is allocated instance of key type. Get the key type and send it with the dataAddress in the
-                // message, then skip the store element below until we get an AddContainerKey message back from the DPE UI
+                // The reserved element is an allocated instance of the IDataContainer's ValueType.
+                // In an associative container, this would be a pair.
                 m_reservedElementInstance = m_container->ReserveElement(m_containerInstance, containerClassElement);
 
                 auto associativeContainer = m_container->GetAssociativeContainerInterface();
@@ -201,6 +120,8 @@ namespace AZ::DocumentPropertyEditor
                     auto keyTypeAttribute = containerClassElement->FindAttribute(AZ_CRC_CE("KeyType"));
                     if (keyTypeAttribute)
                     {
+                        // Get the key type and send it with the dataAddress in the message, then skip the store
+                        // element below until we get an AddContainerKey message back from the DPE UI
                         auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
                         if (keyTypeData)
                         {
@@ -221,46 +142,13 @@ namespace AZ::DocumentPropertyEditor
                 impl->m_adapter->NotifyResetDocument();
             }
 
-            void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
-            {
-                void* instanceToRemove = nullptr;
-                if (m_elementInstance == nullptr)
-                {
-                    instanceToRemove = m_containerInstance;
-                    auto associativeContainer = m_parentContainer->GetAssociativeContainerInterface();
-                    if (associativeContainer)
-                    {
-                        // Use the override instance if specified since it represents the
-                        // element pair instance that the IDataContainer API is expecting
-                        void* keyInstance = m_elementOverrideInstance ? m_elementOverrideInstance : m_containerInstance;
-                        const AZ::SerializeContext::ClassElement* containerClassElement =
-                            m_parentContainer->GetElement(m_parentContainer->GetDefaultElementNameCrc());
-                        instanceToRemove =
-                            associativeContainer->GetElementByKey(m_parentContainerInstance, containerClassElement, keyInstance);
-                    }
-                }
-                else
-                {
-                    instanceToRemove = m_elementInstance;
-                    auto associativeContainer = m_parentContainer->GetAssociativeContainerInterface();
-                    if (associativeContainer)
-                    {
-                        instanceToRemove = associativeContainer->GetElementByKey(m_parentContainerInstance, nullptr, m_elementInstance);
-                    }
-                }
-
-                m_parentContainer->RemoveElement(m_parentContainerInstance, instanceToRemove, impl->m_serializeContext);
-
-                auto containerNode = GetContainerNode(impl, path);
-                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
-                impl->m_adapter->NotifyResetDocument();
-            }
-
             void OnAddElementToAssociativeContainer(
                 ReflectionAdapterReflectionImpl* impl,
                 AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapterContainingKey,
                 const AZ::Dom::Path& containerPath)
             {
+                AZ_Assert(m_reservedElementInstance != nullptr, "This BoundContainer has no reserved element to store");
+
                 ReflectionAdapter* adapter = static_cast<ReflectionAdapter*>(adapterContainingKey->get());
                 void* keyInstance = adapter->GetInstance();
 
@@ -285,22 +173,123 @@ namespace AZ::DocumentPropertyEditor
                 m_reservedElementInstance = nullptr;
             };
 
-            AZ::SerializeContext::IDataContainer* m_parentContainer = nullptr;
-            void* m_parentContainerInstance = nullptr;
-
             AZ::SerializeContext::IDataContainer* m_container = nullptr;
             void* m_containerInstance = nullptr;
 
-            void* m_elementInstance = nullptr;
-
             // An element instance reserved through the IDataContainer API
             void* m_reservedElementInstance = nullptr;
-            // If specified, a more specific instance for associative container elements
-            void* m_elementOverrideInstance = nullptr;
+        };
+
+        //! This represents an element instance of a container or associative container with methods
+        //! for interacting with that parent container. The element instance could be a container within
+        //! another container or a non-container element.
+        struct ContainerElement
+        {
+            // For constructing non-container elements
+            ContainerElement(AZ::SerializeContext::IDataContainer* container, void* containerInstance, void* elementInstance)
+                : m_container(container)
+                , m_containerInstance(containerInstance)
+                , m_elementInstance(elementInstance)
+            {
+            }
+
+            static AZStd::unique_ptr<ContainerElement> CreateContainerElement(void* instance, const Reflection::IAttributes& attributes)
+            {
+                AZ_Assert(instance != nullptr, "Instance was nullptr when attempting to create a ContainerElement");
+
+                auto parentContainerValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainer);
+                if (parentContainerValue && !parentContainerValue->IsNull())
+                {
+                    auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerValue);
+
+                    auto parentContainerInstanceValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ParentContainerInstance);
+                    auto parentContainerInstance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*parentContainerInstanceValue);
+
+                    // Check if this element is actually standing in for a direct child of a container. This is used in scenarios like
+                    // maps, where the direct children are actually pairs of key/value, but we need to only show the value as an
+                    // editable item who pretends that they can be removed directly from the container
+                    auto containerElementOverrideValue = attributes.Find(AZ::Reflection::DescriptorAttributes::ContainerElementOverride);
+                    if (containerElementOverrideValue)
+                    {
+                        instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(*containerElementOverrideValue);
+                    }
+
+                    return AZStd::make_unique<ContainerElement>(parentContainer, parentContainerInstance, instance);
+                }
+
+                return nullptr;
+            }
+
+            Dom::Value GetContainerNode(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
+            {
+                Dom::Value containerRow;
+                const auto& findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const ContainerEntry& containerEntry)
+                {
+                    if (containerRow.IsNull() && containerEntry.container && containerEntry.container->m_container == m_container)
+                    {
+                        containerRow = impl->m_adapter->GetContents()[nodePath];
+                        return false; // We've found our container row, so stop the visitor
+                    }
+                    return true;
+                };
+
+                // Find the row that contains the PropertyEditor for our actual container (if it exists)
+                auto visitorFlags =
+                    Dom::PrefixTreeTraversalFlags::ExcludeChildPaths | Dom::PrefixTreeTraversalFlags::TraverseMostToLeastSpecific;
+                impl->m_containers.VisitPath(path, findContainerProcedure, visitorFlags);
+
+                if (containerRow.IsNode())
+                {
+                    // Look within the Row for a PropertyEditor that has a SerializedPath field.
+                    // This will be the container's editor w/ attributes.
+                    for (auto it = containerRow.ArrayBegin(); it != containerRow.ArrayEnd(); ++it)
+                    {
+                        if (it->IsNode() && it->GetNodeName() == GetNodeName<Nodes::PropertyEditor>())
+                        {
+                            auto serializedFieldIt = it->FindMember(Reflection::DescriptorAttributes::SerializedPath);
+                            if (serializedFieldIt != it->MemberEnd())
+                            {
+                                return *it;
+                            }
+                        }
+                    }
+                }
+                return {};
+            }
+
+            void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
+            {
+                void* instanceToRemove = m_elementInstance;
+
+                auto associativeContainer = m_container->GetAssociativeContainerInterface();
+                if (associativeContainer)
+                {
+                    const AZ::SerializeContext::ClassElement* containerClassElement =
+                        m_container->GetElement(m_container->GetDefaultElementNameCrc());
+                    instanceToRemove = associativeContainer->GetElementByKey(m_containerInstance, containerClassElement, m_elementInstance);
+
+                }
+
+                m_container->RemoveElement(m_containerInstance, instanceToRemove, impl->m_serializeContext);
+
+                auto containerNode = GetContainerNode(impl, path);
+                Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
+                impl->m_adapter->NotifyResetDocument();
+            }
+
+            AZ::SerializeContext::IDataContainer* m_container = nullptr;
+            void* m_containerInstance = nullptr;
+            void* m_elementInstance = nullptr;
+        };
+
+        struct ContainerEntry
+        {
+            AZStd::unique_ptr<BoundContainer> container;
+            AZStd::unique_ptr<ContainerElement> element;
         };
 
         // Lookup table of containers and their elements for handling container operations
-        AZ::Dom::DomPrefixTree<BoundContainer> m_containers;
+        AZ::Dom::DomPrefixTree<ContainerEntry> m_containers;
 
         ReflectionAdapterReflectionImpl(ReflectionAdapter* adapter)
             : m_adapter(adapter)
@@ -576,7 +565,17 @@ namespace AZ::DocumentPropertyEditor
             if (parentContainerAttribute && !parentContainerAttribute->IsNull() &&
                 parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
             {
-                m_containers.SetValue(m_builder.GetCurrentPath(), AZStd::move(BoundContainer::CreateBoundContainer(instance, attributes)));
+                auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
+                if (containerEntry)
+                {
+                    containerEntry->element = ContainerElement::CreateContainerElement(instance, attributes);
+                }
+                else
+                {
+                    m_containers.SetValue(
+                        m_builder.GetCurrentPath(),
+                        ContainerEntry{ nullptr, ContainerElement::CreateContainerElement(instance, attributes) });
+                }
 
                 auto parentContainer = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*parentContainerAttribute);
                 if (!parentContainer->IsFixedSize())
@@ -615,14 +614,6 @@ namespace AZ::DocumentPropertyEditor
 
             if (visibility == Nodes::PropertyVisibility::Hide || visibility == Nodes::PropertyVisibility::ShowChildrenOnly)
             {
-                //auto containerAttribute = attributes.Find(AZ::Reflection::DescriptorAttributes::Container);
-                //if (containerAttribute && !containerAttribute->IsNull())
-                //{
-                //    m_builder.AddMessageHandler(m_adapter, Nodes::Container::AddNotify.GetName());
-                //    m_builder.AddMessageHandler(m_adapter, Nodes::Container::ClearNotify.GetName());
-                //    m_builder.AddMessageHandler(m_adapter, Nodes::Container::RemoveNotify.GetName());
-                //}
-
                 return;
             }
 
@@ -660,7 +651,7 @@ namespace AZ::DocumentPropertyEditor
                 if (containerAttribute && !containerAttribute->IsNull())
                 {
                     m_containers.SetValue(
-                        m_builder.GetCurrentPath(), AZStd::move(BoundContainer::CreateBoundContainer(access.Get(), attributes)));
+                        m_builder.GetCurrentPath(), ContainerEntry{ BoundContainer::CreateBoundContainer(access.Get(), attributes) });
 
                     auto container = AZ::Dom::Utils::ValueToTypeUnsafe<AZ::SerializeContext::IDataContainer*>(*containerAttribute);
 
@@ -1106,13 +1097,13 @@ namespace AZ::DocumentPropertyEditor
                 switch (action.value())
                 {
                 case ContainerAction::AddElement:
-                    containerEntry->OnAddElement(m_impl.get(), message.m_messageOrigin);
+                    containerEntry->container->OnAddElement(m_impl.get(), message.m_messageOrigin);
                     break;
                 case ContainerAction::RemoveElement:
-                    containerEntry->OnRemoveElement(m_impl.get(), message.m_messageOrigin);
+                    containerEntry->element->OnRemoveElement(m_impl.get(), message.m_messageOrigin);
                     break;
                 case ContainerAction::Clear:
-                    containerEntry->OnClear(m_impl.get(), message.m_messageOrigin);
+                    containerEntry->container->OnClear(m_impl.get(), message.m_messageOrigin);
                     break;
                 }
             }
@@ -1121,13 +1112,13 @@ namespace AZ::DocumentPropertyEditor
         auto addKeyToContainer = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
         {
             auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
-            containerEntry->OnAddElementToAssociativeContainer(m_impl.get(), adapter, containerPath);
+            containerEntry->container->OnAddElementToAssociativeContainer(m_impl.get(), adapter, containerPath);
         };
 
         auto rejectKeyToContainer = [&](AZ::Dom::Path containerPath)
         {
             auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
-            containerEntry->RejectAssociativeContainerKey(m_impl.get());
+            containerEntry->container->RejectAssociativeContainerKey(m_impl.get());
         };
 
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
