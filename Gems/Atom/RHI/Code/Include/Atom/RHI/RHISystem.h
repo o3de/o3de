@@ -13,6 +13,7 @@
 #include <Atom/RHI/FrameScheduler.h>
 #include <Atom/RHI/PipelineStateCache.h>
 #include <Atom/RHI/RHISystemInterface.h>
+#include <Atom/RHI/RHIMemoryStatisticsInterface.h>
 #include <Atom/RHI/XRRenderingInterface.h>
 
 namespace AZ
@@ -25,6 +26,7 @@ namespace AZ
 
         class RHISystem final
             : public RHISystemInterface
+            , public RHIMemoryStatisticsInterface
         {
         public:
             //! This function just initializes the native device and RHI::Device as a result.
@@ -57,12 +59,25 @@ namespace AZ
             RHI::PipelineStateCache* GetPipelineStateCache() override;
             void ModifyFrameSchedulerStatisticsFlags(RHI::FrameSchedulerStatisticsFlags statisticsFlags, bool enableFlags) override;
             double GetCpuFrameTime() const override;
-            const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
-            const RHI::MemoryStatistics* GetMemoryStatistics() const override;
             const RHI::TransientAttachmentPoolDescriptor* GetTransientAttachmentPoolDescriptor() const override;
             ConstPtr<PlatformLimitsDescriptor> GetPlatformLimitsDescriptor(int deviceIndex = MultiDevice::DefaultDeviceIndex) const override;
             void QueueRayTracingShaderTableForBuild(RayTracingShaderTable* rayTracingShaderTable) override;
             XRRenderingInterface* GetXRSystem() const override;
+            //////////////////////////////////////////////////////////////////////////
+
+            //////////////////////////////////////////////////////////////////////////
+            // RHIMemoryStatisticsInterface Overrides
+            const RHI::TransientAttachmentStatistics* GetTransientAttachmentStatistics() const override;
+            const RHI::MemoryStatistics* GetMemoryStatistics() const override;
+            void WriteResourcePoolInfoToJson(
+                const AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+                rapidjson::Document& doc) const override;
+            AZ::Outcome<void, AZStd::string> LoadResourcePoolInfoFromJson(
+                AZStd::vector<RHI::MemoryStatistics::Pool>& pools, 
+                AZStd::vector<RHI::MemoryStatistics::Heap>& heaps, 
+                rapidjson::Document& doc, 
+                const AZStd::string& fileName) const override;
+            void TriggerResourcePoolAllocInfoDump() const override;
             //////////////////////////////////////////////////////////////////////////
 
         private:

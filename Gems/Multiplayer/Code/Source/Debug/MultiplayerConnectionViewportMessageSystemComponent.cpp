@@ -375,10 +375,11 @@ namespace Multiplayer
         m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal)
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;
-        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
+        m_centerViewportDebugText =
+            AZStd::fixed_string<MaxMessageLength>::format(OnEditorSendingLevelDataMessage, bytesSent, bytesTotal);
     }   
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)

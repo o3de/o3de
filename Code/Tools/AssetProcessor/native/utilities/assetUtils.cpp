@@ -1075,9 +1075,10 @@ namespace AssetUtilities
         // now the other jobs, which this job depends on:
         for (const AssetProcessor::JobDependencyInternal& jobDependencyInternal : jobDetail.m_jobDependencyList)
         {
-            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce)
+            if (jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnce ||
+                jobDependencyInternal.m_jobDependency.m_type == AssetBuilderSDK::JobDependencyType::OrderOnly)
             {
-                // we do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce.
+                // We do not want to include the fingerprint of dependent jobs if the job dependency type is OrderOnce or OrderOnly.
                 continue;
             }
             AssetProcessor::JobDesc jobDesc(AssetProcessor::SourceAssetReference(jobDependencyInternal.m_jobDependency.m_sourceFile.m_sourceFileDependencyPath.c_str()),

@@ -27,15 +27,15 @@ uint        prefix##m_emissiveMapUvIndex;
 option bool prefix##o_emissiveEnabled; \
 option bool prefix##o_emissive_useTexture; 
 
-float3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, float factor, float3 emissiveColor, float emissiveAffectedByAlpha, float alpha, bool emissiveEnabled, bool useTexture)
+real3 GetEmissiveInput(Texture2D map, sampler mapSampler, float2 uv, real factor, real3 emissiveColor, real emissiveAffectedByAlpha, real alpha, bool emissiveEnabled, bool useTexture)
 {
-    float3 emissive = float3(0,0,0);
+    real3 emissive = real3(0,0,0);
     if(emissiveEnabled)
     {
         emissive = factor * lerp(1, alpha, emissiveAffectedByAlpha) * emissiveColor;
         if (useTexture)
         {
-            float3 sampledValue = map.Sample(mapSampler, uv).rgb;
+            real3 sampledValue = real3(map.Sample(mapSampler, uv).rgb);
             emissive *= TransformColor(sampledValue, ColorSpaceId::LinearSRGB, ColorSpaceId::ACEScg);
         }
     }

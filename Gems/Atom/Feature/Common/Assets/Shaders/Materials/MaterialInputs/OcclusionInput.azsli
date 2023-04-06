@@ -26,12 +26,12 @@ uint        prefix##m_specularOcclusionMapUvIndex;
 option bool prefix##o_diffuseOcclusion_useTexture; \
 option bool prefix##o_specularOcclusion_useTexture; 
 
-float GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, float factor, bool useTexture)
+real GetOcclusionInput(Texture2D map, sampler mapSampler, float2 uv, real factor, bool useTexture)
 {
-    float occlusion = 1.0f;
+    real occlusion = 1.0;
     if(useTexture)
     {
-        float4 sampledValue = map.Sample(mapSampler, uv);
+        real4 sampledValue = real4(map.Sample(mapSampler, uv));
         occlusion = pow(sampledValue.r, factor);
     }
     return occlusion;

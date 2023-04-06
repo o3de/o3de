@@ -47,9 +47,9 @@ namespace Multiplayer::Automation
         Call(FN_OnEditorConnectionAttemptsFailed, failedAttempts);
     }
 
-    void MultiplayerEditorAutomationHandler::OnEditorSendingLevelData()
+    void MultiplayerEditorAutomationHandler::OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal)
     {
-        Call(FN_OnEditorSendingLevelData);
+        Call(FN_OnEditorSendingLevelData, bytesSent, bytesTotal);
     }
 
     void MultiplayerEditorAutomationHandler::OnConnectToSimulationSuccess()

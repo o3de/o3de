@@ -15,8 +15,6 @@ namespace AZ
 {
     namespace DX12
     {
-        class Device;
-
         class BufferMemoryAllocator
         {
         public:
