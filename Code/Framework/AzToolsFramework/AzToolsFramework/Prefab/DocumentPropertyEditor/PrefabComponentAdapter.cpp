@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -60,6 +61,8 @@ namespace AzToolsFramework::Prefab
         }
 
         ComponentAdapter::SetComponent(componentInstance);
+
+        m_currentUndoBatch = nullptr;
     }
 
     void PrefabComponentAdapter::CreateLabel(
@@ -113,8 +116,27 @@ namespace AzToolsFramework::Prefab
 
     void PrefabComponentAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
     {
-        if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+        if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
         {
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
+            }
+
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch,
+                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                    m_currentUndoBatch,
+                    "Modify Entity Property");
+            }
+            else
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+            }
+
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
 
             AZ::Dom::Path relativePathFromOwningPrefab(PrefabDomUtils::EntitiesName);
@@ -127,7 +149,6 @@ namespace AzToolsFramework::Prefab
 
             relativePathFromOwningPrefab /= AZ::Dom::Path(serializedPathValue.GetString());
 
-
             auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
             if (prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityId))
             {
@@ -135,7 +156,6 @@ namespace AzToolsFramework::Prefab
                 {
                     NotifyContentsChanged(
                         { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
-
                 }
             }
             else if (prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(m_entityId))
@@ -169,6 +189,17 @@ namespace AzToolsFramework::Prefab
                     NotifyContentsChanged(patches);
                 }
             }
+
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+        }
+        else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+        {
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
+            }
+
+            m_currentUndoBatch = nullptr;
         }
     }
 
@@ -203,12 +234,12 @@ namespace AzToolsFramework::Prefab
                 ScopedUndoBatch undoBatch("Update component in a prefab template");
 
                 PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Undo Updating Component");
-                state->SetParent(undoBatch.GetUndoBatch());
+                state->SetParent(m_currentUndoBatch);
                 state->Capture(
                     owningInstance->get(), AZ::Dom::Path(relativePathFromOwningPrefab).ToString(), afterValueOfComponentProperty);
                 state->Redo();
 
-                return true;
+                return state->Changed();
             }
         }
         else
@@ -247,12 +278,11 @@ namespace AzToolsFramework::Prefab
                 }
 
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
-                ScopedUndoBatch undoBatch("override a component in a nested prefab template");
                 PrefabUndoComponentPropertyOverride* state = aznew PrefabUndoComponentPropertyOverride("Undo overriding Component");
-                state->SetParent(undoBatch.GetUndoBatch());
+                state->SetParent(m_currentUndoBatch);
                 state->CaptureAndRedo(owningInstance->get(), relativePathFromOwningPrefab, afterValueOfComponentProperty);
 
-                return true;
+                return state->Changed();
             }
         }
         else

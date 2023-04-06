@@ -8,9 +8,11 @@
 
 #include "MaterialGraphName_Common.azsli"
 
-VsOutput MainVS(VsInput IN)
+VsOutput MainVS(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    return EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    return EvaluateVertexGeometry(IN, SV);
 }
 
 struct PsDepthOutput
