@@ -165,7 +165,7 @@ namespace AzToolsFramework
                 auto thumbnailKey = (azrtti_cast<const SourceAssetBrowserEntry*>(entry))->GetSourceControlThumbnailKey();
                 SharedThumbnail thumbnail;
                 ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
-                AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestBus.");
+                AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
                 AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
                 if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
                 {
