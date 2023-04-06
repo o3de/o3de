@@ -357,14 +357,14 @@
               </widget>
              </item>
              <item>
-               <widget class="QLabel" name="WelcomeDescriptionLabel">
+               <widget class="QLabel" name="WelcomeDescriptionLabel1">
                  <property name="text">
-                   <string>This tool converts an O3DE project's source assets to game ready content.</string>
+                   <string>This tool converts an O3DE project's source assets to runtime ready content.</string>
                  </property>
                </widget>
              </item>
              <item>
-               <widget class="QLabel" name="WelcomeDescriptionLabel">
+               <widget class="QLabel" name="WelcomeDescriptionLabel2">
                  <property name="text">
                    <string>You can read more about the Asset Processor &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/asset-processor/&quot;&gt;here.&lt;/a&gt;</string>
                  </property>
