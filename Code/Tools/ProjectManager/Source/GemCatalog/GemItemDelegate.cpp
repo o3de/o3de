@@ -268,7 +268,7 @@ namespace O3DE::ProjectManager
         return QStyledItemDelegate::editorEvent(event, model, option, modelIndex);
     }
 
-    QString GetGemNameList(const QVector<QModelIndex> modelIndices)
+    QString GetGemNameList(const QVector<QPersistentModelIndex> modelIndices)
     {
         QString gemNameList;
         for (int i = 0; i < modelIndices.size(); ++i)
@@ -310,7 +310,7 @@ namespace O3DE::ProjectManager
                         // we only want to display the gems that must be de-selected to automatically
                         // disable this dependency, so don't include any that haven't been selected (added) 
                         constexpr bool addedOnly = true;
-                        QVector<QModelIndex> dependents = gemModel->GatherDependentGems(index, addedOnly);
+                        auto dependents = gemModel->GatherDependentGems(index, addedOnly);
                         QString nameList = GetGemNameList(dependents);
                         if (!nameList.isEmpty())
                         {

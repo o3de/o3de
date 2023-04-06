@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void AddGemInfoVersion(QStandardItem* item, const GemInfo& gemInfo)
+    void AddGemInfoVersion(QStandardItem* item, const GemInfo& gemInfo, bool update)
     {
         QList<QVariant> versionList;
         auto variant = item->data(GemModel::RoleGemInfoVersions);
@@ -68,7 +68,7 @@ namespace O3DE::ProjectManager
             const GemInfo& existingGemInfo = existingGemVariant.value<GemInfo>();
             if (QDir(existingGemInfo.m_path) == QDir(gemInfo.m_path))
             {
-                if (existingGemInfo.m_version == gemInfo.m_version)
+                if (existingGemInfo.m_version == gemInfo.m_version && !update)
                 {
                     AZ_Info("ProjectManager", "Not adding GemInfo because a GemInfo with path (%s) and version (%s) already exists.",
                         gemInfo.m_path.toUtf8().constData(),
@@ -80,6 +80,24 @@ namespace O3DE::ProjectManager
                 // the path is the same but the version has changed, update the info
                 versionToReplaceIndex = i;
                 break;
+            }
+            else if (existingGemInfo.m_version == gemInfo.m_version &&
+                existingGemInfo.m_downloadStatus == GemInfo::NotDownloaded &&
+                gemInfo.m_downloadStatus == GemInfo::Downloaded)
+            {
+                // we are adding  a gem version for a gem that has been downloaded
+                // so replace the content for remote gem
+                versionToReplaceIndex = i;
+                break;
+            }
+
+            if (existingGemInfo.m_version == gemInfo.m_version &&
+                existingGemInfo.m_downloadStatus == GemInfo::Downloaded &&
+                gemInfo.m_downloadStatus == GemInfo::NotDownloaded)
+            {
+                // do not add the not downloaded remote version of
+                // something we have downloaded
+                return;
             }
         }
 
@@ -94,9 +112,39 @@ namespace O3DE::ProjectManager
         item->setData(versionList, GemModel::RoleGemInfoVersions);
     }
 
-    QVector<QModelIndex> GemModel::AddGems(const QVector<GemInfo>& gemInfos)
+    bool RemoveGemInfoVersion(QStandardItem* item, const QString& version, const QString& path)
     {
-        QVector<QModelIndex> indexesChanged;
+        QVariant variant = item->data(GemModel::RoleGemInfoVersions);
+        auto versionList = variant.isValid() ? variant.value<QList<QVariant>>() : QList<QVariant>();
+        const bool removeByPath = !path.isEmpty();
+
+        QDir dir{ path };
+        for (int i = 0; i < versionList.size(); ++i)
+        {
+            const QVariant& existingGemVariant = versionList.at(i);
+            const GemInfo& existingGemInfo = existingGemVariant.value<GemInfo>();
+            if (removeByPath)
+            {
+                if (QDir(existingGemInfo.m_path) == dir)
+                {
+                    versionList.removeAt(i);
+                    break;
+                }
+            }
+            else if (existingGemInfo.m_version == version)
+            {
+                // there could be multiple instances of the same version
+                versionList.removeAt(i);
+            }
+        }
+
+        item->setData(versionList, GemModel::RoleGemInfoVersions);
+        return versionList.isEmpty();
+    }
+
+    QVector<QPersistentModelIndex> GemModel::AddGems(const QVector<GemInfo>& gemInfos, bool updateExisting)
+    {
+        QVector<QPersistentModelIndex> indexesChanged;
         const int initialNumRows = rowCount();
 
         // block dataChanged signal if we are adding a bunch of stuff
@@ -119,13 +167,15 @@ namespace O3DE::ProjectManager
                 auto gemItem = item(modelIndex.row(), modelIndex.column());
                 AZ_Assert(gemItem, "Failed to retrieve existing gem item from model index");
 
-                // if this is a greater version than the existing version, show it
-                if (ProjectUtils::VersionCompare(gemInfo.m_version, gemItem->data(RoleVersion).toString()) > 0)
+                // if this is a greater version than the existing version
+                // or we are updating the existing version, update
+                int versionResult = ProjectUtils::VersionCompare(gemInfo.m_version, gemItem->data(RoleVersion).toString());
+                if (versionResult > 0 || (versionResult == 0 && updateExisting))
                 {
                     SetItemDataFromGemInfo(gemItem, gemInfo, /*metaDataOnly=*/ true);
                 }
 
-                AddGemInfoVersion(gemItem, gemInfo);
+                AddGemInfoVersion(gemItem, gemInfo, updateExisting);
 
                 indexesChanged.append(modelIndex);
             }
@@ -133,7 +183,7 @@ namespace O3DE::ProjectManager
             {
                 auto gemItem = new QStandardItem();
                 SetItemDataFromGemInfo(gemItem, gemInfo);
-                AddGemInfoVersion(gemItem, gemInfo);
+                AddGemInfoVersion(gemItem, gemInfo, updateExisting);
                 appendRow(gemItem); 
 
                 modelIndex = index(rowCount() - 1, 0);
@@ -216,7 +266,7 @@ namespace O3DE::ProjectManager
 
             QStandardItem* gemItem = new QStandardItem();
             SetItemDataFromGemInfo(gemItem, gemInfo);
-            AddGemInfoVersion(gemItem, gemInfo);
+            AddGemInfoVersion(gemItem, gemInfo, /*updateExisting=*/false);
             appendRow(gemItem); 
 
             const auto modelIndex = index(rowCount() - 1, 0);
@@ -236,7 +286,7 @@ namespace O3DE::ProjectManager
         emit dataChanged(index(0, 0), index(AZStd::max(0, rowCount() - 1), 0));
     }
 
-    QModelIndex GemModel::AddGem(const GemInfo& gemInfo)
+    QPersistentModelIndex GemModel::AddGem(const GemInfo& gemInfo)
     {
         if (const auto& indexes = AddGems({gemInfo}); !indexes.isEmpty())
         {
@@ -251,12 +301,23 @@ namespace O3DE::ProjectManager
         removeRow(modelIndex.row());
     }
 
-    void GemModel::RemoveGem(const QString& gemName)
+    void GemModel::RemoveGem(const QString& gemName, const QString& version, const QString& path)
     {
         auto nameFind = m_nameToIndexMap.find(gemName);
         if (nameFind != m_nameToIndexMap.end())
         {
-            removeRow(nameFind->row());
+            if (!version.isEmpty() || !path.isEmpty())
+            {
+                const bool removedAllVersions = RemoveGemInfoVersion(item(nameFind->row(), nameFind->column()), version, path);
+                if (removedAllVersions)
+                {
+                    removeRow(nameFind->row());
+                }
+            }
+            else
+            {
+                removeRow(nameFind->row());
+            }
         }
     }
 
@@ -275,7 +336,7 @@ namespace O3DE::ProjectManager
         {
             const QString& key = iter.key();
             const QModelIndex modelIndex = iter.value();
-            QSet<QModelIndex> dependencies;
+            QSet<QPersistentModelIndex> dependencies;
             GetAllDependingGems(modelIndex, dependencies);
             if (!dependencies.isEmpty())
             {
@@ -291,7 +352,7 @@ namespace O3DE::ProjectManager
                 const QString& dependencyName = dependency.data(RoleName).toString();
                 if (!m_gemReverseDependencyMap.contains(dependencyName))
                 {
-                    m_gemReverseDependencyMap.insert(dependencyName, QSet<QModelIndex>());
+                    m_gemReverseDependencyMap.insert(dependencyName, QSet<QPersistentModelIndex>());
                 }
 
                 m_gemReverseDependencyMap[dependencyName].insert(m_nameToIndexMap[dependant]);
@@ -299,7 +360,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex, const QString& version)
+    const GemInfo GemModel::GetGemInfo(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
         const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
         const QString& gemVersion = modelIndex.data(RoleVersion).toString();
@@ -313,13 +374,21 @@ namespace O3DE::ProjectManager
             return versionList.at(0).value<GemInfo>();
         }
 
+        bool usePath = !path.isEmpty();
+        bool useVersion = !version.isEmpty();
+        bool useCurrentVersion = !useVersion && !usePath;
         for (const auto& versionVariant : versionList)
         {
+            // there may be multiple instances of the same gem with the same version
+            // at different paths
             const QString& variantVersion = versionVariant.value<GemInfo>().m_version;
+            const QString& variantPath = versionVariant.value<GemInfo>().m_path;
 
-            // if a version is provided try to find an exact match
             // if no version is provided, try to find the one that matches the current version
-            if (version == variantVersion || (version.isEmpty() && gemVersion == variantVersion))
+            // if a path and/or version is provided try to find an exact match
+            if ((useCurrentVersion && gemVersion == variantVersion) ||
+                (usePath && variantPath == path) ||
+                (!usePath && useVersion && variantVersion == version))
             {
                 return versionVariant.value<GemInfo>();
             }
@@ -329,15 +398,9 @@ namespace O3DE::ProjectManager
         return {};
     }
 
-    const QStringList GemModel::GetGemVersions(const QModelIndex& modelIndex)
+    const QList<QVariant> GemModel::GetGemVersions(const QModelIndex& modelIndex)
     {
-        QStringList versionList;
-        const auto& versions = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
-        for (const auto& version : versions)
-        {
-            versionList.append(version.value<GemInfo>().m_version);
-        }
-        return versionList;
+        return modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
     }
 
     QString GemModel::GetName(const QModelIndex& modelIndex)
@@ -364,7 +427,7 @@ namespace O3DE::ProjectManager
         return static_cast<GemInfo::DownloadStatus>(modelIndex.data(RoleDownloadStatus).toInt());
     }
 
-    QModelIndex GemModel::FindIndexByNameString(const QString& nameString) const
+    QPersistentModelIndex GemModel::FindIndexByNameString(const QString& nameString) const
     {
         const auto iterator = m_nameToIndexMap.find(nameString);
         if (iterator != m_nameToIndexMap.end())
@@ -390,7 +453,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems)
+    void GemModel::GetAllDependingGems(const QModelIndex& modelIndex, QSet<QPersistentModelIndex>& inOutGems)
     {
         QStringList dependencies = GetDependingGems(modelIndex);
         for (const QString& dependency : dependencies)
@@ -491,7 +554,7 @@ namespace O3DE::ProjectManager
 
     bool GemModel::HasDependentGems(const QModelIndex& modelIndex) const
     {
-        QVector<QModelIndex> dependentGems = GatherDependentGems(modelIndex);
+        auto dependentGems = GatherDependentGems(modelIndex);
         for (const QModelIndex& dependency : dependentGems)
         {
             if (IsAdded(dependency))
@@ -507,9 +570,9 @@ namespace O3DE::ProjectManager
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
-        QModelIndex modelIndex = gemModel->FindIndexByNameString(gemName);
+        auto modelIndex = gemModel->FindIndexByNameString(gemName);
 
-        QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+        auto dependencies = gemModel->GatherGemDependencies(modelIndex);
         uint32_t numChangedDependencies = 0;
 
         if (isAdded)
@@ -539,7 +602,7 @@ namespace O3DE::ProjectManager
                 SetIsAddedDependency(*gemModel, modelIndex, hasDependentGems);
             }
 
-            for (const QModelIndex& dependency : dependencies)
+            for (const auto& dependency : dependencies)
             {
                 hasDependentGems = gemModel->HasDependentGems(dependency);
                 if (IsAddedDependency(dependency) != hasDependentGems)
@@ -560,13 +623,13 @@ namespace O3DE::ProjectManager
         gemModel->emit gemStatusChanged(gemName, numChangedDependencies);
     }
 
-    void GemModel::UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version)
+    void GemModel::UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
         auto gemItem = gemModel->item(modelIndex.row(), modelIndex.column());
         AZ_Assert(gemItem, "Failed to obtain gem model item");
-        SetItemDataFromGemInfo(gemItem, GetGemInfo(modelIndex, version), /*metaDataOnly*/ true);
+        SetItemDataFromGemInfo(gemItem, GetGemInfo(modelIndex, version, path), /*metaDataOnly*/ true);
     }
 
     void GemModel::OnRowsAboutToBeRemoved(const QModelIndex& parent, int first, int last)
@@ -612,7 +675,7 @@ namespace O3DE::ProjectManager
             // update all dependencies
             GemModel* gemModel = GetSourceModel(&model);
             AZ_Assert(gemModel, "Failed to obtain GemModel");
-            QVector<QModelIndex> dependencies = gemModel->GatherGemDependencies(modelIndex);
+            auto dependencies = gemModel->GatherGemDependencies(modelIndex);
             for (const QModelIndex& dependency : dependencies)
             {
                 SetWasPreviouslyAddedDependency(*gemModel, dependency, true);
@@ -665,7 +728,7 @@ namespace O3DE::ProjectManager
         GemModel* gemModel = GetSourceModel(&model);
         AZ_Assert(gemModel, "Failed to obtain GemModel");
 
-        QVector<QModelIndex> dependentGems = gemModel->GatherDependentGems(modelIndex);
+        auto dependentGems = gemModel->GatherDependentGems(modelIndex);
         if (!dependentGems.isEmpty())
         {
             // we need to deactivate all gems that depend on this one
@@ -713,7 +776,7 @@ namespace O3DE::ProjectManager
             auto currentVersion = modelIndex.data(RoleVersion).toString();
 
             // gem versions are sorted so we can just compare if we're using the latest version
-            return currentVersion != versions.at(0);
+            return currentVersion != versions.at(0).value<GemInfo>().m_version;
         }
 
         return false;
@@ -746,13 +809,13 @@ namespace O3DE::ProjectManager
         return false;
     }
 
-    QVector<QModelIndex> GemModel::GatherGemDependencies(const QModelIndex& modelIndex) const 
+    QVector<QPersistentModelIndex> GemModel::GatherGemDependencies(const QPersistentModelIndex& modelIndex) const 
     {
-        QVector<QModelIndex> result;
+        QVector<QPersistentModelIndex> result;
         const QString& gemName = modelIndex.data(RoleName).toString();
         if (m_gemDependencyMap.contains(gemName))
         {
-            for (const QModelIndex& dependency : m_gemDependencyMap[gemName])
+            for (const auto& dependency : m_gemDependencyMap[gemName])
             {
                 result.push_back(dependency);
             }
@@ -760,13 +823,13 @@ namespace O3DE::ProjectManager
         return result;
     }
 
-    QVector<QModelIndex> GemModel::GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly) const
+    QVector<QPersistentModelIndex> GemModel::GatherDependentGems(const QPersistentModelIndex& modelIndex, bool addedOnly) const
     {
-        QVector<QModelIndex> result;
+        QVector<QPersistentModelIndex> result;
         const QString& gemName = modelIndex.data(RoleName).toString();
         if (m_gemReverseDependencyMap.contains(gemName))
         {
-            for (const QModelIndex& dependency : m_gemReverseDependencyMap[gemName])
+            for (const auto& dependency : m_gemReverseDependencyMap[gemName])
             {
                 if (!addedOnly || GemModel::IsAdded(dependency))
                 {

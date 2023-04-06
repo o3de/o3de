@@ -359,10 +359,10 @@ namespace O3DE::ProjectManager
                 QString version =  GemModel::GetNewVersion(modelIndex);
                 if (version.isEmpty())
                 {
-                    version =  GemModel::GetVersion(modelIndex);
+                    version =  gemInfo.m_version;
                 }
 
-                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive))
+                if (version.isEmpty() || version.contains("Unknown", Qt::CaseInsensitive) || gemInfo.m_displayName.contains(version))
                 {
                     tags.push_back({ gemInfo.m_displayName, gemInfo.m_name });
                 }

@@ -42,20 +42,20 @@ namespace O3DE::ProjectManager
             RoleGemInfoVersions
         };
 
-        QModelIndex AddGem(const GemInfo& gemInfo);
-        QVector<QModelIndex> AddGems(const QVector<GemInfo>& gemInfos);
+        QPersistentModelIndex AddGem(const GemInfo& gemInfo);
+        QVector<QPersistentModelIndex> AddGems(const QVector<GemInfo>& gemInfos, bool updateExisting = false);
         void ActivateGems(const QHash<QString, QString>& enabledGemNames);
         void RemoveGem(const QModelIndex& modelIndex);
-        void RemoveGem(const QString& gemName);
+        void RemoveGem(const QString& gemName, const QString& version = "", const QString& path = "");
         void Clear();
         void UpdateGemDependencies();
 
-        QModelIndex FindIndexByNameString(const QString& nameString) const;
+        QPersistentModelIndex FindIndexByNameString(const QString& nameString) const;
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
-        static const GemInfo GetGemInfo(const QModelIndex& modelIndex, const QString& version = "");
-        static const QStringList GetGemVersions(const QModelIndex& modelIndex);
+        static const GemInfo GetGemInfo(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
+        static const QList<QVariant> GetGemVersions(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
         static QString GetDisplayName(const QModelIndex& modelIndex);
         static GemInfo::DownloadStatus GetDownloadStatus(const QModelIndex& modelIndex);
@@ -80,15 +80,16 @@ namespace O3DE::ProjectManager
         static bool HasRequirement(const QModelIndex& modelIndex);
         static bool HasUpdates(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
-        static void UpdateWithVersion(QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version);
+        static void UpdateWithVersion(
+            QAbstractItemModel& model, const QModelIndex& modelIndex, const QString& version, const QString& path = "");
         static void DeactivateDependentGems(QAbstractItemModel& model, const QModelIndex& modelIndex);
         static void SetDownloadStatus(QAbstractItemModel& model, const QModelIndex& modelIndex, GemInfo::DownloadStatus status);
 
         bool DoGemsToBeAddedHaveRequirements() const;
         bool HasDependentGemsToRemove() const;
 
-        QVector<QModelIndex> GatherGemDependencies(const QModelIndex& modelIndex) const;
-        QVector<QModelIndex> GatherDependentGems(const QModelIndex& modelIndex, bool addedOnly = false) const;
+        QVector<QPersistentModelIndex> GatherGemDependencies(const QPersistentModelIndex& modelIndex) const;
+        QVector<QPersistentModelIndex> GatherDependentGems(const QPersistentModelIndex& modelIndex, bool addedOnly = false) const;
         QVector<QModelIndex> GatherGemsToBeAdded(bool includeDependencies = false) const;
         QVector<QModelIndex> GatherGemsToBeRemoved(bool includeDependencies = false) const;
 
@@ -103,12 +104,12 @@ namespace O3DE::ProjectManager
         void OnRowsRemoved(const QModelIndex& parent, int first, int last);
 
     private:
-        void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QModelIndex>& inOutGems);
+        void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QPersistentModelIndex>& inOutGems);
         QStringList GetDependingGems(const QModelIndex& modelIndex);
 
-        QHash<QString, QModelIndex> m_nameToIndexMap;
+        QHash<QString, QPersistentModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;
-        QHash<QString, QSet<QModelIndex>> m_gemDependencyMap;
-        QHash<QString, QSet<QModelIndex>> m_gemReverseDependencyMap;
+        QHash<QString, QSet<QPersistentModelIndex>> m_gemDependencyMap;
+        QHash<QString, QSet<QPersistentModelIndex>> m_gemReverseDependencyMap;
     };
 } // namespace O3DE::ProjectManager
