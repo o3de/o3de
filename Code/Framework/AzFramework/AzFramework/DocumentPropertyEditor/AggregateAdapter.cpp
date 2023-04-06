@@ -51,7 +51,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::RemoveAdapter(DocumentAdapterPtr sourceAdapter)
     {
-        // TODO
+        // TODO: https://github.com/o3de/o3de/issues/15609
         (void)sourceAdapter;
     }
 
@@ -59,6 +59,7 @@ namespace AZ::DocumentPropertyEditor
     {
         m_adapters.clear();
         m_rootNode = AZStd::make_unique<AggregateNode>();
+        NotifyResetDocument();
     }
 
     bool RowAggregateAdapter::IsRow(const Dom::Value& domValue)
@@ -132,51 +133,15 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::HandleAdapterReset(DocumentAdapterPtr adapter)
     {
-        // TODO
+        // TODO https://github.com/o3de/o3de/issues/15610
         (void)adapter;
     }
 
     void RowAggregateAdapter::HandleDomChange(DocumentAdapterPtr adapter, const Dom::Patch& patch)
     {
-        const auto adapterIndex = GetIndexForAdapter(adapter);
-
-        for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
-        {
-            const auto& patchPath = operationIterator->GetDestinationPath();
-            if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
-            {
-                auto* nodeAtPath = GetNodeAtAdapterPath(adapterIndex, patchPath);
-                if (nodeAtPath)
-                {
-                    // <apm> remove this entry from the node, update the "values differ"
-                }
-                else
-                {
-                    // if there's no node at that path, it was a column entry
-                    auto parentPath = patchPath;
-                    parentPath.Pop();
-                    auto* rowParentNode = GetNodeAtAdapterPath(adapterIndex, parentPath);
-                    (void)rowParentNode;
-                    /* <apm> see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use a different GetComparisonRow),
-                    if not, remove it and place it where it actually goes. If yes, update the node's "values differ" status */
-                    // <apm> it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same bucket, but need to track exactly
-                    // what's been updated since last frame for patching purposes
-                }
-            }
-            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
-            {
-                // <apm>
-            }
-            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
-            {
-                // <apm>
-            }
-        }
-
-        // <apm> adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
-        // of child
-        // <apm> need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all row children
-        // <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one adapter adds or removes children
+        (void)adapter;
+        (void)patch;
+        // TODO https://github.com/o3de/o3de/issues/15612
     }
 
     void RowAggregateAdapter::HandleDomMessage(
@@ -184,8 +149,8 @@ namespace AZ::DocumentPropertyEditor
         [[maybe_unused]] const AZ::DocumentPropertyEditor::AdapterMessage& message,
         [[maybe_unused]] Dom::Value& value)
     {
-        // <apm> forwarding all of these isn't desirable, test to see if we need to conditionally forward this
-        // DocumentAdapter::SendAdapterMessage(message);
+        // TODO forwarding all of these isn't desirable, test to see if we need to conditionally forward this
+        // https://github.com/o3de/o3de/issues/15611
     }
 
     size_t RowAggregateAdapter::GetIndexForAdapter(const DocumentAdapterPtr& adapter)
@@ -227,7 +192,6 @@ namespace AZ::DocumentPropertyEditor
                 return nullptr;
             }
         }
-
         return currNode;
     }
 
@@ -462,9 +426,9 @@ namespace AZ::DocumentPropertyEditor
             NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
         };
 
-        // todo: handle messages from things like "edit anyway" button
         return message.Match(
-            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged, Nodes::GenericButton::OnActivate, handleEditAnyway
+            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
+            Nodes::GenericButton::OnActivate, handleEditAnyway
         );
     }
 
@@ -557,21 +521,4 @@ namespace AZ::DocumentPropertyEditor
 
         return (leftValue.GetType() != AZ::Dom::Type::Null && leftValue == rightValue);
     }
-
-
-    /* notes:
-
-    - A node is only considered matching if its number of Values equals the number of adapters
-    - If all the nodes in a given set have all column children value matching, the full row is passed through,
-      otherwise, the column children are replaced with a label saying, "Values differ", and a button saying "Edit anyway"
-      if Edit anyway is pressed, the first value in the set is passed through, but its editor is set to change the values of all nodes
-    - the types of all nodes must match to be considered to be editable together
-
-    TBD:
-    - need to figure out how to reliably apply the edits of one PropertyEditor to all represented nodes
-    - need to handle nodes with children that could differ on subsequent levels, like:
-    - A has vector B, which has C, D, E children;
-    - A' has vector B', which has D, E, F children;
-    */
-
 } // namespace AZ::DocumentPropertyEditor
