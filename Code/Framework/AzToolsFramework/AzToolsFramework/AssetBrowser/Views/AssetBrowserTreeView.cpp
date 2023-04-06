@@ -181,7 +181,7 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
-        void AssetBrowserTreeView::dropEvent([[maybe_unused]] QDropEvent* event)
+        void AssetBrowserTreeView::dropEvent(QDropEvent* event)
         {
             QModelIndex sourceIndex = currentIndex();
             QModelIndex targetIndex = indexAt(event->pos());
@@ -189,6 +189,7 @@ namespace AzToolsFramework
             {
                 event->setDropAction(Qt::IgnoreAction);
                 event->accept();
+                return;
             }
             QTreeView::dropEvent(event);
         }
