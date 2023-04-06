@@ -10,11 +10,11 @@
 
 option bool o_subsurfaceScattering_useTexture;
 
-float GetSubsurfaceInput(Texture2D map, sampler mapSampler, float2 uv, float surfaceScatteringFactor)
+real GetSubsurfaceInput(Texture2D map, sampler mapSampler, float2 uv, real surfaceScatteringFactor)
 {
     if(o_subsurfaceScattering_useTexture)
     {
-        surfaceScatteringFactor *= map.Sample(mapSampler, uv).r;
+        surfaceScatteringFactor *= real(map.Sample(mapSampler, uv).r);
     }
     return surfaceScatteringFactor;
 }

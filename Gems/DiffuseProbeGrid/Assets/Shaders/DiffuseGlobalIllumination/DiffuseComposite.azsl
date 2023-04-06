@@ -40,7 +40,8 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_imageScale;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+// The shader variant system needs a fallback if you have non-static options.
+#include <Atom/RPI/ShaderResourceGroups/UnusedFallbackDrawSrg.azsli>
 
 // Vertex Shader
 VSOutput MainVS(VSInput input)

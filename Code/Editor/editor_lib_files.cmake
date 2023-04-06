@@ -327,8 +327,6 @@ set(FILES
     Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/ImageHistogramCtrl.cpp
-    Controls/ImageHistogramCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -471,10 +469,6 @@ set(FILES
     Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
-    QtUI/QCollapsibleGroupBox.h
-    QtUI/QCollapsibleGroupBox.cpp
-    QtUI/PixmapLabelPreview.h
-    QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
     RenderHelpers/AxisHelper.cpp
@@ -686,8 +680,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
     WelcomeScreen/WelcomeScreenDialog.qrc
-    2DViewport.cpp
-    2DViewport.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
@@ -701,8 +693,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    TopRendererWnd.cpp
-    TopRendererWnd.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp
