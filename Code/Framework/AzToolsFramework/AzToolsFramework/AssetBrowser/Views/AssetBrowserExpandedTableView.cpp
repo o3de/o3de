@@ -453,7 +453,7 @@ namespace AzToolsFramework
                     if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                     {
                         icon.addFile(path, iconSize, QIcon::Normal, QIcon::Off);
-                        AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.constData());
+                        AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                         icon.paint(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter);
                     }
                     else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
