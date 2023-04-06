@@ -389,8 +389,6 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
-    filteredDPE->show();
-
     AZStd::map<int, float> firstVector = { 
         { 1, 1. },
         { 2, 2. },
@@ -422,6 +420,7 @@ int main(int argc, char** argv)
 
     debugViewer->AddAdapterToList("Vector AggregateAdapter", aggregateAdapter);
     debugViewer->show();
+    filteredDPE->show();
 
     return qtApp.exec();
 }
