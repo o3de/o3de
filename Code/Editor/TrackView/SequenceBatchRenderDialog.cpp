@@ -76,8 +76,6 @@ namespace
 
     const char debugInfo[] = "debuginfo";
 
-    const char format[] = "format";
-
     const int kBatchRenderFileVersion = 2; // This version number should be incremented every time available options like the list of formats,
     // the list of buffers change.
 
@@ -1518,7 +1516,7 @@ void CSequenceBatchRenderDialog::OnLoadBatch()
 
             itemNode->getAttr(debugInfo, item.disableDebugInfo);
 
-            item.imageFormat = itemNode->getAttr(format);
+            item.imageFormat = itemNode->getAttr("format");
 
             // cvars
             for (int k = 0; k < itemNode->getChildCount(); ++k)
@@ -1574,7 +1572,7 @@ void CSequenceBatchRenderDialog::OnSaveBatch()
 
             itemNode->setAttr(debugInfo, item.disableDebugInfo);
 
-            itemNode->setAttr(format, item.imageFormat.toUtf8().data());
+            itemNode->setAttr("format", item.imageFormat.toUtf8().data());
 
             // cvars
             for (size_t k = 0; k < item.cvars.size(); ++k)

@@ -682,11 +682,11 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             m_builderInfoMetricsSort->mapFromSource(m_builderInfoMetrics->index(m_builderData->m_builderGuidToIndex[builder.m_busId], 0)));
         ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
-        ui->builderInfoHeaderValueType->setText(
+        ui->builderInfoDetailsValueType->setText(
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
-        ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
-        ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToFixedString().c_str());
+        ui->builderInfoDetailsValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
+        ui->builderInfoDetailsValueVersionNumber->setText(QString::number(builder.m_version));
+        ui->builderInfoDetailsValueBusId->setText(builder.m_busId.ToFixedString().c_str());
     }
 }
 

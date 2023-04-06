@@ -487,21 +487,45 @@ namespace AZ::IO::PosixInternal
     {
         return _pipe(pipeFileDescriptors, pipeSize, static_cast<int>(pipeFlags));
     }
+}
 
-    static int Eof(int fileDescriptor)
+namespace AZ::IO::Internal
+{
+    // The only way for a completion routine to pass in any
+    // context is through the LPOVERLAPPED structure that gets passed to it
+    // So the AsyncPipeData struct contains an OVERLAPPED instance at offset 0
+    // and then inside of the completion routine the LPOVERLAPPED structure
+    // is cast to an AsyncPipeData*
+    // See example of using completion routines for Named Pipes at
+    // https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-server-using-completion-routines
+    struct AsyncPipeData
     {
-        return _eof(fileDescriptor);
-    }
+        AsyncPipeData(FileDescriptorCapturer& descriptorCapturer)
+            : m_descriptorCapturer(descriptorCapturer)
+        {}
+
+        OVERLAPPED m_asyncIO{};
+        FileDescriptorCapturer& m_descriptorCapturer;
+        //! Storage buffer for read results of Async ReadFileEx opeastion
+        AZStd::array<AZStd::byte, AZ::IO::FileDescriptorCapturer::DefaultPipeSize> m_capturedBytes;
+    };
+
+    static_assert(offsetof(AsyncPipeData, m_asyncIO) == 0, "OVERLAPPED IO structure must be at offset 0."
+        " Virtual functions cannot be added to the above struct as that affects the layout");
 }
 
 namespace AZ::IO
 {
     // FileDescriptorCapturer WinAPI Impl
-    void FileDescriptorCapturer::Start(int pipeSize)
+    void FileDescriptorCapturer::Start(OutputRedirectVisitor redirectCallback,
+        AZStd::chrono::milliseconds waitTimeout,
+        int pipeSize)
     {
-        if (m_redirectToPipe)
+        // atomically update the redirect state to active if idle
+        if (auto expectedState = RedirectState::Idle;
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::Active))
         {
-            // Capturer is already in progress
+            // A capturer is already in progress
             return;
         }
         if (m_sourceDescriptor == -1)
@@ -510,9 +534,13 @@ namespace AZ::IO
             return;
         }
 
-        int pipeCreated = PosixInternal::Pipe(m_pipe, pipeSize, PosixInternal::OpenFlags::Binary);
+        const auto pipeName = FixedMaxPathWString::format(LR"(\\.\pipe\capturer.%hs)", AZ::Uuid::CreateRandom().ToFixedString().c_str());
 
-        if (pipeCreated == -1)
+        auto& pipeServerEnd{ reinterpret_cast<HANDLE&>(m_pipe[WriteEnd]) };
+        if (pipeServerEnd = CreateNamedPipeW(pipeName.c_str(), PIPE_ACCESS_OUTBOUND | FILE_FLAG_OVERLAPPED,
+            PIPE_TYPE_BYTE | PIPE_READMODE_BYTE, 1,
+            pipeSize, pipeSize, 0, nullptr);
+            pipeServerEnd == INVALID_HANDLE_VALUE)
         {
             return;
         }
@@ -522,12 +550,12 @@ namespace AZ::IO
 
         // Duplicate the write end of the pipe onto the original source descriptor
         // This causes the writes to the source descriptor to redirect to the pipe
-        if (PosixInternal::Dup2(m_pipe[WriteEnd], m_sourceDescriptor) == -1)
+        m_pipe[WriteEnd] = _open_osfhandle(m_pipe[WriteEnd], 0);
+        if (PosixInternal::Dup2(static_cast<int>(m_pipe[WriteEnd]), m_sourceDescriptor) == -1)
         {
             // Failed to redirect the source descriptor to the pipe
             PosixInternal::Close(m_dupSourceDescriptor);
-            PosixInternal::Close(m_pipe[WriteEnd]);
-            PosixInternal::Close(m_pipe[ReadEnd]);
+            PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
             // Reset pipe descriptor to -1
             m_pipe[WriteEnd] = -1;
             m_pipe[ReadEnd] = -1;
@@ -535,53 +563,161 @@ namespace AZ::IO
             return;
         }
 
-        m_redirectToPipe = true;
-    }
-
-    void FileDescriptorCapturer::Flush(const OutputRedirectVisitor& redirectCallback)
-    {
-        if (!redirectCallback)
+        // Open read end of the pipe
+        auto& pipeClientEnd{ reinterpret_cast<HANDLE&>(m_pipe[ReadEnd]) };
+        if (pipeClientEnd = CreateFileW(pipeName.c_str(), GENERIC_READ, 0, nullptr,
+            OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, nullptr);
+            pipeClientEnd == INVALID_HANDLE_VALUE)
         {
-            // If the callback is empty, there is no where to flush the output
+            Reset();
             return;
         }
 
-        constexpr int PipeBufferSize = DefaultPipeSize;
-        AZStd::array<AZStd::byte, PipeBufferSize> capturedBytes;
+        // Store the OVERLAPPED IO in the m_pipeData
+        // It will be used in the Flush(), to provide the async callback
+        auto asyncPipeData = new Internal::AsyncPipeData{ *this };
 
-        int bytesRead{};
-        do
+        constexpr bool eventNeedsToBeManuallyReset = true;
+        constexpr bool initialStateIsSignalled = false;
+        asyncPipeData->m_asyncIO.hEvent = CreateEventW(nullptr, eventNeedsToBeManuallyReset,
+            initialStateIsSignalled, nullptr);
+
+        // Store the AsyncPipeData instance in the intptr_t opaque data
+        m_pipeData = reinterpret_cast<intptr_t>(asyncPipeData);
+
+        // Setup flush thread which pumps the read end of the pipe when filled with data
+        m_redirectCallback = AZStd::move(redirectCallback);
+
+        auto ReadFromPipeAsync = [this, waitTimeout]
         {
-            // WinAPI has support for checking if the file descriptor is at EOF
-            if (PosixInternal::Eof(m_pipe[ReadEnd]) != 0)
+            do
             {
-                break;
-            }
-            // Pump the read end of the pipe until it is empty
-            // and invoke the visitor for each call
-            bytesRead = PosixInternal::Read(m_pipe[ReadEnd],
-                AZStd::ranges::data(capturedBytes), static_cast<int>(AZStd::ranges::size(capturedBytes)));
-            if (bytesRead > 0)
-            {
-                redirectCallback(AZStd::span(AZStd::ranges::data(capturedBytes), bytesRead));
-            }
+                if (Flush())
+                {
+                    if (auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(m_pipeData);
+                        asyncPipeData != nullptr)
+                    {
+                        DWORD bytesTransferred{};
 
-        } while (bytesRead > 0);
+                        constexpr bool hasAsyncProcedureCall = true;
+                        const auto timeoutMs = static_cast<DWORD>(AZStd::min<decltype(waitTimeout)::rep>(waitTimeout.count(), INFINITE));
+                        if (bool waitResult = GetOverlappedResultEx(reinterpret_cast<HANDLE>(m_pipe[ReadEnd]),
+                            &asyncPipeData->m_asyncIO, &bytesTransferred,
+                            timeoutMs, hasAsyncProcedureCall);
+                            waitResult)
+                        {
+                            ResetEvent(asyncPipeData->m_asyncIO.hEvent);
+                        }
+                    }
+                }
+            } while (m_redirectState < RedirectState::DisconnectedPipe);
+        };
+        m_flushThread = AZStd::thread(ReadFromPipeAsync);
     }
 
-    void FileDescriptorCapturer::Stop(const OutputRedirectVisitor& redirectCallback)
+    bool FileDescriptorCapturer::Flush()
     {
-        // Close the write end of the pipe before flushing
-        // This is required in order to not block the thread when reading from the pipe
-        if (m_pipe[WriteEnd] != -1)
+        LPOVERLAPPED_COMPLETION_ROUTINE ReadCompleted = [](DWORD errorCode, DWORD bytesRead,
+            LPOVERLAPPED asyncIO)
         {
-            PosixInternal::Close(m_pipe[WriteEnd]);
-            m_pipe[WriteEnd] = -1;
+            auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(asyncIO);
+            auto& self = asyncPipeData->m_descriptorCapturer;
+            if (self.m_redirectCallback && errorCode == ERROR_SUCCESS && bytesRead > 0)
+            {
+                self.m_redirectCallback(AZStd::span(asyncPipeData->m_capturedBytes.data(), bytesRead));
+            }
+        };
+
+        if (auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(m_pipeData);
+            asyncPipeData != nullptr)
+        {
+            // Use the address of the m_asyncIO OVERLAPPED io member to pass through context data
+            // to the async io completion routine
+            const bool readResult = ReadFileEx(reinterpret_cast<HANDLE>(m_pipe[ReadEnd]),
+                asyncPipeData->m_capturedBytes.data(), static_cast<DWORD>(asyncPipeData->m_capturedBytes.size()),
+                &asyncPipeData->m_asyncIO, ReadCompleted);
+
+            return readResult;
         }
 
-        // Invoke the visitor with the output in the pipe
-        Flush(redirectCallback);
-        // Closes the pipe and resets the descriptor
-        Reset();
+        return false;
+    }
+
+    // Reset which uses WinAPI CloseHandle to close pipe descriptors
+    void FileDescriptorCapturer::Reset()
+    {
+        if (auto expectedState = RedirectState::Active;
+            !m_redirectState.compare_exchange_strong(expectedState, RedirectState::ClosingPipeWriteSide))
+        {
+            // Since the descriptor capturer is not active return
+            return;
+        }
+
+        // Close the write end of the pipe first
+        if (m_pipe[WriteEnd] != -1)
+        {
+            // Retrieve OS Handle from file descriptor
+            HANDLE writeEndHandle = reinterpret_cast<HANDLE>(_get_osfhandle(static_cast<int>(m_pipe[WriteEnd])));
+
+            // Flush the write end of the pipe to make sure the read end receives any partial data at this point
+            FlushFileBuffers(writeEndHandle);
+
+            // Disconnect the pipe. This also signals the read end of the pipe if it is in an alertible wait
+            DisconnectNamedPipe(writeEndHandle);
+
+            // Using _close on Windows since the write end of the pipe is represented by a file descriptor
+            PosixInternal::Close(static_cast<int>(m_pipe[WriteEnd]));
+        }
+
+        // Set the pipe state to disconnected
+        m_redirectState = RedirectState::DisconnectedPipe;
+        // At this point the the flush thread can now join without a deadlock occuring
+        // As the pipe is disconnected at this point
+
+        if (m_flushThread.joinable())
+        {
+            // Join the flush thread, now that that it is in disconnected pipe state
+            m_flushThread.join();
+        }
+
+        // Default contruct the thread to clear it out.
+        m_flushThread = {};
+
+        // Close the read end of the pipe after the write end is closed
+        if (m_pipe[ReadEnd] != -1)
+        {
+            // Using CloseHandle on Windows since the read end of the pipe is represented by a HANDLE
+            CloseHandle(reinterpret_cast<HANDLE>(m_pipe[ReadEnd]));
+        }
+
+        // Reset the redirect callback
+        m_redirectCallback = {};
+
+        if (auto asyncPipeData = reinterpret_cast<Internal::AsyncPipeData*>(m_pipeData);
+            asyncPipeData != nullptr)
+        {
+            // Deallocate the OVERLAPPED IO structure if it was allocated in the m_waitHandle
+            delete asyncPipeData;
+            m_pipeData = 0;
+        }
+
+        // Reset the pipe descriptor files after the thread has been joined
+        // to avoid a race condition where the `m_pipe[ReadEnd]` is an -1 while
+        // the flush thread is still running
+        m_pipe[WriteEnd] = -1;
+        m_pipe[ReadEnd] = -1;
+
+        // Take the duplicate of the original source descriptor and restore it
+        // Afterwards close the duplicate descriptor
+        if (m_dupSourceDescriptor != -1)
+        {
+            PosixInternal::Dup2(m_dupSourceDescriptor, m_sourceDescriptor);
+            PosixInternal::Close(m_dupSourceDescriptor);
+            m_dupSourceDescriptor = -1;
+        }
+
+        // Reset the redirect state to Idle
+        m_redirectState = RedirectState::Idle;
+        // At this point it is now safe to call Start() again on this Capturer
     }
 } // namespace AZ::IO

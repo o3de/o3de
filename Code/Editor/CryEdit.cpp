@@ -403,9 +403,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_TOOLS_CUSTOMIZEKEYBOARD, OnCustomizeKeyboard)
     ON_COMMAND(ID_TOOLS_CONFIGURETOOLS, OnToolsConfiguretools)
     ON_COMMAND(ID_TOOLS_SCRIPTHELP, OnToolsScriptHelp)
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
-#endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)

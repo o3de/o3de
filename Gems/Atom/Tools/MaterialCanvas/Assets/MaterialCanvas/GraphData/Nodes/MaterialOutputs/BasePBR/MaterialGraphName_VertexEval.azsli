@@ -16,16 +16,18 @@
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_MaterialGraphName(
     float3 position,
     real3 normal,
     real4 tangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
-    const real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
-    const real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
+    const float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
+    const float3x3 objectToWorldIT = GetObjectToWorldMatrixInverseTranspose(instanceId);
     const float4 positionWS = mul(objectToWorld, float4(position, 1.0));
     const real3 bitangent = cross(normal, tangent.xyz);
 
@@ -55,15 +57,17 @@ VsOutput EvaluateVertexGeometry_MaterialGraphName(
     output.uvs[1] = uv1;
     output.normal = normal;
     output.tangent = tangent;
+    output.m_instanceId = instanceId;
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN)
+VsOutput EvaluateVertexGeometry_MaterialGraphName(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_MaterialGraphName(
         IN.position,
         real3(IN.normal),
         real4(IN.tangent),
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.m_instanceId);
 }
