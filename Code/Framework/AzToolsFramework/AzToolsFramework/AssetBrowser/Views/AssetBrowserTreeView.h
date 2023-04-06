@@ -114,6 +114,7 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
+            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;

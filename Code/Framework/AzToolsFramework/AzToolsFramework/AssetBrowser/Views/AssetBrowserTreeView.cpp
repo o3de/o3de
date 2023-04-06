@@ -181,6 +181,19 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
+        void AssetBrowserTreeView::dropEvent(QDropEvent* event)
+        {
+            QModelIndex sourceIndex = currentIndex();
+            QModelIndex targetIndex = indexAt(event->pos());
+            if ((sourceIndex.internalPointer() == targetIndex.internalPointer()) && (sourceIndex.row() == targetIndex.row()))
+            {
+                event->setDropAction(Qt::IgnoreAction);
+                event->accept();
+                return;
+            }
+            QTreeView::dropEvent(event);
+        }
+
         AZStd::vector<const AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
