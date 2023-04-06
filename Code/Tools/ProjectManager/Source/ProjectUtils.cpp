@@ -11,7 +11,6 @@
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
-#include <AzCore/Dependency/Dependency.h>
 #include <AzCore/std/chrono/chrono.h>
 
 #include <QFileDialog>
@@ -795,6 +794,34 @@ namespace O3DE::ProjectManager
                 }
             }
             return result;
+        }
+
+
+        void GetDependencyNameAndVersion(const QString& dependencyString, QString& objectName, Comparison& comparator, QString& version)
+        {
+            Dependency dependency;
+            if (auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                objectName = dependency.GetName().c_str();
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    comparator = dependency.GetBounds().at(0).GetComparison();
+                    version = dependency.GetBounds().at(0).GetVersion().ToString().c_str();
+                }
+            }
+            else
+            {
+                objectName = dependencyString;
+            }
+        }
+
+
+        QString GetDependencyName(const QString& dependency)
+        {
+            QString objectName, version;
+            ProjectUtils::Comparison comparator;
+            GetDependencyNameAndVersion(dependency, objectName, comparator, version);
+            return objectName; 
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

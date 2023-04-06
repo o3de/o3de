@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QProcessEnvironment>
 
+#include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
 
@@ -132,6 +133,26 @@ namespace O3DE::ProjectManager
          * @return a human readable string e.g. o3de 1.2.3, or o3de greater than or equal to 2.3.4
          */
         QString GetDependencyString(const QString& dependency);
+
+
+        using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+        using Comparison = AZ::Dependency<AZ::SemanticVersion::parts_count>::Bound::Comparison;
+
+        /**
+         * Helper to parse a dependency, e.g. o3de==1.2.3 into an object name, comparator version 
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @param objectName The parsed object name, e.g. o3de 
+         * @param comparator The parsed comparator, e.g. ==
+         * @param version The parsed version, e.g. 1.2.3 
+         */
+        void GetDependencyNameAndVersion(const QString& dependency, QString& objectName, Comparison& comparator, QString& version);
+
+        /**
+         * Helper to parse a dependency, e.g. o3de==1.2.3 into an object name 
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @return The parsed object name, e.g. o3de 
+         */
+        QString GetDependencyName(const QString& dependency);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
