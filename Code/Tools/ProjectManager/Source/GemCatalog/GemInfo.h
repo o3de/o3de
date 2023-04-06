@@ -12,6 +12,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVector>
+#include <QMetaType>
 #endif
 
 namespace O3DE::ProjectManager
