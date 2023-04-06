@@ -436,8 +436,8 @@ namespace Multiplayer
 
         // These control how many retries and how to space them out for packet send failures.
         static constexpr int MaxRetries = 20;
-        static constexpr int InitialMsDelayPerRetry = 10;
-        static constexpr int MaxMsDelayPerRetry = 1000;
+        static constexpr AZ::TimeMs InitialMsDelayPerRetry = AZ::TimeMs { 10 };
+        static constexpr AZ::TimeMs MaxMsDelayPerRetry = AZ::TimeMs { 1000 };
 
         // If there's no data left to send, exit.
         if (!m_levelSendData.m_byteStream)
@@ -476,18 +476,18 @@ namespace Multiplayer
 
             // Try to send the packet to the Editor server. Retry if necessary.
             bool packetSent = false;
-            int millisecondDelayPerRetry = InitialMsDelayPerRetry;
+            AZ::TimeMs millisecondDelayPerRetry = InitialMsDelayPerRetry;
             int numRetries = 0;
             while (!packetSent && (numRetries < MaxRetries))
             {
                 packetSent = m_levelSendData.m_sendConnection->SendReliablePacket(editorServerLevelDataPacket);
                 if (!packetSent)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(millisecondDelayPerRetry));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(aznumeric_cast<int>(millisecondDelayPerRetry)));
                     numRetries++;
 
                     // Keep doubling the time between retries up to the max amount, then clamp it there.
-                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * 2, MaxMsDelayPerRetry);
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * AZ::TimeMs{ 2 }, MaxMsDelayPerRetry);
 
                     // Force the networking buffers to try and flush before sending the packet again.
                     AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
