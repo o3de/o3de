@@ -29,7 +29,7 @@ namespace AZ
         public:
             //! This function just initializes the native device and RHI::Device as a result.
             //! We can use this device to then query for device capabilities.
-            void InitDevice();
+            ResultCode InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
             void Init();
@@ -41,9 +41,13 @@ namespace AZ
             //! Invokes the frame scheduler. The provided callback is invoked prior to compilation of the graph.
             void FrameUpdate(FrameGraphCallback frameGraphCallback);
 
-            // Register/Unregister xr system
-            void RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
+            //! Register/Unregister xr system
+            bool RegisterXRSystem(XRRenderingInterface* xrRenderingInterface);
             void UnregisterXRSystem();
+
+            //! Get/Set functions for the number of active pipelines in use in a frame 
+            void SetNumActiveRenderPipelines(uint16_t numActiveRenderPipelines);
+            uint16_t GetNumActiveRenderPipelines() const;
 
             //////////////////////////////////////////////////////////////////////////
             // RHISystemInterface Overrides
@@ -64,7 +68,7 @@ namespace AZ
         private:
 
             //Enumerates the Physical devices and picks one to be used to initialize the RHI::Device with
-            void InitInternalDevices();
+            ResultCode InitInternalDevices();
 
             AZStd::vector<RHI::Ptr<RHI::Device>> m_devices;
             RHI::FrameScheduler m_frameScheduler;
@@ -72,6 +76,9 @@ namespace AZ
             RHI::Ptr<RHI::DrawListTagRegistry> m_drawListTagRegistry;
             RHI::Ptr<RHI::PipelineStateCache> m_pipelineStateCache;
             XRRenderingInterface* m_xrSystem = nullptr;
+
+            //Used for better verbosity related to gpu markers
+            uint16_t m_numActiveRenderPipelines = 0;
         };
     } // namespace RPI
 } // namespace AZ

@@ -11,10 +11,13 @@
 #include <Atom/RHI/PhysicalDevice.h>
 #include <AzCore/Debug/Budget.h>
 #include <AzCore/Name/Name.h>
+#include <AzCore/Console/IConsole.h>
 
 #if defined(USE_RENDERDOC)
 #include <renderdoc_app.h>
 #endif
+
+AZ_CVAR_EXTERNED(bool, r_gpuMarkersMergeGroups);
 
 namespace AZ
 {
@@ -55,6 +58,8 @@ namespace AZ
         static const APIPriority APITopPriority = 1;
         static const APIPriority APILowPriority = 10;
         static const APIPriority APIMiddlePriority = (APILowPriority - APITopPriority) / 2;
+
+        
 
         //! The factory is an interface for creating RHI data structures. The platform system should
         //! register itself with the factory by calling Register, and unregister on shutdown with
@@ -124,6 +129,9 @@ namespace AZ
 
             //! Returns the default priority of the factory in case there's no priorities set in the FactoryManager.
             virtual APIPriority GetDefaultPriority() = 0;
+
+            //! Returns true if the factory supports XR api
+            virtual bool SupportsXR() const = 0;
 
             //! Purpose: The API Unique Index will be encoded in the 2 Most Significant Bits of a ShaderVariantAsset ProductSubId (a 32bits integer). 
             //! Returns a number in the range [0..3].

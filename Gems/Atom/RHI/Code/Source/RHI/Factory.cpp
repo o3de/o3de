@@ -30,6 +30,8 @@ static bool s_pixGpuMarkersEnabled = true;
 #endif
 
 static bool s_usingWarpDevice = false;
+AZ_CVAR(bool, r_gpuMarkersMergeGroups, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Enable merging of gpu markers in order to track payload (i.e all the scopes) per command list.");
+
 
 namespace AZ
 {

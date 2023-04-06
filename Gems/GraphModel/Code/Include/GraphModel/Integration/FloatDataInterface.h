@@ -17,15 +17,14 @@
 namespace GraphModelIntegration
 {
     //! Satisfies GraphCanvas API requirements for showing float property widgets in nodes.
-    class FloatDataInterface
-        : public GraphCanvas::NumericDataInterface
+    class FloatDataInterface : public GraphCanvas::NumericDataInterface
     {
     public:
         AZ_CLASS_ALLOCATOR(FloatDataInterface, AZ::SystemAllocator);
 
         FloatDataInterface(GraphModel::SlotPtr slot);
         ~FloatDataInterface() = default;
-        
+
         double GetNumber() const override;
         void SetNumber(double value) override;
 
@@ -34,6 +33,5 @@ namespace GraphModelIntegration
 
     private:
         AZStd::weak_ptr<GraphModel::Slot> m_slot;
-    };  
-}
-
+    };
+} // namespace GraphModelIntegration

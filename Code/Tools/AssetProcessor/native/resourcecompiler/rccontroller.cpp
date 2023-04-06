@@ -172,6 +172,7 @@ namespace AssetProcessor
             details.m_jobEntry.m_platformInfo.m_identifier.c_str(),
             details.m_jobEntry.m_jobKey);
         bool cancelJob = false;
+        bool markCancelledJobAsFinished = false;
         RCJob* existingJob = nullptr;
         int existingJobIndex = -1;
 
@@ -192,6 +193,7 @@ namespace AssetProcessor
                         checkFile.GetPlatform().toUtf8().data(),
                         checkFile.GetJobDescriptor().toUtf8().data());
                     cancelJob = true;
+                    markCancelledJobAsFinished = existingJob->GetState() == RCJob::JobState::pending;
                 }
             }
 
@@ -219,6 +221,8 @@ namespace AssetProcessor
             {
                 existingJob = m_RCJobListModel.getItem(existingJobIndex);
 
+                // This does not set markCanceledJobAsFinished to true in either case the job is cancelled, because the job will
+                // have FinishJob called once through the callback in RCController::StartJob. FinishJob should not be called more than once.
                 if (existingJob->GetJobEntry().m_computedFingerprint != details.m_jobEntry.m_computedFingerprint)
                 {
                     AZ_TracePrintf(
@@ -262,11 +266,10 @@ namespace AssetProcessor
 
         if (cancelJob && existingJob && existingJobIndex != -1)
         {
-            bool markCanceledJobAsFinished = existingJob->GetState() == RCJob::JobState::pending;
             existingJob->SetState(RCJob::JobState::cancelled);
 
             // If the job was pending, mark it as finished, so asset processor can clean up the interface for this job and update tracking info.
-            if (markCanceledJobAsFinished)
+            if (markCancelledJobAsFinished)
             {
                 FinishJob(existingJob);
             }

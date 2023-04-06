@@ -65,21 +65,29 @@ namespace AtomToolsFramework
         {
         case State::Idle:
             ReportStatus(AZStd::string::format("%s (Idle)", GetGraphPath().c_str()));
+            m_graph.reset();
+            m_graphName.clear();
+            m_graphPath.clear();
+            m_generatedFiles.clear();
             break;
         case State::Compiling:
-            m_generatedFiles.clear();
             ReportStatus(AZStd::string::format("%s (Compiling)", GetGraphPath().c_str()));
+            m_generatedFiles.clear();
             break;
         case State::Processing:
+            ReportStatus(AZStd::string::format("%s (Processing)", GetGraphPath().c_str()));
             break;
         case State::Complete:
             ReportStatus(AZStd::string::format("%s (Complete)", GetGraphPath().c_str()));
+            m_graph.reset();
             break;
         case State::Failed:
             ReportStatus(AZStd::string::format("%s (Failed)", GetGraphPath().c_str()));
+            m_graph.reset();
             break;
         case State::Canceled:
             ReportStatus(AZStd::string::format("%s (Cancelled)", GetGraphPath().c_str()));
+            m_graph.reset();
             break;
         }
 
@@ -170,7 +178,7 @@ namespace AtomToolsFramework
                     }
 
                     ReportStatus(AZStd::string::format(
-                        "Processing %s (%s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status)));
+                        "%s (Processing: %s)", generatedFile.c_str(), AzToolsFramework::AssetSystem::JobStatusString(job.m_status)));
 
                     switch (job.m_status)
                     {
