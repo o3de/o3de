@@ -1563,9 +1563,8 @@ namespace O3DE::ProjectManager
         bool result = ExecuteWithLock(
             [&]
             {
-                auto pyUri = QString_To_Py_String(repoUri);
-                auto pythonRegistrationResult = m_register.attr("register")(
-                    pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pybind11::none(), pyUri);
+                using namespace pybind11::literals;
+                auto pythonRegistrationResult = m_register.attr("register")("repo_uri"_a = QString_To_Py_String(repoUri));
 
                 // Returns an exit code so boolify it then invert result
                 registrationResult = !pythonRegistrationResult.cast<bool>();

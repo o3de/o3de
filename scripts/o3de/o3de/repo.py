@@ -24,13 +24,16 @@ def get_cache_file_uri(uri: str):
     cache_file = manifest.get_o3de_cache_folder() / str(uri_sha256.hexdigest() + '.json')
     return cache_file, parsed_uri
 
+def sanitized_repo_uri(repo_uri: str) -> str or None:
+    # remove excess whitespace and any trailing slashes
+    return repo_uri.strip().rstrip('/') if repo_uri else None
+
 def get_repo_manifest_uri(repo_uri: str) -> str or None:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
         return None
 
-    url = f'{repo_uri}/repo.json'
-    return url
+    return f'{repo_uri}/repo.json'
 
 def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
     cache_file, parsed_uri = get_cache_file_uri(manifest_uri)
