@@ -43,7 +43,7 @@ namespace Multiplayer::Automation
         void OnServerLaunchFail() override;
         void OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts) override;
         void OnEditorConnectionAttemptsFailed(uint16_t failedAttempts) override;
-        void OnEditorSendingLevelData() override;
+        void OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal) override;
         void OnConnectToSimulationSuccess() override;
         void OnConnectToSimulationFail(uint16_t serverPort) override;
         void OnPlayModeEnd() override;

@@ -134,7 +134,7 @@ class GameLiftStack(Stack):
                 id=f'{self._stack_name}-GameLiftBuild{identifier}',
                 name=f'{self._stack_name}-GameLiftBuild{identifier}',
                 operating_system=build_configuration.get('operating_system'),
-                storage_location=gamelift.CfnBuild.S3LocationProperty(
+                storage_location=gamelift.CfnBuild.StorageLocationProperty(
                     **build_configuration['storage_location']
                 )
             )

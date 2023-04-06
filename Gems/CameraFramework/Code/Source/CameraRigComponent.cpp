@@ -149,11 +149,11 @@ namespace Camera
     void CameraRigComponent::GetRequiredServices(AZ::ComponentDescriptor::DependencyArrayType& required)
     {
         required.push_back(AZ_CRC("TransformService", 0x8ee22c50));
+        required.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
     }
 
-    void CameraRigComponent::GetDependentServices(AZ::ComponentDescriptor::DependencyArrayType& dependent)
+    void CameraRigComponent::GetDependentServices([[maybe_unused]] AZ::ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("CameraService", 0x1dd1caa4));
     }
 
     void CameraRigComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
