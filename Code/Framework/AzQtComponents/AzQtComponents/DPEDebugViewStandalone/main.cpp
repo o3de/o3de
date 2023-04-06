@@ -381,16 +381,15 @@ int main(int argc, char** argv)
     auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
 
     sortFilter->SetSourceAdapter(cvarAdapter);
-    /*
+    
     debugViewer->AddAdapterToList(
         "Reflection Adapter",
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
     debugViewer->AddAdapterToList("CVar Adapter", sortFilter);
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
-    */
 
-    //filteredDPE->show();
+    filteredDPE->show();
 
     AZStd::map<int, float> firstVector = { 
         { 1, 1. },
@@ -400,9 +399,10 @@ int main(int argc, char** argv)
     };
 
     auto firstContainerAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&firstVector, azrtti_typeid<AZStd::map<int, float>>());
+    /* Note: uncomment to generate DPE to view the the firstVector adapter
     AzToolsFramework::DocumentPropertyEditor firstDPE;
     firstDPE.SetAdapter(firstContainerAdapter);
-    firstDPE.show();
+    firstDPE.show(); */
 
     AZStd::map<int, float> secondVector = {
         { 2, 2. },
@@ -411,18 +411,17 @@ int main(int argc, char** argv)
         { 5, 5. },
     };
     auto secondContainerAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&secondVector, azrtti_typeid<AZStd::map<int, float>>());
+    /* Note: uncomment to generate DPE to view the the secondVector adapter
     AzToolsFramework::DocumentPropertyEditor secondDPE;
     secondDPE.SetAdapter(secondContainerAdapter);
     secondDPE.show();
+    */
 
     auto aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
     aggregateAdapter->AddAdapter(firstContainerAdapter);
     aggregateAdapter->AddAdapter(secondContainerAdapter);
-    AzToolsFramework::DocumentPropertyEditor aggregateDPE;
-    aggregateDPE.SetAdapter(aggregateAdapter);
-    aggregateDPE.show();
 
-    debugViewer->AddAdapterToList("Debug", firstContainerAdapter);
+    debugViewer->AddAdapterToList("Vector AggregateAdapter", aggregateAdapter);
     debugViewer->show();
 
     return qtApp.exec();

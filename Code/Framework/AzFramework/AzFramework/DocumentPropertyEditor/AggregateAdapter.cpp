@@ -453,9 +453,18 @@ namespace AZ::DocumentPropertyEditor
             }
         };
 
+        auto handleEditAnyway = [&]()
+        {
+            // get the affected row by pulling off the trailing column index on the address
+            auto rowPath = message.m_messageOrigin;
+            rowPath.Pop();
+
+            NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
+        };
+
         // todo: handle messages from things like "edit anyway" button
         return message.Match(
-            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged
+            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged, Nodes::GenericButton::OnActivate, handleEditAnyway
         );
     }
 
@@ -503,12 +512,14 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value LabeledRowAggregateAdapter::GenerateValuesDifferRow([[maybe_unused]]AggregateNode* mismatchNode)
     {
+        m_builder.SetCurrentPath(GetPathForNode(mismatchNode));
         m_builder.BeginRow();
         m_builder.Label(GetFirstLabel(GetComparisonRow(mismatchNode)));
         m_builder.Label(AZStd::string("Values Differ"));
-        m_builder.BeginPropertyEditor<Nodes::Button>();
+        m_builder.BeginPropertyEditor<Nodes::GenericButton>();
         m_builder.Attribute(Nodes::PropertyEditor::SharePriorColumn, true);
         m_builder.Attribute(Nodes::Button::ButtonText, AZStd::string("Edit Anyway"));
+        m_builder.AddMessageHandler(this, Nodes::GenericButton::OnActivate.GetName());
         m_builder.EndPropertyEditor();
         m_builder.EndRow();
         return m_builder.FinishAndTakeResult();

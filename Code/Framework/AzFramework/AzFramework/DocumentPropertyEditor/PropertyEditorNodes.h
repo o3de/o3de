@@ -191,6 +191,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
     };
 
+    struct GenericButton : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "GenericButton";
+        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
+        static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
+    };
+
     enum class ContainerAction
     {
         AddElement,
@@ -198,11 +205,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         Clear
     };
 
-    struct ContainerActionButton : PropertyEditorDefinition
+    struct ContainerActionButton : GenericButton
     {
         static constexpr AZStd::string_view Name = "ContainerActionButton";
         static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
-        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
     };
 
     struct CheckBox : PropertyEditorDefinition
