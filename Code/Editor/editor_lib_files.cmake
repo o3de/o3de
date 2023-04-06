@@ -680,8 +680,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
     WelcomeScreen/WelcomeScreenDialog.qrc
-    2DViewport.cpp
-    2DViewport.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
@@ -695,8 +693,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    TopRendererWnd.cpp
-    TopRendererWnd.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp
