@@ -345,9 +345,14 @@ namespace Multiplayer
 
             if (editorsv_print_server_logs)
             {
-                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-                AZ::TickBus::Handler::BusConnect();
+                // Create a threaded trace printer so that it will keep the output pipes flowing smoothly even while sending the
+                // editor data over to the server.
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
+                    m_serverProcessWatcher->GetCommunicator(), "EditorServer", ProcessCommunicatorTracePrinter::TraceProcessing::Threaded);
             }
+
+            // Connect to the tick bus to listen for unexpected server process disconnections
+            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
@@ -444,13 +449,6 @@ namespace Multiplayer
 
                     // Force the networking buffers to try and flush before sending the packet again.
                     AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
-
-                    // Also, process the trace printing communication from server->client. Without this, if the piped trace
-                    // buffer is completely full, the server process will be completely halted waiting to send more trace
-                    // information. All retries here would fail indefinitely waiting for the server process to become available
-                    // again. With the Pump(), the trace pipes can be kept flowing, and retries can be processed by the server
-                    // in a timely manner.
-                    m_serverProcessTracePrinter->Pump();
                 }
             }
             AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
@@ -480,18 +478,6 @@ namespace Multiplayer
             AZ::TickBus::Handler::BusDisconnect();
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorServerProcessStoppedUnexpectedly);
             AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process has unexpectedly stopped running. Did it crash or get accidentally closed?")
-        }
-
-        if (m_serverProcessTracePrinter)
-        {
-            m_serverProcessTracePrinter->Pump();
-        }
-        else
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-            AZ_Warning(
-                "MultiplayerEditorSystemComponent", false,
-                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
         }
     }
 
