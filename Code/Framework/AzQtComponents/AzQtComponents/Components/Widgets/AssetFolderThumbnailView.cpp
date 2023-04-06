@@ -7,6 +7,7 @@
  */
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
+#include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
@@ -162,7 +163,8 @@ namespace AzQtComponents
             QIcon icon;
             if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
             {
-                icon.addFile(path, rect.size(), QIcon::Normal, QIcon::Off);
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.constData());
                 icon.paint(painter, imageRect);
             }
             else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
