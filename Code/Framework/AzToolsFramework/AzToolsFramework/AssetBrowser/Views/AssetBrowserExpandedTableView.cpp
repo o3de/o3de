@@ -462,7 +462,6 @@ namespace AzToolsFramework
                         icon.paint(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter);
                     }
                 }
-                //style->drawItemPixmap(painter, iconRect, Qt::AlignLeft | Qt::AlignVCenter, icon.pixmap(iconSize));
                 QRect textRect{options.rect};
                 textRect.setX(textRect.x() + 4);
                 style->drawItemText(
