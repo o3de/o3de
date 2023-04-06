@@ -10,7 +10,6 @@
 
 
 #include "Settings.h"
-#include "IIconManager.h"
 #include "Include/IObjectManager.h"
 #include "Objects/SelectionGroup.h"
 
@@ -65,7 +64,6 @@ CComponentEntityObject::~CComponentEntityObject()
 bool CComponentEntityObject::Init(IEditor* ie, CBaseObject* copyFrom, const QString& file)
 {
     SetColor(RGB(0, 255, 0));
-    SetTextureIcon(GetClassDesc()->GetTextureIconId());
 
     // Sandbox does not serialize this object with others in the layer.
     SetFlags(OBJFLAG_DONT_SAVE);
@@ -775,9 +773,6 @@ void CComponentEntityObject::SetupEntityIcon()
         if (!m_icon.empty())
         {
             m_hasIcon = true;
-
-            // ToDo: Get from Atom?
-            // int textureId = GetIEditor()->GetIconManager()->GetIconTexture(m_icon.c_str());
             m_iconTexture = nullptr;
         }
     }

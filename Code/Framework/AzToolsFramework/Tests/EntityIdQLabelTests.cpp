@@ -61,7 +61,6 @@ namespace UnitTest
         }
 
         void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) override {}
-        int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override { AZ_UNUSED(entityIconPath);  return 0; }
 
         void GoToSelectedEntitiesInViewports() override 
         {

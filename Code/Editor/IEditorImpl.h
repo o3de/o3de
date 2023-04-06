@@ -38,7 +38,6 @@ class CUndoManager;
 class CGameEngine;
 class CExportManager;
 class CErrorsDlg;
-class CIconManager;
 class CTrackViewSequenceManager;
 class CEditorFileMonitor;
 class AzAssetWindow;
@@ -154,7 +153,6 @@ public:
     CMusicManager* GetMusicManager() override { return m_pMusicManager; };
 
     IEditorFileMonitor* GetFileMonitor() override;
-    IIconManager* GetIconManager() override;
     float GetTerrainElevation(float x, float y) override;
     Editor::EditorQtApplication* GetEditorQtApplication() override { return m_QtApplication; }
     const QColor& GetColorByName(const QString& name) override;
@@ -316,7 +314,6 @@ protected:
     SFileVersion m_productVersion;
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
-    CIconManager* m_pIconManager;
     QString m_primaryCDFolder;
     QString m_userFolder;
     bool m_bSelectionLocked;

@@ -277,7 +277,6 @@ set(FILES
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IExportManager.h
-    Include/IIconManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IObjectManager.h
@@ -440,7 +439,6 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
@@ -513,8 +511,6 @@ set(FILES
     DisplaySettingsPythonFuncs.cpp
     ErrorReport.cpp
     ErrorReport.h
-    IconManager.cpp
-    IconManager.h
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h

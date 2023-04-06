@@ -167,7 +167,6 @@ private:
     AZ::Vector3 GetWorldPositionAtViewportCenter() override;
     void InstantiateSliceFromAssetId(const AZ::Data::AssetId& assetId) override;
     void ClearRedoStack() override;
-    int GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath) override;
     //////////////////////////////////////////////////////////////////////////
 
     //////////////////////////////////////////////////////////////////////////

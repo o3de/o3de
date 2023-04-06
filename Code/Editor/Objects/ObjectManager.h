@@ -13,7 +13,6 @@
 #include "IObjectManager.h"
 #include "BaseObject.h"
 #include "SelectionGroup.h"
-#include "ObjectManagerEventBus.h"
 
 #include <AzCore/std/containers/map.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -28,23 +27,6 @@ class CObjectClassDesc;
 class CWaitProgress;
 
 enum class ImageRotationDegrees;
-
-//////////////////////////////////////////////////////////////////////////
-// Helper class to signal when we are exporting a level to game
-//////////////////////////////////////////////////////////////////////////
-class CObjectManagerLevelIsExporting
-{
-public:
-    CObjectManagerLevelIsExporting()
-    {
-        AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingStarting);
-    }
-
-    ~CObjectManagerLevelIsExporting()
-    {
-        AZ::ObjectManagerEventBus::Broadcast(&AZ::ObjectManagerEventBus::Events::OnExportingFinished);
-    }
-};
 
 /*!
  *  CObjectManager is a singleton object that
