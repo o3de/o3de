@@ -108,7 +108,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         // These notify callback attributes may be invoked when a container is modified and handled
         // alongside other messages in the adapter's message handler.
         static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
-        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t /*index*/)>("RemoveNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
         static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 

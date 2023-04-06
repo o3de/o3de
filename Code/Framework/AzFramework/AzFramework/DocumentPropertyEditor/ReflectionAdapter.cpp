@@ -259,19 +259,7 @@ namespace AZ::DocumentPropertyEditor
 
             void OnRemoveElement(ReflectionAdapterReflectionImpl* impl, const AZ::Dom::Path& path)
             {
-                void* instanceToRemove = m_elementInstance;
-
-                auto associativeContainer = m_container->GetAssociativeContainerInterface();
-                if (associativeContainer)
-                {
-                    const AZ::SerializeContext::ClassElement* containerClassElement =
-                        m_container->GetElement(m_container->GetDefaultElementNameCrc());
-                    instanceToRemove = associativeContainer->GetElementByKey(m_containerInstance, containerClassElement, m_elementInstance);
-
-                }
-
-                m_container->RemoveElement(m_containerInstance, instanceToRemove, impl->m_serializeContext);
-
+                m_container->RemoveElement(m_containerInstance, m_elementInstance, impl->m_serializeContext);
                 auto containerNode = GetContainerNode(impl, path);
                 Nodes::PropertyEditor::ChangeNotify.InvokeOnDomNode(containerNode);
                 impl->m_adapter->NotifyResetDocument();
@@ -566,7 +554,7 @@ namespace AZ::DocumentPropertyEditor
                 parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
             {
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
-                if (containerEntry && containerEntry->m_element)
+                if (containerEntry)
                 {
                     containerEntry->m_element = ContainerElement::CreateContainerElement(instance, attributes);
                 }
