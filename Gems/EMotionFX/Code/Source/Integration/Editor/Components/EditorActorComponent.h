@@ -127,6 +127,7 @@ namespace EMotionFX
             bool AttachmentTargetJointVisibility();
             AZStd::string AttachmentJointButtonText();
             void UpdateRenderFlags();
+            void OnExcludeFromReflectionCubeMapsChanged();
 
             void LaunchAnimationEditor(const AZ::Data::AssetId& assetId, const AZ::Data::AssetType&);
 
@@ -182,6 +183,7 @@ namespace EMotionFX
             bool                                m_forceUpdateJointsOOV = false;
             ActorRenderFlags                    m_renderFlags;              ///< Actor render flag
             // \todo attachmentTarget node nr
+            bool                                m_excludeFromReflectionCubeMaps;
 
             ActorAsset::ActorInstancePtr        m_actorInstance;            ///< Live actor instance.
             AZStd::unique_ptr<RenderActorInstance> m_renderActorInstance;
