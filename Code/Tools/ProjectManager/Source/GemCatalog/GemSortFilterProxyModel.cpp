@@ -210,6 +210,48 @@ namespace O3DE::ProjectManager
         emit OnInvalidated();
     }
 
+    void GemSortFilterProxyModel::SetOriginFilterFlag(int flag, bool set)
+    {
+        auto origin = static_cast<GemInfo::GemOrigin>(flag);
+        if (set)
+        {
+            m_gemOriginFilter |= origin;
+        }
+        else
+        {
+            m_gemOriginFilter &= ~origin;
+        }
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetTypeFilterFlag(int flag, bool set)
+    {
+        auto type = static_cast<GemInfo::Type>(flag);
+        if (set)
+        {
+            m_typeFilter |= type;
+        }
+        else
+        {
+            m_typeFilter &= ~type;
+        }
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetPlatformFilterFlag(int flag, bool set)
+    {
+        auto platform = static_cast<GemInfo::Platform>(flag);
+        if (set)
+        {
+            m_platformFilter |= platform;
+        }
+        else
+        {
+            m_platformFilter &= ~platform;
+        }
+        InvalidateFilter();
+    }
+
     void GemSortFilterProxyModel::ResetFilters(bool clearSearchString)
     {
         if (clearSearchString)
@@ -223,6 +265,12 @@ namespace O3DE::ProjectManager
         m_typeFilter = {};
         m_featureFilter = {};
 
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetUpdateAvailable(bool showGemsWithUpdates)
+    {
+        m_updateAvailableFilter = showGemsWithUpdates;
         InvalidateFilter();
     }
 } // namespace O3DE::ProjectManager

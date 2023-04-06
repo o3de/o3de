@@ -70,13 +70,18 @@ namespace O3DE::ProjectManager
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
         bool GetUpdateAvailable() const { return m_updateAvailableFilter; }
-        void SetUpdateAvailable(bool showGemsWithUpdates) { m_updateAvailableFilter = showGemsWithUpdates; InvalidateFilter(); }
 
         void InvalidateFilter();
         void ResetFilters(bool clearSearchString = true);
 
     signals:
         void OnInvalidated();
+
+    public slots:
+        void SetUpdateAvailable(bool showGemsWithUpdates);
+        void SetTypeFilterFlag(int flag, bool set); 
+        void SetPlatformFilterFlag(int flag, bool set); 
+        void SetOriginFilterFlag(int flag, bool set); 
 
     private:
         GemModel* m_sourceModel = nullptr;
