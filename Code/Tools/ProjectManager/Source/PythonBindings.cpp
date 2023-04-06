@@ -651,6 +651,7 @@ namespace O3DE::ProjectManager
         gemInfo.m_path = Py_To_String_Optional(data, "path", gemInfo.m_path);
         gemInfo.m_directoryLink = QDir::cleanPath(gemInfo.m_path);
         gemInfo.m_isEngineGem = Py_To_Int_Optional(data, "engine_gem", 0);
+        gemInfo.m_isProjectGem = Py_To_Int_Optional(data, "project_gem", 0);
 
         if (gemInfo.m_isEngineGem || gemInfo.m_origin.contains("Open 3D Engine"))
         {

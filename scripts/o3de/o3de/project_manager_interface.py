@@ -299,8 +299,16 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     # running out of
     engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
     engine_gem_paths = [pathlib.PurePath(path) for path in manifest.get_engine_gems(engine_path)]
+    if project_path:
+        project_gem_paths = [pathlib.PurePath(path) for path in manifest.get_project_gems(project_path)]
+
     for i, gem_json_data in enumerate(all_gem_json_data):
-        all_gem_json_data[i]['engine_gem'] = gem_json_data['path'] in engine_gem_paths
+        if project_path:
+            if gem_json_data['path'] in project_gem_paths:
+                all_gem_json_data[i]['project_gem'] = True
+        
+        if gem_json_data['path'] in engine_gem_paths:
+            all_gem_json_data[i]['engine_gem'] = True
 
     return all_gem_json_data
 

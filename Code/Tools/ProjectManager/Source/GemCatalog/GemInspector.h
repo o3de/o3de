@@ -42,7 +42,7 @@ namespace O3DE::ProjectManager
         void Done(QString size);
 
     public slots:
-        void SetDir(QDir dir);
+        void SetDir(QString dir);
 
     private:
         void GetDirSize(QDir dir, quint64& sizeTotal);
@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
         explicit GemInspector(GemModel* model, QWidget* parent, bool readOnly = false);
         ~GemInspector();
 
-        void Update(const QModelIndex& modelIndex, const QString& version = "");
+        void Update(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         static QLabel* CreateStyledLabel(QLayout* layout, int fontSize, const QString& colorCodeString);
 
         // Fonts
@@ -70,15 +70,19 @@ namespace O3DE::ProjectManager
     signals:
         void TagClicked(const Tag& tag);
         void UpdateGem(const QModelIndex& modelIndex);
-        void UninstallGem(const QModelIndex& modelIndex);
-        void EditGem(const QModelIndex& modelIndex);
+        void UninstallGem(const QModelIndex& modelIndex, const QString& path = "");
+        void EditGem(const QModelIndex& modelIndex, const QString& path = "");
+        void DownloadGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
 
     private slots:
         void OnSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
         void OnVersionChanged(int index);
+        void OnDirSizeSet(QString size);
 
     private:
         void InitMainWidget();
+        QString GetVersion() const;
+        QString GetVersionPath() const;
 
         bool m_readOnly = false;
 
@@ -87,7 +91,7 @@ namespace O3DE::ProjectManager
         QVBoxLayout* m_mainLayout = nullptr;
         QModelIndex m_curModelIndex;
         QThread m_workerThread;
-        GemInspectorWorker* m_worker = nullptr;
+        GemInspectorWorker m_worker;
 
         // General info (top) section
         QLabel* m_nameLabel = nullptr;
@@ -118,5 +122,6 @@ namespace O3DE::ProjectManager
         QPushButton* m_updateGemButton = nullptr;
         QPushButton* m_editGemButton = nullptr;
         QPushButton* m_uninstallGemButton = nullptr;
+        QPushButton* m_downloadGemButton = nullptr;
     };
 } // namespace O3DE::ProjectManager

@@ -43,10 +43,10 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemInspectorWorker::SetDir(QDir dir)
+    void GemInspectorWorker::SetDir(QString dir)
     {
         quint64 size = 0;
-        GetDirSize(dir, size);
+        GetDirSize(QDir(dir), size);
         emit Done(QLocale().formattedDataSize(size, QLocale::DataSizeTraditionalFormat));
     }
 
@@ -74,13 +74,11 @@ namespace O3DE::ProjectManager
 
         InitMainWidget();
 
-        // worker for calculating folder sizes
-        m_worker = new GemInspectorWorker();
-        m_worker->moveToThread(&m_workerThread);
 
-        connect(m_worker, &GemInspectorWorker::Done, [this](QString size){
-            m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(size));
-        });
+        // worker for calculating folder sizes
+        m_worker.moveToThread(&m_workerThread);
+        connect(&m_worker, &GemInspectorWorker::Done, this, &GemInspector::OnDirSizeSet, Qt::QueuedConnection);
+        m_workerThread.start();
 
         connect(m_model->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemInspector::OnSelectionChanged);
         Update({});
@@ -88,10 +86,13 @@ namespace O3DE::ProjectManager
 
     GemInspector::~GemInspector()
     {
-        connect(&m_workerThread, &QThread::finished, m_worker, &GemInspectorWorker::deleteLater);
-        m_workerThread.requestInterruption();
         m_workerThread.quit();
         m_workerThread.wait();
+    }
+
+    void GemInspector::OnDirSizeSet(QString size)
+    {
+        m_binarySizeLabel->setText(tr("Binary Size:  %1").arg(size));
     }
 
     void GemInspector::OnSelectionChanged(const QItemSelection& selected, [[maybe_unused]] const QItemSelection& deselected)
@@ -125,13 +126,14 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemInspector::Update(const QModelIndex& modelIndex, const QString& version)
+    void GemInspector::Update(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
         m_curModelIndex = modelIndex;
 
         if (!modelIndex.isValid())
         {
             m_mainWidget->hide();
+            return;
         }
 
         // use the provided version if available
@@ -148,10 +150,10 @@ namespace O3DE::ProjectManager
             displayVersion = activeVersion;
         }
 
-        const GemInfo& gemInfo = m_model->GetGemInfo(modelIndex, displayVersion);
+        const GemInfo& gemInfo = m_model->GetGemInfo(modelIndex, displayVersion, path);
+        const bool isMissing = gemInfo.m_path.isEmpty();
 
-        // The gem display name should stay the same
-        SetLabelElidedText(m_nameLabel, m_model->GetDisplayName(modelIndex));
+        SetLabelElidedText(m_nameLabel, gemInfo.m_displayName.isEmpty() ? gemInfo.m_name : gemInfo.m_displayName);
         SetLabelElidedText(m_creatorLabel, gemInfo.m_origin);
 
         m_summaryLabel->setText(gemInfo.m_summary);
@@ -171,9 +173,9 @@ namespace O3DE::ProjectManager
         const QVector<Tag>& dependingGemTags = m_model->GetDependingGemTags(modelIndex);
         if (!dependingGemTags.isEmpty())
         {
-            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
-            m_dependingGems->show();
             m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
+            m_dependingGems->show();
+            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
         }
         else
         {
@@ -187,11 +189,10 @@ namespace O3DE::ProjectManager
         {
             m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(gemInfo.m_binarySizeInKB));
         }
-        else if (gemInfo.m_downloadStatus == GemInfo::Downloaded)
+        else if (gemInfo.m_downloadStatus == GemInfo::Downloaded && !isMissing)
         {
-            m_binarySizeLabel->setText(tr("Binary Size: ...").arg(gemInfo.m_binarySizeInKB));
-            m_worker->SetDir(QDir(gemInfo.m_path));
-            m_workerThread.start();
+            m_binarySizeLabel->setText(tr("Binary Size: ..."));
+            QMetaObject::invokeMethod(&m_worker, "SetDir", Qt::QueuedConnection, Q_ARG(QString, gemInfo.m_path));
         }
         else
         {
@@ -201,7 +202,7 @@ namespace O3DE::ProjectManager
         // Versions
         disconnect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
         m_versionComboBox->clear();
-        auto gemVersions = m_model->GetGemVersions(modelIndex);
+        const auto& gemVersions = m_model->GetGemVersions(modelIndex);
         if (gemInfo.m_isEngineGem || gemVersions.count() < 2)
         {
             m_versionComboBox->setVisible(false);
@@ -213,23 +214,27 @@ namespace O3DE::ProjectManager
         {
             m_versionLabel->setVisible(false);
             m_versionComboBox->setVisible(true);
-            m_versionComboBox->addItems(gemVersions);
+            for (const auto& gemVersion : gemVersions)
+            {
+                const GemInfo& gemVersionInfo = gemVersion.value<GemInfo>();
+                m_versionComboBox->addItem(gemVersionInfo.m_version, gemVersionInfo.m_path);
+            }
+
             if (m_versionComboBox->count() == 0)
             {
                 m_versionComboBox->insertItem(0, "Unknown");
             }
 
-            auto foundIndex = m_versionComboBox->findText(displayVersion);
+            auto foundIndex = path.isEmpty()? m_versionComboBox->findText(displayVersion) : m_versionComboBox->findData(path);
             m_versionComboBox->setCurrentIndex(foundIndex > -1 ? foundIndex : 0);
 
             bool versionChanged = displayVersion != activeVersion && !m_readOnly && m_model->IsAdded(modelIndex);
             m_updateVersionButton->setVisible(versionChanged);
             if (versionChanged)
             {
-                m_updateVersionButton->setText(tr("Use Version %1").arg(m_versionComboBox->currentText()));
+                m_updateVersionButton->setText(tr("Use Version %1").arg(GetVersion()));
             }
             connect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
-
         }
 
         // Compatible engines
@@ -262,12 +267,18 @@ namespace O3DE::ProjectManager
         }
 
         const bool isRemote = gemInfo.m_gemOrigin == GemInfo::Remote;
+        // for now we don't count engine or project gems as local so they cannot be removed
+        // currently we don't have a way for users to add gems to the project or engine through
+        // the project manager if they remove/unregister them by accident
+        const bool isLocal = gemInfo.m_gemOrigin == GemInfo::Local && !gemInfo.m_isEngineGem && !gemInfo.m_isProjectGem;
         const bool isDownloaded = gemInfo.m_downloadStatus == GemInfo::Downloaded ||
                                   gemInfo.m_downloadStatus == GemInfo::DownloadSuccessful;
 
-        m_updateGemButton->setVisible(isRemote && isDownloaded);
-        m_uninstallGemButton->setVisible(isRemote && isDownloaded);
-        m_editGemButton->setVisible(!isRemote || (isRemote && isDownloaded));
+        m_updateGemButton->setVisible(isRemote && isDownloaded && !isMissing);
+        m_uninstallGemButton->setText(isRemote ? tr("Uninstall Gem") : tr("Remove Gem"));
+        m_uninstallGemButton->setVisible((isRemote && isDownloaded && !isMissing) || isLocal);
+        m_editGemButton->setVisible(!isMissing && (!isRemote || (isRemote && isDownloaded)));
+        m_downloadGemButton->setVisible(m_readOnly && isRemote && !isDownloaded);
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -283,11 +294,21 @@ namespace O3DE::ProjectManager
 
     void GemInspector::OnVersionChanged([[maybe_unused]] int index)
     {
-        Update(m_curModelIndex, m_versionComboBox->currentText());
+        Update(m_curModelIndex, GetVersion(), GetVersionPath());
         if (!GemModel::IsAdded(m_curModelIndex))
         {
-            GemModel::UpdateWithVersion(*m_model, m_curModelIndex, m_versionComboBox->currentText());
+            GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
         }
+    }
+
+    QString GemInspector::GetVersion() const
+    {
+        return m_versionComboBox->count() > 0 ? m_versionComboBox->currentText() : m_model->GetVersion(m_curModelIndex);
+    }
+
+    QString GemInspector::GetVersionPath() const
+    {
+        return m_versionComboBox->count() > 0 ? m_versionComboBox->currentData().toString() : m_model->GetGemInfo(m_curModelIndex).m_path;
     }
 
     void GemInspector::InitMainWidget()
@@ -319,11 +340,11 @@ namespace O3DE::ProjectManager
             versionHLayout->addWidget(m_versionComboBox);
 
             m_updateVersionButton = new QPushButton(tr("Use Version"));
-            m_updateVersionButton->setProperty("class", "Secondary");
+            m_updateVersionButton->setProperty("secondary", true);
             versionVLayout->addWidget(m_updateVersionButton);
             connect(m_updateVersionButton, &QPushButton::clicked, this , [this]{
-                GemModel::SetIsAdded(*m_model, m_curModelIndex, true, m_versionComboBox->currentText());
-                GemModel::UpdateWithVersion(*m_model, m_curModelIndex, m_versionComboBox->currentText());
+                GemModel::SetIsAdded(*m_model, m_curModelIndex, true, GetVersion());
+                GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
                 m_updateVersionButton->setVisible(false);
             });
 
@@ -418,22 +439,27 @@ namespace O3DE::ProjectManager
 
         // Update and Uninstall buttons
         m_updateGemButton = new QPushButton(tr("Update Gem"));
-        m_updateGemButton->setProperty("class", "Secondary");
+        m_updateGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_updateGemButton);
         connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
 
         m_mainLayout->addSpacing(10);
 
         m_editGemButton = new QPushButton(tr("Edit Gem"));
-        m_editGemButton->setProperty("class", "Secondary");
+        m_editGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_editGemButton);
-        connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex); });
+        connect(m_editGemButton, &QPushButton::clicked, this , [this]{ emit EditGem(m_curModelIndex, GetVersionPath()); });
 
         m_mainLayout->addSpacing(10);
 
         m_uninstallGemButton = new QPushButton(tr("Uninstall Gem"));
-        m_uninstallGemButton->setProperty("class", "Danger");
+        m_uninstallGemButton->setProperty("danger", true);
         m_mainLayout->addWidget(m_uninstallGemButton);
-        connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex); });
+        connect(m_uninstallGemButton, &QPushButton::clicked, this , [this]{ emit UninstallGem(m_curModelIndex, GetVersionPath()); });
+
+        m_downloadGemButton = new QPushButton(tr("Download Gem"));
+        m_downloadGemButton->setProperty("primary", true);
+        m_mainLayout->addWidget(m_downloadGemButton);
+        connect(m_downloadGemButton, &QPushButton::clicked, this , [this]{ emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath()); });
     }
 } // namespace O3DE::ProjectManager

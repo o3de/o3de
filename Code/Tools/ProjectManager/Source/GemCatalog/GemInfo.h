@@ -85,6 +85,7 @@ namespace O3DE::ProjectManager
         QString m_iconPath;
         bool m_isAdded = false; //! Is the gem explicitly added (not a dependency) and enabled in the project?
         bool m_isEngineGem = false;
+        bool m_isProjectGem = false;
         QString m_summary = "No summary provided.";
         Platforms m_platforms;
         Types m_types; //! Asset and/or Code and/or Tool

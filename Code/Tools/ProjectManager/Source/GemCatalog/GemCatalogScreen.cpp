@@ -500,15 +500,33 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex)
+    void GemCatalogScreen::DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
-        const QString selectedDisplayGemName = m_gemModel->GetDisplayName(modelIndex);
+        const QString gemDisplayName = m_gemModel->GetDisplayName(modelIndex);
+        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
+        m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
+    }
 
-        GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(selectedDisplayGemName, this);
-        if (confirmUninstallDialog->exec() == QDialog::Accepted)
+    void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex, const QString& path)
+    {
+        const QString gemDisplayName = m_gemModel->GetDisplayName(modelIndex);
+        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, "", path);
+
+        bool confirmed = false;
+        if (gemInfo.m_gemOrigin == GemInfo::Remote)
         {
-            const QString& selectedGemPath = m_gemModel->GetGemInfo(modelIndex).m_path;
+            GemUninstallDialog* confirmUninstallDialog = new GemUninstallDialog(gemDisplayName, this);
+            confirmed = confirmUninstallDialog->exec() == QDialog::Accepted;
+        }
+        else
+        {
+            confirmed = QMessageBox::warning(this, tr("Remove Gem"),
+                tr("Do you want to remove %1?<br>The gem will only be unregistered, and can be re-added.  The files will not be removed from disk.").arg(gemDisplayName),
+                QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Ok;
+        }
 
+        if (confirmed)
+        {
             const bool wasAdded = GemModel::WasPreviouslyAdded(modelIndex);
             const bool wasAddedDependency = GemModel::WasPreviouslyAddedDependency(modelIndex);
 
@@ -641,7 +659,7 @@ namespace O3DE::ProjectManager
         emit ChangeScreenRequest(ProjectManagerScreen::CreateGem);
     }
 
-    void GemCatalogScreen::HandleEditGem(const QModelIndex& currentModelIndex)
+    void GemCatalogScreen::HandleEditGem(const QModelIndex& currentModelIndex, const QString& path)
     {
         if (m_screensControl)
         {
@@ -649,7 +667,7 @@ namespace O3DE::ProjectManager
             if (editGemScreen)
             {
                 m_curEditedIndex = currentModelIndex;
-                editGemScreen->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex));
+                editGemScreen->ResetWorkflow(m_gemModel->GetGemInfo(currentModelIndex, /*version=*/"", path));
                 emit ChangeScreenRequest(ProjectManagerScreen::EditGem);
             }
         }
@@ -669,58 +687,21 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
     {
+        const QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
         if (succeeded)
         {
-            // refresh the information for downloaded gems
-            const AZ::Outcome<QVector<GemInfo>, AZStd::string>& allGemInfosResult =
-                PythonBindingsInterface::Get()->GetAllGemInfos(m_projectPath);
-            if (allGemInfosResult.IsSuccess())
+            Refresh();
+
+            if(index.isValid())
             {
-                // we should find the gem name now in all gem infos
-                for (const GemInfo& gemInfo : allGemInfosResult.GetValue())
-                {
-                    if (gemInfo.m_name == gemName)
-                    {
-                        QModelIndex oldIndex = m_gemModel->FindIndexByNameString(gemName);
-                        if (oldIndex.isValid())
-                        {
-                            // Check if old gem is selected
-                            bool oldGemSelected = false;
-                            if (m_gemModel->GetSelectionModel()->currentIndex() == oldIndex)
-                            {
-                                oldGemSelected = true;
-                            }
-
-                            // Remove old remote gem
-                            m_gemModel->RemoveGem(oldIndex);
-
-                            // Add new downloaded version of gem
-                            QModelIndex newIndex = m_gemModel->AddGem(gemInfo);
-                            GemModel::SetDownloadStatus(*m_gemModel, newIndex, GemInfo::DownloadSuccessful);
-                            GemModel::SetIsAdded(*m_gemModel, newIndex, true);
-
-                            // Select new version of gem if it was previously selected
-                            if (oldGemSelected)
-                            {
-                                QModelIndex proxyIndex = m_proxyModel->mapFromSource(newIndex);
-                                m_proxyModel->GetSelectionModel()->setCurrentIndex(proxyIndex, QItemSelectionModel::ClearAndSelect);
-                            }
-                        }
-
-                        break;
-                    }
-                }
+                GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadSuccessful);
             }
         }
-        else
+        else if (index.isValid())
         {
-            QModelIndex index = m_gemModel->FindIndexByNameString(gemName);
-            if (index.isValid())
-            {
-                GemModel::SetIsAdded(*m_gemModel, index, false);
-                GemModel::DeactivateDependentGems(*m_gemModel, index);
-                GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadFailed);
-            }
+            GemModel::SetIsAdded(*m_gemModel, index, false);
+            GemModel::DeactivateDependentGems(*m_gemModel, index);
+            GemModel::SetDownloadStatus(*m_gemModel, index, GemInfo::DownloadFailed);
         }
     }
 
@@ -732,7 +713,7 @@ namespace O3DE::ProjectManager
         AddToGemModel(gemInfo);
 
         // create Toast Notification for project gem catalog
-        QString notification = tr("%1 has been created.").arg(gemInfo.m_displayName);
+        QString notification = tr("%1 has been created").arg(gemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 
@@ -749,7 +730,7 @@ namespace O3DE::ProjectManager
         //gem inspector needs to have its selection updated to the newly added gem
         SelectGem(newGemInfo.m_name);
 
-        QString notification = tr("%1 was edited.").arg(newGemInfo.m_displayName);
+        QString notification = tr("%1 was edited").arg(newGemInfo.m_displayName);
         ShowStandardToastNotification(notification);
     }
 
