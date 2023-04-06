@@ -160,7 +160,7 @@ namespace DPEDebugView
         double m_doubleSlider = 3.25;
         AZStd::vector<AZStd::string> m_vector;
         AZStd::map<AZStd::string, float> m_map;
-        AZStd::map<int, float> m_readOnlyMap;
+        AZStd::map<AZStd::string, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnumMap;
         AZStd::unordered_map<EnumType, double> m_immutableEnumMap;
@@ -342,9 +342,9 @@ int main(int argc, char** argv)
     testContainer.m_map["Two"] = 2.f;
     testContainer.m_map["million"] = 1000000.f;
 
-    testContainer.m_readOnlyMap[2] = 1.f;
-    testContainer.m_readOnlyMap[4] = 2.f;
-    testContainer.m_readOnlyMap[6] = 3.f;
+    testContainer.m_readOnlyMap["A"] = 1.f;
+    testContainer.m_readOnlyMap["B"] = 2.f;
+    testContainer.m_readOnlyMap["C"] = 3.f;
 
     testContainer.m_unorderedMap[{1, 2.}] = 3;
     testContainer.m_unorderedMap[{ 4, 5. }] = 6;
@@ -381,7 +381,7 @@ int main(int argc, char** argv)
     auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
 
     sortFilter->SetSourceAdapter(cvarAdapter);
-    
+
     debugViewer->AddAdapterToList(
         "Reflection Adapter",
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
