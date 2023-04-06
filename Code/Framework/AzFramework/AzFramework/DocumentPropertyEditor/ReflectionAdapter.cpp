@@ -59,7 +59,7 @@ namespace AZ::DocumentPropertyEditor
                 Dom::Value containerRow;
                 const auto& findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const ContainerEntry& containerEntry)
                     {
-                    if (containerRow.IsNull() && containerEntry.container && containerEntry.container->m_container == m_container)
+                    if (containerRow.IsNull() && containerEntry.m_container && containerEntry.m_container->m_container == m_container)
                         {
                             containerRow = impl->m_adapter->GetContents()[nodePath];
                             return false;
@@ -125,7 +125,7 @@ namespace AZ::DocumentPropertyEditor
                         auto* keyTypeData = azdynamic_cast<const AZ::Edit::AttributeData<AZ::Uuid>*>(keyTypeAttribute);
                         if (keyTypeData)
                         {
-                            auto& keyType = keyTypeData->Get(nullptr);
+                            const AZ::TypeId& keyType = keyTypeData->Get(nullptr);
                             DocumentAdapterPtr reflectionAdapter =
                                 AZStd::make_shared<ReflectionAdapter>(m_reservedElementInstance, keyType);
                             Nodes::Adapter::QueryKey.InvokeOnDomNode(impl->m_adapter->GetContents(), &reflectionAdapter, path);
@@ -225,7 +225,7 @@ namespace AZ::DocumentPropertyEditor
                 Dom::Value containerRow;
                 const auto& findContainerProcedure = [&](const AZ::Dom::Path& nodePath, const ContainerEntry& containerEntry)
                 {
-                    if (containerRow.IsNull() && containerEntry.container && containerEntry.container->m_container == m_container)
+                    if (containerRow.IsNull() && containerEntry.m_container && containerEntry.m_container->m_container == m_container)
                     {
                         containerRow = impl->m_adapter->GetContents()[nodePath];
                         return false; // We've found our container row, so stop the visitor
@@ -284,8 +284,8 @@ namespace AZ::DocumentPropertyEditor
 
         struct ContainerEntry
         {
-            AZStd::unique_ptr<BoundContainer> container;
-            AZStd::unique_ptr<ContainerElement> element;
+            AZStd::unique_ptr<BoundContainer> m_container;
+            AZStd::unique_ptr<ContainerElement> m_element;
         };
 
         // Lookup table of containers and their elements for handling container operations
@@ -566,9 +566,9 @@ namespace AZ::DocumentPropertyEditor
                 parentContainerInstanceAttribute && !parentContainerInstanceAttribute->IsNull())
             {
                 auto containerEntry = m_containers.ValueAtPath(m_builder.GetCurrentPath(), AZ::Dom::PrefixTreeMatch::ExactPath);
-                if (containerEntry)
+                if (containerEntry && containerEntry->m_element)
                 {
-                    containerEntry->element = ContainerElement::CreateContainerElement(instance, attributes);
+                    containerEntry->m_element = ContainerElement::CreateContainerElement(instance, attributes);
                 }
                 else
                 {
@@ -1097,13 +1097,22 @@ namespace AZ::DocumentPropertyEditor
                 switch (action.value())
                 {
                 case ContainerAction::AddElement:
-                    containerEntry->container->OnAddElement(m_impl.get(), message.m_messageOrigin);
+                    if (containerEntry->m_container)
+                    {
+                        containerEntry->m_container->OnAddElement(m_impl.get(), message.m_messageOrigin);
+                    }
                     break;
                 case ContainerAction::RemoveElement:
-                    containerEntry->element->OnRemoveElement(m_impl.get(), message.m_messageOrigin);
+                    if (containerEntry->m_element)
+                    {
+                        containerEntry->m_element->OnRemoveElement(m_impl.get(), message.m_messageOrigin);
+                    }
                     break;
                 case ContainerAction::Clear:
-                    containerEntry->container->OnClear(m_impl.get(), message.m_messageOrigin);
+                    if (containerEntry->m_container)
+                    {
+                        containerEntry->m_container->OnClear(m_impl.get(), message.m_messageOrigin);
+                    }
                     break;
                 }
             }
@@ -1112,13 +1121,19 @@ namespace AZ::DocumentPropertyEditor
         auto addKeyToContainer = [&](AZ::DocumentPropertyEditor::DocumentAdapterPtr* adapter, AZ::Dom::Path containerPath)
         {
             auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
-            containerEntry->container->OnAddElementToAssociativeContainer(m_impl.get(), adapter, containerPath);
+            if (containerEntry->m_container)
+            {
+                containerEntry->m_container->OnAddElementToAssociativeContainer(m_impl.get(), adapter, containerPath);
+            }
         };
 
         auto rejectKeyToContainer = [&](AZ::Dom::Path containerPath)
         {
             auto containerEntry = m_impl->m_containers.ValueAtPath(containerPath, AZ::Dom::PrefixTreeMatch::ParentsOnly);
-            containerEntry->container->RejectAssociativeContainerKey(m_impl.get());
+            if (containerEntry->m_container)
+            {
+                containerEntry->m_container->RejectAssociativeContainerKey(m_impl.get());
+            }
         };
 
         auto handleTreeUpdate = [&](Nodes::PropertyRefreshLevel)
