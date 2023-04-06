@@ -201,7 +201,7 @@ namespace PhysX
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
                     ->DataElement(0, &ArticulationLinkConfiguration::m_armature, "Armature", "Mass for prismatic joints, inertia for hinge")
-                    ->Attribute(AZ::Edit::Attributes::Min, AZ::Vector3::CreateZero())
+                    ->Attribute(AZ::Edit::Attributes::Min, 0.0f)
                     ->Attribute(AZ::Edit::Attributes::Visibility, &ArticulationLinkConfiguration::IsSingleDofJointType)
 
                     ->ClassElement(AZ::Edit::ClassElements::Group, "Sensors")
