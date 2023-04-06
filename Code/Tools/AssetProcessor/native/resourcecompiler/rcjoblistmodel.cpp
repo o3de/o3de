@@ -292,14 +292,13 @@ namespace AssetProcessor
             }
         }
 
-        AZ_TracePrintf(
-            AssetProcessor::DebugChannel,
-            "JobTrace jobIndex == -1!!! (%i %s,%s,%s)\n",
-            rcJob,
+        AZ_Error(
+            AssetProcessor::ConsoleChannel,
+            false,
+            "Programmer Error: Could not mark job for file %s as completed, job was not tracked in the m_jobs container. It was either already finished, or never queued. (platform:%s, job key:%s)\n",
             rcJob->GetJobEntry().GetAbsoluteSourcePath().toUtf8().constData(),
             rcJob->GetPlatformInfo().m_identifier.c_str(),
             rcJob->GetJobKey().toUtf8().constData());
-        AZ_Assert(false, "Job not found!!!");
     }
 
     void RCJobListModel::markAsCataloged(const AssetProcessor::QueueElementID& check)

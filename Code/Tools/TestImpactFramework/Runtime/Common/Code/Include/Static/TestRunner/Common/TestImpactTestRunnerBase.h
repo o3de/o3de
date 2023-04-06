@@ -21,6 +21,7 @@ namespace TestImpact
     public:
         using TestJobRunner = TestJobRunner<AdditionalInfo, Payload>;
         using TestJobRunner::TestJobRunner;
+        using ResultType = AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>>;
 
         //! Executes the specified test run jobs according to the specified job exception policies.
         //! @param jobInfos The test run jobs to execute.
@@ -31,8 +32,8 @@ namespace TestImpact
         //! @param runTimeout The maximum duration a run may be in-flight for before being forcefully terminated.
         //! @param runnerTimeout The maximum duration the runner may run before forcefully terminating all in-flight runs.
         //! @return The result of the run sequence and the run jobs with their associated test run payloads.
-        virtual AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestJobRunner::Job>> RunTests(
-            const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        [[nodiscard]] virtual ResultType RunTests(
+            const typename TestJobRunner::JobInfos& jobInfos,
             StdOutputRouting stdOutRouting,
             StdErrorRouting stdErrRouting,
             AZStd::optional<AZStd::chrono::milliseconds> runTimeout,
@@ -48,9 +49,9 @@ namespace TestImpact
     };
 
     template<typename AdditionalInfo, typename Payload>
-    AZStd::pair<ProcessSchedulerResult, AZStd::vector<typename TestRunnerBase<AdditionalInfo, Payload>::TestJobRunner::Job>>
+    typename TestRunnerBase<AdditionalInfo, Payload>::ResultType
     TestRunnerBase<AdditionalInfo, Payload>::RunTests(
-        const AZStd::vector<typename TestJobRunner::JobInfo>& jobInfos,
+        const typename TestJobRunner::JobInfos& jobInfos,
         StdOutputRouting stdOutRouting,
         StdErrorRouting stdErrRouting,
         AZStd::optional<AZStd::chrono::milliseconds> runTimeout,

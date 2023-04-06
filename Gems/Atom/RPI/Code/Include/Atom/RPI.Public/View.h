@@ -14,6 +14,7 @@
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/Pass.h>
 #include <Atom/RPI.Public/Shader/ShaderResourceGroup.h>
+#include <Atom/RPI.Public/VisibleObjectContext.h>
 
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Memory/SystemAllocator.h>
@@ -74,7 +75,15 @@ namespace AZ
             void AddDrawPacket(const RHI::DrawPacket* drawPacket, float depth = 0.0f);
 
             //! Similar to previous AddDrawPacket() but calculates depth from packet position
-            void AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition);
+            void AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition);
+            
+            //! Similar to AddDrawPacket, but the view will not submit any draw items for rendering. It will just
+            //! maintain a list of visible objects for the current frame, and the caller must get that list, reinterpret the
+            //! userData, and submit the draw calls.
+            void AddVisibleObject(const void* userData, float depth = 0.0f);
+
+            //! Similar to previous AddVisibleObject() but calculates depth from object position
+            void AddVisibleObject(const void* userData, const Vector3& worldPosition);
 
             //! Add a draw item to this view with its associated draw list tag
             void AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties);
@@ -123,6 +132,10 @@ namespace AZ
             //! Get the camera's world transform, converted from the viewToWorld matrix's native y-up to z-up
             AZ::Transform GetCameraTransform() const;
 
+            //! Finalize visible object lists in this view. This function should only be called when all
+            //! visible objects for current frame are added, but before FinalizeDrawLists is called. 
+            void FinalizeVisibleObjectList();
+
             //! Finalize draw lists in this view. This function should only be called when all
             //! draw packets for current frame are added. 
             void FinalizeDrawListsJob(AZ::Job* parentJob);
@@ -131,6 +144,7 @@ namespace AZ
             bool HasDrawListTag(RHI::DrawListTag drawListTag);
 
             RHI::DrawListView GetDrawList(RHI::DrawListTag drawListTag);
+            VisibleObjectListView GetVisibleObjectList();
 
             //! Helper function to generate a sort key from a given position in world
             RHI::DrawItemSortKey GetSortKeyForPosition(const Vector3& positionInWorld) const;
@@ -199,6 +213,8 @@ namespace AZ
             // The context containing draw lists associated with the view.
             RHI::DrawListContext m_drawListContext;
             RHI::DrawListMask m_drawListMask;
+
+            RPI::VisibleObjectContext m_visibleObjectContext;
 
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;

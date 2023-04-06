@@ -137,6 +137,8 @@ public:
         const char* m_helpText;
     };
 
+    virtual WId GetWindowId() const;
+
 Q_SIGNALS:
     void CheckAssetProcessorManagerIdleState();
     void ConnectionStatusMsg(QString message);

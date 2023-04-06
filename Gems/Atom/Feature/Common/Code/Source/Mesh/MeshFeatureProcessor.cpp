@@ -420,6 +420,38 @@ namespace AZ
             }
         }
 
+        void MeshFeatureProcessor::OnEndCulling(const MeshFeatureProcessor::RenderPacket& packet)
+        {
+            if (r_meshInstancingEnabled)
+            {
+                AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
+                for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
+                {
+                    ProcessVisibleObjectListForView(packet.m_views[viewIndex]);
+                }
+            }
+        }
+        
+        void MeshFeatureProcessor::ProcessVisibleObjectListForView(const RPI::ViewPtr& view)
+        {
+            // As an interim step while mesh instancing is still not supported, when r_meshInstancingIsEnabled == true, we just submit the draw packet directly to the view
+            // In a follow up commit, we will process the lists properly and generate actual instanced draw calls
+            for (const RPI::VisibleObjectProperties& visibleObject : view->GetVisibleObjectList())
+            {
+                if (visibleObject.m_userData)
+                {
+                    const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
+                        reinterpret_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
+                    // For the initial commit, we naively add each draw packet for each visible object to the view.
+                    // This will be replaced with generating instance buffers for each view to use with instanced draw calls.
+                    for (auto& instanceGroupHandle : *instanceGroupHandles)
+                    {
+                        view->AddDrawPacket(instanceGroupHandle->m_drawPacket.GetRHIDrawPacket(), visibleObject.m_depth);
+                    }
+                }
+            }
+        }
+        
         void MeshFeatureProcessor::OnBeginPrepareRender()
         {
             m_meshDataChecker.soft_lock();
@@ -528,6 +560,7 @@ namespace AZ
             meshDataHandle->m_originalModelAsset = descriptor.m_modelAsset;
             meshDataHandle->m_meshLoader = AZStd::make_unique<ModelDataInstance::MeshLoader>(descriptor.m_modelAsset, &*meshDataHandle);
             meshDataHandle->m_flags.m_isAlwaysDynamic = descriptor.m_isAlwaysDynamic;
+            meshDataHandle->m_flags.m_isDrawMotion = descriptor.m_isAlwaysDynamic;
 
             if (descriptor.m_excludeFromReflectionCubeMaps)
             {
@@ -1289,7 +1322,6 @@ namespace AZ
         {
             m_model = model;
             m_flags.m_needsInit = true;
-            m_flags.m_isDrawMotion = m_flags.m_isAlwaysDynamic;
             m_aabb = m_model->GetModelAsset()->GetAabb();
         }
 
@@ -2103,25 +2135,35 @@ namespace AZ
                 size_t meshCount = lodAssets[lodIndex + m_lodBias]->GetMeshes().size();
                 for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
                 {
-                    const RHI::DrawPacket* rhiDrawPacket = nullptr;
                     if (!r_meshInstancingEnabled)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
-                        rhiDrawPacket = m_drawPacketListsByLod[lodIndex + m_lodBias][meshIndex].GetRHIDrawPacket();
+                        const RHI::DrawPacket* rhiDrawPacket =
+                            m_drawPacketListsByLod[lodIndex + m_lodBias][meshIndex].GetRHIDrawPacket();
+
+                        if (rhiDrawPacket)
+                        {
+                            // OR-together all the drawListMasks (so we know which views to cull against)
+                            cullData.m_drawListMask |= rhiDrawPacket->GetDrawListMask();
+
+                            lod.m_drawPackets.push_back(rhiDrawPacket);
+                        }
                     }
                     else
                     {
-                        // If mesh instancing is enabled, get the draw packets from the mesh instance manager
-                        InstanceGroupHandle& instanceGroupHandle = m_instanceGroupHandlesByLod[lodIndex + m_lodBias][meshIndex];
-                        rhiDrawPacket = meshInstanceManager[instanceGroupHandle].m_drawPacket.GetRHIDrawPacket();
-                    }
+                        // If mesh instancing is enabled, get the draw packet from the MeshInstanceManager
+                        const RHI::DrawPacket* rhiDrawPacket =
+                            meshInstanceManager[m_instanceGroupHandlesByLod[lodIndex + m_lodBias][meshIndex]]
+                                .m_drawPacket.GetRHIDrawPacket();
 
-                    if (rhiDrawPacket)
-                    {
-                        //OR-together all the drawListMasks (so we know which views to cull against)
-                        cullData.m_drawListMask |= rhiDrawPacket->GetDrawListMask();
+                        if (rhiDrawPacket)
+                        {
+                            // OR-together all the drawListMasks (so we know which views to cull against)
+                            cullData.m_drawListMask |= rhiDrawPacket->GetDrawListMask();
+                        }
 
-                        lod.m_drawPackets.push_back(rhiDrawPacket);
+                        // Set the user data for the cullable lod to reference the intance group handles for the lod
+                        lod.m_visibleObjectUserData = static_cast<void*>(&m_instanceGroupHandlesByLod[lodIndex + m_lodBias]);
                     }
                 }
             }
@@ -2161,7 +2203,14 @@ namespace AZ
             m_cullable.m_cullData.m_boundingObb = localAabb.GetTransformedObb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_boundingVolume = localAabb.GetTransformedAabb(localToWorld);
             m_cullable.m_cullData.m_visibilityEntry.m_userData = &m_cullable;
-            m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+            if (!r_meshInstancingEnabled)
+            {
+                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_Cullable;
+            }
+            else
+            {
+                m_cullable.m_cullData.m_visibilityEntry.m_typeFlags = AzFramework::VisibilityEntry::TYPE_RPI_VisibleObjectList;
+            }
             m_scene->GetCullingScene()->RegisterOrUpdateCullable(m_cullable);
 
             m_flags.m_cullBoundsNeedsUpdate = false;

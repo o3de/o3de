@@ -59,7 +59,7 @@ namespace AZ
             // IShaderVariantFinder overrides
             bool QueueLoadShaderVariantAssetByVariantId(Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
             bool QueueLoadShaderVariantTreeAsset(const Data::AssetId& shaderAssetId) override;
-            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, SupervariantIndex supervariantIndex) override;
+            bool QueueLoadShaderVariantAsset(const Data::AssetId& shaderVariantTreeAssetId, ShaderVariantStableId variantStableId, const AZ::Name& supervariantName) override;
 
             Data::Asset<ShaderVariantAsset> GetShaderVariantAssetByVariantId(
                 Data::Asset<ShaderAsset> shaderAsset, const ShaderVariantId& shaderVariantId, SupervariantIndex supervariantIndex) override;
@@ -99,7 +99,7 @@ namespace AZ
             //! in the asset database AND a request to load such asset is properly queued.
             bool TryToLoadShaderVariantTreeAsset(const Data::AssetId& shaderAssetId);
 
-            bool TryToLoadShaderVariantAsset(const Data::AssetId& shaderVariantAssetId);
+            bool TryToLoadShaderVariantAsset(const Data::AssetId& shaderVariantAssetId, const Data::AssetId& shaderVariantTreeAssetId);
 
 
             //! A thread that runs forever servicing shader variant and trees load requests.
@@ -114,17 +114,25 @@ namespace AZ
             //! This is a list of AssetId of ShaderAsset (Do not confuse with the AssetId ShaderVariantTreeAsset).
             AZStd::vector<Data::AssetId> m_shaderVariantTreePendingRequests;
 
-            //! This is a list of AssetId of ShaderVariantAsset.
-            AZStd::vector<Data::AssetId> m_shaderVariantPendingRequests;
+            //! This is a list of ShaderVariantAsset::AssetId + ShaderVariantTreeAsset::AssetId
+            AZStd::vector<AZStd::pair<Data::AssetId, Data::AssetId>> m_shaderVariantPendingRequests;
+
+            // Even though a ShaderVariantAsset comes from a unique source asset (the *.hashedvariantinfo),
+            // all SubIds are unique across all ShaderVariantAssets that are related with a ShaderAsset (Regardless
+            // of Supervariant and StableId, because the Supervariant and the StableId, along with the RHI are encoded
+            // in the product SubId).
+            // We can safely use the product subId as the key in a map.
+            using ShaderVariantProductSubId = RHI::Handle<uint32_t, ShaderVariantAsyncLoader>;
 
             struct ShaderVariantCollection
             {
                 Data::AssetId m_shaderAssetId;
                 Data::Asset<ShaderVariantTreeAsset> m_shaderVariantTree;
-                //! The key is the AssetId of the ShaderVariantAsset
+
                 //! We need to preserve a reference to shaderVariantAsset, otherwise the asset load will be canceled
                 //! or the asset could be removed from the asset database before it is passed back to the shader system.
-                AZStd::unordered_map<Data::AssetId, Data::Asset<ShaderVariantAsset>> m_shaderVariantsMap;
+                //! The key is the product SubId of the ShaderVariantAsset.
+                AZStd::unordered_map<ShaderVariantProductSubId, Data::Asset<ShaderVariantAsset>> m_shaderVariantsMap;
             };
 
             //! The key is the shader variant tree asset id.
@@ -133,6 +141,11 @@ namespace AZ
             //! Key: AssetId of a ShaderAsset; Value: AssetId of a ShaderVariantTreeAsset.
             //! REMARK: To go the other way, you can use m_shaderVariantData.
             AZStd::unordered_map<Data::AssetId, Data::AssetId> m_shaderAssetIdToShaderVariantTreeAssetId;
+
+            //! Key: AssetId of a ShaderVariantAsset; Value: AssetId of a ShaderVariantTreeAsset.
+            //! This is necessary so we can quickly find the ShaderVariantTreeAsset when the asset system
+            //! calls OnAssetReady(), OnAssetReloaded(), etc.
+            AZStd::unordered_map<Data::AssetId, Data::AssetId> m_shaderVariantAssetIdToShaderVariantTreeAssetId;
 
         };
 

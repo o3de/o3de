@@ -135,7 +135,6 @@ namespace UnitTest
 
     TEST_F(SystemFileTest, Open_BadFileNames_DoesNotCrash)
     {
-
         AZStd::string randomJunkName;
 
         randomJunkName.resize(128, '\0');
@@ -250,6 +249,36 @@ namespace UnitTest
 
         AZ::IO::SystemFile::Delete(srcFile.c_str());
         AZ::IO::SystemFile::Delete(redirectFile.c_str());
+    }
+
+    TEST_F(SystemFileTest, FileDescriptorCapturer_DoesNotDeadlock_WhenMoreThanPipeSizeContent_IsCaptured)
+    {
+        AZStd::string stdoutData;
+        auto StoreStdout = [&stdoutData](AZStd::span<const AZStd::byte> capturedBytes)
+        {
+            AZStd::string_view capturedStrView(reinterpret_cast<const char*>(capturedBytes.data()), capturedBytes.size());
+            stdoutData += capturedStrView;
+        };
+
+        // The +1 to make sure the value isn't a power of 2, to try to catch any edge cases
+        // with reading from a buffered pipe
+        constexpr size_t charCountToWrite = AZ::IO::FileDescriptorCapturer::DefaultPipeSize * 2 + 1;
+        stdoutData.reserve(charCountToWrite);
+
+        // file descriptor 1 is stdout
+        constexpr int StdoutDescriptor = 1;
+        AZ::IO::FileDescriptorCapturer capturer(StdoutDescriptor);
+        capturer.Start(StoreStdout);
+        // Capture twice the DefaultPipeSize amount of bytes
+        for (size_t i = 0; i < charCountToWrite; ++i)
+        {
+            fputc('a', stdout);
+        }
+        fflush(stdout);
+        capturer.Stop();
+
+        const AZStd::string expectedValue(charCountToWrite, 'a');
+        EXPECT_EQ(expectedValue, stdoutData);
     }
 
 }   // namespace UnitTest

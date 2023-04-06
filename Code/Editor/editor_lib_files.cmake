@@ -277,7 +277,6 @@ set(FILES
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IExportManager.h
-    Include/IGizmoManager.h
     Include/IIconManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
@@ -285,7 +284,6 @@ set(FILES
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/ISourceControl.h
-    Include/ITransformManipulator.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -327,8 +325,6 @@ set(FILES
     Controls/CvarDPE.h
     Controls/FolderTreeCtrl.cpp
     Controls/FolderTreeCtrl.h
-    Controls/ImageHistogramCtrl.cpp
-    Controls/ImageHistogramCtrl.h
     Controls/SplineCtrl.cpp
     Controls/SplineCtrl.h
     Controls/SplineCtrlEx.cpp
@@ -459,26 +455,10 @@ set(FILES
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
-    Objects/AxisGizmo.cpp
-    Objects/Gizmo.cpp
-    Objects/GizmoManager.cpp
-    Objects/LineGizmo.cpp
-    Objects/TrackGizmo.cpp
-    Objects/AxisGizmo.h
-    Objects/Gizmo.h
-    Objects/GizmoManager.h
-    Objects/LineGizmo.h
-    Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
-    QtUI/QCollapsibleGroupBox.h
-    QtUI/QCollapsibleGroupBox.cpp
-    QtUI/PixmapLabelPreview.h
-    QtUI/PixmapLabelPreview.cpp
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelper.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -686,8 +666,6 @@ set(FILES
     WelcomeScreen/WelcomeScreenDialog.cpp
     WelcomeScreen/WelcomeScreenDialog.ui
     WelcomeScreen/WelcomeScreenDialog.qrc
-    2DViewport.cpp
-    2DViewport.h
     LayoutWnd.cpp
     LayoutWnd.h
     EditorViewportWidget.cpp
@@ -701,8 +679,6 @@ set(FILES
     EditorModularViewportCameraComposerBus.h
     ViewportManipulatorController.cpp
     ViewportManipulatorController.h
-    TopRendererWnd.cpp
-    TopRendererWnd.h
     ViewManager.cpp
     ViewManager.h
     ViewPane.cpp

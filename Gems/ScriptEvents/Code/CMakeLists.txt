@@ -93,5 +93,6 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::ScriptEvents.Tests
+        LABELS REQUIRES_tiaf
     )
 endif()

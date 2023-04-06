@@ -181,6 +181,19 @@ namespace AzToolsFramework
             CaptureTreeViewSnapshot();
         }
 
+        void AssetBrowserTreeView::dropEvent(QDropEvent* event)
+        {
+            QModelIndex sourceIndex = currentIndex();
+            QModelIndex targetIndex = indexAt(event->pos());
+            if ((sourceIndex.internalPointer() == targetIndex.internalPointer()) && (sourceIndex.row() == targetIndex.row()))
+            {
+                event->setDropAction(Qt::IgnoreAction);
+                event->accept();
+                return;
+            }
+            QTreeView::dropEvent(event);
+        }
+
         AZStd::vector<const AssetBrowserEntry*> AssetBrowserTreeView::GetSelectedAssets(bool includeProducts) const
         {
             const QModelIndexList& selectedIndexes = selectionModel()->selectedRows();
@@ -331,13 +344,13 @@ namespace AzToolsFramework
             {
                 QModelIndex curIndex = selectedIndexes[0];
                 m_expandToEntriesByDefault = true;
-                if (m_treeStateSaver)
+                if (m_treeStateSaver && m_applySnapshot)
                 {
                     m_treeStateSaver->ApplySnapshot();
                 }
 
                 setCurrentIndex(curIndex);
-                scrollTo(curIndex);
+                scrollTo(curIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
 
                 return;
             }
@@ -346,7 +359,7 @@ namespace AzToolsFramework
             m_expandToEntriesByDefault = hasFilter;
 
             // Then ask our state saver to apply its current snapshot again, falling back on asking us if entries should be expanded or not
-            if (m_treeStateSaver)
+            if (m_treeStateSaver && m_applySnapshot)
             {
                 m_treeStateSaver->ApplySnapshot();
             }
@@ -371,6 +384,12 @@ namespace AzToolsFramework
                 selectionModel()->select(m_indexToSelectAfterUpdate, QItemSelectionModel::ClearAndSelect);
                 m_indexToSelectAfterUpdate = QModelIndex();
             }
+            m_applySnapshot = true;
+        }
+
+        void AssetBrowserTreeView::SetApplySnapshot(bool shouldApplySnapshot)
+        {
+            m_applySnapshot = shouldApplySnapshot;
         }
 
         const AssetBrowserEntry* AssetBrowserTreeView::GetEntryByPath(QStringView path)
@@ -624,26 +643,32 @@ namespace AzToolsFramework
             [[maybe_unused]] const AZ::Uuid& sourceUUID,
             AzToolsFramework::AssetBrowser::SourceFileCreatorList& creators)
         {
-            creators.push_back(
-                { "Folder_Creator", "Folder", QIcon(),
-                  [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
-                  {
-                    AZ::IO::Path path = fullSourceFolderNameInCallback.c_str();
-                    path /= "New Folder";
-
-                    AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
-                        AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
-                        &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
-                        path.c_str(),
-                        AZ::Crc32(),
-                        true);
-
-                    if (!AZ::IO::SystemFile::Exists(path.c_str()))
-                    {
-                        AZ::IO::SystemFile::CreateDir(path.c_str());
-                    }
-                  }
+            auto it = std::find_if(creators.begin(), creators.end(),
+                [&](const AzToolsFramework::AssetBrowser::SourceFileCreatorDetails& creator)
+                {
+                    return creator.m_identifier == "Folder_Creator";
                 });
+            if (it == creators.end())
+            {
+                creators.push_back(
+                    { "Folder_Creator",
+                      "Folder",
+                      QIcon(),
+                      [&](const AZStd::string& fullSourceFolderNameInCallback, [[maybe_unused]] const AZ::Uuid& sourceUUID)
+                      {
+                          AZ::IO::FixedMaxPath path = AzFramework::StringFunc::Path::MakeUniqueFilenameWithSuffix(
+                              AZ::IO::PathView(fullSourceFolderNameInCallback + "/New Folder"), "-");
+
+                          AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotificationBus::Event(
+                              AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::FileCreationNotificationBusId,
+                              &AzToolsFramework::AssetBrowser::AssetBrowserFileCreationNotifications::HandleAssetCreatedInEditor,
+                              path.c_str(),
+                              AZ::Crc32(),
+                              true);
+
+                          AZ::IO::SystemFile::CreateDir(path.c_str());
+                      } });
+            }
         }
 
         void AssetBrowserTreeView::SetShowIndexAfterUpdate(QModelIndex index)
