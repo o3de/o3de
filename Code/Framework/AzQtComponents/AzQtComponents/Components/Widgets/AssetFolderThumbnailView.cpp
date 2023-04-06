@@ -164,7 +164,7 @@ namespace AzQtComponents
             if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
             {
                 icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
-                AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.constData());
+                AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                 icon.paint(painter, imageRect);
             }
             else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())

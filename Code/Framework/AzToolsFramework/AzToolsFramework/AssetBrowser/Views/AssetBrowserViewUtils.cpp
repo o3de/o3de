@@ -578,9 +578,7 @@ namespace AzToolsFramework
                     if (foundIt)
                     {
                         // the absolute path is join(watchfolder, relativepath); // since its relative to the watch folder.
-                        AZStd::string finalPath;
-                        AzFramework::StringFunc::Path::Join(watchFolder.c_str(), assetInfo.m_relativePath.c_str(), finalPath);
-                        resultPath = QString::fromUtf8(finalPath.c_str());
+                        resultPath = QDir(watchFolder.c_str()).absoluteFilePath(assetInfo.m_relativePath.c_str());
                     }
                 }
                 return resultPath;

@@ -7,7 +7,6 @@
  */
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/Asset/AssetTypeInfoBus.h>
-#include <AzCore/Settings/SettingsRegistryVisitorUtils.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Gem/GemInfo.h>
