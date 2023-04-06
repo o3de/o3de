@@ -229,22 +229,14 @@ namespace AzToolsFramework::Prefab
                     return false;
                 }
 
-                auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-
-                if (!prefabSystemComponentInterface)
-                {
-                    AZ_Assert(false, "PrefabSystemComponentInterface is not found.");
-                    return false;
-                }
-
-                const PrefabDom& templateDom = prefabSystemComponentInterface->FindTemplateDom(owningInstance->get().GetTemplateId());
-                PrefabDomPath prefabDomPathToComponentProperty(relativePathFromOwningPrefab.data());
-                const PrefabDomValue* beforeValueOfComponentProperty = prefabDomPathToComponentProperty.Get(templateDom);
-
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
+
+                ScopedUndoBatch undoBatch("Update component in a prefab template");
+
                 PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Undo Updating Component");
                 state->SetParent(m_currentUndoBatch);
-                state->Capture(*beforeValueOfComponentProperty, afterValueOfComponentProperty, m_entityId, relativePathFromOwningPrefab);
+                state->Capture(
+                    owningInstance->get(), AZ::Dom::Path(relativePathFromOwningPrefab).ToString(), afterValueOfComponentProperty);
                 state->Redo();
 
                 return state->Changed();
@@ -253,7 +245,8 @@ namespace AzToolsFramework::Prefab
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. "
+                "It should have been a serialized value.");
             return false;
         }
     }
@@ -295,7 +288,8 @@ namespace AzToolsFramework::Prefab
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::CreateAndApplyComponentOverridePatch. "
+                "It should have been a serialized value.");
             return false;
         }
     }
