@@ -48,7 +48,7 @@ namespace TestImpact
         typename NativeInstrumentedTestRunner::JobInfo::Id startingId) const
     {
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
-        const auto testFilters = TestListsToTestFilters(ShardTestInterleaved(testTargetAndEnumeration));
+        const auto testFilters = TestListsToTestFilters(GenerateShardedTestsList(testTargetAndEnumeration));
         typename ShardedInstrumentedTestJobInfo::JobInfos jobInfos;
         jobInfos.reserve(testFilters.size());
 
@@ -83,7 +83,7 @@ namespace TestImpact
         typename NativeRegularTestRunner::JobInfo::Id startingId) const
     {
         const auto [testTarget, testEnumeration] = testTargetAndEnumeration;
-        const auto testFilters = TestListsToTestFilters(ShardTestInterleaved(testTargetAndEnumeration));
+        const auto testFilters = TestListsToTestFilters(GenerateShardedTestsList(testTargetAndEnumeration));
         typename ShardedRegularTestJobInfo::JobInfos jobInfos;
         jobInfos.reserve(testFilters.size());
 

@@ -20,6 +20,8 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyEdit.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyOverride.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -50,7 +52,13 @@ namespace AzToolsFramework::Prefab
         // Otherwise, an empty component alias will be used in DOM data.
         AZ_Assert(componentInstance, "PrefabComponentAdapter::SetComponent - component is null.")
         m_componentAlias = componentInstance->GetSerializedIdentifier();
-        AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
+
+        // Do not assert on empty alias for disabled or pending components.
+        // See GHI: https://github.com/o3de/o3de/issues/15546
+        if (!IsComponentDisabled(componentInstance) && !IsComponentPending(componentInstance))
+        {
+            AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
+        }
 
         ComponentAdapter::SetComponent(componentInstance);
 
@@ -66,10 +74,8 @@ namespace AzToolsFramework::Prefab
         adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
 
         AZ::Dom::Path relativePathFromEntity;
-        if (!serializedPath.empty())
+        if (!m_componentAlias.empty() && !serializedPath.empty())
         {
-            AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::CreateLabel - Component alias should not be empty.");
-
             relativePathFromEntity /= PrefabDomUtils::ComponentsName;
             relativePathFromEntity /= m_componentAlias;
             relativePathFromEntity /= AZ::Dom::Path(serializedPath);
@@ -293,4 +299,25 @@ namespace AzToolsFramework::Prefab
             return false;
         }
     }
+
+    bool PrefabComponentAdapter::IsComponentDisabled(const AZ::Component* component)
+    {
+        AZ_Assert(component, "Unable to check a component that is nullptr");
+
+        bool result = false;
+        EditorDisabledCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorDisabledCompositionRequests::IsComponentDisabled, component);
+        return result;
+    }
+
+    bool PrefabComponentAdapter::IsComponentPending(const AZ::Component* component)
+    {
+        AZ_Assert(component, "Unable to check a component that is nullptr");
+
+        bool result = false;
+        EditorPendingCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorPendingCompositionRequests::IsComponentPending, component);
+        return result;
+    }
+
 } // namespace AzToolsFramework::Prefab

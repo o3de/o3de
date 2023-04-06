@@ -19,5 +19,6 @@ ly_install_directory(
         DefaultComponent
         ScriptCanvasNode
         UnifiedMultiplayerGem
+        GraphicsGem
     VERBATIM
 )

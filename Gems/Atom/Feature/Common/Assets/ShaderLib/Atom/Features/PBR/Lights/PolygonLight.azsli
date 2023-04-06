@@ -12,6 +12,7 @@
 #include <Atom/Features/PBR/Lights/Ltc.azsli>
 #include <Atom/RPI/Math.azsli>
 
+#if ENABLE_POLYGON_LTC_LIGHTS
 // Polygon lights using Linearly Transformed Cosines
 void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout LightingData lightingData)
 {
@@ -59,7 +60,6 @@ void ApplyPoylgonLight(ViewSrg::PolygonLight light, Surface surface, inout Light
 
 void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
 {
-#if ENABLE_POLYGON_LTC_LIGHTS
     if (o_enablePolygonLights)
     {
         for (uint currLightIndex = 0; currLightIndex <  ViewSrg::m_polygonLightCount; ++currLightIndex)
@@ -69,5 +69,10 @@ void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
             ApplyPoylgonLight(light, surface, lightingData);
         }
     }
-#endif
 }
+#else
+void ApplyPolygonLights(Surface surface, inout LightingData lightingData)
+{
+    return;
+}
+#endif
