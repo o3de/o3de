@@ -369,6 +369,16 @@ namespace PhysX
                     drive.stiffness = articulationLinkConfiguration.m_motorConfiguration.m_driveStiffness;
                     inboundJoint->setDriveParams(physx::PxArticulationAxis::eTWIST, drive);
                 }
+                inboundJoint->setFrictionCoefficient(articulationLinkConfiguration.m_jointFriction);
+                if (articulationLinkConfiguration.m_armature.GetX()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eTWIST, articulationLinkConfiguration.m_armature.GetX());
+                }
+                if (articulationLinkConfiguration.m_armature.GetY()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eSWING1, articulationLinkConfiguration.m_armature.GetY());
+                }
+                if (articulationLinkConfiguration.m_armature.GetZ()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eSWING2, articulationLinkConfiguration.m_armature.GetZ());
+                }
                 break;
             case ArticulationJointType::Prismatic:
                 inboundJoint->setJointType(physx::PxArticulationJointType::ePRISMATIC);
@@ -406,6 +416,16 @@ namespace PhysX
                     drive.damping = articulationLinkConfiguration.m_motorConfiguration.m_driveDamping;
                     drive.stiffness = articulationLinkConfiguration.m_motorConfiguration.m_driveStiffness;
                     inboundJoint->setDriveParams(physx::PxArticulationAxis::eX, drive);
+                }
+                inboundJoint->setFrictionCoefficient(articulationLinkConfiguration.m_jointFriction);
+                if (articulationLinkConfiguration.m_armature.GetX()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eX, articulationLinkConfiguration.m_armature.GetX());
+                }
+                if (articulationLinkConfiguration.m_armature.GetY()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eY, articulationLinkConfiguration.m_armature.GetY());
+                }
+                if (articulationLinkConfiguration.m_armature.GetZ()>AZ::Constants::FloatEpsilon){
+                    inboundJoint->setArmature(physx::PxArticulationAxis::eZ, articulationLinkConfiguration.m_armature.GetZ());
                 }
                 break;
             default:

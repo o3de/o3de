@@ -48,6 +48,9 @@ namespace PhysX
             ArticulationLinkConfiguration);
 
         static void Reflect(AZ::ReflectContext* context);
+
+    private:
+        AZ::Outcome<void, AZStd::string> ValidateArtmature(void* newValue, const AZ::Uuid& valueType);
     };
 
     //! Class for in-editor PhysX Articulation Link Component.
