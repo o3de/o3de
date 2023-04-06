@@ -277,7 +277,6 @@ set(FILES
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
     Include/IExportManager.h
-    Include/IGizmoManager.h
     Include/IIconManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
@@ -285,7 +284,6 @@ set(FILES
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/ISourceControl.h
-    Include/ITransformManipulator.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -457,22 +455,10 @@ set(FILES
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
-    Objects/AxisGizmo.cpp
-    Objects/Gizmo.cpp
-    Objects/GizmoManager.cpp
-    Objects/LineGizmo.cpp
-    Objects/TrackGizmo.cpp
-    Objects/AxisGizmo.h
-    Objects/Gizmo.h
-    Objects/GizmoManager.h
-    Objects/LineGizmo.h
-    Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelper.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui

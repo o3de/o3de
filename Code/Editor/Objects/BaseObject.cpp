@@ -26,7 +26,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "GizmoManager.h"
 #include "Include/IIconManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
@@ -1933,18 +1932,6 @@ void CBaseObject::UpdateVisibility(bool bVisible)
         NotifyListeners(ON_VISIBILITY);
 
     }
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::AddGizmo(CGizmo* gizmo)
-{
-    GetObjectManager()->GetGizmoManager()->AddGizmo(gizmo);
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CBaseObject::RemoveGizmo(CGizmo* gizmo)
-{
-    GetObjectManager()->GetGizmoManager()->RemoveGizmo(gizmo);
 }
 
 //////////////////////////////////////////////////////////////////////////

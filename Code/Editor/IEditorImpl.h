@@ -133,7 +133,6 @@ public:
     void EnableAcceleratos(bool bEnable) override;
     CGameEngine* GetGameEngine() override { return m_pGameEngine; };
     CDisplaySettings*   GetDisplaySettings() override { return m_pDisplaySettings; };
-    const SGizmoParameters& GetGlobalGizmoParameters() override;
     CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) override;
     void DeleteObject(CBaseObject* obj) override;
     IObjectManager* GetObjectManager() override;
@@ -189,8 +188,6 @@ public:
     void SetOperationMode(EOperationMode mode) override;
     EOperationMode GetOperationMode() override;
 
-    ITransformManipulator* ShowTransformManipulator(bool bShow) override;
-    ITransformManipulator* GetTransformManipulator() override;
     void SetAxisConstraints(AxisConstrains axis) override;
     AxisConstrains GetAxisConstrains() override;
     void SetAxisVectorLock(bool bAxisVectorLock) override { m_bAxisVectorLock = bAxisVectorLock; }
@@ -320,11 +317,9 @@ protected:
     CXmlTemplateRegistry m_templateRegistry;
     CDisplaySettings* m_pDisplaySettings;
     CIconManager* m_pIconManager;
-    std::unique_ptr<SGizmoParameters> m_pGizmoParameters;
     QString m_primaryCDFolder;
     QString m_userFolder;
     bool m_bSelectionLocked;
-    class CAxisGizmo* m_pAxisGizmo;
     CGameEngine* m_pGameEngine;
     CAnimationContext* m_pAnimationContext;
     CTrackViewSequenceManager* m_pSequenceManager;

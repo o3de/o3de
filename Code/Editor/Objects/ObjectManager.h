@@ -22,7 +22,6 @@
 #include <Include/SandboxAPI.h>
 
 // forward declarations.
-class CGizmoManager;
 class CEntityObject;
 class CObjectArchive;
 class CObjectClassDesc;
@@ -74,9 +73,6 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     void GetObjects(CBaseObjectsArray& objects) const override;
-
-    //! Display objects on display context.
-    void    Display(DisplayContext& dc) override;
 
     //! Send event to all objects.
     //! Will cause OnEvent handler to be called on all objects.
@@ -139,10 +135,6 @@ public:
     void ChangeObjectId(REFGUID oldId, REFGUID newId) override;
 
     //////////////////////////////////////////////////////////////////////////
-    //! Get access to gizmo manager.
-    IGizmoManager* GetGizmoManager() override;
-
-    //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.
     void InvalidateVisibleList() override;
 
@@ -199,9 +191,6 @@ private:
 
     //! Default selection.
     CSelectionGroup m_defaultSelection;
-
-    // Object manager also handles Gizmo manager.
-    CGizmoManager* m_gizmoManager;
 
     //////////////////////////////////////////////////////////////////////////
 
