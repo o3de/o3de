@@ -11,8 +11,11 @@
 
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/IO/SystemFile_Platform.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/containers/span.h>
-#include <AzCore/std/function/function_fwd.h>
+#include <AzCore/std/functional.h>
+#include <AzCore/std/parallel/atomic.h>
+#include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/string/fixed_string.h>
 
 // Establish a consistent size that works across platforms. It's actually larger than this
@@ -182,6 +185,9 @@ namespace AZ
 
         /**
          * Utility class for capturing the output of file descriptor redirection using with RAII behavior.
+         * NOTE: This class creates a new thread when Start() is called to pump the read end of the pipe
+         * when it is filled with data.
+         * The thread is terminated in Stop
          * Example:
          *
          *   printf("Test"); // prints to stdout
@@ -207,30 +213,65 @@ namespace AZ
             FileDescriptorCapturer(int sourceDescriptor);
             ~FileDescriptorCapturer();
 
-            // Starts capture of file descriptor
-            void Start(int pipeSize = DefaultPipeSize);
-
             //! Redirects file descriptor to a visitor callback
             //! Internally a pipe is used to send output to the visitor
+            //! 
+            //! NOTE: This function will be called on a different thread than the one used to invoke Start()
+            //! The caller is responsible for ensuring thread safety with the callback function
             using OutputRedirectVisitor = AZStd::function<void(AZStd::span<AZStd::byte>)>;
 
-            //! Reads all the data from the pipe and sends it to the visitor
-            void Flush(const OutputRedirectVisitor& redirectCallback);
+            //! Starts capture of file descriptor
+            //! @param redirectCallback callback to invoke when data is available for read
+            //! @param waitTimeout Timeout to wait for the descriptor to be signaled with data
+            //!        default to 1 seconds
+            //!        NOTE: This is not a timeout of the capture operation, but determines how frequently
+            //!        a polling operation retries.
+            //!        Using AZStd::chrono::milliseconds::max() results in an infinite timeout
+            //! @param pipeSize used internally for pipe used to send captured data to the redirect callback
+            //!        redirectCallback will not receieve more data than pipeSize in a single invocation
+            void Start(OutputRedirectVisitor redirectCallback,
+                AZStd::chrono::milliseconds waitTimeout = AZStd::chrono::seconds(1),
+                int pipeSize = DefaultPipeSize);
 
             //! Stops capture of file descriptor and reset it back to it's previous value
-            void Stop(const OutputRedirectVisitor& redirectCallback);
+            void Stop();
 
             // Writes to the original source descriptor, bypassing the capture
             int WriteBypassingCapture(const void* data, unsigned int size);
 
         private:
+            //! Reads all the data from the pipe and sends it to the visitor
+            //! returns true if the flush operation has succeeded
+            bool Flush();
+
+            // Any RedirectState value above DisconnectePipe
+            // will cause the flush thread to exit
+            enum class RedirectState : AZ::u8
+            {
+                Active = 0,
+                ClosingPipeWriteSide = 64,
+                DisconnectedPipe = 128,
+                Idle = 255,
+            };
             void Reset();
             int m_sourceDescriptor = -1;
             int m_dupSourceDescriptor = -1;
             inline static constexpr int ReadEnd = 0;
             inline static constexpr int WriteEnd = 1;
-            int m_pipe[2]{ -1, -1 };
-            bool m_redirectToPipe{};
+            intptr_t m_pipe[2]{ -1, -1 };
+            //! atomic that is used to allow
+            //! the Start method to be thread safe in relation to the Reset/Stop method.
+            AZStd::atomic<RedirectState> m_redirectState{ RedirectState::Idle };
+
+            //! Opaque data structure used for storing event or queue data used for
+            //! event based signaling when the read end of the descriptor has available data
+            intptr_t m_pipeData = 0;
+
+            //! Thread responsible for flushing the descriptor to the callback function when full
+            AZStd::thread m_flushThread;
+
+            //! Callback which is pumped on the Flush Thread whenever pipe data is available for reading
+            OutputRedirectVisitor m_redirectCallback;
         };
     }
 }

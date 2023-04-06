@@ -208,6 +208,11 @@ namespace AZ
             return false;
         }
 
+        static bool HasRootConstants(const RHI::ConstantsLayout* rootConstantsLayout)
+        {
+            return rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0;
+        }
+
         bool MeshDrawPacket::DoUpdate(const Scene& parentScene)
         {
             const ModelLod::Mesh& mesh = m_modelLod->GetMeshes()[m_modelLodMeshIndex];
@@ -375,10 +380,11 @@ namespace AZ
                     return false;
                 }
 
+                const RHI::ConstantsLayout* rootConstantsLayout =
+                    pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
                 if(isFirstShaderItem)
                 {
-                    const RHI::ConstantsLayout* rootConstantsLayout = pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout();
-                    if (rootConstantsLayout && rootConstantsLayout->GetDataSize() > 0)
+                    if (HasRootConstants(rootConstantsLayout))
                     {
                         m_rootConstantsLayout = rootConstantsLayout;
                         rootConstants.resize(m_rootConstantsLayout->GetDataSize());
@@ -391,8 +397,8 @@ namespace AZ
                 {
                     AZ_Error(
                         "MeshDrawPacket",
-                        (!m_rootConstantsLayout && !pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()) ||
-                        (m_rootConstantsLayout && m_rootConstantsLayout->GetHash() == pipelineStateDescriptor.m_pipelineLayoutDescriptor->GetRootConstantsLayout()->GetHash()),
+                        (!m_rootConstantsLayout && !HasRootConstants(rootConstantsLayout)) ||
+                        (m_rootConstantsLayout && rootConstantsLayout && m_rootConstantsLayout->GetHash() == rootConstantsLayout->GetHash()),
                         "All draw items in a draw packet need to share the same root constants layout. This means that each pass "
                         "(e.g. Depth, Shadows, Forward, MotionVectors) for a given materialtype should use the same layout.");
                 }

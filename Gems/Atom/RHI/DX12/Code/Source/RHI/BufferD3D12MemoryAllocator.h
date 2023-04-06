@@ -15,38 +15,37 @@ namespace AZ
 {
     namespace DX12
     {
-        class BufferMemoryAllocator
+        //! Utility class to forward buffer allocations to AMD's D3D12MemoryAllocator library.
+        class BufferD3D12MemoryAllocator
         {
         public:
-            BufferMemoryAllocator() = default;
-            BufferMemoryAllocator(const BufferMemoryAllocator&) = delete;
+            BufferD3D12MemoryAllocator() = default;
+            BufferD3D12MemoryAllocator(const BufferD3D12MemoryAllocator&) = delete;
 
+            // Use the same descriptor as BufferPageAllocator to enable exact API match.
             using Descriptor = MemoryPageAllocator::Descriptor;
 
+            //! Do any internal initialization
             void Init(const Descriptor& descriptor);
 
+            //! placeholder to match BufferMemoryAllocator api
             void Shutdown();
 
+            //! placeholder to match BufferMemoryAllocator api
             void GarbageCollect();
 
+            // Allocate space for a buffer
             BufferMemoryView Allocate(size_t sizeInBytes, size_t overrideAlignment = 0);
 
+            // Release space previously allocated for a buffer
             void DeAllocate(const BufferMemoryView& memory);
 
+            //! placeholder to match BufferMemoryAllocator api
             float ComputeFragmentation() const;
 
         private:
-            BufferMemoryView AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor);
-
-            void DeAllocateUnique(const BufferMemoryView& memoryView);
 
             Descriptor m_descriptor;
-            MemoryPageAllocator m_pageAllocator;
-            bool m_usePageAllocator = true;
-
-            AZStd::mutex m_subAllocatorMutex;
-            MemoryFreeListSubAllocator m_subAllocator;
-            size_t m_subAllocationAlignment = Alignment::Buffer;
         };
     }
 }
