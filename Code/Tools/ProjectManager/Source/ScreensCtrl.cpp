@@ -61,11 +61,11 @@ namespace O3DE::ProjectManager
     {
         if (m_screenStack->currentWidget() == m_tabWidget)
         {
-            return reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+            return static_cast<ScreenWidget*>(m_tabWidget->currentWidget());
         }
         else
         {
-            return reinterpret_cast<ScreenWidget*>(m_screenStack->currentWidget());
+            return static_cast<ScreenWidget*>(m_screenStack->currentWidget());
         }
     }
 
@@ -251,7 +251,7 @@ namespace O3DE::ProjectManager
 
     void ScreensCtrl::TabChanged([[maybe_unused]] int index)
     {
-        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        ScreenWidget* screen = static_cast<ScreenWidget*>(m_tabWidget->currentWidget());
         if (screen)
         {
             screen->NotifyCurrentScreen();

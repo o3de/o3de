@@ -57,7 +57,7 @@ namespace O3DE::ProjectManager
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
-        connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
 
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
@@ -120,7 +120,7 @@ namespace O3DE::ProjectManager
     // Called when pressing "Create New Project"
     void CreateProjectCtrl::NotifyCurrentScreen()
     {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
+        ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
         if (currentScreen)
         {
             currentScreen->NotifyCurrentScreen();

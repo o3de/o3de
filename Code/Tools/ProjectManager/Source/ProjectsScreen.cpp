@@ -74,7 +74,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addWidget(m_stack);
 
-        connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
         connect(m_downloadController, &DownloadController::Done, this, &ProjectsScreen::HandleDownloadResult);
         connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
