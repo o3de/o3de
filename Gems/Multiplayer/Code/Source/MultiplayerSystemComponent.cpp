@@ -1352,9 +1352,9 @@ namespace Multiplayer
                 // If there wasn't any player entity, wait until a level loads and check again
                 m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
             }
-
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
+        m_agentInitializedEvent.Signal(m_agentType);
 
         if (auto* statSystem = AZ::Interface<IMultiplayerStatSystem>::Get())
         {
@@ -1420,6 +1420,11 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddVersionMismatchHandler(NoServerLevelLoadedEvent::Handler& handler)
     {
         handler.Connect(m_versionMismatchEvent);
+    }
+
+    void MultiplayerSystemComponent::AddAgentInitializedEvent(AgentInitializedEvent::Handler& handler)
+    {
+        handler.Connect(m_agentInitializedEvent);
     }
 
     void MultiplayerSystemComponent::SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId)

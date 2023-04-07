@@ -71,6 +71,7 @@ namespace Multiplayer
     using LevelLoadBlockedEvent = AZ::Event<>;
     using NoServerLevelLoadedEvent = AZ::Event<>;
     using VersionMismatchEvent = AZ::Event<>;
+    using AgentInitializedEvent = AZ::Event<MultiplayerAgentType>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -168,6 +169,12 @@ namespace Multiplayer
         //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
         //! @param handler The VersionMismatchEvent handler to add
         virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
+
+        //! Adds an AgentInitializedEvent Handler which is invoked whenever the multiplayer agent type is changed and ready to fulfill its role.
+        //! For example before attempting to connect to the host server, the game launcher will set its agent type to 'Client'.
+        //! Agent types include: uninitialized, client, dedicated-server, and client-server.
+        //! @param handler The AgentInitializedEvent handler to add
+        virtual void AddAgentInitializedEvent(AgentInitializedEvent::Handler& handler) = 0;
 
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating

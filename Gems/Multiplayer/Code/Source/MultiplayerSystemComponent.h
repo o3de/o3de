@@ -136,6 +136,7 @@ namespace Multiplayer
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
         void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
+        void AddAgentInitializedEvent(AgentInitializedEvent::Handler& handler) override;
         void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) override;
         void SendNotifyClientMigrationEvent(AzNetworking::ConnectionId connectionId, const HostId& hostId, uint64_t userIdentifier, ClientInputId lastClientInputId, NetEntityId controlledEntityId) override;
         void SendNotifyEntityMigrationEvent(const ConstNetworkEntityHandle& entityHandle, const HostId& remoteHostId) override;
@@ -206,6 +207,7 @@ namespace Multiplayer
         LevelLoadBlockedEvent m_levelLoadBlockedEvent;
         NoServerLevelLoadedEvent m_noServerLevelLoadedEvent;
         VersionMismatchEvent m_versionMismatchEvent;
+        AgentInitializedEvent m_agentInitializedEvent;
 
         AZ::Event<NetEntityId>::Handler m_autonomousEntityReplicatorCreatedHandler;
         AZ::SettingsRegistryInterface::NotifyEventHandler m_componentApplicationLifecycleHandler;
