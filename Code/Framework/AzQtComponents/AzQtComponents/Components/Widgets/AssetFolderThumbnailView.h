@@ -113,7 +113,7 @@ namespace AzQtComponents
         void setRootIndex(const QModelIndex &index) override;
 
         void SetShowSearchResultsMode(bool searchMode);
-        bool InSearchResultsMode();
+        bool InSearchResultsMode() const;
 
     signals:
         void rootIndexChanged(const QModelIndex& idx);
