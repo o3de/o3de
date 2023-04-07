@@ -1063,29 +1063,6 @@ namespace AzQtComponents
     {
         m_showSearchResultsMode = searchMode;
     }
-
-    void AssetFolderThumbnailView::rowsInserted(const QModelIndex& parent, int start, int end)
-    {
-        scheduleDelayedItemsLayout();
-
-        QAbstractItemView::rowsInserted(parent, start, end);
-    }
-
-    void AssetFolderThumbnailView::rowsAboutToBeRemoved(const QModelIndex& parent, int start, int end)
-    {
-        scheduleDelayedItemsLayout();
-
-        QAbstractItemView::rowsAboutToBeRemoved(parent, start, end);
-    }
-
-    void AssetFolderThumbnailView::reset()
-    {
-        m_itemGeometry.clear();
-        m_expandedIndexes.clear();
-        m_childFrames.clear();
-
-        QAbstractItemView::reset();
-    }
 } // namespace AzQtComponents
 
 #include "Components/Widgets/moc_AssetFolderThumbnailView.cpp"
