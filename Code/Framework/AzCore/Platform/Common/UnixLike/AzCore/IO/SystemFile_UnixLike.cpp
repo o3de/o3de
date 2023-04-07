@@ -290,7 +290,11 @@ namespace AZ::IO
         }
 
         m_redirectCallback = {};
-        m_pipeData = -1;
+        if (m_pipeData > 0)
+        {
+            PosixInternal::Close(static_cast<int>(m_pipeData));
+            m_pipeData = 0;
+        }
 
         // Reset the file descriptors after any flush thread
         // operations have been complete, so correct descriptor value
