@@ -1046,7 +1046,7 @@ namespace AzQtComponents
         m_showSearchResultsMode = searchMode;
     }
 
-    bool AssetFolderThumbnailView::InSearchResultsMode()
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
     {
         return m_showSearchResultsMode;
     }

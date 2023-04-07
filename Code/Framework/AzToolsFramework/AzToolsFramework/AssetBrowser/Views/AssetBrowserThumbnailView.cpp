@@ -78,7 +78,7 @@ namespace AzToolsFramework
                         AZStd::vector<const AssetBrowserEntry*> entries{ entry };
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
-                            auto action = menu.addAction("Show In Folder");
+                            auto action = menu.addAction(tr("Show In Folder"));
                             connect(
                                 action,
                                 &QAction::triggered,
