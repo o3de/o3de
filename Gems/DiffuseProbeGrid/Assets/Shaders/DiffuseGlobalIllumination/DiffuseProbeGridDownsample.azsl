@@ -32,8 +32,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     uint m_outputImageScale;
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
-
 // Vertex Shader
 VSOutput MainVS(VSInput input)
 {

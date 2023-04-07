@@ -16,9 +16,9 @@
 #include <AzToolsFramework/Entity/EditorEntityContextBus.h>
 #include <AzCore/Component/TransformBus.h>
 
+#include "Objects/BaseObject.h"
 #include "TrackViewNode.h"
 #include "TrackViewTrack.h"
-#include "Objects/TrackGizmo.h"
 
 class CTrackViewAnimNode;
 class QWidget;
@@ -257,7 +257,6 @@ public:
 
     //////////////////////////////////////////////////////////////////////////
     //! AZ::TransformNotificationBus::Handler
-    void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
     void OnParentChanged(AZ::EntityId oldParent, AZ::EntityId newParent) override;
     void OnParentTransformWillChange(AZ::Transform oldTransform, AZ::Transform newTransform) override;
     //////////////////////////////////////////////////////////////////////////
@@ -287,8 +286,6 @@ private:
     void PasteNodeFromClipboard(AZStd::map<int, IAnimNode*>& copiedIdToNodeMap, XmlNodeRef xmlNode);
 
     void SetPosRotScaleTracksDefaultValues(bool positionAllowed = true, bool rotationAllowed = true, bool scaleAllowed = true);
-
-    void UpdateTrackGizmo();
 
     bool CheckTrackAnimated(const CAnimParamType& paramType) const;
 
@@ -338,7 +335,6 @@ private:
     AZStd::intrusive_ptr<IAnimNode> m_animNode;
     AZ::EntityId m_nodeEntityId;
     AZStd::unique_ptr<IAnimNodeAnimator> m_pNodeAnimator;
-    _smart_ptr<CGizmo> m_trackGizmo;
 
     // used to stash the Editor sequence and node entity Ids when we switch to game mode from the editor
     AZ::EntityId    m_stashedAnimNodeEditorAzEntityId;
