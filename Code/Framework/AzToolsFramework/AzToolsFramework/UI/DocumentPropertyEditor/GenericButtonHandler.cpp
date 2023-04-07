@@ -29,6 +29,6 @@ namespace AzToolsFramework
         // Cache the node so we can query OnActivate on it when we're pressed.
         m_node = node;
         auto buttonText = GenericButton::ButtonText.ExtractFromDomNode(node).value_or("");
-        setText(QString::fromLatin1(AZStd::string(buttonText).c_str()));
+        setText(QString::fromUtf8(AZStd::string(buttonText).c_str()));
     }
 } // namespace AzToolsFramework

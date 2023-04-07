@@ -20,9 +20,9 @@ namespace AZ::DocumentPropertyEditor
 
     protected:
         // pure virtual overrides
-        virtual MatchInfoNode* NewMatchInfoNode() const override;
-        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
-        virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
+        MatchInfoNode* NewMatchInfoNode() const override;
+        void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
+        bool MatchesFilter(MatchInfoNode* matchNode) const override;
 
         struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
         {

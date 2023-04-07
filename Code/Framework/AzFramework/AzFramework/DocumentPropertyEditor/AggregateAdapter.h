@@ -106,7 +106,6 @@ namespace AZ::DocumentPropertyEditor
 
     class LabeledRowAggregateAdapter : public RowAggregateAdapter
     {
-    public:
     protected:
         static AZStd::string_view GetFirstLabel(const Dom::Value& rowValue);
 
