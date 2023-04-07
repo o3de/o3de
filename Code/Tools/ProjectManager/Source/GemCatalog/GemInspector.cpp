@@ -10,7 +10,6 @@
 #include <GemCatalog/GemItemDelegate.h>
 #include <ProjectManagerDefs.h>
 #include <ProjectUtils.h>
-#include <AzCore/Dependency/Dependency.h>
 
 #include <QDir>
 #include <QFrame>
@@ -251,8 +250,6 @@ namespace O3DE::ProjectManager
             else
             {
                 m_enginesTitleLabel->setText(tr("Compatible Engines:"));
-                using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
-                using Comparison = Dependency::Bound::Comparison;
                 QString compatibleEngines;
                 for (int i = 0; i < gemInfo.m_compatibleEngines.size(); ++i)
                 {
