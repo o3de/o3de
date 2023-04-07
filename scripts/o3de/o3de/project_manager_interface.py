@@ -287,20 +287,28 @@ def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
 
         :return list of dicts containing gem json data
     """
-    all_gem_json_data = manifest.get_gems_json_data_by_name(project_path=project_path,
+    # it's easier to determine which gems are engine gems here rather than in c++
+    # because the project might be using a different engine than the one Project Manager is
+    # running out of
+    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
+
+    # get all gem json data by path so we can use it for detecting engine and project gems
+    # without re-opening and parsing gem.json files again
+    all_gem_json_data = manifest.get_gems_json_data_by_path(engine_path=engine_path,
+                                                            project_path=project_path,
                                                             include_engine_gems=True,
                                                             include_manifest_gems=True)
+    # include gems inside gems
+    recurse = True
+    engine_gem_paths = [pathlib.PurePath(path) for path in manifest.get_engine_gems(engine_path, recurse, all_gem_json_data)]
+    if project_path:
+        project_gem_paths = [pathlib.PurePath(path) for path in manifest.get_project_gems(project_path, recurse, all_gem_json_data)]
+
+    # convert all_gem_json_data to have gem names as keys with values that are gem version lists
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
 
     # flatten into a single list
     all_gem_json_data = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
-
-    # it's easier to determine which gems are engine gems here rather than in c++
-    # because this gem might belong to a different engine than the one Project Manager is
-    # running out of
-    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
-    engine_gem_paths = [pathlib.PurePath(path) for path in manifest.get_engine_gems(engine_path)]
-    if project_path:
-        project_gem_paths = [pathlib.PurePath(path) for path in manifest.get_project_gems(project_path)]
 
     for i, gem_json_data in enumerate(all_gem_json_data):
         if project_path:

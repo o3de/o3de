@@ -275,8 +275,14 @@ def get_engine_projects(engine_path:pathlib.Path = None) -> list:
     return []
 
 
-def get_engine_gems(engine_path:pathlib.Path = None) -> list:
-    return get_gems_from_external_subdirectories(get_engine_external_subdirectories(engine_path))
+def get_engine_gems(engine_path:pathlib.Path = None, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    engine_gem_paths = get_gems_from_external_subdirectories(get_engine_external_subdirectories(engine_path))
+    if recurse:
+        gems_json_data_by_path = gems_json_data_by_path or dict()
+        for path in engine_gem_paths:
+            engine_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
+    
+    return engine_gem_paths
 
 
 def get_engine_external_subdirectories(engine_path:pathlib.Path = None) -> list:
@@ -298,8 +304,14 @@ def get_engine_templates() -> list:
 
 
 # project.json queries
-def get_project_gems(project_path: pathlib.Path) -> list:
-    return get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
+def get_project_gems(project_path:pathlib.Path, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    project_gem_paths = get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
+    if recurse:
+        gems_json_data_by_path = gems_json_data_by_path or dict()
+        for path in project_gem_paths:
+            project_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
+    
+    return project_gem_paths
 
 def get_enabled_gem_cmake_file(project_name: str = None,
                                 project_path: str or pathlib.Path = None,
@@ -625,19 +637,15 @@ def remove_non_dependency_gem_json_data(gem_names:list, gems_json_data_by_name:d
         del gems_json_data_by_name[gem_name]
 
 
-def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+def get_gems_json_data_by_path(engine_path:pathlib.Path = None, 
                                project_path: pathlib.Path = None, 
                                include_manifest_gems: bool = False,
                                include_engine_gems: bool = False,
                                external_subdirectories: list = None) -> dict:
     """
-    Create a dictionary of gem.json data with gem names as keys based on the provided list of
+    Create a dictionary of gem.json data with gem paths as keys based on the provided list of
     external subdirectories, engine_path or project_path.  Optionally, include gems
     found using the o3de manifest.
-
-    It's often more efficient to open all gem.json files instead of 
-    looking up each by name, which will load many gem.json files multiple times
-    It takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
 
     param: engine_path optional engine path
     param: project_path optional project path
@@ -646,7 +654,7 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     will use the current engine if no engine_path is provided and none can be deduced from
     the project_path
     param: external_subdirectories optional external_subdirectories to include
-    return: a dictionary of gem_name -> gem.json data
+    return: a dictionary of gem_path -> gem.json data
     """
     all_gems_json_data = {}
 
@@ -673,6 +681,38 @@ def get_gems_json_data_by_name(engine_path:pathlib.Path = None,
     gem_paths = get_gems_from_external_subdirectories(external_subdirectories)
     for gem_path in gem_paths:
         get_gem_external_subdirectories(gem_path, list(), all_gems_json_data)
+    
+    return all_gems_json_data
+
+def get_gems_json_data_by_name(engine_path:pathlib.Path = None, 
+                               project_path: pathlib.Path = None, 
+                               include_manifest_gems: bool = False,
+                               include_engine_gems: bool = False,
+                               external_subdirectories: list = None) -> dict:
+                        
+    """
+    Create a dictionary of gem.json data with gem names as keys based on the provided list of
+    external subdirectories, engine_path or project_path.  Optionally, include gems
+    found using the o3de manifest.
+
+    It's often more efficient to open all gem.json files instead of 
+    looking up each by name, which will load many gem.json files multiple times
+    It takes about 150ms to populate this structure with 137 gems, 4696 bytes in total
+
+    param: engine_path optional engine path
+    param: project_path optional project path
+    param: include_manifest_gems if True, include gems found using the o3de manifest 
+    param: include_engine_gems if True, include gems found using the engine, 
+    will use the current engine if no engine_path is provided and none can be deduced from
+    the project_path
+    param: external_subdirectories optional external_subdirectories to include
+    return: a dictionary of gem_name -> gem.json data
+    """
+    all_gems_json_data = get_gems_json_data_by_path(engine_path, 
+                                                    project_path, 
+                                                    include_manifest_gems, 
+                                                    include_engine_gems, 
+                                                    external_subdirectories)
 
     # convert from being keyed on gem_path to gem_name and store the paths
     # resulting dictionary format will look like
