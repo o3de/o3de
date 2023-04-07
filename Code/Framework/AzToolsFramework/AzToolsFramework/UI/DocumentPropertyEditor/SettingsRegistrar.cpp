@@ -74,7 +74,7 @@ namespace AzToolsFramework
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
         fullSettingsPath /= relativeFilepath;
 
-        bool fileExists = AZ::IO::SystemFile::Exists(fullSettingsPath.Native().c_str());
+        const bool fileExists = AZ::IO::SystemFile::Exists(fullSettingsPath.c_str());
 
         if (fileExists)
         {
