@@ -37,7 +37,7 @@ namespace AzToolsFramework
         //! Loads settings from the provided '.setreg' file and merges settings into the SettingsRegistry
         //! at the given anchor key.
         //! The path passed to this function is expected to be relative to the project root.
-        //! Succeedds if the file was loaded or if the file does not exist.
+        //! Succeeds if the file was loaded or if the file does not exist.
         //! Upon success, returns whether the file exists or not.
         AZ::Outcome<bool, AZStd::string> LoadSettingsFromFile(
             AZ::IO::PathView relativeFilepath,
