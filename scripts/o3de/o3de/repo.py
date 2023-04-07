@@ -18,6 +18,10 @@ from o3de import manifest, utils, validation
 logger = logging.getLogger('o3de.repo')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
+REPO_IMPLICIT_SCHEMA_VERSION = "0.0.0"
+
+REPO_SCHEMA_VERSION_1_0_0 = "1.0.0"
+
 def get_cache_file_uri(uri: str):
     parsed_uri = urllib.parse.urlparse(uri)
     uri_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
@@ -85,6 +89,9 @@ def download_object_manifests(repo_data):
                 return download_file_result
     return 0
 
+def get_repo_schema_version(repo_data: dict):
+    return repo_data.get("$schemaVersion", REPO_IMPLICIT_SCHEMA_VERSION)
+
 def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False) -> bool:
     manifest_uri = get_repo_manifest_uri(repo_uri)
 
@@ -110,16 +117,9 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                 logger.error(f'Invalid JSON - {cache_file} could not be loaded')
                 return False
 
-        if download_object_manifests(repo_data) != 0:
-            return False
-
-        gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
-        for gem_json in gem_set:
-            if not validation.valid_o3de_gem_json(gem_json):
-                logger.error(f'Invalid gem JSON - {gem_json} could not be loaded or is missing required values')
+        if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:
+            if download_object_manifests(repo_data) != 0:
                 return False
-        
-        if repo_schema_version == "1.0.0":
             gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
             for gem_json in gem_set:
                 if not validation.valid_o3de_gem_json(gem_json):
@@ -136,7 +136,7 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                     logger.error(f'Invalid template JSON - {template_json} could not be loaded or is missing required values')
                     return False
                 
-        elif repo_schema_version == "2.0.0":
+        elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
             gem_list = repo_data.get("gems", [])
             for gem_json in gem_list:
                 if not validation.valid_o3de_gem_json_data(gem_json):
@@ -344,7 +344,7 @@ def search_repo(manifest_json_data: dict,
     
     repo_schema_version = get_repo_schema_version(manifest_json_data)
 
-    if repo_schema_version == "1.0.0":        
+    if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
         if isinstance(engine_name, str):
             o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'engines', 'engine.json', 'engine_name', engine_name)
         elif isinstance(project_name, str):
@@ -358,7 +358,7 @@ def search_repo(manifest_json_data: dict,
         else:
             return None
         
-    elif repo_schema_version == "2.0.0":
+    elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
         #search for the o3de object from inside repos object 
         if isinstance(engine_name, str):
             o3de_object = search_o3de_repo_for_object(manifest_json_data, 'engines', 'engine_name', engine_name)
@@ -376,7 +376,6 @@ def search_repo(manifest_json_data: dict,
     if o3de_object:
         o3de_object['repo_name'] = manifest_json_data['repo_name']
         return o3de_object
-    
     # recurse into the repos object to search for the o3de object
     o3de_object_uris = []
     try:

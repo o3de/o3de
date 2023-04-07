@@ -75,7 +75,7 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
 
     "origin": "Studios",
 
-    "$schemaVersion":"2.0.0",
+    "$schemaVersion":"1.0.0",
     
     "repo_uri": "https://downloads.testgem3.com/o3de-repo",
 
