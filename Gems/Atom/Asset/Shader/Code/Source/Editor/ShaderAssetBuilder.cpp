@@ -222,7 +222,7 @@ namespace AZ
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
 
-            AZ_TracePrintf(
+            AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
                 AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
