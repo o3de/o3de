@@ -32,6 +32,7 @@
 #include <PythonBindingsInterface.h>
 #include <QMessageBox>
 #include <QDir>
+#include <QFileInfo>
 #include <QStandardPaths>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -183,7 +184,9 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::NotifyProjectRemoved(const QString& projectPath)
     {
-        if (QDir(projectPath) == QDir(m_projectPath))
+        // Use QFileInfo because the project path might be the project folder
+        // or a remote project.json file in the cache
+        if (QFileInfo(projectPath) == QFileInfo(m_projectPath))
         {
             m_projectPath = "";
             m_gemModel->Clear();
@@ -193,8 +196,10 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::ReinitForProject(const QString& projectPath)
     {
-        // avoid slow rebuilding, user can manually refresh if needed
-        if (m_gemModel->rowCount() > 0 && QDir(projectPath) == QDir(m_projectPath))
+        // Avoid slow rebuilding, user can manually refresh if needed
+        // Use QFileInfo because the project path might be the project folder
+        // or a remote project.json file in the cache
+        if (m_gemModel->rowCount() > 0 && QFileInfo(projectPath) == QFileInfo(m_projectPath))
         {
             return;
         }

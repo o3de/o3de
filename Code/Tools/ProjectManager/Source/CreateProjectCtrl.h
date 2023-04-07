@@ -46,7 +46,8 @@ namespace O3DE::ProjectManager
         void NextScreen();
         void PreviousScreen();
 
-        bool CurrentScreenIsValid();
+        
+        AZ::Outcome<void, QString> CurrentScreenIsValid();
         void CreateProject();
 
         QStackedWidget* m_stack = nullptr;

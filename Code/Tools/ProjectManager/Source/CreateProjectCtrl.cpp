@@ -25,6 +25,7 @@
 #include <QStackedWidget>
 #include <QLabel>
 #include <QSizePolicy>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
@@ -203,13 +204,32 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() < m_stack->count())
         {
-            if(CurrentScreenIsValid())
+            // special case where we need to download the template before proceeding
+            if (m_stack->currentWidget() == m_newProjectSettingsScreen)
+            {
+                if (m_newProjectSettingsScreen->GetProjectTemplatePath().isEmpty() &&
+                    !m_newProjectSettingsScreen->IsDownloadingTemplate())
+                {
+                    m_newProjectSettingsScreen->ShowDownloadTemplateDialog();
+                    return;
+                }
+                else if (m_newProjectSettingsScreen->IsDownloadingTemplate())
+                {
+                    QMessageBox::warning(this, tr("Cannot configure gems"), tr("Cannot configure gems until the template has finished downloading."));
+                    return;
+                }
+            }
+
+            if(auto outcome = CurrentScreenIsValid(); outcome.IsSuccess())
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-
                 Update();
             }
-            else
+            else if (!outcome.GetError().isEmpty())
+            {
+                QMessageBox::warning(this, tr("Cannot continue"), outcome.GetError());
+            }
+            else 
             {
                 QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
             }
@@ -231,14 +251,14 @@ namespace O3DE::ProjectManager
         CreateProject();
     }
 
-    bool CreateProjectCtrl::CurrentScreenIsValid()
+    AZ::Outcome<void, QString> CreateProjectCtrl::CurrentScreenIsValid()
     {
         if (m_stack->currentWidget() == m_newProjectSettingsScreen)
         {
-            return m_newProjectSettingsScreen->Validate().IsSuccess();
+            return m_newProjectSettingsScreen->Validate();
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void CreateProjectCtrl::CreateProject()
@@ -297,6 +317,11 @@ namespace O3DE::ProjectManager
     void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
     {
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+        if (projectTemplatePath.isEmpty())
+        {
+            return;
+        }
+
         m_projectGemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
 } // namespace O3DE::ProjectManager

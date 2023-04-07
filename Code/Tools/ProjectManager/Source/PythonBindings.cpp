@@ -1317,6 +1317,14 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo templateInfo(TemplateInfoFromPath(path));
         if (templateInfo.IsValid())
         {
+            if (QFileInfo(templateInfo.m_path).isFile())
+            {
+                // remote templates in the cache that have not been downloaded
+                // use the cached template.json file as the path so we cannot
+                // get the enabled gems until the repo.json is updated to include that data
+                return templateInfo;
+            }
+
             QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
             constexpr bool includeDependencies = false;
             auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies);
