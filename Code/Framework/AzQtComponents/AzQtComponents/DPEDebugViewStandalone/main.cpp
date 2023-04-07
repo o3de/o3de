@@ -389,6 +389,8 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
+    // Important! Note that the following type must already be exposed to the reflection system, so we will re-use AZStd::map<int, float>, 
+    // which was previously used for m_readOnlyMap
     AZStd::map<int, float> firstVector = { 
         { 1, 1. },
         { 2, 2. },
