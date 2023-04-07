@@ -116,6 +116,8 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
             except json.JSONDecodeError as e:
                 logger.error(f'Invalid JSON - {cache_file} could not be loaded')
                 return False
+            
+        repo_schema_version = get_repo_schema_version(repo_data)
 
         if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:
             if download_object_manifests(repo_data) != 0:
@@ -148,6 +150,7 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                     versions_data = gem_json["versions_data"]
                     for version in versions_data:
                         if not all(key in version for key in ['last_updated', 'version']):
+                            logger.error("Invalid gem JSON - {gem_json} Both last_updated and version fields must be defined for each entry in the versions_data field")
                             return False
                         
                         source_control_uri_defined = "source_control_uri" in version
@@ -160,6 +163,7 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                                                    (not download_source_uri_defined and origin_uri_defined))
 
                         if not (source_control_uri_defined or download_origin_defined):
+                            logger.error(f"Invalid gem JSON - {gem_json} At least one of source_control_uri or download_source_uri must be defined")
                             return False
 
             project_list = repo_data.get("projects", [])
@@ -390,11 +394,9 @@ def search_repo(manifest_json_data: dict,
 
 def search_o3de_repo_for_object(repo_json_data: dict, manifest_attribute:str, target_json_key:str, target_name: str):
     o3de_objects = repo_json_data.get(manifest_attribute, [])
-    search_func = lambda repo_json_data: repo_json_data if repo_json_data.get(target_json_key, '') == target_name else None
     for o3de_object in o3de_objects:
-        result_json_data = search_func(o3de_object)
-        if result_json_data:
-            return result_json_data
+        if o3de_object.get(target_json_key, '') == target_name:
+            return o3de_object
     return None
 
 def search_o3de_manifest_for_object(manifest_json_data: dict, manifest_attribute: str, target_manifest_json: str, target_json_key: str, target_name: str):

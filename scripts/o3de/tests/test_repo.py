@@ -75,7 +75,7 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
 
     "origin": "Studios",
 
-    "$schemaVersion":"1.0.0",
+    "$schemaVersion":"2.0.0",
     
     "repo_uri": "https://downloads.testgem3.com/o3de-repo",
 
@@ -219,6 +219,58 @@ TEST_O3DE_REPO_GEM_JSON_PAYLOAD = '''
     "summary": "A test downloadable gem.",
     "canonical_tags": [
         "Gem"
+    ],
+    "user_tags": [],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": []
+}
+'''
+
+TEST_O3DE_REPO_PROJECT_FILE_NAME = '233c6e449888b4dc1355b2bf668b91b53715888e6777a2791df0e7aec9d08989.json'
+TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD = '''
+{
+    "project_name": "TestProject",
+    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+    "version" : "0.0.0",
+    "compatible_engines" : [
+        "o3de-sdk==2205.01"
+    ],
+    "engine_api_dependencies" : [
+        "framework==1.2.3"
+    ],
+    "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
+    "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "TestProject",
+    "summary": "A short description of TestProject.",
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [
+        "TestProject"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de-install",
+    "restricted_name": "projects",
+    "external_subdirectories": [
+        "D:/TestGem"
+    ]
+}
+'''
+
+TEST_O3DE_REPO_TEMPLATE_FILE_NAME = '7802eae005ca1c023e14611ed63182299bf87e760708b4dba8086a134e309f3a.json'
+TEST_O3DE_REPO_TEMPLATE_JSON_PAYLOAD = '''
+{
+    "template_name": "TestTemplate",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Test Creator",
+    "origin_uri": "http://o3derepo.org/TestTemplate/template.zip",
+    "repo_uri": "http://o3derepo.org",
+    "type": "Tool",
+    "summary": "A test downloadable gem.",
+    "canonical_tags": [
+        "Template"
     ],
     "user_tags": [],
     "icon_path": "preview.png",
@@ -389,7 +441,15 @@ class TestRepos:
                     assert len(object_set) == 2
         assert True
 
-    def test_validation(self):
+
+    @pytest.mark.parametrize("repo_uri, validate_objects", [
+        pytest.param('http://o3de.org/repoA', False),
+        pytest.param('http://o3de.org/repoA', True),
+        #tests with version schema 2.0.0
+        pytest.param('http://o3de.org/repoC', False),
+        pytest.param('http://o3de.org/repoC', True)
+    ])
+    def test_validation(self, repo_uri, validate_objects):
         self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
         self.o3de_manifest_data["repos"] = []
         self.created_files.clear()
@@ -407,7 +467,11 @@ class TestRepos:
             else:
                 url_str = url
 
-            if url_str in ['http://o3de.org/repoA/repo.json']:
+            if url_str in ['http://o3de.org/repoA/repo.json',
+                           'http://o3de.org/repoC/repo.json',
+                           'http://o3derepo.org/TestProject/project.json',
+                           'http://o3derepo.org/TestGem/gem.json',
+                           'http://o3derepo.org/TestTemplate/template.json']:
                 custom_mock = MagicMock()
                 custom_mock.getcode.return_value = 200
                 custom_mock.read.return_value = 0
@@ -450,5 +514,5 @@ class TestRepos:
                 patch('pathlib.Path.open', mocked_open) as _3, \
                 patch('urllib.request.urlopen', side_effect=mocked_requests_get) as _4, \
                 patch('pathlib.Path.is_file', mocked_isfile) as _5:
-                    valid = repo.validate_remote_repo('http://o3de.org/repoA')
+                    valid = repo.validate_remote_repo(repo_uri, validate_objects)
                     assert valid

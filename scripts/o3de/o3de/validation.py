@@ -60,7 +60,7 @@ def valid_o3de_project_json_data(json_data: dict, generate_uuid: bool = True) ->
         if not generate_uuid:
             _ = json_data['project_id']
     except (KeyError):
-            return False
+        return False
     return True
 
 
@@ -109,14 +109,8 @@ def valid_o3de_gem_json(file_name: str or pathlib.Path) -> bool:
     # open will raise an OSError, so there is no need for a default return path
     with file_name.open('r') as f:
         try:
-            json_data = json.load(f)
-            _ = json_data['gem_name']
-
-            if 'compatible_engines' in json_data:
-                if not utils.validate_version_specifier_list(json_data['compatible_engines']):
-                    return False
-
-        except (json.JSONDecodeError, KeyError):
+            return valid_o3de_gem_json_data(json.load(f))
+        except json.JSONDecodeError:
             return False
     
 
@@ -128,7 +122,6 @@ def valid_o3de_template_json_data(json_data: dict) -> bool:
         return False
     return True
 
-
 def valid_o3de_template_json(file_name: str or pathlib.Path) -> bool:
     file_name = pathlib.Path(file_name).resolve()
     if not file_name.is_file():
@@ -137,9 +130,8 @@ def valid_o3de_template_json(file_name: str or pathlib.Path) -> bool:
     #all return paths are encapsulated within scope. File path was pre-validated
     with file_name.open('r') as f:
         try:
-            json_data = json.load(f)
-            _ = json_data['template_name']
-        except (json.JSONDecodeError, KeyError):
+            return valid_o3de_template_json_data(json.load(f))
+        except json.JSONDecodeError:
             return False
     
 
