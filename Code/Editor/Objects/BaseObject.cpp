@@ -26,7 +26,6 @@
 #include "DisplaySettings.h"
 #include "Undo/Undo.h"
 #include "UsedResources.h"
-#include "Include/IIconManager.h"
 #include "Objects/SelectionGroup.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
@@ -414,7 +413,6 @@ bool CBaseObject::Init([[maybe_unused]] IEditor* ie, CBaseObject* prev, [[maybe_
         OnSetValues();
     }
 
-    m_nTextureIcon = m_classDesc->GetTextureIconId();
     if (m_classDesc->RenderTextureOnTop())
     {
         SetFlags(OBJFLAG_SHOW_ICONONTOP);

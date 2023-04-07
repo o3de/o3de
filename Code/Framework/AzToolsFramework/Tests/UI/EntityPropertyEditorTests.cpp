@@ -236,7 +236,6 @@ namespace UnitTest
 
         // These are required by implementing the EditorRequestBus
         void BrowseForAssets(AssetBrowser::AssetSelectionModel& /*selection*/) override {}
-        int GetIconTextureIdFromEntityIconPath([[maybe_unused]] const AZStd::string& entityIconPath) override { return 0; }
 
     public:
         EntityPropertyEditor* m_levelEditor;
