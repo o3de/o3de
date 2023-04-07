@@ -381,7 +381,7 @@ int main(int argc, char** argv)
     auto sortFilter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringSort>();
 
     sortFilter->SetSourceAdapter(cvarAdapter);
-    
+
     debugViewer->AddAdapterToList(
         "Reflection Adapter",
         AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&testContainer, azrtti_typeid<DPEDebugView::TestContainer>()));
@@ -389,7 +389,7 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
-    // Important! Note that the following type must already be exposed to the reflection system, so we will re-use AZStd::map<int, float>, 
+    // Important! Note that the following type must already be exposed to the reflection system, so we will re-use AZStd::map<int, float>,
     // which was previously used for m_readOnlyMap
     AZStd::map<int, float> firstVector = { 
         { 1, 1. },
