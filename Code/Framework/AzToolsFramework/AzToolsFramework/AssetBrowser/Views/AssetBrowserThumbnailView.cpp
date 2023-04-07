@@ -67,16 +67,6 @@ namespace AzToolsFramework
 
             connect(
                 m_thumbnailViewWidget,
-                &AzQtComponents::AssetFolderThumbnailView::showInFolderTriggered,
-                this,
-                [this](const QModelIndex& index)
-                {
-                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    emit showInFolderTriggered(indexData);
-                });
-
-            connect(
-                m_thumbnailViewWidget,
                 &AzQtComponents::AssetFolderThumbnailView::contextMenu,
                 this,
                 [this](const QModelIndex& index)
@@ -86,6 +76,19 @@ namespace AzToolsFramework
                         QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
                         AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                        if (m_thumbnailViewWidget->InSearchResultsMode())
+                        {
+                            auto action = menu.addAction(tr("Show In Folder"));
+                            connect(
+                                action,
+                                &QAction::triggered,
+                                this,
+                                [this, entry]()
+                                {
+                                    emit showInFolderTriggered(entry);
+                                });
+                            menu.addSeparator();
+                        }
                         AssetBrowserInteractionNotificationBus::Broadcast(
                             &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
 

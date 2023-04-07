@@ -849,29 +849,9 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
-
-        if (idx.isValid() && m_showSearchResultsMode)
-        {
-            QMenu* menu = new QMenu;
-            auto action = menu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            menu->exec(event->globalPos());
-            delete menu;
-        }
-        else
-        {
-            emit contextMenu(idx);
-        }
+        emit contextMenu(idx);
     }
 
     int AssetFolderThumbnailView::rootThumbnailSizeInPixels() const
@@ -1065,6 +1045,11 @@ namespace AzQtComponents
     void AssetFolderThumbnailView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
+    }
+
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
+    {
+        return m_showSearchResultsMode;
     }
 } // namespace AzQtComponents
 
