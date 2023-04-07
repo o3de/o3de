@@ -761,27 +761,16 @@ namespace O3DE::ProjectManager
             return false;
         }
 
-        if (gemInfo.m_gemOrigin == GemInfo::Remote)
+        const auto& versions = GemModel::GetGemVersions(modelIndex);
+        if (versions.count() < 2)
         {
-            // Not implemented yet - check for new versions available from the remote
-            // or use a new Role to store the latest version avaiable on the remote
             return false;
         }
-        else
-        {
-            const auto& versions = GemModel::GetGemVersions(modelIndex);
-            if (versions.count() < 2)
-            {
-                return false;
-            }
 
-            auto currentVersion = modelIndex.data(RoleVersion).toString();
+        auto currentVersion = modelIndex.data(RoleVersion).toString();
 
-            // gem versions are sorted so we can just compare if we're using the latest version
-            return currentVersion != versions.at(0).value<GemInfo>().m_version;
-        }
-
-        return false;
+        // gem versions are sorted so we can just compare if we're using the latest version
+        return currentVersion != versions.at(0).value<GemInfo>().m_version;
     }
 
     bool GemModel::DoGemsToBeAddedHaveRequirements() const

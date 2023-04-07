@@ -276,9 +276,15 @@ def get_engine_projects(engine_path:pathlib.Path = None) -> list:
 
 
 def get_engine_gems(engine_path:pathlib.Path = None, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    """
+    Get gems from the external subdirectories in engine.json
+    :param engine_path: the path to the engine
+    :param recurse: whether to include gems in gems or not
+    :param gems_json_data_by_path: optional dictionary of known gem json data by path to use instead of opening files
+    :return: list of engine gem paths
+    """
     engine_gem_paths = get_gems_from_external_subdirectories(get_engine_external_subdirectories(engine_path))
     if recurse:
-        gems_json_data_by_path = gems_json_data_by_path or dict()
         for path in engine_gem_paths:
             engine_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
     
@@ -305,9 +311,15 @@ def get_engine_templates() -> list:
 
 # project.json queries
 def get_project_gems(project_path:pathlib.Path, recurse:bool = False, gems_json_data_by_path:dict = None) -> list:
+    """
+    Get gems from the external subdirectories in project.json
+    :param project_path: the path to the project
+    :param recurse: whether to include gems in gems or not
+    :param gems_json_data_by_path: optional dictionary of known gem json data by path to use instead of opening files
+    :return: list of project gem paths
+    """
     project_gem_paths = get_gems_from_external_subdirectories(get_project_external_subdirectories(project_path))
     if recurse:
-        gems_json_data_by_path = gems_json_data_by_path or dict()
         for path in project_gem_paths:
             project_gem_paths.extend(get_gem_external_subdirectories(path, list(), gems_json_data_by_path))
     
