@@ -116,6 +116,12 @@ namespace AZ::SceneGenerationComponents
         const AZ::SceneAPI::DataTypes::UVsGenerationMethod generationMethod = uvsRule ? uvsRule->GetGenerationMethod() : defaultGenerationMethod;
         const bool replaceExisting = uvsRule ? uvsRule->GetReplaceExisting() : defaultReplaceExisting;
 
+        if (generationMethod == SceneAPI::DataTypes::UVsGenerationMethod::LeaveSceneDataAsIs)
+        {
+            // no point in going any further if the rule basically says to leave scene data as is
+            return AZ::SceneAPI::Events::ProcessingResult::Success;
+        }
+
         // Iterate over all graph content and filter out all meshes.
         AZ::SceneAPI::Containers::SceneGraph& graph = context.GetScene().GetGraph();
         AZ::SceneAPI::Containers::SceneGraph::ContentStorageData graphContent = graph.GetContentStorage();
@@ -156,11 +162,6 @@ namespace AZ::SceneGenerationComponents
         const AZ::SceneAPI::DataTypes::UVsGenerationMethod generationMethod,
         const bool replaceExisting)
     {
-        if (generationMethod == SceneAPI::DataTypes::UVsGenerationMethod::LeaveSceneDataAsIs)
-        {
-            return true;
-        }
-
         AZ::SceneAPI::Containers::SceneGraph& graph = scene.GetGraph();
         size_t uvSetCount = CalcUvSetCount(graph, nodeIndex);
 
@@ -272,10 +273,12 @@ namespace AZ::SceneGenerationComponents
         AZStd::shared_ptr<SceneData::GraphData::MeshVertexUVData> uvData =
             AZStd::make_shared<AZ::SceneData::GraphData::MeshVertexUVData>();
 
-        AZ_Assert(uvData, "Failed to allocate UV data for scene graph.");
         if (!uvData)
         {
-            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to allocate UV data.\n");
+            // it is unlikely you will even see this message since you are out of memory and the below
+            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "OUT OF MEMORY - Failed to allocate UV data.\n"
+            "You could try reducing the size of the files, splitting into multiple geometries, or reducing the number "
+            "or concurrent Asset Processor Jobs allowed to run.");
             return false;
         }
 
@@ -285,10 +288,11 @@ namespace AZ::SceneGenerationComponents
         uvData->SetCustomName(uvSetName.c_str());
 
         AZ::SceneAPI::Containers::SceneGraph::NodeIndex newIndex = graph.AddChild(nodeIndex, uvSetName.c_str(), uvData);
+        // if this assert triggers theres some terrible bug deep in the scene graph system, and the artist that sees it
+        // is not going to be able to fix it without code intervention (so assert).
         AZ_Assert(newIndex.IsValid(), "Failed to create SceneGraph node for UVs attribute.");
         if (!newIndex.IsValid())
         {
-            AZ_Error(AZ::SceneAPI::Utilities::ErrorWindow, false, "Failed to create node in scene graph that stores UV data.\n");
             return false;
         }
         graph.MakeEndPoint(newIndex);
