@@ -186,13 +186,27 @@ namespace Multiplayer
                     mpComponent->GetNetworkEntityManager()->ClearAllEntities();
                 })
                 ->Method("GetCurrentBlendFactor", []()
+                {
+                    if (GetMultiplayer())
                     {
-                        if (GetMultiplayer())
-                        {
-                            return GetMultiplayer()->GetCurrentBlendFactor();
-                        }
-                        return 0.f;
-                    })
+                        return GetMultiplayer()->GetCurrentBlendFactor();
+                    }
+                    return 0.f;
+                })
+                ->Method("GetOnAgentInitializedEvent",[]() -> AgentInitializedEvent*
+                {
+                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
+                    if (!mpComponent)
+                    {
+                        AZ_Assert(false, "GetOnAgentInitializedEvent failed to find the multiplayer system component. Please update behavior context to properly retrieve the event.");
+                        return nullptr;
+                    }
+
+                    return &mpComponent->m_agentInitializedEvent;
+                })
+                    ->Attribute(
+                        AZ::Script::Attributes::AzEventDescription,
+                        AZ::BehaviorAzEventDescription{ "On Agent Initialized Event", { "Multiplayer Agent Type" } })
             ;
         }
 
