@@ -406,10 +406,10 @@ namespace AZ
                 --globalLibraryEntry.m_pendingCompileCount;
             }
 
-            // NOTE: We can't return null on a failure, since other threads will return the entry without compiling
-            // it. Instead, the pipeline state remains uninitialized.
+            // NOTE: We can't return null on a failure, since other threads will return the entry (that is already in the cache)
+            // without compiling it. Instead, the pipeline state remains uninitialized.
 
-            AZ_Error("PipelineStateCache", resultCode == ResultCode::Success, "Failed to compile pipeline state. It will remain in an initialized state.");
+            AZ_Error("PipelineStateCache", resultCode == ResultCode::Success, "Failed to compile pipeline state. It will remain in an uninitialized state.");
             return AZStd::move(pipelineState);
         }
 

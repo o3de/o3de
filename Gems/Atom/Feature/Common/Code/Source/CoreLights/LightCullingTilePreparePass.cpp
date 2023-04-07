@@ -129,7 +129,8 @@ namespace AZ
             AZ::RHI::PipelineStateDescriptorForDispatch pipelineStateDescriptor;
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
             m_msaaPipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            AZ_Error("LightCulling", m_msaaPipelineState, "Failed to acquire pipeline state for shader");
+            AZ_Error(
+                "LightCulling", m_msaaPipelineState && m_msaaPipelineState->IsInitialized(), "Failed to acquire pipeline state for shader");
         }
 
         const AZ::RPI::ShaderVariant& LightCullingTilePreparePass::CreateShaderVariant()

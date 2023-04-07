@@ -122,6 +122,7 @@ namespace AZ
             const ShaderOutputContract& GetOutputContract() const;
             
             //! Acquires a pipeline state directly from a descriptor.
+            //! If the PipelineState fails to compile, returns a valid pointer with IsInitialized() == false
             const RHI::PipelineState* AcquirePipelineState(const RHI::PipelineStateDescriptor& descriptor) const;
 
             //! Finds and returns the shader resource group asset with the requested name. Returns an empty handle if no matching group was found.

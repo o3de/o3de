@@ -283,6 +283,7 @@ namespace UnitTest
 
             EXPECT_EQ(pipelineStates.size(), 1);
             EXPECT_NE(*pipelineStates.begin(), nullptr);
+            EXPECT_TRUE((*pipelineStates.begin())->IsInitialized());
 
             mutex.lock();
             pipelineStatesMerged.insert(*pipelineStates.begin());

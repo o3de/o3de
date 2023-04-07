@@ -56,7 +56,7 @@ namespace AZ
             const auto& shaderVariant = m_shader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
             shaderVariant.ConfigurePipelineState(pipelineStateDescriptor);
             m_pipelineState = m_shader->AcquirePipelineState(pipelineStateDescriptor);
-            AZ_Assert(m_pipelineState, "Failed to acquire pipeline state");
+            AZ_Assert(m_pipelineState && m_pipelineState->IsInitialized(), "Failed to acquire pipeline state");
 
             m_srgLayout = m_shader->FindShaderResourceGroupLayout(RPI::SrgBindingSlot::Pass);
             AZ_Assert(m_srgLayout.get(), "Failed to find Srg layout");

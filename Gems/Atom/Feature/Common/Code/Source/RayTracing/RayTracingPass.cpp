@@ -105,7 +105,7 @@ namespace AZ
 
             // retrieve global pipeline state
             m_globalPipelineState = m_rayGenerationShader->AcquirePipelineState(rayGenerationShaderDescriptor);
-            AZ_Assert(m_globalPipelineState, "Failed to acquire ray tracing global pipeline state");
+            AZ_Assert(m_globalPipelineState && m_globalPipelineState->IsInitialized(), "Failed to acquire ray tracing global pipeline state");
 
             // create global srg
             const auto& globalSrgLayout = m_rayGenerationShader->FindShaderResourceGroupLayout(RayTracingGlobalSrgBindingSlot);

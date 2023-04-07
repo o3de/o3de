@@ -17,6 +17,7 @@
 
 #include <Atom/RHI.Reflect/BufferViewDescriptor.h>
 #include <Atom/RHI.Reflect/InputStreamLayoutBuilder.h>
+#include <Atom/RHI/PipelineState.h>
 #include <Atom/RHI/RHISystemInterface.h>
 
 #include <Atom/RPI.Public/Scene.h>
@@ -606,7 +607,7 @@ namespace Terrain
             m_parentScene->ConfigurePipelineState(drawListTag, pipelineStateDescriptor);
 
             const AZ::RHI::PipelineState* pipelineState = shader->AcquirePipelineState(pipelineStateDescriptor);
-            if (!pipelineState)
+            if (!pipelineState || !pipelineState->IsInitialized())
             {
                 AZ_Error(TerrainMeshManagerName, false, "Shader '%s'. Failed to acquire default pipeline state", shaderItem.GetShaderAsset()->GetName().GetCStr());
                 return;
