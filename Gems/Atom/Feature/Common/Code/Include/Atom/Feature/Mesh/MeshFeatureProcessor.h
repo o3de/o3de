@@ -115,7 +115,7 @@ namespace AZ
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
-            RHI::DrawItemSortKey m_sortKey;
+            RHI::DrawItemSortKey m_sortKey = 0;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             AZ::Uuid m_rayTracingUuid;
