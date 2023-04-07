@@ -15,6 +15,7 @@
 
 namespace AZ::DocumentPropertyEditor
 {
+    //! class to allow multi-edits of row-based DPE adapters
     class RowAggregateAdapter : public DocumentAdapter
     {
     public:
