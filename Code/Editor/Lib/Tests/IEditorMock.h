@@ -83,7 +83,6 @@ public:
     MOCK_METHOD0(IsSelectionLocked, bool());
     MOCK_METHOD0(GetObjectManager, struct IObjectManager* ());
     MOCK_METHOD0(GetSettingsManager, CSettingsManager* ());
-    MOCK_METHOD0(GetIconManager, IIconManager* ());
     MOCK_METHOD0(GetMusicManager, CMusicManager* ());
     MOCK_METHOD2(GetTerrainElevation, float(float , float ));
     MOCK_METHOD0(GetVegetationMap, class CVegetationMap* ());

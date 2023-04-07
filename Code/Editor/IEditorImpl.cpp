@@ -38,7 +38,6 @@
 #include "CryEdit.h"
 #include "Dialogs/ErrorsDlg.h"
 #include "PluginManager.h"
-#include "IconManager.h"
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "KeyboardCustomizationSettings.h"
@@ -99,7 +98,6 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
@@ -143,7 +141,6 @@ CEditorImpl::CEditorImpl()
 
     m_pObjectManager = new CObjectManager;
     m_pViewManager = new CViewManager;
-    m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
     m_pSequenceManager = new CTrackViewSequenceManager;
@@ -267,7 +264,6 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
 
@@ -721,11 +717,6 @@ void CEditorImpl::ResetViews()
     m_pViewManager->ResetViews();
 
     m_pDisplaySettings->SetRenderFlags(m_pDisplaySettings->GetRenderFlags());
-}
-
-IIconManager* CEditorImpl::GetIconManager()
-{
-    return m_pIconManager;
 }
 
 IEditorFileMonitor* CEditorImpl::GetFileMonitor()

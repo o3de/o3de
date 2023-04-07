@@ -34,7 +34,10 @@ namespace AzToolsFramework::Prefab
         // The function to generate override subtrees for updating the provided entity as overrides.
         // Redo should not be called after. It does redo in capture because adding override patches here allows us
         // to generate patches with correct indices and add them to tree in one place. Two operations won't be disconnected.
-        void CaptureAndRedo(Instance& owningInstance, AZ::Dom::Path relativePathFromOwningPrefab, const PrefabDomValue& afterStateOfComponentProperty);
+        void CaptureAndRedo(
+            Instance& owningInstance,
+            const AZ::Dom::Path pathToPropertyFromOwningPrefab,
+            const PrefabDomValue& afterStateOfComponentProperty);
 
     private:
         // The function to update link during undo and redo.

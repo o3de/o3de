@@ -83,7 +83,6 @@ CGameExporter::~CGameExporter()
 bool CGameExporter::Export(unsigned int flags, [[maybe_unused]] EEndian eExportEndian, const char* subdirectory)
 {
     CAutoDocNotReady autoDocNotReady;
-    CObjectManagerLevelIsExporting levelIsExportingFlag;
     QWaitCursor waitCursor;
 
     IEditor* pEditor = GetIEditor();

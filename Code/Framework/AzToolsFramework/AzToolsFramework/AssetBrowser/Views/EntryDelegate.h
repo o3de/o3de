@@ -61,7 +61,7 @@ namespace AzToolsFramework
             int m_iconSize;
             bool m_showSourceControl = false;
             //! Draw a thumbnail and return its width
-            int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const;
+            int DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, const AssetBrowserEntry* entry) const;
         };
 
         //! SearchEntryDelegate draws a single item in AssetBrowserTableView.

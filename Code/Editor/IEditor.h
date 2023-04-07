@@ -37,7 +37,6 @@ class CSelectionGroup;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
-struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
 class CMusicManager;
@@ -481,8 +480,6 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Returns IconManager.
-    virtual IIconManager* GetIconManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
