@@ -549,8 +549,9 @@ namespace O3DE::ProjectManager
 
             if (!generalError.empty())
             {
-                if(ProjectUtils::DisplayDetailedError(errorTitle.c_str(), generalError,
-                    detailedError, this, QMessageBox::Yes | QMessageBox::No) == QMessageBox::No)
+                QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, this);
+                warningDialog.setDetailedText(detailedError.c_str());
+                if(warningDialog.exec() == QMessageBox::No)
                 {
                     return;
                 }

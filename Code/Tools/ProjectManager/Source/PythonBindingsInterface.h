@@ -257,13 +257,15 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) = 0;
 
         /**
-         * Get objects that are incompatibile with the provided project and current engine.
+         * Get objects that are incompatibile with the provided project and engine.
          * The objects could be engine APIs or gems dependencies that might prevent this project from compiling
-         * with the current engine.
+         * with the engine.
          * @param projectPath the absolute path to the project
+         * @param enginePath the optional absolute path to the engine
          * @return An outcome with the a list of incompatible objects including APIs and gems or an error message on failure.
          */
-        virtual AZ::Outcome<QStringList, ErrorPair> GetProjectEngineIncompatibleObjects(const QString& projectPath) = 0;
+        virtual AZ::Outcome<QStringList, ErrorPair> GetProjectEngineIncompatibleObjects(
+            const QString& projectPath, const QString& enginePath = "") = 0;
 
         /**
          * Remove gem to a project

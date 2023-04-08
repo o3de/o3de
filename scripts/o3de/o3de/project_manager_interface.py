@@ -180,14 +180,15 @@ def set_project_info(project_info: dict):
     pass
 
 
-def get_project_engine_incompatible_objects(project_path: pathlib.Path) -> set() or int:
+def get_project_engine_incompatible_objects(project_path: pathlib.Path, engine_path: pathlib.Path = None) -> set() or int:
     """
-        Checks for compatibility issues between the provided project and current engine
+        Checks for compatibility issues between the provided project and engine
 
         :param project_path: Project path 
+        :param engine_path: Optional engine path 
         :return a set of all incompatible objects which may include APIs and gems or an error code on failure
     """
-    engine_path = manifest.get_this_engine_path()
+    engine_path = engine_path or manifest.get_this_engine_path()
     if not manifest.get_engine_json_data(engine_path=engine_path):
         return 1
     if not manifest.get_project_json_data(project_path=project_path):

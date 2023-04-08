@@ -1539,7 +1539,7 @@ namespace O3DE::ProjectManager
         return result && refreshResult;
     }
 
-    AZ::Outcome<QStringList, IPythonBindings::ErrorPair> PythonBindings::GetProjectEngineIncompatibleObjects(const QString& projectPath)
+    AZ::Outcome<QStringList, IPythonBindings::ErrorPair> PythonBindings::GetProjectEngineIncompatibleObjects(const QString& projectPath, const QString& enginePath)
     {
         QStringList incompatibleObjects;
         bool executeResult = ExecuteWithLock(
@@ -1547,7 +1547,8 @@ namespace O3DE::ProjectManager
             {
                 using namespace pybind11::literals;
                 auto result = m_projectManagerInterface.attr("get_project_engine_incompatible_objects")(
-                        "project_path"_a = QString_To_Py_Path(projectPath)
+                        "project_path"_a = QString_To_Py_Path(projectPath),
+                        "engine_path"_a = enginePath.isEmpty() ? pybind11::none() : QString_To_Py_Path(enginePath)
                     );
                 if (pybind11::isinstance<pybind11::set>(result))
                 {

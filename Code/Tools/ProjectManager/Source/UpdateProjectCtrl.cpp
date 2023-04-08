@@ -260,14 +260,14 @@ namespace O3DE::ProjectManager
         {
             if (shouldConfirm)
             {
-                QMessageBox::StandardButton warningResult = QMessageBox::warning(
+                QMessageBox::StandardButton questionResult = QMessageBox::question(
                     this,
-                    QObject::tr("Unsaved Changes"),
+                    QObject::tr("Unsaved changes"),
                     QObject::tr("Would you like to save your changes to project settings?"),
                     QMessageBox::No | QMessageBox::Yes
                 );
 
-                if (warningResult == QMessageBox::No)
+                if (questionResult == QMessageBox::No)
                 {
                     return true;
                 }
@@ -286,6 +286,53 @@ namespace O3DE::ProjectManager
                 {
                     QMessageBox::critical(this, tr("Project move failed"), tr("Failed to move project."));
                     return false;
+                }
+            }
+
+            // Check engine compatibility if a new engine was selected
+            if (QDir(newProjectSettings.m_enginePath) != QDir(m_projectInfo.m_enginePath))
+            {
+                auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(newProjectSettings.m_path, newProjectSettings.m_enginePath);
+
+                AZStd::string errorTitle, generalError, detailedError;
+                if (!incompatibleObjectsResult)
+                {
+                    errorTitle = "Failed to check project compatibility";
+                    generalError = incompatibleObjectsResult.GetError().first;
+                    generalError.append("\nDo you still want to save your changes to project settings?");
+                    detailedError = incompatibleObjectsResult.GetError().second;
+                }
+                else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
+                {
+                    // provide a couple more user friendly error messages for uncommon cases
+                    if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                    {
+                        errorTitle = "Failed to read engine.json";
+                        generalError = "The projects compatibility with the new engine could not be checked because the engine.json could not be read";
+                    }
+                    else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                    {
+                        errorTitle = "Invalid project, failed to read project.json";
+                        generalError = "The projects compatibility with the new engine could not be checked because the project.json could not be read.";
+                    }
+                    else
+                    {
+                        // could be gems, apis or both
+                        errorTitle = "Project may not be compatible with new engine";
+                        generalError = incompatibleObjects.join("\n").toUtf8().constData();
+                        generalError.append("\nDo you still want to save your changes to project settings?");
+                    }
+                }
+
+                if (!generalError.empty())
+                {
+                    QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, this);
+                    warningDialog.setDetailedText(detailedError.c_str());
+                    if(warningDialog.exec() == QMessageBox::No)
+                    {
+                        return false;
+                    }
+                    AZ_Warning("ProjectManager", false, "Proceeding with saving project settings after engine compatibility check failed.");
                 }
             }
 
