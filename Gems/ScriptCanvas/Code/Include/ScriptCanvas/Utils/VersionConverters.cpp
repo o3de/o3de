@@ -16,7 +16,6 @@
 #include <ScriptCanvas/Core/SlotMetadata.h>
 #include <ScriptCanvas/Internal/Nodes/BaseTimerNode.h>
 #include <ScriptCanvas/Libraries/Core/EBusEventHandler.h>
-#include <ScriptCanvas/Libraries/Deprecated/Time/Repeater.h>
 #include <ScriptCanvas/Utils/SerializationUtils.h>
 #include <ScriptCanvas/Utils/VersionConverters.h>
 
