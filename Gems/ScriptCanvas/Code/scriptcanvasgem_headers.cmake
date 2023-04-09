@@ -125,7 +125,6 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.h
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Libraries/Libraries.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
