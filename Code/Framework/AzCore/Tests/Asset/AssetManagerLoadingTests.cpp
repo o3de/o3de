@@ -1122,6 +1122,11 @@ namespace UnitTest
 
             asset1CopyContainer = {};
             asset1 = {};
+
+            // Make sure events are dispatched after releasing the asset handles, so they get destroyed.
+            // This addresses a rare race condition, a test failure roughly once every 2,000 runs on Linux.
+            m_testAssetManager->DispatchEvents();
+
             // We've released the references for one asset and its dependency
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numDestructions, AssetsPerContainer);
             asset1 = m_testAssetManager->FindOrCreateAsset(MyAsset1Id, azrtti_typeid<AssetWithAssetReference>(), AZ::Data::AssetLoadBehavior::Default);
