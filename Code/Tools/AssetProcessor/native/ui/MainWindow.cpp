@@ -237,6 +237,7 @@ void MainWindow::Activate()
 
     connect(ui->supportButton, &QPushButton::clicked, this, &MainWindow::OnSupportClicked);
 
+    ui->buttonList->addTab(QStringLiteral("Welcome"));
     ui->buttonList->addTab(QStringLiteral("Jobs"));
     ui->buttonList->addTab(QStringLiteral("Assets"));
     ui->buttonList->addTab(QStringLiteral("Logs"));
@@ -247,7 +248,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Asset Relocation"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
-    const int startIndex = static_cast<int>(DialogStackIndex::Jobs);
+    const int startIndex = static_cast<int>(DialogStackIndex::Welcome);
     ui->dialogStack->setCurrentIndex(startIndex);
     ui->buttonList->setCurrentIndex(startIndex);
 
@@ -687,11 +688,11 @@ void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, cons
             m_builderInfoMetricsSort->mapFromSource(m_builderInfoMetrics->index(m_builderData->m_builderGuidToIndex[builder.m_busId], 0)));
         ui->builderInfoMetricsTreeView->expandToDepth(0);
         ui->builderInfoHeaderValueName->setText(builder.m_name.c_str());
-        ui->builderInfoHeaderValueType->setText(
+        ui->builderInfoDetailsValueType->setText(
             builder.m_builderType == AssetBuilderSDK::AssetBuilderDesc::AssetBuilderType::Internal ? "Internal" : "External");
-        ui->builderInfoHeaderValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
-        ui->builderInfoHeaderValueVersionNumber->setText(QString::number(builder.m_version));
-        ui->builderInfoHeaderValueBusId->setText(builder.m_busId.ToFixedString().c_str());
+        ui->builderInfoDetailsValueFingerprint->setText(builder.m_analysisFingerprint.c_str());
+        ui->builderInfoDetailsValueVersionNumber->setText(QString::number(builder.m_version));
+        ui->builderInfoDetailsValueBusId->setText(builder.m_busId.ToFixedString().c_str());
     }
 }
 

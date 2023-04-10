@@ -195,27 +195,15 @@ namespace AZ
                 jobDescriptor.SetPlatformIdentifier(info.m_identifier.data());
             
                 // The ShaderVariantAssets should be built AFTER the ShaderVariantTreeAsset.
-                // But unfortunately we can not declare job dependency because it will cause
-                // recompilation of all ShaderVariantAssets whenever the ShaderVariantTreeAsset
-                // changes.
-                // Ideally, what we need is a mode for job dependencies which says:
-                // "make sure X completes before Y runs, but don't re-run Y just because X ran".
+                // With "OrderOnly" dependency, We make sure ShaderVariantTreeAsset completes before ShaderVariantAsset runs,
+                // but don't re-run ShaderVariantAsset just because ShaderVariantTreeAsset ran.
                 //
-                // Temporary workaround: We set the job priority to -5000 (very low) for ShaderVariantAssets
-                // and job priority 1 (very high) for ShaderVariantTreeAssets.
-                //
-                // TODO: Add "OrderOnly" job dependency type to the Asset System so we can:
-                //  "make sure X completes before Y runs, but don't re-run Y just because X ran".
-                // https://github.com/o3de/o3de/issues/15428
-                // 
-                // **************************************************************************
-                //AssetBuilderSDK::JobDependency variantTreeJobDependency;
-                //variantTreeJobDependency.m_jobKey = GetShaderVariantTreeAssetJobKey();
-                //variantTreeJobDependency.m_platformIdentifier = info.m_identifier;
-                //variantTreeJobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantListFullPath;
-                //variantTreeJobDependency.m_type = AssetBuilderSDK::JobDependencyType::Order;
-                //jobDescriptor.m_jobDependencyList.emplace_back(variantTreeJobDependency);
-                // ***************************************************************************
+                AssetBuilderSDK::JobDependency variantTreeJobDependency;
+                variantTreeJobDependency.m_jobKey = GetShaderVariantTreeAssetJobKey();
+                variantTreeJobDependency.m_platformIdentifier = info.m_identifier;
+                variantTreeJobDependency.m_sourceFile.m_sourceFileDependencyPath = hashedVariantListFullPath;
+                variantTreeJobDependency.m_type = AssetBuilderSDK::JobDependencyType::OrderOnly;
+                jobDescriptor.m_jobDependencyList.emplace_back(variantTreeJobDependency);
 
                 // If the *.shader file changes, all the variants need to be rebuilt.
                 AssetBuilderSDK::JobDependency shaderAssetJobDependency;
@@ -589,8 +577,6 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
-            
-            const AZ::u64 shaderVariantAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
@@ -727,7 +713,6 @@ namespace AZ
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
                         *shaderPlatformInterface, request.m_platformInfo, buildArgsManager.GetCurrentArguments(), request.m_tempDirPath,
-                        shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -922,7 +907,6 @@ namespace AZ
             variantCreator.Begin(
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
-            variantCreator.SetBuildTimestamp(creationContext.m_assetBuildTimestamp);
 
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
             for (const auto& shaderEntryPoint : shaderEntryPoints)

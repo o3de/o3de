@@ -69,7 +69,11 @@
         <file alias="lock_on_transparent.svg">Outliner/lock_on_transparent.svg</file>
     </qresource>
     <qresource prefix="/Icons">
-        <file alias="material.svg">AssetBrowser/material.svg</file>
-        <file alias="materialtype.svg">AssetBrowser/materialtype.svg</file>
+        <file alias="Material_80.svg">AssetBrowser/Material_80.svg</file>
+        <file alias="MaterialType_80.svg">AssetBrowser/MaterialType_80.svg</file>
+        <file alias="MaterialGraph_80.svg">AssetBrowser/MaterialGraph_80.svg</file>
+        <file alias="BufferAsset_80.svg">AssetBrowser/BufferAsset_80.svg</file>
+        <file alias="Shader_80.svg">AssetBrowser/Shader_80.svg</file>
+        <file alias="PhysXMaterial_80.svg">AssetBrowser/PhysXMaterial_80.svg</file>
     </qresource>
 </RCC>

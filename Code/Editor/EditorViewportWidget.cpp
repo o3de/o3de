@@ -218,7 +218,6 @@ EditorViewportWidget::EditorViewportWidget(const QString& name, QWidget* parent)
 
     GetIEditor()->RegisterNotifyListener(this);
 
-    m_displayContext.pIconManager = GetIEditor()->GetIconManager();
     GetIEditor()->GetUndoManager()->AddListener(this);
 
     // The renderer requires something, so don't allow us to shrink to absolutely nothing

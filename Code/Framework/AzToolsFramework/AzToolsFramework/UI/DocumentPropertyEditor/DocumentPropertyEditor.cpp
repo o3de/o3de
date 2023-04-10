@@ -1610,7 +1610,7 @@ namespace AzToolsFramework
             else
             {
                 AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
-                    m_adapter->GetContents(), adapter, containerPath);
+                    m_adapter->GetContents(), containerPath);
             }
         };
 

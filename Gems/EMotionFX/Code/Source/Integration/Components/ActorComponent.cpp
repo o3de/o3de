@@ -146,7 +146,7 @@ namespace EMotionFX
                 ActorRenderFlagsReflect(*serializeContext);
 
                 serializeContext->Class<Configuration>()
-                    ->Version(6)
+                    ->Version(7)
                     ->Field("ActorAsset", &Configuration::m_actorAsset)
                     ->Field("AttachmentType", &Configuration::m_attachmentType)
                     ->Field("AttachmentTarget", &Configuration::m_attachmentTarget)
@@ -155,6 +155,7 @@ namespace EMotionFX
                     ->Field("BoundingBoxConfig", &Configuration::m_bboxConfig)
                     ->Field("ForceJointsUpdateOOV", &Configuration::m_forceUpdateJointsOOV)
                     ->Field("RenderFlags", &Configuration::m_renderFlags)
+                    ->Field("ExcludeFromReflectionCubeMaps", &Configuration::m_excludeFromReflectionCubeMaps)
                 ;
             }
         }
@@ -460,6 +461,7 @@ namespace EMotionFX
                 if (m_renderActorInstance)
                 {
                     m_renderActorInstance->SetIsVisible(AZ::RHI::CheckBitsAny(m_configuration.m_renderFlags, ActorRenderFlags::Solid));
+                    m_renderActorInstance->SetExcludeFromReflectionCubeMaps(m_configuration.m_excludeFromReflectionCubeMaps);
                 }
             }
 

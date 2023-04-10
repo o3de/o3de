@@ -74,6 +74,7 @@ public:
     // If the order is changed in the UI file, it should be changed here, too.
     enum class DialogStackIndex
     {
+        Welcome, // The welcome screen provides some basic info on the Asset Processor.
         Jobs,
         Assets,
         Logs,

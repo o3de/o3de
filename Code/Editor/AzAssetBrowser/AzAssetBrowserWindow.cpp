@@ -188,12 +188,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             this,
             [this](const AssetBrowserEntry* entry)
             {
-                if (!entry)
+                if (entry && entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
                 {
-                    return;
+                    entry = entry->GetParent();
                 }
 
-                if (!entry->GetParent())
+                if (!entry || !entry->GetParent())
                 {
                     return;
                 }
@@ -288,7 +288,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             if (selected.indexes().size() > 0)
             {
                 CurrentIndexChangedSlot(selected.indexes()[0]);
-                m_ui->m_createButton->setDisabled(false);
+                m_ui->m_createButton->setEnabled(true);
             }
             else
             {
@@ -669,7 +669,7 @@ void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
-        m_ui->m_searchWidget->setDisabled(false);
+        m_ui->m_searchWidget->setEnabled(true);
     }
     else if (expandedTableView)
     {
@@ -692,6 +692,7 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         }
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_searchWidget->setEnabled(true);
     }
 }
 

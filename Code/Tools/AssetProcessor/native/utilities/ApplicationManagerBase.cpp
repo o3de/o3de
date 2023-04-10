@@ -1311,6 +1311,11 @@ void ApplicationManagerBase::CheckForIdle()
     }
 }
 
+WId ApplicationManagerBase::GetWindowId() const
+{
+    return {};
+}
+
 void ApplicationManagerBase::InitBuilderManager()
 {
     AZ_Assert(m_connectionManager != nullptr, "ConnectionManager must be started before the builder manager");
