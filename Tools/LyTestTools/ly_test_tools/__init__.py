@@ -8,6 +8,7 @@ OS and devices are detected and set as constants when ly_test_tools.__init__() c
 """
 import logging
 import sys
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +21,9 @@ IOS = False  # Not implemented - see SPEC-2505
 LINUX = sys.platform.startswith('linux')
 MAC = sys.platform.startswith('darwin')
 WINDOWS = sys.platform.startswith('win')
+
+# CPU architecture
+ARM64 = platform.machine.lower() == 'arm64'
 
 # Detect available platforms
 HOST_OS_PLATFORM = 'unknown'
