@@ -137,7 +137,7 @@ namespace AZ
             m_features.m_independentBlend = true;
             m_features.m_dualSourceBlending = true;
             D3D12_FEATURE_DATA_D3D12_OPTIONS2 options2;
-            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS3, &options2, sizeof(options2));
+            GetDevice()->CheckFeatureSupport(D3D12_FEATURE_D3D12_OPTIONS2, &options2, sizeof(options2));
             m_features.m_customSamplePositions =
                 options2.ProgrammableSamplePositionsTier != D3D12_PROGRAMMABLE_SAMPLE_POSITIONS_TIER_NOT_SUPPORTED;
             m_features.m_queryTypesMask[static_cast<uint32_t>(RHI::HardwareQueueClass::Graphics)] = RHI::QueryTypeFlags::All;

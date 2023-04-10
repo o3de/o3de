@@ -28,14 +28,15 @@ namespace O3DE::ProjectManager
             return false;
         }
 
+        const GemInfo& gemInfo = m_sourceModel->GetGemInfo(sourceIndex);
         // Search Bar
-        if (!m_sourceModel->GetDisplayName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetName(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetCreator(sourceIndex).contains(m_searchString, Qt::CaseInsensitive) &&
-            !m_sourceModel->GetSummary(sourceIndex).contains(m_searchString, Qt::CaseInsensitive))
+        if (!gemInfo.m_displayName.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_name.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_origin.contains(m_searchString, Qt::CaseInsensitive) &&
+            !gemInfo.m_summary.contains(m_searchString, Qt::CaseInsensitive))
         {
             bool foundFeature = false;
-            for (const QString& feature : m_sourceModel->GetFeatures(sourceIndex))
+            for (const QString& feature : gemInfo.m_features)
             {
                 if (feature.contains(m_searchString, Qt::CaseInsensitive))
                 {
@@ -75,6 +76,12 @@ namespace O3DE::ProjectManager
             }
         }
 
+        // Update available
+        if (m_updateAvailableFilter && !GemModel::HasUpdates(sourceIndex))
+        {
+            return false;
+        }
+
         // Gem enabled
         if (m_gemActiveFilter != GemActive::NoFilter)
         {
@@ -94,7 +101,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::GemOrigin filteredGemOrigin = static_cast<GemInfo::GemOrigin>(1 << i);
                 if (m_gemOriginFilter & filteredGemOrigin)
                 {
-                    if ((GemModel::GetGemOrigin(sourceIndex) == filteredGemOrigin))
+                    if ((gemInfo.m_gemOrigin == filteredGemOrigin))
                     {
                         supportsAnyFilteredGemOrigin = true;
                         break;
@@ -116,7 +123,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::Platform filteredPlatform = static_cast<GemInfo::Platform>(1 << i);
                 if (m_platformFilter & filteredPlatform)
                 {
-                    if ((GemModel::GetPlatforms(sourceIndex) & filteredPlatform))
+                    if ((gemInfo.m_platforms & filteredPlatform))
                     {
                         supportsAnyFilteredPlatform = true;
                         break;
@@ -138,7 +145,7 @@ namespace O3DE::ProjectManager
                 const GemInfo::Type filteredType = static_cast<GemInfo::Type>(1 << i);
                 if (m_typeFilter & filteredType)
                 {
-                    if ((GemModel::GetTypes(sourceIndex) & filteredType))
+                    if ((gemInfo.m_types & filteredType))
                     {
                         supportsAnyFilteredType = true;
                         break;
@@ -155,8 +162,7 @@ namespace O3DE::ProjectManager
         if (!m_featureFilter.isEmpty())
         {
             bool containsFilterFeature = false;
-            const QStringList features = m_sourceModel->GetFeatures(sourceIndex);
-            for (const QString& feature : features)
+            for (const QString& feature : gemInfo.m_features)
             {
                 if (m_featureFilter.contains(feature))
                 {
@@ -204,6 +210,48 @@ namespace O3DE::ProjectManager
         emit OnInvalidated();
     }
 
+    void GemSortFilterProxyModel::SetOriginFilterFlag(int flag, bool set)
+    {
+        auto origin = static_cast<GemInfo::GemOrigin>(flag);
+        if (set)
+        {
+            m_gemOriginFilter |= origin;
+        }
+        else
+        {
+            m_gemOriginFilter &= ~origin;
+        }
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetTypeFilterFlag(int flag, bool set)
+    {
+        auto type = static_cast<GemInfo::Type>(flag);
+        if (set)
+        {
+            m_typeFilter |= type;
+        }
+        else
+        {
+            m_typeFilter &= ~type;
+        }
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetPlatformFilterFlag(int flag, bool set)
+    {
+        auto platform = static_cast<GemInfo::Platform>(flag);
+        if (set)
+        {
+            m_platformFilter |= platform;
+        }
+        else
+        {
+            m_platformFilter &= ~platform;
+        }
+        InvalidateFilter();
+    }
+
     void GemSortFilterProxyModel::ResetFilters(bool clearSearchString)
     {
         if (clearSearchString)
@@ -217,6 +265,12 @@ namespace O3DE::ProjectManager
         m_typeFilter = {};
         m_featureFilter = {};
 
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetUpdateAvailable(bool showGemsWithUpdates)
+    {
+        m_updateAvailableFilter = showGemsWithUpdates;
         InvalidateFilter();
     }
 } // namespace O3DE::ProjectManager

@@ -1596,6 +1596,10 @@ namespace {{ Component.attrib['Namespace'] }}
         AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context);
         if (behaviorContext)
         {
+            behaviorContext->ConstantProperty("{{ ComponentName }}TypeId", BehaviorConstant(s_{{ LowerFirst(ComponentName) }}ConcreteUuid))
+                ->Attribute(AZ::Script::Attributes::Module, "{{ LowerFirst(Component.attrib['Namespace']) }}")
+                ->Attribute(AZ::Script::Attributes::Scope, AZ::Script::Attributes::ScopeFlags::Common);
+
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Server', 'Authority')|indent(4) -}}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Autonomous', 'Authority')|indent(4) -}}
             {{ ReflectRpcEventDescs(Component, ComponentName, 'Authority', 'Autonomous')|indent(4) -}}
