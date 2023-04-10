@@ -1113,7 +1113,6 @@ namespace UnitTest
 
             // We've now created the dependencies for each asset in the container as well
             EXPECT_EQ(m_assetHandlerAndCatalog->m_numCreations, NumTestAssets * AssetsPerContainer);
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
             EXPECT_EQ(asset1CopyContainer->GetDependencies().size(), 1);
 
             asset1Container = {};

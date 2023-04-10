@@ -45,11 +45,6 @@ namespace UnitTest
         return AZ::Data::AssetData::AssetStatus::NotLoaded;
     }
 
-    size_t TestAssetManager::GetRemainingJobs() const
-    {
-        return m_activeJobs.size();
-    }
-
     const AZ::Data::AssetManager::OwnedAssetContainerMap& TestAssetManager::GetAssetContainers() const
     {
         return m_ownedAssetContainers;
