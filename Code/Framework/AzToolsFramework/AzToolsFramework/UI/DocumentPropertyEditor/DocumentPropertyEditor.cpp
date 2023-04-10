@@ -508,7 +508,6 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
-                    // propertyHandlers own their widgets, so don't destroy them here. Set them free!
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
@@ -1684,7 +1683,6 @@ namespace AzToolsFramework
             // the registration is needed in case the handler pool is released by other DPE views
             RegisterHandlerPool(handlerName, handlerPool);
 
-            // store, then reference the unique_ptr that will manage the handler's lifetime
             auto handler = handlerPool->GetInstance();
             handler->SetValueFromDom(domValue);
             createdWidget = handler->GetWidget();
