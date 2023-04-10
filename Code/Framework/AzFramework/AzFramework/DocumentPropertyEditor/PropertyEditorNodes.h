@@ -49,7 +49,7 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr AZStd::string_view Name = "Adapter";
         static constexpr auto QueryKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("QueryKey");
         static constexpr auto AddContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("AddContainerKey");
-        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(DocumentAdapterPtr*, AZ::Dom::Path)>("RejectContainerKey");
+        static constexpr auto RejectContainerKey = CallbackAttributeDefinition<void(AZ::Dom::Path)>("RejectContainerKey");
 
         //! Use this callback attribute if there is need to enable/disable an adapter's nodes at runtime.
         static constexpr auto SetNodeDisabled =
@@ -102,6 +102,16 @@ namespace AZ::DocumentPropertyEditor::Nodes
         FinishedEdit,
     };
 
+    //! Container: A node representing a container instance.
+    struct Container : NodeWithVisiblityControl
+    {
+        // These notify callback attributes may be invoked when a container is modified and handled
+        // alongside other messages in the adapter's message handler.
+        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
+        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t index)>("RemoveNotify");
+        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
+    };
+
     //! PropertyEditor: A property editor, of a type dictated by its "type" field,
     //! that can edit an associated value.
     struct PropertyEditor : NodeWithVisiblityControl
@@ -147,11 +157,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
-
-        // Container attributes
-        static constexpr auto AddNotify = CallbackAttributeDefinition<void()>("AddNotify");
-        static constexpr auto RemoveNotify = CallbackAttributeDefinition<void(size_t)>("RemoveNotify");
-        static constexpr auto ClearNotify = CallbackAttributeDefinition<void()>("ClearNotify");
     };
 
     struct UIElement : PropertyEditor
@@ -191,6 +196,13 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
     };
 
+    struct GenericButton : PropertyEditorDefinition
+    {
+        static constexpr AZStd::string_view Name = "GenericButton";
+        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
+        static constexpr auto ButtonText = AttributeDefinition<AZStd::string_view>("ButtonText");
+    };
+
     enum class ContainerAction
     {
         AddElement,
@@ -198,11 +210,10 @@ namespace AZ::DocumentPropertyEditor::Nodes
         Clear
     };
 
-    struct ContainerActionButton : PropertyEditorDefinition
+    struct ContainerActionButton : GenericButton
     {
         static constexpr AZStd::string_view Name = "ContainerActionButton";
         static constexpr auto Action = AttributeDefinition<ContainerAction>("Action");
-        static constexpr auto OnActivate = CallbackAttributeDefinition<void()>("OnActivate");
     };
 
     struct CheckBox : PropertyEditorDefinition

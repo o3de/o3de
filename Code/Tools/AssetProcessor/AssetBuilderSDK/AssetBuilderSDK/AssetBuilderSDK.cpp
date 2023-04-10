@@ -1438,7 +1438,8 @@ namespace AssetBuilderSDK
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
-                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce")
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnly)>("OrderOnly");
         }
     }
 

@@ -16,6 +16,7 @@
 #endif
 
 #include <Atom/RPI/TangentSpace.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 
 VsOutput EvaluateVertexGeometry_Eye(
     float3 position,
@@ -23,11 +24,12 @@ VsOutput EvaluateVertexGeometry_Eye(
     float4 tangent,
     float3 bitangent,
     float2 uv0,
-    float2 uv1)
+    float2 uv1,
+    uint instanceId)
 {
     VsOutput output;
 
-    float4x4 objectToWorld = ObjectSrg::GetWorldMatrix();
+    float4x4 objectToWorld = GetObjectToWorldMatrix(instanceId);
     float4 worldPosition = mul(objectToWorld, float4(position, 1.0));
     output.worldPosition = worldPosition.xyz;
     output.position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
@@ -41,11 +43,15 @@ VsOutput EvaluateVertexGeometry_Eye(
     output.bitangent = bitangent;
 
     output.localPosition = position.xyz;
+    
+    // Set the instanceId on the output so the pixel shader can use it
+    // since you can't use SV_InstanceID for both a vertex and a pixel shader at the same time
+    output.m_instanceId = instanceId;
 
     return output;
 }
 
-VsOutput EvaluateVertexGeometry_Eye(VsInput IN)
+VsOutput EvaluateVertexGeometry_Eye(VsInput IN, VsSystemValues SV)
 {
     return EvaluateVertexGeometry_Eye(
         IN.position,
@@ -53,5 +59,6 @@ VsOutput EvaluateVertexGeometry_Eye(VsInput IN)
         IN.tangent,
         IN.bitangent,
         IN.uv0,
-        IN.uv1);
+        IN.uv1,
+        SV.m_instanceId);
 }

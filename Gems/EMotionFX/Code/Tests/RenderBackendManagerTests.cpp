@@ -69,6 +69,7 @@ namespace EMotionFX
             MOCK_METHOD0(UpdateBounds, void());
             MOCK_METHOD0(GetWorldBounds, AZ::Aabb());
             MOCK_METHOD0(GetLocalBounds, AZ::Aabb());
+            MOCK_METHOD1(SetExcludeFromReflectionCubeMaps, void(bool));
 
         public:
             AZ::EntityId m_entityId;

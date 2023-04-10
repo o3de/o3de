@@ -58,7 +58,7 @@
         "coverage_artifact_dir": "${native_temp_dir}/Coverage",
         "sharded_coverage_artifact_dir": "${native_temp_dir}/Shard/Coverage",
         "enumeration_cache_dir": "${native_temp_dir}/EnumerationCache",
-        "change_list" : "${native_temp_dir}/Changelists",
+        "change_list" : "${native_temp_dir}",
         "reports" : "${native_temp_dir}/Reports"
       },
       "active": {
@@ -111,7 +111,7 @@
         "run_artifact_dir": "${LY_TEST_IMPACT_PYTHON_TEST_RUN_DIR}",
         "coverage_artifact_dir": "${python_temp_dir}/Coverage",
         "enumeration_cache_dir": "${python_temp_dir}/EnumerationCache",
-        "change_list" : "${python_temp_dir}/Changelists",
+        "change_list" : "${python_temp_dir}",
         "reports" : "${python_temp_dir}/Reports"
       },
       "active": {

@@ -49,7 +49,6 @@
 #include "LayoutWnd.h"
 #include "Viewport.h"
 #include "LayoutConfigDialog.h"
-#include "TopRendererWnd.h"
 #include "MainWindow.h"
 #include "QtViewPaneManager.h"
 #include "EditorViewportWidget.h"
@@ -322,7 +321,7 @@ void CLayoutViewPane::OnActionRegistrationHook()
     {
         constexpr AZStd::string_view actionIdentifier = "o3de.action.viewport.menuIcon";
         AzToolsFramework::ActionProperties actionProperties;
-        actionProperties.m_name = "Menu";
+        actionProperties.m_name = "Options";
         actionProperties.m_iconPath = ":/Menu/menu.svg";
 
         m_actionManagerInterface->RegisterAction(
@@ -331,7 +330,8 @@ void CLayoutViewPane::OnActionRegistrationHook()
             actionProperties,
             []
             {
-            });
+            }
+        );
     }
 
     // Viewport Debug Information
@@ -1046,20 +1046,6 @@ void CLayoutViewPane::ShowTitleMenu()
     // after the QMenu is cleaned up on the stack.
     connect(action, &QAction::triggered, this, &CLayoutViewPane::OnMenuLayoutConfig, Qt::QueuedConnection);
 
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    QMenu* viewsMenu = root.addMenu(tr("Viewport Type"));
-    
-    QtViewPanes viewports = QtViewPaneManager::instance()->GetRegisteredViewportPanes();
-
-    for (auto it = viewports.cbegin(), end = viewports.cend(); it != end; ++it)
-    {
-        const QtViewPane& pane = *it;
-        action = viewsMenu->addAction(pane.m_name);
-        action->setCheckable(true);
-        action->setChecked(m_viewPaneClass == pane.m_name);
-        connect(action, &QAction::triggered, [pane, this] { OnMenuViewSelected(pane.m_name); });
-    }
-#endif
     root.exec(QCursor::pos());
 }
 

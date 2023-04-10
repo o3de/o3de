@@ -25,7 +25,6 @@
 // Editor
 #include "Editor/Plugins/ComponentEntityEditorPlugin/SandboxIntegration.h"
 #include "ViewManager.h"
-#include "Include/ITransformManipulator.h"
 #include "Include/HitContext.h"
 #include "Objects/ObjectManager.h"
 #include "Util/3DConnexionDriver.h"

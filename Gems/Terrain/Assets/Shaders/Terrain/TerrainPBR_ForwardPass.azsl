@@ -15,7 +15,6 @@
 #include <TerrainDetailHelpers.azsli>
 #include <TerrainMacroHelpers.azsli>
 #include <ClipmapComputeHelpers.azsli>
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PBR/AlphaUtils.azsli>

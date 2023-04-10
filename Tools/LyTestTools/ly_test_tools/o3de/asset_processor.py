@@ -143,6 +143,12 @@ class AssetProcessor(object):
         """
         return self.send_message("quit")
 
+    def send_windowid(self):
+        """
+        Send the windowid command to AP over the control channel to request the main window WId
+        """
+        return self.send_message("windowid")
+
     def send_message(self, message):
         """
         Communicate with asset processor.  Must be running through gui_process/start method

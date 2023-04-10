@@ -14,7 +14,6 @@
 #define CRYINCLUDE_EDITOR_INCLUDE_HITCONTEXT_H
 #pragma once
 
-class CGizmo;
 class CBaseObject;
 struct IDisplayViewport;
 struct AABB;
@@ -102,8 +101,6 @@ struct HitContext
     float dist;
     //! object that have been hit.
     CBaseObject* object;
-    //! gizmo object that have been hit.
-    CGizmo* gizmo;
     //! For linking tool
     const char* name;
     //! true if this hit was from the object icon

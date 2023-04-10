@@ -84,7 +84,6 @@
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
@@ -1181,11 +1180,6 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     }
 
     return AZ::Vector3::CreateZero();
-}
-
-int SandboxIntegrationManager::GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath)
-{
-    return GetIEditor()->GetIconManager()->GetIconTexture(entityIconPath.c_str());
 }
 
 void SandboxIntegrationManager::ClearRedoStack()

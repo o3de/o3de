@@ -37,7 +37,6 @@
 #define MILLIMETER_TO_METER 1e-3
 #define METER_TO_MILLIMETER 1e3
 
-#define EPSILON 1e-4
 #define DEPTH_CLIP_THRESHOLD_SCALE (0.5 * MILLIMETER_TO_METER)
 
 ShaderResourceGroup PassSrg : SRG_PerPass

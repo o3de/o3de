@@ -626,7 +626,7 @@ namespace AzToolsFramework
 
         m_componentType = componentType;
 
-        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()));
+        GetPropertyEditor()->SetSavedStateKey(AZ::Crc32(componentType.ToString<AZStd::string>().data()), "componenteditor");
 
         GetHeader()->SetTitle(GetFriendlyComponentName(&componentInstance).c_str());
 

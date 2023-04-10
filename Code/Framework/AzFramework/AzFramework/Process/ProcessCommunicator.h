@@ -82,13 +82,13 @@ namespace AzFramework
         // Reads into process output until the communicator's output handles are no longer valid
         void ReadIntoProcessOutput(ProcessOutput& processOutput);
 
-    protected:
-        AZ_DISABLE_COPY(ProcessCommunicator);
-        
         // Waits for stdout or stderr to be ready for reading.  Note that its non-const
         // because it can detect if the outputs break and update them to be "broken".
         virtual void WaitForReadyOutputs(OutputStatus& outputStatus) = 0;
 
+    protected:
+        AZ_DISABLE_COPY(ProcessCommunicator);
+        
         void ReadFromOutputs(ProcessOutput& processOutput, OutputStatus& status);
 
     private:

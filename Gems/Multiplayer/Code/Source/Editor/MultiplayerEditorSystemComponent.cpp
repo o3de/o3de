@@ -345,9 +345,14 @@ namespace Multiplayer
 
             if (editorsv_print_server_logs)
             {
-                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-                AZ::TickBus::Handler::BusConnect();
+                // Create a threaded trace printer so that it will keep the output pipes flowing smoothly even while sending the
+                // editor data over to the server.
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
+                    m_serverProcessWatcher->GetCommunicator(), "EditorServer", ProcessCommunicatorTracePrinter::TraceProcessing::Threaded);
             }
+
+            // Connect to the tick bus to listen for unexpected server process disconnections
+            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
@@ -376,9 +381,7 @@ namespace Multiplayer
             return;
         }
         
-        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
-
 
         AZStd::vector<uint8_t> buffer;
         AZ::IO::ByteContainerStream byteStream(&buffer);
@@ -400,6 +403,11 @@ namespace Multiplayer
 
         // Read the buffer into EditorServerLevelData packets until we've flushed the whole thing
         byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+
+        // Send an initial notification showing how much data will be sent.
+        MultiplayerEditorServerNotificationBus::Broadcast(
+            &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+            0, aznumeric_cast<uint32_t>(byteStream.GetLength()));
 
         while (byteStream.GetCurPos() < byteStream.GetLength())
         {
@@ -444,6 +452,12 @@ namespace Multiplayer
                 }
             }
             AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
+
+            // Update our information to track the current amount of data sent.
+            MultiplayerEditorServerNotificationBus::Broadcast(
+                &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+                aznumeric_cast<uint32_t>(byteStream.GetCurPos()),
+                aznumeric_cast<uint32_t>(byteStream.GetLength()));
         }
     }
 
@@ -464,18 +478,6 @@ namespace Multiplayer
             AZ::TickBus::Handler::BusDisconnect();
             MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorServerProcessStoppedUnexpectedly);
             AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process has unexpectedly stopped running. Did it crash or get accidentally closed?")
-        }
-
-        if (m_serverProcessTracePrinter)
-        {
-            m_serverProcessTracePrinter->Pump();
-        }
-        else
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-            AZ_Warning(
-                "MultiplayerEditorSystemComponent", false,
-                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
         }
     }
 
