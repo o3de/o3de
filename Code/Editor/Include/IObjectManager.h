@@ -16,7 +16,6 @@
 // forward declarations.
 class CEntityObject;
 struct DisplayContext;
-struct IGizmoManager;
 class CTrackViewAnimNode;
 class CUsedResources;
 class CSelectionGroup;
@@ -64,9 +63,6 @@ public:
     //! Get array of objects, managed by manager (not contain sub objects of groups).
     //! @param layer if 0 get objects for all layers, or layer to get objects from.
     virtual void GetObjects(CBaseObjectsArray& objects) const = 0;
-
-    //! Display objects on specified display context.
-    virtual void Display(DisplayContext& dc) = 0;
 
     //! Gets a radius to be used for hit tests on the axis helpers, like the transform gizmo.
     //! @return the axis helper hit radius.
@@ -119,8 +115,6 @@ public:
     virtual CObjectClassDesc* FindClass(const QString& className) = 0;
 
     virtual void ChangeObjectId(REFGUID oldId, REFGUID newId) = 0;
-
-    virtual IGizmoManager* GetGizmoManager() = 0;
 
     //////////////////////////////////////////////////////////////////////////
     //! Invalidate visibily settings of objects.

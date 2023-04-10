@@ -21,6 +21,7 @@
 #include <SceneAPI/SceneData/Rules/ScriptProcessorRule.h>
 #include <SceneAPI/SceneData/Rules/SkeletonProxyRule.h>
 #include <SceneAPI/SceneData/Rules/TangentsRule.h>
+#include <SceneAPI/SceneData/Rules/UVsRule.h>
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 #include <SceneAPI/SceneData/Rules/TagRule.h>
 
@@ -75,6 +76,7 @@ namespace AZ
             SceneData::SkeletonProxyRule::Reflect(context);
             SceneData::SkinMeshAdvancedRule::Reflect(context);
             SceneData::TangentsRule::Reflect(context);
+            SceneData::UVsRule::Reflect(context);
             SceneData::CoordinateSystemRule::Reflect(context);
             SceneData::TagRule::Reflect(context);
 
