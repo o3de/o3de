@@ -577,8 +577,6 @@ namespace AZ
                 response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
                 return;
             }
-            
-            const AZ::u64 shaderVariantAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceDescriptor);
 
@@ -715,7 +713,6 @@ namespace AZ
                     ShaderVariantCreationContext shaderVariantCreationContext =
                     {
                         *shaderPlatformInterface, request.m_platformInfo, buildArgsManager.GetCurrentArguments(), request.m_tempDirPath,
-                        shaderVariantAssetBuildTimestamp,
                         shaderSourceDescriptor,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -910,7 +907,6 @@ namespace AZ
             variantCreator.Begin(
                 creationContext.m_shaderVariantAssetId, optionGroup.GetShaderVariantId(), shaderVariantStableId,
                 shaderOptions.IsFullySpecified());
-            variantCreator.SetBuildTimestamp(creationContext.m_assetBuildTimestamp);
 
             const AZStd::unordered_map<AZStd::string, RPI::ShaderStageType>& shaderEntryPoints = creationContext.m_shaderEntryPoints;
             for (const auto& shaderEntryPoint : shaderEntryPoints)
