@@ -86,7 +86,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         test_5_material_graph_file = os.path.join(atom_tools_utils.MATERIALCANVAS_GRAPH_PATH, "test5.materialgraph")
 
         # 1. Open an existing material graph document.
-        test_1_material_graph = Graph(test_1_material_graph_file)
+        test_1_material_graph = Graph(atom_tools_utils.open_document(test_1_material_graph_file))
         Report.result(
             Tests.open_existing_material_graph,
             atom_tools_utils.is_document_open(test_1_material_graph.document_id) is True)
@@ -102,7 +102,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             test_1_material_graph_file, test_2_material_graph_file, test_3_material_graph_file,
             test_4_material_graph_file, test_5_material_graph_file]
         for material_graph_document_file in material_graph_document_files:
-            Graph(material_graph_document_file)
+            Graph(atom_tools_utils.open_document(material_graph_document_file))
         Report.result(
             Tests.close_all_opened_material_graphs,
             atom_tools_utils.close_all_documents() is True)
@@ -110,7 +110,7 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         # 4. Open multiple material graph documents then verify all material documents are opened.
         test_material_graphs = []
         for material_graph_document_file in material_graph_document_files:
-            test_material_graph = Graph(material_graph_document_file)
+            test_material_graph = Graph(atom_tools_utils.open_document(material_graph_document_file))
             Report.result(Tests.verify_all_material_graphs_are_opened,
                           atom_tools_utils.is_document_open(test_material_graph.document_id) is True)
             test_material_graphs.append(test_material_graph)
@@ -135,28 +135,37 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         # 7. Verify test_1_material_graph.name is 'test1'.
         Report.result(
             Tests.material_graph_name_is_test1,
-            test_1_material_graph.name == "test1")
+            test_1_material_graph.get_graph_name() == "test1")
 
         # 8. Create a new world_position_node inside test_1_material_graph.
-        test_1_material_graph.add_node('World Position', math.Vector2(-200.0, 10.0))
-        world_position_node = test_1_material_graph.nodes[0]
+        created_world_position_node = test_1_material_graph.create_node_by_name(
+            test_1_material_graph.get_graph(), 'World Position')
+        world_position_node = test_1_material_graph.add_node(
+            test_1_material_graph.get_graph_id(), created_world_position_node, math.Vector2(-200.0, 10.0))
         Report.result(
             Tests.world_position_node_created,
-            world_position_node.node_object.typename == "AZStd::shared_ptr<Node>")
+            world_position_node.node_python_proxy.typename == "AZStd::shared_ptr<Node>")
 
         # 9. Create a new standard_pbr_node inside test_1_material_graph.
-        test_1_material_graph.add_node('Standard PBR', math.Vector2(10.0, 220.0))
-        standard_pbr_node = test_1_material_graph.nodes[1]
+        created_standard_pbr_node = test_1_material_graph.create_node_by_name(
+            test_1_material_graph.get_graph(), 'Standard PBR')
+        standard_pbr_node = test_1_material_graph.add_node(
+            test_1_material_graph.get_graph_id(), created_standard_pbr_node, math.Vector2(10.0, 220.0))
         Report.result(
             Tests.standard_pbr_node_created,
-            standard_pbr_node.node_object.typename == "AZStd::shared_ptr<Node>")
+            standard_pbr_node.node_python_proxy.typename == "AZStd::shared_ptr<Node>")
 
         # 10. Create a node connection between world_position_node outbound slot and standard_pbr_node inbound slot.
-        world_position_node.add_slot('outPosition')
-        standard_pbr_node.add_slot('inPositionOffset')
-        world_position_node.connect_slots(world_position_node.slots[0], standard_pbr_node, standard_pbr_node.slots[0])
-        are_slots_connected = world_position_node.are_slots_connected(
-            world_position_node.slots[0], standard_pbr_node, standard_pbr_node.slots[0])
+        world_position_node_slots = world_position_node.get_slots()
+        standard_pbr_node_slots = standard_pbr_node.get_slots()
+        test_1_material_graph.add_connection_by_slot_id(
+            test_1_material_graph.get_graph_id(),
+            world_position_node, world_position_node_slots['outPosition'],
+            standard_pbr_node, standard_pbr_node_slots['inPositionOffset'])
+        are_slots_connected = test_1_material_graph.are_slots_connected(
+            test_1_material_graph.get_graph_id(),
+            world_position_node, world_position_node_slots['outPosition'],
+            standard_pbr_node, standard_pbr_node_slots['inPositionOffset'])
         Report.result(Tests.nodes_connected, are_slots_connected is True)
 
         # 11. Look for errors and asserts.
