@@ -32,7 +32,15 @@ namespace ShaderManagementConsole
         // AtomToolsFramework::AtomToolsDocumentMainWindow overrides...
         AZStd::string GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const override;
 
+        // AtomToolsMainWindowRequestBus::Handler overrides...
+        void CreateMenus(QMenuBar* menuBar) override;
+
+        void GenerateStatisticView();
+
     private:
+        void closeEvent(QCloseEvent* closeEvent) override;
+
         AtomToolsFramework::AtomToolsDocumentInspector* m_documentInspector = {};
+        QWidget* m_statisticView = nullptr;
     };
 } // namespace ShaderManagementConsole

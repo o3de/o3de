@@ -18,18 +18,18 @@ namespace AZ::DocumentPropertyEditor
         ValueStringFilter();
         void SetFilterString(AZStd::string filterString);
 
+    protected:
+        // pure virtual overrides
+        MatchInfoNode* NewMatchInfoNode() const override;
+        void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
+        bool MatchesFilter(MatchInfoNode* matchNode) const override;
+
         struct StringMatchNode : public RowFilterAdapter::MatchInfoNode
         {
             void AddStringifyValue(const Dom::Value& domValue);
 
             AZStd::string m_matchableDomTerms;
         };
-
-    protected:
-        // pure virtual overrides
-        virtual MatchInfoNode* NewMatchInfoNode() const override;
-        virtual void CacheDomInfoForNode(const Dom::Value& domValue, MatchInfoNode* matchNode) const override;
-        virtual bool MatchesFilter(MatchInfoNode* matchNode) const override;
 
         bool m_includeDescriptions = true;
         AZStd::string m_filterString;

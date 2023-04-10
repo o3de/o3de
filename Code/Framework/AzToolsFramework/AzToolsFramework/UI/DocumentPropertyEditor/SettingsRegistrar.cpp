@@ -59,7 +59,7 @@ namespace AzToolsFramework
         return AZ::Success();
     }
 
-    AZ::Outcome<void, AZStd::string> SettingsRegistrar::LoadSettingsFromFile(
+    AZ::Outcome<bool, AZStd::string> SettingsRegistrar::LoadSettingsFromFile(
         AZ::IO::PathView relativeFilepath,
         AZStd::string_view anchorKey,
         AZ::SettingsRegistryInterface* registry,
@@ -73,7 +73,19 @@ namespace AzToolsFramework
 
         AZ::IO::FixedMaxPath fullSettingsPath = AZ::Utils::GetProjectPath();
         fullSettingsPath /= relativeFilepath;
-        return registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey);
+
+        const bool fileExists = AZ::IO::SystemFile::Exists(fullSettingsPath.c_str());
+
+        if (fileExists)
+        {
+            if (auto mergeResult = registry->MergeSettingsFile(fullSettingsPath.Native(), format, anchorKey);
+                !mergeResult.IsSuccess())
+            {
+                return AZ::Failure(mergeResult.GetError());
+            }
+        }
+
+        return AZ::Success(fileExists);
     }
 
     bool SettingsRegistrar::RemoveSettingFromRegistry(AZStd::string_view registryPath, AZ::SettingsRegistryInterface* registry) const

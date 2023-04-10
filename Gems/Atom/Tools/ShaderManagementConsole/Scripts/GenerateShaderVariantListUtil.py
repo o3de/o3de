@@ -15,13 +15,14 @@ import azlmbr.paths
 import azlmbr.shadermanagementconsole
 import azlmbr.shader
 from PySide2 import QtWidgets
+import json
 
 PROJECT_SHADER_VARIANTS_FOLDER = "ShaderVariants"
 
-# input is Material Asset id list
-def create_shadervariantlists_from_material(materialAssetIds):
+# Input is Material Asset id list
+# For all material in the asset database, save a shader variant list in the project's ShaderVariants folder
+def save_shadervariantlists_for_materials(materialAssetIds):
 
-    shaderVarintIdDict = {}     # Key: ShaderAssetId, Value: ShaderVarintId list
     shaderOptionGroupsDict = {} # Key: ShaderAssetId, Value: ShaderOptionGroups list
 
     progressDialog = QtWidgets.QProgressDialog("Gather shader variant information...", "Cancel", 0, len(materialAssetIds))
@@ -38,40 +39,34 @@ def create_shadervariantlists_from_material(materialAssetIds):
             shaderAssetId = shaderItem.GetShaderAsset().get_id()
             shaderVariantId = shaderItem.GetShaderVariantId()
 
-            if shaderVarintIdDict.get(shaderAssetId) == None:
-                shaderVarintIdDict[shaderAssetId] = []
-                shaderOptionGroupsDict[shaderAssetId] = []
-                if not shaderVariantId.IsEmpty():
-                    shaderVarintIdDict[shaderAssetId].append(shaderVariantId)
+            if not shaderVariantId.IsEmpty():
+                if shaderOptionGroupsDict.get(shaderAssetId) == None:
+                    shaderOptionGroupsDict[shaderAssetId] = []
                     shaderOptionGroupsDict[shaderAssetId].append(shaderItem.GetShaderOptionGroup())
-            else:
-                if not shaderVariantId.IsEmpty():
-                    # Check for repeat shader variant ids. We are using a list here
-                    # instead of a set to check for duplicates on shaderVariantIds because
-                    # shaderVariantId is not hashed by the ID like it is in the C++ side. 
+                else:
+                    # check for repetition
                     has_repeat = False
-                    for variantId in shaderVarintIdDict[shaderAssetId]:
+                    for shaderOptionGroup in shaderOptionGroupsDict[shaderAssetId]:
+                        variantId = shaderOptionGroup.GetShaderVariantId()
                         if shaderVariantId == variantId:
                             has_repeat = True
                             break
                     if has_repeat:
                         continue
 
-                    shaderVarintIdDict[shaderAssetId].append(shaderVariantId)
                     shaderOptionGroupsDict[shaderAssetId].append(shaderItem.GetShaderOptionGroup())
 
         progressDialog.setValue(i)
         if progressDialog.wasCanceled():
             return
-
     progressDialog.close()
-
 
     progressDialog = QtWidgets.QProgressDialog("Generating .shadervariantlist files...", "Cancel", 0, len(shaderOptionGroupsDict))
     progressDialog.setMaximumWidth(400)
     progressDialog.setMaximumHeight(100)
     progressDialog.setModal(True)
     progressDialog.setWindowTitle("Generating Shader Variant Lists")
+
     # Generate the shader variant list for each shader asset
     for i, shaderAssetId in enumerate(shaderOptionGroupsDict):
 
@@ -117,10 +112,7 @@ def create_shadervariantlists_from_material(materialAssetIds):
         if shaderVariants:
             shaderVariantList.shaderVariants = shaderVariants
             pre, ext = os.path.splitext(relativeShaderPath)
-            if "Intermediate Assets" in fullShaderPath:
-                projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, "Cache", "Intermediate Assets", f'{pre}.shadervariantlist')
-            else:
-                projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
+            projectShaderVariantListFilePath = os.path.join(azlmbr.paths.projectroot, PROJECT_SHADER_VARIANTS_FOLDER, f'{pre}.shadervariantlist')
             
             # clean previously generated shader variant list file so they don't clash.
             if os.path.exists(projectShaderVariantListFilePath):
@@ -131,11 +123,30 @@ def create_shadervariantlists_from_material(materialAssetIds):
         progressDialog.setValue(i)
         if progressDialog.wasCanceled():
             return
-    
     progressDialog.close()
 
+# Make a copy of shaderVariants, update target option value and return copy, accumulate stableId
+def updateOptionValue(shaderVariants, targetOptionName, targetValue, stableId):
+    tempShaderVariants = []
+    
+    for variantInfo in shaderVariants:
+        tempVariantInfo = azlmbr.shader.ShaderVariantInfo()
+        options = {}
 
-# Input is .shader
+        for optionName in variantInfo.options:
+            if targetOptionName == optionName:
+                options[optionName] = targetValue
+            else:
+                options[optionName] = variantInfo.options[optionName]
+
+        tempVariantInfo.options = options
+        tempVariantInfo.stableId = stableId
+        tempShaderVariants.append(tempVariantInfo)
+        stableId += 1
+
+    return tempShaderVariants, stableId
+
+# Input is one .shader
 def create_shadervariantlist_for_shader(filename):
     
     # Get info such as relative path of the file and asset id
@@ -144,6 +155,7 @@ def create_shadervariantlist_for_shader(filename):
         'GetSourceAssetInfo', 
         filename
     )
+
     # retrieves a list of all material source files that use the shader. Note that materials inherit from materialtype files, which are actual files that refer to shader files.
     materialAssetIds = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(
         azlmbr.bus.Broadcast, 
@@ -151,16 +163,26 @@ def create_shadervariantlist_for_shader(filename):
         shaderAssetInfo.relativePath
     )
 
+    
+    shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
+    shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
 
+    if len(materialAssetIds) == 0:
+        # No material is using this shader, so we can't get ShaderOptionDescriptor in the script
+        # Return early and handle user assigned system option after shaderAsset is loaded
+        return shaderVariantList
+    
     # This loop collects all uniquely-identified shader items used by the materials based on its shader variant id. 
     shader_file = os.path.basename(filename)
     shaderVariantIds = []
-    shaderVariantListShaderOptionGroups = []
+    shaderOptionGroups = []
+
     progressDialog = QtWidgets.QProgressDialog(f"Generating .shadervariantlist file for:\n{shader_file}", "Cancel", 0, len(materialAssetIds))
     progressDialog.setMaximumWidth(400)
     progressDialog.setMaximumHeight(100)
     progressDialog.setModal(True)
     progressDialog.setWindowTitle("Generating Shader Variant List")
+
     for i, materialAssetId in enumerate(materialAssetIds):
         materialInstanceShaderItems = azlmbr.shadermanagementconsole.ShaderManagementConsoleRequestBus(azlmbr.bus.Broadcast, 'GetMaterialInstanceShaderItems', materialAssetId)
 
@@ -181,7 +203,8 @@ def create_shadervariantlist_for_shader(filename):
                         continue
 
                     shaderVariantIds.append(shaderVariantId)
-                    shaderVariantListShaderOptionGroups.append(shaderItem.GetShaderOptionGroup())
+                    shaderOptionGroups.append(shaderItem.GetShaderOptionGroup())
+                    
 
         progressDialog.setValue(i)
         if progressDialog.wasCanceled():
@@ -189,12 +212,22 @@ def create_shadervariantlist_for_shader(filename):
 
     progressDialog.close()
 
+    # Read from shaderPath.systemoptions to get user assigned system option value
+    pre, ext = os.path.splitext(filename)
+    systemOptionFilePath = f'{pre}.systemoptions'
+    systemOptionFilePath = systemOptionFilePath.replace("\\", "/")
+    systemOptionDict = {}
+
+    if os.path.isfile(systemOptionFilePath):
+        with open(systemOptionFilePath, "r") as systemOptionFile:
+            systemOptionDict = json.load(systemOptionFile)
+
     # Generate the shader variant list data by collecting shader option name-value pairs.s
-    shaderVariantList = azlmbr.shader.ShaderVariantListSourceData()
-    shaderVariantList.shaderFilePath = shaderAssetInfo.relativePath
     shaderVariants = []
+    systemOptionDescriptor = {} 
     stableId = 1
-    for shaderOptionGroup in shaderVariantListShaderOptionGroups:
+
+    for shaderOptionGroup in shaderOptionGroups:
         variantInfo = azlmbr.shader.ShaderVariantInfo()
         variantInfo.stableId = stableId
         options = {}
@@ -209,16 +242,36 @@ def create_shadervariantlist_for_shader(filename):
             valueName = shaderOptionDescriptor.GetValueName(optionValue)
             options[optionName] = valueName
 
+            # Check user assigned value
+            optionNameString = optionName.ToString()
+            if optionNameString in systemOptionDict:
+                if systemOptionDict[optionNameString] != "":
+                    options[optionName] = azlmbr.name.Name(systemOptionDict[optionNameString])
+                else:
+                    # Value is unset, expansion handling later
+                    systemOptionDescriptor[optionName] = shaderOptionDescriptor
+
         if len(options) != 0:
             variantInfo.options = options
             shaderVariants.append(variantInfo)
             stableId += 1
 
+    # Expand the unset system option
+    for systemOptionName in systemOptionDescriptor:
+        optionDescriptor = systemOptionDescriptor[systemOptionName]
+        defaultValue = optionDescriptor.GetDefaultValue()
+        
+        valueMin = optionDescriptor.GetMinValue()
+        valueMax = optionDescriptor.GetMaxValue()
+        totalShaderVariants = []
+        
+        for index in range(valueMin.GetIndex(), valueMax.GetIndex() + 1):
+            optionValue = optionDescriptor.GetValueNameByIndex(index)
+            if optionValue != defaultValue:
+                tempShaderVariants, stableId = updateOptionValue(shaderVariants, systemOptionName, optionValue, stableId) 
+                totalShaderVariants.extend(tempShaderVariants)
+            
+        shaderVariants.extend(totalShaderVariants)
+
     shaderVariantList.shaderVariants = shaderVariants
-
-    pre, ext = os.path.splitext(filename)
-    defaultShaderVariantListFilePath = f'{pre}.shadervariantlist'
-    defaultShaderVariantListFilePath = defaultShaderVariantListFilePath.replace("\\", "/")
-
-    return shaderVariantList, defaultShaderVariantListFilePath
-
+    return shaderVariantList

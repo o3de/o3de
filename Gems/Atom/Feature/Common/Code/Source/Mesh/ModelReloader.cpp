@@ -15,11 +15,10 @@ namespace AZ
     namespace Render
     {
         ModelReloader::ModelReloader(
-            Data::Asset<RPI::ModelAsset> modelAsset, RemoveModelFromReloaderSystemEvent::Handler& removeReloaderFromSystemHandler)
+            Data::Asset<RPI::ModelAsset> modelAsset)
         {
             m_modelAsset.push_back(modelAsset);
             m_pendingDependencyListStatus.reset();
-            removeReloaderFromSystemHandler.Connect(m_onRemoveReloaderFromSystem);
 
             // Iterate over the model and track the assets that need to be reloaded
             for (auto& modelLodAsset : modelAsset->GetLodAssets())
@@ -149,7 +148,7 @@ namespace AZ
                     // Signal that the model is ready
                     m_onModelReloaded.Signal(m_modelAsset.front());
                     // Remove this reloader from the ModelReloaderSystem
-                    m_onRemoveReloaderFromSystem.Signal(m_modelAsset.front().GetId());
+                    ModelReloaderSystemInterface::Get()->RemoveReloader(m_modelAsset.front().GetId());
                     delete this;
                     break;
             }

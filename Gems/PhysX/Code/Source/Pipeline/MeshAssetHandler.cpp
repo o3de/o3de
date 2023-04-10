@@ -73,7 +73,7 @@ namespace PhysX
 
         const char* MeshAssetHandler::GetBrowserIcon() const
         {
-            return "Icons/Components/ColliderMesh.svg";
+            return "Icons/Components/PhysXMeshCollider.svg";
         }
 
         const char* MeshAssetHandler::GetGroup() const

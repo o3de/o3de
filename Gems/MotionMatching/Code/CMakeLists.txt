@@ -120,6 +120,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     # Add MotionMatching.Tests to googletest
     ly_add_googletest(
         NAME Gem::MotionMatching.Tests
+        LABELS REQUIRES_tiaf
     )
 
     # If we are a host platform we want to add tools test like editor tests here

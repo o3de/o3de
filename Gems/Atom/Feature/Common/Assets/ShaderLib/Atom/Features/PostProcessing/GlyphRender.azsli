@@ -60,7 +60,7 @@ class GlyphRender
         if( m_localPosition.x < m_localSize.x ) \
         { \
             m_localPosition.xy /= m_screenSpaceScale; \
-            mask = (glyphArray[m_localPosition.y + index * GLYPH_HEIGHT] & (1 << m_localPosition.x)) != 0 ? MaskForeground : MaskBackground; \
+            mask = (glyphArray[m_localPosition.y + index * GLYPH_HEIGHT] & (1u << m_localPosition.x)) != 0 ? MaskForeground : MaskBackground; \
         } \
     }       
        

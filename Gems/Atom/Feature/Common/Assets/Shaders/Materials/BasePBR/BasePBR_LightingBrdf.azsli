@@ -29,16 +29,16 @@
 #error Surface must be defined before including this file.
 #endif
 
-float3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, float3 lightIntensity, float3 dirToLight)
+real3 GetDiffuseLighting_BasePBR(Surface surface, LightingData lightingData, real3 lightIntensity, real3 dirToLight)
 {
-    float3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
+    real3 diffuse = DiffuseLambertian(surface.albedo, surface.normal, dirToLight, lightingData.diffuseResponse);
     diffuse *= lightIntensity;
     return diffuse;
 }
 
-float3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
+real3 GetSpecularLighting_BasePBR(Surface surface, LightingData lightingData, const real3 lightIntensity, const real3 dirToLight)
 {
-    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
+    real3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
     specular *= lightIntensity;
     return specular;
 }

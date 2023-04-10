@@ -9,6 +9,7 @@
 #include <AzCore/Asset/AssetTypeInfoBus.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Gem/GemInfo.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 
 #include <AzCore/IO/FileIO.h>
@@ -50,6 +51,16 @@ namespace AzToolsFramework
             m_enginePath = AZ::IO::Path(enginePath).LexicallyNormal();
             m_projectPath = AZ::IO::Path(AZ::Utils::GetProjectPath()).LexicallyNormal();
             m_fullPath = m_enginePath;
+            AZ::SettingsRegistryInterface* settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry != nullptr)
+            {
+                AZStd::vector<AzFramework::GemInfo> gemInfoList;
+                AzFramework::GetGemsInfo(gemInfoList, *settingsRegistry);
+                for (AzFramework::GemInfo gemInfo : gemInfoList)
+                {
+                    m_gemNames.insert(gemInfo.m_absoluteSourcePaths.begin(), gemInfo.m_absoluteSourcePaths.end());
+                }
+            }
         }
 
         bool RootAssetBrowserEntry::IsInitialUpdate() const
@@ -136,7 +147,7 @@ namespace AzToolsFramework
                 if (auto settingsRegistry = AZ::SettingsRegistry::Get(); settingsRegistry != nullptr)
                 {
                     settingsRegistry->Get(assetPath.Native(), AZ::SettingsRegistryMergeUtils::FilePathKey_CacheRootFolder);
-                    assetPath /= fileDatabaseEntry.m_fileName + ".metadata.json";
+                    assetPath /= fileDatabaseEntry.m_fileName + ".abdata.json";
 
                     auto result = AZ::JsonSerializationUtils::ReadJsonFile(assetPath.Native());
 
@@ -410,6 +421,7 @@ namespace AzToolsFramework
             folder->m_displayName = QString::fromUtf8(folderName.data(), aznumeric_caster(folderName.size()));
             folder->m_isScanFolder = isScanFolder;
             parent->AddChild(folder);
+            folder->m_isGemFolder = m_gemNames.contains(folder->GetFullPath());
             return folder;
         }
 

@@ -101,6 +101,10 @@ namespace AzToolsFramework
 
             bool IsIndexExpandedByDefault(const QModelIndex& index) const override;
 
+            void SetShowIndexAfterUpdate(QModelIndex index);
+
+            void SetApplySnapshot(bool applySnapshot);
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -112,6 +116,7 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
+            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
@@ -124,10 +129,14 @@ namespace AzToolsFramework
 
             bool m_expandToEntriesByDefault = false;
 
+            bool m_applySnapshot = true;
+
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;
 
             QString m_name;
+
+            QModelIndex m_indexToSelectAfterUpdate;
 
             bool SelectProduct(const QModelIndex& idxParent, AZ::Data::AssetId assetID);
             bool SelectEntry(const QModelIndex& idxParent, const AZStd::vector<AZStd::string>& entryPathTokens, const uint32_t entryPathIndex = 0, bool useDisplayName = false);

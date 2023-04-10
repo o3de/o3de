@@ -10,6 +10,7 @@
 #include "AssetTreeModel.h"
 #include <AzToolsFramework/API/AssetDatabaseBus.h>
 #include <AzCore/std/containers/unordered_map.h>
+#include <native/assetprocessor.h>
 #include <native/utilities/ApplicationManagerAPI.h>
 #include <QDir>
 
@@ -28,17 +29,12 @@ namespace AssetProcessor
         // Overriding AssetTreeModel for displaying analysis job duration header
         QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
 
-        QModelIndex GetIndexForSource(const AZStd::string& source);
+        QModelIndex GetIndexForSource(const AZStd::string& source, AZ::s64 scanFolderID);
 
         void SetOnlyShowIntermediateAssets() { m_intermediateAssets = true; }
 
-        void SetIntermediateAssetFolderId(AZStd::optional<AZ::s64> intermediateAssetFolderId)
-        {
-            m_intermediateAssetFolderId = intermediateAssetFolderId;
-        }
-
     public Q_SLOTS:
-        void OnCreateJobsDurationChanged(QString sourceName);
+        void OnCreateJobsDurationChanged(QString sourceName, AZ::s64 scanFolderID);
 
     protected:
         void ResetModel() override;
@@ -51,11 +47,10 @@ namespace AssetProcessor
         void RemoveAssetTreeItem(AssetTreeItem* assetToRemove);
         void RemoveFoldersIfEmpty(AssetTreeItem* itemToCheck);
 
-        AZStd::unordered_map<AZStd::string, AssetTreeItem*> m_sourceToTreeItem;
+        AZStd::unordered_map<SourceAndScanID, AssetTreeItem*> m_sourceToTreeItem;
         AZStd::unordered_map<AZ::s64, AssetTreeItem*> m_sourceIdToTreeItem;
         QDir m_assetRoot;
         bool m_assetRootSet = false;
         bool m_intermediateAssets = false;
-        AZStd::optional<AZ::s64> m_intermediateAssetFolderId;
     };
 }

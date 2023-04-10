@@ -70,7 +70,6 @@ namespace TestImpact
 
     ProcessSchedulerResult ProcessScheduler::ExecutionState::MonitorProcesses(const AZStd::vector<ProcessInfo>& processes)
     {
-        AZ_TestImpact_Eval(!processes.empty(), ProcessException, "Number of processes to launch cannot be 0");
         m_startTime = AZStd::chrono::steady_clock::now();
         const size_t numConcurrentProcesses = AZStd::min(processes.size(), m_maxConcurrentProcesses);
         m_processPool.resize(numConcurrentProcesses);
