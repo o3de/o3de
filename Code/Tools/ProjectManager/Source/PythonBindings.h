@@ -47,7 +47,6 @@ namespace O3DE::ProjectManager
         AZ::Outcome<GemInfo> CreateGem(const QString& templatePath, const GemInfo& gemInfo, bool registerGem = true) override;
         AZ::Outcome<GemInfo> EditGem(const QString& oldGemName, const GemInfo& newGemInfo) override;
         AZ::Outcome<GemInfo> GetGemInfo(const QString& path, const QString& projectPath = {}) override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetEngineGemInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetAllGemInfos(const QString& projectPath) override;
         AZ::Outcome<QHash<QString /*gem name with specifier*/, QString /* gem path */>, AZStd::string> GetEnabledGems(
             const QString& projectPath, bool includeDependencies) const override;
@@ -69,7 +68,7 @@ namespace O3DE::ProjectManager
             const QString& projectPath, const QString& enginePath = "") override;
         DetailedOutcome AddGemsToProject(
             const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) override;
-        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemPath, const QString& projectPath) override;
+        AZ::Outcome<void, AZStd::string> RemoveGemFromProject(const QString& gemName, const QString& projectPath) override;
         bool RemoveInvalidProjects() override;
 
         // Gem Repos
