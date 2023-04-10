@@ -138,19 +138,15 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
             test_1_material_graph.get_graph_name() == "test1")
 
         # 8. Create a new world_position_node inside test_1_material_graph.
-        created_world_position_node = test_1_material_graph.create_node_by_name(
-            test_1_material_graph.get_graph(), 'World Position')
-        world_position_node = test_1_material_graph.add_node(
-            test_1_material_graph.get_graph_id(), created_world_position_node, math.Vector2(-200.0, 10.0))
+        created_world_position_node = test_1_material_graph.create_node_by_name('World Position')
+        world_position_node = test_1_material_graph.add_node(created_world_position_node, math.Vector2(-200.0, 10.0))
         Report.result(
             Tests.world_position_node_created,
             world_position_node.node_python_proxy.typename == "AZStd::shared_ptr<Node>")
 
         # 9. Create a new standard_pbr_node inside test_1_material_graph.
-        created_standard_pbr_node = test_1_material_graph.create_node_by_name(
-            test_1_material_graph.get_graph(), 'Standard PBR')
-        standard_pbr_node = test_1_material_graph.add_node(
-            test_1_material_graph.get_graph_id(), created_standard_pbr_node, math.Vector2(10.0, 220.0))
+        created_standard_pbr_node = test_1_material_graph.create_node_by_name('Standard PBR')
+        standard_pbr_node = test_1_material_graph.add_node(created_standard_pbr_node, math.Vector2(10.0, 220.0))
         Report.result(
             Tests.standard_pbr_node_created,
             standard_pbr_node.node_python_proxy.typename == "AZStd::shared_ptr<Node>")
@@ -159,11 +155,9 @@ def MaterialCanvas_BasicFunctionalityChecks_AllChecksPass():
         world_position_node_slots = world_position_node.get_slots()
         standard_pbr_node_slots = standard_pbr_node.get_slots()
         test_1_material_graph.add_connection_by_slot_id(
-            test_1_material_graph.get_graph_id(),
             world_position_node, world_position_node_slots['outPosition'],
             standard_pbr_node, standard_pbr_node_slots['inPositionOffset'])
         are_slots_connected = test_1_material_graph.are_slots_connected(
-            test_1_material_graph.get_graph_id(),
             world_position_node, world_position_node_slots['outPosition'],
             standard_pbr_node, standard_pbr_node_slots['inPositionOffset'])
         Report.result(Tests.nodes_connected, are_slots_connected is True)
