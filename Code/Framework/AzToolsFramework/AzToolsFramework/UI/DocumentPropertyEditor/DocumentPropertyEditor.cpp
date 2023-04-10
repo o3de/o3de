@@ -1707,6 +1707,7 @@ namespace AzToolsFramework
         {
             // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
             delete handler.handlerInterface;
+            handler.handlerInterface = nullptr;
         }
     }
 } // namespace AzToolsFramework
