@@ -97,6 +97,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(buttons);
 
         m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        m_primaryButton->setProperty("primary", true);
         connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
         connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 

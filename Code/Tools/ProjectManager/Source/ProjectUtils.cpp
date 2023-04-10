@@ -11,6 +11,7 @@
 #include <PythonBindingsInterface.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/std/chrono/chrono.h>
 
 #include <QFileDialog>
 #include <QDir>
@@ -30,7 +31,6 @@
 #include <QLabel>
 #include <QStandardPaths>
 
-#include <AzCore/std/chrono/chrono.h>
 
 namespace O3DE::ProjectManager
 {
@@ -732,6 +732,96 @@ namespace O3DE::ProjectManager
             {
                 QMessageBox::critical(parent, title, generalError.c_str());
             }
+        }
+
+        int VersionCompare(const QString& a, const QString&b)
+        {
+            auto outcomeA = AZ::SemanticVersion::ParseFromString(a.toUtf8().constData());
+            auto outcomeB = AZ::SemanticVersion::ParseFromString(b.toUtf8().constData());
+
+            auto versionA = outcomeA ? outcomeA.GetValue() : AZ::SemanticVersion(0, 0, 0);
+            auto versionB = outcomeB ? outcomeB.GetValue() : AZ::SemanticVersion(0, 0, 0);
+
+            return AZ::SemanticVersion::Compare(versionA, versionB);
+
+        }
+
+        QString GetDependencyString(const QString& dependencyString)
+        {
+            using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+            using Comparison = Dependency::Bound::Comparison;
+            Dependency dependency;
+
+            QString result;
+            if(auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                // dependency name
+                result.append(dependency.GetName().c_str());
+
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    // we only support a single specifier
+                    const auto& bound = bounds[0];
+                    Comparison comparison = bound.GetComparison();
+                    if (comparison == Comparison::GreaterThan)
+                    {
+                        result.append(QObject::tr(" versions greater than"));
+                    }
+                    else if (comparison == Comparison::LessThan)
+                    {
+                        result.append(QObject::tr(" versions less than"));
+                    }
+                    else if ((comparison& Comparison::TwiddleWakka) != Comparison::None)
+                    {
+                        // don't try to explain the twiddle wakka in short form
+                        result.append(QObject::tr(" versions ~="));
+                    }
+
+                    result.append(" ");
+                    result.append(bound.GetVersion().ToString().c_str());
+
+                    if ((comparison & Comparison::EqualTo) != Comparison::None)
+                    {
+                        if ((comparison & Comparison::GreaterThan) != Comparison::None)
+                        {
+                            result.append(QObject::tr(" or higher "));
+                        }
+                        else if ((comparison & Comparison::LessThan) != Comparison::None)
+                        {
+                            result.append(QObject::tr(" or lower "));
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+
+        void GetDependencyNameAndVersion(const QString& dependencyString, QString& objectName, Comparison& comparator, QString& version)
+        {
+            Dependency dependency;
+            if (auto parseOutcome = dependency.ParseVersions({ dependencyString.toUtf8().constData() }); parseOutcome)
+            {
+                objectName = dependency.GetName().c_str();
+                if (const auto& bounds = dependency.GetBounds(); !bounds.empty())
+                {
+                    comparator = dependency.GetBounds().at(0).GetComparison();
+                    version = dependency.GetBounds().at(0).GetVersion().ToString().c_str();
+                }
+            }
+            else
+            {
+                objectName = dependencyString;
+            }
+        }
+
+
+        QString GetDependencyName(const QString& dependency)
+        {
+            QString objectName, version;
+            ProjectUtils::Comparison comparator;
+            GetDependencyNameAndVersion(dependency, objectName, comparator, version);
+            return objectName; 
         }
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager
