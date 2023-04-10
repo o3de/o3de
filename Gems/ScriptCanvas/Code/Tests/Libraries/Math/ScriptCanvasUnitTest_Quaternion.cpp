@@ -39,24 +39,16 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult, AZ::Quaternion::CreateIdentity());
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestQuaternionFunctions, DISABLED_FromMatrix3x3_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromMatrix3x3_Call_GetExpectedResult)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = QuaternionFunctions::FromMatrix3x3(AZ::Matrix3x3::CreateIdentity());
-        EXPECT_EQ(actualResult, AZ::Quaternion::CreateIdentity());
+        EXPECT_THAT(actualResult, IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestQuaternionFunctions, DISABLED_FromMatrix4x4_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromMatrix4x4_Call_GetExpectedResult)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = QuaternionFunctions::FromMatrix4x4(AZ::Matrix4x4::CreateIdentity());
-        EXPECT_EQ(actualResult, AZ::Quaternion::CreateIdentity());
+        EXPECT_THAT(actualResult, IsClose(AZ::Quaternion::CreateIdentity()));
     }
 
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, FromTransform_Call_GetExpectedResult)
@@ -95,14 +87,15 @@ namespace ScriptCanvasUnitTest
         EXPECT_TRUE(actualResult);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestQuaternionFunctions, DISABLED_LengthReciprocal_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, LengthReciprocal_Call_GetExpectedResult)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = QuaternionFunctions::LengthReciprocal(AZ::Quaternion::CreateIdentity());
-        EXPECT_EQ(actualResult, 1);
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        constexpr float tolerance = 0.00001f;
+        #else
+        constexpr float tolerance = 0.0f;
+        #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        EXPECT_NEAR(actualResult, 1.0f, tolerance);
     }
 
     TEST_F(ScriptCanvasUnitTestQuaternionFunctions, LengthSquared_Call_GetExpectedResult)

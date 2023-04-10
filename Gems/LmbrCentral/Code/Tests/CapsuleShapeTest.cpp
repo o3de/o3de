@@ -388,11 +388,7 @@ namespace UnitTest
         EXPECT_NEAR(distance, 2.0f, 1e-2f);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(CapsuleShapeTest, DISABLED_ShapeHasThreadsafeGetSetCalls)
-#else
     TEST_F(CapsuleShapeTest, ShapeHasThreadsafeGetSetCalls)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // Verify that setting values from one thread and querying values from multiple other threads in parallel produces
         // correct, consistent results.

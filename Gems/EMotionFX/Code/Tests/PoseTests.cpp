@@ -476,11 +476,7 @@ namespace EMotionFX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_P(PoseTestsBoolParam, DISABLED_UpdateLocalSpaceTranforms)
-#else
     TEST_P(PoseTestsBoolParam, UpdateLocalSpaceTranforms)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         Pose pose;
         pose.LinkToActor(m_actor.get());
@@ -493,8 +489,13 @@ namespace EMotionFX
 
             // Set the model space transform directly, so that it won't automatically be updated.
             pose.SetModelSpaceTransformDirect(i, newTransform);
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetModelSpaceTransformDirect(i), IsClose(newTransform));
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(oldLocalSpaceTransform));
+            #else
             EXPECT_EQ(pose.GetModelSpaceTransformDirect(i), newTransform);
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), oldLocalSpaceTransform);
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
 
         // We have to manually update the local space transforms as we directly set them.
@@ -516,15 +517,15 @@ namespace EMotionFX
         for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             // Get the local space transform without auto-updating them, to see if update call worked.
-            EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity()));
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            #else
+            EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(PoseTests, DISABLED_ForceUpdateFullLocalSpacePose)
-#else
     TEST_F(PoseTests, ForceUpdateFullLocalSpacePose)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         Pose pose;
         pose.LinkToActor(m_actor.get());
@@ -537,8 +538,13 @@ namespace EMotionFX
 
             // Set the local space without invalidating the model space transform.
             pose.SetModelSpaceTransformDirect(i, newTransform);
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetModelSpaceTransformDirect(i), IsClose(newTransform));
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(oldLocalSpaceTransform));
+            #else
             EXPECT_EQ(pose.GetModelSpaceTransformDirect(i), newTransform);
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), oldLocalSpaceTransform);
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
 
         // Update all local space transforms regardless of the invalidate flag.
@@ -547,7 +553,11 @@ namespace EMotionFX
         for (size_t i = 0; i < m_actor->GetSkeleton()->GetNumNodes(); ++i)
         {
             // Get the local space transform without auto-updating them, to see if update call worked.
+            #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+            EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            #else
             EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity()));
+            #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
     }
 

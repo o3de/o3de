@@ -178,14 +178,10 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult, AZ::Vector3::CreateZero());
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestVector3Functions, DISABLED_Reciprocal_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestVector3Functions, Reciprocal_Call_GetExpectedResult)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = Vector3Functions::Reciprocal(AZ::Vector3::CreateOne());
-        EXPECT_EQ(actualResult, AZ::Vector3::CreateOne());
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3::CreateOne()));
     }
 
     TEST_F(ScriptCanvasUnitTestVector3Functions, Slerp_Call_GetExpectedResult)
@@ -194,14 +190,10 @@ namespace ScriptCanvasUnitTest
         EXPECT_EQ(actualResult, AZ::Vector3::CreateOne());
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestVector3Functions, DISABLED_DirectionTo_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestVector3Functions, DirectionTo_Call_GetExpectedResult)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         auto actualResult = Vector3Functions::DirectionTo(AZ::Vector3::CreateZero(), AZ::Vector3(1, 0, 0), 1);
-        EXPECT_EQ(AZStd::get<0>(actualResult), AZ::Vector3(1, 0, 0));
+        EXPECT_THAT(AZStd::get<0>(actualResult), IsClose(AZ::Vector3(1, 0, 0)));
         EXPECT_EQ(AZStd::get<1>(actualResult), 1);
     }
 } // namespace ScriptCanvasUnitTest

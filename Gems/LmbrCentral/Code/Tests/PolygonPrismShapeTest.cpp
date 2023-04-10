@@ -85,11 +85,7 @@ namespace UnitTest
         LmbrCentral::PolygonPrismShapeComponentRequestBus::Event(entity.GetId(), &LmbrCentral::PolygonPrismShapeComponentRequests::SetVertices, vertices);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(PolygonPrismShapeTest, DISABLED_PolygonShapeComponent_IsPointInside)
-#else
     TEST_F(PolygonPrismShapeTest, PolygonShapeComponent_IsPointInside)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         AZ::Entity entity;
         CreatePolygonPrism(
@@ -235,7 +231,7 @@ namespace UnitTest
         }
         {
             bool inside;
-            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.0f, 32.0f));
+            LmbrCentral::ShapeComponentRequestsBus::EventResult(inside, entity.GetId(), &LmbrCentral::ShapeComponentRequests::IsPointInside, AZ::Vector3(502.0f, 585.1f, 32.0f));
             EXPECT_TRUE(inside);
         }
         {

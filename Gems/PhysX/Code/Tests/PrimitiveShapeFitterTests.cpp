@@ -37,15 +37,22 @@ namespace PhysX::Pipeline
     extern const AZStd::array<AZ::Vector3, 514> CapsuleVertices;
     extern const AZStd::array<AZ::Vector3, 8> MinimalVertices;
 
+    #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+    // NEON has a lower float precision than SIMD/SCALAR
+    static constexpr double defaultTolerance = 1.0e-4;
+    #else
+    static constexpr double defaultTolerance = 1.0e-6;
+    #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
 
-    static void ExpectNear(const AZ::Vector3& actual, const AZ::Vector3& expected, const double tolerance = 1.0e-6)
+
+    static void ExpectNear(const AZ::Vector3& actual, const AZ::Vector3& expected, const double tolerance = defaultTolerance)
     {
         EXPECT_NEAR(actual(0), expected(0), tolerance);
         EXPECT_NEAR(actual(1), expected(1), tolerance);
         EXPECT_NEAR(actual(2), expected(2), tolerance);
     }
 
-    static void ExpectParallel(const AZ::Vector3& actual, const AZ::Vector3& expected, const double tolerance = 1.0e-6)
+    static void ExpectParallel(const AZ::Vector3& actual, const AZ::Vector3& expected, const double tolerance = defaultTolerance)
     {
         if (expected.Dot(actual) > 0.0)
         {
@@ -63,12 +70,12 @@ namespace PhysX::Pipeline
         const AZ::Vector3& zAxis
     )
     {
-        EXPECT_NEAR(xAxis.GetLengthSq(), 1.0, 1.0e-6);
-        EXPECT_NEAR(yAxis.GetLengthSq(), 1.0, 1.0e-6);
-        EXPECT_NEAR(zAxis.GetLengthSq(), 1.0, 1.0e-6);
+        EXPECT_NEAR(xAxis.GetLengthSq(), 1.0, defaultTolerance);
+        EXPECT_NEAR(yAxis.GetLengthSq(), 1.0, defaultTolerance);
+        EXPECT_NEAR(zAxis.GetLengthSq(), 1.0, defaultTolerance);
 
-        EXPECT_NEAR(xAxis.Dot(yAxis), 0.0, 1.0e-6);
-        ExpectNear(zAxis, xAxis.Cross(yAxis), 1.0e-6);
+        EXPECT_NEAR(xAxis.Dot(yAxis), 0.0, defaultTolerance);
+        ExpectNear(zAxis, xAxis.Cross(yAxis), defaultTolerance);
     }
 
     static AZStd::vector<Vec3> AZVerticesToLYVertices(const AZStd::vector<AZ::Vector3>& vertices)
@@ -366,11 +373,7 @@ namespace PhysX::Pipeline
         ExpectNear(configPtr->m_transform->GetTranslation(), AZ::Vector3(1.0, 2.0, 3.0));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST(GetShapeConfigurationTestFixture, DISABLED_SimpleBoxTest)
-#else
     TEST(GetShapeConfigurationTestFixture, SimpleBoxTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const MeshAssetData::ShapeConfigurationPair pair = SimpleBox->GetShapeConfigurationPair();
 
@@ -418,11 +421,7 @@ namespace PhysX::Pipeline
         ExpectNear(configPtr->m_transform->GetBasisZ(), AZ::Vector3(0.5, 0.0, 0.8660254038));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST(GetShapeConfigurationTestFixture, DISABLED_SimpleCapsuleTest)
-#else
     TEST(GetShapeConfigurationTestFixture, SimpleCapsuleTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const MeshAssetData::ShapeConfigurationPair pair = SimpleCapsule->GetShapeConfigurationPair();
 
@@ -432,8 +431,8 @@ namespace PhysX::Pipeline
         // Validate shape.
         ASSERT_THAT(shapePtr, ::testing::NotNull());
         ASSERT_TRUE(shapePtr->GetShapeType() == Physics::ShapeType::Capsule);
-        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_height, 6.0, 1.0e-6);
-        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_radius, 1.0, 1.0e-6);
+        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_height, 6.0, defaultTolerance);
+        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_radius, 1.0, defaultTolerance);
 
         // Validate transform.
         ASSERT_THAT(configPtr, ::testing::NotNull());
@@ -454,8 +453,8 @@ namespace PhysX::Pipeline
         // Validate shape.
         ASSERT_THAT(shapePtr, ::testing::NotNull());
         ASSERT_TRUE(shapePtr->GetShapeType() == Physics::ShapeType::Capsule);
-        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_height, 6.0, 1.0e-6);
-        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_radius, 1.0, 1.0e-6);
+        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_height, 6.0, defaultTolerance);
+        EXPECT_NEAR(static_cast<const Physics::CapsuleShapeConfiguration&>(*shapePtr).m_radius, 1.0, defaultTolerance);
 
         // Validate transform.
         ASSERT_THAT(configPtr, ::testing::NotNull());
@@ -524,11 +523,7 @@ namespace PhysX::Pipeline
         );
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_BoxTest)
-#else
     TEST_P(FitPrimitiveShapeTestFixture, BoxTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const AZ::Transform& transform = GetParam();
 
@@ -566,11 +561,7 @@ namespace PhysX::Pipeline
         ExpectRightHandedOrthonormalBasis(xAxis, yAxis, zAxis);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_CapsuleTest)
-#else
     TEST_P(FitPrimitiveShapeTestFixture, CapsuleTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         const AZ::Transform& transform = GetParam();
 
@@ -603,11 +594,7 @@ namespace PhysX::Pipeline
         ExpectRightHandedOrthonormalBasis(xAxis, yAxis, zAxis);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_P(FitPrimitiveShapeTestFixture, DISABLED_VolumeMinimizationTest)
-#else
     TEST_P(FitPrimitiveShapeTestFixture, VolumeMinimizationTest)
-#endif // AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
     {
         // This test verifies that the volume minimization coefficient works as expected. The vertices used here form a
         // 2x2x2 cube centered at the origin. We let the fitter decide which primitive fits best, which should always be

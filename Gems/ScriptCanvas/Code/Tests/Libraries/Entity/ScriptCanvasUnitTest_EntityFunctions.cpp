@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplicationBus.h>
 #include <AzCore/Component/Entity.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzCore/UnitTest/TestTypes.h>
 #include <Tests/Framework/ScriptCanvasUnitTestFixture.h>
 #include <Libraries/Entity/EntityFunctions.h>
 
@@ -86,37 +87,25 @@ namespace ScriptCanvasUnitTest
         AZ::Entity m_entity;
     };
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestEntityFunctions, DISABLED_GetEntityRight_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestEntityFunctions, GetEntityRight_Call_GetExpectedResult)
-#endif
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityRight(m_id, scale);
-        EXPECT_EQ(actualResult, AZ::Vector3(scale, 0, 0));
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(scale, 0, 0)));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestEntityFunctions, DISABLED_GetEntityForward_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestEntityFunctions, GetEntityForward_Call_GetExpectedResult)
-#endif
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityForward(m_id, scale);
-        EXPECT_EQ(actualResult, AZ::Vector3(0, scale, 0));
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, scale, 0)));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_ARM64_TESTS
-    TEST_F(ScriptCanvasUnitTestEntityFunctions, DISABLED_GetEntityUp_Call_GetExpectedResult)
-#else
     TEST_F(ScriptCanvasUnitTestEntityFunctions, GetEntityUp_Call_GetExpectedResult)
-#endif
     {
         float scale = 123.f;
         auto actualResult = EntityFunctions::GetEntityUp(m_id, scale);
-        EXPECT_EQ(actualResult, AZ::Vector3(0, 0, scale));
+        EXPECT_THAT(actualResult, IsClose(AZ::Vector3(0, 0, scale)));
     }
 
     TEST_F(ScriptCanvasUnitTestEntityFunctions, Rotate_Call_GetExpectedResult)

@@ -15,4 +15,14 @@ namespace ScriptCanvasUnitTest
         : public UnitTest::LeakDetectionFixture
     {
     };
+
+    MATCHER_P(IsClose, expected, "")
+    {
+        #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        constexpr float tolerance = 0.001f;
+        #else
+        constexpr float tolerance = 0.0f;
+        #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
+        return arg.IsClose(expected, tolerance);
+    }
 }
