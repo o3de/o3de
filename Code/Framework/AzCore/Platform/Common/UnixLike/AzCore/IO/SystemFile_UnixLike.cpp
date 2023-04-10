@@ -25,80 +25,83 @@
 
 namespace AZ::IO
 {
+    const char* SystemFile::GetNullFilename()
+    {
+        return "/dev/null";
+    }
+} // namespace AZ::IO
 
-const char* SystemFile::GetNullFilename()
-{
-    return "/dev/null";
-}
-
-namespace UnixLikePlatformUtil
+namespace AZ::IO::UnixLikePlatformUtil
 {
     // Platform specific helpers
     bool CanCreateDirRecursive(char* dirPath);
-}
+} // AZ::IO::UnixLikePlatformUtil
 
-namespace
+namespace AZ::IO
 {
-    //=========================================================================
-    //  Internal utility to create a folder hierarchy recursively without
-    //  any additional string copies.
-    //  If this function fails (returns false), the error will be available
-    //   via errno on Unix platforms
-    //=========================================================================
-    bool CreateDirRecursive(char* dirPath)
+    namespace
     {
-        if (!UnixLikePlatformUtil::CanCreateDirRecursive(dirPath))
+        //=========================================================================
+        //  Internal utility to create a folder hierarchy recursively without
+        //  any additional string copies.
+        //  If this function fails (returns false), the error will be available
+        //   via errno on Unix platforms
+        //=========================================================================
+        bool CreateDirRecursive(char* dirPath)
         {
-            // Our current platform has told us we have failed
-            return false;
-        }
-
-        int result = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
-        if (result == 0)
-        {
-            return true;    // Created without error
-        }
-        else if (result == -1)
-        {
-            // If result == -1, the error is stored in errno
-            // http://pubs.opengroup.org/onlinepubs/007908799/xsh/mkdir.html
-            result = errno;
-        }
-
-        if (result == ENOTDIR || result == ENOENT)
-        {
-            // try to create our parent hierarchy
-            for (size_t i = strlen(dirPath); i > 0; --i)
+            if (!UnixLikePlatformUtil::CanCreateDirRecursive(dirPath))
             {
-                if (dirPath[i] == '/' || dirPath[i] == '\\')
+                // Our current platform has told us we have failed
+                return false;
+            }
+
+            int result = mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+            if (result == 0)
+            {
+                return true;    // Created without error
+            }
+            else if (result == -1)
+            {
+                // If result == -1, the error is stored in errno
+                // http://pubs.opengroup.org/onlinepubs/007908799/xsh/mkdir.html
+                result = errno;
+            }
+
+            if (result == ENOTDIR || result == ENOENT)
+            {
+                // try to create our parent hierarchy
+                for (size_t i = strlen(dirPath); i > 0; --i)
                 {
-                    char delimiter = dirPath[i];
-                    dirPath[i] = 0; // null-terminate at the previous slash
-                    bool ret = CreateDirRecursive(dirPath);
-                    dirPath[i] = delimiter; // restore slash
-                    if (ret)
+                    if (dirPath[i] == '/' || dirPath[i] == '\\')
                     {
-                        // now that our parent is created, try to create again
-                        return mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+                        char delimiter = dirPath[i];
+                        dirPath[i] = 0; // null-terminate at the previous slash
+                        bool ret = CreateDirRecursive(dirPath);
+                        dirPath[i] = delimiter; // restore slash
+                        if (ret)
+                        {
+                            // now that our parent is created, try to create again
+                            return mkdir(dirPath, S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH) == 0;
+                        }
+                        return false;
                     }
-                    return false;
+                }
+                // if we reach here then there was no parent folder to create, so we failed for other reasons
+            }
+            else if (result == EEXIST)
+            {
+                struct stat s;
+                if (stat(dirPath, &s) == 0)
+                {
+                    return s.st_mode & S_IFDIR;
                 }
             }
-            // if we reach here then there was no parent folder to create, so we failed for other reasons
+            return false;
         }
-        else if (result == EEXIST)
-        {
-            struct stat s;
-            if (stat(dirPath, &s) == 0)
-            {
-                return s.st_mode & S_IFDIR;
-            }
-        }
-        return false;
     }
-}
+} // namespace AZ::IO
 
-namespace Platform
+namespace AZ::IO::Platform
 {
     AZ::u64 ModificationTime(const char* fileName)
     {
@@ -211,7 +214,6 @@ namespace Platform
         return false;
     }
 } // namespace AZ::IO::Platform
-} // namespace AZ::IO
 
 namespace AZ::IO::PosixInternal
 {
@@ -228,6 +230,12 @@ namespace AZ::IO::PosixInternal
 
 namespace AZ::IO
 {
+    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
+        : m_sourceDescriptor(sourceDescriptor)
+        , m_pipeData(-1)
+    {
+    }
+
     bool FileDescriptorCapturer::Flush()
     {
         constexpr int PipeBufferSize = DefaultPipeSize;
@@ -290,10 +298,10 @@ namespace AZ::IO
         }
 
         m_redirectCallback = {};
-        if (m_pipeData > 0)
+        if (m_pipeData != 1)
         {
             PosixInternal::Close(static_cast<int>(m_pipeData));
-            m_pipeData = 0;
+            m_pipeData = -1;
         }
 
         // Reset the file descriptors after any flush thread
@@ -314,4 +322,4 @@ namespace AZ::IO
         m_redirectState = RedirectState::Idle;
         // At this point it is now safe to call Start() again on this Capturer
     }
-}
+} // namespace AZ::IO
