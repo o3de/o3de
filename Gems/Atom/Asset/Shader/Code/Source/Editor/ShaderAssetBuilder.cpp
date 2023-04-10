@@ -23,6 +23,7 @@
 #include <Atom/RHI.Reflect/ConstantsLayout.h>
 #include <Atom/RHI.Reflect/PipelineLayoutDescriptor.h>
 #include <Atom/RHI.Reflect/ShaderStageFunction.h>
+#include <Atom/RHI/RHIUtils.h>
 
 #include <AzCore/Serialization/Json/JsonUtils.h>
 
@@ -58,7 +59,6 @@ namespace AZ
     namespace ShaderBuilder
     {
         static constexpr char ShaderAssetBuilderName[] = "ShaderAssetBuilder";
-        static constexpr uint32_t ShaderAssetBuildTimestampParam = 0;
 
         //! The search will start in @currentFolderPath.
         //! if the file is not found then it searches in order of appearence in @includeDirectories.
@@ -150,18 +150,14 @@ namespace AZ
 
         void ShaderAssetBuilder::CreateJobs(const AssetBuilderSDK::CreateJobsRequest& request, AssetBuilderSDK::CreateJobsResponse& response) const
         {
+            // Used to measure the duration of CreateJobs
+            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
+
             AZStd::string shaderAssetSourceFileFullPath;
             AzFramework::StringFunc::Path::ConstructFull(request.m_watchFolder.data(), request.m_sourceFile.data(), shaderAssetSourceFileFullPath, true);
             ShaderBuilderUtility::IncludedFilesParser includedFilesParser;
 
             AZ_TracePrintf(ShaderAssetBuilderName, "CreateJobs for Shader \"%s\"\n", shaderAssetSourceFileFullPath.data());
-
-            // Used to synchronize versions of the ShaderAsset and ShaderVariantTreeAsset, especially during hot-reload.
-            // Note it's probably important for this to be set once outside the platform loop so every platform's ShaderAsset
-            // has the same value, because later the ShaderVariantTreeAsset job will fetch this value from the local ShaderAsset
-            // which could cross platforms (i.e. building an android ShaderVariantTreeAsset on PC would fetch the tiemstamp from
-            // the PC's ShaderAsset).
-            AZ::u64 shaderAssetBuildTimestamp = AZStd::GetTimeUTCMilliSecond();
 
             // Need to get the name of the azsl file from the .shader source asset, to be able to declare a dependency to SRG Layout Job.
             // and the macro options to preprocess.
@@ -222,12 +218,11 @@ namespace AZ
                 jobDescriptor.m_critical = false;
                 jobDescriptor.m_jobKey = ShaderAssetBuilderJobKey;
                 jobDescriptor.SetPlatformIdentifier(platformInfo.m_identifier.c_str());
-                jobDescriptor.m_jobParameters.emplace(ShaderAssetBuildTimestampParam, AZStd::to_string(shaderAssetBuildTimestamp));
 
                 response.m_createJobOutputs.push_back(jobDescriptor);
             }  // for all request.m_enabledPlatforms
 
-            AZ_TracePrintf(
+            AZ_Printf(
                 ShaderAssetBuilderName, "CreateJobs for %s took %llu milliseconds", shaderAssetSourceFileFullPath.c_str(),
                 AZStd::GetTimeUTCMilliSecond() - shaderAssetBuildTimestamp);
 
@@ -372,28 +367,6 @@ namespace AZ
                 return;
             }
 
-            // Get the time stamp string as u64, and also convert back to string to make sure it was converted correctly.
-            AZ::u64 shaderAssetBuildTimestamp = 0;
-            auto shaderAssetBuildTimestampIterator = request.m_jobDescription.m_jobParameters.find(ShaderAssetBuildTimestampParam);
-            if (shaderAssetBuildTimestampIterator != request.m_jobDescription.m_jobParameters.end())
-            {
-                shaderAssetBuildTimestamp = AZStd::stoull(shaderAssetBuildTimestampIterator->second);
-
-                if (AZStd::to_string(shaderAssetBuildTimestamp) != shaderAssetBuildTimestampIterator->second)
-                {
-                    response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                    AZ_Assert(false, "Incorrect conversion of ShaderAssetBuildTimestampParam");
-                    return;
-                }
-            }
-            else
-            {
-                // CreateJobs was not successful if there's no timestamp property in m_jobParameters.
-                response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Failed;
-                AZ_Assert(false, "Missing ShaderAssetBuildTimestampParam");
-                return;
-            }
-
             auto supervariantList = ShaderBuilderUtility::GetSupervariantListFromShaderSourceData(shaderSourceData);
 
             RPI::ShaderAssetCreator shaderAssetCreator;
@@ -401,7 +374,6 @@ namespace AZ
 
             shaderAssetCreator.SetName(AZ::Name{shaderFileName});
             shaderAssetCreator.SetDrawListName(shaderSourceData.m_drawListName);
-            shaderAssetCreator.SetShaderAssetBuildTimestamp(shaderAssetBuildTimestamp);
 
             // The ShaderOptionGroupLayout must be the same across all supervariants because
             // there can be only a single ShaderVariantTreeAsset per ShaderAsset.
@@ -426,7 +398,6 @@ namespace AZ
 
             // Remark: In general, the work done by the ShaderVariantAssetBuilder is similar, but it will start from the HLSL file created; in step 2, mentioned above; by this builder,
             // for each supervariant.
-
             for (RHI::ShaderPlatformInterface* shaderPlatformInterface : platformInterfaces)
             {
                 AZStd::string apiName(shaderPlatformInterface->GetAPIName().GetCStr());
@@ -690,7 +661,6 @@ namespace AZ
                         request.m_platformInfo,
                         buildArgsManager.GetCurrentArguments(),
                         request.m_tempDirPath,
-                        shaderAssetBuildTimestamp,
                         shaderSourceData,
                         *shaderOptionGroupLayout.get(),
                         shaderEntryPoints,
@@ -699,6 +669,10 @@ namespace AZ
                         hlslFullPath,
                         hlslSourceCode};
 
+                    // Preserve the Temp folder when shaders are compiled with debug symbols
+                    // or because the ShaderSourceData has m_keepTempFolder set to true.
+                    response.m_keepTempFolder |= shaderVariantCreationContext.m_shaderBuildArguments.m_generateDebugInfo
+                        || shaderSourceData.m_keepTempFolder || RHI::IsGraphicsDevModeEnabled();
 
                     AZStd::optional<RHI::ShaderPlatformInterface::ByProducts> outputByproducts;
                     auto rootShaderVariantAssetOutcome = ShaderVariantAssetBuilder::CreateShaderVariantAsset(rootVariantInfo, shaderVariantCreationContext, outputByproducts);
@@ -777,11 +751,11 @@ namespace AZ
                 return;
             }
 
-            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
-
             AZ_TracePrintf(ShaderAssetBuilderName, "Finished processing %s in %.3f seconds\n", request.m_sourceFile.c_str(), timer.GetDeltaTimeInSeconds());
 
             ShaderBuilderUtility::LogProfilingData(ShaderAssetBuilderName, shaderFileName);
+
+            response.m_resultCode = AssetBuilderSDK::ProcessJobResult_Success;
         }
 
     } // ShaderBuilder

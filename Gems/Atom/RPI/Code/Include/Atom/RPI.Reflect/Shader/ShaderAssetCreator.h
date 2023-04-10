@@ -28,10 +28,6 @@ namespace AZ
             //! Begins creation of a shader asset.
             void Begin(const Data::AssetId& assetId);
 
-            //! [Optional] Set the timestamp for when the ShaderAsset build process began.
-            //! This is needed to synchronize between the ShaderAsset and ShaderVariantTreeAsset when hot-reloading shaders.
-            void SetShaderAssetBuildTimestamp(AZStd::sys_time_t shaderAssetBuildTimestamp);
-
             //! [Optional] Sets the name of the shader asset from content.
             void SetName(const Name& name);
             

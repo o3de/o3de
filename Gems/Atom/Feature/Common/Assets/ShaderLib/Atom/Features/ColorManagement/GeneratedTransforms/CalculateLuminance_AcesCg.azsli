@@ -10,7 +10,7 @@
 
 #include <Atom/Features/PostProcessing/AcesColorSpaceConversion.azsli>
 
-float CalculateLuminance_AcesCg(in float3 color)
+real CalculateLuminance_AcesCg(in real3 color)
 {
     // Calculate the Y value of XYZ color space.
     return dot(color, AP1ToXYZMat[1]);

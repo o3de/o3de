@@ -56,7 +56,6 @@ ShaderResourceGroup PassSrg : SRG_PerPass
     };
 }
 
-#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 #include "ReflectionCommon.azsli"
 
 // Vertex Shader

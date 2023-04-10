@@ -8,15 +8,16 @@
 
 #pragma once
 
-#define OUTPUT_DEPTH 0 // Never use custom depth, the VR pipeline is too optimized to support PDO.
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
 #include <Atom/Features/PostProcessing/Tonemap.azsli>
+#include <Atom/Features/ColorManagement/TransformColor.azsli>
 
 // --- Vertex Shader ---
-
-VsOutput VertexShader(VsInput IN)
+VsOutput VertexShader(VsInput IN, uint instanceId : SV_InstanceID)
 {
-    VsOutput OUT = EvaluateVertexGeometry(IN);
+    VsSystemValues SV;
+    SV.m_instanceId = instanceId;
+    VsOutput OUT = EvaluateVertexGeometry(IN, SV);
     return OUT;
 }
 
@@ -39,17 +40,25 @@ ForwardPassOutput PixelShader(VsOutput IN, bool isFrontFace : SV_IsFrontFace)
 
     ForwardPassOutput OUT;
 
-    float3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
+    real3 color = lightingData.diffuseLighting.rgb + lightingData.specularLighting.rgb + lightingData.emissiveLighting.rgb;
 
 #if ENABLE_MERGE_FILMIC_TONEMAP
     // Apply manual exposure compensation
-    color = ApplyManualExposure(color, ViewSrg::GetExposureValueCompensation());
+    color = ApplyManualExposure(color, real(ViewSrg::GetExposureValueCompensation()));
     
-    // We could add Aces support here as well if perf allows.
+    //Convert to linearsrg space as we are in acescg space and we will not be applying aces tonemap
+    color = AcesCg_To_LinearSrgb(color);
+
+    // We could add other forms of tonemapping in future via shader options.
     color = ApplyFilmicTonemap(color);
 #endif
 
     OUT.m_color.rgb = color;
+    OUT.m_color.a = 1.0;
+
+#if OUTPUT_DEPTH
+    OUT.m_depth = IN.position.z;
+#endif
 
     return OUT;
 }

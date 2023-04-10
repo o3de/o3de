@@ -37,7 +37,6 @@ class CSelectionGroup;
 class CAnimationContext;
 class CTrackViewSequenceManager;
 class CGameEngine;
-struct IIconManager;
 class CToolBoxManager;
 class CClassFactory;
 class CMusicManager;
@@ -49,7 +48,6 @@ class CEditorCommandManager;
 class CConsoleSynchronization;
 struct ISourceControl;
 struct IEditorClassFactory;
-struct ITransformManipulator;
 class CDialog;
 #if defined(AZ_PLATFORM_WINDOWS)
 class C3DConnexionDriver;
@@ -57,7 +55,6 @@ class C3DConnexionDriver;
 class CSettingsManager;
 struct IExportManager;
 class CDisplaySettings;
-struct SGizmoParameters;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
 struct SEditorSettings;
@@ -465,7 +462,6 @@ struct IEditor
     //! Retrieve pointer to game engine instance
     virtual CGameEngine* GetGameEngine() = 0;
     virtual CDisplaySettings* GetDisplaySettings() = 0;
-    virtual const SGizmoParameters& GetGlobalGizmoParameters() = 0;
     //! Create new object
     virtual CBaseObject* NewObject(const char* typeName, const char* fileName = "", const char* name = "", float x = 0.0f, float y = 0.0f, float z = 0.0f, bool modifyDoc = true) = 0;
     //! Delete object
@@ -484,8 +480,6 @@ struct IEditor
     //! Get access to object manager.
     virtual struct IObjectManager* GetObjectManager() = 0;
     virtual CSettingsManager* GetSettingsManager() = 0;
-    //! Returns IconManager.
-    virtual IIconManager* GetIconManager() = 0;
     //! Get Music Manager.
     virtual CMusicManager* GetMusicManager() = 0;
     virtual float GetTerrainElevation(float x, float y) = 0;
@@ -531,12 +525,6 @@ struct IEditor
 
     virtual void SetOperationMode(EOperationMode mode) = 0;
     virtual EOperationMode GetOperationMode() = 0;
-    //! Shows/Hides transformation manipulator.
-    //! if bShow is true also returns a valid ITransformManipulator pointer.
-    virtual ITransformManipulator* ShowTransformManipulator(bool bShow) = 0;
-    //! Return a pointer to a ITransformManipulator pointer if shown.
-    //! nullptr if manipulator is not shown.
-    virtual ITransformManipulator* GetTransformManipulator() = 0;
     //! Set constrain on specified axis for objects construction and modifications.
     //! @param axis one of AxisConstrains enumerations.
     virtual void SetAxisConstraints(AxisConstrains axis) = 0;

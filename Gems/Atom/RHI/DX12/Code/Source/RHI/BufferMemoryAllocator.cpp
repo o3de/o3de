@@ -155,14 +155,12 @@ namespace AZ
             {
                 return m_subAllocator.ComputeFragmentation();
             }
-
             return 0.f;
         }
 
         BufferMemoryView BufferMemoryAllocator::AllocateUnique(const RHI::BufferDescriptor& bufferDescriptor)
         {
             AZ_PROFILE_FUNCTION(RHI);
-
             const size_t alignedSize = RHI::AlignUp(bufferDescriptor.m_byteCount, Alignment::CommittedBuffer);
 
             RHI::HeapMemoryUsage& heapMemoryUsage = *m_descriptor.m_getHeapMemoryUsageFunction();
@@ -170,7 +168,6 @@ namespace AZ
             {
                 return BufferMemoryView();
             }
-
             D3D12_RESOURCE_STATES initialResourceState = ConvertInitialResourceState(m_descriptor.m_heapMemoryLevel, m_descriptor.m_hostMemoryAccess);
             if (RHI::CheckBitsAny(m_descriptor.m_bindFlags, RHI::BufferBindFlags::RayTracingAccelerationStructure))
             {
@@ -182,10 +179,12 @@ namespace AZ
             MemoryView memoryView = m_descriptor.m_device->CreateBufferCommitted(bufferDescriptor, initialResourceState, heapType);
             if (memoryView.IsValid())
             {
+                const size_t sizeInBytes = memoryView.GetSize();
+
                 // Add the resident usage now that everything succeeded.
-                heapMemoryUsage.m_totalResidentInBytes += alignedSize;
-                heapMemoryUsage.m_usedResidentInBytes += alignedSize;
-                heapMemoryUsage.m_uniqueAllocationBytes += alignedSize;
+                heapMemoryUsage.m_totalResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_usedResidentInBytes += sizeInBytes;
+                heapMemoryUsage.m_uniqueAllocationBytes += sizeInBytes;
             }
 
             return BufferMemoryView(AZStd::move(memoryView), BufferMemoryType::Unique);

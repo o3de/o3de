@@ -171,13 +171,10 @@ namespace AZ
         {
             Base::SetupFrameGraphDependencies(frameGraph);
 
-            // Override the estimated item count set by the base class.
-            frameGraph.SetEstimatedItemCount(GetNumDraws());
-        }
-
-        uint32_t ShadowmapPass::GetNumDraws() const
-        {
-            if (m_isStatic && !m_forceRenderNextFrame)
+            // Override the estimated item count set by the base class. Draw item count is compared against
+            // the last frame to detect cases where a moving object leaves the shadow frustum. It wouldn't
+            // set m_casterMovedBit since its outside the view, but needs to trigger a re-render anyway.
+            if (m_isStatic && !m_forceRenderNextFrame && m_lastFrameDrawCount == m_drawItemCount)
             {
                 const auto& views = m_pipeline->GetViews(GetPipelineViewTag());
                 if (!views.empty())
@@ -186,21 +183,19 @@ namespace AZ
                     if (view && (view->GetOrFlags() & m_casterMovedBit.GetIndex()) == 0)
                     {
                         // Shadow is static and no casters moved since last frame.
-                        return 0;
+                        frameGraph.SetEstimatedItemCount(0);
                     }
                 }
             }
-            // Report + 1 to make room for the clear draw packet.
-            return static_cast<uint32_t>(m_drawListView.size() + 1);
+            else
+            {
+                // Report + 1 to make room for the clear draw packet.
+                frameGraph.SetEstimatedItemCount(static_cast<uint32_t>(m_drawListView.size() + 1));
+            }
         }
 
         void ShadowmapPass::SubmitDrawItems(const RHI::FrameGraphExecuteContext& context, uint32_t startIndex, uint32_t endIndex, uint32_t offset) const
         {
-            if (GetNumDraws() == 0)
-            {
-                return;
-            }
-
             if (m_clearShadowDrawPacket)
             {
                 if (startIndex == 0)
@@ -230,6 +225,7 @@ namespace AZ
                 // in SubmitDrawItems because it may be called multiple times from different threads.
                 m_forceRenderNextFrame = false;
             }
+            m_lastFrameDrawCount = m_drawItemCount;
             Base::FrameEndInternal();
         }
 
