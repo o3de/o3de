@@ -2360,7 +2360,7 @@
              <item>
                <widget class="QLabel" name="AssetRelocationDescriptionLabel">
                  <property name="text">
-                   <string>This is the list of currently enabled extensions for asset relocation. You can read more about relocating assets &lt;a href=&quot;TODO-LINK-LEAVE-IN-DRAFT-UNTIL-AVAILABLE&quot;&gt;here.&lt;/a&gt;</string>
+                   <string>This is the list of currently enabled extensions for asset relocation. You can read more about relocating assets &lt;a href=&quot;https://www.o3de.org/docs/user-guide/assets/pipeline/metadata&quot;&gt;here.&lt;/a&gt;</string>
                  </property>
                  <property name="openExternalLinks">
                    <bool>true</bool>
