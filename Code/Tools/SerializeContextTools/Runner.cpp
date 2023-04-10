@@ -99,8 +99,11 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(        Ex. --values "engine.json" --values "project.json")" "\n");
         AZ_Printf("Help", R"(        Ex. --values engine.json,project.json)" "\n");
         AZ_Printf("Help", R"(        Ex. --values engine.json,project.json --values gem.json)" "\n");
+        AZ_Printf("Help", "    [opt] --values-file=<filepath>: Path to file containing linefeed delimited strings to convert to UUD.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' reads input from stdin\n");
         AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed uuids.\n");
         AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' writes output to stdout\n");
         AZ_Printf("Help", "    [opt] --with-curly-braces=<true|false> Outputs the Uuid with curly braces. Defaults to true\n");
         AZ_Printf("Help", "         Ex. when true = {0123456789abcdef0123456789abcdef}\n");
         AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
