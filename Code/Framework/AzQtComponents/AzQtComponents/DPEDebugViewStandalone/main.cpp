@@ -31,6 +31,7 @@
 #include <QComboBox>
 
 #include <AzCore/DOM/Backends/JSON/JsonBackend.h>
+#include <AzFramework/DocumentPropertyEditor/AggregateAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/CvarAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/ReflectionAdapter.h>
 #include <AzFramework/DocumentPropertyEditor/SettingsRegistryAdapter.h>
@@ -160,7 +161,7 @@ namespace DPEDebugView
         AZStd::vector<AZStd::string> m_vector;
         AZStd::vector<AZStd::vector<int>> m_vectorOfVectors;
         AZStd::map<AZStd::string, float> m_map;
-        AZStd::map<AZStd::string, float> m_readOnlyMap;
+        AZStd::map<int, float> m_readOnlyMap;
         AZStd::unordered_map<AZStd::pair<int, double>, int> m_unorderedMap;
         AZStd::unordered_map<EnumType, int> m_simpleEnumMap;
         AZStd::unordered_map<EnumType, double> m_immutableEnumMap;
@@ -347,9 +348,9 @@ int main(int argc, char** argv)
     testContainer.m_map["Two"] = 2.f;
     testContainer.m_map["million"] = 1000000.f;
 
-    testContainer.m_readOnlyMap["A"] = 1.f;
-    testContainer.m_readOnlyMap["B"] = 2.f;
-    testContainer.m_readOnlyMap["C"] = 3.f;
+    testContainer.m_readOnlyMap[2] = 1.f;
+    testContainer.m_readOnlyMap[4] = 2.f;
+    testContainer.m_readOnlyMap[6] = 3.f;
 
     testContainer.m_unorderedMap[{1, 2.}] = 3;
     testContainer.m_unorderedMap[{ 4, 5. }] = 6;
@@ -394,6 +395,38 @@ int main(int argc, char** argv)
     debugViewer->AddAdapterToList("Example Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::ExampleAdapter>());
     debugViewer->AddAdapterToList("Settings Registry Adapter", AZStd::make_shared<AZ::DocumentPropertyEditor::SettingsRegistryAdapter>());
 
+    // Important! Note that the following type must already be exposed to the reflection system, so we will re-use AZStd::map<int, float>,
+    // which was previously used for m_readOnlyMap
+    AZStd::map<int, float> firstVector = { 
+        { 1, 1. },
+        { 2, 2. },
+        { 3, 3. },
+        { 4, 4. },
+    };
+
+    auto firstContainerAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&firstVector, azrtti_typeid<AZStd::map<int, float>>());
+    // Note: uncomment to generate DPE to view the the firstVector adapter
+    /*AzToolsFramework::DocumentPropertyEditor firstDPE;
+    firstDPE.SetAdapter(firstContainerAdapter);
+    firstDPE.show();*/
+
+    AZStd::map<int, float> secondVector = {
+        { 2, 2. },
+        { 3, 3.5 },
+        { 4, 4. },
+        { 5, 5. },
+    };
+    auto secondContainerAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ReflectionAdapter>(&secondVector, azrtti_typeid<AZStd::map<int, float>>());
+    // Note: uncomment to generate DPE to view the the secondVector adapter
+    /*AzToolsFramework::DocumentPropertyEditor secondDPE;
+    secondDPE.SetAdapter(secondContainerAdapter);
+    secondDPE.show();*/
+
+    auto aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+    aggregateAdapter->AddAdapter(firstContainerAdapter);
+    aggregateAdapter->AddAdapter(secondContainerAdapter);
+
+    debugViewer->AddAdapterToList("Vector AggregateAdapter", aggregateAdapter);
     debugViewer->show();
     filteredDPE->show();
 

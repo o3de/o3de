@@ -85,6 +85,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterPropertyEditor<Button>();
         system->RegisterNodeAttribute<Button>(Button::ButtonText);
 
+        system->RegisterPropertyEditor<GenericButton>();
+        system->RegisterNodeAttribute<GenericButton>(GenericButton::OnActivate);
+
         system->RegisterPropertyEditor<ContainerActionButton>();
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::OnActivate);
