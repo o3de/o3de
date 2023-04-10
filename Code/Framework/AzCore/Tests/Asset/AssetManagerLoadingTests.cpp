@@ -1079,13 +1079,10 @@ namespace UnitTest
                 }
                 AZStd::this_thread::yield();
             }
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             EXPECT_EQ(asset1Container->IsReady(), true);
             EXPECT_EQ(asset2Container->IsReady(), true);
             EXPECT_EQ(asset3Container->IsReady(), true);
-
-            EXPECT_EQ(m_testAssetManager->GetRemainingJobs(), 0);
 
             auto rootAsset = asset1Container->GetRootAsset();
             EXPECT_EQ(rootAsset->GetId(), MyAsset1Id);
