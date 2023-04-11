@@ -17,7 +17,7 @@
         "Content",
         "Creation"
     ],
-    "requirements": "",
+    "requirements": "Change directory to DccScriptingInterface (gem folder), run '>.\\python.cmd foundation.py' to configure dependencies. See readme for more detail <a href='https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md'>DccScriptingInterface README</a>.",
     "documentation_url": "https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md",
 	"dependencies": [
         "QtForPython"]
