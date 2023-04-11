@@ -35,9 +35,6 @@ namespace UnitTest
         // Find the current status of the reload
         AZ::Data::AssetData::AssetStatus GetReloadStatus(const AssetId& assetId);
 
-        // Get the number of jobs left to process
-        size_t GetRemainingJobs() const;
-
         const AZ::Data::AssetManager::OwnedAssetContainerMap& GetAssetContainers() const;
 
         const AssetMap& GetAssets() const;
