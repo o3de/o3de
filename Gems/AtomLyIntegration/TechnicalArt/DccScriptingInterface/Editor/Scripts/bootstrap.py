@@ -16,7 +16,7 @@ This bootstrap file requires azlmbr and thus only runs within O3DE.
 
 :file: DccScriptingInterface\\editor\\scripts\\boostrap.py
 :Status: Prototype
-:Version: 0.0.1
+:Version: 0.0.2
 :Future: is unknown
 :Entrypoint: is an entrypoint and thus configures logging
 :Notice:
@@ -134,6 +134,9 @@ import azlmbr.bus
 import azlmbr.paths
 import azlmbr.action
 
+# put the Action Manager handler into a global scope so it's not deleted
+handler_action_manager = azlmbr.action.ActionManagerRegistrationNotificationBusHandler()
+
 # path devs might be interested in retreiving
 _LOGGER.debug(f'engroot: {azlmbr.paths.engroot}')
 _LOGGER.debug(f'executableFolder: {azlmbr.paths.executableFolder}')
@@ -195,7 +198,6 @@ dccsi_menu_slug = 'o3de.menu.studiotools'
 
 # - slot ------------------------------------------------------------------
 # as the list of slots/actions grows, refactor into sub-modules
-@Slot()
 def click_action_blender_start() -> start_service:
     """Start Blender DCC application"""
     _LOGGER.debug(f'Clicked: click_action_blender_start')
@@ -221,7 +223,6 @@ def hook_register_action_blender_start(parameters):
 
 
 # - slot ------------------------------------------------------------------
-@Slot()
 def click_action_blender_help():
     """Open Blender DCCsi docs (readme currently)"""
     _LOGGER.debug(f'Clicked: click_action_blender_help')
@@ -247,7 +248,6 @@ def hook_register_action_blender_help(parameters):
 
 
 # - slot ------------------------------------------------------------------
-@Slot()
 def click_action_maya_start() -> start_service:
     """Start Maya DCC application"""
     _LOGGER.debug(f'Clicked: click_action_maya_start')
@@ -273,7 +273,6 @@ def hook_register_action_maya_start(parameters):
 
 
 # - slot ------------------------------------------------------------------
-@Slot()
 def click_action_maya_help():
     """Open Maya DCCsi docs (readme currently)"""
     _LOGGER.debug(f'Clicked: click_action_maya_help')
@@ -299,7 +298,6 @@ def hook_register_action_maya_help(parameters):
 
 
 # - slot ------------------------------------------------------------------
-@Slot()
 def click_action_wing_start() -> start_service:
     """Start Wing IDE"""
     _LOGGER.debug(f'Clicked: click_action_wing_start')
@@ -325,7 +323,6 @@ def hook_register_action_wing_start(parameters):
 
 
 # - slot ------------------------------------------------------------------
-@Slot()
 def click_action_wing_help():
     """Open Wing IDE DCCsi docs (readme currently)"""
     _LOGGER.debug(f'Clicked: click_action_wing_help')
@@ -353,7 +350,6 @@ def hook_register_action_wing_help(parameters):
 # - slot ------------------------------------------------------------------
 from DccScriptingInterface.Editor.Scripts.about import DccsiAbout
 
-@Slot()
 def click_action_dccsi_about():
     """Open DCCsi About Dialog"""
     _LOGGER.debug(f'Clicked: click_action_dccsi_about')
@@ -375,7 +371,7 @@ def hook_register_action_dccsi_about(parameters):
                                                 editor_mainwindow_context_slug,
                                                 'o3de.action.python.dccsi.about',
                                                 action_properties,
-                                                click_action_wing_help)
+                                                click_action_dccsi_about)
 # -------------------------------------------------------------------------
 
 
@@ -574,21 +570,18 @@ def hook_on_action_registration(parameters):
 
 
 # -------------------------------------------------------------------------
-def bootstrap_Editor():
+def bootstrap_Editor(handler_action_manager):
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
 
     _LOGGER.debug('DCCsi:bootstrap_Editor')
-
-    # NEW
-    handler = azlmbr.action.ActionManagerRegistrationNotificationBusHandler()
-    handler.connect()
+    handler_action_manager.connect()
 
     # dccsi actions
-    handler.add_callback('OnActionRegistrationHook', hook_on_action_registration)
+    handler_action_manager.add_callback('OnActionRegistrationHook', hook_on_action_registration)
 
     # dccsi StudioTools menu
-    handler.add_callback('OnMenuRegistrationHook', hook_on_menu_registration)
-    handler.add_callback('OnMenuBindingHook', hook_on_menu_binding)
+    handler_action_manager.add_callback('OnMenuRegistrationHook', hook_on_menu_registration)
+    handler_action_manager.add_callback('OnMenuBindingHook', hook_on_menu_binding)
 # -------------------------------------------------------------------------
 
 
@@ -649,7 +642,7 @@ if __name__ == '__main__':
 
         if O3DE_EDITOR.stem.lower() == "editor":
             # if _DCCSI_GDEBUG then run the pyside2 test
-            _settings = bootstrap_Editor()
+            _settings = bootstrap_Editor(handler_action_manager)
 
         elif O3DE_EDITOR.stem.lower() == "materialeditor":
             _settings = bootstrap_MaterialEditor()

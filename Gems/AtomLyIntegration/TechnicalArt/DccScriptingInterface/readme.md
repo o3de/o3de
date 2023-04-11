@@ -2,7 +2,7 @@
 
 ### Status: Prototype
 
-### Version: 0.0.1
+### Version: 0.0.2
 
 ### OS: Windows only (for now)
 
