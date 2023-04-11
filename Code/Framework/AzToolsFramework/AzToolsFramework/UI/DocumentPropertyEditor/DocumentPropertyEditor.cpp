@@ -1618,12 +1618,12 @@ namespace AzToolsFramework
 
     void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
-        if (m_handlerPools.find(handlerName) != m_handlerPools.end())
-        {
-            AZ_Assert(m_handlerPools[handlerName] == handlerPool, "Registering a handler name for a different handler pool.");
-        }
+        AZ_Assert(
+            m_handlerPools.find(handlerName) == m_handlerPools.end() || m_handlerPools[handlerName] == handlerPool,
+            "Attempted to register a new handler pool to a handler name that is already in use.");
 
-        // will not overwrite if there is a registered handler pool for the handler name
+        // insertion to the handler pool hash map only succeeds if the handler name is a new key
+        // so it won't overwrite any existing registered handler pool for that handler name
         m_handlerPools.insert({ handlerName, handlerPool });
     }
 
