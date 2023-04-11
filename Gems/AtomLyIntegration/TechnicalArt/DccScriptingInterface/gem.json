@@ -18,7 +18,7 @@
         "Creation"
     ],
     "requirements": "",
-    "documentation_url": "",
+    "documentation_url": "https://github.com/o3de/o3de/blob/development/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/readme.md",
 	"dependencies": [
         "QtForPython"]
 }
