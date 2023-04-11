@@ -116,7 +116,6 @@ namespace UnitTest
     {
     public:
         MOCK_METHOD1(BrowseForAssets, void(AzToolsFramework::AssetBrowser::AssetSelectionModel& /*selection*/));
-        MOCK_METHOD1(GetIconTextureIdFromEntityIconPath, int(const AZStd::string&));
         MOCK_METHOD2(CreateNewEntityAtPosition, AZ::EntityId (const AZ::Vector3&, AZ::EntityId));
     };
 

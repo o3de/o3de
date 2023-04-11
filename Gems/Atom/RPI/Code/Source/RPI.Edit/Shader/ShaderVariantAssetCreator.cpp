@@ -40,12 +40,6 @@ namespace AZ
                 return false;
             }
 
-            if (!m_asset->m_buildTimestamp)
-            {
-                ReportError("Invalid timestamp");
-                return false;
-            }
-
             bool foundDrawFunctions = false;
             bool foundDispatchFunctions = false;
 
@@ -91,14 +85,6 @@ namespace AZ
 
         /////////////////////////////////////////////////////////////////////
         // Methods for all shader variant types
-
-        void ShaderVariantAssetCreator::SetBuildTimestamp(AZ::u64 buildTimestamp)
-        {
-            if (ValidateIsReady())
-            {
-                m_asset->m_buildTimestamp = buildTimestamp;
-            }
-        }
 
         void ShaderVariantAssetCreator::SetShaderFunction(RHI::ShaderStage shaderStage, RHI::Ptr<RHI::ShaderStageFunction> shaderStageFunction)
         {

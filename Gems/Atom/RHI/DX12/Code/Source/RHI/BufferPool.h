@@ -12,9 +12,8 @@
 
 #ifdef USE_AMD_D3D12MA
 #include <RHI/BufferD3D12MemoryAllocator.h>
-#else
-#include <RHI/BufferMemoryAllocator.h>
 #endif
+#include <RHI/BufferMemoryAllocator.h>
 
 namespace AZ
 {

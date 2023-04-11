@@ -599,12 +599,6 @@ QMenu* LevelEditorMenuHandler::CreateGameMenu()
         gameMenu.AddAction(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE);
     }
 
-    // Export Selected Objects
-    gameMenu.AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS);
-
-    // Export Occlusion Mesh
-    gameMenu.AddAction(ID_FILE_EXPORTOCCLUSIONMESH);
-
     gameMenu.AddSeparator();
 
     // Synchronize Player with Camera

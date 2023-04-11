@@ -9,6 +9,8 @@
 #include <Process/Scheduler/TestImpactProcessScheduler.h>
 #include <TestEngine/Common/TestImpactTestEngineBus.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
+#include <TestImpactFramework/TestImpactPolicy.h>
+#include <TestImpactFramework/TestImpactTestSequence.h>
 
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/vector.h>
