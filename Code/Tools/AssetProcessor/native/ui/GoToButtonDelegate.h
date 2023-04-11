@@ -46,6 +46,6 @@ namespace AssetProcessor
 
         QIcon m_icon, m_hoverIcon;
     };
-
-    Q_DECLARE_METATYPE(GoToButtonData);
 } // namespace AssetProcessor
+
+Q_DECLARE_METATYPE(AssetProcessor::GoToButtonData);
