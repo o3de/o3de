@@ -276,7 +276,6 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IExportManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IObjectManager.h
@@ -414,12 +413,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    Export/ExportManager.cpp
-    Export/ExportManager.h
-    Export/OBJExporter.cpp
-    Export/OBJExporter.h
-    Export/OCMExporter.cpp
-    Export/OCMExporter.h
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h

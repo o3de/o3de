@@ -41,7 +41,6 @@
 #include "ViewManager.h"
 #include "DisplaySettings.h"
 #include "KeyboardCustomizationSettings.h"
-#include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
@@ -112,7 +111,6 @@ CEditorImpl::CEditorImpl()
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
-    , m_pExportManager(nullptr)
     , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
@@ -266,9 +264,6 @@ CEditorImpl::~CEditorImpl()
 
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
-
-    // some plugins may be exporter - this must be above plugin manager delete.
-    SAFE_DELETE(m_pExportManager);
 
     SAFE_DELETE(m_pPluginManager)
     SAFE_DELETE(m_pAnimationContext) // relies on undo manager
@@ -1368,16 +1363,6 @@ void CEditorImpl::ReduceMemory()
         CryLogAlways("Max Free Memory Block = %I64d Kb", maxsize / 1024);
     }
 #endif
-}
-
-IExportManager* CEditorImpl::GetExportManager()
-{
-    if (!m_pExportManager)
-    {
-        m_pExportManager = new CExportManager();
-    }
-
-    return m_pExportManager;
 }
 
 ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const

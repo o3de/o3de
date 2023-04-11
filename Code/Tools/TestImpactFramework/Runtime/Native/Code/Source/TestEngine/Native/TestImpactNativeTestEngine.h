@@ -17,6 +17,8 @@
 #include <TestEngine/Common/Run/TestImpactTestEngineInstrumentedRun.h>
 #include <TestEngine/Common/Run/TestImpactTestEngineRegularRun.h>
 
+#include <TestRunner/Native/Job/TestImpactNativeShardedTestJobInfoGenerator.h>
+
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
@@ -26,6 +28,7 @@ namespace TestImpact
     class NativeTestEnumerationJobInfoGenerator;
     class NativeRegularTestRunJobInfoGenerator;
     class NativeInstrumentedTestRunJobInfoGenerator;
+    struct NativeShardedArtifactDir;
     class NativeShardedRegularTestRunJobInfoGenerator;
     class NativeShardedInstrumentedTestRunJobInfoGenerator;
     class NativeTestEnumerator;

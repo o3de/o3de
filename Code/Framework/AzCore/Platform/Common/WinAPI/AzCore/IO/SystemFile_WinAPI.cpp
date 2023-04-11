@@ -517,6 +517,13 @@ namespace AZ::IO::Internal
 namespace AZ::IO
 {
     // FileDescriptorCapturer WinAPI Impl
+
+    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
+        : m_sourceDescriptor(sourceDescriptor)
+        , m_pipeData(0)
+    {
+    }
+
     void FileDescriptorCapturer::Start(OutputRedirectVisitor redirectCallback,
         AZStd::chrono::milliseconds waitTimeout,
         int pipeSize)
