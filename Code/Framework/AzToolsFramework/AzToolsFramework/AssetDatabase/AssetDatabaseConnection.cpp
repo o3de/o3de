@@ -290,6 +290,14 @@ namespace AzToolsFramework
                     SqlParam<AZ::s64>(":sourceid"),
                     SqlParam<const char*>(":platform"));
 
+            static const char* QUERY_JOBS_BY_FAILURECAUSESOURCEID = "AzToolsFramework::AssetDatabase::QueryJobByFailureCauseSourceID";
+            static const char* QUERY_JOBS_BY_FAILURECAUSESOURCEID_STATEMENT =
+                "SELECT * FROM Jobs WHERE "
+                "FailureCauseSourcePK = :sourceid;";
+
+            static const auto s_queryJobsByFailureCauseSourceId = MakeSqlQuery(QUERY_JOBS_BY_FAILURECAUSESOURCEID, QUERY_JOBS_BY_FAILURECAUSESOURCEID_STATEMENT, LOG_NAME,
+                SqlParam<AZ::s64>(":sourceid"));
+
             // lookup by primary key
             static const char* QUERY_PRODUCT_BY_PRODUCTID = "AzToolsFramework::AssetDatabase::QueryProductByProductID";
             static const char* QUERY_PRODUCT_BY_PRODUCTID_STATEMENT =
@@ -1375,10 +1383,21 @@ namespace AzToolsFramework
 
         AZStd::string JobDatabaseEntry::ToString() const
         {
-            return AZStd::string::format("JobDatabaseEntry id:%" PRId64 " sourcepk:%" PRId64 " jobkey: %s fingerprint: %i platform: %s builderguid: %s status: %s, warnings: %u, errors %u",
-                static_cast<int64_t>(m_jobID), static_cast<int64_t>(m_sourcePK), m_jobKey.c_str(), m_fingerprint, m_platform.c_str(),
-                m_builderGuid.ToString<AZStd::string>().c_str(), AssetSystem::JobStatusString(m_status),
-                m_warningCount, m_errorCount);
+            return AZStd::string::format(
+                "JobDatabaseEntry id:%" PRId64 " sourcepk:%" PRId64
+                " jobkey: %s fingerprint: %i platform: %s builderguid: %s status: %s, failurecausesource: %" PRId64
+                ", failurecausefingerprint: %i, warnings: %u, errors %u",
+                static_cast<int64_t>(m_jobID),
+                static_cast<int64_t>(m_sourcePK),
+                m_jobKey.c_str(),
+                m_fingerprint,
+                m_platform.c_str(),
+                m_builderGuid.ToString<AZStd::string>().c_str(),
+                AssetSystem::JobStatusString(m_status),
+                static_cast<int64_t>(m_failureCauseSourcePK),
+                m_failureCauseFingerprint,
+                m_warningCount,
+                m_errorCount);
         }
 
         auto JobDatabaseEntry::GetColumns()
@@ -1392,6 +1411,8 @@ namespace AzToolsFramework
                 MakeColumn("BuilderGuid", m_builderGuid),
                 MakeColumn("Status", m_status),
                 MakeColumn("JobRunKey", m_jobRunKey),
+                MakeColumn("FailureCauseSourcePK", m_failureCauseSourcePK),
+                MakeColumn("FailureCauseFingerprint", m_failureCauseFingerprint),
                 MakeColumn("FirstFailLogTime", m_firstFailLogTime),
                 MakeColumn("FirstFailLogFile", m_firstFailLogFile),
                 MakeColumn("LastFailLogTime", m_lastFailLogTime),
@@ -1889,6 +1910,7 @@ namespace AzToolsFramework
             AddStatement(m_databaseConnection, s_queryJobByProductid);
             AddStatement(m_databaseConnection, s_queryJobBySourceid);
             AddStatement(m_databaseConnection, s_queryJobBySourceidPlatform);
+            AddStatement(m_databaseConnection, s_queryJobsByFailureCauseSourceId);
 
             AddStatement(m_databaseConnection, s_queryProductByProductid);
             AddStatement(m_databaseConnection, s_queryProductByJobid);
@@ -2248,6 +2270,11 @@ namespace AzToolsFramework
             }
 
             return s_queryJobBySourceid.BindAndThen(*m_databaseConnection, handler, sourceID).Query(&GetJobResult, builderGuid, jobKey, status);
+        }
+
+        bool AssetDatabaseConnection::QueryJobsByFailureCauseSourceID(AZ::s64 sourceID, jobHandler handler)
+        {
+            return s_queryJobsByFailureCauseSourceId.BindAndQuery(*m_databaseConnection, handler, &GetJobResultSimple, sourceID);
         }
 
         bool AssetDatabaseConnection::QueryProductByProductID(AZ::s64 productid, productHandler handler)

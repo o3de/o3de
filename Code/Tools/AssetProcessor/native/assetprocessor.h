@@ -129,6 +129,8 @@ namespace AssetProcessor
         AZ::u32 m_computedFingerprint = 0;     // what the fingerprint was at the time of job creation.
         qint64 m_computedFingerprintTimeStamp = 0; // stores the number of milliseconds since the universal coordinated time when the fingerprint was computed.
         AZ::u64 m_jobRunKey = 0;
+        AZ::s64 m_failureCauseSourceId = AzToolsFramework::AssetDatabase::InvalidEntryId; // Id of the source that caused this job to fail (typically due to a conflict).
+        AZ::u32 m_failureCauseFingerprint = 0; // Fingerprint of the job that caused this job to fail.  Used to prevent infinite retry loops.
         bool m_checkExclusiveLock = true;      ///< indicates whether we need to check the input file for exclusive lock before we process this job
         bool m_addToDatabase = true; ///< If false, this is just a UI job, and should not affect the database.
 
