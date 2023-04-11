@@ -71,6 +71,7 @@ def click_action_sampleui():
     return
 # - hook ------------------------------------------------------------------
 def hook_register_action_sampleui(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_sampleui')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = 'SampleUI'
     action_properties.description = "Open an Example SampleUI Dialog"

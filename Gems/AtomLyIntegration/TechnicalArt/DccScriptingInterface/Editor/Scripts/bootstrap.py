@@ -205,6 +205,7 @@ def click_action_blender_start() -> start_service:
 # - hook ------------------------------------------------------------------
 def hook_register_action_blender_start(parameters):
     # Create an Action Hook for starting Blender from menu
+    _LOGGER.debug(f'Registered: hook_register_action_blender_start')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = START_SLUG
     action_properties.description = "A menu item to call an action to Start Blender"
@@ -230,6 +231,7 @@ def click_action_blender_help():
     return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
 # - hook ------------------------------------------------------------------
 def hook_register_action_blender_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_blender_help')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = HELP_SLUG
     action_properties.description = "A menu item to open Dccsi Blender Readme (help docs)"
@@ -255,6 +257,7 @@ def click_action_maya_start() -> start_service:
 # - hook ------------------------------------------------------------------
 def hook_register_action_maya_start(parameters):
     # Create an Action Hook for starting Maya from menu
+    _LOGGER.debug(f'Registered: hook_register_action_maya_start')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = START_SLUG
     action_properties.description = "A menu item to call an action to Start Maya"
@@ -280,6 +283,7 @@ def click_action_maya_help():
     return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
 # - hook ------------------------------------------------------------------
 def hook_register_action_maya_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_maya_help')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = HELP_SLUG
     action_properties.description = "A menu item to open Dccsi Maya Readme (help docs)"
@@ -305,6 +309,7 @@ def click_action_wing_start() -> start_service:
 # - hook ------------------------------------------------------------------
 def hook_register_action_wing_start(parameters):
     # Create an Action Hook for starting WingIDE from menu
+    _LOGGER.debug(f'Registered: hook_register_action_wing_start')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = START_SLUG
     action_properties.description = "A menu item to call an action to Start Wing IDE"
@@ -330,6 +335,7 @@ def click_action_wing_help():
     return QtGui.QDesktopServices.openUrl(QUrl(url, QUrl.TolerantMode))
 # - hook ------------------------------------------------------------------
 def hook_register_action_wing_help(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_wing_help')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = HELP_SLUG
     action_properties.description = "A menu item to open Dccsi Wing IDE Readme (help docs)"
@@ -358,6 +364,7 @@ def click_action_dccsi_about():
     return about_dialog.exec_()
 # - hook ------------------------------------------------------------------
 def hook_register_action_dccsi_about(parameters):
+    _LOGGER.debug(f'Registered: hook_register_action_dccsi_about')
     action_properties = azlmbr.action.ActionProperties()
     action_properties.name = 'About'
     action_properties.description = "Open DccScriptingInterface About Dialog"
@@ -374,6 +381,9 @@ def hook_register_action_dccsi_about(parameters):
 
 # -------------------------------------------------------------------------
 def hook_on_menu_registration(parameters):
+
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_menu_registration')
+
     # Create a StudioTools Menu (o3de.menu.studiotools)
     menu_studiotools_properties = azlmbr.action.MenuProperties()
     menu_studiotools_properties.name = "Studio Tools"
@@ -442,6 +452,9 @@ def hook_on_menu_registration(parameters):
 
 # -------------------------------------------------------------------------
 def hook_on_menu_binding(parameters):
+
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_menu_binding')
+
     # Add Blender Actions to menu tree
     azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
                                               'AddActionToMenu',
@@ -544,10 +557,11 @@ def hook_on_menu_binding(parameters):
 
 
 # -------------------------------------------------------------------------
-def hook_onA_ation_registration(parameters):
-    """Action Registration"""
+def hook_on_action_registration(parameters):
+    """DCCsi Action Registration"""
 
-    # dccsi actions
+    _LOGGER.debug('DCCsi:bootstrap_Editor:hook_on_action_registration')
+
     hook_register_action_blender_start(parameters)
     hook_register_action_blender_help(parameters)
     hook_register_action_maya_start(parameters)
@@ -570,7 +584,7 @@ def bootstrap_Editor():
     handler.connect()
 
     # dccsi actions
-    handler.add_callback('OnActionRegistrationHook', hook_onA_ation_registration)
+    handler.add_callback('OnActionRegistrationHook', hook_on_action_registration)
 
     # dccsi StudioTools menu
     handler.add_callback('OnMenuRegistrationHook', hook_on_menu_registration)
