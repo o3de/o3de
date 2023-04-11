@@ -1394,7 +1394,7 @@ namespace AzToolsFramework
                 m_platform.c_str(),
                 m_builderGuid.ToString<AZStd::string>().c_str(),
                 AssetSystem::JobStatusString(m_status),
-                m_failureCauseSourcePK,
+                static_cast<int64_t>(m_failureCauseSourcePK),
                 m_failureCauseFingerprint,
                 m_warningCount,
                 m_errorCount);
