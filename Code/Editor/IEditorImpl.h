@@ -36,7 +36,6 @@ class QMenu;
 class CObjectManager;
 class CUndoManager;
 class CGameEngine;
-class CExportManager;
 class CErrorsDlg;
 class CTrackViewSequenceManager;
 class CEditorFileMonitor;
@@ -262,8 +261,6 @@ public:
     //! Setup Material Editor mode
     void SetMatEditMode(bool bIsMatEditMode);
     void ReduceMemory() override;
-    // Get Export manager
-    IExportManager* GetExportManager() override;
     ESystemConfigPlatform GetEditorConfigPlatform() const override;
     void ReloadTemplates() override;
     void AddErrorMessage(const QString& text, const QString& caption);
@@ -339,8 +336,6 @@ protected:
 
     CLevelIndependentFileMan* m_pLevelIndependentFileMan;
 
-    //! Export manager for exporting objects and a terrain from the game to DCC tools
-    CExportManager* m_pExportManager;
     std::unique_ptr<CEditorFileMonitor> m_pEditorFileMonitor;
     QString m_selectFileBuffer;
     QString m_levelNameBuffer;
