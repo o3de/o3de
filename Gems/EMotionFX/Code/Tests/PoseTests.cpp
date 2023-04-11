@@ -520,7 +520,7 @@ namespace EMotionFX
             #if AZ_TRAIT_USE_PLATFORM_SIMD_NEON
             EXPECT_THAT(pose.GetLocalSpaceTransformDirect(i), IsClose(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
             #else
-            EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity())));
+            EXPECT_EQ(pose.GetLocalSpaceTransformDirect(i), Transform(AZ::Vector3(0.0f, 0.0f, m_testOffset), AZ::Quaternion::CreateIdentity()));
             #endif // AZ_TRAIT_USE_PLATFORM_SIMD_NEON
         }
     }
