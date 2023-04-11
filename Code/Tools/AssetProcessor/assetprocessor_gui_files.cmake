@@ -45,6 +45,8 @@ set(FILES
     native/ui/BuilderInfoPatternsModel.cpp
     native/ui/BuilderInfoMetricsModel.h
     native/ui/BuilderInfoMetricsModel.cpp
+    native/ui/EnabledRelocationTypesModel.h
+    native/ui/EnabledRelocationTypesModel.cpp
     native/ui/MessageWindow.h
     native/ui/MessageWindow.cpp
     native/ui/MessageWindow.ui

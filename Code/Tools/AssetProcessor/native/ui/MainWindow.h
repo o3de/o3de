@@ -52,6 +52,7 @@ namespace AssetProcessor
     class BuilderInfoPatternsModel;
     class BuilderInfoMetricsModel;
     class BuilderInfoMetricsSortModel;
+    class EnabledRelocationTypesModel;
 }
 
 class MainWindow
@@ -79,7 +80,8 @@ public:
         Logs,
         Connections,
         Builders,
-        Tools
+        Tools,
+        AssetRelocation
     };
 
     struct Config
@@ -171,6 +173,8 @@ private:
     AssetProcessor::BuilderInfoMetricsModel* m_builderInfoMetrics = nullptr;
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
+
+    AssetProcessor::EnabledRelocationTypesModel* m_enabledRelocationTypesModel = nullptr;
 
     void SetContextLogDetails(const QMap<QString, QString>& details);
     void ClearContextLogDetails();
