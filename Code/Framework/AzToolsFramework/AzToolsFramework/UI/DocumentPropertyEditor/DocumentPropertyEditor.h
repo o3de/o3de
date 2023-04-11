@@ -231,7 +231,7 @@ namespace AzToolsFramework
                 ->GetPool<AzQtComponents::ElidingLabel>();
         }
 
-        void RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
+        void RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool);
 
         struct HandlerInfo
         {
@@ -280,7 +280,8 @@ namespace AzToolsFramework
         static AZ::Name GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId);
         static void ReleaseHandler(HandlerInfo& handler);
 
-        AZStd::vector<AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
+        // Co-owns the handler pool that is needed in DPE and the ownership would be released when the DPE is deleted
+        AZStd::unordered_map<AZ::Name, AZStd::shared_ptr<AZ::InstancePoolBase>> m_handlerPools;
     };
 } // namespace AzToolsFramework
 
