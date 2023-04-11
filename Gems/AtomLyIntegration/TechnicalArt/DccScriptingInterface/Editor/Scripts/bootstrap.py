@@ -566,8 +566,8 @@ def hook_on_action_registration(parameters):
     hook_register_action_blender_help(parameters)
     hook_register_action_maya_start(parameters)
     hook_register_action_maya_help(parameters)
-    hook_register_action_maya_start(parameters)
-    hook_register_action_maya_help(parameters)
+    hook_register_action_wing_start(parameters)
+    hook_register_action_wing_help(parameters)
     hook_register_action_sampleui(parameters)
     hook_register_action_dccsi_about(parameters)
 # -------------------------------------------------------------------------
