@@ -12,6 +12,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/Views/EntryDelegate.h>
 #include <AzCore/Utils/Utils.h>
 #include <AzQtComponents/Components/StyledBusyLabel.h>
@@ -103,12 +104,12 @@ namespace AzToolsFramework
                 QPalette actualPalette(option.palette);
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
                     if (sourceEntry)
                     {
                         if (m_showSourceControl)
                         {
-                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                            DrawThumbnail(painter, iconTopLeft, iconSize, entry);
                         }
                         // sources with no children should be greyed out.
                         if (sourceEntry->GetChildCount() == 0)
@@ -138,38 +139,61 @@ namespace AzToolsFramework
             m_showSourceControl = showSourceControl;
         }
 
-        int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, Thumbnailer::SharedThumbnailKey thumbnailKey) const
+        int EntryDelegate::DrawThumbnail(QPainter* painter, const QPoint& point, const QSize& size, const AssetBrowserEntry* entry) const
         {
-            SharedThumbnail thumbnail;
-            ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
-            AZ_Assert(thumbnail, "The shared numbernail was not available from the ThumbnailerRequestBus.");
-            AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
-            if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
+            if (!m_showSourceControl)
             {
-                return 0;
-            }
-
-            const Thumbnail::State thumbnailState = thumbnail->GetState();
-            if (thumbnailState == Thumbnail::State::Loading)
-            {
-                AzQtComponents::StyledBusyLabel* busyLabel;
-                AssetBrowserComponentRequestBus::BroadcastResult(busyLabel , &AssetBrowserComponentRequests::GetStyledBusyLabel);
-                if (busyLabel)
+                const auto& qVariant = AssetBrowserViewUtils::GetThumbnail(entry);
+                if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
                 {
-                    busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
+                    QIcon icon;
+                    icon.addFile(path, size, QIcon::Normal, QIcon::Off);
+                    AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
+                    icon.paint(painter, QRect(point.x(), point.y(), size.width(), size.height()));
+                }
+                else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
+                {
+                    // Scaling and centering pixmap within bounds to preserve aspect ratio
+                    const QPixmap pixmapScaled = pixmap.scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    const QSize sizeDelta = size - pixmapScaled.size();
+                    const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                    painter->drawPixmap(point + pointDelta, pixmapScaled);
                 }
             }
-            else if (thumbnailState == Thumbnail::State::Ready)
+            else if (auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry))
             {
-                // Scaling and centering pixmap within bounds to preserve aspect ratio
-                const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-                const QSize sizeDelta = size - pixmap.size();
-                const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
-                painter->drawPixmap(point + pointDelta, pixmap);
-            }
-            else
-            {
-                AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
+                Thumbnailer::SharedThumbnailKey thumbnailKey = sourceEntry->GetSourceControlThumbnailKey();
+                SharedThumbnail thumbnail;
+                ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
+                AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
+                AZ_Assert(painter, "A null QPainter was passed in to DrawThumbnail.");
+                if (!painter || !thumbnail || thumbnail->GetState() == Thumbnail::State::Failed)
+                {
+                    return 0;
+                }
+
+                const Thumbnail::State thumbnailState = thumbnail->GetState();
+                if (thumbnailState == Thumbnail::State::Loading)
+                {
+                    AzQtComponents::StyledBusyLabel* busyLabel;
+                    AssetBrowserComponentRequestBus::BroadcastResult(busyLabel, &AssetBrowserComponentRequests::GetStyledBusyLabel);
+                    if (busyLabel)
+                    {
+                        busyLabel->DrawTo(painter, QRectF(point.x(), point.y(), size.width(), size.height()));
+                    }
+                }
+                else if (thumbnailState == Thumbnail::State::Ready)
+                {
+                    // Scaling and centering pixmap within bounds to preserve aspect ratio
+                    const QPixmap pixmap = thumbnail->GetPixmap().scaled(size, Qt::KeepAspectRatio, Qt::SmoothTransformation);
+                    const QSize sizeDelta = size - pixmap.size();
+                    const QPoint pointDelta = QPoint(sizeDelta.width() / 2, sizeDelta.height() / 2);
+                    painter->drawPixmap(point + pointDelta, pixmap);
+                }
+                else
+                {
+                    AZ_Assert(false, "Thumbnail state %d unexpected here", int(thumbnailState));
+                }
             }
             return m_iconSize;
         }
@@ -228,12 +252,12 @@ namespace AzToolsFramework
 
                 if (index.column() == aznumeric_cast<int>(AssetBrowserEntry::Column::Name))
                 {
-                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry->GetThumbnailKey());
+                    int thumbX = DrawThumbnail(painter, iconTopLeft, iconSize, entry);
                     if (sourceEntry)
                     {
                         if (m_showSourceControl)
                         {
-                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry->GetSourceControlThumbnailKey());
+                            DrawThumbnail(painter, iconTopLeft, iconSize, sourceEntry);
                         }
                         // sources with no children should be greyed out.
                         if (sourceEntry->GetChildCount() == 0)

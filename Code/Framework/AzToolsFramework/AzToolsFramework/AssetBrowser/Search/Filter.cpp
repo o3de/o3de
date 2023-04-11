@@ -390,7 +390,9 @@ namespace AzToolsFramework
         // EntryTypeFilter
         //////////////////////////////////////////////////////////////////////////
         EntryTypeFilter::EntryTypeFilter()
-            : m_entryType(AssetBrowserEntry::AssetEntryType::Product) {}
+            : m_entryType(AssetBrowserEntry::AssetEntryType::Product)
+        {
+        }
 
         void EntryTypeFilter::SetEntryType(AssetBrowserEntry::AssetEntryType entryType)
         {
@@ -416,23 +418,33 @@ namespace AzToolsFramework
         // AssetPathFilter
         //////////////////////////////////////////////////////////////////////////
         AssetPathFilter::AssetPathFilter()
+            : m_assetPath("")
         {
         }
 
         void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
         {
-            m_assetPath = path;
+            m_assetPath = path.LexicallyNormal();
         }
 
         QString AssetPathFilter::GetNameInternal() const
         {
-            return QString::fromUtf8(m_assetPath.c_str());
+            return QString::fromUtf8(m_assetPath.c_str(), static_cast<int32_t>(m_assetPath.Native().size()));
         }
 
         bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            const AZ::IO::Path entryPath = entry->GetFullPath();
-            return entryPath.IsRelativeTo(m_assetPath);
+            if (m_assetPath.empty())
+            {
+                return false;
+            }
+
+            AZ::IO::Path absolutePath =
+                (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product && entry->GetParent()
+                    ? entry->GetParent()->GetFullPath()
+                    : AZ::IO::Path(entry->GetFullPath()));
+
+            return absolutePath.IsRelativeTo(m_assetPath);
         }
 
         //////////////////////////////////////////////////////////////////////////

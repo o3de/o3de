@@ -190,12 +190,12 @@ namespace LyShineEditor
     {
         if (AZStd::wildcard_match("*.uicanvas", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/UICanvas_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/UICanvas_80.svg");
         }
 
         if (AZStd::wildcard_match("*.sprite", fullSourceFileName))
         {
-            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/Sprite_16.png");
+            return AzToolsFramework::AssetBrowser::SourceFileDetails("Editor/Icons/AssetBrowser/Sprite_80.svg");
         }
         return AzToolsFramework::AssetBrowser::SourceFileDetails();
     }

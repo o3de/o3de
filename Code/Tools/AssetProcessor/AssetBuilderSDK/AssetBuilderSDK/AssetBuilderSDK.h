@@ -10,6 +10,7 @@
 #pragma once
 
 #include <AzCore/Debug/TraceMessageBus.h>
+#include <AzCore/JSON/prettywriter.h>
 #include <AzCore/std/string/regex.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/containers/vector.h>
@@ -81,6 +82,8 @@ namespace AssetBuilderSDK
 
         static void Reflect(AZ::ReflectContext* context);
     };
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body);
 }
 
 namespace AZStd
