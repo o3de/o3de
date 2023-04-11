@@ -138,39 +138,59 @@ blender_config.add_setting(ENVAR_BLENDER_USER_SCRIPTS,
                            set_sys_path=True,
                            set_pythonpath=True)
 
+try:
+    SLUG_DCCSI_BLENDER_VERSION = settings.DCCSI_BLENDER_VERSION
+except:
+    from DccScriptingInterface.Tools.DCC.Blender.constants import SLUG_DCCSI_BLENDER_VERSION
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_VERSION
-from DccScriptingInterface.Tools.DCC.Blender.constants import SLUG_DCCSI_BLENDER_VERSION
 blender_config.add_setting(ENVAR_DCCSI_BLENDER_VERSION,
                            SLUG_DCCSI_BLENDER_VERSION)
 
+try:
+    PATH_DCCSI_BLENDER_LOCATION = settings.PATH_DCCSI_BLENDER_LOCATION
+except:
+    from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_ROOT
+    PATH_DCCSI_BLENDER_LOCATION = f'{PATH_DCCSI_BLENDER_ROOT} {SLUG_DCCSI_BLENDER_VERSION}'
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LOCATION
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LOCATION
 PATH_DCCSI_BLENDER_LOCATION = Path(PATH_DCCSI_BLENDER_LOCATION).resolve()
 blender_config.add_setting(ENVAR_DCCSI_BLENDER_LOCATION,
                            PATH_DCCSI_BLENDER_LOCATION.as_posix(),
                            set_sys_path=True)
 
+try:
+    PATH_DCCSI_BLENDER_EXE = settings.PATH_DCCSI_BLENDER_EXE
+except:
+    from DccScriptingInterface.Tools.DCC.Blender.constants import SLUG_BLENDER_EXE
+    PATH_DCCSI_BLENDER_EXE = f"{PATH_DCCSI_BLENDER_LOCATION}\\{SLUG_BLENDER_EXE}"
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_PATH_DCCSI_BLENDER_EXE
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_EXE
 PATH_DCCSI_BLENDER_EXE = Path(PATH_DCCSI_BLENDER_EXE).resolve()
 blender_config.add_setting(ENVAR_PATH_DCCSI_BLENDER_EXE,
                            PATH_DCCSI_BLENDER_EXE.as_posix())
 
+try:
+    PATH_DCCSI_BLENDER_LAUNCHER_EXE = settings.PATH_DCCSI_BLENDER_LAUNCHER_EXE
+except:
+    from DccScriptingInterface.Tools.DCC.Blender.constants import SLUG_BLENDER_LAUNCHER_EXE
+    PATH_DCCSI_BLENDER_LAUNCHER_EXE = f'{PATH_DCCSI_BLENDER_LOCATION}\\{SLUG_BLENDER_LAUNCHER_EXE}'
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_LAUNCHER_EXE
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_LAUNCHER_EXE
 PATH_DCCSI_BLENDER_LAUNCHER_EXE = Path(PATH_DCCSI_BLENDER_LAUNCHER_EXE).resolve()
 blender_config.add_setting(ENVAR_DCCSI_BLENDER_LAUNCHER_EXE,
                            PATH_DCCSI_BLENDER_LAUNCHER_EXE.as_posix())
 
+try:
+    PATH_DCCSI_BLENDER_PYTHON_LOC = settings.PATH_DCCSI_BLENDER_PYTHON_LOC
+except:
+    PATH_DCCSI_BLENDER_PYTHON_LOC = f"{PATH_DCCSI_BLENDER_LOCATION}\\{SLUG_DCCSI_BLENDER_VERSION}/python"
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PYTHON_LOC
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PYTHON_LOC
 PATH_DCCSI_BLENDER_PYTHON_LOC = Path(PATH_DCCSI_BLENDER_PYTHON_LOC).resolve()
 blender_config.add_setting(ENVAR_DCCSI_BLENDER_PYTHON_LOC,
                            PATH_DCCSI_BLENDER_PYTHON_LOC.as_posix(),
                            set_sys_path=True)
-
+try:
+    PATH_DCCSI_BLENDER_PY_EXE = settings.PATH_DCCSI_BLENDER_PY_EXE
+except:
+    PATH_DCCSI_BLENDER_PY_EXE = f'{PATH_DCCSI_BLENDER_PYTHON_LOC}\\bin\\python.exe'
 from DccScriptingInterface.Tools.DCC.Blender.constants import ENVAR_DCCSI_BLENDER_PY_EXE
-from DccScriptingInterface.Tools.DCC.Blender.constants import PATH_DCCSI_BLENDER_PY_EXE
 PATH_DCCSI_BLENDER_PY_EXE = Path(PATH_DCCSI_BLENDER_PY_EXE).resolve()
 blender_config.add_setting(ENVAR_DCCSI_BLENDER_PY_EXE,
                            PATH_DCCSI_BLENDER_PY_EXE.as_posix())
