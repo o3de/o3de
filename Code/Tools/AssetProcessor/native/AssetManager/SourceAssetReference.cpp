@@ -152,17 +152,17 @@ namespace AssetProcessor
 
     AZ::IO::FixedMaxPath SourceAssetReference::AbsolutePath() const
     {
-        return m_absolutePath;
+        return AZ::IO::FixedMaxPath(m_absolutePath);
     }
 
     AZ::IO::FixedMaxPath SourceAssetReference::RelativePath() const
     {
-        return m_relativePath;
+        return AZ::IO::FixedMaxPath(m_relativePath);
     }
 
     AZ::IO::FixedMaxPath SourceAssetReference::ScanFolderPath() const
     {
-        return m_scanFolderPath;
+        return AZ::IO::FixedMaxPath(m_scanFolderPath);
     }
 
     AZ::s64 SourceAssetReference::ScanFolderId() const

@@ -74,9 +74,9 @@ namespace AssetProcessor
     private:
         void Normalize();
 
-        AZ::IO::FixedMaxPath m_absolutePath;
-        AZ::IO::FixedMaxPath m_relativePath;
-        AZ::IO::FixedMaxPath m_scanFolderPath;
+        AZ::IO::Path m_absolutePath;
+        AZ::IO::Path m_relativePath;
+        AZ::IO::Path m_scanFolderPath;
         AZ::s64 m_scanFolderId{};
     };
 }
