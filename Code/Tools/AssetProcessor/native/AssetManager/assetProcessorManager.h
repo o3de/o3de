@@ -249,6 +249,9 @@ namespace AssetProcessor
         //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
         void SetMetaCreationDelay(AZ::u32 milliseconds);
 
+        //! Gets the maximum amount of time to wait before generating a metadata file.
+        AZ::u32 GetMetaCreationDelay() const { return m_metaCreationDelayMs; }
+
         void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
