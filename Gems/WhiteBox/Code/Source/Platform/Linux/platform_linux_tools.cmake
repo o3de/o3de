@@ -13,7 +13,7 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
     elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "aarch64")
         ly_associate_package(PACKAGE_NAME OpenMesh-8.1-rev3-linux-aarch64 TARGETS OpenMesh PACKAGE_HASH 0d53d215c4b2185879e3b27d1a4bdf61a53bcdb059eae30377ea4573bcd9ebc1)
     else()
-        message(FATAL_ERROR "Unsupport linux architecture ${CMAKE_SYSTEM_PROCESSOR}")
+        message(FATAL_ERROR "Unsupported linux architecture ${CMAKE_SYSTEM_PROCESSOR}")
     endif()
 
     set(LY_BUILD_DEPENDENCIES

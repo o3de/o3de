@@ -208,4 +208,10 @@ endforeach()
 
 # flags are defined per platform, follow platform files under Platform/<PlatformName>/Configurations_<platformname>.cmake
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
-include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+
+if(${PAL_PLATFORM_NAME_LOWERCASE} STREQUAL "linux")
+    # Currently only linux supports multiple architectures, so use the platform + architecture specific file
+    include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}_${CMAKE_SYSTEM_PROCESSOR}.cmake)
+else()
+    include(${pal_dir}/Configurations_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
+endif()
