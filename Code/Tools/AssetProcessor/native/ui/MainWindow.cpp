@@ -235,6 +235,7 @@ void MainWindow::Activate()
 
     connect(ui->supportButton, &QPushButton::clicked, this, &MainWindow::OnSupportClicked);
 
+    ui->buttonList->addTab(QStringLiteral("Welcome"));
     ui->buttonList->addTab(QStringLiteral("Jobs"));
     ui->buttonList->addTab(QStringLiteral("Assets"));
     ui->buttonList->addTab(QStringLiteral("Logs"));
@@ -244,7 +245,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
-    const int startIndex = static_cast<int>(DialogStackIndex::Jobs);
+    const int startIndex = static_cast<int>(DialogStackIndex::Welcome);
     ui->dialogStack->setCurrentIndex(startIndex);
     ui->buttonList->setCurrentIndex(startIndex);
 

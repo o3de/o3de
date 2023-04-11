@@ -36,9 +36,6 @@ namespace AZ
             const RHI::ShaderBuildArguments& m_shaderBuildArguments;
             //! Used to write temporary files during shader compilation, like *.hlsl, or *.air, or *.metallib, etc.
             const AZStd::string& m_tempDirPath;
-            //! Used to synchronize versions of the ShaderAsset and ShaderVariantAsset,
-            //! especially during hot-reload. A (ShaderVariantAsset.timestamp) >= (ShaderAsset.timestamp).
-            const AZ::u64 m_assetBuildTimestamp;
             const RPI::ShaderSourceData& m_shaderSourceDataDescriptor;
             const RPI::ShaderOptionGroupLayout& m_shaderOptionGroupLayout;
             const MapOfStringToStageType& m_shaderEntryPoints;
