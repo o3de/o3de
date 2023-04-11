@@ -181,8 +181,6 @@ If you have the engine source setup properly, and have Wing Pro 8 installed, and
 >.\python.cmd Tools\IDE\Wing\start.py
 ```
 
-
-
 ---
 
 Copyright (c) Contributors to the Open 3D Engine Project. For complete
