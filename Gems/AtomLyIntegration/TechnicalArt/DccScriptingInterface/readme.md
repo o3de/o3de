@@ -90,17 +90,24 @@ You need to pass the target interpreter into `foundation.py`
 cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
 ```
 
-- From command line the option `--python_exe` or `-py`
+If you care going to use the DCCsi cli tools, you'll need to just run the default foundation configuration:
 
-- Examples:
-  
-  ```batch
-  .\python foundation.py -py="C:\Program Files\Blender Foundation\Blender 3.1\3.1\python\bin\python.exe"`
-  ```
-  
-  ```batch
-  .\python foundation.py -py="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe"`
-  ```
+```.shell
+>cd C:\path\to\o3de\Gems\AtomLyIntegration\TechnicalArt\DccScriptingInterface
+>.\python.cmd foundation.py
+```
+
+For supported tools such as DCC apps like Blender or Maya, From command line the option `--python_exe` or `-py`
+
+Examples:
+
+```batch
+.\python foundation.py -py="C:\Program Files\Blender Foundation\Blender 3.1\3.1\python\bin\python.exe"`
+```
+
+```batch
+.\python foundation.py -py="C:\Program Files\Autodesk\Maya2023\bin\mayapy.exe"`
+```
 
 `foundation.py` can also be used to check the target Python for pip, which is needed to install the `requirements.txt`
 
