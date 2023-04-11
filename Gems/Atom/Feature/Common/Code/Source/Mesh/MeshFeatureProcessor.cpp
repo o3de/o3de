@@ -1465,7 +1465,7 @@ namespace AZ
                     // Connect to the update draw packet event
                     {
                         AZStd::scoped_lock<AZStd::mutex> scopedLock(instanceGroupInsertResult.m_handle->m_eventLock);
-                        m_updateDrawPacketEventHandlersByLod[modelLodIndex][meshIndex].Connect(
+                        m_updateDrawPacketEventHandlersByLod[modelLodIndex].back().Connect(
                             instanceGroupInsertResult.m_handle->m_updateDrawPacketEvent);
                     }
                 }
@@ -2132,14 +2132,13 @@ namespace AZ
                 }
 
                 lod.m_drawPackets.clear();
-                size_t meshCount = lodAssets[lodIndex + m_lodBias]->GetMeshes().size();
-                for (size_t meshIndex = 0; meshIndex < meshCount; ++meshIndex)
+                if (!r_meshInstancingEnabled)
                 {
-                    if (!r_meshInstancingEnabled)
+                    const RPI::MeshDrawPacketList& drawPacketList = m_drawPacketListsByLod[lodIndex + m_lodBias];
+                    for (const RPI::MeshDrawPacket& drawPacket : drawPacketList)
                     {
                         // If mesh instancing is disabled, get the draw packets directly from this ModelDataInstance
-                        const RHI::DrawPacket* rhiDrawPacket =
-                            m_drawPacketListsByLod[lodIndex + m_lodBias][meshIndex].GetRHIDrawPacket();
+                        const RHI::DrawPacket* rhiDrawPacket = drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {
@@ -2149,12 +2148,14 @@ namespace AZ
                             lod.m_drawPackets.push_back(rhiDrawPacket);
                         }
                     }
-                    else
+                }
+                else
+                {
+                    const InstanceGroupHandleList& instanceGroupHandleList = m_instanceGroupHandlesByLod[lodIndex + m_lodBias];
+                    for (const ModelDataInstance::InstanceGroupHandle& handle : instanceGroupHandleList)
                     {
                         // If mesh instancing is enabled, get the draw packet from the MeshInstanceManager
-                        const RHI::DrawPacket* rhiDrawPacket =
-                            meshInstanceManager[m_instanceGroupHandlesByLod[lodIndex + m_lodBias][meshIndex]]
-                                .m_drawPacket.GetRHIDrawPacket();
+                        const RHI::DrawPacket* rhiDrawPacket = meshInstanceManager[handle].m_drawPacket.GetRHIDrawPacket();
 
                         if (rhiDrawPacket)
                         {
