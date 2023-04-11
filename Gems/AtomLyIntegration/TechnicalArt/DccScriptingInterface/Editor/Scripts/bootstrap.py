@@ -366,7 +366,7 @@ def hook_register_action_dccsi_about(parameters):
     azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
                                                 'RegisterAction',
                                                 editor_mainwindow_context_slug,
-                                                'o3de.action.python.dccsi.ide.wing.help',
+                                                'o3de.action.python.dccsi.about',
                                                 action_properties,
                                                 click_action_wing_help)
 # -------------------------------------------------------------------------
@@ -442,13 +442,56 @@ def hook_on_menu_registration(parameters):
 
 # -------------------------------------------------------------------------
 def hook_on_menu_binding(parameters):
-    # Add Action to Menu
+    # Add Blender Actions to menu tree
     azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
                                               'AddActionToMenu',
-                                              'o3de.menu.studiotools.dcc',
-                                              'o3de.action.python.dccsi.dcc.blender_start',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              'o3de.action.python.dccsi.dcc.blender.start',
                                               100)
 
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.blender',
+                                              'o3de.action.python.dccsi.dcc.blender.help',
+                                              200)
+    # Add Maya Actions to menu tree
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              'o3de.action.python.dccsi.dcc.maya.start',
+                                              100)
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.dcc.maya',
+                                              'o3de.action.python.dccsi.dcc.maya.help',
+                                              200)
+    # Add Wing Actions to menu tree
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              'o3de.action.python.dccsi.ide.wing.start',
+                                              100)
+
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.ide.wing',
+                                              'o3de.action.python.dccsi.ide.wing.help',
+                                              200)
+    # Add examples SampleUI
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools.examples',
+                                              'o3de.action.python.dccsi.examples.sampleui',
+                                              100)
+    # Add dccsi About
+    azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
+                                              'AddActionToMenu',
+                                              'o3de.menu.studiotools',
+                                              'o3de.action.python.dccsi.about',
+                                              100)
+
+    # manage dccsi menu tree
     # Add StudioTools > DCC (subMenu)
     azlmbr.action.MenuManagerPythonRequestBus(azlmbr.bus.Broadcast,
                                               'AddSubMenuToMenu',
@@ -501,6 +544,22 @@ def hook_on_menu_binding(parameters):
 
 
 # -------------------------------------------------------------------------
+def hook_onA_ation_registration(parameters):
+    """Action Registration"""
+
+    # dccsi actions
+    hook_register_action_blender_start(parameters)
+    hook_register_action_blender_help(parameters)
+    hook_register_action_maya_start(parameters)
+    hook_register_action_maya_help(parameters)
+    hook_register_action_maya_start(parameters)
+    hook_register_action_maya_help(parameters)
+    hook_register_action_sampleui(parameters)
+    hook_register_action_dccsi_about(parameters)
+# -------------------------------------------------------------------------
+
+
+# -------------------------------------------------------------------------
 def bootstrap_Editor():
     """! Put bootstrapping code here to execute in O3DE Editor.exe"""
 
@@ -511,21 +570,11 @@ def bootstrap_Editor():
     handler.connect()
 
     # dccsi actions
-    handler.add_callback('hook_register_action_blender_start', hook_register_action_blender_start)
-    handler.add_callback('hook_register_action_blender_help', hook_register_action_blender_help)
-
-    handler.add_callback('hook_register_action_maya_start', hook_register_action_maya_start)
-    handler.add_callback('hook_register_action_maya_help', hook_register_action_maya_help)
-
-    handler.add_callback('hook_register_action_wing_start', hook_register_action_maya_start)
-    handler.add_callback('hook_register_action_wing_help', hook_register_action_maya_help)
-
-    handler.add_callback('hook_register_action_sampleui', hook_register_action_sampleui)
-    handler.add_callback('hook_register_action_dccsi_about', hook_register_action_dccsi_about)
+    handler.add_callback('OnActionRegistrationHook', hook_onA_ation_registration)
 
     # dccsi StudioTools menu
-    handler.add_callback('hook_on_menu_registration', hook_on_menu_registration)
-    handler.add_callback('hook_on_menu_binding', hook_on_menu_binding)
+    handler.add_callback('OnMenuRegistrationHook', hook_on_menu_registration)
+    handler.add_callback('OnMenuBindingHook', hook_on_menu_binding)
 # -------------------------------------------------------------------------
 
 

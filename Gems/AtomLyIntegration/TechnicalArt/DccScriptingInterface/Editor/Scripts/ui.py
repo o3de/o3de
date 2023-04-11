@@ -79,7 +79,7 @@ def hook_register_action_sampleui(parameters):
     azlmbr.action.ActionManagerPythonRequestBus(azlmbr.bus.Broadcast,
                                                 'RegisterAction',
                                                 'o3de.context.editor.mainwindow',
-                                                'o3de.action.python.dccsi.ide.wing.help',
+                                                'o3de.action.python.dccsi.examples.sampleui',
                                                 action_properties,
                                                 click_action_sampleui)
 # -------------------------------------------------------------------------
