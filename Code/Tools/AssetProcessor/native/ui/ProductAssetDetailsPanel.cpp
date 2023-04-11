@@ -25,6 +25,7 @@
 #include <QDir>
 #include <QStringLiteral>
 #include <QUrl>
+#include <AzCore/Jobs/JobFunction.h>
 
 namespace AssetProcessor
 {
@@ -455,9 +456,8 @@ namespace AssetProcessor
         QString pathOnDisk = cacheRootDir.filePath(productItemData->m_databaseInfo.m_productName.c_str());
 
         AddProductIdToScanCount(productItemData->m_databaseInfo.m_productID, scanName);
-
         // Run the scan on another thread so the UI remains responsive.
-        AZStd::thread scanningThread = AZStd::thread([=]() {
+        auto* job = AZ::CreateJobFunction([=]() {
             MissingDependencyScannerRequestBus::Broadcast(&MissingDependencyScannerRequestBus::Events::ScanFile,
                 pathOnDisk.toUtf8().constData(),
                 MissingDependencyScanner::DefaultMaxScanIteration,
@@ -480,8 +480,9 @@ namespace AssetProcessor
                     }
                 }
             });
-        });
-        scanningThread.detach();
+        }, true);
+
+        job->Start();
     }
 
     void ProductAssetDetailsPanel::AddProductIdToScanCount(AZ::s64 scannedProductId, QString scanName)
