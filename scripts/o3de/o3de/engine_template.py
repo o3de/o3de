@@ -766,16 +766,16 @@ def create_template(source_path: pathlib.Path,
         # Finally replace any remaining AZ_TYPE_INFO*, AZ_RTTI*, AZ_COMPONENT*, and AZ_EDITOR_COMPONENT*
         # with the {${Random_Uuid}} placehlder
         find_pattern_and_add_replacement( \
-            r'.*AZ_TYPE_INFO*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            r'.*AZ_TYPE_INFO.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
             '{${Random_Uuid}}')
         find_pattern_and_add_replacement( \
-            r'.*AZ_RTTI*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            r'.*AZ_RTTI.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
             '{${Random_Uuid}}')
         find_pattern_and_add_replacement( \
-            r'.*AZ_COMPONENT*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            r'.*AZ_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
             '{${Random_Uuid}}')
         find_pattern_and_add_replacement( \
-            r'.*AZ_EDITOR_COMPONENT*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            r'.*AZ_EDITOR_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
             '{${Random_Uuid}}')
 
         # we want to send back the transformed data and whether or not this file
