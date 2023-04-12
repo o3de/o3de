@@ -7,6 +7,9 @@
  */
 
 #include "GemInfo.h"
+#include <AzCore/IO/Path/Path.h>
+#include <AzCore/Utils/Utils.h>
+#include <ProjectUtils.h>
 
 #include <QObject>
 
@@ -96,9 +99,39 @@ namespace O3DE::ProjectManager
         return (m_platforms & platform);
     }
 
+    QString GemInfo::GetNameWithVersionSpecifier(const QString& comparator) const
+    {
+        if (m_isEngineGem || m_version.isEmpty() || m_version.contains("unknown", Qt::CaseInsensitive))
+        {
+            // The gem should not use a version specifier because it is an engine gem
+            // or the version is invalid
+            return m_name;
+        }
+        else
+        {
+            return QString("%1%2%3").arg(m_name, comparator, m_version);
+        }
+    }
+
     bool GemInfo::operator<(const GemInfo& gemInfo) const
     {
-        return (m_displayName < gemInfo.m_displayName);
+        // Don't use display name for comparison here - do that in whatever model
+        // or model proxy Qt uses to display the table of gems
+        // We want to keep gems with the same names together in case the display
+        // names change, otherwise you can end up with a list that has multiple
+        // versions of a gem in different orders in the list because the display
+        // name for that gem was changed
+        const int compareResult = m_name.compare(gemInfo.m_name, Qt::CaseInsensitive);
+        if (compareResult == 0)
+        {
+            // If the gem names are the same, compare if the version number is less
+            // If the version is missing or invalid '0.0.0' will be used
+            return ProjectUtils::VersionCompare(gemInfo.m_version, m_version) < 0;
+        }
+        else
+        {
+            return compareResult < 0;
+        }
     }
 
     GemInfo::Platforms GemInfo::GetPlatformFromString(const QString& platformText)

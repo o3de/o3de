@@ -73,25 +73,6 @@ namespace AZ::Render
         Base::CompileResources(context);
     }
 
-    void TaaPass::BuildCommandListInternal(const RHI::FrameGraphExecuteContext& context)
-    {
-        Base::BuildCommandListInternal(context);
-        if (ShouldCopyHistoryBuffer)
-        {
-            context.GetCommandList()->Submit(m_copyItem);
-        }
-    }
-
-    void TaaPass::SetupFrameGraphDependencies(RHI::FrameGraphInterface frameGraph)
-    {
-        Base::SetupFrameGraphDependencies(frameGraph);
-        if (ShouldCopyHistoryBuffer)
-        {
-            // Override the estimated item count to include the copy item.
-            frameGraph.SetEstimatedItemCount(2);
-        }
-    }
-
     void TaaPass::FrameBeginInternal(FramePrepareParams params)
     {
         RHI::Size inputSize = m_inputColorBinding->GetAttachment()->m_descriptor.m_image.m_size;
@@ -162,13 +143,6 @@ namespace AZ::Render
         AZ_Error("TaaPass", m_lastFrameAccumulationBinding, "TaaPass requires a slot for LastFrameAccumulation.");
         m_outputColorBinding = FindAttachmentBinding(Name("OutputColor"));
         AZ_Error("TaaPass", m_outputColorBinding, "TaaPass requires a slot for OutputColor.");
-
-        RHI::CopyImageDescriptor desc;
-        desc.m_sourceImage = m_attachmentImages[1]->GetRHIImage();
-        desc.m_destinationImage = m_attachmentImages[0]->GetRHIImage();
-        desc.m_sourceSize = desc.m_sourceImage->GetDescriptor().m_size;
-
-        m_copyItem = RHI::CopyItem(desc);
 
         // Set up the attachment for last frame accumulation and output color if it's never been done to
         // ensure SRG indices are set up correctly by the pass system.

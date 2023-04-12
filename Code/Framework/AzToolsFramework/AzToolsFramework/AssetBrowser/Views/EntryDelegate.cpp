@@ -160,9 +160,9 @@ namespace AzToolsFramework
                     painter->drawPixmap(point + pointDelta, pixmapScaled);
                 }
             }
-            else
+            else if (auto sourceEntry = azrtti_cast<const SourceAssetBrowserEntry*>(entry))
             {
-                auto thumbnailKey = (azrtti_cast<const SourceAssetBrowserEntry*>(entry))->GetSourceControlThumbnailKey();
+                Thumbnailer::SharedThumbnailKey thumbnailKey = sourceEntry->GetSourceControlThumbnailKey();
                 SharedThumbnail thumbnail;
                 ThumbnailerRequestBus::BroadcastResult(thumbnail, &ThumbnailerRequests::GetThumbnail, thumbnailKey);
                 AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");

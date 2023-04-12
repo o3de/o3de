@@ -51,7 +51,7 @@ namespace O3DE::ProjectManager
 
         // Margin and borders
         inline constexpr static QMargins s_itemMargins = QMargins(/*left=*/16, /*top=*/5, /*right=*/16, /*bottom=*/5); // Item border distances
-        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/10, /*top=*/12, /*right=*/20, /*bottom=*/12); // Distances of the elements within an item to the item borders
+        inline constexpr static QMargins s_contentMargins = QMargins(/*left=*/10, /*top=*/12, /*right=*/30, /*bottom=*/12); // Distances of the elements within an item to the item borders
         inline constexpr static int s_borderWidth = 4;
         inline constexpr static int s_extraSummarySpacing = s_itemMargins.right();
 
@@ -75,8 +75,13 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_platformTextLineBottomMargin = 5;
         inline constexpr static int s_platformTextWrapAroundLineMaxCount = 2;
 
+        // Version
+        inline constexpr static int s_versionSize = 50;
+        inline constexpr static int s_versionSizeSpacing = 25;
+
         // Status icon
         inline constexpr static int s_statusIconSize = 16;
+        inline constexpr static int s_statusIconSizeLarge = 20;
         inline constexpr static int s_statusButtonSpacing = 5;
 
         enum class HeaderOrder
@@ -84,6 +89,7 @@ namespace O3DE::ProjectManager
             Preview,
             Name,
             Summary,
+            Version,
             Status
         };
 
@@ -125,9 +131,11 @@ namespace O3DE::ProjectManager
 
         QPixmap m_unknownStatusPixmap;
         QPixmap m_notDownloadedPixmap;
+        QPixmap m_downloadedPixmap;
         QPixmap m_downloadSuccessfulPixmap;
         QPixmap m_downloadFailedPixmap;
         QMovie* m_downloadingMovie = nullptr;
+        QPixmap m_updatePixmap;
         bool m_readOnly = false;
 
         AdjustableHeaderWidget* m_headerWidget = nullptr;

@@ -66,6 +66,7 @@ namespace O3DE::ProjectManager
         tabWidget->addTab(m_updateSettingsScreen, tr("General"));
 
         QPushButton* gemsButton = new QPushButton(tr("Configure Gems"), this);
+        gemsButton->setProperty("secondary", true);
         topBarHLayout->addWidget(gemsButton);
         tabWidget->setCornerWidget(gemsButton);
 
@@ -82,6 +83,7 @@ namespace O3DE::ProjectManager
         m_backButton = backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
         m_nextButton = backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+        m_nextButton->setProperty("primary", true);
 
         connect(gemsButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleGemsButton);
         connect(m_backButton, &QPushButton::clicked, this, &UpdateProjectCtrl::HandleBackButton);
