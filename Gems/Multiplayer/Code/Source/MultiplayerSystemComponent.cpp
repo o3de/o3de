@@ -187,9 +187,9 @@ namespace Multiplayer
                 })
                 ->Method("GetCurrentBlendFactor", []()
                 {
-                    if (GetMultiplayer())
+                    if (const IMultiplayer* multiplayerSystem = GetMultiplayer())
                     {
-                        return GetMultiplayer()->GetCurrentBlendFactor();
+                        return multiplayerSystem->GetCurrentBlendFactor();
                     }
                     return 0.f;
                 })
