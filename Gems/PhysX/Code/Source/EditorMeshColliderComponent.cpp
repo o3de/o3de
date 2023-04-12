@@ -7,6 +7,7 @@
  */
 
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
+#include <AzFramework/Physics/Utils.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/API/EntityPropertyEditorRequestsBus.h>
 
@@ -857,9 +858,8 @@ namespace PhysX
     void EditorMeshColliderComponent::UpdateShapeConfigurationScale()
     {
         const AZ::Vector3& assetScale = m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_assetScale;
-        const bool isAssetScaleUniform =
-            AZ::IsClose(assetScale.GetX(), assetScale.GetY()) && AZ::IsClose(assetScale.GetX(), assetScale.GetZ());
-        m_hasNonUniformScale = !isAssetScaleUniform || (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
+        m_hasNonUniformScale =
+            !Physics::Utils::HasUniformScale(assetScale) || (AZ::NonUniformScaleRequestBus::FindFirstHandler(GetEntityId()) != nullptr);
         m_proxyShapeConfiguration.m_hasNonUniformScale = m_hasNonUniformScale;
         m_proxyShapeConfiguration.m_physicsAsset.m_configuration.m_scale = GetWorldTM().ExtractUniformScale() * m_cachedNonUniformScale;
     }
