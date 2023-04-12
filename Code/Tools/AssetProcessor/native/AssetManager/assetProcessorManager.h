@@ -389,7 +389,12 @@ namespace AssetProcessor
             AZStd::string_view autoFailReason,
             JobEntry jobEntry,
             AZStd::string_view jobLog = "");
-        void AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter);
+        void AutoFailJob(
+            AZStd::string_view consoleMsg,
+            AZStd::string_view autoFailReason,
+            const AZStd::vector<AssetProcessedEntry>::iterator& assetIter,
+            AZ::s64 failureCauseSourceId = AzToolsFramework::AssetDatabase::InvalidEntryId,
+            AZ::u32 failureCauseFingerprint = 0);
 
         using ProductInfoList = AZStd::vector<AZStd::pair<AzToolsFramework::AssetDatabase::ProductDatabaseEntry, const AssetBuilderSDK::JobProduct*>>;
 
