@@ -193,34 +193,6 @@ namespace Multiplayer
                     }
                     return 0.f;
                 })
-                ->Method("GetOnInitializedEvent",[]() -> InitializedEvent*
-                {
-                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
-                    if (!mpComponent)
-                    {
-                        AZ_Assert(false, "GetOnInitializedEvent failed to find the multiplayer system component. Please update behavior context to properly retrieve the event.");
-                        return nullptr;
-                    }
-
-                    return &mpComponent->m_initializedEvent;
-                })
-                    ->Attribute(
-                        AZ::Script::Attributes::AzEventDescription,
-                        AZ::BehaviorAzEventDescription{ "On Initialized Event", { "Multiplayer Agent Type" } })
-                ->Method("GetOnTerminatedEvent",[]() -> TerminatedEvent*
-                {
-                    const auto mpComponent = static_cast<MultiplayerSystemComponent*>(AZ::Interface<IMultiplayer>::Get());
-                    if (!mpComponent)
-                    {
-                        AZ_Assert(false, "GetOnTerminatedEvent failed to find the multiplayer system component. Please update behavior context to properly retrieve the event.");
-                        return nullptr;
-                    }
-
-                    return &mpComponent->m_terminatedEvent;
-                })
-                    ->Attribute(
-                        AZ::Script::Attributes::AzEventDescription,
-                        AZ::BehaviorAzEventDescription{ "On Terminated Event", { "Reason" } })
             ;
         }
 
@@ -455,7 +427,6 @@ namespace Multiplayer
         GetNetworkEntityManager()->ClearAllEntities();
 
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
-        m_terminatedEvent.Signal(reason);
 
         // Signal session management, do this after uninitializing state
         if (agentType == MultiplayerAgentType::DedicatedServer || agentType == MultiplayerAgentType::ClientServer)
@@ -547,7 +518,6 @@ namespace Multiplayer
             m_networkInterface->StopListening();
         }
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
-        m_terminatedEvent.Signal(DisconnectReason::TerminatedByServer);
 
         return true;
     }
@@ -1297,7 +1267,7 @@ namespace Multiplayer
 
         if (m_agentType != MultiplayerAgentType::Uninitialized && multiplayerType != MultiplayerAgentType::Uninitialized)
         {
-            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down.");
+            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down. Please disconnect from multiplayer");
         }
 
         if (m_agentType == MultiplayerAgentType::Uninitialized)
@@ -1320,8 +1290,6 @@ namespace Multiplayer
             {
                 m_networkEntityManager.Initialize(AzNetworking::IpAddress(), AZStd::make_unique<NullEntityDomain>());
             }
-
-            m_initializedEvent.Signal(multiplayerType);
         }
         m_agentType = multiplayerType;
 
@@ -1394,16 +1362,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
     {
         handler.Connect(m_serverAcceptanceReceivedEvent);
-    }
-
-    void MultiplayerSystemComponent::AddInitializedHandler(InitializedEvent::Handler& handler)
-    {
-        handler.Connect(m_initializedEvent);
-    }
-
-    void MultiplayerSystemComponent::AddTerminatedHandler(TerminatedEvent::Handler& handler)
-    {
-        handler.Connect(m_terminatedEvent);
     }
 
     void MultiplayerSystemComponent::AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler)

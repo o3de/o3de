@@ -68,8 +68,6 @@ namespace Multiplayer
     using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
-    using InitializedEvent = AZ::Event<MultiplayerAgentType>;
-    using TerminatedEvent = AZ::Event<AzNetworking::DisconnectReason>;
     using LevelLoadBlockedEvent = AZ::Event<>;
     using NoServerLevelLoadedEvent = AZ::Event<>;
     using VersionMismatchEvent = AZ::Event<>;
@@ -150,23 +148,11 @@ namespace Multiplayer
         //! @param handler The ServerAcceptanceReceived Handler to add
         virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
-        //! @deprecated If looking for an event when the multiplayer system initializes (begins running as a client, dedicated-server, or client-server), then use AddInitializedEvent.
-        //! Otherwise, if looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
 
-        //! @deprecated If looking for an event when the multiplayer system is terminated, then use AddTerminatedEvent.
-        //! Otherwise, If looking for an event when a multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or SessionNotificationBus::OnDestroySessionEnd.
+        //! @deprecated If looking for an event when a multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or SessionNotificationBus::OnDestroySessionEnd.
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
-
-        //! Adds an InitializedEvent Handler which is invoked whenever the multiplayer agent is set up and ready to fulfill its role.
-        //! For example before attempting to connect to the host server, the game launcher will set initialize with a 'Client' agent type.
-        //! Agent types include: Client, dedicated-server, and client-server.
-        //! @param handler The InitializedEvent handler to add
-        virtual void AddInitializedHandler(InitializedEvent::Handler& handler) = 0;
-
-        //! Adds an TerminatedEvent Handler which is invoked whenever stopping multiplayer mode.
-        //! @param handler The TerminatedEvent handler to add
-        virtual void AddTerminatedHandler(TerminatedEvent::Handler& handler) = 0;
 
         //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
         //! @param handler The LevelLoadBlockedEvent handler to add

@@ -132,19 +132,14 @@ namespace Multiplayer
         void AddNotifyEntityMigrationEventHandler(NotifyEntityMigrationEvent::Handler& handler) override;
         void AddConnectionAcquiredHandler(ConnectionAcquiredEvent::Handler& handler) override;
 
-        //! @deprecated If looking for an event when the multiplayer system initializes (begins running as a client, dedicated-server, or
-        //! client-server), then use AddAgentInitializedEvent
-        //! Otherwise, if looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or
+        //! @deprecated If looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or
         //! SessionNotificationBus::OnCreateSessionEnd.
         void AddSessionInitHandler(SessionInitEvent::Handler&) override {}
 
-        //! @deprecated If looking for an event when leaving multiplayer mode, use AddTerminatedEvent instead.
-        //! Otherwise, if looking for an event when the multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or
+        //! @deprecated If looking for an event when the multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or
         //! SessionNotificationBus::OnDestroySessionEnd.
         void AddSessionShutdownHandler(SessionShutdownEvent::Handler&) override {}
 
-        void AddInitializedHandler(InitializedEvent::Handler& handler) override;
-        void AddTerminatedHandler(TerminatedEvent::Handler& handler) override;
         void AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler) override;
         void AddNoServerLevelLoadedHandler(NoServerLevelLoadedEvent::Handler& handler) override;
         void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) override;
@@ -206,8 +201,6 @@ namespace Multiplayer
         
         IFilterEntityManager* m_filterEntityManager = nullptr; // non-owning pointer
 
-        InitializedEvent m_initializedEvent;
-        TerminatedEvent m_terminatedEvent;
         ConnectionAcquiredEvent m_connectionAcquiredEvent;
         ServerAcceptanceReceivedEvent m_serverAcceptanceReceivedEvent;
         EndpointDisconnectedEvent m_endpointDisconnectedEvent;

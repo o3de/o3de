@@ -63,19 +63,6 @@ namespace Multiplayer
             m_mpComponent->Reflect(m_serializeContext.get());
             m_mpComponent->Reflect(m_behaviorContext.get());
 
-            m_initHandler = Multiplayer::InitializedEvent::Handler(
-                [this](Multiplayer::MultiplayerAgentType agentType)
-                {
-                    TestInitEvent(agentType);
-                });
-            m_mpComponent->AddInitializedHandler(m_initHandler);
-            m_terminatedHandler = Multiplayer::TerminatedEvent::Handler(
-                [this](DisconnectReason reason)
-                {
-                    TestTerminateEvent(reason);
-                });
-            m_mpComponent->AddTerminatedHandler(m_terminatedHandler);
-
             m_connAcquiredHandler = Multiplayer::ConnectionAcquiredEvent::Handler(
                 [this](Multiplayer::MultiplayerAgentDatum value)
                 {
@@ -109,16 +96,6 @@ namespace Multiplayer
             m_behaviorContext.reset();
         }
 
-        void TestInitEvent([[maybe_unused]] Multiplayer::MultiplayerAgentType agentType)
-        {
-            ++m_initEventTriggerCount;
-        }
-
-        void TestTerminateEvent([[maybe_unused]] DisconnectReason reason)
-        {
-            ++m_terminatedEventTriggerCount;
-        }
-
         void TestConnectionAcquiredEvent(Multiplayer::MultiplayerAgentDatum& datum)
         {
             m_connectionAcquiredCount += aznumeric_cast<uint32_t>(datum.m_id);
@@ -147,13 +124,9 @@ namespace Multiplayer
         AZStd::unique_ptr<AZ::IConsole> m_console;
         AZStd::unique_ptr<AZ::NiceTimeSystemMock> m_mockTime;
 
-        uint32_t m_initEventTriggerCount = 0;
-        uint32_t m_terminatedEventTriggerCount = 0;
         uint32_t m_connectionAcquiredCount = 0;
         uint32_t m_endpointDisconnectedCount = 0;
 
-        Multiplayer::InitializedEvent::Handler m_initHandler;
-        Multiplayer::TerminatedEvent::Handler m_terminatedHandler;
         Multiplayer::ConnectionAcquiredEvent::Handler m_connAcquiredHandler;
         Multiplayer::EndpointDisconnectedEvent::Handler m_endpointDisconnectedHandler;
 
@@ -164,20 +137,6 @@ namespace Multiplayer
 
         IMultiplayerSpawnerMock m_mpSpawnerMock;
     };
-
-    TEST_F(MultiplayerSystemTests, TestInitEvent)
-    {
-        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::DedicatedServer);
-        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::DedicatedServer);
-
-        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::ClientServer);
-        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::ClientServer);
-
-        m_mpComponent->InitializeMultiplayer(MultiplayerAgentType::Client);
-        EXPECT_EQ(m_mpComponent->GetAgentType(), MultiplayerAgentType::Client);
-
-        EXPECT_EQ(m_initEventTriggerCount, 1);
-    }
 
     TEST_F(MultiplayerSystemTests, TestShutdownEvent)
     {
@@ -190,7 +149,6 @@ namespace Multiplayer
         m_mpComponent->OnDisconnect(&connMock2, AzNetworking::DisconnectReason::None, AzNetworking::TerminationEndpoint::Local);
 
         EXPECT_EQ(m_endpointDisconnectedCount, 2);
-        EXPECT_EQ(m_terminatedEventTriggerCount, 1);
     }
 
     TEST_F(MultiplayerSystemTests, TestConnectionDatum)

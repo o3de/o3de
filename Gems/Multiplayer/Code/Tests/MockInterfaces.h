@@ -34,8 +34,6 @@ namespace UnitTest
         MOCK_METHOD1(AddServerAcceptanceReceivedHandler, void(Multiplayer::ServerAcceptanceReceivedEvent::Handler&));
         MOCK_METHOD1(AddSessionInitHandler, void(Multiplayer::SessionInitEvent::Handler&));
         MOCK_METHOD1(AddSessionShutdownHandler, void(Multiplayer::SessionShutdownEvent::Handler&));
-        MOCK_METHOD1(AddInitializedHandler, void(Multiplayer::InitializedEvent::Handler&));
-        MOCK_METHOD1(AddTerminatedHandler, void(Multiplayer::TerminatedEvent::Handler&));
         MOCK_METHOD1(AddLevelLoadBlockedHandler, void(Multiplayer::LevelLoadBlockedEvent::Handler&));
         MOCK_METHOD1(AddNoServerLevelLoadedHandler, void(Multiplayer::NoServerLevelLoadedEvent::Handler&));
         MOCK_METHOD1(AddVersionMismatchHandler, void(Multiplayer::VersionMismatchEvent::Handler&));
