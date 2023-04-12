@@ -74,6 +74,7 @@ namespace AzToolsFramework
             SplitMaterialBuilderAndMaterialAssetBuilder,
             NewMaterialTypeBuildPipeline,
             AddedJobFailureSourceColumn,
+            AddedMissingDependenciesIndex,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
