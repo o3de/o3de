@@ -38,11 +38,7 @@ namespace AzToolsFramework
 
         bool m_isRegistrationCompleted = false;
 
-        struct HotKeyActionContextPair
-        {
-            AZStd::string actionContextIdentifier;
-            QWidget* widget;
-        };
+        struct HotKeyActionContextPair;
         AZStd::vector<HotKeyActionContextPair> m_widgetContextQueue;
 
         HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;

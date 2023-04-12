@@ -14,6 +14,12 @@
 
 namespace AzToolsFramework
 {
+    struct HotKeyWidgetRegistrationHelper::HotKeyActionContextPair
+    {
+        AZStd::string actionContextIdentifier;
+        QWidget* widget;
+    };
+
     HotKeyWidgetRegistrationHelper::HotKeyWidgetRegistrationHelper()
     {
         m_hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get();
@@ -36,15 +42,13 @@ namespace AzToolsFramework
         if (m_isRegistrationCompleted)
         {
             // If the registration hooks were already run, just proceed with the call directly.
-            auto outcome = m_hotKeyManagerInterface->AssignWidgetToActionContext(actionContextIdentifier, widget);
-            if (outcome.IsSuccess())
-            {
-                return;
-            }
+            m_hotKeyManagerInterface->AssignWidgetToActionContext(actionContextIdentifier, widget);
         }
-
-        // If we're before the registration has been completed, or the assignment failed, store the data and do it later.
-        m_widgetContextQueue.push_back({ actionContextIdentifier, widget });
+        else
+        {
+            // If we're before the registration has been completed, store the data and call the API later.
+            m_widgetContextQueue.push_back({ actionContextIdentifier, widget });
+        }
     }
 
     void HotKeyWidgetRegistrationHelper::OnPostActionManagerRegistrationHook()
