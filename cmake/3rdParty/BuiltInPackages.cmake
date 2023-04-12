@@ -13,14 +13,7 @@
 
 #include the platform-specific 3rd party packages.
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
-
-if(${PAL_PLATFORM_NAME_LOWERCASE} STREQUAL "linux")
-    # Currently only linux supports multiple architectures, so use the platform + architecture specific file
-    set(LY_PAL_PACKAGE_FILE_NAME ${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}_${CMAKE_SYSTEM_PROCESSOR}.cmake)
-else()
-    set(LY_PAL_PACKAGE_FILE_NAME ${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-endif()
-
+set(LY_PAL_PACKAGE_FILE_NAME ${pal_dir}/BuiltInPackages_${PAL_PLATFORM_NAME_LOWERCASE}${LY_HOST_ARCHITECTURE_NAME_EXTENSION}.cmake)
 include(${LY_PAL_PACKAGE_FILE_NAME})
 
 # add the above file to the ALLFILES list, so that they show up in IDEs
