@@ -19,6 +19,7 @@
 #include <native/ui/BuilderDataItem.h>
 #include <native/ui/BuilderInfoPatternsModel.h>
 #include <native/ui/BuilderInfoMetricsModel.h>
+#include <native/ui/EnabledRelocationTypesModel.h>
 #include <native/ui/SourceAssetTreeFilterModel.h>
 
 #include <AzFramework/Asset/AssetSystemBus.h>
@@ -191,6 +192,7 @@ MainWindow::MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* pa
     , m_builderList(new BuilderListModel(this))
     , m_builderListSortFilterProxy(new BuilderListSortFilterProxy(this))
     , m_builderInfoPatterns(new AssetProcessor::BuilderInfoPatternsModel(this))
+    , m_enabledRelocationTypesModel(new AssetProcessor::EnabledRelocationTypesModel(this))
 {
     ui->setupUi(this);
 
@@ -243,6 +245,7 @@ void MainWindow::Activate()
     ui->buttonList->addTab(QStringLiteral("Builders"));
     ui->buttonList->addTab(QStringLiteral("Settings"));
     ui->buttonList->addTab(QStringLiteral("Shared Cache"));
+    ui->buttonList->addTab(QStringLiteral("Asset Relocation"));
 
     connect(ui->buttonList, &AzQtComponents::SegmentBar::currentChanged, ui->dialogStack, &QStackedWidget::setCurrentIndex);
     const int startIndex = static_cast<int>(DialogStackIndex::Welcome);
@@ -658,6 +661,9 @@ void MainWindow::Activate()
 
     // Shared Cache tab:
     SetupAssetServerTab();
+
+    m_enabledRelocationTypesModel->Reset();
+    ui->AssetRelocationExtensionListView->setModel(m_enabledRelocationTypesModel);
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)

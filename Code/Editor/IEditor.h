@@ -53,7 +53,6 @@ class CDialog;
 class C3DConnexionDriver;
 #endif
 class CSettingsManager;
-struct IExportManager;
 class CDisplaySettings;
 class CLevelIndependentFileMan;
 class CSelectionTreeManager;
@@ -634,8 +633,6 @@ struct IEditor
 
     virtual void ReduceMemory() = 0;
 
-    //! Export manager for exporting objects and a terrain from the game to DCC tools
-    virtual IExportManager* GetExportManager() = 0;
     virtual ESystemConfigPlatform GetEditorConfigPlatform() const = 0;
     virtual void ReloadTemplates() = 0;
     virtual void ShowStatusText(bool bEnable) = 0;

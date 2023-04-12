@@ -16,7 +16,7 @@ import sys
 import json
 import uuid
 import re
-
+from typing import Tuple
 
 from o3de import manifest, register, validation, utils
 
@@ -672,7 +672,7 @@ def create_template(source_path: pathlib.Path,
         return ext.lower() in cpp_file_ext
 
     def _transform_into_template(s_data: object,
-                                 prefer_sanitized_name: bool = False) -> (bool, str):
+                                 prefer_sanitized_name: bool = False) -> Tuple[bool, str]:
         """
         Internal function to transform any data into templated data
         :param s_data: the input data, this could be file data or file name data
@@ -706,32 +706,77 @@ def create_template(source_path: pathlib.Path,
         if not keep_license_text:
             t_data = _replace_license_text(t_data)
 
+        def find_pattern_and_add_replacement(pattern: str, replace_placeholder: str):
+            """
+            Searchs for pattern containing Uuid within the file data
+            and replaces matched Uuids with with the specified placeholder
+            :param pattern: Regular expression pattern to search for Uuid
+                            Pattern must contain a symbolic group of (?P<Uuid>...)
+                            as documented at https://docs.python.org/3/library/re.html#regular-expression-syntax
+            :replace_placeholder: text to replaced matched Uuid symbolic group pattern with
+            """
+            nonlocal t_data
+            match_result_list = re.findall(pattern, t_data)
+            if match_result_list:
+                for uuid_text in match_result_list:
+                    replacements.append((uuid_text, replace_placeholder))
+                    t_data = t_data.replace(uuid_text, replace_placeholder)
+
         # See if this file has the ModuleClassId
-        try:
-            pattern = r'.*AZ_RTTI\(\$\{SanitizedCppName\}Module, \"(?P<ModuleClassId>\{.*-.*-.*-.*-.*\})\",'
-            module_class_id = re.search(pattern, t_data).group('ModuleClassId')
-            replacements.append((module_class_id, '${ModuleClassId}'))
-            t_data = t_data.replace(module_class_id, '${ModuleClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_RTTI\(\$\{SanitizedCppName\}Module,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${ModuleClassId}')
 
         # See if this file has the SysCompClassId
-        try:
-            pattern = r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}SystemComponent, \"(?P<SysCompClassId>\{.*-.*-.*-.*-.*\})\"'
-            sys_comp_class_id = re.search(pattern, t_data).group('SysCompClassId')
-            replacements.append((sys_comp_class_id, '${SysCompClassId}'))
-            t_data = t_data.replace(sys_comp_class_id, '${SysCompClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}SystemComponent,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${SysCompClassId}')
 
         # See if this file has the EditorSysCompClassId
-        try:
-            pattern = r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}EditorSystemComponent, \"(?P<EditorSysCompClassId>\{.*-.*-.*-.*-.*\})\"'
-            editor_sys_comp_class_id = re.search(pattern, t_data).group('EditorSysCompClassId')
-            replacements.append((editor_sys_comp_class_id, '${EditorSysCompClassId}'))
-            t_data = t_data.replace(editor_sys_comp_class_id, '${EditorSysCompClassId}')
-        except Exception as e:
-            pass
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT\(\$\{SanitizedCppName\}EditorSystemComponent,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${EditorSysCompClassId}')
+
+        # Replace TypeIds.h TypeIds values with placeholders
+        # Replace <Uuid> values for EditorSystemComponentTypeId with the ${EditorSysCompClassId} placeholder
+        # Users non-capturing group of (?:...) to match a separating '=', '{' or '('
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}EditorSystemComponentTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${EditorSysCompClassId}')
+
+        # Replace the <Uuid> values from a line that matches patterns such as
+        # 1. *${SanitizedCppName}SystemComponentTypeId = <Uuid>;
+        # 2. *${SanitizedCppName}SystemComponentTypeId{<Uuid>};
+        # 3. *${SanitizedCppName}SystemComponentTypeId(<Uuid>);
+        # with the ${SysCompClassId} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}SystemComponentTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${SysCompClassId}')
+
+        # Replace <Uuid> values for ModuleTypeId with the ${EditorSysCompClassId} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*\$\{SanitizedCppName\}ModuleTypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '${ModuleClassId}')
+
+        # Replace <Uuid> values for remaining *TypeId variables with the {${Random_Uuid}} placeholder
+        find_pattern_and_add_replacement( \
+            r'.*TypeId\s*(?:{|=|\()\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+
+        # Finally replace any remaining AZ_TYPE_INFO*, AZ_RTTI*, AZ_COMPONENT*, and AZ_EDITOR_COMPONENT*
+        # with the {${Random_Uuid}} placehlder
+        find_pattern_and_add_replacement( \
+            r'.*AZ_TYPE_INFO.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_RTTI.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
+        find_pattern_and_add_replacement( \
+            r'.*AZ_EDITOR_COMPONENT.*?\(.+,\s*"(?P<Uuid>\{?[A-Fa-f0-9]{8}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{4}-?[A-Fa-f0-9]{12}\}?)"', \
+            '{${Random_Uuid}}')
 
         # we want to send back the transformed data and whether or not this file
         # may require transformation when instantiated. So if the input data is not the
@@ -2114,7 +2159,7 @@ def create_gem(gem_path: pathlib.Path,
     replacements.append(("${Origin}", origin if origin else ""))
     replacements.append(("${OriginURL}", origin_url if origin_url else ""))
     replacements.append(("${Version}", version if version else "1.0.0"))
-    
+
 
     tags = [gem_name]
     if user_tags:
@@ -2748,17 +2793,17 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('-lu', '--license-url', type=str, required=False,
                        default='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0',
                        help='Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0')
-    create_gem_subparser.add_argument('-o', '--origin', type=str, required=False, 
+    create_gem_subparser.add_argument('-o', '--origin', type=str, required=False,
                        default='The name of the originator or creator',
                        help='The name of the originator or creator i.e. XYZ Inc.')
-    create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False, 
+    create_gem_subparser.add_argument('-ou', '--origin-url', type=str, required=False,
                        default='The website for this Gem',
                        help='The website for your Gem. i.e. http://www.mydomain.com')
     create_gem_subparser.add_argument('-ut', '--user-tags', type=str, nargs='*', required=False,
                        help='Adds tag(s) to user_tags property. Can be specified multiple times.')
     create_gem_subparser.add_argument('-pl', '--platforms', type=str, nargs='*', required=False,
                        help='Add platform(s) to platforms property. Can be specified multiple times.')
-    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False, 
+    create_gem_subparser.add_argument('-ip', '--icon-path', type=str, required=False,
                        default="preview.png",
                        help='Select Gem icon path')
     create_gem_subparser.add_argument('-du', '--documentation-url', type=str, required=False,

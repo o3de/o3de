@@ -336,9 +336,7 @@ class TestsAssetProcessorBatch_AllPlatforms(object):
                                    os.path.join(source_folder, "b.fbx")]
 
             result, output = asset_processor.batch_process(capture_output=True,
-                                                           skip_atom_output=True,
-                                                           extra_params=[f"--reprocessFileList={reprocess_file_list}",
-                                                                         "--regset=\"/Amazon/AssetProcessor/Settings/Jobs/maxJobs=1\""])
+                                                           skip_atom_output=True)
 
             # If the test fails, it's helpful to have the output from asset processor in the logs, to track the failure down.
             if not result:

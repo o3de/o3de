@@ -385,11 +385,6 @@ namespace AZ::IO
 namespace AZ::IO
 {
     // Captures File Descriptor output through a pipe
-    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
-        : m_sourceDescriptor(sourceDescriptor)
-    {
-    }
-
     FileDescriptorCapturer::~FileDescriptorCapturer()
     {
         Reset();

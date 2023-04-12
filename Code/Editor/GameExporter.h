@@ -83,8 +83,6 @@ private:
     void ExportLevelData(const QString& path, bool bExportMission = true);
     void ExportLevelInfo(const QString& path);
 
-    void ExportOcclusionMesh(const char* pszGamePath);
-
     void ExportLevelResourceList(const QString& path);
     void ExportLevelUsedResourceList(const QString& path);
     void ExportFileList(const QString& path, const QString& levelName);
