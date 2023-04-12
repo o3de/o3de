@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
         const QVector<Tag>& dependingGemTags = m_model->GetDependingGemTags(modelIndex);
         if (!dependingGemTags.isEmpty())
         {
-            m_dependingGems->Update(tr("Depending Gems"), tr("The following Gems will be automatically enabled with this Gem."), dependingGemTags);
+            m_dependingGems->Update(tr("Gem Dependencies"), tr("Enabling this Gem will automatically enable the following Gems."), dependingGemTags);
             m_dependingGems->show();
             m_dependingGemsSpacer->changeSize(0, 20, QSizePolicy::Fixed, QSizePolicy::Fixed);
         }
