@@ -664,6 +664,9 @@ void MainWindow::Activate()
 
     m_enabledRelocationTypesModel->Reset();
     ui->AssetRelocationExtensionListView->setModel(m_enabledRelocationTypesModel);
+
+    ui->MetaCreationDelayValue->setText(tr("%1 milliseconds").arg(m_guiApplicationManager->GetAssetProcessorManager()->GetMetaCreationDelay()));
+
 }
 
 void MainWindow::BuilderTabSelectionChanged(const QItemSelection& selected, const QItemSelection& /*deselected*/)
