@@ -68,10 +68,11 @@ namespace Multiplayer
     using ServerAcceptanceReceivedEvent = AZ::Event<>;
     using SessionInitEvent = AZ::Event<AzNetworking::INetworkInterface*>;
     using SessionShutdownEvent = AZ::Event<AzNetworking::INetworkInterface*>;
+    using InitializedEvent = AZ::Event<MultiplayerAgentType>;
+    using TerminatedEvent = AZ::Event<AzNetworking::DisconnectReason>;
     using LevelLoadBlockedEvent = AZ::Event<>;
     using NoServerLevelLoadedEvent = AZ::Event<>;
     using VersionMismatchEvent = AZ::Event<>;
-    using AgentInitializedEvent = AZ::Event<MultiplayerAgentType>;
 
     //! @class IMultiplayer
     //! @brief IMultiplayer provides insight into the Multiplayer session and its Agents
@@ -149,13 +150,23 @@ namespace Multiplayer
         //! @param handler The ServerAcceptanceReceived Handler to add
         virtual void AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler) = 0;
 
-        //! Adds a SessionInitEvent Handler which is invoked when a new network session starts.
-        //! @param handler The SessionInitEvent Handler to add
+        //! @deprecated If looking for an event when the multiplayer system initializes (begins running as a client, dedicated-server, or client-server), then use AddInitializedEvent.
+        //! Otherwise, if looking for an event when a multiplayer session is created, use SessionNotificationBus::OnCreateSessionBegin or SessionNotificationBus::OnCreateSessionEnd
         virtual void AddSessionInitHandler(SessionInitEvent::Handler& handler) = 0;
 
-        //! Adds a SessionShutdownEvent Handler which is invoked when the current network session ends.
-        //! @param handler The SessionShutdownEvent handler to add
+        //! @deprecated If looking for an event when the multiplayer system is terminated, then use AddTerminatedEvent.
+        //! Otherwise, If looking for an event when a multiplayer session ends, use SessionNotificationBus::OnDestroySessionBegin or SessionNotificationBus::OnDestroySessionEnd.
         virtual void AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler) = 0;
+
+        //! Adds an InitializedEvent Handler which is invoked whenever the multiplayer agent is set up and ready to fulfill its role.
+        //! For example before attempting to connect to the host server, the game launcher will set initialize with a 'Client' agent type.
+        //! Agent types include: Client, dedicated-server, and client-server.
+        //! @param handler The InitializedEvent handler to add
+        virtual void AddInitializedHandler(InitializedEvent::Handler& handler) = 0;
+
+        //! Adds an TerminatedEvent Handler which is invoked whenever stopping multiplayer mode.
+        //! @param handler The TerminatedEvent handler to add
+        virtual void AddTerminatedHandler(TerminatedEvent::Handler& handler) = 0;
 
         //! Adds a LevelLoadBlockedEvent Handler which is invoked whenever the multiplayer system blocks a level load.
         //! @param handler The LevelLoadBlockedEvent handler to add
@@ -169,13 +180,7 @@ namespace Multiplayer
         //! For example, the provided handler will be triggered if a client tries connecting to a server that's using a different multiplayer version.
         //! @param handler The VersionMismatchEvent handler to add
         virtual void AddVersionMismatchHandler(VersionMismatchEvent::Handler& handler) = 0;
-
-        //! Adds an AgentInitializedEvent Handler which is invoked whenever the multiplayer agent type is changed and ready to fulfill its role.
-        //! For example before attempting to connect to the host server, the game launcher will set its agent type to 'Client'.
-        //! Agent types include: uninitialized, client, dedicated-server, and client-server.
-        //! @param handler The AgentInitializedEvent handler to add
-        virtual void AddAgentInitializedEvent(AgentInitializedEvent::Handler& handler) = 0;
-
+        
         //! Signals a NotifyClientMigrationEvent with the provided parameters.
         //! @param connectionId       the connection id of the client that is migrating
         //! @param hostId             the host id of the host the client is migrating to

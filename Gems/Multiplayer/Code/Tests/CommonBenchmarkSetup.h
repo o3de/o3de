@@ -313,6 +313,8 @@ namespace Multiplayer
         void AddServerAcceptanceReceivedHandler([[maybe_unused]] ServerAcceptanceReceivedEvent::Handler& handler) override {}
         void AddSessionInitHandler([[maybe_unused]] SessionInitEvent::Handler& handler) override {}
         void AddSessionShutdownHandler([[maybe_unused]] SessionShutdownEvent::Handler& handler) override {}
+        void AddInitializedHandler([[maybe_unused]] InitializedEvent::Handler& handler) override {}
+        void AddTerminatedHandler([[maybe_unused]] TerminatedEvent::Handler& handler) override {}
         void AddLevelLoadBlockedHandler([[maybe_unused]] LevelLoadBlockedEvent::Handler& handler) override {}
         void AddNoServerLevelLoadedHandler([[maybe_unused]] NoServerLevelLoadedEvent::Handler& handler) override {}
         void AddVersionMismatchHandler([[maybe_unused]] VersionMismatchEvent::Handler& handler) override {}
