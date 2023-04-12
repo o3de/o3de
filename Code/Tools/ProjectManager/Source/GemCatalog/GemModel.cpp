@@ -109,6 +109,20 @@ namespace O3DE::ProjectManager
         {
             versionList.append(gemVariant);
         }
+
+        // it's possible a remote gem with a higher version gets added after a downloaded gem with a lower version
+        // so sort by version if we have enough entries
+        if (versionList.size() > 1)
+        {
+            std::sort(
+                versionList.begin(),
+                versionList.end(),
+                [](const QVariant& a, const QVariant& b) -> bool
+                {
+                    return ProjectUtils::VersionCompare(a.value<GemInfo>().m_version, b.value<GemInfo>().m_version) > 0;
+                });
+        }
+
         item->setData(versionList, GemModel::RoleGemInfoVersions);
     }
 
