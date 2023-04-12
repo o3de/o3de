@@ -21,7 +21,7 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::AddAdapter(DocumentAdapterPtr sourceAdapter)
     {
-        // capture the acutal adapter, not just the index, as adding or removing adapters could change the index
+        // capture the actual adapter, not just the index, as adding or removing adapters could change the index
         auto& newAdapterInfo = m_adapters.emplace_back(AZStd::make_unique<AdapterInfo>());
         newAdapterInfo->adapter = sourceAdapter;
 
@@ -102,7 +102,7 @@ namespace AZ::DocumentPropertyEditor
             m_pathEntries.resize(adapterIndex + 1, InvalidEntry);
         }
         m_pathEntries[adapterIndex] = pathEntryIndex;
-        
+
         // set m_allEntriesMatch so that the Adapter knows whether to show a "values differ" type of node
         m_allEntriesMatch = matchesOtherEntries;
 
@@ -139,9 +139,127 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::HandleDomChange(DocumentAdapterPtr adapter, const Dom::Patch& patch)
     {
-        (void)adapter;
-        (void)patch;
-        // TODO https://github.com/o3de/o3de/issues/15612
+        const auto adapterIndex = GetIndexForAdapter(adapter);
+
+        for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
+        {
+            const auto& patchPath = operationIterator->GetDestinationPath();
+            if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Remove)
+            {
+                auto* nodeAtPath = GetNodeAtAdapterPath(adapterIndex, patchPath);
+                if (nodeAtPath)
+                {
+                    // <apm> remove this entry from the node, update the "values differ"
+                }
+                else
+                {
+                    // if there's no node at that path, it was a column entry
+                    auto parentPath = patchPath;
+                    parentPath.Pop();
+                    auto* rowParentNode = GetNodeAtAdapterPath(adapterIndex, parentPath);
+                    (void)rowParentNode;
+                    /* <apm> see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use
+                    a different GetComparisonRow), if not, remove it and place it where it actually goes. If yes, update the node's "values
+                    differ" status */
+                    // <apm> it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same
+                    // bucket, but need to track exactly what's been updated since last frame for patching purposes
+                }
+            }
+            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
+            {
+                auto* nodeAtPath = GetNodeAtAdapterPath(adapterIndex, patchPath);
+                if (!nodeAtPath)
+                {
+                    if (!IsRow(operationIterator->GetValue()))
+                    {
+                        // neither the child being replaced nor the replacement is a row, we just need
+                        // to make sure the new value is still the SameRow and update its matching state
+                        auto rowPath = patchPath;
+                        AggregateNode* ancestorRowNode = nullptr;
+
+                        // find the first row node in this patch's ancestry, if it exists
+                        do
+                        {
+                            rowPath.Pop();
+                            ancestorRowNode = GetNodeAtAdapterPath(adapterIndex, rowPath);
+                        } while (!rowPath.IsEmpty() && !ancestorRowNode);
+
+                        // if there's a node for this value, and it's not the only entry in the node,
+                        // we need to check if it still belongs with the other entries
+                        if (ancestorRowNode)
+                        {
+                            if (ancestorRowNode->EntryCount() > 1)
+                            {
+                                auto comparisonRow = GetComparisonRow(ancestorRowNode, adapterIndex);
+                                AZ_Assert(
+                                    !comparisonRow.IsNull(),
+                                    "there should always be a valid comparison value for a node with more than one entry");
+
+                                auto adapterRow = adapter->GetContents()[rowPath];
+                                if (SameRow(comparisonRow, adapterRow))
+                                {
+                                    bool entriesMatch = true;
+                                    for (size_t index = 0, numEntries = ancestorRowNode->m_pathEntries.size();
+                                         index < numEntries && entriesMatch;
+                                         ++index)
+                                    {
+                                        if (index != adapterIndex && ancestorRowNode->m_pathEntries[index] != AggregateNode::InvalidEntry)
+                                        {
+                                            auto currAdapterPath = ancestorRowNode->GetPathForAdapter(index);
+                                            AZ_Assert(
+                                                !currAdapterPath.IsEmpty(),
+                                                "ancestorRowNode had an entry for this adapter -- it must have a valid path!");
+                                            auto currRowValue = m_adapters[index]->adapter->GetContents()[currAdapterPath];
+                                            entriesMatch = ValuesMatch(adapterRow, currRowValue);
+                                        }
+                                    }
+
+                                    if (entriesMatch != ancestorRowNode->m_allEntriesMatch)
+                                    {
+                                        // m_allEntriesMatch has changed for this node. If this node is included in the current multi-edit,
+                                        // issue a replacement patch for its row value
+                                        ancestorRowNode->m_allEntriesMatch = entriesMatch;
+
+                                        auto nodePath = GetPathForNode(ancestorRowNode);
+                                        if (!nodePath.IsEmpty())
+                                        {
+                                            NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(
+                                                nodePath,
+                                                (entriesMatch ? GenerateAggregateRow(ancestorRowNode) : GenerateValuesDifferRow(ancestorRowNode))) });
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    // <apm> no longer the same row, check for a matching sibling, and if there isn't one, split off a new
+                                    // node
+                                }
+                            }
+                            else
+                            {
+                                // <apm> handle case where there's only one entry in this node, but it might've changed.
+                                // need to check if it has changed to match a parallel node, in which case it should join
+                                // that node, and this one should be destroyed.
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    // <apm> incomplete
+                }
+            }
+            else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
+            {
+                // <apm>
+            }
+        }
+
+        // <apm> adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
+        // of child
+        // <apm> need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all
+        // row children <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one
+        // adapter adds or removes children
     }
 
     void RowAggregateAdapter::HandleDomMessage(
@@ -180,8 +298,12 @@ namespace AZ::DocumentPropertyEditor
                 // this path includes a non-index entry, and is therefore not a row
                 return nullptr;
             }
-            const auto index = pathEntry.GetIndex();
+            if (adapterIndex >= currNode->m_pathIndexToChildMaps.size())
+            {
+                return nullptr;
+            }
             auto& pathMap = currNode->m_pathIndexToChildMaps[adapterIndex];
+            const auto index = pathEntry.GetIndex();
             if (auto foundIter = pathMap.find(index); foundIter != pathMap.end())
             {
                 currNode = foundIter->second;
@@ -284,7 +406,7 @@ namespace AZ::DocumentPropertyEditor
         return nodePath;
     }
 
-    Dom::Value RowAggregateAdapter::GetComparisonRow(AggregateNode* aggregateNode)
+    Dom::Value RowAggregateAdapter::GetComparisonRow(AggregateNode* aggregateNode, size_t omitAdapterIndex)
     {
         // for now, return first entry from the map, assert if map is empty
         auto removeChildRows = [](Dom::Value& rowValue)
@@ -304,18 +426,18 @@ namespace AZ::DocumentPropertyEditor
 
         for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
         {
-            Dom::Path pathToComparisonValue = aggregateNode->GetPathForAdapter(adapterIndex);
-            if (!pathToComparisonValue.IsEmpty())
+            if (adapterIndex != omitAdapterIndex) // don't generate a value from the adapter at omitAdapterIndex, if it exists
             {
-                auto comparisonRow = m_adapters[adapterIndex]->adapter->GetContents()[pathToComparisonValue];
-                removeChildRows(comparisonRow);
-                return comparisonRow;
+                Dom::Path pathToComparisonValue = aggregateNode->GetPathForAdapter(adapterIndex);
+                if (!pathToComparisonValue.IsEmpty())
+                {
+                    auto comparisonRow = m_adapters[adapterIndex]->adapter->GetContents()[pathToComparisonValue];
+                    removeChildRows(comparisonRow);
+                    return comparisonRow;
+                }
             }
         }
-        AZ_Warning(
-            "RowAggregateAdapter",
-            false,
-            "no valid path found in AggregateNode -- there either should be one, or this entry shouldn't exist!");
+        // if we reached here, there is no valid adapter that isn't at omitAdapterIndex with a value for this node
         return Dom::Value();
     }
 
@@ -344,8 +466,8 @@ namespace AZ::DocumentPropertyEditor
                 {
                     AggregateNode* possibleMatch = matchIter->get();
 
-                    // make sure there isn't already an entry for this adapter. This can matter in weird
-                    // edge cases where multiple rows can match, like in multisets
+                    // make sure there isn't already an entry for this adapter. This can happen in
+                    // edge cases where multiple rows can match, like in multi-sets
                     if (!possibleMatch->HasEntryForAdapter(adapterIndex))
                     {
                         auto comparisonRow = GetComparisonRow(possibleMatch);
@@ -360,7 +482,6 @@ namespace AZ::DocumentPropertyEditor
                 }
                 if (!addedToNode)
                 {
-
                     // didn't find an existing child to own us, add a new one and attach to it
                     auto& newNode = parentNode->m_childRows.emplace_back(AZStd::make_unique<AggregateNode>());
                     newNode->m_parent = parentNode;
@@ -385,7 +506,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     auto generatedValue =
                         (currChild->m_allEntriesMatch ? GenerateAggregateRow(currChild.get()) : GenerateValuesDifferRow(currChild.get()));
-                    
+
                     AddChildrenToValue(currChild.get(), generatedValue, AddChildrenToValue);
                     value.ArrayPushBack(generatedValue);
                 }
@@ -427,9 +548,7 @@ namespace AZ::DocumentPropertyEditor
         };
 
         return message.Match(
-            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged,
-            Nodes::GenericButton::OnActivate, handleEditAnyway
-        );
+            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged, Nodes::GenericButton::OnActivate, handleEditAnyway);
     }
 
     AZStd::string_view LabeledRowAggregateAdapter::GetFirstLabel(const Dom::Value& rowValue)
@@ -457,7 +576,8 @@ namespace AZ::DocumentPropertyEditor
             auto& childValue = multiRow.MutableArrayAt(childIndex);
             if (childValue.GetNodeName() == editorName)
             {
-                for (auto attributeIter = childValue.MutableMemberBegin(), attributeEnd = childValue.MutableMemberEnd(); attributeIter != attributeEnd;
+                for (auto attributeIter = childValue.MutableMemberBegin(), attributeEnd = childValue.MutableMemberEnd();
+                     attributeIter != attributeEnd;
                      ++attributeIter)
                 {
                     if (attributeIter->first == onChangedName)
@@ -474,7 +594,7 @@ namespace AZ::DocumentPropertyEditor
         return multiRow;
     }
 
-    Dom::Value LabeledRowAggregateAdapter::GenerateValuesDifferRow([[maybe_unused]]AggregateNode* mismatchNode)
+    Dom::Value LabeledRowAggregateAdapter::GenerateValuesDifferRow([[maybe_unused]] AggregateNode* mismatchNode)
     {
         m_builder.SetCurrentPath(GetPathForNode(mismatchNode));
         m_builder.BeginRow();

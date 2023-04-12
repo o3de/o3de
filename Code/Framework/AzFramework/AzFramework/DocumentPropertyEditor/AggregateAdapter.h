@@ -41,14 +41,13 @@ namespace AZ::DocumentPropertyEditor
 
             bool m_allEntriesMatch = true;
 
-            // track the last frame when this node changed state for easy and efficient patch generation
-            unsigned int m_lastUpdateFrame = 0;
-
             // per-adapter mapping of DOM index to child
             AZStd::vector<AZStd::map<size_t, AggregateNode*>> m_pathIndexToChildMaps;
 
             AggregateNode* m_parent = nullptr;
-            AZStd::vector<AZStd::unique_ptr<AggregateNode>> m_childRows; // ordered by primary adapter
+
+            //! all children (even incomplete ones), ordered by primary adapter
+            AZStd::vector<AZStd::unique_ptr<AggregateNode>> m_childRows;
         };
 
         // virtual function to generate an aggregate row that represents all the matching Dom::Values with in this node
@@ -76,7 +75,9 @@ namespace AZ::DocumentPropertyEditor
 
         size_t GetIndexForAdapter(const DocumentAdapterPtr& adapter);
         AggregateNode* GetNodeAtAdapterPath(size_t adapterIndex, const Dom::Path& path);
-        Dom::Value GetComparisonRow(AggregateNode* aggregateNode);
+
+        //! get a Dom Value representing the given node by asking the first valid adapter that isn't at omitAdapterIndex
+        Dom::Value GetComparisonRow(AggregateNode* aggregateNode, size_t omitAdapterIndex = AggregateNode::InvalidEntry);
 
         //! gets the node at the given path relative to this adapter, if it exists
         AggregateNode* GetNodeAtPath(const Dom::Path& aggregatePath);
