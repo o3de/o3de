@@ -19,156 +19,188 @@
 namespace AZ::IO
 {
     using FixedMaxPathWString = AZStd::fixed_wstring<MaxPathLength>;
-namespace
-{
-    //=========================================================================
-    // GetAttributes
-    //  Internal utility to avoid code duplication. Returns result of win32
-    //  GetFileAttributes
-    //=========================================================================
-    DWORD GetAttributes(const char* fileName)
+    namespace
     {
-        FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, fileName);
-        return GetFileAttributesW(fileNameW.c_str());
-    }
-
-    //=========================================================================
-    // SetAttributes
-    //  Internal utility to avoid code duplication. Returns result of win32
-    //  SetFileAttributes
-    //=========================================================================
-    BOOL SetAttributes(const char* fileName, DWORD fileAttributes)
-    {
-        FixedMaxPathWString fileNameW;
-        AZStd::to_wstring(fileNameW, fileName);
-        return SetFileAttributesW(fileNameW.c_str(), fileAttributes);
-    }
-
-    //=========================================================================
-    // CreateDirRecursive
-    // [2/3/2013]
-    //  Internal utility to create a folder hierarchy recursively without
-    //  any additional string copies.
-    //  If this function fails (returns false), the error will be available via:
-    //   * GetLastError() on Windows-like platforms
-    //   * errno on Unix platforms
-    //=========================================================================
-    bool CreateDirRecursive(AZ::IO::FixedMaxPathWString& dirPath)
-    {
-        if (CreateDirectoryW(dirPath.c_str(), nullptr))
+        //=========================================================================
+        // GetAttributes
+        //  Internal utility to avoid code duplication. Returns result of win32
+        //  GetFileAttributes
+        //=========================================================================
+        DWORD GetAttributes(const char* fileName)
         {
-            return true;    // Created without error
+            FixedMaxPathWString fileNameW;
+            AZStd::to_wstring(fileNameW, fileName);
+            return GetFileAttributesW(fileNameW.c_str());
         }
-        DWORD error = GetLastError();
-        if (error == ERROR_PATH_NOT_FOUND)
+
+        //=========================================================================
+        // SetAttributes
+        //  Internal utility to avoid code duplication. Returns result of win32
+        //  SetFileAttributes
+        //=========================================================================
+        BOOL SetAttributes(const char* fileName, DWORD fileAttributes)
         {
-            // try to create our parent hierarchy
-            if (size_t i = dirPath.find_last_of(LR"(/\)"); i != FixedMaxPathWString::npos)
+            FixedMaxPathWString fileNameW;
+            AZStd::to_wstring(fileNameW, fileName);
+            return SetFileAttributesW(fileNameW.c_str(), fileAttributes);
+        }
+
+        //=========================================================================
+        // CreateDirRecursive
+        // [2/3/2013]
+        //  Internal utility to create a folder hierarchy recursively without
+        //  any additional string copies.
+        //  If this function fails (returns false), the error will be available via:
+        //   * GetLastError() on Windows-like platforms
+        //   * errno on Unix platforms
+        //=========================================================================
+        bool CreateDirRecursive(AZ::IO::FixedMaxPathWString& dirPath)
+        {
+            if (CreateDirectoryW(dirPath.c_str(), nullptr))
             {
-                wchar_t delimiter = dirPath[i];
-                dirPath[i] = 0; // null-terminate at the previous slash
-                const bool ret = CreateDirRecursive(dirPath);
-                dirPath[i] = delimiter; // restore slash
-                if (ret)
-                {
-                    // now that our parent is created, try to create again
-                    return CreateDirectoryW(dirPath.c_str(), nullptr) != 0;
-                }
+                return true;    // Created without error
             }
-            // if we reach here then there was no parent folder to create, so we failed for other reasons
+            DWORD error = GetLastError();
+            if (error == ERROR_PATH_NOT_FOUND)
+            {
+                // try to create our parent hierarchy
+                if (size_t i = dirPath.find_last_of(LR"(/\)"); i != FixedMaxPathWString::npos)
+                {
+                    wchar_t delimiter = dirPath[i];
+                    dirPath[i] = 0; // null-terminate at the previous slash
+                    const bool ret = CreateDirRecursive(dirPath);
+                    dirPath[i] = delimiter; // restore slash
+                    if (ret)
+                    {
+                        // now that our parent is created, try to create again
+                        return CreateDirectoryW(dirPath.c_str(), nullptr) != 0;
+                    }
+                }
+                // if we reach here then there was no parent folder to create, so we failed for other reasons
+            }
+            else if (error == ERROR_ALREADY_EXISTS)
+            {
+                DWORD attributes = GetFileAttributesW(dirPath.c_str());
+                return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
+            }
+            return false;
         }
-        else if (error == ERROR_ALREADY_EXISTS)
-        {
-            DWORD attributes = GetFileAttributesW(dirPath.c_str());
-            return attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-        return false;
+
+        static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = INVALID_HANDLE_VALUE;
     }
+} // namespace AZ::IO
 
-    static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = INVALID_HANDLE_VALUE;
-}
-
-
-bool SystemFile::PlatformOpen(int mode, int platformFlags)
+namespace AZ::IO
 {
-    DWORD dwDesiredAccess = 0;
-    DWORD dwShareMode = FILE_SHARE_READ;
-    DWORD dwFlagsAndAttributes = platformFlags;
-    DWORD dwCreationDisposition = OPEN_EXISTING;
+    bool SystemFile::PlatformOpen(int mode, int platformFlags)
+    {
+        DWORD dwDesiredAccess = 0;
+        DWORD dwShareMode = FILE_SHARE_READ;
+        DWORD dwFlagsAndAttributes = platformFlags;
+        DWORD dwCreationDisposition = OPEN_EXISTING;
 
-    bool createPath = false;
-    if (mode & SF_OPEN_READ_ONLY)
-    {
-        dwDesiredAccess |= GENERIC_READ;
-        // Always open files for reading with file shared write flag otherwise it may result in a sharing violation if 
-        // either some process has already opened the file for writing or if some process will later on try to open the file for writing. 
-        dwShareMode |= FILE_SHARE_WRITE;
-    }
-    if (mode & SF_OPEN_READ_WRITE)
-    {
-        dwDesiredAccess |= GENERIC_READ;
-    }
-    if ((mode & SF_OPEN_WRITE_ONLY) || (mode & SF_OPEN_READ_WRITE) || (mode & SF_OPEN_APPEND))
-    {
-        dwDesiredAccess |= GENERIC_WRITE;
-    }
-
-    if ((mode & SF_OPEN_CREATE_NEW))
-    {
-        dwCreationDisposition = CREATE_NEW;
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
-    }
-    else if ((mode & SF_OPEN_CREATE))
-    {
-        dwCreationDisposition = CREATE_ALWAYS;
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
-    }
-    else if ((mode & SF_OPEN_TRUNCATE))
-    {
-        dwCreationDisposition = TRUNCATE_EXISTING;
-    }
-
-    if (createPath)
-    {
-        CreatePath(m_fileName.c_str());
-    }
-
-    AZ::IO::FixedMaxPathWString fileNameW;
-    AZStd::to_wstring(fileNameW, m_fileName);
-    m_handle = INVALID_HANDLE_VALUE;
-    m_handle = CreateFileW(fileNameW.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
-
-    if (m_handle == INVALID_HANDLE_VALUE)
-    {
-        return false;
-    }
-    else
-    {
-        if (mode & SF_OPEN_APPEND)
+        bool createPath = false;
+        if (mode & SF_OPEN_READ_ONLY)
         {
-            SetFilePointer(m_handle, 0, NULL, FILE_END);
+            dwDesiredAccess |= GENERIC_READ;
+            // Always open files for reading with file shared write flag otherwise it may result in a sharing violation if
+            // either some process has already opened the file for writing or if some process will later on try to open the file for writing.
+            dwShareMode |= FILE_SHARE_WRITE;
         }
-    }
+        if (mode & SF_OPEN_READ_WRITE)
+        {
+            dwDesiredAccess |= GENERIC_READ;
+        }
+        if ((mode & SF_OPEN_WRITE_ONLY) || (mode & SF_OPEN_READ_WRITE) || (mode & SF_OPEN_APPEND))
+        {
+            dwDesiredAccess |= GENERIC_WRITE;
+        }
 
-    return true;
-}
+        if ((mode & SF_OPEN_CREATE_NEW))
+        {
+            dwCreationDisposition = CREATE_NEW;
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+        else if ((mode & SF_OPEN_CREATE))
+        {
+            dwCreationDisposition = CREATE_ALWAYS;
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+        else if ((mode & SF_OPEN_TRUNCATE))
+        {
+            dwCreationDisposition = TRUNCATE_EXISTING;
+        }
 
-void SystemFile::PlatformClose()
-{
-    if (m_handle != PlatformSpecificInvalidHandle)
-    {
-        CloseHandle(m_handle);
+        if (createPath)
+        {
+            CreatePath(m_fileName.c_str());
+        }
+
+        AZ::IO::FixedMaxPathWString fileNameW;
+        AZStd::to_wstring(fileNameW, m_fileName);
         m_handle = INVALID_HANDLE_VALUE;
+        m_handle = CreateFileW(fileNameW.c_str(), dwDesiredAccess, dwShareMode, 0, dwCreationDisposition, dwFlagsAndAttributes, 0);
+
+        if (m_handle == INVALID_HANDLE_VALUE)
+        {
+            return false;
+        }
+        else
+        {
+            if (mode & SF_OPEN_APPEND)
+            {
+                SetFilePointer(m_handle, 0, NULL, FILE_END);
+            }
+        }
+
+        return true;
     }
-}
 
-const char* SystemFile::GetNullFilename()
-{
-    return "NUL";
-}
+    void SystemFile::PlatformClose()
+    {
+        if (m_handle != PlatformSpecificInvalidHandle)
+        {
+            CloseHandle(m_handle);
+            m_handle = INVALID_HANDLE_VALUE;
+        }
+    }
 
-namespace Platform
+    const char* SystemFile::GetNullFilename()
+    {
+        return "NUL";
+    }
+
+    SystemFile SystemFile::GetStdin()
+    {
+        SystemFile systemFile;
+        systemFile.m_handle = GetStdHandle(STD_INPUT_HANDLE);
+        systemFile.m_fileName = "/dev/stdin";
+        // The destructor of the SystemFile will not close the stdin handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+
+    SystemFile SystemFile::GetStdout()
+    {
+        SystemFile systemFile;
+        systemFile.m_handle = GetStdHandle(STD_OUTPUT_HANDLE);
+        systemFile.m_fileName = "/dev/stdout";
+        // The destructor of the SystemFile will not close the stdout handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+    SystemFile SystemFile::GetStderr()
+    {
+        SystemFile systemFile;
+        systemFile.m_handle = GetStdHandle(STD_ERROR_HANDLE);
+        systemFile.m_fileName = "/dev/stderr";
+        // The destructor of the SystemFile will not close the stderr handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+} // namespace AZ::IO
+
+namespace AZ::IO::Platform
 {
     using FileHandleType = AZ::IO::SystemFile::FileHandleType;
 
@@ -477,8 +509,6 @@ namespace Platform
 
         return false;
     }
-
-}
 } // namespace AZ::IO
 
 namespace AZ::IO::PosixInternal
@@ -517,6 +547,13 @@ namespace AZ::IO::Internal
 namespace AZ::IO
 {
     // FileDescriptorCapturer WinAPI Impl
+
+    FileDescriptorCapturer::FileDescriptorCapturer(int sourceDescriptor)
+        : m_sourceDescriptor(sourceDescriptor)
+        , m_pipeData(0)
+    {
+    }
+
     void FileDescriptorCapturer::Start(OutputRedirectVisitor redirectCallback,
         AZStd::chrono::milliseconds waitTimeout,
         int pipeSize)

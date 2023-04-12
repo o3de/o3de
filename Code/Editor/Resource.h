@@ -182,7 +182,6 @@
 #define ID_MODIFY_AIPOINT_PICKIMPASSLINK           33865
 #define ID_FILE_EXPORTSELECTION                    33875
 #define ID_EDIT_PASTE_WITH_LINKS                   33893
-#define ID_FILE_EXPORT_SELECTEDOBJECTS             33911
 #define ID_SPLINE_PREVIOUS_KEY                     33916
 #define ID_SPLINE_NEXT_KEY                         33917
 #define ID_SPLINE_FLATTEN_ALL                      33918
@@ -247,7 +246,6 @@
 #define ID_SET_TIME_TO_KEY                         34206
 #define ID_TOGGLE_SCRUB_UNITS                      34207
 #define ID_TOGGLE_PREVIEW_UNITS                    34208
-#define ID_FILE_EXPORTOCCLUSIONMESH                34209
 #define ID_MANN_RELOAD_ANIMS                       34210
 #define ID_FILE_ANIMDBEDITOR                       34211
 #define ID_SNAP_TO_ANGLE_RANGE_BEGIN    34323

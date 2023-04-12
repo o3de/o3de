@@ -214,6 +214,11 @@ namespace AssetProcessor
         return m_enabledTypes.contains(file.Extension().Native());
     }
 
+    AZStd::unordered_set<AZStd::string> UuidManager::GetEnabledTypes()
+    {
+        return m_enabledTypes;
+    }
+
     void UuidManager::EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types)
     {
         m_enabledTypes = AZStd::move(types);

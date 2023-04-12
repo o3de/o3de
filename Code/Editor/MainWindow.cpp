@@ -686,9 +686,6 @@ void MainWindow::InitActions()
             .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateDocumentReady);
     }
 
-    am->AddAction(ID_FILE_EXPORT_SELECTEDOBJECTS, tr("Export Selected &Objects"))
-        .RegisterUpdateCallback(cryEdit, &CCryEditApp::OnUpdateSelected);
-    am->AddAction(ID_FILE_EXPORTOCCLUSIONMESH, tr("Export Occlusion Mesh"));
     am->AddAction(ID_FILE_EDITLOGFILE, tr("Show Log File"));
 #ifdef ENABLE_SLICE_EDITOR
     am->AddAction(ID_FILE_RESAVESLICES, tr("Resave All Slices"));
