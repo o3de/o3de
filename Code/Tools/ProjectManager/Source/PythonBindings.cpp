@@ -377,9 +377,10 @@ namespace O3DE::ProjectManager
         {
             executionCallback();
         }
-        catch ([[maybe_unused]] const std::exception& e)
+        catch (const std::exception& e)
         {
             AZ_Warning("PythonBindings", false, "Python exception %s", e.what());
+            m_pythonErrorStrings.push_back(e.what());
             return AZ::Failure(e.what());
         }
 
@@ -844,13 +845,15 @@ namespace O3DE::ProjectManager
         return GemRegistration(gemPath, projectPath, /*remove*/true);
     }
 
-    IPythonBindings::DetailedOutcome PythonBindings::AddProject(const QString& path)
+    IPythonBindings::DetailedOutcome PythonBindings::AddProject(const QString& path, bool force)
     {
         using namespace pybind11::literals;
         bool registrationResult = false;
         bool result = ExecuteWithLock([&] {
-            auto pythonRegistrationResult = m_register.attr("register")(
-                "project_path"_a = QString_To_Py_Path(path));
+            auto pythonRegistrationResult = m_projectManagerInterface.attr("register_project")(
+                "project_path"_a = QString_To_Py_Path(path),
+                "force"_a = force
+                );
 
             // Returns an exit code so boolify it then invert result
             registrationResult = !pythonRegistrationResult.cast<bool>();
@@ -1310,6 +1313,14 @@ namespace O3DE::ProjectManager
         ProjectTemplateInfo templateInfo(TemplateInfoFromPath(path));
         if (templateInfo.IsValid())
         {
+            if (QFileInfo(templateInfo.m_path).isFile())
+            {
+                // remote templates in the cache that have not been downloaded
+                // use the cached template.json file as the path so we cannot
+                // get the enabled gems until the repo.json is updated to include that data
+                return templateInfo;
+            }
+
             QString templateProjectPath = QDir(templateInfo.m_path).filePath("Template");
             constexpr bool includeDependencies = false;
             auto enabledGems = GetEnabledGems(templateProjectPath, includeDependencies);
@@ -1524,37 +1535,76 @@ namespace O3DE::ProjectManager
         return result && refreshResult;
     }
 
+    AZ::Outcome<QStringList, IPythonBindings::ErrorPair> PythonBindings::GetProjectEngineIncompatibleObjects(const QString& projectPath, const QString& enginePath)
+    {
+        QStringList incompatibleObjects;
+        bool executeResult = ExecuteWithLock(
+            [&]
+            {
+                using namespace pybind11::literals;
+                auto result = m_projectManagerInterface.attr("get_project_engine_incompatible_objects")(
+                        "project_path"_a = QString_To_Py_Path(projectPath),
+                        "engine_path"_a = enginePath.isEmpty() ? pybind11::none() : QString_To_Py_Path(enginePath)
+                    );
+                if (pybind11::isinstance<pybind11::set>(result))
+                {
+                    // We don't use a const ref here because pybind11 iterator
+                    // returns a temp pybind11::handle so using a reference will cause
+                    // a warning/error, and copying the handle is what we want to do
+                    for (auto incompatibleObject : result)
+                    {
+                        incompatibleObjects.push_back(Py_To_String(incompatibleObject));
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("Failed to check if this project and engine have any incompatible objects.");
+                }
+            });
+
+        if (!executeResult)
+        {
+            return AZ::Failure(GetErrorPair());
+        }
+
+        return AZ::Success(incompatibleObjects);
+    }
+
     AZ::Outcome<QStringList, AZStd::string> PythonBindings::GetIncompatibleProjectGems(
         const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath)
     {
         QStringList incompatibleGems;
-        bool result = ExecuteWithLock(
+        bool executeResult = ExecuteWithLock(
             [&]
             {
                 using namespace pybind11::literals;
-                auto incompatibleGemSet = 
-                    m_projectManagerInterface.attr("get_incompatible_project_gems")(
+                auto result = m_projectManagerInterface.attr("get_incompatible_project_gems")(
                         "gem_paths"_a = QStringList_To_Py_List(gemPaths),
                         "gem_names"_a = QStringList_To_Py_List(gemNames),
                         "project_path"_a = QString_To_Py_String(projectPath)
                     );
-
-                // We don't use a const ref here because pybind11 iterator
-                // returns a temp pybind11::handle so using a reference will cause
-                // a warning/error, and copying the handle is what we want to do
-                for (auto incompatibleGem : incompatibleGemSet)
+                if (pybind11::isinstance<pybind11::set>(result))
                 {
-                    incompatibleGems.push_back(Py_To_String(incompatibleGem));
+                    // We don't use a const ref here because pybind11 iterator
+                    // returns a temp pybind11::handle so using a reference will cause
+                    // a warning/error, and copying the handle is what we want to do
+                    for (auto incompatibleGem : result)
+                    {
+                        incompatibleGems.push_back(Py_To_String(incompatibleGem));
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("Failed to get incompatible gems for project");
                 }
             });
 
-        if (!result)
+        if (!executeResult)
         {
             return AZ::Failure("Failed to get incompatible gems for project");
         }
 
         return AZ::Success(incompatibleGems);
-
     }
 
     IPythonBindings::DetailedOutcome PythonBindings::AddGemRepo(const QString& repoUri)
