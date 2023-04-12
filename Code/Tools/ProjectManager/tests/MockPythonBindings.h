@@ -27,7 +27,6 @@ namespace O3DE::ProjectManager
         // Gem
         MOCK_METHOD3(CreateGem, AZ::Outcome<GemInfo>(const QString&, const GemInfo&, bool));
         MOCK_METHOD2(GetGemInfo, AZ::Outcome<GemInfo>(const QString&, const QString&));
-        MOCK_METHOD0(GetEngineGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>());
         MOCK_METHOD1(GetAllGemInfos, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
         MOCK_CONST_METHOD2(GetEnabledGems, AZ::Outcome<QHash<QString, QString>, AZStd::string>(const QString&, bool includeDependencies));
         MOCK_METHOD2(RegisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));

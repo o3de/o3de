@@ -413,13 +413,6 @@ namespace AzQtComponents
     {
         setItemDelegate(m_delegate);
 
-        // Enable drag/drop.
-        setDragEnabled(true);
-        setAcceptDrops(true);
-        setDragDropMode(QAbstractItemView::DragDrop);
-        setDropIndicatorShown(true);
-        setDragDropOverwriteMode(true);
-
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -428,6 +421,13 @@ namespace AzQtComponents
             {
                 emit afterRename(value);
             });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
