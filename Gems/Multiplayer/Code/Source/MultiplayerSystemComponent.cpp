@@ -1267,7 +1267,7 @@ namespace Multiplayer
 
         if (m_agentType != MultiplayerAgentType::Uninitialized && multiplayerType != MultiplayerAgentType::Uninitialized)
         {
-            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down. Please disconnect from multiplayer");
+            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down. Please call the 'disconnect' console command to terminated the current multiplayer simulation before switching to a new multiplayer role.");
         }
 
         if (m_agentType == MultiplayerAgentType::Uninitialized)
