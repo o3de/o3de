@@ -346,6 +346,8 @@ def search_repo(manifest_json_data: dict,
                 template_name: str = None,
                 restricted_name: str = None) -> dict or None:
     
+    o3de_object = None
+
     repo_schema_version = get_repo_schema_version(manifest_json_data)
 
     if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
@@ -393,12 +395,30 @@ def search_repo(manifest_json_data: dict,
 
 
 def search_o3de_repo_for_object(repo_json_data: dict, manifest_attribute:str, target_json_key:str, target_name: str):
-    o3de_objects = repo_json_data.get(manifest_attribute, [])
-    for o3de_object in o3de_objects:
-        if o3de_object.get(target_json_key, '') == target_name:
-            return o3de_object
-    return None
+    remote_candidates = repo_json_data.get(manifest_attribute, [])
 
+    target_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(target_name)
+
+    # merge all versioned data into candidates
+    versioned_candidates = []
+    for candidate in remote_candidates:
+        # ignore candidates without the matching target name
+        if candidate.get(target_json_key, '') != target_name_without_version_specifier:
+            continue
+
+        # remove the versions_data from the candidate so it isn't
+        # included in the result if it exists
+        remote_versioned_data = candidate.pop('versions_data', None)
+        if remote_versioned_data:
+            for versioned_data in remote_versioned_data:
+                versioned_candidates.append(candidate | versioned_data)
+        else:
+            versioned_candidates.append(candidate)
+
+    if not versioned_candidates:
+        return None
+
+    return manifest.get_most_compatible_object(object_name=target_name, name_key=target_json_key, objects=versioned_candidates)
 def search_o3de_manifest_for_object(manifest_json_data: dict, manifest_attribute: str, target_manifest_json: str, target_json_key: str, target_name: str):
     o3de_object_uris = manifest_json_data.get(manifest_attribute, [])
     search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(target_json_key, '') == target_name else None

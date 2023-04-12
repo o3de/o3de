@@ -12,16 +12,17 @@ import argparse
 import sys
 import uuid
 import os
+import stat
 import pathlib
 import shutil
 import urllib.request
+from urllib.parse import ParseResult
 import logging
 import zipfile
 import re
-from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from o3de import gitproviderinterface, github_utils
+from o3de import github_utils, git_utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
@@ -91,6 +92,22 @@ def copyfileobj(fsrc, fdst, callback, length=0):
         if callback(copied):
             return 1
     return 0
+
+def remove_dir_path(path:pathlib.Path):
+    """
+    Helper function to delete a folder, ignoring all errors if possible
+    :param path: The Path to the folder to delete
+    """
+    if path.exists() and path.is_dir():
+        files_to_delete = []
+        for root, dirs, files in os.walk(path):
+            for file in files:
+                files_to_delete.append(os.path.join(root, file))
+        for file in files_to_delete:
+            os.chmod(file, stat.S_IWRITE)
+            os.remove(file)
+
+        shutil.rmtree(path.resolve(), ignore_errors=True)
 
 
 def validate_identifier(identifier: str) -> bool:
@@ -189,16 +206,23 @@ def backup_folder(folder: str or pathlib.Path) -> None:
                 renamed = True
 
 
-def get_git_provider(parsed_uri):
+def get_git_provider(parsed_uri:ParseResult):
     """
     Returns a git provider if one exists given the passed uri
     :param parsed_uri: uniform resource identifier of a possible git repository
     :return: A git provider implementation providing functions to get infomration about or clone a repository, see gitproviderinterface
     """
-    return github_utils.get_github_provider(parsed_uri)
+    # check for providers with unique APIs first
+    git_provider = github_utils.get_github_provider(parsed_uri)
+
+    if not git_provider:
+        # fallback to generic git provider
+        git_provider = git_utils.get_generic_git_provider(parsed_uri)
+
+    return git_provider
 
 
-def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
+def download_file(parsed_uri:ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -245,11 +269,11 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'
                     if total_size == 0 or downloaded > total_size:
-                        print(f'Downloading {object_name} - {downloaded} bytes')
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} bytes')
                     else:
                         if downloaded == total_size:
                             end_ch = '\n'
-                        print(f'Downloading {object_name} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
+                        print(f'Downloading {object_name if object_name else parsed_uri.geturl()} - {downloaded} of {total_size} bytes - {(downloaded/total_size)*100:.2f}%', end=end_ch)
 
                 if download_progress_callback == None:
                     download_progress_callback = print_progress

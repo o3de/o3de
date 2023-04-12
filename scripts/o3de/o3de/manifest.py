@@ -1004,6 +1004,47 @@ def get_most_compatible_gem(gem_name: str,
 
 
 def get_most_compatible_object(object_name: str, 
+                              name_key: str, 
+                              objects: list) -> dict or None:
+    """
+    Looks for the most compatible object based on object_name which may contain a version specifier.
+    Example: o3de>=1.2.3
+
+    :param object_name: Name of the object with optional version specifier 
+    :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
+    :param objects: List of object json data to consider 
+    :return the most compatible object json data dict or None
+    """
+    most_compatible_version = Version('0.0.0')
+    object_name, version_specifier = utils.get_object_name_and_optional_version_specifier(object_name)
+    most_compatible_object = None
+
+    def update_most_compatible(candidate_version:str, json_data:dict):
+        nonlocal most_compatible_object
+        nonlocal most_compatible_version
+
+        if not most_compatible_object:
+            most_compatible_object = json_data 
+            most_compatible_version = Version(candidate_version)
+        elif Version(candidate_version) > most_compatible_version:
+            most_compatible_object = json_data 
+            most_compatible_version = Version(candidate_version)
+
+    for json_data in objects:
+        candidate_name = json_data.get(name_key,'')
+        if candidate_name != object_name:
+            continue
+
+        candidate_version = json_data.get('version','0.0.0')
+        if version_specifier:
+            if compatibility.has_compatible_version([object_name + version_specifier], candidate_name, candidate_version):
+                update_most_compatible(candidate_version, json_data)
+        else:
+            update_most_compatible(candidate_version, json_data)
+
+    return most_compatible_object
+
+def get_most_compatible_object_path(object_name: str, 
                               object_typename: str, 
                               object_validator: callable, 
                               name_key: str, 
@@ -1017,7 +1058,7 @@ def get_most_compatible_object(object_name: str,
     :param object_validator: Validator to use for json file 
     :param name_key: Object name key inside the object's json file e.g. 'engine_name' 
     :param objects: List of paths to search
-    :param gem_json_data_by_name
+    :return the most compatible object path or None
     """
     matching_paths = deque()
     most_compatible_version = Version('0.0.0')
@@ -1088,10 +1129,10 @@ def get_registered(engine_name: str = None,
     json_data = load_o3de_manifest()
 
     if isinstance(engine_name, str):
-        return get_most_compatible_object(engine_name, 'engine', validation.valid_o3de_engine_json, 'engine_name', get_manifest_engines())
+        return get_most_compatible_object_path(engine_name, 'engine', validation.valid_o3de_engine_json, 'engine_name', get_manifest_engines())
 
     elif isinstance(project_name, str):
-        return get_most_compatible_object(project_name, 'project', validation.valid_o3de_project_json, 'project_name', get_all_projects())
+        return get_most_compatible_object_path(project_name, 'project', validation.valid_o3de_project_json, 'project_name', get_all_projects())
 
     elif isinstance(gem_name, str):
         gems = []
@@ -1108,7 +1149,7 @@ def get_registered(engine_name: str = None,
                 for registered_project_path in registered_project_paths:
                     gems.extend(get_all_gems(registered_project_path))
                 gems = list(dict.fromkeys(gems))
-        return get_most_compatible_object(gem_name, 'gem', validation.valid_o3de_gem_json, 'gem_name', gems)
+        return get_most_compatible_object_path(gem_name, 'gem', validation.valid_o3de_gem_json, 'gem_name', gems)
 
     elif isinstance(template_name, str):
         templates = []
