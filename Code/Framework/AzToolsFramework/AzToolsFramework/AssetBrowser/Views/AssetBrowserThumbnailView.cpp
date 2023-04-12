@@ -105,15 +105,6 @@ namespace AzToolsFramework
 
             connect(m_thumbnailViewWidget, &AzQtComponents::AssetFolderThumbnailView::afterRename, this, &AssetBrowserThumbnailView::AfterRename);
 
-              if (AzToolsFramework::IsNewActionManagerEnabled())
-              {
-                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                  {
-                      // Assign this widget to the Editor Asset Browser Action Context.
-                      hotKeyManagerInterface->AssignWidgetToActionContext(
-                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                  }
-              }
 
               QAction* deleteAction = new QAction("Delete Action", this);
               deleteAction->setShortcut(QKeySequence::Delete);
@@ -164,17 +155,18 @@ namespace AzToolsFramework
             auto layout = new QVBoxLayout();
             layout->addWidget(m_thumbnailViewWidget);
             setLayout(layout);
+
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+            }
         }
 
         AssetBrowserThumbnailView::~AssetBrowserThumbnailView()
         {
             if (AzToolsFramework::IsNewActionManagerEnabled())
             {
-                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                  {
-                      hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                  }
+                RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
             }
         }
 
