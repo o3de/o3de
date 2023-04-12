@@ -9,6 +9,8 @@
 
 #include "KeyboardCustomizationSettings.h"
 
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
+
 // Qt
 #include <QMenu>
 #include <QMenuBar>
@@ -349,6 +351,12 @@ void KeyboardCustomizationSettings::ClearShortcutsAndAccelerators()
 /** static */
 void KeyboardCustomizationSettings::EnableShortcutsGlobally(bool enable)
 {
+    // This is part of the legacy shortcut manager, so bypass it if the new action manager is enabled.
+    if (AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        return;
+    }
+
     for (auto it : m_instances)
     {
         it->EnableShortcuts(enable);

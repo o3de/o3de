@@ -1567,6 +1567,7 @@ namespace Multiplayer
                         NetBindComponent* netBindComponent = m_networkEntityManager.GetNetworkEntityTracker()->GetNetBindComponent(entity);
                         if (netBindComponent != nullptr)
                         {
+                            AZ_Assert(netBindComponent->GetEntity() != nullptr, "Null entity for this component");
                             gatheredEntities.push_back(netBindComponent);
                         }
                     }

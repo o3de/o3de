@@ -4978,7 +4978,7 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Error("AssetProcessor", false, "%s", outcome.GetError().c_str());
+                        AZ_Error(AssetProcessor::ConsoleChannel, false, "%s", outcome.GetError().c_str());
                         return {};
                     }
                 }

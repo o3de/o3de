@@ -59,6 +59,11 @@ namespace PhysX
         if (numShapes > 0)
         {
             auto* scene = Utils::GetDefaultScene();
+            if (scene == nullptr)
+            {
+                return;
+            }
+
             auto* pxScene = static_cast<physx::PxScene*>(scene->GetNativePointer());
             PHYSX_SCENE_READ_LOCK(pxScene);
 
