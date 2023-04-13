@@ -284,7 +284,7 @@ namespace AZ
             
             void ResizePerViewInstanceVectors(size_t viewCount);
             void ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view);
-            void SortInstanceDataForView(size_t viewIndex);
+            void SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex);
             void AddInstancedDrawPacketsTasksForView(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
             void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
 
@@ -304,8 +304,34 @@ namespace AZ
                     return AZStd::tie(m_instanceIndex,  m_depth) < AZStd::tie(rhs.m_instanceIndex, rhs.m_depth);
                 }
             };
+
+            struct PerViewInstanceGroupPageData
+            {
+                AZStd::atomic<uint32_t> m_currentElementIndex = 0;
+                AZStd::vector<SortInstanceData> m_sortInstanceData = {};
+
+                PerViewInstanceGroupPageData()
+                    : m_currentElementIndex(0)
+                    , m_sortInstanceData({})
+                {
+                }
+                // We need a copy constructor in order to re-size a vector of these,
+                // even though we only resize empty vectors that never actually need to copy anything
+                PerViewInstanceGroupPageData(const PerViewInstanceGroupPageData& rhs)
+                {
+                    m_currentElementIndex = rhs.m_currentElementIndex.load();
+                    m_sortInstanceData = rhs.m_sortInstanceData;
+                }
+
+                void operator=(const PerViewInstanceGroupPageData& rhs)
+                {
+                    m_currentElementIndex = rhs.m_currentElementIndex.load();
+                    m_sortInstanceData = rhs.m_sortInstanceData;
+                }
+            };
             
             AZStd::vector<AZStd::vector<SortInstanceData>> m_perViewSortInstanceData;
+            AZStd::vector<AZStd::vector<PerViewInstanceGroupPageData>> m_perViewInstanceGroupPageData;
             AZStd::vector<AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>> m_perViewInstanceData;
             AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
             AZStd::mutex m_meshDataMutex;

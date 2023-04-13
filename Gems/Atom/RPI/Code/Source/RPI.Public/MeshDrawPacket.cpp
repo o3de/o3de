@@ -322,6 +322,9 @@ namespace AZ
                     RPI::ShaderOptionValue& value = meshShaderOption.second;
 
                     ShaderOptionIndex index = shaderOptions.FindShaderOptionIndex(name);
+
+                    // Most shader options will be applied to any shader item that supports it, even if
+                    // not all the shader items in the draw packet support it
                     if (index.IsValid())
                     {
                         shaderOptions.SetValue(name, value);

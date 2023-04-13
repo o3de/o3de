@@ -261,6 +261,8 @@ namespace AZ
         this_type& operator++();
         this_type operator++(int);
 
+        uint32_t GetPageIndex() const;
+
     private:
 
         void SkipEmptyBitGroups();
@@ -291,17 +293,22 @@ namespace AZ
         /// Returns true if this Handle doesn't contain a value (same as !IsValid()).
         bool IsNull() const;
 
+        /// Returns the index of the page this handle refers to
+        uint32_t GetPageIndex() const;
+
         ValueType& operator*() const;
         ValueType* operator->() const;
 
         bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         bool operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+
         
     private:
-        StableDynamicArrayWeakHandle(ValueType* data);
+        StableDynamicArrayWeakHandle(ValueType* data, uint32_t pageIndex);
 
         ValueType* m_data = nullptr;
+        uint32_t m_pageIndex = 0;
 
         template<typename T>
         friend class StableDynamicArrayHandle;
@@ -360,7 +367,7 @@ namespace AZ
     private:
 
         template<typename PageType>
-        StableDynamicArrayHandle(ValueType* data, PageType* page);
+        StableDynamicArrayHandle(ValueType* data, PageType* page, uint32_t pageIndex);
 
         StableDynamicArrayHandle(const StableDynamicArrayHandle&) = delete;
 
@@ -371,6 +378,7 @@ namespace AZ
 
         ValueType* m_data = nullptr; ///< The actual data this handle points to in the StableDynamicArrayHandle.
         void* m_page = nullptr; ///< The page the data this Handle points to was allocated on.
+        uint32_t m_pageIndex = 0;
     };
     
     /// Used for returning information about the internal state of the StableDynamicArray.

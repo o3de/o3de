@@ -30,7 +30,13 @@ namespace AZ::Render
         AZStd::vector<RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
 
         // All draw items in a draw packet share the same root constant layout
-        uint32_t m_drawRootConstantOffset;
+        uint32_t m_drawRootConstantOffset = 0;
+
+        // The current instance group count
+        uint32_t m_count = 0;
+
+        // The page that this instance group belongs to
+        uint32_t m_pageIndex = 0;
 
         // We store a key with the data to make it faster to remove the instance without needing to recreate the key
         // or store it with the data for each individual instance

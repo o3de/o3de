@@ -45,6 +45,11 @@ namespace AZ::Render
         //! Get begin and end iterators for each page in the MeshInstanceGroup, which can be processed in parallel
         ParallelRanges GetParallelRanges();
 
+        struct PerPageData
+        {
+            uint32_t m_totalInstanceCount = 0;
+
+        };
     private:
 
         MeshInstanceGroupList m_instanceData;

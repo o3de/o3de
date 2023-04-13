@@ -76,7 +76,7 @@ namespace AZ
                 AZStd::Internal::construct<T*>::single(item, AZStd::forward<Args>(args) ...);
 
                 ++m_itemCount;
-                return Handle(item, m_firstAvailablePage);
+                return Handle(item, m_firstAvailablePage, static_cast<uint32_t>(m_firstAvailablePage->m_pageIndex));
             }
             if (!m_firstAvailablePage->m_nextPage)
             {
@@ -105,7 +105,7 @@ namespace AZ
         T* item = m_firstAvailablePage->GetItem(pageItem);
         AZStd::Internal::construct<T*>::single(item, AZStd::forward<Args>(args) ...);
         ++m_itemCount;
-        return Handle(item, page);
+        return Handle(item, page, static_cast<uint32_t>(m_firstAvailablePage->m_pageIndex));
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
@@ -581,6 +581,12 @@ namespace AZ
     }
 
     template<typename T, size_t ElementsPerPage, class Allocator>
+    uint32_t StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::GetPageIndex() const
+    {
+        return static_cast<uint32_t>(m_page->m_pageIndex);
+    }
+
+    template<typename T, size_t ElementsPerPage, class Allocator>
     void StableDynamicArray<T, ElementsPerPage, Allocator>::pageIterator::SkipEmptyBitGroups()
     {
         // skip the next bit group in the page until one is found with entries
@@ -617,8 +623,9 @@ namespace AZ
 
     // StableDynamicArray::WeakHandle
     template<typename ValueType>
-    StableDynamicArrayWeakHandle<ValueType>::StableDynamicArrayWeakHandle(ValueType* data)
+    StableDynamicArrayWeakHandle<ValueType>::StableDynamicArrayWeakHandle(ValueType* data, uint32_t pageIndex)
         : m_data(data)
+        , m_pageIndex(pageIndex)
     {
     }
 
@@ -632,6 +639,12 @@ namespace AZ
     bool StableDynamicArrayWeakHandle<ValueType>::IsNull() const
     {
         return m_data == nullptr;
+    }
+
+    template<typename ValueType>
+    uint32_t StableDynamicArrayWeakHandle<ValueType>::GetPageIndex() const
+    {
+        return m_pageIndex;
     }
 
     template<typename ValueType>
@@ -669,9 +682,10 @@ namespace AZ
 
     template<typename ValueType>
     template<typename PageType>
-    StableDynamicArrayHandle<ValueType>::StableDynamicArrayHandle(ValueType* data, PageType* page)
+    StableDynamicArrayHandle<ValueType>::StableDynamicArrayHandle(ValueType* data, PageType* page, uint32_t pageIndex)
         : m_data(data)
         , m_page(page)
+        , m_pageIndex(pageIndex)
     {
         // Store container type information in the non-capturing lambda callback so the Handle itself doesn't need it.
         m_destructorCallback = [](void* typelessHandlePointer)
@@ -707,6 +721,7 @@ namespace AZ
         {
             Free();
             m_data = other.m_data;
+            m_pageIndex = other.m_pageIndex;
             m_destructorCallback = other.m_destructorCallback;
             m_page = other.m_page;
             other.Invalidate();
@@ -722,6 +737,7 @@ namespace AZ
 
         Free();
         m_data = azrtti_cast<ValueType*>(other.m_data);
+        m_pageIndex = other.m_pageIndex;
         // Only move the data if the azrtti_cast cast succeeded. Otherwise, leave both handles invalid
         if (m_data)
         {
@@ -784,12 +800,13 @@ namespace AZ
         m_data = nullptr;
         m_destructorCallback = nullptr;
         m_page = nullptr;
+        m_pageIndex = 0;
     }
 
     template<typename ValueType>
     StableDynamicArrayWeakHandle<ValueType> StableDynamicArrayHandle<ValueType>::GetWeakHandle() const
     {
-        return StableDynamicArrayWeakHandle<ValueType>(m_data);
+        return StableDynamicArrayWeakHandle<ValueType>(m_data, m_pageIndex);
     }
 
 } // end namespace AZ

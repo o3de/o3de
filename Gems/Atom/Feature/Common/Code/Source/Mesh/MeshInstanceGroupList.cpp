@@ -32,6 +32,9 @@ namespace AZ::Render
             it->second.m_count++;
         }
 
+        // Keep track of the count from the map in the data itself
+        it->second.m_handle->m_count = it->second.m_count;
+
         m_instanceDataConcurrencyChecker.soft_unlock();
         return MeshInstanceGroupList::InsertResult{ it->second.m_handle.GetWeakHandle(), it->second.m_count};
     }

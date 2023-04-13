@@ -40,6 +40,15 @@ namespace AZ
             AZ::ConsoleFunctorFlags::Null,
             "Enable instanced draw calls in the MeshFeatureProcessor.");
 
+        
+        AZ_CVAR(
+            bool,
+            r_meshInstancingForceOneObjectPerDrawCall,
+            false,
+            nullptr,
+            AZ::ConsoleFunctorFlags::Null,
+            "Enable instanced draw calls in the MeshFeatureProcessor, but force one object per draw call.");
+
         class ModelDataInstance;
 
         //! Mesh feature processor data types for customizing model materials

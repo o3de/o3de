@@ -88,6 +88,8 @@ namespace AZ
         static AZ::Name s_opacity_factor_Name = AZ::Name::FromStringLiteral("opacity.factor", AZ::Interface<AZ::NameDictionary>::Get());
         static AZ::Name s_m_rootConstantInstanceDataOffset_Name =
             AZ::Name::FromStringLiteral("m_rootConstantInstanceDataOffset", AZ::Interface<AZ::NameDictionary>::Get());
+        static AZ::Name s_o_meshInstancingIsEnabled_Name =
+            AZ::Name::FromStringLiteral("o_meshInstancingIsEnabled", AZ::Interface<AZ::NameDictionary>::Get());
 
         static void CacheRootConstantInterval(MeshInstanceGroupData& meshInstanceGroupData)
         {
@@ -435,10 +437,16 @@ namespace AZ
                     ProcessVisibilityListForView(viewIndex, packet.m_views[viewIndex]);
                 }
 
+                AZ::TaskGraphEvent sortInstanceBufferBucketsTGEvent{ "SortInstanceBufferBuckets Wait" };
+                AZ::TaskGraph sortInstanceBufferBucketsTG{ "SortInstanceBufferBuckets" };
                 for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                 {
-                    SortInstanceDataForView(viewIndex);
+                    SortInstanceDataForView(sortInstanceBufferBucketsTG, viewIndex);
                 }
+
+                // submit the tasks
+                sortInstanceBufferBucketsTG.Submit(&sortInstanceBufferBucketsTGEvent);
+                sortInstanceBufferBucketsTGEvent.Wait();
 
                 // Create the task graph;
                 AZ::TaskGraphEvent buildInstanceBufferTGEvent{ "BuildInstanceBuffer Wait" };
@@ -474,6 +482,11 @@ namespace AZ
                     viewCount, AZStd::vector<SortInstanceData>());
             }
 
+            if (m_perViewInstanceGroupPageData.size() <= viewCount)
+            {
+                m_perViewInstanceGroupPageData.resize(viewCount, AZStd::vector<PerViewInstanceGroupPageData>());
+            }
+
             // Initialize the buffer handler if it hasn't been created yet
             if (m_perViewInstanceDataBufferHandlers.size() <= viewCount)
             {
@@ -490,18 +503,39 @@ namespace AZ
                 }
             }
 
+            AZStd::vector<uint32_t> perPageInstanceCounts;
             AZ::JobCompletion perInstanceGroupJobCompletion;
             const auto instanceManagerRanges = m_meshInstanceManager.GetParallelRanges();
+            if (instanceManagerRanges.size() > 0)
+            {
+                // Resize the per-page data vectors for every view
+                for (AZStd::vector<PerViewInstanceGroupPageData>& pageDataVector : m_perViewInstanceGroupPageData)
+                {
+                    // Get the max page index by looking at the index of the very last page
+                    uint32_t pageCount = instanceManagerRanges.back().m_begin.GetPageIndex() + 1;
+                    pageDataVector.resize(pageCount);
+                    perPageInstanceCounts.resize(pageCount, 0);
+                    for (auto& pageData : pageDataVector)
+                    {
+                        pageData.m_currentElementIndex = 0;
+                        pageData.m_sortInstanceData.clear();
+                    }
+                }
+            }
+            
             for (const auto& iteratorRange : instanceManagerRanges)
             {
                 const auto perInstanceGroupJobLambda = [&]() -> void
                 {
+                    uint32_t maxPossibleInstanceCountForGroup = 0;
                     for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
                          ++instanceGroupDataIter)
                     {
                         // Resize the cloned draw packet vector
                         instanceGroupDataIter->m_perViewDrawPackets.resize(viewCount);
+                        maxPossibleInstanceCountForGroup += instanceGroupDataIter->m_count;
                     }
+                    perPageInstanceCounts[iteratorRange.m_begin.GetPageIndex()] = maxPossibleInstanceCountForGroup;
                 };
                 Job* executePerInstanceGroupJob =
                     aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
@@ -510,6 +544,20 @@ namespace AZ
                 executePerInstanceGroupJob->Start();
             }
             perInstanceGroupJobCompletion.StartAndWaitForCompletion();
+
+            // Resize the per-page data vectors for every view to allow for all possible objects to be visible
+            for (size_t viewIndex = 0; viewIndex < viewCount; ++viewIndex)
+            {
+                AZStd::vector<PerViewInstanceGroupPageData>& pageDataVector = m_perViewInstanceGroupPageData[viewIndex];
+                for (size_t pageIndex = 0; pageIndex < pageDataVector.size(); ++pageIndex)
+                {
+                    // Reserve enough memory to handle the case where all of the objects are visible
+                    // We use resize_no_construct instead of reserve + push_back so that we can use an
+                    // atomic index to set the data lock-free from multiple threads.
+                    uint32_t maxPossibleObjects = perPageInstanceCounts[pageIndex];
+                    pageDataVector[pageIndex].m_sortInstanceData.resize_no_construct(maxPossibleObjects);
+                }
+            }
         }
 
         void MeshFeatureProcessor::ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view)
@@ -519,7 +567,7 @@ namespace AZ
 
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
-
+            AZStd::vector<PerViewInstanceGroupPageData>& perViewInstanceGroupPageData = m_perViewInstanceGroupPageData[viewIndex];
             if (instanceBufferCount > 0)
             {
                 perViewInstanceData.clear();
@@ -538,12 +586,19 @@ namespace AZ
                     instanceData.m_depth = visibleObject.m_depth;
 
                     // TODO: this is not thread safe when using a shared pool allocator
-                    perViewSortInstanceData.push_back(instanceData);
+                    //perViewSortInstanceData.push_back(instanceData);
+
+                    // Add the sort data to the bucket (pageData)
+                    PerViewInstanceGroupPageData& pageData =
+                        perViewInstanceGroupPageData[postCullingData.m_instanceGroupHandle.GetPageIndex()];
+                    // Use an atomic operation to determine where to insert this sort data
+                    uint32_t currentIndex = pageData.m_currentElementIndex++;
+                    pageData.m_sortInstanceData[currentIndex] = instanceData;
                 }
             }
         }
 
-        void MeshFeatureProcessor::SortInstanceDataForView(size_t viewIndex)
+        void MeshFeatureProcessor::SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex)
         {
             // TODO: We're sorting by depth front to back within the instanced data for a given instance group. This is valid for
             // depth/shadow passes but not for transparency. We need to either determine the sort order on the CPU side (not sure that's
@@ -551,67 +606,44 @@ namespace AZ
             // shaders to read the data in the correct order (front to back vs back to front) Sort key is irrelevant, only depth, in this
             // scenario because everything in an instance group shares a common sort key What do we do about depth-then-key sorting? The
             // pass system will only see average depth, not true depth. Should we not support instancing here?
-            AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
-            std::sort(std::execution::par_unseq, perViewSortInstanceData.begin(), perViewSortInstanceData.end());
+            //AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
+            AZStd::vector<PerViewInstanceGroupPageData>& perViewInstanceGroupPageData = m_perViewInstanceGroupPageData[viewIndex];
+
+            // Create a task graph where each task is responsible for sorting a bucket.
+            // TODO: If the bucket is large enough, sort it in parallel after the fact
+
+            static const AZ::TaskDescriptor sortInstanceBufferBucketsTaskDescriptor{
+                "AZ::Render::MeshFeatureProcessor::OnEndCSulling - sort instance data buckets", "Graphics"
+            };
+
+            for (PerViewInstanceGroupPageData& pageData : perViewInstanceGroupPageData)
+            {
+                sortInstanceBufferBucketsTG.AddTask(
+                    sortInstanceBufferBucketsTaskDescriptor,
+                    [&pageData]()
+                    {
+                        // Note: we've resized sortInstanceData so that we could use an atomic for parallel lock free insertion
+                        // so it has a greater size than the actual count. We only care about the real data, so cut off the last
+                        // unused elements here
+                        pageData.m_sortInstanceData.resize(pageData.m_currentElementIndex);
+                        std::sort(pageData.m_sortInstanceData.begin(), pageData.m_sortInstanceData.end());
+                    });
+            }
         }
 
         void MeshFeatureProcessor::AddInstancedDrawPacketsTasksForView(
             TaskGraph& buildInstanceBufferTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
-            AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
-            uint32_t totalVisibleInstanceCount = static_cast<uint32_t>(perViewSortInstanceData.size());
-            if (totalVisibleInstanceCount > 0)
+            //AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
+            AZStd::vector<PerViewInstanceGroupPageData>& perViewInstanceGroupPageData = m_perViewInstanceGroupPageData[viewIndex];
+            //uint32_t totalVisibleInstanceCount = static_cast<uint32_t>(perViewSortInstanceData.size());
+
+            uint32_t currentBatchStart = 0;
+            for (PerViewInstanceGroupPageData& pageData : perViewInstanceGroupPageData)
             {
-                // Make space for the final data
-                perViewInstanceData.resize_no_construct(perViewSortInstanceData.size());
-
-                // Divy up the work into tasks
-                constexpr uint32_t minimumBatchSize = 256;
-                // If there are a lot of instances to iterate over, split them evenly among threads
-                uint32_t taskCount = AZStd::thread::hardware_concurrency();
-                uint32_t approximateBatchSize = totalVisibleInstanceCount / taskCount;
-                // If there are not very many instances, split them into reasonably sized batches
-                if (approximateBatchSize < minimumBatchSize)
+                if (pageData.m_currentElementIndex > 0)
                 {
-                    taskCount = (totalVisibleInstanceCount / minimumBatchSize) + 1;
-                    approximateBatchSize = totalVisibleInstanceCount / taskCount;
-                }
-
-                uint32_t currentBatchStart = 0;
-                uint32_t currentBatchEndNonInclusive = 0;
-                // For each task, find the next boundary where the work needs to be split
-                // TODO: find the boundary in the task itself? Would need to also find the correct starting point, instead of basing start
-                // on the previous end
-                for (uint32_t taskIndex = 0; taskIndex < taskCount; ++taskIndex)
-                {
-                    if (taskIndex < taskCount - 1)
-                    {
-                        // End location is roughly here
-                        uint32_t approximateEndOffset = taskIndex * approximateBatchSize + approximateBatchSize;
-                        ModelDataInstance::InstanceGroupHandle batchEndInstanceGroup = perViewSortInstanceData[approximateEndOffset].m_instanceIndex;
-                        // TODO: validate what happens whenthe offset overruns the start of the next batch
-                        if (approximateEndOffset < currentBatchStart)
-                        {
-                            // Skip this batch since the previous batch overran what would have been the start of this batch
-                            continue;
-                        }
-                        for (uint32_t actualEndOffset = approximateEndOffset; actualEndOffset < approximateEndOffset + approximateBatchSize;
-                             ++actualEndOffset)
-                        {
-                            if (perViewSortInstanceData[actualEndOffset].m_instanceIndex != batchEndInstanceGroup)
-                            {
-                                // We've found where the current batch ends
-                                currentBatchEndNonInclusive = actualEndOffset;
-                                break;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        currentBatchEndNonInclusive = totalVisibleInstanceCount;
-                    }
-
                     static const AZ::TaskDescriptor buildInstanceBufferTaskDescriptor{
                         "AZ::Render::MeshFeatureProcessor::OnEndCulling - process instance data", "Graphics"
                     };
@@ -619,23 +651,25 @@ namespace AZ
                     buildInstanceBufferTG.AddTask(
                         buildInstanceBufferTaskDescriptor,
                         [this,
-                         currentBatchStart,
-                         currentBatchEndNonInclusive,
-                         viewIndex,
-                         &view,
-                         &perViewInstanceData,
-                         &perViewSortInstanceData]()
+                        currentBatchStart,
+                        viewIndex,
+                        &view,
+                        &perViewInstanceData,
+                        &pageData]()
                         {
                             ModelDataInstance::InstanceGroupHandle currentInstanceGroup =
-                                perViewSortInstanceData[currentBatchStart].m_instanceIndex;
+                                pageData.m_sortInstanceData.begin()->m_instanceIndex;
                             uint32_t instanceDataOffset = currentBatchStart;
                             float depth = 0.0f;
-                            for (uint32_t i = currentBatchStart; i < currentBatchEndNonInclusive; ++i)
+                            uint32_t pageElementIndex = 0;
+                            uint32_t instanceDataIndex = 0;
+                            for (SortInstanceData& sortInstanceData : pageData.m_sortInstanceData)
                             {
-                                perViewInstanceData[i] = perViewSortInstanceData[i].m_objectId;
-                                depth += perViewSortInstanceData[i].m_depth;
+                                instanceDataIndex = currentBatchStart + pageElementIndex;
+                                perViewInstanceData[instanceDataIndex] = sortInstanceData.m_objectId;
+                                depth += sortInstanceData.m_depth;
                                 // Anytime the instance group changes, submit a draw
-                                if (perViewSortInstanceData[i].m_instanceIndex != currentInstanceGroup)
+                                if (sortInstanceData.m_instanceIndex != currentInstanceGroup)
                                 {
                                     // Submit a draw
                                     MeshInstanceGroupData& instanceData = m_meshInstanceManager[currentInstanceGroup];
@@ -659,26 +693,12 @@ namespace AZ
 
                                     RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
 
-                                    // Get the root constant layout
-                                    // TODO: Verify the validity of the root constant interval elsewhere
-                                    // if (instanceData.m_drawRootConstantInterval.IsValid())
-                                    {
-                                        // Set the instance data offset
-                                        AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                        clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantOffset, data);
-                                    }
-                                    /* else
-                                    {
-                                        AZ_Error(
-                                            "MeshFeatureProcessor",
-                                            false,
-                                            "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name "
-                                            "from its "
-                                            "root constant layout.");
-                                    }*/
+                                    // Set the instance data offset
+                                    AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                    clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantOffset, data);
 
                                     // This is the number of visible instances for this view
-                                    uint32_t instanceCount = i - instanceDataOffset;
+                                    uint32_t instanceCount = instanceDataIndex - instanceDataOffset;
 
                                     // Set the cloned draw packet instance count
                                     clonedDrawPacket->SetInstanceCount(instanceCount);
@@ -691,15 +711,16 @@ namespace AZ
                                     view->AddDrawPacket(clonedDrawPacket.get(), averageDepth);
 
                                     // Update the loop trackers
-                                    instanceDataOffset = i;
-                                    currentInstanceGroup = perViewSortInstanceData[i].m_instanceIndex;
+                                    instanceDataOffset = instanceDataIndex;
+                                    currentInstanceGroup = sortInstanceData.m_instanceIndex;
                                 }
+                                pageElementIndex++;
                             }
 
                             // submit the last instance group
                             {
                                 // Submit a draw
-                                MeshInstanceGroupData& instanceData = m_meshInstanceManager[currentInstanceGroup];
+                                MeshInstanceGroupData& instanceData = *currentInstanceGroup;
 
                                 RHI::Ptr<RHI::DrawPacket> clonedDrawPacket = nullptr;
                                 // TODO: maybe resize every instance group in parallel in ResizePerViewInstanceVectors to make the threading
@@ -736,26 +757,12 @@ namespace AZ
 
                                 clonedDrawPacket = instanceData.m_perViewDrawPackets[viewIndex];
 
-                                // Get the root constant layout
-                                // TODO: Verify the validity of the root constant interval elsewhere
-                                // if (instanceData.m_drawRootConstantInterval.IsValid())
-                                {
-                                    // Set the instance data offset
-                                    AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
-                                    clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantOffset, data);
-                                }
-                                /* else
-                                {
-                                    AZ_Error(
-                                        "MeshFeatureProcessor",
-                                        false,
-                                        "Trying to instance something that is missing s_m_rootConstantInstanceDataOffset_Name "
-                                        "from its "
-                                        "root constant layout.");
-                                }*/
+                                // Set the instance data offset
+                                AZStd::span<uint8_t> data{ reinterpret_cast<uint8_t*>(&instanceDataOffset), sizeof(uint32_t) };
+                                clonedDrawPacket->SetRootConstant(instanceData.m_drawRootConstantOffset, data);
 
                                 // This is the number of visible instances for this view
-                                uint32_t instanceCount = currentBatchEndNonInclusive - instanceDataOffset;
+                                uint32_t instanceCount = instanceDataIndex + 1 - instanceDataOffset;
                                 // Set the cloned draw packet instance count
                                 clonedDrawPacket->SetInstanceCount(instanceCount);
 
@@ -764,9 +771,12 @@ namespace AZ
                             }
                         });
 
-                    currentBatchStart = currentBatchEndNonInclusive;
+                    currentBatchStart += pageData.m_currentElementIndex;
                 }
             }
+
+            // currentBatchStart now represents the total count of visible instances in this view
+            perViewInstanceData.resize_no_construct(currentBatchStart);
         }
 
         void MeshFeatureProcessor::UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view)
@@ -1697,6 +1707,41 @@ namespace AZ
             m_flags.m_needsInit = false;
         }
 
+        static bool CanSupportInstancing(Data::Instance<RPI::Material> material, bool useForwardPassIbleSpecular)
+        {
+            if (useForwardPassIbleSpecular)
+            {
+                // Forward pass ibl specular uses the ObjectSrg to set the closest reflection probe data
+                // Since all instances from a single instanced draw call share a single ObjectSrg, this
+                // will not work with instancing unless they happen to all share the same closes probe.
+                // In the future, we could make that part of the MeshInstanceGroupKey, but that impacts
+                // the initalization logic since at Init time we don't yet know the closest reflection probe.
+                // So initially we treat that case as not supporting instancing, and eventually we can re-order
+                // the logic in MeshFeatureProcessor::Simulate such that we know the up-to-date ObjectSrg data
+                // before this point
+                return false;
+            }
+
+            bool shadersSupportInstancing = true;
+            material->ForAllShaderItems(
+                [&](const Name&, const RPI::ShaderCollection::Item& shaderItem)
+                {
+                    if (shaderItem.IsEnabled())
+                    {
+                        RPI::ShaderOptionIndex index = shaderItem.GetShaderOptionGroup().GetShaderOptionLayout()->FindShaderOptionIndex(
+                            s_o_meshInstancingIsEnabled_Name);
+                        if (!index.IsValid())
+                        {
+                            shadersSupportInstancing = false;
+                            return false; // break
+                        }
+                    }
+
+                    return true; // continue
+                });
+            return shadersSupportInstancing;
+        }
+
         void ModelDataInstance::BuildDrawPacketList(MeshFeatureProcessor* meshFeatureProcessor, size_t modelLodIndex)
         {
             RPI::ModelLod& modelLod = *m_model->GetLods()[modelLodIndex];
@@ -1769,6 +1814,7 @@ namespace AZ
 
                 MeshInstanceManager::InsertResult instanceGroupInsertResult{ MeshInstanceManager::Handle{}, 0 };
 
+                bool canSupportInstancing = false;
                 if (r_meshInstancingEnabled)
                 {
                     // Get the instance index for referencing the draw packet
@@ -1785,7 +1831,18 @@ namespace AZ
 
                     // Using a random uuid will force this mesh into it's own unique instance group, which is always done for now since
                     // no actual instancing is supported yet.
-                    key.m_forceInstancingOff = Uuid::CreateNull();
+                    canSupportInstancing = CanSupportInstancing(material, m_flags.m_hasForwardPassIblSpecularMaterial);
+                    if (canSupportInstancing && !r_meshInstancingForceOneObjectPerDrawCall)
+                    {
+                        key.m_forceInstancingOff = Uuid::CreateNull();
+                    }
+                    else
+                    {
+                        // When instancing is enabled, everything goes down the instancing path, including this
+                        // However, it will get its own unique instance group, with it's own unique ObjectSrg,
+                        // so it will end up as an instanced draw call with a count of 1
+                        key.m_forceInstancingOff = Uuid::CreateRandom();
+                    }
 
                     instanceGroupInsertResult = meshInstanceManager.AddInstance(key);
                     PostCullingData postCullingData;
@@ -1823,6 +1880,11 @@ namespace AZ
                     if (!drawPacket.SetShaderOption(s_o_meshUseForwardPassIBLSpecular_Name, AZ::RPI::ShaderOptionValue{ m_descriptor.m_useForwardPassIblSpecular }))
                     {
                         AZ_Warning("MeshDrawPacket", false, "Failed to set o_meshUseForwardPassIBLSpecular on mesh draw packet");
+                    }
+
+                    if (canSupportInstancing)
+                    {
+                        drawPacket.SetShaderOption(s_o_meshInstancingIsEnabled_Name, AZ::RPI::ShaderOptionValue{ true });
                     }
 
                     // stencil bits
@@ -2683,3 +2745,4 @@ namespace AZ
 
     } // namespace Render
 } // namespace AZ
+
