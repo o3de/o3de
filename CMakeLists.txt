@@ -44,6 +44,7 @@ include(cmake/3rdParty.cmake)
 include(cmake/LYPython.cmake)
 include(cmake/Install.cmake)
 include(cmake/LYWrappers.cmake)
+include(cmake/Translation.cmake)
 include(cmake/Gems.cmake)
 include(cmake/UnitTest.cmake)
 include(cmake/TestImpactFramework/TestImpactTestTargetConfig.cmake) # LYTestWrappers dependency

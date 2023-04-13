@@ -11,6 +11,7 @@ if(NOT PAL_TRAIT_BUILD_HOST_TOOLS)
 endif()
 
 add_subdirectory(Plugins)
+add_subdirectory(Translations)
 
 ly_add_target(
     NAME EditorCore SHARED
