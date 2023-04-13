@@ -11,8 +11,11 @@
 #include <ProjectInfo.h>
 #include <ProjectManagerDefs.h>
 
+#if !defined(Q_MOC_RUN)
 #include <QWidget>
+#include <QMessageBox>
 #include <QProcessEnvironment>
+#endif
 
 #include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
@@ -22,7 +25,6 @@ namespace O3DE::ProjectManager
 {
     namespace ProjectUtils
     {
-        bool AddProjectDialog(QWidget* parent = nullptr);
         bool RegisterProject(const QString& path, QWidget* parent = nullptr);
         bool UnregisterProject(const QString& path, QWidget* parent = nullptr);
         bool CopyProjectDialog(const QString& origPath, ProjectInfo& newProjectInfo, QWidget* parent = nullptr);
@@ -108,16 +110,6 @@ namespace O3DE::ProjectManager
          */
         AZ::IO::FixedMaxPath GetEditorExecutablePath(const AZ::IO::PathView& projectPath);
 
-
-        /**
-         * Display a dialog with general and detailed sections for the given AZ::Outcome
-         * @param title Dialog title
-         * @param outcome The AZ::Outcome with general and detailed error messages
-         * @param parent Optional QWidget parent
-         */
-        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent = nullptr);
-
-
         /**
          * Compare two version strings.  Invalid version strings will be treated as 0.0.0
          * If you need to validate version strings, use AZ::Validate::ParseVersion()
@@ -154,5 +146,29 @@ namespace O3DE::ProjectManager
          */
         QString GetDependencyName(const QString& dependency);
 
+        /**
+         * Display a dialog with general and detailed sections for the given AZ::Outcome
+         * @param title Dialog title
+         * @param outcome The AZ::Outcome with general and detailed error messages
+         * @param parent Optional QWidget parent
+         * @return the QMessageBox result
+         */
+        int DisplayDetailedError(
+            const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent = nullptr);
+
+        /**
+         * Display a dialog with general and detailed sections for the given ErrorPair
+         * @param title Dialog title
+         * @param errorPair The general and detailed error messages pair
+         * @param parent Optional QWidget parent
+         * @param buttons Optional buttons to show
+         * @return the QMessageBox result
+         */
+        int DisplayDetailedError(
+            const QString& title,
+            const AZStd::string& generalError,
+            const AZStd::string& detailedError,
+            QWidget* parent = nullptr,
+            QMessageBox::StandardButtons buttons = QMessageBox::Ok);
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

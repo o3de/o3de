@@ -9,6 +9,7 @@
 
 #pragma once
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzFramework/Visibility/BoundsBus.h>
 
@@ -23,6 +24,7 @@ namespace PhysX
     /// Base class for editor joint components.
     class EditorJointComponent
         : public AzToolsFramework::Components::EditorComponentBase
+        , protected AZ::TransformNotificationBus::Handler
         , protected AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , protected AzToolsFramework::EditorComponentSelectionNotificationsBus::Handler
         , protected PhysX::EditorJointRequestBus::Handler
@@ -42,6 +44,9 @@ namespace PhysX
         AZ::Aabb GetLocalBounds() override;
 
     protected:
+        // TransformNotificationBus overrides ...
+        void OnTransformChanged(const AZ::Transform& localTM, const AZ::Transform& worldTM) override;
+
         // EditorComponentSelectionRequestsBus overrides ....
         AZ::Aabb GetEditorSelectionBoundsViewport(
             const AzFramework::ViewportInfo& viewportInfo) override;
@@ -70,5 +75,7 @@ namespace PhysX
             AzFramework::DebugDisplayRequests& debugDisplay) override;
 
         EditorJointConfig m_config;
+
+        AZ::Transform m_cachedWorldTM;
     };
 } // namespace PhysX
