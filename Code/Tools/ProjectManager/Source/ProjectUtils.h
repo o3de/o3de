@@ -14,6 +14,7 @@
 #include <QWidget>
 #include <QProcessEnvironment>
 
+#include <AzCore/Dependency/Dependency.h>
 #include <AzCore/IO/Path/Path_fwd.h>
 #include <AzCore/Outcome/Outcome.h>
 
@@ -115,6 +116,43 @@ namespace O3DE::ProjectManager
          * @param parent Optional QWidget parent
          */
         void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent = nullptr);
+
+
+        /**
+         * Compare two version strings.  Invalid version strings will be treated as 0.0.0
+         * If you need to validate version strings, use AZ::Validate::ParseVersion()
+         * @param version1 The first version string
+         * @param version2 The first version string
+         * @return 0 if a == b, <0 if a < b, and >0 if a > b on success, or failure
+         */
+        int VersionCompare(const QString& a, const QString&b);
+
+        /**
+         * Return a human readable dependency
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @return a human readable string e.g. o3de 1.2.3, or o3de greater than or equal to 2.3.4
+         */
+        QString GetDependencyString(const QString& dependency);
+
+
+        using Dependency = AZ::Dependency<AZ::SemanticVersion::parts_count>;
+        using Comparison = AZ::Dependency<AZ::SemanticVersion::parts_count>::Bound::Comparison;
+
+        /**
+         * Helper to parse a dependency, e.g. o3de==1.2.3 into an object name, comparator version 
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @param objectName The parsed object name, e.g. o3de 
+         * @param comparator The parsed comparator, e.g. ==
+         * @param version The parsed version, e.g. 1.2.3 
+         */
+        void GetDependencyNameAndVersion(const QString& dependency, QString& objectName, Comparison& comparator, QString& version);
+
+        /**
+         * Helper to parse a dependency, e.g. o3de==1.2.3 into an object name 
+         * @param dependency The dependency, e.g. o3de==1.2.3
+         * @return The parsed object name, e.g. o3de 
+         */
+        QString GetDependencyName(const QString& dependency);
 
     } // namespace ProjectUtils
 } // namespace O3DE::ProjectManager

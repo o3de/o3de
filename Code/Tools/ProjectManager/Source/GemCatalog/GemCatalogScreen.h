@@ -60,7 +60,8 @@ namespace O3DE::ProjectManager
         void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
         void Refresh();
         void UpdateGem(const QModelIndex& modelIndex);
-        void UninstallGem(const QModelIndex& modelIndex);
+        void UninstallGem(const QModelIndex& modelIndex, const QString& path);
+        void DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
         void HandleGemCreated(const GemInfo& gemInfo);
         void HandleGemEdited(const GemInfo& newGemInfo);
 
@@ -80,7 +81,7 @@ namespace O3DE::ProjectManager
     private slots:
         void HandleOpenGemRepo();
         void HandleCreateGem();
-        void HandleEditGem(const QModelIndex& currentModelIndex);
+        void HandleEditGem(const QModelIndex& currentModelIndex, const QString& path);
         void UpdateAndShowGemCart(QWidget* cartWidget);
         void ShowInspector();
 

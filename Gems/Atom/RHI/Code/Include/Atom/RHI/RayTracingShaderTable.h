@@ -67,7 +67,7 @@ namespace AZ
             void RemoveHitGroupRecords(uint32_t key);
 
             // build operations
-            RayTracingShaderTableDescriptor* Build(const AZ::Name& name, RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState);
+            RayTracingShaderTableDescriptor* Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState);
             RayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
             RayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
             RayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
