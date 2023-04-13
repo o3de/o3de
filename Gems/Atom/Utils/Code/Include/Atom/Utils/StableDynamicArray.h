@@ -296,6 +296,7 @@ namespace AZ
 
         bool operator==(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         bool operator!=(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
+        bool operator<(const StableDynamicArrayWeakHandle<ValueType>& rhs) const;
         
     private:
         StableDynamicArrayWeakHandle(ValueType* data);

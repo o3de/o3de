@@ -30,7 +30,7 @@ namespace AZ::Render
         AZStd::vector<RHI::Ptr<RHI::DrawPacket>> m_perViewDrawPackets;
 
         // All draw items in a draw packet share the same root constant layout
-        RHI::Interval m_drawRootConstantInterval;
+        uint32_t m_drawRootConstantOffset;
 
         // We store a key with the data to make it faster to remove the instance without needing to recreate the key
         // or store it with the data for each individual instance

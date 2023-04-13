@@ -31,6 +31,7 @@ namespace AZ
         class RayTracingFeatureProcessor;
         class ReflectionProbeFeatureProcessor;
         class MeshFeatureProcessor;
+        class GpuBufferHandler;
 
         class ModelDataInstance
         {
@@ -47,9 +48,15 @@ namespace AZ
 
             ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
 
-            
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
-            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
+
+            struct PostCullingData
+            {
+                InstanceGroupHandle m_instanceGroupHandle;
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+            };
+
+            using InstanceGroupHandleList = AZStd::vector<PostCullingData>;
 
         private:
             class MeshLoader
@@ -105,7 +112,7 @@ namespace AZ
             void SetMeshLodConfiguration(RPI::Cullable::LodConfiguration meshLodConfig);
             RPI::Cullable::LodConfiguration GetMeshLodConfiguration() const;
             void UpdateDrawPackets(bool forceUpdate = false);
-            void BuildCullable(MeshFeatureProcessor* meshFeatureProcessor);
+            void BuildCullable();
             void UpdateCullBounds(const MeshFeatureProcessor* meshFeatureProcessor);
             void UpdateObjectSrg(MeshFeatureProcessor* meshFeatureProcessor);
             bool MaterialRequiresForwardPassIblSpecular(Data::Instance<RPI::Material> material) const;
@@ -275,12 +282,34 @@ namespace AZ
             void ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob);
             
             
-            void ProcessVisibleObjectListForView(const RPI::ViewPtr& view);
+            void ResizePerViewInstanceVectors(size_t viewCount);
+            void ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view);
+            void SortInstanceDataForView(size_t viewIndex);
+            void AddInstancedDrawPacketsTasksForView(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
+            void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
 
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
 
             MeshInstanceManager m_meshInstanceManager;
+            
+            struct SortInstanceData
+            {
+                ModelDataInstance::InstanceGroupHandle m_instanceIndex;
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+                float m_depth = 0.0f;
+
+                bool operator<(const SortInstanceData& rhs)
+                {
+                    return AZStd::tie(m_instanceIndex,  m_depth) < AZStd::tie(rhs.m_instanceIndex, rhs.m_depth);
+                }
+            };
+            
+            AZStd::vector<AZStd::vector<SortInstanceData>> m_perViewSortInstanceData;
+            AZStd::vector<AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>> m_perViewInstanceData;
+            AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
+            AZStd::mutex m_meshDataMutex;
+            
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
             ReflectionProbeFeatureProcessor* m_reflectionProbeFeatureProcessor = nullptr;
