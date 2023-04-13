@@ -435,9 +435,9 @@ namespace O3DE::ProjectManager
         ShowInspector();
     }
 
-    void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex)
+    void GemCatalogScreen::UpdateGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
-        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex);
+        const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
 
         if (!gemInfo.m_repoUri.isEmpty())
         {
@@ -470,21 +470,25 @@ namespace O3DE::ProjectManager
             }
         }
 
+        QString gemNameWithVersionSpecifier = version.isEmpty() ? gemInfo.m_name : QString("%1==%2").arg(gemInfo.m_name, version);
+
         // Check if there is an update avaliable now that repo is refreshed
-        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemInfo.m_name, gemInfo.m_lastUpdatedDate);
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemNameWithVersionSpecifier, gemInfo.m_lastUpdatedDate);
 
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(gemInfo.m_name, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
+            m_downloadController->AddObjectDownload(gemNameWithVersionSpecifier, "" , DownloadController::DownloadObjectType::Gem);
         }
     }
 
     void GemCatalogScreen::DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
-        const QString gemDisplayName = m_gemModel->GetDisplayName(modelIndex);
         const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
-        m_downloadController->AddObjectDownload(gemInfo.m_name, "" , DownloadController::DownloadObjectType::Gem);
+        QString downloadName = version.isEmpty() ? gemInfo.m_name : QString("%1==%2").arg(gemInfo.m_name, version);
+
+        // download to the default path
+        m_downloadController->AddObjectDownload(downloadName, "" , DownloadController::DownloadObjectType::Gem);
     }
 
     void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex, const QString& path)
@@ -613,7 +617,7 @@ namespace O3DE::ProjectManager
         {
             m_gemModel->AddGems(allGemInfosResult.GetValue());
 
-            const auto& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos();
+            const auto& allRepoGemInfosResult = PythonBindingsInterface::Get()->GetGemInfosForAllRepos(projectPath);
             if (allRepoGemInfosResult.IsSuccess())
             {
                 m_gemModel->AddGems(allRepoGemInfosResult.GetValue());

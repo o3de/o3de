@@ -59,7 +59,7 @@ namespace O3DE::ProjectManager
         void SelectGem(const QString& gemName);
         void OnGemDownloadResult(const QString& gemName, bool succeeded = true);
         void Refresh();
-        void UpdateGem(const QModelIndex& modelIndex);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
         void UninstallGem(const QModelIndex& modelIndex, const QString& path);
         void DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path);
         void HandleGemCreated(const GemInfo& gemInfo);

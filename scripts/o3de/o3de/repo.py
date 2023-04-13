@@ -121,21 +121,23 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
 
         if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:
             if download_object_manifests(repo_data) != 0:
+                # we don't issue an error message here because better error messaging is provided
+                # in the download functions themselves
                 return False
-            gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
-            for gem_json in gem_set:
-                if not validation.valid_o3de_gem_json(gem_json):
-                    logger.error(f'Invalid gem JSON - {gem_json} could not be loaded or is missing required values')
+            cached_gems_json_data = get_gem_json_data_from_cached_repo(repo_uri)
+            for gem_json_data in cached_gems_json_data:
+                if not validation.valid_o3de_gem_json_data(gem_json_data):
+                    logger.error(f'Invalid gem JSON - {gem_json_data} is missing required values')
                     return False
-            project_set = get_project_json_paths_from_cached_repo(repo_uri)
-            for project_json in project_set:
-                if not validation.valid_o3de_project_json(project_json):
-                    logger.error(f'Invalid project JSON - {project_json} could not be loaded or is missing required values')
+            cached_project_json_data = get_project_json_data_from_cached_repo(repo_uri)
+            for project_json_data in cached_project_json_data:
+                if not validation.valid_o3de_project_json_data(project_json_data):
+                    logger.error(f'Invalid project JSON - {project_json_data} is missing required values')
                     return False
-            template_set = get_template_json_paths_from_cached_repo(repo_uri)
-            for template_json in template_set:
-                if not validation.valid_o3de_template_json(template_json):
-                    logger.error(f'Invalid template JSON - {template_json} could not be loaded or is missing required values')
+            cached_template_json_data = get_template_json_data_from_cached_repo(repo_uri)
+            for template_json_data in cached_template_json_data:
+                if not validation.valid_o3de_template_json_data(template_json_data):
+                    logger.error(f'Invalid template JSON - {template_json_data} is missing required values')
                     return False
                 
         elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
@@ -229,79 +231,108 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
             return process_add_o3de_repo(cache_file, repo_set)
     return 0
 
+def get_object_versions_json_data(remote_object_list:list, required_json_key:str = None, required_json_value:str = None) -> list:
+    """
+    Convert a list of remote objects that may have 'versions_data', into a list
+    of object json data with a separate entry for every entry in 'versions_data'
+    or a single entry for every remote object that has no 'versions_data' entries
+    :param remote_object_list The list of remote object json data
+    :param required_json_key Optional required json key to look for in each object
+    :param required_json_value Optional required value if required json key is specified
+    """
+    object_json_data_list = []
+    for remote_object_json_data in remote_object_list:
+        if required_json_key and remote_object_json_data.get(required_json_key, '') != required_json_value:
+            continue
 
-def get_object_json_paths_from_cached_repo(repo_uri: str, repo_key: str, object_manifest_filename: str) -> set:
+        versions_data = remote_object_json_data.pop('versions_data', None)
+        if versions_data:
+            for version_json_data in versions_data:
+                object_json_data_list.append(remote_object_json_data | version_json_data)
+        else:
+            object_json_data_list.append(remote_object_json_data)
+
+    return object_json_data_list
+
+def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_typename: str, object_validator) -> list or None:
     url = f'{repo_uri}/repo.json'
     cache_file, _ = get_cache_file_uri(url)
 
-    o3de_object_set = set()
+    o3de_object_json_data = list()
 
     file_name = pathlib.Path(cache_file).resolve()
     if not file_name.is_file():
         logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
-        return o3de_object_set
+        return None
 
     with file_name.open('r') as f:
         try:
             repo_data = json.load(f)
         except json.JSONDecodeError as e:
             logger.error(f'{file_name} failed to load: {str(e)}')
-            return o3de_object_set
+            return None
 
         # Get list of objects, then add all json paths to the list if they exist in the cache
         repo_objects = []
         try:
-            repo_objects.append((repo_data[repo_key], object_manifest_filename + '.json'))
+            repo_objects.append((repo_data[repo_key], object_typename + '.json'))
         except KeyError:
             pass
 
-        for o3de_object_uris, manifest_json in repo_objects:
-            for o3de_object_uri in o3de_object_uris:
-                manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
-                cache_object_json_filepath, _ = get_cache_file_uri(manifest_json_uri)
-                
-                if cache_object_json_filepath.is_file():
-                    o3de_object_set.add(cache_object_json_filepath)
-                else:
-                    logger.warning(f'Could not find cached {repo_key} json file {cache_object_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+        repo_schema_version = get_repo_schema_version(repo_data)
+        if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
+            for o3de_object_uris, manifest_json in repo_objects:
+                for o3de_object_uri in o3de_object_uris:
+                    manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
+                    cache_object_json_filepath, _ = get_cache_file_uri(manifest_json_uri)
+                    
+                    if cache_object_json_filepath.is_file():
+                        json_data = manifest.get_json_data_file(cache_object_json_filepath, object_typename, object_validator)
+                        # validation errors will be logged via the function above
+                        if json_data:
+                            o3de_object_json_data.append(json_data)
+                    else:
+                        logger.warning(f'Could not find cached {repo_key} json file {cache_object_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
+        elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
+            o3de_object_json_data.extend(get_object_versions_json_data(repo_data[repo_key]))
 
-    return o3de_object_set
+    return o3de_object_json_data
 
-def get_gem_json_paths_from_cached_repo(repo_uri: str) -> set:
-    return get_object_json_paths_from_cached_repo(repo_uri, 'gems', 'gem')
+def get_gem_json_data_from_cached_repo(repo_uri: str) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'gems', 'gem', validation.valid_o3de_gem_json)
 
-def get_gem_json_paths_from_all_cached_repos() -> set:
-    json_data = manifest.load_o3de_manifest()
-    gem_set = set()
+def get_gem_json_data_from_all_cached_repos() -> list:
+    manifest_json_data = manifest.load_o3de_manifest()
+    gems_json_data = list()
 
-    for repo_uri in json_data.get('repos', []):
-        gem_set.update(get_gem_json_paths_from_cached_repo(repo_uri))
+    for repo_uri in manifest_json_data.get('repos', []):
+        gems_json_data.extend(get_gem_json_data_from_cached_repo(repo_uri))
 
-    return gem_set
+    return gems_json_data
 
-def get_project_json_paths_from_cached_repo(repo_uri: str) -> set:
-    return get_object_json_paths_from_cached_repo(repo_uri, 'projects', 'project')
+def get_project_json_data_from_cached_repo(repo_uri: str) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'projects', 'project', validation.valid_o3de_project_json)
 
-def get_project_json_paths_from_all_cached_repos() -> set:
-    json_data = manifest.load_o3de_manifest()
-    project_set = set()
+def get_project_json_data_from_all_cached_repos() -> list:
+    manifest_json_data = manifest.load_o3de_manifest()
+    projects_json_data = list()
 
-    for repo_uri in json_data.get('repos', []):
-        project_set.update(get_project_json_paths_from_cached_repo(repo_uri))
+    for repo_uri in manifest_json_data.get('repos', []):
+        projects_json_data.extend(get_project_json_data_from_cached_repo(repo_uri))
 
-    return project_set
+    return projects_json_data
 
-def get_template_json_paths_from_cached_repo(repo_uri: str) -> set:
-    return get_object_json_paths_from_cached_repo(repo_uri, 'templates', 'template')
+def get_template_json_data_from_cached_repo(repo_uri: str) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'templates', 'template', validation.valid_o3de_template_json)
 
-def get_template_json_paths_from_all_cached_repos() -> set:
-    json_data = manifest.load_o3de_manifest()
-    template_set = set()
+def get_template_json_data_from_all_cached_repos() -> list:
+    manifest_json_data = manifest.load_o3de_manifest()
+    templates_json_data = list()
 
-    for repo_uri in json_data.get('repos', []):
-        template_set.update(get_template_json_paths_from_cached_repo(repo_uri))
+    for repo_uri in manifest_json_data.get('repos', []):
+        templates_json_data.extend(get_template_json_data_from_cached_repo(repo_uri))
 
-    return template_set
+    return templates_json_data
 
 def refresh_repo(repo_uri: str,
                  repo_set: set = None) -> int:
@@ -399,26 +430,12 @@ def search_o3de_repo_for_object(repo_json_data: dict, manifest_attribute:str, ta
 
     target_name_without_version_specifier, _ = utils.get_object_name_and_optional_version_specifier(target_name)
 
-    # merge all versioned data into candidates
-    versioned_candidates = []
-    for candidate in remote_candidates:
-        # ignore candidates without the matching target name
-        if candidate.get(target_json_key, '') != target_name_without_version_specifier:
-            continue
-
-        # remove the versions_data from the candidate so it isn't
-        # included in the result if it exists
-        remote_versioned_data = candidate.pop('versions_data', None)
-        if remote_versioned_data:
-            for versioned_data in remote_versioned_data:
-                versioned_candidates.append(candidate | versioned_data)
-        else:
-            versioned_candidates.append(candidate)
-
-    if not versioned_candidates:
-        return None
+    # merge all versioned data into a list of candidates
+    versioned_candidates = get_object_versions_json_data(remote_candidates, target_json_key, target_name_without_version_specifier)
 
     return manifest.get_most_compatible_object(object_name=target_name, name_key=target_json_key, objects=versioned_candidates)
+
+
 def search_o3de_manifest_for_object(manifest_json_data: dict, manifest_attribute: str, target_manifest_json: str, target_json_key: str, target_name: str):
     o3de_object_uris = manifest_json_data.get(manifest_attribute, [])
     search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(target_json_key, '') == target_name else None

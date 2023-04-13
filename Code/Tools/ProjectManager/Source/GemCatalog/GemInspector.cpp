@@ -438,7 +438,7 @@ namespace O3DE::ProjectManager
         m_updateGemButton = new QPushButton(tr("Update Gem"));
         m_updateGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_updateGemButton);
-        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
+        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex, GetVersion(), GetVersionPath()); });
 
         m_mainLayout->addSpacing(10);
 

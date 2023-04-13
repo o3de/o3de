@@ -365,20 +365,20 @@ def test_refresh_repos():
 
     assert sig.return_annotation == int
 
-def test_get_gem_json_paths_from_cached_repo():
-    sig = signature(repo.get_gem_json_paths_from_cached_repo)
+def test_get_gem_json_data_from_cached_repo():
+    sig = signature(repo.get_gem_json_data_from_cached_repo)
     assert len(sig.parameters) >= 1
 
     repo_uri = list(sig.parameters.values())[0]
     assert repo_uri.name == 'repo_uri'
     assert repo_uri.annotation == str
 
-    assert sig.return_annotation == set
+    assert sig.return_annotation == list 
 
 def test_get_gem_json_paths_from_all_cached_repos():
-    sig = signature(repo.get_gem_json_paths_from_all_cached_repos)
+    sig = signature(repo.get_gem_json_data_from_all_cached_repos)
 
-    assert sig.return_annotation == set
+    assert sig.return_annotation == list
 
 # download interface
 def test_download_gem():

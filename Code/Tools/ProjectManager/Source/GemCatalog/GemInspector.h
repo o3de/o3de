@@ -69,7 +69,7 @@ namespace O3DE::ProjectManager
 
     signals:
         void TagClicked(const Tag& tag);
-        void UpdateGem(const QModelIndex& modelIndex);
+        void UpdateGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         void UninstallGem(const QModelIndex& modelIndex, const QString& path = "");
         void EditGem(const QModelIndex& modelIndex, const QString& path = "");
         void DownloadGem(const QModelIndex& modelIndex, const QString& version = "", const QString& path = "");

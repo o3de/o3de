@@ -127,7 +127,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     if use_source_control:
         origin_uri = downloadable_object_data.get('source_control_uri')
         if not origin_uri:
-            logger.error(f"Tried to use source control to aquire {object_name} but the 'source_control_uri' is empty or missing.")
+            logger.error(f"Tried to use source control to acquire {object_name} but the 'source_control_uri' is empty or missing.")
             return 1
     else:
         origin_uri = downloadable_object_data.get('download_source_uri')

@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
         bool RemoveGemRepo(const QString& repoUri) override;
         AZ::Outcome<QVector<GemRepoInfo>, AZStd::string> GetAllGemRepoInfos() override;
         AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForRepo(const QString& repoUri) override;
-        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() override;
+        AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos(const QString& projectPath) override;
         DetailedOutcome DownloadGem(
             const QString& gemName, const QString& path, std::function<void(int, int)> gemProgressCallback, bool force = false) override;
         DetailedOutcome DownloadProject(
@@ -109,7 +109,9 @@ namespace O3DE::ProjectManager
         ProjectInfo ProjectInfoFromPath(pybind11::handle path);
         ProjectInfo ProjectInfoFromDict(pybind11::handle projectData, const QString& path = {});
         ProjectTemplateInfo ProjectTemplateInfoFromPath(pybind11::handle path) const;
+        ProjectTemplateInfo ProjectTemplateInfoFromDict(pybind11::handle templateData, const QString& path = {}) const;
         TemplateInfo TemplateInfoFromPath(pybind11::handle path) const;
+        TemplateInfo TemplateInfoFromDict(pybind11::handle templateData, const QString& path = {}) const;
         AZ::Outcome<void, AZStd::string> GemRegistration(const QString& gemPath, const QString& projectPath, bool remove = false);
         bool StopPython();
         IPythonBindings::ErrorPair GetErrorPair();

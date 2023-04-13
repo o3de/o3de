@@ -378,10 +378,13 @@ namespace O3DE::ProjectManager
             }
 
             // Setup building button again
-            auto buildProjectIter = m_projectButtons.find(buildProjectPath);
-            if (buildProjectIter != m_projectButtons.end())
+            if (!buildProjectPath.empty())
             {
-                m_currentBuilder->SetProjectButton(buildProjectIter->second);
+                auto buildProjectIter = m_projectButtons.find(buildProjectPath);
+                if (buildProjectIter != m_projectButtons.end())
+                {
+                    m_currentBuilder->SetProjectButton(buildProjectIter->second);
+                }
             }
 
             for (const ProjectInfo& project : m_buildQueue)

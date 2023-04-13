@@ -328,9 +328,10 @@ namespace O3DE::ProjectManager
 
         /**
          * Gathers all gem infos for all gems registered from repos.
+         * @param projectPath an optional project path to use for compatibility information
          * @return A list of gem infos.
          */
-        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos() = 0;
+        virtual AZ::Outcome<QVector<GemInfo>, AZStd::string> GetGemInfosForAllRepos(const QString& projectPath = "") = 0;
 
         /**
          * Downloads and registers a Gem.
