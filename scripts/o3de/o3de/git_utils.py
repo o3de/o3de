@@ -65,6 +65,10 @@ class GenericGitProvider(gitproviderinterface.GitProviderInterface):
         return proc.returncode
 
 def get_generic_git_provider(parsed_uri:ParseResult) -> GenericGitProvider or None:
-    # the only requirement we have is that .git is somewhere in the URL,
+    # the only requirement we have is one of the path components ends in .git
     # this could be relaxed further 
-    return GenericGitProvider if (parsed_uri.scheme and parsed_uri.netloc and ('.git' in parsed_uri.geturl())) else None
+    if parsed_uri.netloc and parsed_uri.scheme and parsed_uri.path:
+        for element in parsed_uri.path.split('/'):
+            if element.strip().endswith(".git"):
+                return GenericGitProvider
+    return None
