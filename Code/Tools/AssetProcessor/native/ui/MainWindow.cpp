@@ -1940,34 +1940,56 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
     QMenu menu;
     menu.setToolTipsVisible(true);
 
-    menu.addAction("Show in Asset Browser", this, [&]()
+    // Find a connection to an Editor, if it exists. This is used for showing this asset in the Asset Browser, if the Editor is available.
+    ConnectionManager* connectionManager = m_guiApplicationManager->GetConnectionManager();
+    Connection* editorConnection = nullptr;
+    auto& connectionMap = connectionManager->getConnectionMap();
+    auto connections = connectionMap.values();
+    for (auto connection : connections)
     {
-        ConnectionManager* connectionManager = m_guiApplicationManager->GetConnectionManager();
+        using namespace AzFramework::AssetSystem;
+        // If there is more than one Editor connected, this will only show this asset in the first connected Editor's asset browser.
+        if (connection->Identifier() == ConnectionIdentifiers::Editor)
+        {
+            editorConnection = connection;
+            break;
+        }
+    }
+
+    QAction* showInAssetBrowserAction = menu.addAction("Show in Asset Browser", this, [&]()
+    {
+        if (!editorConnection)
+        {
+            return;
+        }
 
         QString filePath = FindAbsoluteFilePath(item);
 
         AzToolsFramework::AssetSystem::WantAssetBrowserShowRequest requestMessage;
 
-        auto& connectionMap = connectionManager->getConnectionMap();
-        auto connections = connectionMap.values();
-        for (auto connection : connections)
-        {
-            using namespace AzFramework::AssetSystem;
-
-            // Ask the Editor, and only the Editor, if it wants to receive
-            // the message for showing an asset in the AssetBrowser.
-            // This also allows the Editor to send back it's Process ID, which
-            // allows the Windows platform to call AllowSetForegroundWindow()
-            // which is required to bring the Editor window to the foreground
-            if (connection->Identifier() == ConnectionIdentifiers::Editor)
+        // Ask the Editor, and only the Editor, if it wants to receive
+        // the message for showing an asset in the AssetBrowser.
+        // This also allows the Editor to send back it's Process ID, which
+        // allows the Windows platform to call AllowSetForegroundWindow()
+        // which is required to bring the Editor window to the foreground
+        unsigned int connectionId = editorConnection->ConnectionId();
+        editorConnection->SendRequest(
+            requestMessage,
+            [connectionManager, connectionId, filePath](AZ::u32 /*type*/, QByteArray callbackData)
             {
-                unsigned int connectionId = connection->ConnectionId();
-                connection->SendRequest(requestMessage, [connectionManager, connectionId, filePath](AZ::u32 /*type*/, QByteArray callbackData) {
                     SendShowInAssetBrowserResponse(filePath, connectionManager, connectionId, callbackData);
                 });
-            }
-        }
-    });
+        });
+    // Disable the menu option if there is no Editor connection.
+    showInAssetBrowserAction->setEnabled(editorConnection != nullptr);
+    if (!editorConnection)
+    {
+        showInAssetBrowserAction->setToolTip(tr("Showing in the Asset Browser requires an active connection to the Editor."));
+    }
+    else
+    {
+        showInAssetBrowserAction->setToolTip(tr("Sends a request to the Editor to display this asset in the Asset Browser."));
+    }
 
     menu.addAction("Reprocess Source Asset", this, [this, &item]()
     {
@@ -1982,6 +2004,29 @@ void MainWindow::ShowJobViewContextMenu(const QPoint& pos)
         ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Assets));
         ui->sourceAssetDetailsPanel->GoToSource(item->m_elementId.GetSourceAssetReference().AbsolutePath().c_str());
     });
+
+    // Get the builder index outside the action, so the action can be disabled if it is not available.
+    QModelIndex builderIndex = m_builderList->GetIndexForBuilder(item->m_builderGuid);
+
+    QAction* assetTabBuilderAction = menu.addAction(tr("View builder"), this, [&]()
+    {
+        ui->dialogStack->setCurrentIndex(static_cast<int>(DialogStackIndex::Builders));
+        ui->buttonList->setCurrentIndex(static_cast<int>(DialogStackIndex::Builders));
+
+        QModelIndex filterIndex = m_builderListSortFilterProxy->mapFromSource(builderIndex);
+        ui->builderList->scrollTo(filterIndex);
+        ui->builderList->selectionModel()->setCurrentIndex(filterIndex, QItemSelectionModel::ClearAndSelect);
+    });
+    assetTabBuilderAction->setEnabled(builderIndex.isValid());
+    if (builderIndex.isValid())
+    {
+        assetTabBuilderAction->setToolTip(tr("Show the builder for this job in the Builder tab."));
+    }
+    else
+    {
+        assetTabBuilderAction->setToolTip(tr("The builder is unavailable for this asset."));
+    }
+    
 
     if (item->m_jobState != AzToolsFramework::AssetSystem::JobStatus::Completed)
     {
