@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/EditorRenderComponentAdapter.h>
+
 #include <AzCore/Component/TickBus.h>
 #include <AzFramework/Entity/EntityDebugDisplayBus.h>
 #include <AzToolsFramework/API/ComponentEntitySelectionBus.h>
@@ -22,14 +24,14 @@ namespace ${Name}
     inline constexpr AZ::TypeId EditorComponentTypeId { "{${Random_Uuid}}" };
 
     class Editor${Name}Component final
-        : public AzToolsFramework::Components::EditorComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>
+        : public AZ::Render::EditorRenderComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>
         , private AzToolsFramework::EditorComponentSelectionRequestsBus::Handler
         , private AzFramework::EntityDebugDisplayEventBus::Handler
         , private AZ::TickBus::Handler
         , private AzToolsFramework::EditorEntityInfoNotificationBus::Handler
     {
     public:
-        using BaseClass = AzToolsFramework::Components::EditorComponentAdapter<${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>;
+        using BaseClass = AZ::Render::EditorRenderComponentAdapter <${Name}ComponentController, ${Name}Component, ${Name}ComponentConfig>;
         AZ_EDITOR_COMPONENT(Editor${Name}Component, EditorComponentTypeId, BaseClass);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -40,6 +42,10 @@ namespace ${Name}
         // AZ::Component overrides
         void Activate() override;
         void Deactivate() override;
+
+    protected:
+
+        void OnEntityVisibilityChanged(bool visibility) override;
 
     private:
 
