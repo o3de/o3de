@@ -74,14 +74,6 @@ os.environ['SETTINGS_MODULE_FOR_DYNACONF'] = PATH_DCCSIG_SETTINGS.as_posix()
 # this accesses common global state, e.g. DCCSI_GDEBUG (is True or False)
 from DccScriptingInterface.globals import *
 
-# temporary force enable these during development, as bootstrap is a entrypoint
-DCCSI_GDEBUG = True
-DCCSI_DEV_MODE = True
-
-# enable this if you are having difficulty with debugging
-# the subprocess booting start.py (note: will block editor)
-DCCSI_LOCAL_DEBUG = True # <-- for code branch in this module only
-
 # auto-attach ide debugging at the earliest possible point in module
 from DccScriptingInterface.azpy.config_utils import attach_debugger
 if DCCSI_DEV_MODE: # from DccScriptingInterface.globals
