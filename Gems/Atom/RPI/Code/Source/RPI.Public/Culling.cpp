@@ -162,8 +162,8 @@ namespace AZ
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
 #endif
-#ifdef AZ_CULL_DEBUG_ENABLED
             bool m_hasExcludeFrustum = false;
+#ifdef AZ_CULL_DEBUG_ENABLED
 
             AuxGeomDrawPtr GetAuxGeomPtr()
             {

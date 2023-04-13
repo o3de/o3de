@@ -24,6 +24,7 @@
 #include <AtomCore/Instance/Instance.h>
 #include <AzCore/Math/MatrixUtils.h>
 #include <AzCore/Math/Obb.h>
+#include <AzCore/Console/Console.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
 
@@ -31,6 +32,8 @@ namespace AZ
 {
     namespace Render
     {
+        AZ_CVAR(bool, r_exludeItemsInSmallerShadowCascades, true, nullptr, ConsoleFunctorFlags::Null, "Set to true to exclude drawing items to a directional shadow cascade that are already covered by a smaller cascade.");
+
         // --- Camera Configuration ---
 
         CascadeShadowCameraConfiguration::CascadeShadowCameraConfiguration()
@@ -246,11 +249,12 @@ namespace AZ
                     UpdateBorderDepthsForSegments(m_shadowingLightHandle);
                     property.m_borderDepthsForSegmentsNeedsUpdate = false;
                 }
-                if (property.m_shadowmapViewNeedsUpdate)
+                if (property.m_shadowmapViewNeedsUpdate || m_previousExcludeCvarValue != r_exludeItemsInSmallerShadowCascades)
                 {
                     UpdateShadowmapViews(m_shadowingLightHandle);
                     UpdateFilterParameters(m_shadowingLightHandle);
                     property.m_shadowmapViewNeedsUpdate = false;
+                    m_previousExcludeCvarValue = r_exludeItemsInSmallerShadowCascades;
                 }
                 SetShadowParameterToShadowData(m_shadowingLightHandle);
             }
@@ -1341,6 +1345,11 @@ namespace AZ
             {
                 const float invShadowmapSize = 1.0f / GetShadowmapSizeFromCameraView(handle, segmentIt.first);
 
+                Vector3 previousAabbMin;
+                Vector3 previousAabbMax;
+                float previousNear;
+                float previousFar;
+
                 for (uint16_t cascadeIndex = 0; cascadeIndex < segmentIt.second.size(); ++cascadeIndex)
                 {
                     const Aabb viewAabb = CalculateShadowViewAabb(handle, segmentIt.first, cascadeIndex, lightTransform);
@@ -1364,6 +1373,28 @@ namespace AZ
                         segment.m_aabb = viewAabb;
                         segment.m_view->SetCameraTransform(lightTransform);
                         segment.m_view->SetViewToClipMatrix(viewToClipMatrix);
+
+                        if (cascadeIndex > 0 && r_exludeItemsInSmallerShadowCascades)
+                        {
+                            Vector3 previousAabbDiff = previousAabbMin - previousAabbMax;
+                            previousAabbDiff *= CascadeBlendArea;
+                            Vector3 excludeAabbMin = previousAabbMin + previousAabbDiff;
+                            Vector3 excludeAabbMax = previousAabbMax - previousAabbDiff;
+
+                            MakeOrthographicMatrixRH(
+                                viewToClipMatrix, excludeAabbMin.GetElement(0), excludeAabbMax.GetElement(0), excludeAabbMin.GetElement(2),
+                                excludeAabbMax.GetElement(2), previousNear, previousFar);
+
+                            segment.m_view->SetViewToClipExcludeMatrix(&viewToClipMatrix);
+                        }
+                        else
+                        {
+                            segment.m_view->SetViewToClipExcludeMatrix(nullptr);
+                        }
+                        previousAabbMin = snappedAabbMin;
+                        previousAabbMax = snappedAabbMax;
+                        previousNear = cascadeNear;
+                        previousFar = cascadeFar;
                     }
                 }
             }
