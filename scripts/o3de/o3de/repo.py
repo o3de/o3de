@@ -6,6 +6,7 @@
 #
 #
 
+import argparse
 import json
 import logging
 import pathlib
@@ -51,33 +52,22 @@ def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
     return cache_file if result == 0 else None
 
 def download_object_manifests(repo_data):
-    cache_folder = manifest.get_o3de_cache_folder()
-    # A repo may not contain all types of object.
-    manifest_download_list = []
-    try:
-        manifest_download_list.append((repo_data['engines'], 'engine.json'))
-    except KeyError:
-        pass
-    try:
-        manifest_download_list.append((repo_data['projects'], 'project.json'))
-    except KeyError:
-        pass
-    try:
-        manifest_download_list.append((repo_data['gems'], 'gem.json'))
-    except KeyError:
-        pass
-    try:
-        manifest_download_list.append((repo_data['templates'], 'template.json'))
-    except KeyError:
-        pass
-    try:
-        manifest_download_list.append((repo_data['restricted'], 'restricted.json'))
-    except KeyError:
-        pass
 
-    for o3de_object_uris, manifest_json in manifest_download_list:
-        for o3de_object_uri in o3de_object_uris:
-            manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
+    if get_repo_schema_version(repo_data) == REPO_SCHEMA_VERSION_1_0_0:
+        # schema version 1.0.0 includes all json data in repo.json
+        return 0
+
+    repo_object_type_manifests = [
+        ('engines','engine.json'),
+        ('projects','project.json'),
+        ('gems','gem.json'),
+        ('templates','template.json'),
+        ('restricted','restricted.json')
+        ]
+
+    for key, manifest_json_filename in repo_object_type_manifests:
+        for o3de_object_uri in repo_data.get(key, []):
+            manifest_json_uri = f'{o3de_object_uri}/{manifest_json_filename}'
             cache_file, parsed_uri = get_cache_file_uri(manifest_json_uri)
 
             git_provider = utils.get_git_provider(parsed_uri)
@@ -188,7 +178,6 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     if not validation.valid_o3de_repo_json(file_name):
         logger.error(f'Repository JSON {file_name} could not be loaded or is missing required values')
         return 1
-    cache_folder = manifest.get_o3de_cache_folder()
 
     repo_data = {}
     with file_name.open('r') as f:
@@ -213,11 +202,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
 
     # Having a repo is also optional
     repo_list = []
-    try:
-        repo_list.extend(repo_data['repos'])
-    except KeyError:
-        pass
-
+    repo_list.extend(repo_data.get('repos',[]))
     for repo in repo_list:
         if repo not in repo_set:
             repo_set.add(repo)
@@ -294,7 +279,7 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
                     else:
                         logger.warning(f'Could not find cached {repo_key} json file {cache_object_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
         elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
-            o3de_object_json_data.extend(get_object_versions_json_data(repo_data[repo_key]))
+            o3de_object_json_data.extend(get_object_versions_json_data(repo_data.get(repo_key,[])))
 
     return o3de_object_json_data
 
@@ -459,3 +444,40 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                     if result_json_data:
                         return result_json_data
     return None
+
+
+def _run_repo(args: argparse) -> int:
+    if args.refresh_repo:
+        return refresh_repo(args.refresh_repo)
+    elif args.refresh_all_repos:
+        return refresh_repos()
+
+    return 1 
+    
+
+def add_parser_args(parser):
+    """
+    add_parser_args is called to add arguments to each command such that it can be
+    invoked locally or added by a central python file.
+    Ex. Directly run from this file alone with: python print_registration.py --engine-projects
+    :param parser: the caller passes an argparse parser like instance to this method
+    """
+    group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-r', '--refresh-repo', type=str, required=False,
+                       help='Fetch the latest meta data the specified remote repository')
+    group.add_argument('-ra', '--refresh-all-repos', action='store_true', required=False, default=False,
+                       help='Fetch the latest meta data from all known remote repository')
+
+    parser.set_defaults(func=_run_repo)
+
+
+def add_args(subparsers) -> None:
+    """
+    add_args is called to add subparsers arguments to each command such that it can be
+    a central python file such as o3de.py.
+    It can be run from the o3de.py script as follows
+    call add_args and execute: python o3de.py repo --refresh https://path/to/remote/repo
+
+    :param subparsers: the caller instantiates subparsers and passes it in here
+    """
+    add_parser_args(subparsers.add_parser('repo'))
