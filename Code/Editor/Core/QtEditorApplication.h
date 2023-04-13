@@ -116,8 +116,7 @@ namespace Editor
         QTranslator* CreateAndInitializeTranslator(const QString& filename, const QString& directory);
         void DeleteTranslator(QTranslator*& translator);
 
-        QTranslator* m_editorTranslator = nullptr;
-        QTranslator* m_assetBrowserTranslator = nullptr;
+        QVector<QTranslator*> m_translators;
 
         AZ::UserSettingsProvider m_localUserSettings;
 
