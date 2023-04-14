@@ -186,13 +186,13 @@ namespace Multiplayer
                     mpComponent->GetNetworkEntityManager()->ClearAllEntities();
                 })
                 ->Method("GetCurrentBlendFactor", []()
+                {
+                    if (const IMultiplayer* multiplayerSystem = GetMultiplayer())
                     {
-                        if (GetMultiplayer())
-                        {
-                            return GetMultiplayer()->GetCurrentBlendFactor();
-                        }
-                        return 0.f;
-                    })
+                        return multiplayerSystem->GetCurrentBlendFactor();
+                    }
+                    return 0.f;
+                })
             ;
         }
 
@@ -421,7 +421,6 @@ namespace Multiplayer
         if (agentType == MultiplayerAgentType::DedicatedServer || agentType == MultiplayerAgentType::ClientServer)
         {
             m_networkInterface->StopListening();
-            m_shutdownEvent.Signal(m_networkInterface);
         }
 
         // Clear out all the registered network entities
@@ -517,7 +516,6 @@ namespace Multiplayer
         if (GetAgentType() == MultiplayerAgentType::DedicatedServer || GetAgentType() == MultiplayerAgentType::ClientServer)
         {
             m_networkInterface->StopListening();
-            m_shutdownEvent.Signal(m_networkInterface);
         }
         InitializeMultiplayer(MultiplayerAgentType::Uninitialized);
 
@@ -1269,7 +1267,7 @@ namespace Multiplayer
 
         if (m_agentType != MultiplayerAgentType::Uninitialized && multiplayerType != MultiplayerAgentType::Uninitialized)
         {
-            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down.");
+            AZLOG_WARN("Attemping to InitializeMultiplayer from one initialized type to another. Your session may not have been properly torn down. Please call the 'disconnect' console command to terminated the current multiplayer simulation before switching to a new multiplayer role.");
         }
 
         if (m_agentType == MultiplayerAgentType::Uninitialized)
@@ -1278,7 +1276,6 @@ namespace Multiplayer
             if (multiplayerType == MultiplayerAgentType::ClientServer || multiplayerType == MultiplayerAgentType::DedicatedServer)
             {
                 m_spawnNetboundEntities = true;
-                m_initEvent.Signal(m_networkInterface); //< Note! This might initialize our network entity manager for us
                 if (!m_networkEntityManager.IsInitialized())
                 {
                     const AZ::CVarFixedString serverAddr = cl_serveraddr;
@@ -1323,7 +1320,6 @@ namespace Multiplayer
                 // If there wasn't any player entity, wait until a level loads and check again
                 m_playersWaitingToBeSpawned.emplace_back(userId, datum, nullptr);
             }
-
         }
         AZLOG_INFO("Multiplayer operating in %s mode", GetEnumString(m_agentType));
 
@@ -1366,16 +1362,6 @@ namespace Multiplayer
     void MultiplayerSystemComponent::AddServerAcceptanceReceivedHandler(ServerAcceptanceReceivedEvent::Handler& handler)
     {
         handler.Connect(m_serverAcceptanceReceivedEvent);
-    }
-
-    void MultiplayerSystemComponent::AddSessionInitHandler(SessionInitEvent::Handler& handler)
-    {
-        handler.Connect(m_initEvent);
-    }
-
-    void MultiplayerSystemComponent::AddSessionShutdownHandler(SessionShutdownEvent::Handler& handler)
-    {
-        handler.Connect(m_shutdownEvent);
     }
 
     void MultiplayerSystemComponent::AddLevelLoadBlockedHandler(LevelLoadBlockedEvent::Handler& handler)
@@ -1666,6 +1652,12 @@ namespace Multiplayer
 
     void MultiplayerSystemComponent::OnRootSpawnableReady([[maybe_unused]] AZ::Data::Asset<AzFramework::Spawnable> rootSpawnable, [[maybe_unused]] uint32_t generation)
     {
+        // Ignore level loads if not in multiplayer mode
+        if (m_agentType == MultiplayerAgentType::Uninitialized)
+        {
+            return;
+        }
+
         // Spawn players waiting to be spawned. This can happen when a player connects before a level is loaded, so there isn't any player spawner components registered
         IMultiplayerSpawner* spawner = AZ::Interface<IMultiplayerSpawner>::Get();
         if (!spawner)

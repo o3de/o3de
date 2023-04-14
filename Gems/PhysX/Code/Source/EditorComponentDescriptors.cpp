@@ -8,6 +8,7 @@
 
 #include <Source/EditorComponentDescriptors.h>
 
+#include <Source/EditorArticulationLinkComponent.h>
 #include <Source/EditorBallJointComponent.h>
 #include <Source/EditorColliderComponent.h>
 #include <Source/EditorMeshColliderComponent.h>
@@ -48,6 +49,7 @@ namespace PhysX
             EditorStaticRigidBodyComponent::CreateDescriptor(),
             EditorShapeColliderComponent::CreateDescriptor(),
             EditorSystemComponent::CreateDescriptor(),
+            EditorArticulationLinkComponent::CreateDescriptor(),
             Pipeline::MeshBehavior::CreateDescriptor(),
             Pipeline::MeshExporter::CreateDescriptor()
         };
