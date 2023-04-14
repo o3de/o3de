@@ -74,7 +74,8 @@ TEST_O3DE_REPO_WITH_OBJECTS_JSON_PAYLOAD_VERSION_1_0_0 = '''
     "$schemaVersion": "1.0.0",
     "repo_name": "Test Repo",
     "origin": "Test Repo Origin",
-    "gems": [
+    "gems":[],
+    "gems_data": [
         {
             "gem_name": "TestRemoteVersionedGem",
             "license": "Apache-2.0 Or MIT",

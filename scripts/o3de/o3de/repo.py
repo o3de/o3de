@@ -131,7 +131,7 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                     return False
                 
         elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
-            gem_list = repo_data.get("gems", [])
+            gem_list = repo_data.get("gems_data", [])
             for gem_json in gem_list:
                 if not validation.valid_o3de_gem_json_data(gem_json):
                     logger.error(f'Invalid gem JSON - {gem_json} is missing required values')
@@ -158,13 +158,13 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                             logger.error(f"Invalid gem JSON - {gem_json} At least one of source_control_uri or download_source_uri must be defined")
                             return False
 
-            project_list = repo_data.get("projects", [])
+            project_list = repo_data.get("projects_data", [])
             for project_json in project_list:
                 if not validation.valid_o3de_project_json_data(project_json):
                     logger.error(f'Invalid project JSON - {project_json} is missing required values')
                     return False                    
 
-            template_list = repo_data.get("templates", [])
+            template_list = repo_data.get("templates_data", [])
             for template_json in template_list:
                 if not validation.valid_o3de_template_json_data(template_json):
                     logger.error(f'Invalid template JSON - {template_json} is missing required values')
@@ -190,6 +190,7 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
     with file_name.open('w') as f:
         try:
             time_now = datetime.now()
+            # %H is 24 hour
             time_str = time_now.strftime('%d/%m/%Y %H:%M')
             repo_data.update({'last_updated': time_str})
             f.write(json.dumps(repo_data, indent=4) + '\n')
@@ -257,15 +258,16 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
             logger.error(f'{file_name} failed to load: {str(e)}')
             return None
 
-        # Get list of objects, then add all json paths to the list if they exist in the cache
-        repo_objects = []
-        try:
-            repo_objects.append((repo_data[repo_key], object_typename + '.json'))
-        except KeyError:
-            pass
-
         repo_schema_version = get_repo_schema_version(repo_data)
         if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
+
+            # Get list of objects, then add all json paths to the list if they exist in the cache
+            repo_objects = []
+            try:
+                repo_objects.append((repo_data[repo_key], object_typename + '.json'))
+            except KeyError:
+                pass
+
             for o3de_object_uris, manifest_json in repo_objects:
                 for o3de_object_uri in o3de_object_uris:
                     manifest_json_uri = f'{o3de_object_uri}/{manifest_json}'
@@ -279,6 +281,9 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
                     else:
                         logger.warning(f'Could not find cached {repo_key} json file {cache_object_json_filepath} for {o3de_object_uri} in repo {repo_uri}')
         elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
+            # the new schema version appends _data to the repo key
+            # so it doesn't conflict with version 0.0.0 fields 
+            repo_key = repo_key if repo_key.endswith('_data') else (repo_key + '_data')
             o3de_object_json_data.extend(get_object_versions_json_data(repo_data.get(repo_key,[])))
 
     return o3de_object_json_data
@@ -383,15 +388,15 @@ def search_repo(manifest_json_data: dict,
     elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
         #search for the o3de object from inside repos object 
         if isinstance(engine_name, str):
-            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'engines', 'engine_name', engine_name)
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'engines_data', 'engine_name', engine_name)
         elif isinstance(project_name, str):
-            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'projects', 'project_name', project_name)
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'projects_data', 'project_name', project_name)
         elif isinstance(gem_name, str):
-            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'gems', 'gem_name', gem_name)
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'gems_data', 'gem_name', gem_name)
         elif isinstance(template_name, str):
-            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'templates', 'template_name', template_name)
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'templates_data', 'template_name', template_name)
         elif isinstance(restricted_name, str):
-            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'restricted', 'restricted_name', restricted_name)
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'restricted_data', 'restricted_name', restricted_name)
         else:
             return None
         
@@ -423,8 +428,22 @@ def search_o3de_repo_for_object(repo_json_data: dict, manifest_attribute:str, ta
 
 def search_o3de_manifest_for_object(manifest_json_data: dict, manifest_attribute: str, target_manifest_json: str, target_json_key: str, target_name: str):
     o3de_object_uris = manifest_json_data.get(manifest_attribute, [])
-    search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(target_json_key, '') == target_name else None
-    return search_o3de_object(target_manifest_json, o3de_object_uris, search_func)
+
+    # load all the .json files and then find the most compatible object
+    candidates = []
+    for o3de_object_uri in o3de_object_uris:
+        manifest_uri = f'{o3de_object_uri}/{target_manifest_json}'
+        cache_file, _ = get_cache_file_uri(manifest_uri)
+        if cache_file.is_file():
+            with cache_file.open('r') as f:
+                try:
+                    manifest_json_data = json.load(f)
+                except json.JSONDecodeError as e:
+                    logger.warning(f'{cache_file} failed to load: {str(e)}')
+                else:
+                    candidates.append(manifest_json_data)
+
+    return manifest.get_most_compatible_object(object_name=target_name, name_key=target_json_key, objects=candidates)
 
 
 def search_o3de_object(manifest_json, o3de_object_uris, search_func):

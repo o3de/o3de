@@ -72,20 +72,14 @@ TEST_O3DE_REPO_JSON_VERSION_2_FILENAME = '3b14717bafd5a3bd768d3d0791a44998c3bd0f
 TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
 {
     "repo_name": "testgem3",
-
     "origin": "Studios",
-
     "$schemaVersion":"1.0.0",
-    
     "repo_uri": "https://downloads.testgem3.com/o3de-repo",
-
     "summary": "Studios Repository for the testgem3 Gem.",
-
     "additional_info": "",
-
     "last_updated": "2023-01-19",
-
-    "gems": [{
+    "gems":[],
+    "gems_data": [{
         "gem_name": "testgem3",
         "display_name": "testgem3 2",
         "download_api": "HTTP",
@@ -118,8 +112,8 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
             }
         ]
     }],
-
-    "projects":[{
+    "project":[],
+    "projects_data":[{
             "project_name": "TestProject",
             "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
             "version" : "0.0.0",
@@ -147,8 +141,8 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
             ]
         }
     ],
-
-    "templates":[{
+    "templates":[],
+    "templates_data":[{
             "template_name": "TestTemplate",
             "license": "Apache-2.0 Or MIT",
             "origin": "Test Creator",
