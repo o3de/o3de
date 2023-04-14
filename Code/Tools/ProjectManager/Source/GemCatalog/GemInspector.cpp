@@ -20,6 +20,8 @@
 #include <QIcon>
 #include <QPushButton>
 #include <QComboBox>
+#include <QClipboard>
+#include <QGuiApplication>
 
 namespace O3DE::ProjectManager
 {
@@ -184,6 +186,7 @@ namespace O3DE::ProjectManager
 
         // Additional information
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(gemInfo.m_lastUpdatedDate));
+        m_copyDownloadLinkLabel->setVisible(!gemInfo.m_downloadSourceUri.isEmpty());
         if (gemInfo.m_binarySizeInKB)
         {
             m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(gemInfo.m_binarySizeInKB));
@@ -323,6 +326,25 @@ namespace O3DE::ProjectManager
         }
     }
 
+    void GemInspector::OnCopyDownloadLinkClicked()
+    {
+        const GemInfo& gemInfo = m_model->GetGemInfo(m_curModelIndex);
+        if (!gemInfo.m_downloadSourceUri.isEmpty())
+        {
+            if(QClipboard* clipboard = QGuiApplication::clipboard(); clipboard != nullptr)
+            {
+                clipboard->setText(gemInfo.m_downloadSourceUri);
+                QString displayname = gemInfo.m_displayName.isEmpty() ? gemInfo.m_name : gemInfo.m_displayName;
+                QString version = gemInfo.m_version.isEmpty() ? "" : (" " + gemInfo.m_version);
+                emit ShowToastNotification(tr("%1%2 download URL copied to clipboard").arg(displayname, version));
+            }
+            else
+            {
+                emit ShowToastNotification("Failed to copy download URL to clipboard");
+            }
+        }
+    }
+
     QString GemInspector::GetVersion() const
     {
         return m_versionComboBox->count() > 0 ? m_versionComboBox->currentText() : m_model->GetVersion(m_curModelIndex);
@@ -456,6 +478,9 @@ namespace O3DE::ProjectManager
 
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_copyDownloadLinkLabel = new LinkLabel(tr("Copy Download URL"));
+        m_mainLayout->addWidget(m_copyDownloadLinkLabel);
+        connect(m_copyDownloadLinkLabel, &LinkLabel::clicked, this, &GemInspector::OnCopyDownloadLinkClicked);
 
         m_mainLayout->addSpacing(20);
 

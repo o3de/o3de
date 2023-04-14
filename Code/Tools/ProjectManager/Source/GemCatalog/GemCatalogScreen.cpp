@@ -100,6 +100,7 @@ namespace O3DE::ProjectManager
         connect(m_gemInspector, &GemInspector::UninstallGem, this, &GemCatalogScreen::UninstallGem);
         connect(m_gemInspector, &GemInspector::EditGem, this, &GemCatalogScreen::HandleEditGem);
         connect(m_gemInspector, &GemInspector::DownloadGem, this, &GemCatalogScreen::DownloadGem);
+        connect(m_gemInspector, &GemInspector::ShowToastNotification, this, &GemCatalogScreen::ShowStandardToastNotification);
 
         QWidget* filterWidget = new QWidget(this);
         filterWidget->setFixedWidth(sidePanelWidth);

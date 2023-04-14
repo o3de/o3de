@@ -47,12 +47,11 @@ namespace O3DE::ProjectManager
 
         void AddToGemModel(const GemInfo& gemInfo);
 
-        void ShowStandardToastNotification(const QString& notification);
-
         GemModel* GetGemModel() const { return m_gemModel; }
         DownloadController* GetDownloadController() const { return m_downloadController; }
 
     public slots:
+        void ShowStandardToastNotification(const QString& notification);
         void OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
         void OnDependencyGemStatusChanged(const QString& gemName);
         void OnAddGemClicked();
