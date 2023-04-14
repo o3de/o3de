@@ -420,7 +420,7 @@ namespace O3DE::ProjectManager
             {
                 // have the gem model update the current gems with compatible
                 // versions in case the user was looking at incompatible gems
-                // an compatible gems exist
+                // and compatible gems exist
                 m_gemModel->ShowCompatibleGems();
             }
 
