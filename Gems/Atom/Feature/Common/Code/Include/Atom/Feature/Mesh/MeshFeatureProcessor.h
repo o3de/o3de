@@ -53,6 +53,7 @@ namespace AZ
             struct PostCullingData
             {
                 InstanceGroupHandle m_instanceGroupHandle;
+                uint32_t m_instanceGroupPageIndex;
                 TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             };
 

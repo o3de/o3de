@@ -69,6 +69,7 @@ namespace AZ::Render
         {
             StableDynamicArrayWeakHandle<MeshInstanceGroupData> m_handle;
             uint32_t m_instanceCount = 0;
+            uint32_t m_pageIndex = 0;
         };
 
         // Adds a new instance group if none with a matching key exists, or increments the reference count if one already does,

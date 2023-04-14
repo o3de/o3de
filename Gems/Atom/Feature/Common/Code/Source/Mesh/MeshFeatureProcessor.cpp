@@ -512,7 +512,7 @@ namespace AZ
                 for (AZStd::vector<PerViewInstanceGroupPageData>& pageDataVector : m_perViewInstanceGroupPageData)
                 {
                     // Get the max page index by looking at the index of the very last page
-                    uint32_t pageCount = instanceManagerRanges.back().m_begin.GetPageIndex() + 1;
+                    uint32_t pageCount = static_cast<uint32_t>(instanceManagerRanges.back().m_begin.GetPageIndex()) + 1;
                     pageDataVector.resize(pageCount);
                     perPageInstanceCounts.resize(pageCount, 0);
                     for (auto& pageData : pageDataVector)
@@ -577,7 +577,7 @@ namespace AZ
             for (const RPI::VisibleObjectProperties& visibleObject : visibilityList)
             {
                 const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
-                    reinterpret_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
+                    static_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
                 for (const ModelDataInstance::PostCullingData& postCullingData : *instanceGroupHandles)
                 {
                     SortInstanceData instanceData;
@@ -590,7 +590,7 @@ namespace AZ
 
                     // Add the sort data to the bucket (pageData)
                     PerViewInstanceGroupPageData& pageData =
-                        perViewInstanceGroupPageData[postCullingData.m_instanceGroupHandle.GetPageIndex()];
+                        perViewInstanceGroupPageData[postCullingData.m_instanceGroupPageIndex];
                     // Use an atomic operation to determine where to insert this sort data
                     uint32_t currentIndex = pageData.m_currentElementIndex++;
                     pageData.m_sortInstanceData[currentIndex] = instanceData;
@@ -1847,6 +1847,7 @@ namespace AZ
                     instanceGroupInsertResult = meshInstanceManager.AddInstance(key);
                     PostCullingData postCullingData;
                     postCullingData.m_instanceGroupHandle = instanceGroupInsertResult.m_handle;
+                    postCullingData.m_instanceGroupPageIndex = instanceGroupInsertResult.m_pageIndex;
                     postCullingData.m_objectId = m_objectId;
                     m_instanceGroupHandlesByLod[modelLodIndex].push_back(postCullingData);
 
