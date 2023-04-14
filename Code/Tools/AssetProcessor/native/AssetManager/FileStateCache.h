@@ -15,6 +15,7 @@
 #include <QFileInfo>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/EBus/Event.h>
+#include <AzCore/IO/FileIO.h>
 
 namespace AssetProcessor
 {
@@ -55,7 +56,7 @@ namespace AssetProcessor
         /// Convenience function to check if a file or directory exists.
         virtual bool Exists(const QString& absolutePath) const = 0;
         virtual bool GetHash(const QString& absolutePath, FileHash* foundHash) = 0;
-        
+
         //! Called when the caller knows a hash and file info already.
         //! This can for example warm up the cache so that it can return hashes without actually hashing.
         //! (optional for implementations)
@@ -90,7 +91,7 @@ namespace AssetProcessor
 
         /// Removes a file from the cache
         virtual void RemoveFile(const QString& /*absolutePath*/) {}
-        
+
         virtual void WarmUpCache(const AssetFileInfo& /*existingInfo*/, const FileHash /*hash*/) {}
     };
 
@@ -111,7 +112,7 @@ namespace AssetProcessor
         void AddFile(const QString& absolutePath) override;
         void UpdateFile(const QString& absolutePath) override;
         void RemoveFile(const QString& absolutePath) override;
-        
+
         void WarmUpCache(const AssetFileInfo& existingInfo, const FileHash hash = IFileStateRequests::InvalidFileHash) override;
 
     private:
@@ -134,6 +135,10 @@ namespace AssetProcessor
         QHash<QString, FileHash> m_fileHashMap;
 
         AZ::Event<FileStateInfo> m_deleteEvent;
+
+        /// Cache of input path values to their final, normalized map key format.
+        /// Profiling has shown path normalization to be a hotspot.
+        mutable QHash<QString, QString> m_keyCache;
 
         using LockGuardType = AZStd::lock_guard<decltype(m_mapMutex)>;
     };
