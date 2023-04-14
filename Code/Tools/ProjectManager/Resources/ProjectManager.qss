@@ -836,13 +836,18 @@ QProgressBar::chunk {
 }
 
 /* be specific here to override the general QLabel margins */
-#GemCatalogInspector #GemCatalogRequirements {
+#GemCatalogInspector #GemCatalogRequirements,
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
    margin:0 0 10px 0; 
    padding-left:34px;
    min-height: 34px;
    font-size:10px;
    color:#ddd;
    background:transparent url(:/Info.svg) no-repeat left center;
+}
+
+#GemCatalogInspector #GemCatalogCompatibilityWarning {
+   background:transparent url(:/Warning.svg) no-repeat left center;
 }
 
 #GemCatalogCartOverlayGemDownloadHeader {

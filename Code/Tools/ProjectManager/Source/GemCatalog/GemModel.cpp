@@ -49,7 +49,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void AddGemInfoVersion(QStandardItem* item, const GemInfo& gemInfo, bool update)
+    bool AddGemInfoVersion(QStandardItem* item, const GemInfo& gemInfo, [[maybe_unused]] bool update)
     {
         QList<QVariant> versionList;
         auto variant = item->data(GemModel::RoleGemInfoVersions);
@@ -60,44 +60,41 @@ namespace O3DE::ProjectManager
         QVariant gemVariant;
         gemVariant.setValue(gemInfo);
 
-        // sanity check we aren't adding a gem with an existing path and version
         int versionToReplaceIndex = -1;
         for (int i = 0; i < versionList.size(); ++i)
         {
-            const QVariant& existingGemVariant = versionList.at(i);
-            const GemInfo& existingGemInfo = existingGemVariant.value<GemInfo>();
-            if (QDir(existingGemInfo.m_path) == QDir(gemInfo.m_path))
+            const GemInfo& existingGemInfo = versionList.at(i).value<GemInfo>();
+            if (existingGemInfo.m_version == gemInfo.m_version)
             {
-                if (existingGemInfo.m_version == gemInfo.m_version && !update)
+                if(existingGemInfo.m_downloadStatus == GemInfo::NotDownloaded ||
+                   existingGemInfo.m_downloadStatus == GemInfo::DownloadFailed)
                 {
-                    AZ_Info("ProjectManager", "Not adding GemInfo because a GemInfo with path (%s) and version (%s) already exists.",
-                        gemInfo.m_path.toUtf8().constData(),
-                        gemInfo.m_version.toUtf8().constData()
-                        );
-                    return;
+                    // gems that haven't been downloaded may have empty paths
+                    // always update data from the server
+                    versionToReplaceIndex = i;
+                    break;
+
+                    // once a gem has been downloaded we rely on the data on disk
+                    // and don't override it with remote data
                 }
-
-                // the path is the same but the version has changed, update the info
+                else if (gemInfo.m_downloadStatus == GemInfo::NotDownloaded ||
+                         gemInfo.m_downloadStatus == GemInfo::DownloadFailed)
+                {
+                    // never overwrite a downloaded version with a remote version
+                    return false;
+                }
+                else if (QDir(existingGemInfo.m_path) == QDir(gemInfo.m_path))
+                {
+                    versionToReplaceIndex = i;
+                    break;
+                }
+            }
+            else if (!existingGemInfo.m_path.isEmpty() && !gemInfo.m_path.isEmpty() &&
+                    QDir(existingGemInfo.m_path) == QDir(gemInfo.m_path))
+            {
+                // data on disk changed and version don't match anymore 
                 versionToReplaceIndex = i;
                 break;
-            }
-            else if (existingGemInfo.m_version == gemInfo.m_version &&
-                existingGemInfo.m_downloadStatus == GemInfo::NotDownloaded &&
-                gemInfo.m_downloadStatus == GemInfo::Downloaded)
-            {
-                // we are adding  a gem version for a gem that has been downloaded
-                // so replace the content for remote gem
-                versionToReplaceIndex = i;
-                break;
-            }
-
-            if (existingGemInfo.m_version == gemInfo.m_version &&
-                existingGemInfo.m_downloadStatus == GemInfo::Downloaded &&
-                gemInfo.m_downloadStatus == GemInfo::NotDownloaded)
-            {
-                // do not add the not downloaded remote version of
-                // something we have downloaded
-                return;
             }
         }
 
@@ -124,6 +121,7 @@ namespace O3DE::ProjectManager
         }
 
         item->setData(versionList, GemModel::RoleGemInfoVersions);
+        return true;
     }
 
     bool RemoveGemInfoVersion(QStandardItem* item, const QString& version, const QString& path)
@@ -156,6 +154,26 @@ namespace O3DE::ProjectManager
         return versionList.isEmpty();
     }
 
+    bool GemModel::ShouldUpdateItemDataFromGemInfo(const QModelIndex& modelIndex, const GemInfo& gemInfo)
+    {
+        // get the most compatible version or empty string if none are compatible
+        const QString mostCompatibleVersion = GetMostCompatibleVersion(modelIndex);
+        const bool newVersionIsCompatible = gemInfo.IsCompatible();
+        int versionResult = ProjectUtils::VersionCompare(gemInfo.m_version, modelIndex.data(RoleVersion).toString());
+
+        if (mostCompatibleVersion.isEmpty() && !newVersionIsCompatible)
+        {
+            // no compatibile versions available (yet) so refresh if version is the same or higher
+            return versionResult >= 0;
+        }
+
+        const bool oldVersionIsCompatible = VersionIsCompatible(modelIndex, modelIndex.data(RoleVersion).toString());
+
+        return (versionResult > 0 && newVersionIsCompatible) || // new higher version is compatible
+               (versionResult == 0) ||                          // version the same
+               (!oldVersionIsCompatible && newVersionIsCompatible); // old version wasn't compatible but new is
+    }
+
     QVector<QPersistentModelIndex> GemModel::AddGems(const QVector<GemInfo>& gemInfos, bool updateExisting)
     {
         QVector<QPersistentModelIndex> indexesChanged;
@@ -181,15 +199,11 @@ namespace O3DE::ProjectManager
                 auto gemItem = itemFromIndex(modelIndex);
                 AZ_Assert(gemItem, "Failed to retrieve existing gem item from model index");
 
-                // if this is a greater version than the existing version
-                // or we are updating the existing version, update
-                int versionResult = ProjectUtils::VersionCompare(gemInfo.m_version, gemItem->data(RoleVersion).toString());
-                if (versionResult > 0 || (versionResult == 0 && updateExisting))
+                const bool updatedExistingInfo = AddGemInfoVersion(gemItem, gemInfo, updateExisting);
+                if (updatedExistingInfo && ShouldUpdateItemDataFromGemInfo(modelIndex, gemInfo))
                 {
                     SetItemDataFromGemInfo(gemItem, gemInfo, /*metaDataOnly=*/ true);
                 }
-
-                AddGemInfoVersion(gemItem, gemInfo, updateExisting);
 
                 indexesChanged.append(modelIndex);
             }
@@ -382,9 +396,9 @@ namespace O3DE::ProjectManager
         {
             return {};
         }
-        else if (gemVersion.isEmpty() && version.isEmpty())
+        else if (gemVersion.isEmpty() && version.isEmpty() && path.isEmpty())
         {
-            // no version to look for so return the first GemInfo
+            // the currently displayed version has no version info so just return it
             return versionList.at(0).value<GemInfo>();
         }
 
@@ -395,8 +409,9 @@ namespace O3DE::ProjectManager
         {
             // there may be multiple instances of the same gem with the same version
             // at different paths
-            const QString& variantVersion = versionVariant.value<GemInfo>().m_version;
-            const QString& variantPath = versionVariant.value<GemInfo>().m_path;
+            const GemInfo& gemInfo = versionVariant.value<GemInfo>();
+            const QString& variantVersion = gemInfo.m_version;
+            const QString& variantPath = gemInfo.m_path;
 
             // if no version is provided, try to find the one that matches the current version
             // if a path and/or version is provided try to find an exact match
@@ -404,7 +419,7 @@ namespace O3DE::ProjectManager
                 (usePath && variantPath == path) ||
                 (!usePath && useVersion && variantVersion == version))
             {
-                return versionVariant.value<GemInfo>();
+                return gemInfo;
             }
         }
 
@@ -508,6 +523,41 @@ namespace O3DE::ProjectManager
     QString GemModel::GetNewVersion(const QModelIndex& modelIndex)
     {
         return modelIndex.data(RoleNewVersion).toString();
+    }
+
+    QString GemModel::GetMostCompatibleVersion(const QModelIndex& modelIndex)
+    {
+        const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
+        if (versionList.isEmpty())
+        {
+            return {};
+        }
+
+        const GemInfo& gemInfo = versionList.at(0).value<GemInfo>();
+        if (gemInfo.IsCompatible())
+        {
+            // most common case is this gem is an engine gem,
+            // or the gem is compatible
+            return gemInfo.m_version;
+        }
+
+        // versions are sorted from highest to lowest so return the first compatible version
+        for (const auto& versionVariant : versionList)
+        {
+            const GemInfo& variantGemInfo = versionVariant.value<GemInfo>();
+            if(variantGemInfo.IsCompatible())
+            {
+                return variantGemInfo.m_version;
+            }
+        }
+
+        // no compatible version found
+        return {};
+    }
+
+    bool GemModel::VersionIsCompatible(const QModelIndex& modelIndex, const QString& version)
+    {
+        return GemModel::GetGemInfo(modelIndex, version).IsCompatible();
     }
 
     GemModel* GemModel::GetSourceModel(QAbstractItemModel* model)
@@ -752,7 +802,25 @@ namespace O3DE::ProjectManager
             {
                 SetIsAdded(model, dependentModelIndex, false);
             }
+        }
+    }
 
+    void GemModel::ShowCompatibleGems()
+    {
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            const QModelIndex modelIndex = index(row, 0);
+            const GemInfo& gemInfo = GetGemInfo(modelIndex);
+            if (!gemInfo.IsCompatible() && !IsAdded(modelIndex))
+            {
+                // does a compatible version exist?
+                QString compatibleVersion = GetMostCompatibleVersion(modelIndex);
+                if(!compatibleVersion.isEmpty())
+                {
+                    // show the compatible version
+                    UpdateWithVersion(*this, modelIndex, compatibleVersion);
+                }
+            }
         }
     }
 
@@ -766,8 +834,9 @@ namespace O3DE::ProjectManager
         return !GemModel::GetGemInfo(modelIndex).m_requirement.isEmpty();
     }
 
-    bool GemModel::HasUpdates(const QModelIndex& modelIndex)
+    bool GemModel::HasUpdates(const QModelIndex& modelIndex, bool compatibleOnly)
     {
+        // get the currently displayed item
         const auto& gemInfo = GemModel::GetGemInfo(modelIndex);
         if (gemInfo.m_isEngineGem)
         {
@@ -778,13 +847,84 @@ namespace O3DE::ProjectManager
         const auto& versions = GemModel::GetGemVersions(modelIndex);
         if (versions.count() < 2)
         {
+            // there is only one version available
             return false;
         }
 
         auto currentVersion = modelIndex.data(RoleVersion).toString();
+        if (compatibleOnly)
+        {
+            // versions are ordered from highest to lowest
+            for (auto itr = versions.cbegin(); itr != versions.cend(); itr++)
+            {
+                const GemInfo& versionGemInfo = itr->value<GemInfo>();
+                if (versionGemInfo.IsCompatible())
+                {
+                    if (currentVersion != versionGemInfo.m_version)
+                    {
+                        return true;
+                    }
 
-        // gem versions are sorted so we can just compare if we're using the latest version
-        return currentVersion != versions.at(0).value<GemInfo>().m_version;
+                    // if this is a remote gem, show that the update is available if we
+                    // haven't downloaded it yet and the user has downloaded an older version
+                    if (gemInfo.m_gemOrigin == GemInfo::Remote && gemInfo.m_downloadStatus == GemInfo::NotDownloaded)
+                    {
+                        itr++;
+                        while (itr != versions.cend())
+                        {
+                            const GemInfo& olderVersionGemInfo = itr->value<GemInfo>();
+                            if (olderVersionGemInfo.m_version != currentVersion &&
+                                (olderVersionGemInfo.m_downloadStatus == GemInfo::DownloadSuccessful ||
+                                olderVersionGemInfo.m_downloadStatus == GemInfo::Downloaded))
+                            {
+                                // found an older version that was downloaded
+                                return true;
+                            }
+                            itr++;
+                        }
+
+                        // did not find an older version that was downloaded
+                        return false;
+                    }
+
+                    return currentVersion != versionGemInfo.m_version;
+                }
+            }
+            return false;
+        }
+        else
+        {
+            if (currentVersion != versions.at(0).value<GemInfo>().m_version)
+            {
+                return true;
+            }
+
+            // if this is a remote gem that hasn't been downloaded, show that the update is
+            // available the user has downloaded an older version
+            if (gemInfo.m_gemOrigin == GemInfo::Remote &&
+                gemInfo.m_downloadStatus == GemInfo::NotDownloaded)
+            {
+                // we've already verified versions.count() > 1 above
+                for (int i = 1; i < versions.count(); ++i)
+                {
+                    const GemInfo& variantGemInfo  = versions.at(i).value<GemInfo>();
+                    if (variantGemInfo.m_version != currentVersion &&
+                        (variantGemInfo.m_downloadStatus == GemInfo::DownloadSuccessful ||
+                        variantGemInfo.m_downloadStatus == GemInfo::Downloaded))
+                    {
+                        // found an older version that was downloaded
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+    }
+
+    bool GemModel::IsCompatible(const QModelIndex& modelIndex)
+    {
+        return GemModel::GetGemInfo(modelIndex).IsCompatible();
     }
 
     bool GemModel::DoGemsToBeAddedHaveRequirements() const

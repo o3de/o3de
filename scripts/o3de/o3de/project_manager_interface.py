@@ -442,7 +442,7 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None) -> list:
     for i, gem_json_data in enumerate(remote_gem_json_data_list):
         incompatible_engine =  compatibility.get_incompatible_objects_for_engine(gem_json_data, engine_json_data)
         if incompatible_engine:
-            remote_gem_json_data_list[i]['incompatible_engine'] = incompatible_engine
+            remote_gem_json_data_list[i]['incompatible_engine_dependencies'] = incompatible_engine
 
         incompatible_gem_dependencies = compatibility.get_incompatible_gem_dependencies(gem_json_data, all_gem_json_data)
         if incompatible_gem_dependencies:

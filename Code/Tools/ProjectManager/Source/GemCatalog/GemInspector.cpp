@@ -236,6 +236,26 @@ namespace O3DE::ProjectManager
             connect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
         }
 
+        m_compatibilityTextLabel->setVisible(!gemInfo.IsCompatible());
+        if(!gemInfo.IsCompatible())
+        {
+            if(!gemInfo.m_compatibleEngines.isEmpty())
+            {
+                if (m_readOnly)
+                {
+                    m_compatibilityTextLabel->setText(tr("This version is not known to be compatible with the current engine"));
+                }
+                else
+                {
+                    m_compatibilityTextLabel->setText(tr("This version is not known to be compatible with the engine this project uses"));
+                }
+            }
+            else
+            {
+                m_compatibilityTextLabel->setText(tr("This version has missing on incompatible gem dependencies"));
+            }
+        }
+
         // Compatible engines
         m_enginesTitleLabel->setVisible(!gemInfo.m_isEngineGem);
         m_enginesLabel->setVisible(!gemInfo.m_isEngineGem);
@@ -292,7 +312,12 @@ namespace O3DE::ProjectManager
     void GemInspector::OnVersionChanged([[maybe_unused]] int index)
     {
         Update(m_curModelIndex, GetVersion(), GetVersionPath());
-        if (!GemModel::IsAdded(m_curModelIndex))
+
+        // we don't update the version in the gem list when read only
+        // because it can cause the row to disappear due to changing filters
+        // but in a project-specific view it is necessary because
+        // the checkbox to activate the gem is on the row
+        if (!GemModel::IsAdded(m_curModelIndex) && !m_readOnly)
         {
             GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
         }
@@ -344,6 +369,14 @@ namespace O3DE::ProjectManager
                 GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
                 m_updateVersionButton->setVisible(false);
             });
+
+            // Compatibility 
+            m_compatibilityTextLabel = new QLabel();
+            m_compatibilityTextLabel->setObjectName("GemCatalogCompatibilityWarning");
+            m_compatibilityTextLabel->setWordWrap(true);
+            m_compatibilityTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+            m_compatibilityTextLabel->setOpenExternalLinks(true);
+            versionVLayout->addWidget(m_compatibilityTextLabel);
 
             m_enginesTitleLabel = new QLabel(tr("Compatible Engines: "));
             versionVLayout->addWidget(m_enginesTitleLabel);

@@ -122,7 +122,7 @@ namespace O3DE::ProjectManager
         constexpr int minHeaderSectionWidth = AZStd::min(previewWidth, AZStd::min(versionWidth, statusWidth));
 
         AdjustableHeaderWidget* listHeaderWidget = new AdjustableHeaderWidget(
-            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Version"), tr("Status") },
+            QStringList{ tr("Gem Image"), tr("Gem Name"), tr("Gem Summary"), tr("Latest Version"), tr("Status") },
             QVector<int>{ previewWidth,
                           GemItemDelegate::s_defaultSummaryStartX - previewWidth,
                           0, // Section is set to stretch to fit
@@ -704,7 +704,8 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemDownloadResult(const QString& gemName, bool succeeded)
     {
-        const auto index = m_gemModel->FindIndexByNameString(gemName);
+        QString gemNameWithoutVersionSpecifier =  ProjectUtils::GetDependencyName(gemName);
+        const auto index = m_gemModel->FindIndexByNameString(gemNameWithoutVersionSpecifier);
         if (succeeded)
         {
             Refresh();

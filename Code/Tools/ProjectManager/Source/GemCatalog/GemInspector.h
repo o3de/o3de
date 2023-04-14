@@ -105,6 +105,9 @@ namespace O3DE::ProjectManager
         // Requirements
         QLabel* m_requirementsTextLabel = nullptr;
 
+        // Compatibility
+        QLabel* m_compatibilityTextLabel = nullptr;
+
         // Depending gems
         GemsSubWidget* m_dependingGems = nullptr;
         QSpacerItem* m_dependingGemsSpacer = nullptr;

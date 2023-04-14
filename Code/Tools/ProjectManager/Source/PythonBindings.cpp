@@ -643,6 +643,10 @@ namespace O3DE::ProjectManager
         gemInfo.m_requirement = Py_To_String_Optional(data, "requirements", "");
         gemInfo.m_origin = Py_To_String_Optional(data, "origin", "");
         gemInfo.m_originURL = Py_To_String_Optional(data, "origin_url", "");
+        gemInfo.m_downloadSourceUri = Py_To_String_Optional(data, "origin_uri", "");
+        gemInfo.m_downloadSourceUri = Py_To_String_Optional(data, "download_source_uri", gemInfo.m_downloadSourceUri);
+        gemInfo.m_sourceControlUri = Py_To_String_Optional(data, "source_control_uri", "");
+        gemInfo.m_sourceControlRef = Py_To_String_Optional(data, "source_control_ref", "");
         gemInfo.m_documentationLink = Py_To_String_Optional(data, "documentation_url", "");
         gemInfo.m_iconPath = Py_To_String_Optional(data, "icon_path", "preview.png");
         gemInfo.m_licenseText = Py_To_String_Optional(data, "license", "Unspecified License");
@@ -716,6 +720,22 @@ namespace O3DE::ProjectManager
             for (auto compatible_engine : data["compatible_engines"])
             {
                 gemInfo.m_compatibleEngines.push_back(Py_To_String(compatible_engine));
+            }
+        }
+
+        if (data.contains("incompatible_engine_dependencies"))
+        {
+            for (auto incompatible_dependency : data["incompatible_engine_dependencies"])
+            {
+                gemInfo.m_incompatibleEngineDependencies.push_back(Py_To_String(incompatible_dependency));
+            }
+        }
+
+        if (data.contains("incompatible_gem_dependencies"))
+        {
+            for (auto incompatible_dependency : data["incompatible_gem_dependencies"])
+            {
+                gemInfo.m_incompatibleGemDependencies.push_back(Py_To_String(incompatible_dependency));
             }
         }
     }
