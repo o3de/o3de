@@ -1716,7 +1716,18 @@ namespace O3DE::ProjectManager
                 gemRepoInfo.m_path = gemRepoInfo.m_directoryLink = Py_To_String(repoPath);
 
                 QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
-                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
+                // this is NOT the same as RepoTimeFormat which uses 12 hour + am/pm
+                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, "dd/MM/yyyy HH:mm");
+                if (!gemRepoInfo.m_lastUpdated.isValid())
+                {
+                    // attempt with default Repo format
+                    gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
+                    if (!gemRepoInfo.m_lastUpdated.isValid())
+                    {
+                        // fallback to ISO 8601 (without milliseconds) 
+                        gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, Qt::ISODate);
+                    }
+                }
 
                 if (data.contains("enabled"))
                 {

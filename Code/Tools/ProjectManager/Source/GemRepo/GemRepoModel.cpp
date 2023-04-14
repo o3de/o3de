@@ -46,11 +46,7 @@ namespace O3DE::ProjectManager
         appendRow(item);
 
         QVector<GemInfo> includedGemInfos = GetIncludedGemInfos(item->index());
-
-        for (const GemInfo& gemInfo : includedGemInfos)
-        {
-            m_gemModel->AddGem(gemInfo);
-        }
+        m_gemModel->AddGems(includedGemInfos, /*updateExisting=*/true);
     }
 
     void GemRepoModel::Clear()

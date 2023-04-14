@@ -15,6 +15,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QHeaderView>
+#include <QLocale>
 
 namespace O3DE::ProjectManager
 {
@@ -105,8 +106,15 @@ namespace O3DE::ProjectManager
         // Repo update
         currentHorizontalOffset += sectionSize;
         sectionSize = m_headerWidget->m_header->sectionSize(static_cast<int>(HeaderOrder::Update));
+        auto lastUpdated = GemRepoModel::GetLastUpdated(modelIndex);
 
-        QString repoUpdatedDate = GemRepoModel::GetLastUpdated(modelIndex).toString(RepoTimeFormat);
+        // get the month day and year in the preferred locale's format (QLocale defaults to the OS locale)
+        QString monthDayYear = lastUpdated.toString(QLocale().dateFormat(QLocale::ShortFormat));
+
+        // always show 12 hour + minutes + am/pm
+        QString hourMinuteAMPM = lastUpdated.toString("h:mmap");
+
+        QString repoUpdatedDate = QString("%1 %2").arg(monthDayYear, hourMinuteAMPM);
         repoUpdatedDate = standardFontMetrics.elidedText(
             repoUpdatedDate, Qt::TextElideMode::ElideRight,
             sectionSize - GemRepoItemDelegate::s_refreshIconSpacing - GemRepoItemDelegate::s_refreshIconSize - AdjustableHeaderWidget::s_headerTextIndent);
