@@ -39,10 +39,11 @@ namespace O3DE::ProjectManager
         bool IsValid() const;
         const QString& GetProjectDisplayName() const;
 
-        // from o3de_manifest.json and o3de_projects.json
+        //! IMPORTANT this path might be the project folder or
+        //! the path to a remote project.json file in the cache
         QString m_path;
 
-        // From project.json
+        //! From project.json
         QString m_projectName;
         QString m_displayName;
         QString m_version;
@@ -65,7 +66,7 @@ namespace O3DE::ProjectManager
 
         bool m_remote = false;
 
-        // Used in project creation
+        //! Used in project creation
         bool m_needsBuild = false; //! Does this project need to be built
         bool m_buildFailed = false;
         QUrl m_logUrl;

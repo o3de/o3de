@@ -213,9 +213,10 @@ namespace O3DE::ProjectManager
         /**
          * Adds existing project on disk
          * @param path the absolute path to the project
+         * @param force whether to bypass compatibility checks and register the project 
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual DetailedOutcome AddProject(const QString& path) = 0;
+        virtual DetailedOutcome AddProject(const QString& path, bool force = false) = 0;
 
         /**
          * Adds existing project on disk
@@ -249,6 +250,17 @@ namespace O3DE::ProjectManager
          * @return An outcome with the a list of incompatible gems or an error message on failure.
          */
         virtual AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) = 0;
+
+        /**
+         * Get objects that are incompatibile with the provided project and engine.
+         * The objects could be engine APIs or gems dependencies that might prevent this project from compiling
+         * with the engine.
+         * @param projectPath the absolute path to the project
+         * @param enginePath the optional absolute path to the engine
+         * @return An outcome with the a list of incompatible objects including APIs and gems or an error message on failure.
+         */
+        virtual AZ::Outcome<QStringList, ErrorPair> GetProjectEngineIncompatibleObjects(
+            const QString& projectPath, const QString& enginePath = "") = 0;
 
         /**
          * Remove gem to a project

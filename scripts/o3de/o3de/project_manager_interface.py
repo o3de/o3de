@@ -12,7 +12,7 @@ Contains functions for the project manager to call that gather data from o3de sc
 import logging
 import pathlib
 
-from o3de import manifest, utils, compatibility, enable_gem, repo
+from o3de import manifest, utils, compatibility, enable_gem, register, project_properties, repo
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -69,13 +69,23 @@ def get_project_template_infos() -> list:
 
 #### Project methods ###
 
-def register_project(project_path: str):
+def register_project(project_path: pathlib.Path, force:bool) -> int:
     """
-        Registers project with engine
+        Registers project with engine and sets the user/project.json engine_path
+        in case there are multiple versions of this project on the user's machine
 
         :param project_path: Project path to register
+        :param force: Whether to force registeration, bypassing compatibility checks
+        :return 0 on success or a non-zero error code
     """
-    pass
+    result = register.register(project_path=project_path, force=force)
+    if result == 0:
+        result = project_properties.edit_project_props(proj_path=project_path, 
+                                                       user=True, 
+                                                       new_engine_path=manifest.get_this_engine_path())
+
+    return result
+
 
 
 def unregister_project(project_path: str):
@@ -170,29 +180,37 @@ def set_project_info(project_info: dict):
     pass
 
 
-def get_project_engine_incompatible_objects(project_path: pathlib.Path) -> set():
+def get_project_engine_incompatible_objects(project_path: pathlib.Path, engine_path: pathlib.Path = None) -> set() or int:
     """
-        Checks for compatibility issues between the provided project and current engine
+        Checks for compatibility issues between the provided project and engine
 
         :param project_path: Project path 
-        :return a set of all incompatible objects which may include APIs and gems
+        :param engine_path: Optional engine path 
+        :return a set of all incompatible objects which may include APIs and gems or an error code on failure
     """
-    return compatibility.get_project_engine_incompatible_objects(project_path=project_path, engine_path=manifest.get_this_engine_path())
+    engine_path = engine_path or manifest.get_this_engine_path()
+    if not manifest.get_engine_json_data(engine_path=engine_path):
+        return 1
+    if not manifest.get_project_json_data(project_path=project_path):
+        return 2
+
+    return compatibility.get_project_engine_incompatible_objects(project_path=project_path, 
+                                                                 engine_path=engine_path)
 
 
-def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set():
+def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set() or int:
     """
         Checks for compatibility issues between the provided gems and project
 
         :param gem_paths: Gem paths for the gems to check
         :param gem_names: Gem names with optional version specifiers
         :param project_path: Project path 
-        :return a set of all incompatible gems
+        :return a set of all incompatible gems or int error code
     """
     # we need to know the engine to check compatibility 
     engine_path = manifest.get_project_engine_path(project_path)
     if not engine_path:
-        return set()
+        return 1
 
     # check compatibility for all gems at once for speeeeeeeeed
     incompatible_objects = compatibility.get_gems_project_incompatible_objects(

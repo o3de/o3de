@@ -1,0 +1,100 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "PassAsset",
+    "ClassData": {
+        "PassTemplate": {
+            "Name": "TaaParentTemplate",
+            "PassClass": "ParentPass",
+            "Slots": [
+                {
+                    "Name": "InputColor",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "InputDepth",
+                    "SlotType": "Input",
+                    "ScopeAttachmentUsage": "DepthStencil"
+                },
+                {
+                    "Name": "MotionVectors",
+                    "SlotType": "Input"
+                },
+                {
+                    "Name": "OutputColor",
+                    "SlotType": "Output"
+                }
+            ],
+            "Connections": [
+                {
+                    "LocalSlot": "OutputColor",
+                    "AttachmentRef": {
+                        "Pass": "TaaPass",
+                        "Attachment": "OutputColor"
+                    }
+                }
+            ],
+            "FallbackConnections": [
+                {
+                    "Input": "InputColor",
+                    "Output": "OutputColor"
+                }
+            ],
+            "PassRequests": [
+                {
+                    "Name": "TaaPass",
+                    "TemplateName": "TaaTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "InputColor",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "InputDepth",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "InputDepth"
+                            }
+                        },
+                        {
+                            "LocalSlot": "MotionVectors",
+                            "AttachmentRef": {
+                                "Pass": "Parent",
+                                "Attachment": "MotionVectors"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "Name": "TaaCopyPass",
+                    "TemplateName": "CopyPassTemplate",
+                    "Enabled": true,
+                    "Connections": [
+                        {
+                            "LocalSlot": "Input",
+                            "AttachmentRef": {
+                                "Pass": "TaaPass",
+                                "Attachment": "OutputColor"
+                            }
+                        },
+                        {
+                            "LocalSlot": "Output",
+                            "AttachmentRef": {
+                                "Pass": "TaaPass",
+                                "Attachment": "LastFrameAccumulation"
+                            }
+                        }
+                    ],
+                    "PassData": {
+                        "$type": "CopyPassData",
+                        "CloneInput": false
+                    }
+                }
+            ]
+        }
+    }
+}
