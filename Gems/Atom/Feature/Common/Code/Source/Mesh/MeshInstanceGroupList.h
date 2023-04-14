@@ -60,7 +60,7 @@ namespace AZ::Render
     public:
         using WeakHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
         using OwningHandle = StableDynamicArrayHandle<MeshInstanceGroupData>;
-        using ParallelRanges = StableDynamicArray<MeshInstanceGroupData>::ParallelRanges;
+        using ParallelRanges = StableDynamicArray<MeshInstanceGroupData, 4096>::ParallelRanges;
         // When adding a new entry, we get back both the index and the count of meshes in the group after inserting
         // The count can be used to determine if this is the first mesh in the group (and thus intialization may be required)
         // As well as to determine if the mesh has reached the threshold at which it can become instanced,
@@ -110,7 +110,7 @@ namespace AZ::Render
         using DataMap = AZStd::unordered_map<MeshInstanceGroupKey, IndexMapEntry>;
 
     private:
-        StableDynamicArray<MeshInstanceGroupData> m_instanceGroupData;
+        StableDynamicArray<MeshInstanceGroupData, 4096> m_instanceGroupData;
         DataMap m_dataMap;
         AZStd::concurrency_checker m_instanceDataConcurrencyChecker;
     };

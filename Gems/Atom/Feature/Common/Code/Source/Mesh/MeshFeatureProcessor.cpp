@@ -432,33 +432,48 @@ namespace AZ
             {
                 AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
                 ResizePerViewInstanceVectors(packet.m_views.size());
-                for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
+
                 {
-                    ProcessVisibilityListForView(viewIndex, packet.m_views[viewIndex]);
+                    AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Add Visible Objects to Buckets");
+                    AZ::TaskGraphEvent processVisiblityListForViewTGEvent{ "ProcessVisibilityListForView Wait" };
+                    AZ::TaskGraph processVisiblityListForViewTG{ "ProcessVisibilityListForView" };
+                    for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
+                    {
+                        ProcessVisibilityListForView(processVisiblityListForViewTG, viewIndex, packet.m_views[viewIndex]);
+                    }
+
+                    processVisiblityListForViewTG.Submit(&processVisiblityListForViewTGEvent);
+                    processVisiblityListForViewTGEvent.Wait();
                 }
 
-                AZ::TaskGraphEvent sortInstanceBufferBucketsTGEvent{ "SortInstanceBufferBuckets Wait" };
-                AZ::TaskGraph sortInstanceBufferBucketsTG{ "SortInstanceBufferBuckets" };
-                for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                 {
-                    SortInstanceDataForView(sortInstanceBufferBucketsTG, viewIndex);
+                    AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Sort Buckets");
+                    AZ::TaskGraphEvent sortInstanceBufferBucketsTGEvent{ "SortInstanceBufferBuckets Wait" };
+                    AZ::TaskGraph sortInstanceBufferBucketsTG{ "SortInstanceBufferBuckets" };
+                    for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
+                    {
+                        SortInstanceDataForView(sortInstanceBufferBucketsTG, viewIndex);
+                    }
+
+                    // submit the tasks
+                    sortInstanceBufferBucketsTG.Submit(&sortInstanceBufferBucketsTGEvent);
+                    sortInstanceBufferBucketsTGEvent.Wait();
                 }
 
-                // submit the tasks
-                sortInstanceBufferBucketsTG.Submit(&sortInstanceBufferBucketsTGEvent);
-                sortInstanceBufferBucketsTGEvent.Wait();
-
-                // Create the task graph;
-                AZ::TaskGraphEvent buildInstanceBufferTGEvent{ "BuildInstanceBuffer Wait" };
-                AZ::TaskGraph buildInstanceBufferTG{ "BuildInstanceBuffer" };
-                for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                 {
-                    AddInstancedDrawPacketsTasksForView(buildInstanceBufferTG, viewIndex, packet.m_views[viewIndex]);
-                }
+                    AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Build Instance Buffer and Draw Calls");
+                    // Create the task graph;
+                    AZ::TaskGraphEvent buildInstanceBufferTGEvent{ "BuildInstanceBuffer Wait" };
+                    AZ::TaskGraph buildInstanceBufferTG{ "BuildInstanceBuffer" };
+                    for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
+                    {
+                        AddInstancedDrawPacketsTasksForView(buildInstanceBufferTG, viewIndex, packet.m_views[viewIndex]);
+                    }
 
-                // submit the tasks
-                buildInstanceBufferTG.Submit(&buildInstanceBufferTGEvent);
-                buildInstanceBufferTGEvent.Wait();
+                    // submit the tasks
+                    buildInstanceBufferTG.Submit(&buildInstanceBufferTGEvent);
+                    buildInstanceBufferTGEvent.Wait();
+                }
 
                 for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                 {
@@ -469,6 +484,7 @@ namespace AZ
         
         void MeshFeatureProcessor::ResizePerViewInstanceVectors(size_t viewCount)
         {
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ResizePerInstanceVectors");
             // Initialize the instance data if it hasn't been created yet
             if (m_perViewInstanceData.size() <= viewCount)
             {
@@ -504,7 +520,6 @@ namespace AZ
             }
 
             AZStd::vector<uint32_t> perPageInstanceCounts;
-            AZ::JobCompletion perInstanceGroupJobCompletion;
             const auto instanceManagerRanges = m_meshInstanceManager.GetParallelRanges();
             if (instanceManagerRanges.size() > 0)
             {
@@ -522,28 +537,19 @@ namespace AZ
                     }
                 }
             }
-            
+
             for (const auto& iteratorRange : instanceManagerRanges)
             {
-                const auto perInstanceGroupJobLambda = [&]() -> void
+                uint32_t maxPossibleInstanceCountForGroup = 0;
+                for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
+                     ++instanceGroupDataIter)
                 {
-                    uint32_t maxPossibleInstanceCountForGroup = 0;
-                    for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
-                         ++instanceGroupDataIter)
-                    {
-                        // Resize the cloned draw packet vector
-                        instanceGroupDataIter->m_perViewDrawPackets.resize(viewCount);
-                        maxPossibleInstanceCountForGroup += instanceGroupDataIter->m_count;
-                    }
-                    perPageInstanceCounts[iteratorRange.m_begin.GetPageIndex()] = maxPossibleInstanceCountForGroup;
-                };
-                Job* executePerInstanceGroupJob =
-                    aznew JobFunction<decltype(perInstanceGroupJobLambda)>(perInstanceGroupJobLambda, true, nullptr); // Auto-deletes
-
-                executePerInstanceGroupJob->SetDependent(&perInstanceGroupJobCompletion);
-                executePerInstanceGroupJob->Start();
+                    // Resize the cloned draw packet vector
+                    instanceGroupDataIter->m_perViewDrawPackets.resize(viewCount);
+                    maxPossibleInstanceCountForGroup += instanceGroupDataIter->m_count;
+                }
+                perPageInstanceCounts[iteratorRange.m_begin.GetPageIndex()] = maxPossibleInstanceCountForGroup;
             }
-            perInstanceGroupJobCompletion.StartAndWaitForCompletion();
 
             // Resize the per-page data vectors for every view to allow for all possible objects to be visible
             for (size_t viewIndex = 0; viewIndex < viewCount; ++viewIndex)
@@ -560,46 +566,71 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view)
+        void MeshFeatureProcessor::ProcessVisibilityListForView(
+            TaskGraph& processVisiblityListForViewTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
-            RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
-            size_t instanceBufferCount = visibilityList.size();
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ProcessVisibilityListForView");
+            size_t visibleObjectCount = view->GetVisibleObjectList().size();
 
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
             AZStd::vector<SortInstanceData>& perViewSortInstanceData = m_perViewSortInstanceData[viewIndex];
-            AZStd::vector<PerViewInstanceGroupPageData>& perViewInstanceGroupPageData = m_perViewInstanceGroupPageData[viewIndex];
-            if (instanceBufferCount > 0)
+            if (visibleObjectCount > 0)
             {
                 perViewInstanceData.clear();
                 perViewSortInstanceData.clear();
-            }
 
-            for (const RPI::VisibleObjectProperties& visibleObject : visibilityList)
-            {
-                const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
-                    static_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
-                for (const ModelDataInstance::PostCullingData& postCullingData : *instanceGroupHandles)
+                static const AZ::TaskDescriptor processVisiblityListForViewTaskDescriptor{
+                    "AZ::Render::MeshFeatureProcessor::OnEndCulling - ProcessVisibilityListForView", "Graphics"
+                };
+
+                size_t batchSize = 512;
+                size_t batchCount = AZ::DivideAndRoundUp(visibleObjectCount, batchSize);
+
+                for (size_t batchIndex = 0; batchIndex < batchCount; ++batchIndex)
                 {
-                    SortInstanceData instanceData;
-                    instanceData.m_instanceIndex = postCullingData.m_instanceGroupHandle;
-                    instanceData.m_objectId = postCullingData.m_objectId;
-                    instanceData.m_depth = visibleObject.m_depth;
+                    size_t batchStart = batchIndex * batchSize;
+                    // If we're in the last batch, we just get the remaining objects
+                    size_t currentBatchCount = batchIndex == batchCount - 1 ? visibleObjectCount % batchSize : batchSize;
 
-                    // TODO: this is not thread safe when using a shared pool allocator
-                    //perViewSortInstanceData.push_back(instanceData);
+                    processVisiblityListForViewTG.AddTask(
+                        processVisiblityListForViewTaskDescriptor,
+                        [this, view, viewIndex, batchStart, currentBatchCount]()
+                        {
+                            RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
+                            AZStd::vector<PerViewInstanceGroupPageData>& perViewInstanceGroupPageData =
+                                m_perViewInstanceGroupPageData[viewIndex];
+                            for (size_t i = batchStart; i < batchStart + currentBatchCount; ++i)
+                            {
+                                const RPI::VisibleObjectProperties& visibleObject = visibilityList[i];
+                                const ModelDataInstance::InstanceGroupHandleList* instanceGroupHandles =
+                                    static_cast<const ModelDataInstance::InstanceGroupHandleList*>(visibleObject.m_userData);
 
-                    // Add the sort data to the bucket (pageData)
-                    PerViewInstanceGroupPageData& pageData =
-                        perViewInstanceGroupPageData[postCullingData.m_instanceGroupPageIndex];
-                    // Use an atomic operation to determine where to insert this sort data
-                    uint32_t currentIndex = pageData.m_currentElementIndex++;
-                    pageData.m_sortInstanceData[currentIndex] = instanceData;
+                                for (const ModelDataInstance::PostCullingData& postCullingData : *instanceGroupHandles)
+                                {
+                                    SortInstanceData instanceData;
+                                    instanceData.m_instanceIndex = postCullingData.m_instanceGroupHandle;
+                                    instanceData.m_objectId = postCullingData.m_objectId;
+                                    instanceData.m_depth = visibleObject.m_depth;
+
+                                    // TODO: this is not thread safe when using a shared pool allocator
+                                    // perViewSortInstanceData.push_back(instanceData);
+
+                                    // Add the sort data to the bucket (pageData)
+                                    PerViewInstanceGroupPageData& pageData =
+                                        perViewInstanceGroupPageData[postCullingData.m_instanceGroupPageIndex];
+                                    // Use an atomic operation to determine where to insert this sort data
+                                    uint32_t currentIndex = pageData.m_currentElementIndex++;
+                                    pageData.m_sortInstanceData[currentIndex] = instanceData;
+                                }
+                            }
+                        });
                 }
             }
         }
 
         void MeshFeatureProcessor::SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex)
         {
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: SortInstanceDataForView");
             // TODO: We're sorting by depth front to back within the instanced data for a given instance group. This is valid for
             // depth/shadow passes but not for transparency. We need to either determine the sort order on the CPU side (not sure that's
             // possible, since that's a per-pass setting, so some items in the draw packet will have different sort orders) Or update the
@@ -781,6 +812,7 @@ namespace AZ
 
         void MeshFeatureProcessor::UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view)
         {
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: UpdateGPUInstanceBufferForView");
             // Use the correct srg for the view
             GpuBufferHandler& instanceDataBufferHandler = m_perViewInstanceDataBufferHandlers[viewIndex];
             instanceDataBufferHandler.UpdateSrg(view->GetShaderResourceGroup().get());

@@ -284,7 +284,7 @@ namespace AZ
             
             
             void ResizePerViewInstanceVectors(size_t viewCount);
-            void ProcessVisibilityListForView(size_t viewIndex, const RPI::ViewPtr& view);
+            void ProcessVisibilityListForView(TaskGraph& processVisibilityListForViewTG, size_t viewIndex, const RPI::ViewPtr& view);
             void SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex);
             void AddInstancedDrawPacketsTasksForView(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
             void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
