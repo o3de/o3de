@@ -50,14 +50,16 @@ namespace AZ
 
             using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
 
-            struct PostCullingData
+            //! PostCullingInstanceData represents the data the MeshFeatureProcessor needs after culling
+            //! in order to generate instanced draw calls
+            struct PostCullingInstanceData
             {
                 InstanceGroupHandle m_instanceGroupHandle;
                 uint32_t m_instanceGroupPageIndex;
                 TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             };
 
-            using InstanceGroupHandleList = AZStd::vector<PostCullingData>;
+            using PostCullingInstanceDataList = AZStd::vector<PostCullingInstanceData>;
 
         private:
             class MeshLoader
@@ -125,8 +127,9 @@ namespace AZ
             RPI::MeshDrawPacketLods m_drawPacketListsByLod;
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
-            // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles
-            AZStd::vector<InstanceGroupHandleList> m_instanceGroupHandlesByLod;
+            // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles,
+            // which are turned into instance draw calls after culling
+            AZStd::vector<PostCullingInstanceDataList> m_postCullingInstanceDataByLod;
             
             // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
             // This is used to trigger an update to the cullable to use the new draw packet
@@ -258,6 +261,8 @@ namespace AZ
             ReflectionProbeFeatureProcessor* GetReflectionProbeFeatureProcessor() const;
             TransformServiceFeatureProcessor* GetTransformServiceFeatureProcessor() const;
 
+            RHI::DrawListTag GetTransparentDrawListTag() const;
+
             MeshInstanceManager& GetMeshInstanceManager();
             bool IsMeshInstancingEnabled() const;
         private:
@@ -293,46 +298,51 @@ namespace AZ
             StableDynamicArray<ModelDataInstance> m_modelData;
 
             MeshInstanceManager m_meshInstanceManager;
-            
+
+            // SortInstanceData represents the data needed to do the sorting (sort by instance group, then by depth)
+            // as well as the data being sorted (ObjectId)
             struct SortInstanceData
             {
-                ModelDataInstance::InstanceGroupHandle m_instanceIndex;
-                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
+                ModelDataInstance::InstanceGroupHandle m_instanceGroupHandle;
                 float m_depth = 0.0f;
+                TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
                 bool operator<(const SortInstanceData& rhs)
                 {
-                    return AZStd::tie(m_instanceIndex,  m_depth) < AZStd::tie(rhs.m_instanceIndex, rhs.m_depth);
+                    return AZStd::tie(m_instanceGroupHandle, m_depth) < AZStd::tie(rhs.m_instanceGroupHandle, rhs.m_depth);
                 }
             };
 
-            struct PerViewInstanceGroupPageData
+            // An InstanceGroupBucket represents all of the instance groups from a single page in the MeshInstanceGroupManager
+            // There is one InstanceGroupBucket per-page, per-view
+            // This is used to perform a bucket-sort, where all of the visible meshes for a given view are first added to their bucket,
+            // then they are sorted within the bucket.
+            struct InstanceGroupBucket
             {
                 AZStd::atomic<uint32_t> m_currentElementIndex = 0;
                 AZStd::vector<SortInstanceData> m_sortInstanceData = {};
 
-                PerViewInstanceGroupPageData()
+                InstanceGroupBucket()
                     : m_currentElementIndex(0)
                     , m_sortInstanceData({})
                 {
                 }
                 // We need a copy constructor in order to re-size a vector of these,
                 // even though we only resize empty vectors that never actually need to copy anything
-                PerViewInstanceGroupPageData(const PerViewInstanceGroupPageData& rhs)
+                InstanceGroupBucket(const InstanceGroupBucket& rhs)
                 {
                     m_currentElementIndex = rhs.m_currentElementIndex.load();
                     m_sortInstanceData = rhs.m_sortInstanceData;
                 }
 
-                void operator=(const PerViewInstanceGroupPageData& rhs)
+                void operator=(const InstanceGroupBucket& rhs)
                 {
                     m_currentElementIndex = rhs.m_currentElementIndex.load();
                     m_sortInstanceData = rhs.m_sortInstanceData;
                 }
             };
             
-            AZStd::vector<AZStd::vector<SortInstanceData>> m_perViewSortInstanceData;
-            AZStd::vector<AZStd::vector<PerViewInstanceGroupPageData>> m_perViewInstanceGroupPageData;
+            AZStd::vector<AZStd::vector<InstanceGroupBucket>> m_perViewInstanceGroupBuckets;
             AZStd::vector<AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>> m_perViewInstanceData;
             AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
             AZStd::mutex m_meshDataMutex;
@@ -345,6 +355,7 @@ namespace AZ
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
             RHI::DrawListTag m_meshMotionDrawListTag;
+            RHI::DrawListTag m_transparentDrawListTag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

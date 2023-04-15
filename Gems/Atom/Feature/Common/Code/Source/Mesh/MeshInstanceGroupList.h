@@ -49,6 +49,9 @@ namespace AZ::Render
 
         // Enable draw motion or not. Set to true if any of mesh instance use this group has the same flag set in their ModelDataInstance
         bool m_isDrawMotion = false;
+
+        // If the group is transparent, sort depth in reverse
+        bool m_isTransparent = false;
     };
 
     //! Manages all the instance groups used by mesh instancing.
