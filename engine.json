@@ -124,5 +124,8 @@
         "Templates/MinimalProject",
         "Templates/ScriptCanvasNode",
         "Templates/PythonToolGem"
+    ],
+    "repos": [
+        "https://canonical.o3de.org"
     ]
 }
