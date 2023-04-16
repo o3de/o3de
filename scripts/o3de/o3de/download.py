@@ -85,16 +85,13 @@ def get_downloadable(engine_name: str = None,
                      gem_name: str = None,
                      template_name: str = None,
                      restricted_name: str = None) -> dict or None:
-    json_data = manifest.load_o3de_manifest()
-    try:
-        o3de_object_uris = json_data['repos']
-    except KeyError as key_err:
-        logger.error(f'Unable to load repos from o3de manifest: {str(key_err)}')
+    repos = manifest.get_manifest_repos()
+    if not repos:
         return None
 
     manifest_json = 'repo.json'
     search_func = lambda manifest_json_data: repo.search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name, restricted_name)
-    return repo.search_o3de_object(manifest_json, o3de_object_uris, search_func)
+    return repo.search_o3de_object(manifest_json, repos, search_func)
 
 def replace_parent_with_subdir(parent_path:pathlib.Path, subdir_path:pathlib.Path):
     with TemporaryDirectory() as tmp_dir:

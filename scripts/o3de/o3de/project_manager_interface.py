@@ -423,7 +423,7 @@ def get_gem_infos_from_repo(repo_uri: str) -> list:
     """
     return list()
 
-def get_gem_infos_from_all_repos(project_path:pathlib.Path = None) -> list:
+def get_gem_infos_from_all_repos(project_path:pathlib.Path = None, enabled_only:bool = True) -> list:
     """
         Call get_gem_json_paths_from_all_cached_repos
 
@@ -431,7 +431,7 @@ def get_gem_infos_from_all_repos(project_path:pathlib.Path = None) -> list:
 
         :return list of dicts containing gem infos.
     """
-    remote_gem_json_data_list = repo.get_gem_json_data_from_all_cached_repos()
+    remote_gem_json_data_list = repo.get_gem_json_data_from_all_cached_repos(enabled_only)
     if not remote_gem_json_data_list:
         return list()
 
@@ -482,3 +482,9 @@ def refresh_all_gem_repos():
         Call refresh_repos
     """
     pass
+
+def set_repo_enabled(repo_uri: str, enabled: bool) -> int:
+    """
+        Call set_repo_enabled 
+    """
+    return repo.set_repo_enabled(repo_uri, enabled)

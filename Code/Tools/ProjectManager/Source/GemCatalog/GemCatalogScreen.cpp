@@ -163,6 +163,7 @@ namespace O3DE::ProjectManager
         m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
+        m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions
     }
 
     void GemCatalogScreen::SetUpScreensControl(QWidget* parent)
@@ -393,8 +394,7 @@ namespace O3DE::ProjectManager
                 if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
                     (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                 {
-                    m_downloadController->AddObjectDownload(GemModel::GetName(modelIndex), "", DownloadController::DownloadObjectType::Gem);
-                    GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
+                    DownloadGem(modelIndex, newVersion.isEmpty() ? gemInfo.m_version : newVersion, gemInfo.m_path);
                 }
             }
 
@@ -487,25 +487,30 @@ namespace O3DE::ProjectManager
             }
         }
 
-        QString gemNameWithVersionSpecifier = version.isEmpty() ? gemInfo.m_name : QString("%1==%2").arg(gemInfo.m_name, version);
+        // include the version if valid
+        auto outcome = AZ::SemanticVersion::ParseFromString(version.toUtf8().constData());
+        const QString gemName = outcome ? QString("%1==%2").arg(gemInfo.m_name, version) : gemInfo.m_name;
 
         // Check if there is an update avaliable now that repo is refreshed
-        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemNameWithVersionSpecifier, gemInfo.m_lastUpdatedDate);
+        bool updateAvaliable = PythonBindingsInterface::Get()->IsGemUpdateAvaliable(gemName, gemInfo.m_lastUpdatedDate);
 
         GemUpdateDialog* confirmUpdateDialog = new GemUpdateDialog(gemInfo.m_name, updateAvaliable, this);
         if (confirmUpdateDialog->exec() == QDialog::Accepted)
         {
-            m_downloadController->AddObjectDownload(gemNameWithVersionSpecifier, "" , DownloadController::DownloadObjectType::Gem);
+            DownloadGem(modelIndex, version, path);
         }
     }
 
     void GemCatalogScreen::DownloadGem(const QModelIndex& modelIndex, const QString& version, const QString& path)
     {
         const GemInfo& gemInfo = m_gemModel->GetGemInfo(modelIndex, version, path);
-        QString downloadName = version.isEmpty() ? gemInfo.m_name : QString("%1==%2").arg(gemInfo.m_name, version);
 
-        // download to the default path
-        m_downloadController->AddObjectDownload(downloadName, "" , DownloadController::DownloadObjectType::Gem);
+        // include the version if valid
+        auto outcome = AZ::SemanticVersion::ParseFromString(version.toUtf8().constData());
+        const QString gemName = outcome ? QString("%1==%2").arg(gemInfo.m_name, version) : gemInfo.m_name;
+        m_downloadController->AddObjectDownload(gemName, "" , DownloadController::DownloadObjectType::Gem);
+
+        GemModel::SetDownloadStatus(*m_gemModel, modelIndex, GemInfo::DownloadStatus::Downloading);
     }
 
     void GemCatalogScreen::UninstallGem(const QModelIndex& modelIndex, const QString& path)

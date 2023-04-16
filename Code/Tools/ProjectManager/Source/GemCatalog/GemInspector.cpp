@@ -160,8 +160,7 @@ namespace O3DE::ProjectManager
         m_summaryLabel->setText(gemInfo.m_summary);
         m_summaryLabel->adjustSize();
 
-        // Manually define remaining space to elide text because spacer would like to take all of the space
-        SetLabelElidedText(m_licenseLinkLabel, gemInfo.m_licenseText, width() - m_licenseLabel->width() - 35);
+        m_licenseLinkLabel->SetText(gemInfo.m_licenseText);
         m_licenseLinkLabel->SetUrl(gemInfo.m_licenseLink);
 
         m_directoryLinkLabel->SetUrl(gemInfo.m_directoryLink);
@@ -328,15 +327,22 @@ namespace O3DE::ProjectManager
 
     void GemInspector::OnCopyDownloadLinkClicked()
     {
-        const GemInfo& gemInfo = m_model->GetGemInfo(m_curModelIndex);
+        const GemInfo& gemInfo = m_model->GetGemInfo(m_curModelIndex, GetVersion(), GetVersionPath());
         if (!gemInfo.m_downloadSourceUri.isEmpty())
         {
             if(QClipboard* clipboard = QGuiApplication::clipboard(); clipboard != nullptr)
             {
                 clipboard->setText(gemInfo.m_downloadSourceUri);
+
                 QString displayname = gemInfo.m_displayName.isEmpty() ? gemInfo.m_name : gemInfo.m_displayName;
-                QString version = gemInfo.m_version.isEmpty() ? "" : (" " + gemInfo.m_version);
-                emit ShowToastNotification(tr("%1%2 download URL copied to clipboard").arg(displayname, version));
+                if (gemInfo.m_version.isEmpty() || gemInfo.m_displayName.contains(gemInfo.m_version) || gemInfo.m_version.contains("Unknown", Qt::CaseInsensitive))
+                {
+                    emit ShowToastNotification(tr("%1 download URL copied to clipboard").arg(displayname));
+                }
+                else
+                {
+                    emit ShowToastNotification(tr("%1 %2 download URL copied to clipboard").arg(displayname, gemInfo.m_version));
+                }
             }
             else
             {
@@ -389,6 +395,13 @@ namespace O3DE::ProjectManager
             connect(m_updateVersionButton, &QPushButton::clicked, this , [this]{
                 GemModel::SetIsAdded(*m_model, m_curModelIndex, true, GetVersion());
                 GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
+
+                const auto downloadStatus = GemModel::GetDownloadStatus(m_curModelIndex);
+                if (downloadStatus == GemInfo::NotDownloaded || downloadStatus == GemInfo::DownloadFailed) 
+                {
+                    emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath());
+                }
+
                 m_updateVersionButton->setVisible(false);
             });
 
@@ -429,8 +442,6 @@ namespace O3DE::ProjectManager
 
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);
-
-            licenseHLayout->addStretch();
 
             m_mainLayout->addSpacing(5);
         }

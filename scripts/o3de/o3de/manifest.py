@@ -261,8 +261,17 @@ def get_manifest_restricted() -> list:
 
 
 def get_manifest_repos() -> list:
-    json_data = load_o3de_manifest()
-    return json_data['repos'] if 'repos' in json_data else []
+    repos = set()
+
+    engine_json_data = get_engine_json_data(engine_path=get_this_engine_path())
+    if engine_json_data:
+        repos.update(set(engine_json_data.get('repos', [])))
+
+    manifest_json_data = load_o3de_manifest()
+    if manifest_json_data:
+        repos.update(set(manifest_json_data.get('repos', [])))
+
+    return list(repos)
 
 
 # engine.json queries

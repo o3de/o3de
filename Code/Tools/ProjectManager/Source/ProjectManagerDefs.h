@@ -31,5 +31,6 @@ namespace O3DE::ProjectManager
     static const QString ProjectCMakeBuildTargetEditor = "Editor";
 
     static const QString RepoTimeFormat = "MM/dd/yyyy hh:mmap";
+    static const QString CanonicalRepoUri = "https://canonical.o3de.org";
 
 } // namespace O3DE::ProjectManager

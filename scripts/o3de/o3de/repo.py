@@ -40,14 +40,27 @@ def get_repo_manifest_uri(repo_uri: str) -> str or None:
 
     return f'{repo_uri}/repo.json'
 
-def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
+def repo_enabled(repo_json_data:dict) -> bool:
+    # unless explicitely disabled assume enabled for backwards compatibility
+    return repo_json_data.get('enabled', True)
+
+def repo_uri_enabled(repo_uri: str) -> bool:
+    repo_json_cache_file, _ = get_cache_file_uri(f'{repo_uri}/repo.json')
+
+    repo_json_data = manifest.get_json_data_file(repo_json_cache_file, "repo", validation.valid_o3de_repo_json)
+    if repo_json_data:
+        return repo_enabled(repo_json_data)
+
+    return False
+
+def download_repo_manifest(manifest_uri: str, force_overwrite: bool = True) -> pathlib.Path or None:
     cache_file, parsed_uri = get_cache_file_uri(manifest_uri)
 
     git_provider = utils.get_git_provider(parsed_uri)
     if git_provider:
         parsed_uri = git_provider.get_specific_file_uri(parsed_uri)
 
-    result = utils.download_file(parsed_uri, cache_file, True)
+    result = utils.download_file(parsed_uri, cache_file, force_overwrite)
 
     return cache_file if result == 0 else None
 
@@ -240,7 +253,7 @@ def get_object_versions_json_data(remote_object_list:list, required_json_key:str
 
     return object_json_data_list
 
-def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_typename: str, object_validator) -> list or None:
+def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_typename: str, object_validator, enabled_only = True) -> list:
     url = f'{repo_uri}/repo.json'
     cache_file, _ = get_cache_file_uri(url)
 
@@ -249,14 +262,17 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
     file_name = pathlib.Path(cache_file).resolve()
     if not file_name.is_file():
         logger.error(f'Could not find cached repository json file for {repo_uri}. Try refreshing the repository.')
-        return None
+        return list() 
 
     with file_name.open('r') as f:
         try:
             repo_data = json.load(f)
         except json.JSONDecodeError as e:
             logger.error(f'{file_name} failed to load: {str(e)}')
-            return None
+            return list()
+
+        if enabled_only and not repo_enabled(repo_data):
+            return list()
 
         repo_schema_version = get_repo_schema_version(repo_data)
         if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
@@ -288,48 +304,51 @@ def get_object_json_data_from_cached_repo(repo_uri: str, repo_key: str, object_t
 
     return o3de_object_json_data
 
-def get_gem_json_data_from_cached_repo(repo_uri: str) -> list:
-    return get_object_json_data_from_cached_repo(repo_uri, 'gems', 'gem', validation.valid_o3de_gem_json)
+def get_gem_json_data_from_cached_repo(repo_uri: str, enabled_only: bool = True) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'gems', 'gem', validation.valid_o3de_gem_json, enabled_only)
 
-def get_gem_json_data_from_all_cached_repos() -> list:
-    manifest_json_data = manifest.load_o3de_manifest()
+def get_gem_json_data_from_all_cached_repos(enabled_only: bool = True) -> list:
     gems_json_data = list()
 
-    for repo_uri in manifest_json_data.get('repos', []):
-        gems_json_data.extend(get_gem_json_data_from_cached_repo(repo_uri))
+    for repo_uri in manifest.get_manifest_repos():
+        gems_json_data.extend(get_gem_json_data_from_cached_repo(repo_uri, enabled_only))
 
     return gems_json_data
 
-def get_project_json_data_from_cached_repo(repo_uri: str) -> list:
-    return get_object_json_data_from_cached_repo(repo_uri, 'projects', 'project', validation.valid_o3de_project_json)
+def get_project_json_data_from_cached_repo(repo_uri: str, enabled_only: bool = True) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'projects', 'project', validation.valid_o3de_project_json, enabled_only)
 
-def get_project_json_data_from_all_cached_repos() -> list:
-    manifest_json_data = manifest.load_o3de_manifest()
+def get_project_json_data_from_all_cached_repos(enabled_only: bool = True) -> list:
     projects_json_data = list()
 
-    for repo_uri in manifest_json_data.get('repos', []):
-        projects_json_data.extend(get_project_json_data_from_cached_repo(repo_uri))
+    for repo_uri in manifest.get_manifest_repos():
+        projects_json_data.extend(get_project_json_data_from_cached_repo(repo_uri, enabled_only))
 
     return projects_json_data
 
-def get_template_json_data_from_cached_repo(repo_uri: str) -> list:
-    return get_object_json_data_from_cached_repo(repo_uri, 'templates', 'template', validation.valid_o3de_template_json)
+def get_template_json_data_from_cached_repo(repo_uri: str, enabled_only: bool = True) -> list:
+    return get_object_json_data_from_cached_repo(repo_uri, 'templates', 'template', validation.valid_o3de_template_json, enabled_only)
 
-def get_template_json_data_from_all_cached_repos() -> list:
-    manifest_json_data = manifest.load_o3de_manifest()
+def get_template_json_data_from_all_cached_repos(enabled_only: bool = True) -> list:
     templates_json_data = list()
 
-    for repo_uri in manifest_json_data.get('repos', []):
-        templates_json_data.extend(get_template_json_data_from_cached_repo(repo_uri))
+    for repo_uri in manifest.get_manifest_repos():
+        templates_json_data.extend(get_template_json_data_from_cached_repo(repo_uri, enabled_only))
 
     return templates_json_data
 
 def refresh_repo(repo_uri: str,
                  repo_set: set = None) -> int:
+
+    if not repo_uri_enabled(repo_uri):
+        logger.info(f'Not refreshing {repo_uri} repo because it is deactivated.')
+        return 0
+
     if not repo_set:
         repo_set = set()
 
     repo_uri = f'{repo_uri}/repo.json'
+
     cache_file = download_repo_manifest(repo_uri)
     if not cache_file:
         logger.error(f'Repo json {repo_uri} could not download.')
@@ -343,13 +362,12 @@ def refresh_repo(repo_uri: str,
     return process_add_o3de_repo(cache_file, repo_set)
 
 def refresh_repos() -> int:
-    json_data = manifest.load_o3de_manifest()
     result = 0
 
     # set will stop circular references
     repo_set = set()
 
-    for repo_uri in json_data.get('repos', []):
+    for repo_uri in manifest.get_manifest_repos():
         if repo_uri not in repo_set:
             repo_set.add(repo_uri)
 
@@ -366,7 +384,11 @@ def search_repo(manifest_json_data: dict,
                 gem_name: str = None,
                 template_name: str = None,
                 restricted_name: str = None) -> dict or None:
-    
+
+    # don't search this repo if it isn't enabled
+    if not repo_enabled(manifest_json_data):
+        return None
+
     o3de_object = None
 
     repo_schema_version = get_repo_schema_version(manifest_json_data)
@@ -464,12 +486,49 @@ def search_o3de_object(manifest_json, o3de_object_uris, search_func):
                         return result_json_data
     return None
 
+def set_repo_enabled(repo_uri:str, enabled:bool) -> int:
+    repo_uri = f'{repo_uri}/repo.json'
+
+    # avoid downloading if the file already exists and is valid
+    repo_json_cache_file, _ = get_cache_file_uri(repo_uri)
+    repo_json_data = manifest.get_json_data_file(repo_json_cache_file, "repo", validation.valid_o3de_repo_json)
+    if not repo_json_data:
+        # attempt to download the repo.json 
+        repo_json_cache_file = download_repo_manifest(repo_uri)
+        if not repo_json_cache_file.is_file():
+            logger.error(f'{repo_json_cache_file} could not be downloaded')
+            return 1
+
+        repo_json_data = manifest.get_json_data_file(repo_json_cache_file, "repo", validation.valid_o3de_repo_json)
+        if not repo_json_data:
+            logger.error(f'Repository JSON {repo_json_cache_file} could not be loaded or is missing required values')
+            repo_json_cache_file.unlink()
+            return 1
+
+    with repo_json_cache_file.open('w') as f:
+        try:
+            time_now = datetime.now()
+            # %H is 24 hour
+            time_str = time_now.strftime('%d/%m/%Y %H:%M')
+            repo_json_data.update({'last_updated': time_str})
+            repo_json_data.update({'enabled': enabled})
+            f.write(json.dumps(repo_json_data, indent=4) + '\n')
+        except Exception as e:
+            logger.error(f'{repo_json_cache_file} failed to save: {str(e)}')
+            return 1
+
+    return 0
+
 
 def _run_repo(args: argparse) -> int:
     if args.refresh_repo:
         return refresh_repo(args.refresh_repo)
     elif args.refresh_all_repos:
         return refresh_repos()
+    elif args.activate_repo:
+        return set_repo_enabled(args.activate_repo, True)
+    elif args.deactivate_repo:
+        return set_repo_enabled(args.deactivate_repo, False)
 
     return 1 
     
@@ -482,6 +541,10 @@ def add_parser_args(parser):
     :param parser: the caller passes an argparse parser like instance to this method
     """
     group = parser.add_mutually_exclusive_group(required=False)
+    group.add_argument('-ar', '--activate-repo', type=str, required=False,
+                       help='Activate the specified remote repository, allowing searching and downloading of objects in it')
+    group.add_argument('-dr', '--deactivate-repo', type=str, required=False,
+                       help='Deactivate the specified remote repository, preventing searching or downloading any objects in it')
     group.add_argument('-r', '--refresh-repo', type=str, required=False,
                        help='Fetch the latest meta data the specified remote repository')
     group.add_argument('-ra', '--refresh-all-repos', action='store_true', required=False, default=False,
