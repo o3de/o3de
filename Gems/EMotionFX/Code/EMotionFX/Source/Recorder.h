@@ -104,20 +104,7 @@ namespace EMotionFX
             float           m_endTime;
             bool            m_isTickEvent;
 
-            EventHistoryItem()
-            {
-                m_eventIndex         = InvalidIndex;
-                m_trackIndex         = InvalidIndex;
-                m_emitterNodeId      = AnimGraphNodeId();
-                m_animGraphId        = MCORE_INVALIDINDEX32;
-
-                const AZ::u32 col = MCore::GenerateColor();
-                m_color = AZ::Color(
-                    MCore::ExtractRed(col)/255.0f,
-                    MCore::ExtractGreen(col)/255.0f,
-                    MCore::ExtractBlue(col)/255.0f,
-                    1.0f);
-            }
+            EventHistoryItem();
         };
 
         struct EMFX_API NodeHistoryItem

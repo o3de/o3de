@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <AzCore/Math/Color.h>
 #include <AzCore/RTTI/ReflectContext.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
