@@ -603,7 +603,8 @@ namespace AZ::Debug
 
         // If the raw output stream environment variable is set to a non-nullptr FILE* stream
         // write to that stream, otherwise write stdout
-        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdout; rawOutputStream != nullptr)
+        FILE* stdoutStream = stdout;
+        if (FILE* rawOutputStream = s_fileStream ? *s_fileStream : stdoutStream; rawOutputStream != nullptr)
         {
             fwrite(windowView.data(), 1, windowView.size(), rawOutputStream);
             fwrite(windowMessageSeparator.data(), 1, windowMessageSeparator.size(), rawOutputStream);

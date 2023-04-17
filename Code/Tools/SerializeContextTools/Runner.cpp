@@ -99,8 +99,11 @@ namespace SerializeContextTools
         AZ_Printf("Help", R"(        Ex. --values "engine.json" --values "project.json")" "\n");
         AZ_Printf("Help", R"(        Ex. --values engine.json,project.json)" "\n");
         AZ_Printf("Help", R"(        Ex. --values engine.json,project.json --values gem.json)" "\n");
+        AZ_Printf("Help", "    [opt] --values-file=<filepath>: Path to file containing linefeed delimited strings to convert to UUD.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' reads input from stdin\n");
         AZ_Printf("Help", "    [opt] --output-file=<filepath>: Path to the file to output constructed uuids.\n");
         AZ_Printf("Help", "          If not supplied, output is written to stdout.\n");
+        AZ_Printf("Help", "          specifying an argument of dash '-' writes output to stdout\n");
         AZ_Printf("Help", "    [opt] --with-curly-braces=<true|false> Outputs the Uuid with curly braces. Defaults to true\n");
         AZ_Printf("Help", "         Ex. when true = {0123456789abcdef0123456789abcdef}\n");
         AZ_Printf("Help", "         Ex. when false = 0123456789abcdef0123456789abcdef\n");
@@ -131,18 +134,15 @@ namespace SerializeContextTools
         constexpr int StdoutDescriptor = 1;
         AZ::IO::FileDescriptorCapturer stdoutCapturer(StdoutDescriptor);
 
-        // Send stdout output to stderr if the executed command returned a failure
-        bool suppressStderr = false;
-        auto SendStdoutToError = [&suppressStderr](AZStd::span<AZStd::byte const> outputBytes)
+        // Capture command output of command that executed
+        // If a failure occured write the output to stderr, otherwise write the output to stdout
+        AZStd::string commandOutput;
+        auto CaptureStdout = [&commandOutput](AZStd::span<AZStd::byte const> outputBytes)
         {
-            if (!suppressStderr)
-            {
-                constexpr int StderrDescriptor = 2;
-                AZ::IO::PosixInternal::Write(StderrDescriptor, outputBytes.data(), aznumeric_cast<int>(outputBytes.size()));
-            }
+            commandOutput += AZStd::string_view(reinterpret_cast<const char*>(outputBytes.data()), outputBytes.size());
         };
 
-        stdoutCapturer.Start();
+        stdoutCapturer.Start(CaptureStdout);
         Application application(argc, argv, &stdoutCapturer);
         AZ::ComponentApplication::StartupParameters startupParameters;
         application.Start({}, startupParameters);
@@ -194,20 +194,18 @@ namespace SerializeContextTools
             }
         }
 
-        // If a command was executed, display the help options
+        // If a command was not executed, display the help options
         if (!commandExecuted)
         {
             // Stop capture of stdout to allow the help command to output to stdout
-            // stderr messages are suppressed in this case
             fflush(stdout);
-            suppressStderr = true;
-            stdoutCapturer.Stop(SendStdoutToError);
+            stdoutCapturer.Stop();
             PrintHelp();
             result = true;
             // Flush stdout stream before restarting the capture to make sure
             // all the help text is output
             fflush(stdout);
-            stdoutCapturer.Start();
+            stdoutCapturer.Start(AZStd::move(CaptureStdout));
         }
 
         if (!result)
@@ -217,15 +215,18 @@ namespace SerializeContextTools
 
         application.Stop();
 
-        // Write out any stdout to stderr at this point
-
         // Because the FILE* stream is buffered, make sure to flush
         // it before stopping the capture of stdout.
         fflush(stdout);
+        stdoutCapturer.Stop();
 
-        suppressStderr = result;
-        stdoutCapturer.Stop(SendStdoutToError);
+        // Write out any error output if the command result is non-zero
+        if (!result)
+        {
+            fwrite(commandOutput.data(), 1, commandOutput.size(), stderr);
+            return -1;
+        }
 
-        return result ? 0 : -1;
+        return 0;
     }
 }

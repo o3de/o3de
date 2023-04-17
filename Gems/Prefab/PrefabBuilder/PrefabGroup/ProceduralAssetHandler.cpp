@@ -71,7 +71,7 @@ namespace AZ::Prefab
 
     const char* PrefabGroupAssetHandler::AssetTypeInfoHandler::GetBrowserIcon() const
     {
-        return "Icons/Components/Box.svg";
+        return "Icons/AssetBrowser/ProcPrefab_80.svg";
     }
 
     void PrefabGroupAssetHandler::AssetTypeInfoHandler::GetAssetTypeExtensions(AZStd::vector<AZStd::string>& extensions)

@@ -50,19 +50,13 @@ namespace AZ
             if (auto* serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<ShaderVariantAsset, AZ::Data::AssetData>()
-                    ->Version(1)
+                    ->Version(2)
                     ->Field("StableId", &ShaderVariantAsset::m_stableId)
                     ->Field("ShaderVariantId", &ShaderVariantAsset::m_shaderVariantId)
                     ->Field("IsFullyBaked", &ShaderVariantAsset::m_isFullyBaked)
                     ->Field("FunctionsByStage", &ShaderVariantAsset::m_functionsByStage)
-                    ->Field("BuildTimestamp", &ShaderVariantAsset::m_buildTimestamp)
                     ;
             }
-        }
-
-        AZ::u64 ShaderVariantAsset::GetBuildTimestamp() const
-        {
-            return m_buildTimestamp;
         }
 
         uint32_t ShaderVariantAsset::GetSupervariantIndex() const

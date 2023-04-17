@@ -60,11 +60,6 @@ namespace AZ::Render
 
         m_filterParamBufferHandler = GpuBufferHandler(desc);
 
-        for (RPI::RenderPipelinePtr pipeline : GetParentScene()->GetRenderPipelines())
-        {
-            CachePasses(pipeline.get());
-        }
-
         EnableSceneNotification();
     }
     

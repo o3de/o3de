@@ -69,7 +69,7 @@ namespace AZ::DocumentPropertyEditor
         // Should call IsComponentValid() for validity check before using the component id and its component instance.
         AZ::ComponentId m_componentId = AZ::InvalidComponentId;
 
-        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoNode = nullptr;
+        AzToolsFramework::UndoSystem::URSequencePoint* m_currentUndoBatch = nullptr;
 
         enum AzToolsFramework::PropertyModificationRefreshLevel m_queuedRefreshLevel =
             AzToolsFramework::PropertyModificationRefreshLevel::Refresh_None;

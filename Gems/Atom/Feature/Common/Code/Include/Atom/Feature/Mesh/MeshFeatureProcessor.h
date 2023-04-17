@@ -47,6 +47,10 @@ namespace AZ
 
             ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
 
+            
+            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
+            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
+
         private:
             class MeshLoader
                 : private Data::AssetBus::Handler
@@ -114,8 +118,6 @@ namespace AZ
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
             // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles
-            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
-            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
             AZStd::vector<InstanceGroupHandleList> m_instanceGroupHandlesByLod;
             
             // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
@@ -138,7 +140,7 @@ namespace AZ
             MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
-            RHI::DrawItemSortKey m_sortKey;
+            RHI::DrawItemSortKey m_sortKey = 0;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             AZ::Uuid m_rayTracingUuid;
@@ -186,6 +188,8 @@ namespace AZ
             void Deactivate() override;
             //! Updates GPU buffers with latest data from render proxies
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+            //! Updates ViewSrgs with per-view instance data for visible instances
+            void OnEndCulling(const RenderPacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
             void OnBeginPrepareRender() override;
@@ -269,6 +273,9 @@ namespace AZ
             AZStd::vector<AZ::Job*> CreateUpdateCullingJobQueue();
             void ExecuteSimulateJobQueue(AZStd::span<Job*> jobQueue, Job* parentJob);
             void ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob);
+            
+            
+            void ProcessVisibleObjectListForView(const RPI::ViewPtr& view);
 
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;

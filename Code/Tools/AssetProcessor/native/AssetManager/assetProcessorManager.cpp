@@ -801,6 +801,9 @@ namespace AssetProcessor
         //set the random key
         job.m_jobRunKey = jobEntry.m_jobRunKey;
 
+        job.m_failureCauseSourcePK = jobEntry.m_failureCauseSourceId;
+        job.m_failureCauseFingerprint = jobEntry.m_failureCauseFingerprint;
+
         QString fullPath = jobEntry.GetAbsoluteSourcePath();
         //set the new status
         job.m_status = fullPath.length() < AP_MAX_PATH_LEN ? JobStatus::Failed : JobStatus::Failed_InvalidSourceNameExceedsMaxLimit;
@@ -1159,6 +1162,8 @@ namespace AssetProcessor
                                     m_stateData->GetProductsBySourceID(source.m_sourceID, products);
                                     DeleteProducts(products);
 
+                                    auto jobFingerprint = job.m_fingerprint;
+
                                     //set the fingerprint to failed
                                     job.m_fingerprint = FAILED_FINGERPRINT;
                                     m_stateData->SetJob(job);
@@ -1188,7 +1193,7 @@ namespace AssetProcessor
                                         fullSourcePath.c_str(),
                                         productPath.GetCachePath().c_str());
 
-                                    AutoFailJob(consoleMsg, autoFailReason, itProcessedAsset);
+                                    AutoFailJob(consoleMsg, autoFailReason, itProcessedAsset, source.m_sourceID, jobFingerprint);
 
                                     //recycle the original source
                                     AzToolsFramework::AssetDatabase::ScanFolderDatabaseEntry scanfolder;
@@ -1484,6 +1489,35 @@ namespace AssetProcessor
                 for(const auto& dependency : dependencies)
                 {
                     AssessFileInternal(dependency, false);
+                }
+            }
+
+            // Check for any jobs that previously failed due to a conflict.
+            // This allows users to fix the 'successful' job in a conflict and have the failed job reprocess automatically.
+            AzToolsFramework::AssetDatabase::JobDatabaseEntryContainer priorConflictedJobs;
+            if(m_stateData->GetJobsByFailureCauseSourceId(source.m_sourceID, priorConflictedJobs))
+            {
+                for(const auto& conflictedJob : priorConflictedJobs)
+                {
+                    // If the fingerprint has changed, try re-running the job.
+                    // The fingerprint check prevents an infinite loop because the job being queued will re-run this job if it fails again.
+                    if (conflictedJob.m_failureCauseFingerprint != job.m_fingerprint)
+                    {
+                        AzToolsFramework::AssetDatabase::SourceDatabaseEntry conflictedSource;
+                        if (m_stateData->GetSourceBySourceID(conflictedJob.m_sourcePK, conflictedSource))
+                        {
+                            SourceAssetReference conflictedSourceRef(
+                                conflictedSource.m_scanFolderPK, conflictedSource.m_sourceName.c_str());
+
+                            AZ_Info(
+                                AssetProcessor::ConsoleChannel,
+                                "Re-queuing previously conflicted source " AZ_STRING_FORMAT " - source " AZ_STRING_FORMAT
+                                " has changed and may no longer conflict\n",
+                                AZ_STRING_ARG(conflictedSource.m_sourceName),
+                                AZ_STRING_ARG(source.m_sourceName));
+                            AssessFileInternal(conflictedSourceRef.AbsolutePath().c_str(), false);
+                        }
+                    }
                 }
             }
 
@@ -4738,7 +4772,7 @@ namespace AssetProcessor
         // Scope the lock for just modifying the processing product info list.
         // This will allow other jobs to lock this list for emitting their own messages.
         // This speeds up asset processing time, by not having jobs holding this longer than they need to.
-        {        
+        {
             QMutexLocker locker(&m_processingJobMutex);
             m_processingProductInfoList.insert(productPath);
         }
@@ -5033,7 +5067,7 @@ namespace AssetProcessor
                     }
                     else
                     {
-                        AZ_Error("AssetProcessor", false, "%s", outcome.GetError().c_str());
+                        AZ_Error(AssetProcessor::ConsoleChannel, false, "%s", outcome.GetError().c_str());
                         return {};
                     }
                 }
@@ -5836,7 +5870,7 @@ namespace AssetProcessor
         Q_EMIT AssetToProcess(jobdetail); // forwarding this job to rccontroller to fail it
     }
 
-    void AssetProcessorManager::AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter)
+    void AssetProcessorManager::AutoFailJob(AZStd::string_view consoleMsg, AZStd::string_view autoFailReason, const AZStd::vector<AssetProcessedEntry>::iterator& assetIter, AZ::s64 failureCauseSourceId, AZ::u32 failureCauseFingerprint)
     {
         JobEntry jobEntry(
             assetIter->m_entry.m_sourceAssetReference,
@@ -5844,6 +5878,9 @@ namespace AssetProcessor
             assetIter->m_entry.m_platformInfo,
             assetIter->m_entry.m_jobKey, 0, GenerateNewJobRunKey(),
             assetIter->m_entry.m_sourceFileUUID);
+
+        jobEntry.m_failureCauseSourceId = failureCauseSourceId;
+        jobEntry.m_failureCauseFingerprint = failureCauseFingerprint;
 
         AutoFailJob(consoleMsg, autoFailReason, jobEntry);
     }

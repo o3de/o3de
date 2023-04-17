@@ -37,6 +37,8 @@
 #include <AzFramework/Physics/Configuration/StaticRigidBodyConfiguration.h>
 #include <AzFramework/Physics/Material/PhysicsMaterialManager.h>
 
+#include <Source/Articulation.h>
+
 namespace PhysX
 {
     AZ_CVAR_EXTERNED(bool, physx_batchTransformSync);
@@ -709,6 +711,10 @@ namespace PhysX
         {
             newBody = Internal::CreateRagdollBody(this, azdynamic_cast<const Physics::RagdollConfiguration*>(simulatedBodyConfig));
         }
+        else if (azrtti_istypeof<ArticulationLinkConfiguration>(simulatedBodyConfig))
+        {
+            newBody = PhysX::CreateArticulationLink(azdynamic_cast<const ArticulationLinkConfiguration*>(simulatedBodyConfig));
+        }
         else
         {
             AZ_Warning("PhysXScene", false, "Unknown SimulatedBodyConfiguration.");
@@ -1077,7 +1083,8 @@ namespace PhysX
     {
         //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
-            !azrtti_istypeof<PhysX::Ragdoll>(body))
+            !azrtti_istypeof<PhysX::Ragdoll>(body) &&
+            !azrtti_istypeof<PhysX::ArticulationLink>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
@@ -1104,7 +1111,8 @@ namespace PhysX
     {
         //character controller is a special actor and only needs the m_simulating flag set,
         if (!azrtti_istypeof<PhysX::CharacterController>(body) &&
-            !azrtti_istypeof<PhysX::Ragdoll>(body))
+            !azrtti_istypeof<PhysX::Ragdoll>(body) &&
+            !azrtti_istypeof<PhysX::ArticulationLink>(body))
         {
             auto pxActor = static_cast<physx::PxActor*>(body.GetNativePointer());
             AZ_Assert(pxActor, "Simulated Body doesn't have a valid physx actor");
