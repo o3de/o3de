@@ -439,15 +439,15 @@ namespace AZ
 
                 {
                     AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Add Visible Objects to Buckets");
-                    AZ::TaskGraphEvent processVisiblityListForViewTGEvent{ "ProcessVisibilityListForView Wait" };
-                    AZ::TaskGraph processVisiblityListForViewTG{ "ProcessVisibilityListForView" };
+                    AZ::TaskGraphEvent addVisibleObjectsToBucketsTGEvent{ "AddVisibleObjectsToBuckets Wait" };
+                    AZ::TaskGraph addVisibleObjectsToBucketsTG{ "AddVisibleObjectsToBuckets" };
                     for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                     {
-                        ProcessVisibilityListForView(processVisiblityListForViewTG, viewIndex, packet.m_views[viewIndex]);
+                        AddVisibleObjectsToBuckets(addVisibleObjectsToBucketsTG, viewIndex, packet.m_views[viewIndex]);
                     }
 
-                    processVisiblityListForViewTG.Submit(&processVisiblityListForViewTGEvent);
-                    processVisiblityListForViewTGEvent.Wait();
+                    addVisibleObjectsToBucketsTG.Submit(&addVisibleObjectsToBucketsTGEvent);
+                    addVisibleObjectsToBucketsTGEvent.Wait();
                 }
 
                 {
@@ -456,7 +456,7 @@ namespace AZ
                     AZ::TaskGraph sortInstanceBufferBucketsTG{ "SortInstanceBufferBuckets" };
                     for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                     {
-                        SortInstanceDataForView(sortInstanceBufferBucketsTG, viewIndex);
+                        SortInstanceBufferBuckets(sortInstanceBufferBucketsTG, viewIndex);
                     }
 
                     // submit the tasks
@@ -471,7 +471,7 @@ namespace AZ
                     AZ::TaskGraph buildInstanceBufferTG{ "BuildInstanceBuffer" };
                     for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                     {
-                        AddInstancedDrawPacketsTasksForView(buildInstanceBufferTG, viewIndex, packet.m_views[viewIndex]);
+                        BuildInstanceBufferAndDrawCalls(buildInstanceBufferTG, viewIndex, packet.m_views[viewIndex]);
                     }
 
                     // submit the tasks
@@ -555,7 +555,7 @@ namespace AZ
                 for (auto instanceGroupDataIter = iteratorRange.m_begin; instanceGroupDataIter != iteratorRange.m_end;
                      ++instanceGroupDataIter)
                 {
-                    // Resize the cloned draw packet vector
+                    // Resize the cloned draw packet vector so that there is a unique drawItem for each view
                     instanceGroupDataIter->m_perViewDrawPackets.resize(viewCount);
                     maxPossibleInstanceCountForGroup += instanceGroupDataIter->m_count;
                 }
@@ -577,10 +577,10 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::ProcessVisibilityListForView(
-            TaskGraph& processVisiblityListForViewTG, size_t viewIndex, const RPI::ViewPtr& view)
+        void MeshFeatureProcessor::AddVisibleObjectsToBuckets(
+            TaskGraph& addVisibleObjectsToBucketsTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
-            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: ProcessVisibilityListForView");
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: AddVisibleObjectsToBuckets");
             size_t visibleObjectCount = view->GetVisibleObjectList().size();
 
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
@@ -588,8 +588,8 @@ namespace AZ
             {
                 perViewInstanceData.clear();
 
-                static const AZ::TaskDescriptor processVisiblityListForViewTaskDescriptor{
-                    "AZ::Render::MeshFeatureProcessor::OnEndCulling - ProcessVisibilityListForView", "Graphics"
+                static const AZ::TaskDescriptor addVisibleObjectsToBucketsTaskDescriptor{
+                    "AZ::Render::MeshFeatureProcessor::OnEndCulling - AddVisibleObjectsToBuckets", "Graphics"
                 };
 
                 size_t batchSize = 512;
@@ -601,8 +601,8 @@ namespace AZ
                     // If we're in the last batch, we just get the remaining objects
                     size_t currentBatchCount = batchIndex == batchCount - 1 ? visibleObjectCount % batchSize : batchSize;
 
-                    processVisiblityListForViewTG.AddTask(
-                        processVisiblityListForViewTaskDescriptor,
+                    addVisibleObjectsToBucketsTG.AddTask(
+                        addVisibleObjectsToBucketsTaskDescriptor,
                         [this, view, viewIndex, batchStart, currentBatchCount]()
                         {
                             RPI::VisibleObjectListView visibilityList = view->GetVisibleObjectList();
@@ -639,9 +639,9 @@ namespace AZ
             }
         }
 
-        void MeshFeatureProcessor::SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex)
+        void MeshFeatureProcessor::SortInstanceBufferBuckets(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex)
         {
-            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: SortInstanceDataForView");
+            AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: SortInstanceBufferBuckets");
             AZStd::vector<InstanceGroupBucket>& currentViewInstanceGroupBuckets = m_perViewInstanceGroupBuckets[viewIndex];
 
             // Populate a task graph where each task is responsible for sorting a bucket.
@@ -715,14 +715,14 @@ namespace AZ
 
             // Depth values from the camera are always positive.
             // However, we use negative values to sort by reverse depth for transparent objects
-            // If the average depth is negative, make it positive to get the real average depth for the group
+            // If the average depth is negative (this instance group is transparent), make it positive to get the real average depth for the group
             averageDepth = AZStd::abs(averageDepth);
 
             // Submit the draw packet
             view->AddDrawPacket(clonedDrawPacket.get(), averageDepth);
         }
 
-        void MeshFeatureProcessor::AddInstancedDrawPacketsTasksForView(
+        void MeshFeatureProcessor::BuildInstanceBufferAndDrawCalls(
             TaskGraph& buildInstanceBufferTG, size_t viewIndex, const RPI::ViewPtr& view)
         {
             AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>& perViewInstanceData = m_perViewInstanceData[viewIndex];
@@ -1765,8 +1765,9 @@ namespace AZ
                                 shaderItem.GetShaderAsset()->GetDrawListName());
                         }
 
-                        // Check to see if the shaderItem is for a transparent pass. None of the active shader items should be transparent
-                        // to support instancing
+                        // Check to see if the shaderItem is for a transparent pass. If any of the active shader items
+                        // are for a transparent pass, we still support instancing, but we mark it as transparent so that
+                        // we can sort by reverse-depth
                         if (drawListTag == transparentDrawListTag)
                         {
                             isTransparent = true;
@@ -1869,18 +1870,18 @@ namespace AZ
                     // Two meshes that could otherwise be instanced but have manually specified sort keys will not be instanced together
                     key.m_sortKey = m_sortKey;
 
-                    // Using a random uuid will force this mesh into it's own unique instance group, which is always done for now since
-                    // no actual instancing is supported yet.
                     instancingSupport = CanSupportInstancing(
                         material, m_flags.m_hasForwardPassIblSpecularMaterial, meshFeatureProcessor->GetTransparentDrawListTag());
+
                     if (instancingSupport.m_canSupportInstancing && !r_meshInstancingForceOneObjectPerDrawCall)
                     {
+                        // If this object can be instanced, it gets a null uuid that will match other objects that can be instanced with it
                         key.m_forceInstancingOff = Uuid::CreateNull();
                     }
                     else
                     {
-                        // When instancing is enabled, everything goes down the instancing path, including this
-                        // However, it will get its own unique instance group, with it's own unique ObjectSrg,
+                        // When instancing is enabled, everything goes down the instancing path, including this object
+                        // However, using a random uuid here will give it its own unique instance group, with it's own unique ObjectSrg,
                         // so it will end up as an instanced draw call with a count of 1
                         key.m_forceInstancingOff = Uuid::CreateRandom();
                     }

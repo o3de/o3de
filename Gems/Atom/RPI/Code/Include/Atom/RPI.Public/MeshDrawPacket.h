@@ -67,11 +67,6 @@ namespace AZ
             bool UnsetShaderOption(const Name& shaderOptionName);
             void ClearShaderOptions();
 
-            typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
-            typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
-            typedef AZStd::span<ShaderOptionPair> ShaderOptionView;
-            ShaderOptionView GetShaderOptions() const;
-
             // Enable/disable draw filter for a specific draw list tag.
             // If disabled, any draw items with this drawListTag won't be added to the DrawPacket when updated
             void SetEnableDraw(RHI::DrawListTag drawListTag, bool enableDraw);
@@ -128,6 +123,8 @@ namespace AZ
             MaterialModelUvOverrideMap m_materialModelUvMap;
 
             //! List of shader options set for this specific draw packet
+            typedef AZStd::pair<Name, RPI::ShaderOptionValue> ShaderOptionPair;
+            typedef AZStd::vector<ShaderOptionPair> ShaderOptionVector;
             ShaderOptionVector m_shaderOptions;
 
             //! A draw list mask which is used to filter draw items which are packed into the DrawPacket

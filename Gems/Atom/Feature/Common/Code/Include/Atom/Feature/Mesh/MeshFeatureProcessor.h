@@ -289,9 +289,9 @@ namespace AZ
             
             
             void ResizePerViewInstanceVectors(size_t viewCount);
-            void ProcessVisibilityListForView(TaskGraph& processVisibilityListForViewTG, size_t viewIndex, const RPI::ViewPtr& view);
-            void SortInstanceDataForView(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex);
-            void AddInstancedDrawPacketsTasksForView(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
+            void AddVisibleObjectsToBuckets(TaskGraph& addVisibleObjectsToBucketsTG, size_t viewIndex, const RPI::ViewPtr& view);
+            void SortInstanceBufferBuckets(TaskGraph& sortInstanceBufferBucketsTG, size_t viewIndex);
+            void BuildInstanceBufferAndDrawCalls(TaskGraph& taskGraph, size_t viewIndex, const RPI::ViewPtr& view);
             void UpdateGPUInstanceBufferForView(size_t viewIndex, const RPI::ViewPtr& view);
 
             AZStd::concurrency_checker m_meshDataChecker;
@@ -313,7 +313,7 @@ namespace AZ
                 }
             };
 
-            // An InstanceGroupBucket represents all of the instance groups from a single page in the MeshInstanceGroupManager
+            // An InstanceGroupBucket represents all of the instance groups from a single page in the MeshInstanceManager
             // There is one InstanceGroupBucket per-page, per-view
             // This is used to perform a bucket-sort, where all of the visible meshes for a given view are first added to their bucket,
             // then they are sorted within the bucket.
@@ -345,7 +345,6 @@ namespace AZ
             AZStd::vector<AZStd::vector<InstanceGroupBucket>> m_perViewInstanceGroupBuckets;
             AZStd::vector<AZStd::vector<TransformServiceFeatureProcessorInterface::ObjectId>> m_perViewInstanceData;
             AZStd::vector<GpuBufferHandler> m_perViewInstanceDataBufferHandlers;
-            AZStd::mutex m_meshDataMutex;
             
             TransformServiceFeatureProcessor* m_transformService;
             RayTracingFeatureProcessor* m_rayTracingFeatureProcessor = nullptr;
