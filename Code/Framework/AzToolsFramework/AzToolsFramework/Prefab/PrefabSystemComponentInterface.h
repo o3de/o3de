@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
+#include <AzCore/std/containers/map.h>
 #include <AzCore/std/containers/set.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
