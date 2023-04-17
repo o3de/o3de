@@ -1347,8 +1347,8 @@ namespace AZ
 
                 Vector3 previousAabbMin;
                 Vector3 previousAabbMax;
-                float previousNear;
-                float previousFar;
+                float previousNear = 0.0f;
+                float previousFar = 0.0f;
 
                 for (uint16_t cascadeIndex = 0; cascadeIndex < segmentIt.second.size(); ++cascadeIndex)
                 {
@@ -1376,10 +1376,16 @@ namespace AZ
 
                         if (cascadeIndex > 0 && r_exludeItemsInSmallerShadowCascades)
                         {
-                            Vector3 previousAabbDiff = previousAabbMin - previousAabbMax;
-                            previousAabbDiff *= CascadeBlendArea;
-                            Vector3 excludeAabbMin = previousAabbMin + previousAabbDiff;
-                            Vector3 excludeAabbMax = previousAabbMax - previousAabbDiff;
+                            Vector3 excludeAabbMin = previousAabbMin;
+                            Vector3 excludeAabbMax = previousAabbMax;
+
+                            if (property.m_blendBetwenCascades)
+                            {
+                                Vector3 previousAabbDiff = previousAabbMin - previousAabbMax;
+                                previousAabbDiff *= CascadeBlendArea;
+                                excludeAabbMin += previousAabbDiff;
+                                excludeAabbMax -= previousAabbDiff;
+                            }
 
                             MakeOrthographicMatrixRH(
                                 viewToClipMatrix, excludeAabbMin.GetElement(0), excludeAabbMax.GetElement(0), excludeAabbMin.GetElement(2),
