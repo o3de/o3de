@@ -31,7 +31,7 @@ namespace AzToolsFramework
                 const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) = 0;
 
             virtual TemplateId CreatePrefabTemplateWithCustomAliases(
-                const AZStd::map<AZ::EntityId, AZStd::string>& entities, const AZStd::string& filePath) = 0;
+                const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entities, const AZStd::string& filePath) = 0;
         };
         
         using PrefabSystemScriptingBus = AZ::EBus<PrefabSystemScriptingEbusTraits>;

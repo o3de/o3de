@@ -121,7 +121,7 @@ namespace AzToolsFramework::Prefab
     }
 
     TemplateId PrefabSystemScriptingHandler::CreatePrefabTemplateWithCustomAliases(
-        const AZStd::map<AZ::EntityId, AZStd::string>& entityIds, const AZStd::string& filePath)
+        const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entityIds, const AZStd::string& filePath)
     {
         AZStd::map<AZStd::string, AZ::Entity*> entities;
         AZStd::vector<AZ::Entity*> entitiesVector;
