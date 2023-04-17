@@ -508,7 +508,6 @@ namespace AzToolsFramework
                 auto handlerInfo = DocumentPropertyEditor::GetInfoFromWidget(childWidget);
                 if (!handlerInfo.IsNull())
                 {
-                    // propertyHandlers own their widgets, so don't destroy them here. Set them free!
                     DocumentPropertyEditor::ReleaseHandler(handlerInfo);
                 }
                 else if (auto rowWidget = qobject_cast<DPERowWidget*>(childWidget))
@@ -1387,6 +1386,10 @@ namespace AzToolsFramework
     {
         // We need to append some alphabetical characters to the key or it will be treated as a very large json array index
         AZStd::string_view keyStr = AZStd::string::format("uuid%s", AZStd::to_string(key).c_str());
+        // Free the settings ptr before creating a new one. If the registry key is the same, we want
+        // the in-memory settings to be saved to disk (in settings destructor) before they're loaded
+        // from disk (in settings constructor)
+        m_dpeSettings.reset();
         m_dpeSettings = AZStd::make_unique<DocumentPropertyEditorSettings>(keyStr, propertyEditorName);
 
         if (m_dpeSettings && m_dpeSettings->WereSettingsLoaded())
@@ -1610,16 +1613,22 @@ namespace AzToolsFramework
             else
             {
                 AZ::DocumentPropertyEditor::Nodes::Adapter::RejectContainerKey.InvokeOnDomNode(
-                    m_adapter->GetContents(), adapter, containerPath);
+                    m_adapter->GetContents(), containerPath);
             }
         };
 
         message.Match(AZ::DocumentPropertyEditor::Nodes::Adapter::QueryKey, showKeyQueryDialog);
     }
 
-    void DocumentPropertyEditor::RegisterHandlerPool(AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
+    void DocumentPropertyEditor::RegisterHandlerPool(AZ::Name handlerName, AZStd::shared_ptr<AZ::InstancePoolBase> handlerPool)
     {
-        m_handlerPools.push_back(handlerPool);
+        AZ_Assert(
+            m_handlerPools.find(handlerName) == m_handlerPools.end() || m_handlerPools[handlerName] == handlerPool,
+            "Attempted to register a new handler pool to a handler name that is already in use.");
+
+        // insertion to the handler pool hash map only succeeds if the handler name is a new key
+        // so it won't overwrite any existing registered handler pool for that handler name
+        m_handlerPools.insert({ handlerName, handlerPool });
     }
 
     DocumentPropertyEditor::HandlerInfo DocumentPropertyEditor::GetInfoFromWidget(const QWidget* widget)
@@ -1634,7 +1643,11 @@ namespace AzToolsFramework
 
     AZ::Name DocumentPropertyEditor::GetNameForHandlerId(PropertyEditorToolsSystemInterface::PropertyHandlerId handlerId)
     {
-        return AZ::Name(AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId)));
+        auto name = AZStd::to_string(reinterpret_cast<uintptr_t>(handlerId));
+        auto moduleId = AZ::Environment::GetModuleId();
+
+        auto nameWithModuleId = AZStd::fixed_string<256>::format("%s%p", name.c_str(), moduleId);
+        return AZ::Name(nameWithModuleId);
     }
 
     QWidget* DocumentPropertyEditor::CreateWidgetForHandler(
@@ -1644,9 +1657,12 @@ namespace AzToolsFramework
         // if we found a valid handler, grab its widget to add to the column layout
         if (handlerId)
         {
+            // first try to get the instance pool from pool manager
             auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
             auto handlerName = GetNameForHandlerId(handlerId);
             auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
+            // create the pool if it does not exist
             if (!handlerPool)
             {
                 AZStd::function<void(PropertyHandlerWidgetInterface&)> resetHandler = [](PropertyHandlerWidgetInterface& handler)
@@ -1665,10 +1681,12 @@ namespace AzToolsFramework
                 };
 
                 handlerPool = poolManager->CreatePool<PropertyHandlerWidgetInterface>(handlerName, resetHandler, createHandler).GetValue();
-                RegisterHandlerPool(handlerPool);
             }
 
-            // store, then reference the unique_ptr that will manage the handler's lifetime
+            // register the handler pool in DPE view to co-own the handler pool
+            // the registration is needed in case the handler pool is released by other DPE views
+            RegisterHandlerPool(handlerName, handlerPool);
+
             auto handler = handlerPool->GetInstance();
             handler->SetValueFromDom(domValue);
             createdWidget = handler->GetWidget();
@@ -1682,18 +1700,16 @@ namespace AzToolsFramework
         auto poolManager = static_cast<AZ::InstancePoolManager*>(AZ::Interface<AZ::InstancePoolManagerInterface>::Get());
         auto handlerName = GetNameForHandlerId(handler.handlerId);
         auto handlerPool = poolManager->GetPool<PropertyHandlerWidgetInterface>(handlerName);
+
         if (handlerPool)
         {
             handlerPool->RecycleInstance(handler.handlerInterface);
         }
         else
         {
-            QTimer::singleShot(
-                0,
-                [interfacePointer = handler.handlerInterface]()
-                {
-                    delete interfacePointer;
-                });
+            // if there is no handler pool, then delete the handler immediately; parent widgets won't delete it twice
+            delete handler.handlerInterface;
+            handler.handlerInterface = nullptr;
         }
     }
 } // namespace AzToolsFramework

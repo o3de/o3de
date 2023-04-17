@@ -18,19 +18,26 @@ from o3de import manifest, utils, validation
 logger = logging.getLogger('o3de.repo')
 logging.basicConfig(format=utils.LOG_FORMAT)
 
+REPO_IMPLICIT_SCHEMA_VERSION = "0.0.0"
+
+REPO_SCHEMA_VERSION_1_0_0 = "1.0.0"
+
 def get_cache_file_uri(uri: str):
     parsed_uri = urllib.parse.urlparse(uri)
     uri_sha256 = hashlib.sha256(parsed_uri.geturl().encode())
     cache_file = manifest.get_o3de_cache_folder() / str(uri_sha256.hexdigest() + '.json')
     return cache_file, parsed_uri
 
+def sanitized_repo_uri(repo_uri: str) -> str or None:
+    # remove excess whitespace and any trailing slashes
+    return repo_uri.strip().rstrip('/') if repo_uri else None
+
 def get_repo_manifest_uri(repo_uri: str) -> str or None:
     if not repo_uri:
         logger.error(f'Repo URI cannot be empty.')
         return None
 
-    url = f'{repo_uri}/repo.json'
-    return url
+    return f'{repo_uri}/repo.json'
 
 def download_repo_manifest(manifest_uri: str) -> pathlib.Path or None:
     cache_file, parsed_uri = get_cache_file_uri(manifest_uri)
@@ -82,6 +89,9 @@ def download_object_manifests(repo_data):
                 return download_file_result
     return 0
 
+def get_repo_schema_version(repo_data: dict):
+    return repo_data.get("$schemaVersion", REPO_IMPLICIT_SCHEMA_VERSION)
+
 def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False) -> bool:
     manifest_uri = get_repo_manifest_uri(repo_uri)
 
@@ -106,27 +116,67 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
             except json.JSONDecodeError as e:
                 logger.error(f'Invalid JSON - {cache_file} could not be loaded')
                 return False
+            
+        repo_schema_version = get_repo_schema_version(repo_data)
 
-        if download_object_manifests(repo_data) != 0:
-            return False
-
-        gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
-        for gem_json in gem_set:
-            if not validation.valid_o3de_gem_json(gem_json):
-                logger.error(f'Invalid gem JSON - {gem_json} could not be loaded or is missing required values')
+        if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:
+            if download_object_manifests(repo_data) != 0:
                 return False
+            gem_set = get_gem_json_paths_from_cached_repo(repo_uri)
+            for gem_json in gem_set:
+                if not validation.valid_o3de_gem_json(gem_json):
+                    logger.error(f'Invalid gem JSON - {gem_json} could not be loaded or is missing required values')
+                    return False
+            project_set = get_project_json_paths_from_cached_repo(repo_uri)
+            for project_json in project_set:
+                if not validation.valid_o3de_project_json(project_json):
+                    logger.error(f'Invalid project JSON - {project_json} could not be loaded or is missing required values')
+                    return False
+            template_set = get_template_json_paths_from_cached_repo(repo_uri)
+            for template_json in template_set:
+                if not validation.valid_o3de_template_json(template_json):
+                    logger.error(f'Invalid template JSON - {template_json} could not be loaded or is missing required values')
+                    return False
+                
+        elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
+            gem_list = repo_data.get("gems", [])
+            for gem_json in gem_list:
+                if not validation.valid_o3de_gem_json_data(gem_json):
+                    logger.error(f'Invalid gem JSON - {gem_json} is missing required values')
+                    return False
 
-        project_set = get_project_json_paths_from_cached_repo(repo_uri)
-        for project_json in project_set:
-            if not validation.valid_o3de_project_json(project_json):
-                logger.error(f'Invalid project JSON - {project_json} could not be loaded or is missing required values')
-                return False
+                # validate versioning info
+                if "versions_data" in gem_json:
+                    versions_data = gem_json["versions_data"]
+                    for version in versions_data:
+                        if not all(key in version for key in ['last_updated', 'version']):
+                            logger.error("Invalid gem JSON - {gem_json} Both last_updated and version fields must be defined for each entry in the versions_data field")
+                            return False
+                        
+                        source_control_uri_defined = "source_control_uri" in version
+                        
+                        download_source_uri_defined = "download_source_uri" in version
+                        origin_uri_defined = "origin_uri" in version
+                        
+                        # prevent mixing fields intended for backwards compatibility (using XOR to verify)
+                        download_origin_defined = ((download_source_uri_defined and not origin_uri_defined) or
+                                                   (not download_source_uri_defined and origin_uri_defined))
 
-        template_set = get_template_json_paths_from_cached_repo(repo_uri)
-        for template_json in template_set:
-            if not validation.valid_o3de_template_json(template_json):
-                logger.error(f'Invalid template JSON - {template_json} could not be loaded or is missing required values')
-                return False
+                        if not (source_control_uri_defined or download_origin_defined):
+                            logger.error(f"Invalid gem JSON - {gem_json} At least one of source_control_uri or download_source_uri must be defined")
+                            return False
+
+            project_list = repo_data.get("projects", [])
+            for project_json in project_list:
+                if not validation.valid_o3de_project_json_data(project_json):
+                    logger.error(f'Invalid project JSON - {project_json} is missing required values')
+                    return False                    
+
+            template_list = repo_data.get("templates", [])
+            for template_json in template_list:
+                if not validation.valid_o3de_template_json_data(template_json):
+                    logger.error(f'Invalid template JSON - {template_json} is missing required values')
+                    return False
 
     return True
 
@@ -295,38 +345,41 @@ def search_repo(manifest_json_data: dict,
                 gem_name: str = None,
                 template_name: str = None,
                 restricted_name: str = None) -> dict or None:
-    if isinstance(engine_name, str) or isinstance(engine_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('engines', [])
-        manifest_json = 'engine.json'
-        json_key = 'engine_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == engine_name else None
-    elif isinstance(project_name, str) or isinstance(project_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('projects', [])
-        manifest_json = 'project.json'
-        json_key = 'project_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == project_name else None
-    elif isinstance(gem_name, str) or isinstance(gem_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('gems', [])
-        manifest_json = 'gem.json'
-        json_key = 'gem_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == gem_name else None
-    elif isinstance(template_name, str) or isinstance(template_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('templates', [])
-        manifest_json = 'template.json'
-        json_key = 'template_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == template_name else None
-    elif isinstance(restricted_name, str) or isinstance(restricted_name, pathlib.PurePath):
-        o3de_object_uris = manifest_json_data.get('restricted', [])
-        manifest_json = 'restricted.json'
-        json_key = 'restricted_name'
-        search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(json_key, '') == restricted_name else None
-    else:
-        return None
-    o3de_object = search_o3de_object(manifest_json, o3de_object_uris, search_func)
+    
+    repo_schema_version = get_repo_schema_version(manifest_json_data)
+
+    if repo_schema_version == REPO_IMPLICIT_SCHEMA_VERSION:        
+        if isinstance(engine_name, str):
+            o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'engines', 'engine.json', 'engine_name', engine_name)
+        elif isinstance(project_name, str):
+            o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'projects', 'project.json', 'project_name', project_name)
+        elif isinstance(gem_name, str):
+            o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'gems', 'gem.json', 'gem_name', gem_name)
+        elif isinstance(template_name, str):
+            o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'templates', 'template.json', 'template_name', template_name)
+        elif isinstance(restricted_name, str):
+            o3de_object = search_o3de_manifest_for_object(manifest_json_data, 'restricted', 'restricted.json', 'restricted_name', restricted_name)
+        else:
+            return None
+        
+    elif repo_schema_version == REPO_SCHEMA_VERSION_1_0_0:
+        #search for the o3de object from inside repos object 
+        if isinstance(engine_name, str):
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'engines', 'engine_name', engine_name)
+        elif isinstance(project_name, str):
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'projects', 'project_name', project_name)
+        elif isinstance(gem_name, str):
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'gems', 'gem_name', gem_name)
+        elif isinstance(template_name, str):
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'templates', 'template_name', template_name)
+        elif isinstance(restricted_name, str):
+            o3de_object = search_o3de_repo_for_object(manifest_json_data, 'restricted', 'restricted_name', restricted_name)
+        else:
+            return None
+        
     if o3de_object:
         o3de_object['repo_name'] = manifest_json_data['repo_name']
         return o3de_object
-
     # recurse into the repos object to search for the o3de object
     o3de_object_uris = []
     try:
@@ -339,9 +392,21 @@ def search_repo(manifest_json_data: dict,
     return search_o3de_object(manifest_json, o3de_object_uris, search_func)
 
 
+def search_o3de_repo_for_object(repo_json_data: dict, manifest_attribute:str, target_json_key:str, target_name: str):
+    o3de_objects = repo_json_data.get(manifest_attribute, [])
+    for o3de_object in o3de_objects:
+        if o3de_object.get(target_json_key, '') == target_name:
+            return o3de_object
+    return None
+
+def search_o3de_manifest_for_object(manifest_json_data: dict, manifest_attribute: str, target_manifest_json: str, target_json_key: str, target_name: str):
+    o3de_object_uris = manifest_json_data.get(manifest_attribute, [])
+    search_func = lambda manifest_json_data: manifest_json_data if manifest_json_data.get(target_json_key, '') == target_name else None
+    return search_o3de_object(target_manifest_json, o3de_object_uris, search_func)
+
+
 def search_o3de_object(manifest_json, o3de_object_uris, search_func):
     # Search for the o3de object based on the supplied object name in the current repo
-    cache_folder = manifest.get_o3de_cache_folder()
     for o3de_object_uri in o3de_object_uris:
         manifest_uri = f'{o3de_object_uri}/{manifest_json}'
         cache_file, _ = get_cache_file_uri(manifest_uri)

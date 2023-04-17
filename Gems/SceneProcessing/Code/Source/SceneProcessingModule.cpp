@@ -16,6 +16,8 @@
 #include <Config/Widgets/GraphTypeSelector.h>
 #include <Generation/Components/TangentGenerator/TangentGenerateComponent.h>
 #include <Generation/Components/TangentGenerator/TangentPreExportComponent.h>
+#include <Generation/Components/UVsGenerator/UVsGenerateComponent.h>
+#include <Generation/Components/UVsGenerator/UVsPreExportComponent.h>
 #include <Generation/Components/MeshOptimizer/MeshOptimizerComponent.h>
 #include <Source/SceneProcessingModule.h>
 
@@ -44,6 +46,8 @@ namespace AZ
                     SceneBuilder::SceneSerializationHandler::CreateDescriptor(),
                     AZ::SceneGenerationComponents::TangentPreExportComponent::CreateDescriptor(),
                     AZ::SceneGenerationComponents::TangentGenerateComponent::CreateDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsGenerateComponentDescriptor(),
+                    AZ::SceneGenerationComponents::CreateUVsPreExportComponentDescriptor(),
                     AZ::SceneGenerationComponents::MeshOptimizerComponent::CreateDescriptor(),
                 });
 

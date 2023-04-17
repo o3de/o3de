@@ -10,6 +10,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 namespace AzToolsFramework
 {
@@ -58,13 +59,13 @@ namespace AzToolsFramework
                         {
                             return QString{ "%1" }.arg(assetBrowserEntry->GetDiskSize() / 1024.0, 0, 'f', 3);
                         }
-                        break;
+                        return "";
                     case Vertices:
                         if (assetBrowserEntry->GetNumVertices() > 0)
                         {
                             return assetBrowserEntry->GetNumVertices();
                         }
-                        break;
+                        return "";
                     case ApproxSize:
                         if (!AZStd::isnan(assetBrowserEntry->GetDimension().GetX()))
                         {
@@ -90,19 +91,29 @@ namespace AzToolsFramework
             case Qt::UserRole:
                 return QString(assetBrowserEntry->GetFullPath().c_str());
             case Qt::UserRole + 1:
-                return assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                return AssetBrowserViewUtils::GetThumbnail(assetBrowserEntry);
             }
             return QAbstractProxyModel::data(index, role);
         }
 
         QVariant AssetBrowserExpandedTableViewProxyModel::headerData(int section, Qt::Orientation orientation, int role) const
         {
-            if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+            switch (role)
             {
-                section += section ? static_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
-                return tr(AssetBrowserEntry::m_columnNames[section]);
+            case Qt::DisplayRole:
+                if (orientation == Qt::Horizontal)
+                {
+                    section += section ? aznumeric_cast<int>(AssetBrowserEntry::Column::Type) - 1 : 0;
+                    return tr(AssetBrowserEntry::m_columnNames[section]);
+                }
+                break;
+            case Qt::TextAlignmentRole:
+                if (section == DiskSize || section == Vertices)
+                {
+                    return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+                }
+                break;
             }
-
             return QVariant();
         }
 

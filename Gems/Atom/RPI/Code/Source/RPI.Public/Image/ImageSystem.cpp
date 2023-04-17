@@ -29,6 +29,7 @@
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/Math/Color.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 AZ_DECLARE_BUDGET(RPI);
 
@@ -37,6 +38,31 @@ namespace AZ
 
     namespace
     {
+        const char* MemoryBudgetSettingPath = "/O3DE/Atom/RPI/Initialization/ImageSystemDescriptor/SystemStreamingImagePoolSize";
+        const char* MipBiasSettingPath = "/O3DE/Atom/RPI/Initialization/ImageSystemDescriptor/SystemStreamingImagePoolMipBias";
+        
+        size_t cvar_r_streamingImagePoolBudgetMb_Init()
+        {
+            u64 value = 0;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(value, MemoryBudgetSettingPath);
+            }
+            return aznumeric_cast<size_t>(value);
+        }
+
+        int16_t cvar_r_streamingImageMipBias_Init()
+        {
+            s64 value = 0;
+            auto settingsRegistry = AZ::SettingsRegistry::Get();
+            if (settingsRegistry)
+            {
+                settingsRegistry->Get(value, MipBiasSettingPath);
+            }
+            return aznumeric_cast<int16_t>(value);
+        }
+
         void cvar_r_streamingImagePoolBudgetMb_Changed(const size_t& value)
         {
             if (auto* imageSystem = RPI::ImageSystemInterface::Get())
@@ -45,6 +71,14 @@ namespace AZ
                 size_t newBudget = value * 1024 * 1024;
                 [[maybe_unused]] bool success = pool->SetMemoryBudget(newBudget);
                 AZ_Warning("StreamingImagePool", success, "Can't update StreamingImagePool's memory budget to %uM", value);
+            }
+            else
+            {
+                // Update setting registry value which is used for image system initialization
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+                {
+                    settingsRegistry->Set(MemoryBudgetSettingPath, aznumeric_cast<u64>(value));
+                }
             }
         }
 
@@ -55,12 +89,20 @@ namespace AZ
                 Data::Instance<RPI::StreamingImagePool> pool = imageSystem->GetSystemStreamingPool();
                 pool->SetMipBias(value);
             }
+            else
+            {
+                // Update setting registry value which is used for image system initialization
+                if (auto settingsRegistry = AZ::SettingsRegistry::Get())
+                {
+                    settingsRegistry->Set(MipBiasSettingPath, aznumeric_cast<s64>(value));
+                }
+            }
         }
     }
 
     // cvars for changing streaming image pool budget and setup mip bias of streaming controller
-    AZ_CVAR(size_t, r_streamingImagePoolBudgetMb, 0, cvar_r_streamingImagePoolBudgetMb_Changed, ConsoleFunctorFlags::Null, "Change gpu memory budget for the RPI system streaming image pool");
-    AZ_CVAR(int16_t, r_streamingImageMipBias, 0, cvar_r_streamingImageMipBias_Changed, ConsoleFunctorFlags::Null, "Set a mipmap bias for all streamable images created from the system streaming image pool");
+    AZ_CVAR(size_t, r_streamingImagePoolBudgetMb, cvar_r_streamingImagePoolBudgetMb_Init(), cvar_r_streamingImagePoolBudgetMb_Changed, ConsoleFunctorFlags::Null, "Change gpu memory budget for the RPI system streaming image pool");
+    AZ_CVAR(int16_t, r_streamingImageMipBias, cvar_r_streamingImageMipBias_Init(), cvar_r_streamingImageMipBias_Changed, ConsoleFunctorFlags::Null, "Set a mipmap bias for all streamable images created from the system streaming image pool");
 
     namespace RPI
     {
@@ -347,6 +389,19 @@ namespace AZ
                 Data::AssetId m_assetId;
             };
 
+            // Sync values from ImageSystemDescriptor back to the cvars
+            // Note 1: we need the sync here because one instance of the cvars might be initialized early than setting registry,
+            // so it can't be initialized properly. See cvar_r_streamingImagePoolBudgetMb_Init and cvar_r_streamingImageMipBias_Init
+            // Note 2: we need to use PerformCommand instead of assign value directly because of this issue https://github.com/o3de/o3de/issues/5537            
+            AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+            if (console)
+            {
+                AZ::CVarFixedString commandString = AZ::CVarFixedString::format("r_streamingImagePoolBudgetMb %" PRIu64, desc.m_systemStreamingImagePoolSize);
+                console->PerformCommand(commandString.c_str());
+                commandString = AZ::CVarFixedString::format("r_streamingImageMipBias %" PRId16, desc.m_systemStreamingImagePoolMipBias);
+                console->PerformCommand(commandString.c_str());
+            }
+
             const SystemImagePoolDescriptor systemStreamingPoolDescriptor{ desc.m_systemStreamingImagePoolSize, "ImageSystem::SystemStreamingImagePool" };
             const SystemImagePoolDescriptor systemAttachmentPoolDescriptor{desc.m_systemAttachmentImagePoolSize, "ImageSystem::AttachmentImagePool" };
 
@@ -365,6 +420,7 @@ namespace AZ
                 AZ_Assert(created, "Failed to build streaming image pool");
 
                 m_systemStreamingPool = StreamingImagePool::FindOrCreate(poolAsset);
+                m_systemStreamingPool->SetMipBias(desc.m_systemStreamingImagePoolMipBias);
             }
 
             // Create the system attachment pool.
@@ -415,4 +471,3 @@ namespace AZ
         }
     } // namespace RPI
 }// namespace AZ
-

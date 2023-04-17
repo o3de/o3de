@@ -260,6 +260,7 @@ namespace PhysX
         float m_maximumSpeed = 100.0f; ///< If the accumulated requested velocity for a tick exceeds this magnitude, it will be clamped.
         AZStd::unique_ptr<CharacterControllerCallbackManager>
             m_callbackManager; ///< Manages callbacks for collision filtering, collision notifications, and handling riding on objects.
+        AZ::Quaternion m_orientation; ///< The orientation of the character.
     };
 
     //! Example implementation of controller-controller filtering callback.

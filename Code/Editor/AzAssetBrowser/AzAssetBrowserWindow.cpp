@@ -38,7 +38,7 @@ AZ_POP_DISABLE_DLL_EXPORT_MEMBER_WARNING
 
 AZ_CVAR_EXTERNED(bool, ed_useNewAssetBrowserTableView);
 
-AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, false, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
+AZ_CVAR(bool, ed_useWIPAssetBrowserDesign, true, nullptr, AZ::ConsoleFunctorFlags::Null, "Use the in-progress new Asset Browser design");
 
 //! When the Asset Browser window is resized to be less than this many pixels in width
 //! the layout changes to accomodate its narrow state better. See AzAssetBrowserWindow::SetNarrowMode
@@ -188,12 +188,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             this,
             [this](const AssetBrowserEntry* entry)
             {
-                if (!entry)
+                if (entry && entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
                 {
-                    return;
+                    entry = entry->GetParent();
                 }
 
-                if (!entry->GetParent())
+                if (!entry || !entry->GetParent())
                 {
                     return;
                 }
@@ -208,10 +208,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
                     return;
                 }
 
-                auto selectionModel = m_ui->m_assetBrowserTreeViewWidget->selectionModel();
                 auto targetIndex = m_filterModel.data()->mapFromSource(indexForEntry);
-
-                selectionModel->select(targetIndex, QItemSelectionModel::ClearAndSelect);
+                m_ui->m_assetBrowserTreeViewWidget->SetShowIndexAfterUpdate(targetIndex);
             });
     }
 
@@ -274,6 +272,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             const bool hasFilter = !m_ui->m_searchWidget->GetFilterString().isEmpty();
             const bool selectFirstFilteredIndex = false;
             m_ui->m_assetBrowserTreeViewWidget->UpdateAfterFilter(hasFilter, selectFirstFilteredIndex);
+            m_ui->m_expandedTableViewButton->setDisabled(hasFilter);
         });
 
     connect(m_ui->m_assetBrowserTreeViewWidget->selectionModel(), &QItemSelectionModel::currentChanged,
@@ -289,7 +288,7 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
             if (selected.indexes().size() > 0)
             {
                 CurrentIndexChangedSlot(selected.indexes()[0]);
-                m_ui->m_createButton->setDisabled(false);
+                m_ui->m_createButton->setEnabled(true);
             }
             else
             {
@@ -404,10 +403,10 @@ void AzAssetBrowserWindow::AddCreateMenu()
 void AzAssetBrowserWindow::RegisterViewClass()
 {
     AzToolsFramework::ViewPaneOptions options;
-    options.preferedDockingArea = Qt::LeftDockWidgetArea;
+    options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
-    options.preferedDockingArea = Qt::RightDockWidgetArea;
+    options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
 
     options.showInMenu = false;
@@ -650,26 +649,51 @@ void AzAssetBrowserWindow::UpdateBreadcrumbs(const AzToolsFramework::AssetBrowse
 
 void AzAssetBrowserWindow::SetTwoColumnMode(QWidget* viewToShow)
 {
+    auto* thumbnailView = qobject_cast<AssetBrowserThumbnailView*>(viewToShow);
+    if (thumbnailView && m_ui->m_thumbnailView->GetThumbnailActiveView())
+    {
+        return;
+    }
+
+    auto* expandedTableView = qobject_cast<AssetBrowserExpandedTableView*>(viewToShow);
+    if (expandedTableView && m_ui->m_expandedTableView->GetExpandedTableViewActive())
+    {
+        return;
+    }
+
     m_ui->m_middleStackWidget->show();
     m_ui->m_middleStackWidget->setCurrentWidget(viewToShow);
+    m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
     m_ui->m_searchWidget->AddFolderFilter();
-    if (qobject_cast<AssetBrowserThumbnailView*>(viewToShow))
+    if (thumbnailView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(true);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_searchWidget->setEnabled(true);
     }
-    else if (qobject_cast<AssetBrowserExpandedTableView*>(viewToShow))
+    else if (expandedTableView)
     {
         m_ui->m_thumbnailView->SetThumbnailActiveView(false);
         m_ui->m_expandedTableView->SetExpandedTableViewActive(true);
+        m_ui->m_searchWidget->setDisabled(true);
     }
 }
 
 void AzAssetBrowserWindow::SetOneColumnMode()
 {
-    m_ui->m_middleStackWidget->hide();
-    m_ui->m_searchWidget->RemoveFolderFilter();
-    m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+    if (m_ui->m_thumbnailView->GetThumbnailActiveView() || m_ui->m_expandedTableView->GetExpandedTableViewActive())
+    {
+        m_ui->m_middleStackWidget->hide();
+        m_ui->m_assetBrowserTreeViewWidget->SetApplySnapshot(false);
+        m_ui->m_searchWidget->RemoveFolderFilter();
+        if (!m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows().isEmpty())
+        {
+            m_ui->m_assetBrowserTreeViewWidget->expand(m_ui->m_assetBrowserTreeViewWidget->selectionModel()->selectedRows()[0]);
+        }
+        m_ui->m_thumbnailView->SetThumbnailActiveView(false);
+        m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
+        m_ui->m_searchWidget->setEnabled(true);
+    }
 }
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
@@ -703,7 +727,7 @@ void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)
             targetIndexAncestor = targetIndexAncestor.parent();
         }
 
-        m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex);
+        m_ui->m_assetBrowserTreeViewWidget->scrollTo(targetIndex, QAbstractItemView::ScrollHint::PositionAtCenter);
     }
     else if (entryType == AssetBrowserEntry::AssetEntryType::Product || entryType == AssetBrowserEntry::AssetEntryType::Source)
     {

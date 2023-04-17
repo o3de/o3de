@@ -74,6 +74,7 @@ namespace O3DE::ProjectManager
         m_backButton = m_backNextButtons->addButton(tr("Back"), QDialogButtonBox::RejectRole);
         m_backButton->setProperty("secondary", true);
         m_nextButton = m_backNextButtons->addButton(tr("Next"), QDialogButtonBox::ApplyRole);
+        m_nextButton->setProperty("primary", true);
 
         setObjectName("createAGemBody");
         setLayout(screenLayout);

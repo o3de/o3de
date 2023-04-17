@@ -441,26 +441,21 @@ namespace SceneBuilder
             AZStd::string folder;
             AZStd::string jsonName;
             AzFramework::StringFunc::Path::GetFullFileName(scene->GetSourceFilename().c_str(), jsonName);
-            folder = AZStd::string::format("%s/%s.metadata.json", outputFolder.c_str(), jsonName.c_str());
-            rapidjson::StringBuffer s;
-            rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
-            writer.StartObject();
-            writer.Key("metadata");
-            writer.StartObject();
-            writer.Key("dimension");
-            writer.StartArray();
-            AZ::Vector3& dimension = scene->GetSceneDimension();
-            writer.Double(dimension.GetX());
-            writer.Double(dimension.GetY());
-            writer.Double(dimension.GetZ());
-            writer.EndArray();
-            writer.Key("vertices");
-            writer.Uint(scene->GetSceneVertices());
-            writer.EndObject();
-            writer.EndObject();
-            rapidjson::Document doc;
-            doc.Parse(s.GetString());
-            AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+            folder = AZStd::string::format("%s/%s.abdata.json", outputFolder.c_str(), jsonName.c_str());
+
+            AssetBuilderSDK::CreateABDataFile(folder, [scene](rapidjson::PrettyWriter<rapidjson::StringBuffer>& writer)
+            {
+                writer.Key("dimension");
+                writer.StartArray();
+                AZ::Vector3& dimension = scene->GetSceneDimension();
+                writer.Double(dimension.GetX());
+                writer.Double(dimension.GetY());
+                writer.Double(dimension.GetZ());
+                writer.EndArray();
+                writer.Key("vertices");
+                writer.Uint(scene->GetSceneVertices());
+            });
+
             AssetBuilderSDK::JobProduct jsonProduct(folder);
             response.m_outputProducts.emplace_back(jsonProduct);
         }

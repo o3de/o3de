@@ -46,12 +46,12 @@ namespace AssetProcessor
             return;
         }
 
-        m_sharedDbConnection->QueryProductsTable(
-            [&](AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product)
-        {
-            AddOrUpdateEntry(product, true);
-            return true; // return true to continue iterating over additional results, we are populating a container
-        });
+        m_sharedDbConnection->QueryCombined(
+            [&](AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combined)
+            {
+                AddOrUpdateEntry(combined, true);
+                return true;
+            });
     }
 
     void ProductAssetTreeModel::OnProductFileChanged(const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& entry)
@@ -70,7 +70,13 @@ namespace AssetProcessor
         // Model changes need to be run on the main thread.
         AZ::SystemTickBus::QueueFunction([&, entry]()
         {
-            AddOrUpdateEntry(entry, false);
+            m_sharedDbConnection->QueryCombinedByProductID(
+                entry.m_productID,
+                [this](const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combined)
+                {
+                    AddOrUpdateEntry(combined, false);
+                    return false; // Should only be 1 entry for 1 product
+                });
         });
     }
 
@@ -186,34 +192,25 @@ namespace AssetProcessor
     }
 
     void ProductAssetTreeModel::AddOrUpdateEntry(
-        const AzToolsFramework::AssetDatabase::ProductDatabaseEntry& product,
+        const AzToolsFramework::AssetDatabase::CombinedDatabaseEntry& combinedDatabaseEntry,
         bool modelIsResetting)
     {
-        AZStd::string platform;
-        m_sharedDbConnection->QueryJobByProductID(
-            product.m_productID,
-            [&](AzToolsFramework::AssetDatabase::JobDatabaseEntry& jobEntry)
-            {
-                platform = jobEntry.m_platform;
-                return true;
-            });
-
         // Intermediate assets are functionally source assets, output as products from other source assets.
         // Don't display them in the product assets tab.
-        if (product.m_flags.test(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)))
+        if (combinedDatabaseEntry.m_flags.test(static_cast<int>(AssetBuilderSDK::ProductOutputFlags::IntermediateAsset)))
         {
             return;
         }
 
-        const auto& existingEntry = m_productIdToTreeItem.find(product.m_productID);
+        const auto& existingEntry = m_productIdToTreeItem.find(combinedDatabaseEntry.m_productID);
         if (existingEntry != m_productIdToTreeItem.end())
         {
             AZStd::shared_ptr<ProductAssetTreeItemData> productItemData = AZStd::rtti_pointer_cast<ProductAssetTreeItemData>(existingEntry->second->GetData());
 
             // This item already exists, refresh the related data.
-            productItemData->m_databaseInfo = product;
+            productItemData->m_databaseInfo = combinedDatabaseEntry; // Intentional object slicing occuring here.  CombinedEntry -> ProductEntry
             CheckForUnresolvedIssues(productItemData);
-            
+
             QModelIndex existingIndexStart = createIndex(existingEntry->second->GetRow(), 0, existingEntry->second);
             QModelIndex existingIndexEnd = createIndex(existingEntry->second->GetRow(), existingEntry->second->GetColumnCount() - 1, existingEntry->second);
             Q_ASSERT(checkIndex(existingIndexStart));
@@ -222,11 +219,16 @@ namespace AssetProcessor
             return;
         }
 
-        AZ::IO::Path productNamePath(product.m_productName, AZ::IO::PosixPathSeparator);
+        AZ::IO::Path productNamePath(combinedDatabaseEntry.m_productName, AZ::IO::PosixPathSeparator);
 
         if (productNamePath.empty())
         {
-            AZ_Warning("AssetProcessor", false, "Product id %d has an invalid name: %s", product.m_productID, product.m_productName.c_str());
+            AZ_Warning(
+                "AssetProcessor",
+                false,
+                "Product id %d has an invalid name: %s",
+                combinedDatabaseEntry.m_productID,
+                combinedDatabaseEntry.m_productName.c_str());
             return;
         }
 
@@ -266,16 +268,8 @@ namespace AssetProcessor
             parentItem = nextParent;
         }
 
-        AZ::Uuid sourceId;
-        AZ::s64 scanFolderID;
-        m_sharedDbConnection->QuerySourceByProductID(
-            product.m_productID,
-            [&](AzToolsFramework::AssetDatabase::SourceDatabaseEntry& sourceEntry)
-        {
-            sourceId = sourceEntry.m_sourceGuid;
-            scanFolderID = sourceEntry.m_scanFolderPK;
-            return true;
-        });
+        AZ::Uuid sourceId = combinedDatabaseEntry.m_sourceGuid;
+        AZ::s64 scanFolderID = combinedDatabaseEntry.m_scanFolderPK;
 
         if (!modelIsResetting)
         {
@@ -285,10 +279,15 @@ namespace AssetProcessor
         }
 
         AZStd::shared_ptr<ProductAssetTreeItemData> productItemData = ProductAssetTreeItemData::MakeShared(
-            &product, product.m_productName, AZ::IO::FixedMaxPathString(filename.Native()).c_str(), false, sourceId, scanFolderID);
-        m_productToTreeItem[product.m_productName] =
+            &combinedDatabaseEntry,
+            combinedDatabaseEntry.m_productName,
+            AZ::IO::FixedMaxPathString(filename.Native()).c_str(),
+            false,
+            sourceId,
+            scanFolderID);
+        m_productToTreeItem[combinedDatabaseEntry.m_productName] =
             parentItem->CreateChild(productItemData);
-        m_productIdToTreeItem[product.m_productID] = m_productToTreeItem[product.m_productName];
+        m_productIdToTreeItem[combinedDatabaseEntry.m_productID] = m_productToTreeItem[combinedDatabaseEntry.m_productName];
 
         CheckForUnresolvedIssues(productItemData);
 

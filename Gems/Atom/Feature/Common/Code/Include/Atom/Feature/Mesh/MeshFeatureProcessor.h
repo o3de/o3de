@@ -38,8 +38,18 @@ namespace AZ
             friend class MeshLoader;
 
         public:
+            using ObjectSrgCreatedEvent = MeshFeatureProcessorInterface::ObjectSrgCreatedEvent;
+
+            ModelDataInstance();
+
             const Data::Instance<RPI::Model>& GetModel() { return m_model; }
             const RPI::Cullable& GetCullable() { return m_cullable; }
+
+            ObjectSrgCreatedEvent& GetObjectSrgCreatedEvent() { return m_objectSrgCreatedEvent; }
+
+            
+            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
+            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
 
         private:
             class MeshLoader
@@ -111,8 +121,6 @@ namespace AZ
             
             // When instancing is enabled, draw packets are owned by the MeshInstanceManager,
             // and the ModelDataInstance refers to those draw packets via InstanceGroupHandles
-            using InstanceGroupHandle = StableDynamicArrayWeakHandle<MeshInstanceGroupData>;
-            using InstanceGroupHandleList = AZStd::vector<InstanceGroupHandle>;
             AZStd::vector<InstanceGroupHandleList> m_instanceGroupHandlesByLod;
             
             // AZ::Event is used to communicate back to all the objects that refer to an instance group whenever a draw packet is updated
@@ -132,24 +140,31 @@ namespace AZ
 
             //! List of object SRGs used by meshes in this model 
             AZStd::vector<Data::Instance<RPI::ShaderResourceGroup>> m_objectSrgList;
+            MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
-            RHI::DrawItemSortKey m_sortKey;
+            RHI::DrawItemSortKey m_sortKey = 0;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             AZ::Uuid m_rayTracingUuid;
 
             Aabb m_aabb = Aabb::CreateNull();
 
-            bool m_cullBoundsNeedsUpdate = false;
-            bool m_cullableNeedsRebuild = false;
-            bool m_needsInit = false;
-            bool m_objectSrgNeedsUpdate = true;
-            bool m_isAlwaysDynamic = false;
-            bool m_visible = true;
-            bool m_hasForwardPassIblSpecularMaterial = false;
-            bool m_needsSetRayTracingData = false;
-            bool m_hasRayTracingReflectionProbe = false;
+            struct Flags
+            {
+                bool m_cullBoundsNeedsUpdate : 1;
+                bool m_cullableNeedsRebuild : 1;
+                bool m_needsInit : 1;
+                bool m_objectSrgNeedsUpdate : 1;
+                bool m_isAlwaysDynamic : 1;
+                bool m_dynamic : 1;                             // True if the model's transformation was changed than the initial position
+                bool m_isDrawMotion : 1;                        // Whether draw to the motion vector
+                bool m_visible : 1;
+                bool m_useForwardPassIblSpecular : 1;
+                bool m_hasForwardPassIblSpecularMaterial : 1;
+                bool m_needsSetRayTracingData : 1;
+                bool m_hasRayTracingReflectionProbe : 1;
+            } m_flags;
         };
 
         //! This feature processor handles static and dynamic non-skinned meshes.
@@ -176,6 +191,8 @@ namespace AZ
             void Deactivate() override;
             //! Updates GPU buffers with latest data from render proxies
             void Simulate(const FeatureProcessor::SimulatePacket& packet) override;
+            //! Updates ViewSrgs with per-view instance data for visible instances
+            void OnEndCulling(const RenderPacket& packet) override;
 
             // RPI::SceneNotificationBus overrides ...
             void OnBeginPrepareRender() override;
@@ -196,6 +213,7 @@ namespace AZ
             void SetCustomMaterials(const MeshHandle& meshHandle, const CustomMaterialMap& materials) override;
             const CustomMaterialMap& GetCustomMaterials(const MeshHandle& meshHandle) const override;
             void ConnectModelChangeEventHandler(const MeshHandle& meshHandle, ModelChangedEvent::Handler& handler) override;
+            void ConnectObjectSrgCreatedEventHandler(const MeshHandle& meshHandle, ObjectSrgCreatedEvent::Handler& handler) override;
 
             void SetTransform(const MeshHandle& meshHandle, const AZ::Transform& transform,
                 const AZ::Vector3& nonUniformScale = AZ::Vector3::CreateOne()) override;
@@ -258,6 +276,9 @@ namespace AZ
             AZStd::vector<AZ::Job*> CreateUpdateCullingJobQueue();
             void ExecuteSimulateJobQueue(AZStd::span<Job*> jobQueue, Job* parentJob);
             void ExecuteCombinedJobQueue(AZStd::span<Job*> initQueue, AZStd::span<Job*> updateCullingQueue, Job* parentJob);
+            
+            
+            void ProcessVisibleObjectListForView(const RPI::ViewPtr& view);
 
             AZStd::concurrency_checker m_meshDataChecker;
             StableDynamicArray<ModelDataInstance> m_modelData;
@@ -270,6 +291,7 @@ namespace AZ
             RPI::MeshDrawPacketLods m_emptyDrawPacketLods;
             RHI::Ptr<FlagRegistry> m_flagRegistry = nullptr;
             AZ::RHI::Handle<uint32_t> m_meshMovedFlag;
+            RHI::DrawListTag m_meshMotionDrawListTag;
             bool m_forceRebuildDrawPackets = false;
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;

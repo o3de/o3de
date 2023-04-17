@@ -70,6 +70,8 @@ public:
     bool OnError(const char* window, const char* message) override;
     bool OnAssert(const char* message) override;
 
+    WId GetWindowId() const override;
+
 private:
     bool Activate() override;
     bool PostActivate() override;

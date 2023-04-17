@@ -73,6 +73,8 @@ namespace AzToolsFramework
             ChangedSourceDependencySourceColumn,
             SplitMaterialBuilderAndMaterialAssetBuilder,
             NewMaterialTypeBuildPipeline,
+            AddedJobFailureSourceColumn,
+            AddedMissingDependenciesIndex,
             //Add all new versions before this
             DatabaseVersionCount,
             LatestVersion = DatabaseVersionCount - 1
@@ -187,6 +189,8 @@ namespace AzToolsFramework
             AZ::Uuid m_builderGuid;
             AssetSystem::JobStatus m_status = AssetSystem::JobStatus::Queued;
             AZ::u64 m_jobRunKey = 0;
+            AZ::s64 m_failureCauseSourcePK = InvalidEntryId;
+            AZ::u32 m_failureCauseFingerprint = 0;
             AZ::s64 m_firstFailLogTime = 0;
             AZStd::string m_firstFailLogFile;
             AZ::s64 m_lastFailLogTime = 0;
@@ -582,6 +586,7 @@ namespace AzToolsFramework
             bool QueryJobByJobRunKey(AZ::u64 jobRunKey, jobHandler handler);
             bool QueryJobByProductID(AZ::s64 productID, jobHandler handler);
             bool QueryJobBySourceID(AZ::s64 sourceID, jobHandler handler, AZ::Uuid builderGuid = AZ::Uuid::CreateNull(), const char* jobKey = nullptr, const char* platform = nullptr, AssetSystem::JobStatus status = AssetSystem::JobStatus::Any);
+            bool QueryJobsByFailureCauseSourceID(AZ::s64 sourceID, jobHandler handler);
 
             //product
             bool QueryProductByProductID(AZ::s64 productID, productHandler handler);

@@ -61,8 +61,10 @@ AZ_POP_DISABLE_WARNING
 #include <AzFramework/Spawnable/RootSpawnableInterface.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ActionManager/ActionManagerSystemComponent.h>
 #include <AzToolsFramework/Component/EditorComponentAPIBus.h>
 #include <AzToolsFramework/Component/EditorLevelComponentAPIBus.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ProgressShield.hxx>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
@@ -127,8 +129,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/PythonTerminal/ScriptHelpDialog.h>
 
 #include "QuickAccessBar.h"
-
-#include "Export/ExportManager.h"
 
 #include "LevelFileDialog.h"
 #include "LevelIndependentFileMan.h"
@@ -363,7 +363,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_DOCUMENTATION_GAMEDEVBLOG, OnDocumentationGameDevBlog)
     ON_COMMAND(ID_DOCUMENTATION_FORUMS, OnDocumentationForums)
     ON_COMMAND(ID_DOCUMENTATION_AWSSUPPORT, OnDocumentationAWSSupport)
-    ON_COMMAND(ID_FILE_EXPORT_SELECTEDOBJECTS, OnExportSelectedObjects)
     ON_COMMAND(ID_EDIT_HOLD, OnEditHold)
     ON_COMMAND(ID_EDIT_FETCH, OnEditFetch)
     ON_COMMAND(ID_FILE_EXPORTTOGAMENOSURFACETEXTURE, OnFileExportToGameNoSurfaceTexture)
@@ -401,9 +400,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_TOOLS_CUSTOMIZEKEYBOARD, OnCustomizeKeyboard)
     ON_COMMAND(ID_TOOLS_CONFIGURETOOLS, OnToolsConfiguretools)
     ON_COMMAND(ID_TOOLS_SCRIPTHELP, OnToolsScriptHelp)
-#ifdef FEATURE_ORTHOGRAPHIC_VIEW
-    ON_COMMAND(ID_VIEW_CYCLE2DVIEWPORT, OnViewCycle2dviewport)
-#endif
     ON_COMMAND(ID_DISPLAY_GOTOPOSITION, OnDisplayGotoPosition)
     ON_COMMAND(ID_FILE_SAVELEVELRESOURCES, OnFileSavelevelresources)
     ON_COMMAND(ID_CLEAR_REGISTRY, OnClearRegistryData)
@@ -422,7 +418,6 @@ void CCryEditApp::RegisterActionHandlers()
     ON_COMMAND(ID_OPEN_QUICK_ACCESS_BAR, OnOpenQuickAccessBar)
 
     ON_COMMAND(ID_FILE_SAVE_LEVEL, OnFileSave)
-    ON_COMMAND(ID_FILE_EXPORTOCCLUSIONMESH, OnFileExportOcclusionMesh)
 
     // Project Manager
     ON_COMMAND(ID_FILE_PROJECT_MANAGER_SETTINGS, OnOpenProjectManagerSettings)
@@ -1814,6 +1809,12 @@ bool CCryEditApp::InitInstance()
         QtViewPaneManager::instance()->RestoreLayout(restoreDefaults);
     }
 
+    // Trigger the Action Manager registration hooks once all systems and Gems are initialized and listening.
+    if (AzToolsFramework::IsNewActionManagerEnabled())
+    {
+        AzToolsFramework::ActionManagerSystemComponent::TriggerRegistrationNotifications();
+    }
+
     CloseSplashScreen();
 
     // DON'T CHANGE ME!
@@ -2603,37 +2604,6 @@ void CCryEditApp::OnViewSwitchToGameFullScreen()
 {
     ed_previewGameInFullscreen_once = true;
     OnViewSwitchToGame();
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnExportSelectedObjects()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*> (GetIEditor()->GetExportManager());
-    QString filename = "untitled";
-    CBaseObject* pObj = GetIEditor()->GetSelectedObject();
-    if (pObj)
-    {
-        filename = pObj->GetName();
-    }
-    else
-    {
-        QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-        if (!levelName.isEmpty())
-        {
-            filename = levelName;
-        }
-    }
-    QString levelPath = GetIEditor()->GetGameEngine()->GetLevelPath();
-    pExportManager->Export(filename.toUtf8().data(), "obj", levelPath.toUtf8().data());
-}
-
-//////////////////////////////////////////////////////////////////////////
-void CCryEditApp::OnFileExportOcclusionMesh()
-{
-    CExportManager* pExportManager = static_cast<CExportManager*> (GetIEditor()->GetExportManager());
-    QString levelName = GetIEditor()->GetGameEngine()->GetLevelName();
-    QString levelPath = GetIEditor()->GetGameEngine()->GetLevelPath();
-    pExportManager->Export(levelName.toUtf8().data(), "ocm", levelPath.toUtf8().data(), false, false, true);
 }
 
 //////////////////////////////////////////////////////////////////////////

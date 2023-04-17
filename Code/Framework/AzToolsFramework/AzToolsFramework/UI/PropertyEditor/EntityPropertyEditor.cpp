@@ -660,29 +660,22 @@ namespace AzToolsFramework
             GetEntityContextId());
         ViewportEditorModeNotificationsBus::Handler::BusConnect(GetEntityContextId());
 
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (IsNewActionManagerEnabled())
         {
             m_actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
 
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                // Assign this widget to the Editor Entity Property Editor Action Context.
-                hotKeyManagerInterface->AssignWidgetToActionContext(
+            // Assign this widget to the Editor Entity Property Editor Action Context.
+            AssignWidgetToActionContextHelper(
                     EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-            }
         }
     }
 
     EntityPropertyEditor::~EntityPropertyEditor()
     {
-        if (AzToolsFramework::IsNewActionManagerEnabled())
+        if (IsNewActionManagerEnabled())
         {
-            if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-            {
-                // Assign this widget to the Editor Entity Property Editor Action Context.
-                hotKeyManagerInterface->RemoveWidgetFromActionContext(
+            RemoveWidgetFromActionContextHelper(
                     EditorIdentifiers::EditorEntityPropertyEditorActionContextIdentifier, this);
-            }
         }
 
         qApp->removeEventFilter(this);
@@ -1942,7 +1935,9 @@ namespace AzToolsFramework
                 auto propertyChanged = 
                     [this, componentEditor](const AZ::DocumentPropertyEditor::ReflectionAdapter::PropertyChangeInfo& changeInfo)
                     {
-                        if (changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+                        // Check if the component editor is currently in use
+                        if (componentEditor->isVisible() &&
+                            changeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
                         {
                             UpdateOverrideVisualization(*componentEditor);
                         }

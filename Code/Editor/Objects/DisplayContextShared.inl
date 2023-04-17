@@ -11,7 +11,6 @@
 #include "DisplayContext.h"
 #include "IRenderAuxGeom.h"
 #include "IEditor.h"
-#include "Include/IIconManager.h"
 #include "Include/IDisplayViewport.h"
 #include <Editor/Util/EditorUtils.h>
 
@@ -28,7 +27,6 @@ DisplayContext::DisplayContext()
     view = 0;
     flags = 0;
     settings = 0;
-    pIconManager = 0;
     m_renderState = 0;
 
     m_currentMatrix = 0;

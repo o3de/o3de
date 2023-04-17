@@ -8,6 +8,7 @@
 
 #include <AzCore/DOM/Backends/JSON/JsonSerializationUtils.h>
 #include <AzFramework/DocumentPropertyEditor/AdapterBuilder.h>
+#include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DPEComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabAdapterInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
@@ -89,9 +90,23 @@ namespace AZ::DocumentPropertyEditor
         SetValue(componentInstance, instanceTypeId);
     }
 
+    bool ComponentAdapter::IsComponentValid() const
+    {
+        if (m_entityId.IsValid())
+        {
+            const Entity* entity = AzToolsFramework::GetEntity(m_entityId);
+            AZ_Assert(entity, "ComponentAdapter::IsComponentValid - Entity is nullptr.");
+
+            bool isEntityActive = entity->GetState() == AZ::Entity::State::Active;
+            return isEntityActive && entity->FindComponent(m_componentId) != nullptr;
+        }
+
+        return false;
+    }
+
     void ComponentAdapter::DoRefresh()
     {
-        if (!m_entityId.IsValid())
+        if (!IsComponentValid())
         {
             return;
         }
@@ -113,18 +128,18 @@ namespace AZ::DocumentPropertyEditor
             case Nodes::ValueChangeType::InProgressEdit:
                 if (m_entityId.IsValid())
                 {
-                    if (m_currentUndoNode)
+                    if (m_currentUndoBatch)
                     {
                         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            m_currentUndoNode,
+                            m_currentUndoBatch,
                             &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
-                            m_currentUndoNode,
+                            m_currentUndoBatch,
                             "Modify Entity Property");
                     }
                     else
                     {
                         AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
-                            m_currentUndoNode, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+                            m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
                     }
 
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(
@@ -132,10 +147,10 @@ namespace AZ::DocumentPropertyEditor
                 }
                 break;
             case Nodes::ValueChangeType::FinishedEdit:
-                if (m_currentUndoNode)
+                if (m_currentUndoBatch)
                 {
                     AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
-                    m_currentUndoNode = nullptr;
+                    m_currentUndoBatch = nullptr;
                 }
                 break;
             }

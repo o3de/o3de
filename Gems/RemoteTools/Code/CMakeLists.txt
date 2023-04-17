@@ -103,6 +103,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         # Add RemoteTools.Tests to googletest
         ly_add_googletest(
             NAME Gem::RemoteTools.Tests
+            LABELS REQUIRES_tiaf
         )
     endif()
 endif()

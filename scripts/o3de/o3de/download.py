@@ -21,6 +21,7 @@ import urllib.parse
 import urllib.request
 import zipfile
 from datetime import datetime
+from tempfile import TemporaryDirectory
 
 from o3de import manifest, repo, utils, validation, register
 
@@ -57,9 +58,9 @@ def validate_downloaded_zip_sha256(download_uri_json_data: dict, download_zip_pa
 
         with download_zip_path.open('rb') as f:
             sha256B = hashlib.sha256(f.read()).hexdigest()
-            if sha256A != sha256B:
+            if sha256A.lower() != sha256B.lower():
                 logger.error(f'SECURITY VIOLATION: Downloaded zip sha256 {sha256B} does not match'
-                            f' the advertised "sha256":{sha256A} in the f{manifest_json_name}.')
+                            f' the advertised "sha256":{sha256A} in the {manifest_json_name}.')
                 return 0
 
     unzipped_manifest_json_data = unzip_manifest_json_data(download_zip_path, manifest_json_name)
@@ -94,6 +95,19 @@ def get_downloadable(engine_name: str = None,
     manifest_json = 'repo.json'
     search_func = lambda manifest_json_data: repo.search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name)
     return repo.search_o3de_object(manifest_json, o3de_object_uris, search_func)
+
+def replace_parent_with_subdir(parent_path:pathlib.Path, subdir_path:pathlib.Path):
+    with TemporaryDirectory() as tmp_dir:
+        logger.info(f'Moving {subdir_path} -> {tmp_dir}/tmp -> {parent_path}.')
+
+        # We need to put the gem in a subdir so we don't move the tmp_dir 
+        shutil.move(subdir_path, pathlib.Path(tmp_dir) / "tmp")
+
+        # Remove the dest_path or when we try to replace it, move() will
+        # just put the subdir inside dest_path instead of replacing it
+        shutil.rmtree(parent_path)
+
+        shutil.move(pathlib.Path(tmp_dir) / "tmp", parent_path)
 
 def download_o3de_object(object_name: str, default_folder_name: str, dest_path: str or pathlib.Path,
                          object_type: str, downloadable_kwarg_key, skip_auto_register: bool,
@@ -155,8 +169,17 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         with zipfile.ZipFile(download_zip_path, 'r') as zip_file_ref:
             try:
                 zip_file_ref.extractall(dest_path)
-            except Exception:
+
+                # Some services like GitHub put repository archive code
+                # in an inner folder.  If the extract contents are a single 
+                # sub-folder, move it up a level.  
+                paths = [path for path in pathlib.Path(dest_path).iterdir()]
+                if len(paths) == 1 and paths[0].is_dir():
+                    replace_parent_with_subdir(dest_path, paths[0])
+                    
+            except Exception as e:
                 logger.error(f'Error unzipping {download_zip_path} to {dest_path}. Deleting {dest_path}.')
+                logger.error(f'{e}')
                 shutil.rmtree(dest_path)
                 return 1
 
