@@ -43,6 +43,8 @@ namespace AZ
                 SCENE_DATA_API void ReserveContainerSpace(size_t size);
                 SCENE_DATA_API void AppendUV(const AZ::Vector2& uv);
 
+                SCENE_DATA_API void Clear();
+
                 SCENE_DATA_API void GetDebugOutput(AZ::SceneAPI::Utilities::DebugOutput& output) const override;
             protected:
                 AZStd::vector<AZ::Vector2> m_uvs;
