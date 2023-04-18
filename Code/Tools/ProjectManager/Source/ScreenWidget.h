@@ -10,6 +10,7 @@
 #if !defined(Q_MOC_RUN)
 #include <ScreenDefs.h>
 #include <ProjectInfo.h>
+#include <ScreensCtrl.h>
 
 #include <QWidget>
 #include <QStyleOption>
@@ -34,14 +35,17 @@ namespace O3DE::ProjectManager
         {
             return ProjectManagerScreen::Empty;
         }
+
         virtual bool IsReadyForNextScreen()
         {
             return true;
         }
+
         virtual bool IsTab()
         {
             return false;
         }
+
         virtual QString GetTabText()
         {
             return tr("Missing");
@@ -51,12 +55,22 @@ namespace O3DE::ProjectManager
         {
             return GetScreenEnum() == screen;
         }
+
         virtual void GoToScreen([[maybe_unused]] ProjectManagerScreen screen)
         {
         }
+
         virtual void Init()
         {
         }
+
+        //! Returns true if this screen is the current screen 
+        virtual bool IsCurrentScreen()
+        {
+            ScreensCtrl* screensCtrl = qobject_cast<ScreensCtrl*>(parent());
+            return screensCtrl ? screensCtrl->GetCurrentScreen() == this : false;
+        }
+
         //! Notify this screen it is the current screen 
         virtual void NotifyCurrentScreen()
         {
