@@ -16,6 +16,7 @@
 #include <AzToolsFramework/API/ToolsApplicationAPI.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/EditorEntityInfoBus.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/ToolsComponents/GenericComponentWrapper.h>
 #include <AzToolsFramework/UI/DocumentPropertyEditor/DocumentPropertyEditor.h>
 #include <AzToolsFramework/UI/PropertyEditor/ReflectedPropertyEditor.hxx>
@@ -144,23 +145,16 @@ namespace AzToolsFramework
     ComponentEditor::ComponentEditor(
         AZ::SerializeContext* context,
         IPropertyEditorNotify* notifyTarget /* = nullptr */,
-        QWidget* parent /* = nullptr */,
-        bool replaceRPE /* = false */,
-        AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter /* = nullptr */)
+        QWidget* parent /* = nullptr */)
         : AzQtComponents::Card(new ComponentEditorHeader(), parent)
         , m_serializeContext(context)
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        if (replaceRPE)
+        if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = customDpeComponentAdapter;
-            if (!m_adapter)
-            {
-                // Create a default component adapter.
-                m_adapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>();
-            }
+            m_adapter = (Prefab::IsInspectorOverrideManagementEnabled() ? AZStd::make_shared<Prefab::PrefabComponentAdapter>() : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);
@@ -214,8 +208,30 @@ namespace AzToolsFramework
             if (!aggregateInstance)
             {
                 // Set the adapter component to this instance.
-                // Note: multiple selection with DPE is not yet supported
                 m_adapter->SetComponent(componentInstance);
+
+                // set the DPE back to the regular adapter and destroy the aggregate adapter
+                if (m_aggregateAdapter)
+                {
+                    m_dpe->SetAdapter(m_adapter);
+                    m_aggregateAdapter.reset();
+                }
+            }
+            else
+            {
+                if (!m_aggregateAdapter)
+                {
+                    m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+                    m_aggregateAdapter->AddAdapter(m_adapter);
+                    m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
+                    m_dpe->SetAdapter(m_filterAdapter);
+                }
+
+                AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> newAdapter =
+                    (Prefab::IsInspectorOverrideManagementEnabled() ? AZStd::make_shared<Prefab::PrefabComponentAdapter>()
+                                                                    : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+                newAdapter->SetComponent(componentInstance);
+                m_aggregateAdapter->AddAdapter(newAdapter);
             }
         }
         else

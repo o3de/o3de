@@ -12,6 +12,7 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/vector.h>
+#include <AzFramework/DocumentPropertyEditor/AggregateAdapter.h>
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
 #include <AzQtComponents/Components/Widgets/Card.h>
 #include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
@@ -63,9 +64,7 @@ namespace AzToolsFramework
         explicit ComponentEditor(
             AZ::SerializeContext* context,
             IPropertyEditorNotify* notifyTarget = nullptr,
-            QWidget* parent = nullptr,
-            bool replaceRPE = false,
-            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> customDpeComponentAdapter = nullptr);
+            QWidget* parent = nullptr);
         ~ComponentEditor();
 
         void AddInstance(AZ::Component* componentInstance, AZ::Component* aggregateInstance, AZ::Component* compareInstance);
@@ -164,6 +163,7 @@ namespace AzToolsFramework
 
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> m_adapter;
         AZStd::shared_ptr<AZ::DocumentPropertyEditor::ValueStringFilter> m_filterAdapter;
+        AZStd::shared_ptr<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter> m_aggregateAdapter;
         DocumentPropertyEditor* m_dpe = nullptr;
 
         AZ::SerializeContext* m_serializeContext = nullptr;

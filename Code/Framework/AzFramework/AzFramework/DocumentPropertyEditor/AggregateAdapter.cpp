@@ -46,7 +46,9 @@ namespace AZ::DocumentPropertyEditor
             });
         sourceAdapter->ConnectMessageHandler(newAdapterInfo->domMessageHandler);
 
-        PopulateNodesForAdapter(m_adapters.size() - 1);
+        const auto adapterIndex = m_adapters.size() - 1;
+        PopulateNodesForAdapter(adapterIndex);
+        NotifyResetDocument();
     }
 
     void RowAggregateAdapter::RemoveAdapter(DocumentAdapterPtr sourceAdapter)
@@ -529,6 +531,7 @@ namespace AZ::DocumentPropertyEditor
             auto originalColumn = nodePath.Back().GetIndex();
             nodePath.Pop();
             auto messageNode = GetNodeAtPath(nodePath);
+            AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
 
             for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
             {

@@ -51,7 +51,6 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
-#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -1903,14 +1902,7 @@ namespace AzToolsFramework
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
             //create a new component editor since cache has been exceeded
-            bool replaceRPE = DocumentPropertyEditor::ShouldReplaceRPE();
-            AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> dpeComponentAdapter = nullptr;
-            if (replaceRPE && Prefab::IsInspectorOverrideManagementEnabled())
-            {
-                // Create a prefab specific component adapter
-                dpeComponentAdapter = AZStd::make_shared<Prefab::PrefabComponentAdapter>();
-            }
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, replaceRPE, dpeComponentAdapter);
+            auto componentEditor = new ComponentEditor(m_serializeContext, this, this);
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()
