@@ -6,6 +6,7 @@
 
 import argparse
 import boto3
+from botocore.utils import IMDSFetcher
 import datetime
 import urllib.request, urllib.error, urllib.parse
 import os
@@ -198,7 +199,7 @@ def get_ec2_resource(region):
 
 def get_ec2_instance_id():
     try:
-        instance_id = urllib.request.urlopen('http://169.254.169.254/latest/meta-data/instance-id').read()
+        instance_id = IMDSFetcher()._get_request("/latest/meta-data/instance-id", None).text
         return instance_id.decode("utf-8")
     except Exception as e:
         print(e)
@@ -207,8 +208,7 @@ def get_ec2_instance_id():
 
 def get_availability_zone():
     try:
-        availability_zone = urllib.request.urlopen(
-            'http://169.254.169.254/latest/meta-data/placement/availability-zone').read()
+        availability_zone = IMDSFetcher()._get_request("/latest/meta-data/placement/availability-zone", None).text
         return availability_zone.decode("utf-8")
     except Exception as e:
         print(e)
