@@ -62,6 +62,10 @@ namespace AssetProcessor
         virtual void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) = 0;
         //! Returns true if UUID generation is enabled for the type (based on file extension), false otherwise.
         virtual bool IsGenerationEnabledForFile(AZ::IO::PathView file) = 0;
+
+        //! Returns the list of file types that UUID generation is enabled for. This is useful over checking the registry setting
+        //! directly, because other types may be enabled via code.
+        virtual AZStd::unordered_set<AZStd::string> GetEnabledTypes() = 0;
     };
 
     //! Serialized settings type for storing the user preferences for the UUID manager
@@ -71,7 +75,7 @@ namespace AssetProcessor
 
         static void Reflect(AZ::ReflectContext* context);
 
-        AZ::u32 m_metaCreationDelayMs;
+        AZ::u32 m_metaCreationDelayMs{};
         AZStd::unordered_set<AZStd::string> m_enabledTypes;
     };
 
@@ -93,6 +97,7 @@ namespace AssetProcessor
         void FileRemoved(AZ::IO::PathView file) override;
         void EnableGenerationForTypes(AZStd::unordered_set<AZStd::string> types) override;
         bool IsGenerationEnabledForFile(AZ::IO::PathView file) override;
+        AZStd::unordered_set<AZStd::string> GetEnabledTypes() override;
 
     private:
         AZ::IO::Path GetCanonicalPath(AZ::IO::PathView file);

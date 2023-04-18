@@ -1,0 +1,25 @@
+{
+    "DCCSIG_TOOLS_PATH": "C:/path/to/o3de/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools",
+    "DCCSI_CONFIG_CORE": "True",
+    "DCCSI_CONFIG_IDE_WING": "True",
+    "DCCSI_DEV_MODE": "True",
+    "DCCSI_GDEBUG": "True",
+    "DCCSI_LOCAL_SETTINGS": "True",
+    "DCCSI_LOGLEVEL": 10,
+    "DCCSI_LOG_PATH": "C:/path/to/o3de/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/user/log/DCCsi",
+    "DCCSI_WING_VERSION_MAJOR": 8,
+    "DEFAULT_SETTINGS_PATHS": [
+        "settings.py",
+        "settings.json",
+        ".secrets.py",
+        ".secrets.json"
+    ],
+    "LOAD_DOTENV": true,
+    "O3DE_DEV": "C:/path/to/o3de",
+    "PATH_O3DE_3RDPARTY": "C:/Users/<your user name>/.o3de/3rdParty",
+    "PATH_O3DE_BIN": "C:/path/to/o3de/build/windows_vs2019/bin/profile",
+    "PATH_O3DE_PYTHON_INSTALL": "C:/path/to/o3de/python",
+    "PATH_O3DE_PYTHON_SCRIPTS": "C:/path/to/o3de/scripts",
+    "WING_APPDATA": "C:/Users/<your user name>/AppData/Roaming/Wing Pro 8",
+    "WING_PROJ": "C:/path/to/o3de/Gems/AtomLyIntegration/TechnicalArt/DccScriptingInterface/Tools/IDE/Wing/.solutions/DCCsi_8x.wpr"
+}

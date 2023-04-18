@@ -46,9 +46,6 @@ namespace PhysX
         float m_stiffness = 100.0f;
 
     private:
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
-
         bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
     };
 
@@ -115,8 +112,8 @@ namespace PhysX
     class EditorJointConfig
     {
     public:
-        static const float s_breakageMax;
-        static const float s_breakageMin;
+        static const float BreakageMax;
+        static const float BreakageMin;
 
         AZ_CLASS_ALLOCATOR(EditorJointConfig, AZ::SystemAllocator);
         AZ_TYPE_INFO(EditorJointConfig, "{8A966D65-CA97-4786-A13C-ACAA519D97EA}");
@@ -148,15 +145,14 @@ namespace PhysX
         float m_torqueMax = 1.0f;
 
         AZ::Vector3 m_localPosition = AZ::Vector3::CreateZero();
-        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); ///< Local rotation angles about X, Y, Z axes in degrees, relative to lead body.
+        AZ::Vector3 m_localRotation = AZ::Vector3::CreateZero(); //!< Local rotation angles about X, Y, Z axes in degrees, relative to follower body.
+
+        bool m_fixJointLocation = false; //!< When moving entity, the joint location and rotation will be recalculated to stay the same.
 
     private:
-        static bool VersionConverter(AZ::SerializeContext& context,
-            AZ::SerializeContext::DataElementNode& classElement);
+        bool IsInComponentMode() const; //!< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
 
-        bool IsInComponentMode() const; ///< This function is necessary for usage of m_inComponentMode as an attribute in the edit context. Using the variable directly instead of this function will result in the variable being saved.
-
-        void ValidateLeadEntityId(); ///< Issues warning if lead entity does not contain required components for a joint to function correctly.
+        AZ::Crc32 OnLeadEntityChanged() const; //!< Issues warning if lead entity does not contain required components for a joint to function correctly.
     };
 
 } // namespace PhysX

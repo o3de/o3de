@@ -38,20 +38,15 @@
 #include "CryEdit.h"
 #include "Dialogs/ErrorsDlg.h"
 #include "PluginManager.h"
-#include "IconManager.h"
 #include "ViewManager.h"
-#include "Objects/GizmoManager.h"
-#include "Objects/AxisGizmo.h"
 #include "DisplaySettings.h"
 #include "KeyboardCustomizationSettings.h"
-#include "Export/ExportManager.h"
 #include "LevelIndependentFileMan.h"
 #include "TrackView/TrackViewSequenceManager.h"
 #include "AnimationContext.h"
 #include "GameEngine.h"
 #include "ToolBox.h"
 #include "MainWindow.h"
-#include "RenderHelpers/AxisHelper.h"
 #include "Settings.h"
 #include "Include/IObjectManager.h"
 #include "Include/ISourceControl.h"
@@ -102,9 +97,7 @@ CEditorImpl::CEditorImpl()
     , m_bUpdates(true)
     , m_bTerrainAxisIgnoreObjects(false)
     , m_pDisplaySettings(nullptr)
-    , m_pIconManager(nullptr)
     , m_bSelectionLocked(true)
-    , m_pAxisGizmo(nullptr)
     , m_pGameEngine(nullptr)
     , m_pAnimationContext(nullptr)
     , m_pSequenceManager(nullptr)
@@ -118,7 +111,6 @@ CEditorImpl::CEditorImpl()
     , m_pConsoleSync(nullptr)
     , m_pSettingsManager(nullptr)
     , m_pLevelIndependentFileMan(nullptr)
-    , m_pExportManager(nullptr)
     , m_bMatEditMode(false)
     , m_bShowStatusText(true)
     , m_bInitialized(false)
@@ -147,7 +139,6 @@ CEditorImpl::CEditorImpl()
 
     m_pObjectManager = new CObjectManager;
     m_pViewManager = new CViewManager;
-    m_pIconManager = new CIconManager;
     m_pUndoManager = new CUndoManager;
     m_pToolBoxManager = new CToolBoxManager;
     m_pSequenceManager = new CTrackViewSequenceManager;
@@ -271,12 +262,8 @@ CEditorImpl::~CEditorImpl()
     m_bExiting = true; // Can't save level after this point (while Crash)
     SAFE_RELEASE(m_pSourceControl);
 
-    SAFE_DELETE(m_pIconManager)
     SAFE_DELETE(m_pViewManager)
     SAFE_DELETE(m_pObjectManager) // relies on prefab manager
-
-    // some plugins may be exporter - this must be above plugin manager delete.
-    SAFE_DELETE(m_pExportManager);
 
     SAFE_DELETE(m_pPluginManager)
     SAFE_DELETE(m_pAnimationContext) // relies on undo manager
@@ -528,36 +515,6 @@ EOperationMode CEditorImpl::GetOperationMode()
     return m_operationMode;
 }
 
-ITransformManipulator* CEditorImpl::ShowTransformManipulator(bool bShow)
-{
-    if (bShow)
-    {
-        if (!m_pAxisGizmo)
-        {
-            m_pAxisGizmo = new CAxisGizmo;
-            m_pAxisGizmo->AddRef();
-            GetObjectManager()->GetGizmoManager()->AddGizmo(m_pAxisGizmo);
-        }
-        return m_pAxisGizmo;
-    }
-    else
-    {
-        // Hide gizmo.
-        if (m_pAxisGizmo)
-        {
-            GetObjectManager()->GetGizmoManager()->RemoveGizmo(m_pAxisGizmo);
-            m_pAxisGizmo->Release();
-        }
-        m_pAxisGizmo = nullptr;
-    }
-    return nullptr;
-}
-
-ITransformManipulator* CEditorImpl::GetTransformManipulator()
-{
-    return m_pAxisGizmo;
-}
-
 void CEditorImpl::SetAxisConstraints(AxisConstrains axisFlags)
 {
     m_selectedAxis = axisFlags;
@@ -624,21 +581,6 @@ CBaseObject* CEditorImpl::NewObject(const char* typeName, const char* fileName, 
     object->SetPos(Vec3(x, y, z));
 
     return object;
-}
-
-const SGizmoParameters& CEditorImpl::GetGlobalGizmoParameters()
-{
-    if (!m_pGizmoParameters.get())
-    {
-        m_pGizmoParameters.reset(new SGizmoParameters());
-    }
-
-    m_pGizmoParameters->axisConstraint = m_selectedAxis;
-    m_pGizmoParameters->referenceCoordSys = m_refCoordsSys;
-    m_pGizmoParameters->axisGizmoScale = 1.0f;
-    m_pGizmoParameters->axisGizmoText = false;
-
-    return *m_pGizmoParameters;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -770,11 +712,6 @@ void CEditorImpl::ResetViews()
     m_pViewManager->ResetViews();
 
     m_pDisplaySettings->SetRenderFlags(m_pDisplaySettings->GetRenderFlags());
-}
-
-IIconManager* CEditorImpl::GetIconManager()
-{
-    return m_pIconManager;
 }
 
 IEditorFileMonitor* CEditorImpl::GetFileMonitor()
@@ -1330,15 +1267,6 @@ void CEditorImpl::NotifyExcept(EEditorNotifyEvent event, IEditorNotifyListener* 
         (*it++)->OnEditorNotifyEvent(event);
     }
 
-    if (event == eNotify_OnBeginNewScene)
-    {
-        if (m_pAxisGizmo)
-        {
-            m_pAxisGizmo->Release();
-        }
-        m_pAxisGizmo = nullptr;
-    }
-
     if (event == eNotify_OnInit)
     {
         REGISTER_COMMAND("py", CmdPy, 0, "Execute a Python code snippet.");
@@ -1435,16 +1363,6 @@ void CEditorImpl::ReduceMemory()
         CryLogAlways("Max Free Memory Block = %I64d Kb", maxsize / 1024);
     }
 #endif
-}
-
-IExportManager* CEditorImpl::GetExportManager()
-{
-    if (!m_pExportManager)
-    {
-        m_pExportManager = new CExportManager();
-    }
-
-    return m_pExportManager;
 }
 
 ESystemConfigPlatform CEditorImpl::GetEditorConfigPlatform() const

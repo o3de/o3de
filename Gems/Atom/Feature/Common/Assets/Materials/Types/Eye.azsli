@@ -9,6 +9,8 @@
 //TODO(MaterialPipeline): Inline the MaterialSrg files since they aren't reused.
 #include <Atom/Feature/Common/Assets/Shaders/Materials/Eye/Eye_MaterialSrg.azsli>
 
+#include <scenesrg.srgi>
+#include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
 

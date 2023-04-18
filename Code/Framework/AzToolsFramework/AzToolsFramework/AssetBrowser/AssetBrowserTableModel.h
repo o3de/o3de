@@ -43,6 +43,13 @@ namespace AzToolsFramework
             QModelIndex sibling(int row, int column, const QModelIndex& idx) const override;
             int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 
+            // QAbstractTableModel overrides ...
+            Qt::DropActions supportedDropActions() const override;
+            Qt::ItemFlags flags(const QModelIndex& index) const override;
+            bool dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex& parent) override;
+            QMimeData* mimeData(const QModelIndexList& indexes) const override;
+            QStringList mimeTypes() const override;
+
         protected:
             bool filterAcceptsRow(int source_row, const QModelIndex& source_parent) const override;
             QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */) const override;

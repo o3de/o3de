@@ -17,7 +17,9 @@
 namespace TestImpact
 {
     NativeTestTargetMetaMap NativeTestTargetMetaMapFactory(
-        const AZStd::string& masterTestListData, const SuiteSet& suiteSet, const SuiteLabelExcludeSet& suiteLabelExcludeSet)
+        const AZStd::string& masterTestListData,
+        const SuiteSet& suiteSet,
+        const SuiteLabelExcludeSet& suiteLabelExcludeSet)
     {
         // Keys for pertinent JSON node and attribute names
         constexpr const char* Keys[] =
@@ -37,7 +39,7 @@ namespace TestImpact
             "labels"
         };
 
-        enum
+        enum Fields
         {
             GoogleKey,
             TestKey,
@@ -51,9 +53,12 @@ namespace TestImpact
             NameKey,
             CommandKey,
             TimeoutKey,
-            SuiteLabelsKey
+            SuiteLabelsKey,
+            // Checksum
+            _CHECKSUM_
         };
 
+        static_assert(Fields::_CHECKSUM_ == AZStd::size(Keys));
         AZ_TestImpact_Eval(!masterTestListData.empty(), ArtifactException, "Test meta-data cannot be empty");
 
         NativeTestTargetMetaMap testMetas;

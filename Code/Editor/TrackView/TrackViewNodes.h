@@ -20,7 +20,6 @@
 #include "TrackViewNode.h"
 #include "TrackViewSequence.h"
 #include "Undo/Undo.h"
-#include "Export/ExportManager.h"
 
 #include <IMovieSystem.h>
 #include <QMap>
@@ -130,9 +129,6 @@ private slots:
 private:
     void CreateFolder(CTrackViewAnimNode* pGroupNode);
     void EditEvents();
-
-    void ImportFromFBX();
-    CTrackViewTrack* GetTrackViewTrack(const Export::EntityAnimData* pAnimData, CTrackViewTrackBundle trackBundle, const QString& nodeName);
 
     void AddMenuSeperatorConditional(QMenu& menu, bool& bAppended);
     void AddGroupNodeAddItems(struct SContextMenu& contextMenu, CTrackViewAnimNode* pAnimNode);

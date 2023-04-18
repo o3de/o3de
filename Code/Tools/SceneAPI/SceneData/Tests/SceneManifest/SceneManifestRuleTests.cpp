@@ -63,8 +63,8 @@ namespace AZ
         }
 
         MOCK_METHOD2(ExecuteByString, void(AZStd::string_view, bool));
-        MOCK_METHOD1(ExecuteByFilename, void(AZStd::string_view));
-        MOCK_METHOD2(ExecuteByFilenameWithArgs, void(AZStd::string_view, const AZStd::vector<AZStd::string_view>&));
+        MOCK_METHOD1(ExecuteByFilename, bool(AZStd::string_view));
+        MOCK_METHOD2(ExecuteByFilenameWithArgs, bool(AZStd::string_view, const AZStd::vector<AZStd::string_view>&));
         MOCK_METHOD3(ExecuteByFilenameAsTest, bool(AZStd::string_view, AZStd::string_view, const AZStd::vector<AZStd::string_view>&));
     };
 

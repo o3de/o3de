@@ -84,7 +84,7 @@ namespace AssetProcessor
                     products.end(),
                     [](const AssetBuilderSDK::JobProduct& a, const AssetBuilderSDK::JobProduct& b)
                     {
-                        return a.m_productFileName.compare(b.m_productFileName);
+                        return a.m_productFileName.compare(b.m_productFileName) < 0;
                     });
 
                 for (auto& product : products)
@@ -168,7 +168,7 @@ namespace AssetProcessor
         }
 
         // Remove the prefix and update
-        QStringRef unprefixedString = filename.midRef(prefixPos + currentPrefix.size());
+        QStringRef unprefixedString = filename.midRef(static_cast<int>(prefixPos + currentPrefix.size()));
         newName = (AZ::IO::FixedMaxPath(AZ::IO::PathView(product.m_productFileName).ParentPath()) / (newPrefix + unprefixedString.toUtf8().constData()))
                       .StringAsPosix();
 

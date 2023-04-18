@@ -68,16 +68,6 @@ namespace AzToolsFramework
 
             connect(
                 m_thumbnailViewWidget,
-                &AzQtComponents::AssetFolderThumbnailView::showInFolderTriggered,
-                this,
-                [this](const QModelIndex& index)
-                {
-                    auto indexData = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                    emit showInFolderTriggered(indexData);
-                });
-
-            connect(
-                m_thumbnailViewWidget,
                 &AzQtComponents::AssetFolderThumbnailView::contextMenu,
                 this,
                 [this](const QModelIndex& index)
@@ -94,6 +84,20 @@ namespace AzToolsFramework
                     {
                         entries = AZStd::move(m_assetTreeView->GetSelectedAssets()); 
                     }
+                    
+                    if (m_thumbnailViewWidget->InSearchResultsMode())
+                        {
+                            auto action = menu.addAction(tr("Show In Folder"));
+                            connect(
+                                action,
+                                &QAction::triggered,
+                                this,
+                                [this, entry]()
+                                {
+                                    emit showInFolderTriggered(entry);
+                                });
+                            menu.addSeparator();
+                        }
 
                     AssetBrowserInteractionNotificationBus::Broadcast(
                         &AssetBrowserInteractionNotificationBus::Events::AddContextMenuActions, this, &menu, entries);
@@ -106,15 +110,6 @@ namespace AzToolsFramework
 
             connect(m_thumbnailViewWidget, &AzQtComponents::AssetFolderThumbnailView::afterRename, this, &AssetBrowserThumbnailView::AfterRename);
 
-              if (AzToolsFramework::IsNewActionManagerEnabled())
-              {
-                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                  {
-                      // Assign this widget to the Editor Asset Browser Action Context.
-                      hotKeyManagerInterface->AssignWidgetToActionContext(
-                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                  }
-              }
 
               QAction* deleteAction = new QAction("Delete Action", this);
               deleteAction->setShortcut(QKeySequence::Delete);
@@ -165,17 +160,18 @@ namespace AzToolsFramework
             auto layout = new QVBoxLayout();
             layout->addWidget(m_thumbnailViewWidget);
             setLayout(layout);
+
+            if (AzToolsFramework::IsNewActionManagerEnabled())
+            {
+                AssignWidgetToActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
+            }
         }
 
         AssetBrowserThumbnailView::~AssetBrowserThumbnailView()
         {
             if (AzToolsFramework::IsNewActionManagerEnabled())
             {
-                  if (auto hotKeyManagerInterface = AZ::Interface<AzToolsFramework::HotKeyManagerInterface>::Get())
-                  {
-                      hotKeyManagerInterface->RemoveWidgetFromActionContext(
-                          EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
-                  }
+                RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorAssetBrowserActionContextIdentifier, this);
             }
         }
 

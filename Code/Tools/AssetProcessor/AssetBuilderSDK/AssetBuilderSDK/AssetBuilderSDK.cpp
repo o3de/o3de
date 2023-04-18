@@ -19,6 +19,7 @@
 #include <AzCore/Component/Entity.h> // so we can have the entity UUID type.
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzCore/Component/ComponentApplicationBus.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Slice/SliceAsset.h> // For slice asset sub ids
 #include <AzCore/RTTI/BehaviorContext.h>
 #include <AzToolsFramework/AssetDatabase/AssetDatabaseConnection.h>
@@ -144,6 +145,24 @@ namespace AssetBuilderSDK
         AssetBuilderSDK::AssetBuilderBus::Broadcast(&AssetBuilderSDK::AssetBuilderBus::Events::BuilderLog, builderId, message, args);
         va_end(args);
     }
+
+    void CreateABDataFile(AZStd::string& folder, AZStd::function<void(rapidjson::PrettyWriter<rapidjson::StringBuffer>&)> body)
+    {
+        rapidjson::StringBuffer s;
+        rapidjson::PrettyWriter<rapidjson::StringBuffer> writer(s);
+        writer.StartObject();
+        writer.Key("metadata");
+        writer.StartObject();
+        body(writer);
+
+        writer.EndObject();
+        writer.EndObject();
+        rapidjson::Document doc;
+        doc.Parse(s.GetString());
+        AZ::JsonSerializationUtils::WriteJsonFile(doc, folder.c_str());
+    }
+
+
 
     AssetBuilderPattern::AssetBuilderPattern(const AZStd::string& pattern, PatternType type)
         : m_pattern(pattern)
@@ -1416,7 +1435,8 @@ namespace AssetBuilderSDK
                 ->Property("type", BehaviorValueProperty(&JobDependency::m_type))
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Fingerprint)>("Fingerprint")
                 ->Enum<aznumeric_cast<int>(JobDependencyType::Order)>("Order")
-                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce");
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnce)>("OrderOnce")
+                ->Enum<aznumeric_cast<int>(JobDependencyType::OrderOnly)>("OrderOnly");
         }
     }
 

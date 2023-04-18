@@ -26,7 +26,7 @@ namespace AZ
             }
         }
 
-        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
+        RayTracingShaderTableDescriptor* RayTracingShaderTableDescriptor::Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState)
         {
             m_name = name;
             m_rayTracingPipelineState = rayTracingPipelineState;

@@ -9,7 +9,7 @@
 #pragma once
 
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/RTTI/RTTI.h>
+#include <AzCore/RTTI/RTTIMacros.h>
 #include <AzCore/std/containers/span.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 #include <Compression/CompressionInterfaceStructs.h>
@@ -22,6 +22,31 @@ namespace Compression
         Started,
         Complete,
         Failed,
+    };
+
+    using DecompressionResultString = AZStd::fixed_string<512>;
+
+    //! Structure which can be used to supply custom options
+    //! to the decompression interface DeompressBlock function
+    //! The expected use is that the derived IDeCompressionInterface class
+    //! implements the Decompression struct and additional fields for specifying decompression options
+    //! When the derived compressed interface classes in their DecompressBlock function
+    //! would use a call to AZ rtti cast to cast the struct to the correct type derived type
+    //! `azrtti_cast<derived-decompression-options*>(&decompressionOptions);
+    struct DecompressionOptions
+    {
+        AZ_TYPE_INFO_WITH_NAME_DECL(DecompressionOptions);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
+        virtual ~DecompressionOptions();
+    };
+
+    struct DecompressionOutcome
+    {
+        explicit constexpr operator bool() const;
+        //! Stores result code of whether the operation succeeded
+        DecompressionResult m_result{ DecompressionResult::PendingStart };
+        //! Stores any error messages associated with a failure result
+        DecompressionResultString m_resultString;
     };
 
     struct DecompressionResultData
@@ -41,8 +66,8 @@ namespace Compression
         //! The size of the span will be set to actual uncompressed size
         AZStd::span<AZStd::byte> m_uncompressedBuffer;
 
-        //! Stores result code of whether the operation succeeded
-        DecompressionResult m_result{ DecompressionResult::PendingStart };
+        //! Outcome containing result of the decompression operation
+        DecompressionOutcome m_decompressionOutcome;
     };
 
     struct IDecompressionInterface
@@ -51,16 +76,23 @@ namespace Compression
 
         //! Retrieves the 32-bit compression algorithm ID associated with this interface
         virtual CompressionAlgorithmId GetCompressionAlgorithmId() const = 0;
+
         //! Decompresses the input compressed data into the uncompressed buffer
         //! Both parameters are specified as spans which encapsulates the contiguous buffer and it's size.
+        //! @param uncompressedBuffer destination buffer where uncompress output will be stored
+        //! @param compressedData source buffer containing compressed data to decompress
+        //! @param decompressionOptions that can be provided to the Compressor
+        //! @return a DecompressionResultData instance to indicate if compression operation has succeeded
         [[nodiscard]] virtual DecompressionResultData DecompressBlock(
-            AZStd::span<AZStd::byte> uncompressedBuffer, const AZStd::span<const AZStd::byte>& compressedData) = 0;
+            AZStd::span<AZStd::byte> decompressionBuffer, const AZStd::span<const AZStd::byte>& compressedData,
+            const DecompressionOptions& decompressionOptions = {}) const = 0;
     };
 
     class DecompressionRegistrarInterface
     {
     public:
-        AZ_RTTI(DecompressionRegistrarInterface, "{DB1ACA55-B36F-469B-9704-EC486D9FC810}");
+        AZ_TYPE_INFO_WITH_NAME_DECL(DecompressionRegistrarInterface);
+        AZ_RTTI_NO_TYPE_INFO_DECL();
         virtual ~DecompressionRegistrarInterface() = default;
 
         //! Callback function that is invoked for every registered decompression interface
@@ -96,9 +128,9 @@ namespace Compression
         //! @return true if the unregistration is successful
         virtual bool UnregisterDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) = 0;
 
-        //! Queries the decompression interface with the decompression algorithmd Id
+        //! Queries the decompression interface with the decompression algorithm Id
         //! @param compressionAlgorithmId unique Id of decompression interface to query
-        //! @return pointer to the decompression tnterface or nullptr if not found
+        //! @return pointer to the decompression interface or nullptr if not found
         [[nodiscard]] virtual IDecompressionInterface* FindDecompressionInterface(CompressionAlgorithmId compressionAlgorithmId) const = 0;
 
 
@@ -112,5 +144,5 @@ namespace Compression
 
 } // namespace Compression
 
-// Provides implemenation of the DecompressionResultData struct
+// Provides implementation of the DecompressionResultData struct
 #include "DecompressionInterfaceAPI.inl"
