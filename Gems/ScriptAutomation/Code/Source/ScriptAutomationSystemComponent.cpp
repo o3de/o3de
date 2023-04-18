@@ -9,6 +9,7 @@
 #include <ScriptAutomationSystemComponent.h>
 
 #include <ScriptAutomationScriptBindings.h>
+#include <ImageComparisonConfig.h>
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
@@ -27,7 +28,7 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Script/ScriptComponent.h>
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
     namespace
     {
@@ -114,6 +115,8 @@ namespace ScriptAutomation
                         ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
             }
         }
+
+        ScriptAutomation::ImageComparisonConfig::Reflect(context);
     }
 
     void ScriptAutomationSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
@@ -176,6 +179,7 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::Activate()
     {
+        AzFramework::AssetCatalogEventBus::Handler::BusConnect(); // listen for OnCatalogLoaded
         ScriptAutomationRequestBus::Handler::BusConnect();
 
         m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
@@ -200,19 +204,27 @@ namespace ScriptAutomation
         }
     }
 
+    void ScriptAutomationSystemComponent::PostAssetCatalogInit()
+    {
+        m_imageComparisonSettings.Activate();
+
+    }
+
     void ScriptAutomationSystemComponent::Deactivate()
     {
-        m_scriptContext = nullptr;
-        m_scriptBehaviorContext = nullptr;
-
         DeactivateScripts();
+
+        m_imageComparisonSettings.Deactivate();
+
+        m_scriptBehaviorContext = nullptr;
+        m_scriptContext = nullptr;
 
         ScriptAutomationRequestBus::Handler::BusDisconnect();
     }
 
     void ScriptAutomationSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (!m_isStarted)
+        if (!m_isStarted && m_imageComparisonSettings.IsReady())
         {
             m_isStarted = true;
             ExecuteScript(m_automationScript.c_str());
@@ -296,44 +308,45 @@ namespace ScriptAutomation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath [[maybe_unused]])
+    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath)
     {
         AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
+        [[maybe_unused]] AZStd::string localScriptFilePath = scriptFilePath;
         if (!scriptAsset)
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
+            QueueScriptOperation([localScriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", localScriptFilePath.c_str());
                 }
             );
-#endif
             return;
         }
 
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
-        QueueScriptOperation([scriptFilePath]()
+        QueueScriptOperation([localScriptFilePath]()
             {
-                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
+                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", localScriptFilePath.c_str());
             }
         );
-#endif
 
-        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
+        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), localScriptFilePath.c_str(), scriptAsset->m_data.GetScriptBuffer().size()))
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
+            QueueScriptOperation([localScriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath);
+                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", localScriptFilePath.c_str());
                 }
             );
-#endif
         }
     }
+
+    const ImageComparisonToleranceLevel* ScriptAutomationSystemComponent::FindToleranceLevel(const AZStd::string& name)
+    {
+        return m_imageComparisonSettings.FindToleranceLevel(name);
+    }
+
 
     void ScriptAutomationSystemComponent::OnCaptureQueryTimestampFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
@@ -374,4 +387,12 @@ namespace ScriptAutomation
         }
     }
 
-} // namespace ScriptAutomation
+    void ScriptAutomationSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+    {
+        AZ::TickBus::QueueFunction([&]()
+            {
+                PostAssetCatalogInit();
+            });
+    }
+
+} // namespace AZ::ScriptAutomation

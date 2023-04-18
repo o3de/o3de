@@ -30,7 +30,7 @@
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
     namespace Utils
     {
@@ -90,40 +90,41 @@ namespace ScriptAutomation
 
     namespace Bindings
     {
+        void RunScript(const AZStd::string& scriptFilePath)
+        {
+            // Unlike other Script_ callback functions, we process immediately instead of pushing onto the m_scriptOperations queue.
+            // This function is special because running the script is what adds more commands onto the m_scriptOperations queue.
+            ScriptAutomationInterface::Get()->ExecuteScript(scriptFilePath.c_str());
+        }
+
         void Print(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_TracePrintf does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void Warning(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_Warning does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void Error(const AZStd::string& message [[maybe_unused]])
         {
-#ifndef _RELEASE //AZ_Error does nothing in release, ignore this call
             auto func = [message]()
             {
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
-#endif
         }
 
         void ExecuteConsoleCommand(const AZStd::string& command)
@@ -267,6 +268,20 @@ namespace ScriptAutomation
         {
             AZ::RPI::RPISystemInterface* rpiSystem = AZ::RPI::RPISystemInterface::Get();
             return rpiSystem->GetRenderApiName().GetCStr();
+        }
+
+        AZStd::string GetRenderPipelineName()
+        {
+            AZ::IConsole* console = AZ::Interface<AZ::IConsole>::Get();
+            AZStd::string renderPipelinePath;
+            console->GetCvarValue("r_default_pipeline_name", renderPipelinePath);
+            AZ_Assert(renderPipelinePath.size() > 0, "Invalid render pipeline path obtained from r_default_pipeline_name CVAR");
+            return AZ::IO::PathView(renderPipelinePath).Stem().FixedMaxPathString().c_str();
+        }
+
+        AZStd::string GetPlatformName()
+        {
+            return AZ_TRAIT_OS_PLATFORM_CODENAME_LOWER;
         }
 
         AZStd::string GetProfilingOutputPath(bool normalized)
@@ -540,10 +555,19 @@ namespace ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
-        void CompareScreenshots(const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
+        void CompareScreenshots(const AZStd::string& compareName, const AZStd::string& comparisonLevel, const AZStd::string& filePathA, const AZStd::string& filePathB, float minDiffFilter)
         {
-            auto operation = [filePathA, filePathB, minDiffFilter]()
+            // capture strings by copy or risk them being deleted before we access them.
+            auto operation = [=]()
             {
+
+                const ImageComparisonToleranceLevel* toleranceLevelPtr = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevelPtr)
+                {
+                    AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
+                    return;
+                }
+                const ImageComparisonToleranceLevel toleranceLevel = *toleranceLevelPtr; // duplicate in case data is reloaded
                 AZStd::string resolvedPathA = ResolvePath(filePathA);
                 AZStd::string resolvedPathB = ResolvePath(filePathB);
 
@@ -555,22 +579,144 @@ namespace ScriptAutomation
                     resolvedPathB,
                     minDiffFilter);
 
-                AZ_Error("ScriptAutomation", compareOutcome.IsSuccess(),
-                    "Image comparison failed. %s", compareOutcome.GetError().m_errorMessage.c_str());
+                AZ_Error(
+                    "ScriptAutomation", 
+                    compareOutcome.IsSuccess(),
+                    "%s screenshot compare error. Error \"%s\"", 
+                    compareName.c_str(),
+                    compareOutcome.GetError().m_errorMessage.c_str()
+                );
                 if (compareOutcome.IsSuccess())
                 {
-                    AZ_Printf(
-                        "ScriptAutomation",
-                        "Diff score is %.5f from %s and %s.",
-                        compareOutcome.GetValue().m_diffScore,
-                        resolvedPathA.c_str(),
-                        resolvedPathB.c_str());
-                    AZ_Printf(
-                        "ScriptAutomation",
-                        "Filtered diff score is %.5f from %s and %s.",
-                        compareOutcome.GetValue().m_filteredDiffScore,
-                        resolvedPathA.c_str(),
-                        resolvedPathB.c_str());
+                    float diffScore = toleranceLevel.m_filterImperceptibleDiffs
+                        ? compareOutcome.GetValue().m_diffScore
+                        : compareOutcome.GetValue().m_filteredDiffScore;
+
+                    if (diffScore > toleranceLevel.m_threshold)
+                    {
+                        AZ_Error(
+                            "ScriptAutomation", 
+                            false,
+                            "%s screenshot compare failed. Diff score %f exceeds threshold of %f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel.m_threshold,
+                            toleranceLevel.m_name.c_str()
+                        );
+
+                        // TODO: open image compare app if CVAR is set
+                    }
+                    else
+                    {
+                        AZ_Printf(
+                            "ScriptAutomation",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel.m_threshold,
+                            toleranceLevel.m_name.c_str()
+                        );
+                    }
+                }
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+
+        void CompareScreenshotToBaseline(const AZStd::string& compareName, const AZStd::string& comparisonLevel, const AZStd::string& imageName, float minDiffFilter)
+        {
+            // capture strings by copy or risk them being deleted before we access them.
+            auto operation = [=]()
+            {
+
+                const ImageComparisonToleranceLevel* toleranceLevelPtr = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevelPtr)
+                {
+                    AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
+                    return;
+                }
+                const ImageComparisonToleranceLevel toleranceLevel = *toleranceLevelPtr; // duplicate in case data is reloaded
+
+
+                // build test image filepath
+                AZ::Render::FrameCapturePathOutcome pathOutcome;
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildScreenshotFilePath, imageName, true);
+
+                if (!pathOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "ScriptAutomation", 
+                        false, 
+                        "%s screenshot compare error. Failed to build screenshot file path for image name %s",
+                        compareName.c_str(),
+                        imageName.c_str());
+                }
+                AZStd::string screenshotFilePath = pathOutcome.GetValue();
+
+                // build official comparison image filepath
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    pathOutcome, &AZ::Render::FrameCaptureTestRequestBus::Events::BuildOfficialBaselineFilePath, imageName, true);
+
+                if (!pathOutcome.IsSuccess())
+                {
+                    AZ_Error(
+                        "ScriptAutomation", 
+                        false, 
+                        "%s screenshot compare error. Failed to build official baseline file path for image name %s",
+                        compareName.c_str(),
+                        imageName.c_str());
+                }
+                AZStd::string baselineFilePath = pathOutcome.GetValue();
+
+                // compare test image against the official baseline
+                AZ::Render::FrameCaptureComparisonOutcome compareOutcome;
+                AZ::Render::FrameCaptureTestRequestBus::BroadcastResult(
+                    compareOutcome,
+                    &AZ::Render::FrameCaptureTestRequestBus::Events::CompareScreenshots,
+                    screenshotFilePath,
+                    baselineFilePath,
+                    minDiffFilter);
+
+                AZ_Error(
+                    "ScriptAutomation", 
+                    compareOutcome.IsSuccess(),
+                    "%s screenshot compare error. Error \"%s\"", 
+                    compareName.c_str(),
+                    compareOutcome.GetError().m_errorMessage.c_str()
+                );
+                if (compareOutcome.IsSuccess())
+                {
+                    float diffScore = toleranceLevel.m_filterImperceptibleDiffs
+                        ? compareOutcome.GetValue().m_diffScore
+                        : compareOutcome.GetValue().m_filteredDiffScore;
+
+                    if (diffScore > toleranceLevel.m_threshold)
+                    {
+                        AZ_Error(
+                            "ScriptAutomation", 
+                            false,
+                            "%s screenshot compare failed. Diff score %f exceeds threshold of %f ('%s').",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel.m_threshold,
+                            toleranceLevel.m_name.c_str()
+                        );
+
+                        // TODO: open image compare app if CVAR is set
+                    }
+                    else
+                    {
+                        AZ_Printf(
+                            "ScriptAutomation",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %f ('%s').\n",
+                            compareName.c_str(),
+                            diffScore,
+                            toleranceLevel.m_threshold,
+                            toleranceLevel.m_name.c_str()
+                        );
+                    }
                 }
             };
 
@@ -583,6 +729,7 @@ namespace ScriptAutomation
         AZ::MathReflect(behaviorContext);
         AZ::SettingsRegistryScriptUtils::ReflectSettingsRegistryToBehaviorContext(*behaviorContext);
 
+        behaviorContext->Method("RunScript", &Bindings::RunScript);
         behaviorContext->Method("Print", &Bindings::Print);
         behaviorContext->Method("Warning", &Bindings::Warning);
         behaviorContext->Method("Error", &Bindings::Error);
@@ -597,6 +744,8 @@ namespace ScriptAutomation
         behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
         behaviorContext->Method("DegToRad", &AZ::DegToRad);
         behaviorContext->Method("GetRenderApiName", &Bindings::GetRenderApiName);
+        behaviorContext->Method("GetRenderPipelineName", &Bindings::GetRenderPipelineName);
+        behaviorContext->Method("GetPlatformName", &Bindings::GetPlatformName);
         behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
 
         // Screenshots...
@@ -608,6 +757,8 @@ namespace ScriptAutomation
         behaviorContext->Method("CaptureScreenshotWithPreview", &Bindings::CaptureScreenshotWithPreview);
         behaviorContext->Method("CapturePassAttachment", &Bindings::CapturePassAttachment);
         behaviorContext->Method("CompareScreenshots", &Bindings::CompareScreenshots);
+        behaviorContext->Method("CompareScreenshotToBaseline", &Bindings::CompareScreenshotToBaseline);
+
 
         // Profiling data...
         behaviorContext->Method("CapturePassTimestamp", &Bindings::CapturePassTimestamp);
@@ -616,4 +767,4 @@ namespace ScriptAutomation
         behaviorContext->Method("CaptureCpuProfilingStatistics", &Bindings::CaptureCpuProfilingStatistics);
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
     }
-} // namespace ScriptAutomation
+} // namespace AZ::ScriptAutomation
