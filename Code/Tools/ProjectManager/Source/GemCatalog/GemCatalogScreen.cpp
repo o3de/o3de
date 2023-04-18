@@ -377,6 +377,7 @@ namespace O3DE::ProjectManager
                 const QString& newVersion = GemModel::GetNewVersion(modelIndex);
                 const QString& version = newVersion.isEmpty() ? gemInfo.m_version : newVersion;
 
+
                 // avoid showing the version twice if it's already in the display name
                 if (gemInfo.m_isEngineGem || (version.isEmpty() || gemInfo.m_displayName.contains(version) || version.contains("Unknown", Qt::CaseInsensitive)))
                 {
@@ -391,10 +392,25 @@ namespace O3DE::ProjectManager
                 {
                     notification += tr(" and ");
                 }
-                if (added && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
-                    (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+
+                if (added)
                 {
-                    DownloadGem(modelIndex, newVersion.isEmpty() ? gemInfo.m_version : newVersion, gemInfo.m_path);
+                    if (newVersion.isEmpty() && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
+                    (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+                    {
+                        // download the current version
+                        DownloadGem(modelIndex, gemInfo.m_version, gemInfo.m_path);
+                    }
+                    else if (!newVersion.isEmpty())
+                    {
+                        const GemInfo& newVersionGemInfo = GemModel::GetGemInfo(modelIndex, newVersion);
+                        if (newVersionGemInfo.m_downloadStatus == GemInfo::DownloadStatus::NotDownloaded ||
+                            GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed)
+                        {
+                            // download the new version
+                            DownloadGem(modelIndex, newVersionGemInfo.m_version, newVersionGemInfo.m_path);
+                        }
+                    }
                 }
             }
 

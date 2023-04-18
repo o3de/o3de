@@ -57,6 +57,9 @@ namespace O3DE::ProjectManager
         GemActive GetGemActive() const { return m_gemActiveFilter; }
         void SetGemActive(GemActive enabled) { m_gemActiveFilter = enabled; InvalidateFilter(); }
 
+        bool GetMissingActive() const { return m_gemMissingFilter; }
+        void SetGemMissing(bool enabled) { m_gemMissingFilter = enabled; InvalidateFilter(); }
+
         GemInfo::GemOrigins GetGemOrigins() const { return m_gemOriginFilter; }
         void SetGemOrigins(const GemInfo::GemOrigins& gemOrigins) { m_gemOriginFilter = gemOrigins; InvalidateFilter(); }
 
@@ -96,6 +99,7 @@ namespace O3DE::ProjectManager
         GemInfo::Types m_typeFilter = {};
         bool m_updateAvailableFilter = false;
         bool m_compatibleOnlyFilter = true;
+        bool m_gemMissingFilter = false;
         QSet<QString> m_featureFilter;
     };
 } // namespace O3DE::ProjectManager

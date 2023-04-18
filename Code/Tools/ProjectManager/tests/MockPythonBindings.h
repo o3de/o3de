@@ -33,7 +33,7 @@ namespace O3DE::ProjectManager
         MOCK_METHOD2(UnregisterGem, AZ::Outcome<void, AZStd::string>(const QString&, const QString&));
 
         // Project
-        MOCK_METHOD3(CreateProject, AZ::Outcome<ProjectInfo>(const QString&, const ProjectInfo&, bool));
+        MOCK_METHOD3(CreateProject, AZ::Outcome<ProjectInfo, IPythonBindings::ErrorPair>(const QString&, const ProjectInfo&, bool));
         MOCK_METHOD1(GetProject, AZ::Outcome<ProjectInfo>(const QString&));
         MOCK_METHOD0(GetProjects, AZ::Outcome<QVector<ProjectInfo>>());
         MOCK_METHOD2(AddProject, DetailedOutcome(const QString&, bool));
@@ -47,7 +47,7 @@ namespace O3DE::ProjectManager
 
         // ProjectTemplate
         MOCK_METHOD0(GetProjectTemplates, AZ::Outcome<QVector<ProjectTemplateInfo>>());
-        MOCK_CONST_METHOD0(GetProjectTemplatesForAllRepos, AZ::Outcome<QVector<ProjectTemplateInfo>>());
+        MOCK_CONST_METHOD1(GetProjectTemplatesForAllRepos, AZ::Outcome<QVector<ProjectTemplateInfo>>(bool));
         MOCK_METHOD0(GetGemTemplates, AZ::Outcome<QVector<TemplateInfo>>());
 
         // Gem Repos
@@ -56,8 +56,8 @@ namespace O3DE::ProjectManager
         MOCK_METHOD1(AddGemRepo, DetailedOutcome(const QString&));
         MOCK_METHOD1(RemoveGemRepo, bool(const QString&));
         MOCK_METHOD0(GetAllGemRepoInfos, AZ::Outcome<QVector<GemRepoInfo>, AZStd::string>());
-        MOCK_METHOD1(GetGemInfosForRepo, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
-        MOCK_METHOD1(GetGemInfosForAllRepos, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&));
+        MOCK_METHOD2(GetGemInfosForRepo, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&, bool));
+        MOCK_METHOD2(GetGemInfosForAllRepos, AZ::Outcome<QVector<GemInfo>, AZStd::string>(const QString&, bool));
         MOCK_METHOD4(DownloadGem, DetailedOutcome(const QString&, const QString&, std::function<void(int, int)>, bool));
         MOCK_METHOD0(CancelDownload, void());
         MOCK_METHOD2(IsGemUpdateAvaliable, bool(const QString&, const QString&));

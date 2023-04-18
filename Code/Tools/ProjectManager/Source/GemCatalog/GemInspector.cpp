@@ -295,9 +295,9 @@ namespace O3DE::ProjectManager
 
         m_updateGemButton->setVisible(isRemote && isDownloaded && !isMissing);
         m_uninstallGemButton->setText(isRemote ? tr("Uninstall Gem") : tr("Remove Gem"));
-        m_uninstallGemButton->setVisible((isRemote && isDownloaded && !isMissing) || isLocal);
+        m_uninstallGemButton->setVisible(!isMissing && ((isRemote && isDownloaded) || isLocal));
         m_editGemButton->setVisible(!isMissing && (!isRemote || (isRemote && isDownloaded)));
-        m_downloadGemButton->setVisible(m_readOnly && isRemote && !isDownloaded);
+        m_downloadGemButton->setVisible(isRemote && !isDownloaded);
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -396,10 +396,15 @@ namespace O3DE::ProjectManager
                 GemModel::SetIsAdded(*m_model, m_curModelIndex, true, GetVersion());
                 GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
 
-                const auto downloadStatus = GemModel::GetDownloadStatus(m_curModelIndex);
-                if (downloadStatus == GemInfo::NotDownloaded || downloadStatus == GemInfo::DownloadFailed) 
+                const GemInfo& gemInfo = GemModel::GetGemInfo(m_curModelIndex);
+                if (!gemInfo.m_repoUri.isEmpty())
                 {
-                    emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath());
+                    // this gem comes from a remote repository, see if we should download it
+                    const auto downloadStatus = GemModel::GetDownloadStatus(m_curModelIndex);
+                    if (downloadStatus == GemInfo::NotDownloaded || downloadStatus == GemInfo::DownloadFailed) 
+                    {
+                        emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath());
+                    }
                 }
 
                 m_updateVersionButton->setVisible(false);

@@ -432,7 +432,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemFilterWidget::OnStatusFilterToggled([[maybe_unused]] QAbstractButton* button, [[maybe_unused]] bool checked)
+    void GemFilterWidget::OnStatusFilterToggled(QAbstractButton* button, bool checked)
     {
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
         QAbstractButton* selectedButton = buttons[0];
@@ -471,6 +471,12 @@ namespace O3DE::ProjectManager
         {
             m_filterProxyModel->SetGemActive(GemSortFilterProxyModel::GemActive::NoFilter);
         }
+
+        // Missing
+        if (button == buttons[4])
+        {
+            m_filterProxyModel->SetGemMissing(checked);
+        }
     }
 
     void GemFilterWidget::UpdateGemStatusFilter()
@@ -503,6 +509,14 @@ namespace O3DE::ProjectManager
         elementNames.push_back(GemSortFilterProxyModel::GetGemActiveString(GemSortFilterProxyModel::GemActive::Inactive));
         elementCounts.push_back(totalGems - enabledGemTotal);
 
+        elementNames.push_back(tr("Missing"));
+        int numMissingGems = 0;
+        for (int i = 0; i < m_gemModel->rowCount(); ++i)
+        {
+            numMissingGems += GemModel::IsAddedMissing(m_gemModel->index(i, 0)) ? 1 : 0;
+        }
+        elementCounts.push_back(numMissingGems);
+
         m_statusFilter->SetElements(elementNames, elementCounts);
 
         const QList<QAbstractButton*> buttons = m_statusFilter->GetButtonGroup()->buttons();
@@ -515,6 +529,9 @@ namespace O3DE::ProjectManager
         QAbstractButton* inactiveButton = buttons[3];
         activeButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Active);
         inactiveButton->setChecked(m_filterProxyModel->GetGemActive() == GemSortFilterProxyModel::GemActive::Inactive);
+
+        QAbstractButton* missingButton = buttons[4];
+        missingButton->setChecked(m_filterProxyModel->GetMissingActive());
     }
 
     void GemFilterWidget::UpdateGemOriginFilter()

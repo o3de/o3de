@@ -243,9 +243,10 @@ namespace O3DE::ProjectManager
         {
             const QString& gemPath = itr.value();
             const QString& gemNameWithSpecifier = itr.key();
-            AZ::Dependency<AZ::SemanticVersion::parts_count> dependency;
-            auto parseOutcome = dependency.ParseVersions({ gemNameWithSpecifier.toUtf8().constData() });
-            const QString& gemName = parseOutcome ? dependency.GetName().c_str() : gemNameWithSpecifier; 
+
+            QString gemName, gemVersion;
+            ProjectUtils::Comparison comparator;
+            ProjectUtils::GetDependencyNameAndVersion(gemNameWithSpecifier, gemName, comparator, gemVersion);
             if (gemName == "${Name}")
             {
                 // ${Name} is a special name used in templates and is replaced with a real gem name later 
@@ -256,25 +257,29 @@ namespace O3DE::ProjectManager
             if (auto nameFoundIter = m_nameToIndexMap.find(gemName); nameFoundIter != m_nameToIndexMap.end())
             {
                 const QModelIndex modelIndex = nameFoundIter.value();
-                const auto& versionList = modelIndex.data(RoleGemInfoVersions).value<QList<QVariant>>();
-                if (versionList.count() > 1 && !gemPath.isEmpty())
+                QStandardItem* gemItem = itemFromIndex(modelIndex);
+                AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
+
+                GemInfo gemInfo = GetGemInfo(modelIndex, gemVersion, gemPath);
+                if (!gemInfo.IsValid())
                 {
-                    // make sure the gem item delegate displays the correct version info 
-                    for (auto versionVariant : versionList)
-                    {
-                        const auto& variantGemInfo = versionVariant.value<GemInfo>();
-                        if (QDir(gemPath) == QDir(variantGemInfo.m_path))
-                        {
-                            QStandardItem* gemItem = itemFromIndex(modelIndex);
-                            AZ_Assert(gemItem, "Failed to retrieve enabled gem item from model index");
-                            SetItemDataFromGemInfo(gemItem, variantGemInfo);
-                            break;
-                        }
-                    }
+                    // This gem version info is missing, but the project uses it so show it to the user
+                    // so they can remove it or change versions if they want to
+                    // In the future we want to let the user browse to this gem's location on disk, or
+                    // let them download it
+                    gemInfo.m_name = gemName;
+                    gemInfo.m_displayName = gemName;
+                    gemInfo.m_version = gemVersion;
+                    gemInfo.m_summary = QString("This project uses %1 but a compatible gem was not found, or has not been registered yet.")
+                                            .arg(gemNameWithSpecifier);
+                    gemInfo.m_isAdded = true;
+
+                    AddGemInfoVersion(gemItem, gemInfo, /*updateExisting=*/false);
                 }
 
-                // Set Added/PreviouslyAdded after potentially updating data above which might remove
-                // those settings
+                SetItemDataFromGemInfo(gemItem, gemInfo);
+
+                // Set Added/PreviouslyAdded after potentially updating data these settings
                 GemModel::SetWasPreviouslyAdded(*this, modelIndex, true);
                 GemModel::SetIsAdded(*this, modelIndex, true);
 
@@ -288,7 +293,7 @@ namespace O3DE::ProjectManager
             GemInfo gemInfo;
             gemInfo.m_name = gemName;
             gemInfo.m_displayName = gemName;
-            gemInfo.m_version = parseOutcome ? dependency.GetBounds().at(0).ToString().c_str() : "";
+            gemInfo.m_version = gemVersion;
             gemInfo.m_summary = QString("This project uses %1 but a compatible gem was not found, or has not been registered yet.").arg(gemNameWithSpecifier);
             gemInfo.m_isAdded = true;
 
@@ -416,7 +421,7 @@ namespace O3DE::ProjectManager
             // if no version is provided, try to find the one that matches the current version
             // if a path and/or version is provided try to find an exact match
             if ((useCurrentVersion && gemVersion == variantVersion) ||
-                (usePath && variantPath == path) ||
+                (usePath && QFileInfo(variantPath) == QFileInfo(path)) ||
                 (!usePath && useVersion && variantVersion == version))
             {
                 return gemInfo;
@@ -917,6 +922,11 @@ namespace O3DE::ProjectManager
     bool GemModel::IsCompatible(const QModelIndex& modelIndex)
     {
         return GemModel::GetGemInfo(modelIndex).IsCompatible();
+    }
+
+    bool GemModel::IsAddedMissing(const QModelIndex& modelIndex)
+    {
+        return GemModel::IsAdded(modelIndex) && GemModel::GetGemInfo(modelIndex).m_path.isEmpty();
     }
 
     bool GemModel::DoGemsToBeAddedHaveRequirements() const
