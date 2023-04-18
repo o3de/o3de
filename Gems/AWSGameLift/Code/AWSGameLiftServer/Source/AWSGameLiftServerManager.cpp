@@ -405,8 +405,8 @@ namespace AWSGameLift
     }
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionCertificate()
-    {
-        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
+    {   
+        auto certificateOutcome = m_gameLiftServerSDKWrapper->GetComputeCertificate();
         if (certificateOutcome.IsSuccess())
         {
             return AZ::IO::Path(certificateOutcome.GetResult().GetCertificatePath().c_str());
@@ -420,6 +420,7 @@ namespace AWSGameLift
 
     AZ::IO::Path AWSGameLiftServerManager::GetExternalSessionPrivateKey()
     {
+        /*
         auto certificateOutcome = m_gameLiftServerSDKWrapper->GetInstanceCertificate();
         if (certificateOutcome.IsSuccess())
         {
@@ -430,6 +431,9 @@ namespace AWSGameLift
             AZ_Error(AWSGameLiftServerManagerName, false, AWSGameLiftServerInstancePrivateKeyErrorMessage);
             return AZ::IO::Path();
         }
+        */
+        
+        return AZ::IO::Path();
     }
 
     AZ::IO::Path AWSGameLiftServerManager::GetInternalSessionCertificate()
@@ -452,8 +456,12 @@ namespace AWSGameLift
             return;
         }
 
+        Aws::GameLift::Server::Model::ServerParameters serverParameters;
+
+        // TODO - Add parameters?
+
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
-        Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK();
+        Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
         AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.");
 
         m_serverSDKInitialized = initOutcome.IsSuccess();

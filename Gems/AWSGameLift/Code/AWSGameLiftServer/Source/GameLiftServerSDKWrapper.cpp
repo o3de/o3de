@@ -28,14 +28,15 @@ namespace AWSGameLift
         return Aws::GameLift::Server::DescribePlayerSessions(describePlayerSessionsRequest);
     }
 
-    Aws::GameLift::Server::InitSDKOutcome GameLiftServerSDKWrapper::InitSDK()
+    Aws::GameLift::Server::InitSDKOutcome GameLiftServerSDKWrapper::InitSDK(
+        Aws::GameLift::Server::Model::ServerParameters serverParameters)
     {
-        return Aws::GameLift::Server::InitSDK();
+        return Aws::GameLift::Server::InitSDK(serverParameters);
     }
 
-    Aws::GameLift::GetInstanceCertificateOutcome GameLiftServerSDKWrapper::GetInstanceCertificate()
+    Aws::GameLift::GetComputeCertificateOutcome GameLiftServerSDKWrapper::GetComputeCertificate()
     {
-        return Aws::GameLift::Server::GetInstanceCertificate();
+        return Aws::GameLift::Server::GetComputeCertificate();
     }
 
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::ProcessReady(

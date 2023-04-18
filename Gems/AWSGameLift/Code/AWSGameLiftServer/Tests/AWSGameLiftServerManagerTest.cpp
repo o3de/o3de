@@ -218,7 +218,7 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, InitializeGameLiftServerSDK_InitializeTwice_InitSDKCalledOnce)
     {
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), InitSDK()).Times(1);
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), InitSDK(_)).Times(1);
         m_serverManager->InitializeGameLiftServerSDK();
 
         AZ_TEST_START_TRACE_SUPPRESSION;
@@ -382,7 +382,7 @@ R"({
         Aws::GameLift::Server::Model::GameProperty testProperty;
         testProperty.SetKey("testKey");
         testProperty.SetValue("testValue");
-        testSession.AddGameProperties(testProperty);
+        testSession.AddGameProperty(testProperty);
         m_serverManager->m_gameLiftServerSDKWrapperMockPtr->m_onStartGameSessionFunc(testSession);
         EXPECT_TRUE(AZ::Interface<Multiplayer::ISessionHandlingProviderRequests>::Get());
 
@@ -735,7 +735,7 @@ R"({
         Aws::GameLift::Server::Model::PlayerSession playerSession;
         playerSession.SetPlayerId("testplayer");
         Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
-        result.AddPlayerSessions(playerSession);
+        result.AddPlayerSession(playerSession);
         Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
             .Times(1)
@@ -751,11 +751,11 @@ R"({
     TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSEnabled_GetExpectedResult)
     {
         AZStd::string expectedResult = "gameliftunittestcertificate.pem";
-        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
+        Aws::GameLift::Server::Model::GetComputeCertificateResult certificateResult;
         certificateResult.SetCertificatePath(expectedResult.c_str());
-        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+        Aws::GameLift::GetComputeCertificateOutcome certificateOutcome(certificateResult);
 
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
             .Times(1)
             .WillOnce(Return(certificateOutcome));
 
@@ -765,9 +765,9 @@ R"({
 
     TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSDisabled_GetEmptyResult)
     {
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
             .Times(1)
-            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+            .WillOnce(Return(Aws::GameLift::GetComputeCertificateOutcome()));
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto actualResult = m_serverManager->GetExternalSessionCertificate();
@@ -778,11 +778,16 @@ R"({
     TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSEnabled_GetExpectedResult)
     {
         AZStd::string expectedResult = "gameliftunittestprivatekey.pem";
-        Aws::GameLift::Server::Model::GetInstanceCertificateResult certificateResult;
-        certificateResult.SetPrivateKeyPath(expectedResult.c_str());
-        Aws::GameLift::GetInstanceCertificateOutcome certificateOutcome(certificateResult);
+        Aws::GameLift::Server::Model::GetComputeCertificateResult certificateResult;
 
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+        // TODO - Add path correctly
+        /*
+        certificateResult.SetPrivateKeyPath(expectedResult.c_str());
+        */
+
+        Aws::GameLift::GetComputeCertificateOutcome certificateOutcome(certificateResult);
+
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
             .Times(1)
             .WillOnce(Return(certificateOutcome));
 
@@ -790,11 +795,11 @@ R"({
         EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
     }
 
-    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSDisabled_GetEmptyResult)
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionSecretAccessKey_CallWithTLSDisabled_GetEmptyResult)
     {
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetInstanceCertificate())
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
             .Times(1)
-            .WillOnce(Return(Aws::GameLift::GetInstanceCertificateOutcome()));
+            .WillOnce(Return(Aws::GameLift::GetComputeCertificateOutcome()));
 
         AZ_TEST_START_TRACE_SUPPRESSION;
         auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
@@ -837,14 +842,14 @@ R"({
         Aws::GameLift::Server::Model::PlayerSession playerSession1;
         playerSession1.SetPlayerId("testplayer");
         Aws::GameLift::Server::Model::DescribePlayerSessionsResult result1;
-        result1.AddPlayerSessions(playerSession1);
+        result1.AddPlayerSession(playerSession1);
         result1.SetNextToken("testtoken");
         Aws::GameLift::DescribePlayerSessionsOutcome successOutcome1(result1);
 
         Aws::GameLift::Server::Model::PlayerSession playerSession2;
         playerSession2.SetPlayerId("playernotinmatch");
         Aws::GameLift::Server::Model::DescribePlayerSessionsResult result2;
-        result2.AddPlayerSessions(playerSession2);
+        result2.AddPlayerSession(playerSession2);
         Aws::GameLift::DescribePlayerSessionsOutcome successOutcome2(result2);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
             .WillOnce(Return(successOutcome1))
@@ -977,7 +982,7 @@ R"({
         Aws::GameLift::Server::Model::PlayerSession playerSession;
         playerSession.SetPlayerId("testplayer");
         Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
-        result.AddPlayerSessions(playerSession);
+        result.AddPlayerSession(playerSession);
         Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
             .Times(1)
@@ -1001,7 +1006,7 @@ R"({
         Aws::GameLift::Server::Model::PlayerSession playerSession;
         playerSession.SetPlayerId("testplayer");
         Aws::GameLift::Server::Model::DescribePlayerSessionsResult result;
-        result.AddPlayerSessions(playerSession);
+        result.AddPlayerSession(playerSession);
         Aws::GameLift::DescribePlayerSessionsOutcome successOutcome(result);
         EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), DescribePlayerSessions(testing::_))
             .Times(1)

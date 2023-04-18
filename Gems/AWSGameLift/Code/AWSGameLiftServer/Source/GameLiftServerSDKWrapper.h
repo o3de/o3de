@@ -46,12 +46,15 @@ namespace AWSGameLift
         //! GENERATED. Use this certificate to establish a secure connection with a game client and to encrypt client server communication. 
         //! @return If successful, returns a GetInstanceCertificateOutcome object containing the location of the fleet's TLS certificate file,
         //!         which is stored on the instance. If not successful, returns an error message.
-        virtual Aws::GameLift::GetInstanceCertificateOutcome GetInstanceCertificate();
+        //virtual Aws::GameLift::GetInstanceCertificateOutcome GetInstanceCertificate();
+
+        //! TODO - Add description
+        virtual Aws::GameLift::GetComputeCertificateOutcome GetComputeCertificate();
 
         //! Initializes the GameLift SDK.
         //! Should be called when the server starts, before any GameLift-dependent initialization happens.
         //! @return If successful, returns an InitSdkOutcome object indicating that the server process is ready to call ProcessReady().
-        virtual Aws::GameLift::Server::InitSDKOutcome InitSDK();
+        virtual Aws::GameLift::Server::InitSDKOutcome InitSDK(Aws::GameLift::Server::Model::ServerParameters serverParameters);
 
         //! Notifies the GameLift service that the server process is ready to host game sessions.
         //! @param processParameters A ProcessParameters object communicating the names of callback methods, port number and game
