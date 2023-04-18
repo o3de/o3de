@@ -544,6 +544,47 @@ namespace AzToolsFramework
 
                 return prefabBuffer.GetString();
             }
+
+            bool AddOrUpdateNestedInstance(
+                PrefabDom& prefabDom,
+                const InstanceAlias& nestedInstanceAlias,
+                PrefabDomValueConstReference nestedInstanceDom)
+            {
+                auto instancesMember = prefabDom.FindMember(PrefabDomUtils::InstancesName);
+                if (instancesMember == prefabDom.MemberEnd())
+                {
+                    // Add an "Instances" member in the prefab DOM
+                    prefabDom.AddMember(
+                        rapidjson::StringRef(PrefabDomUtils::InstancesName), PrefabDomValue(), prefabDom.GetAllocator());
+                    instancesMember = prefabDom.FindMember(PrefabDomUtils::InstancesName);
+                }
+
+                PrefabDomValueReference instancesValue = instancesMember->value;
+                if (!instancesValue->get().IsObject())
+                {
+                    instancesValue->get().SetObject();
+                }
+
+                auto instanceMember = instancesValue->get().FindMember(rapidjson::StringRef(nestedInstanceAlias.c_str()));
+                if (instanceMember == instancesValue->get().MemberEnd())
+                {
+                    // Add a member for the nested instance in the prefab DOM
+                    instancesValue->get().AddMember(
+                        rapidjson::Value(nestedInstanceAlias.c_str(), prefabDom.GetAllocator()),
+                        nestedInstanceDom.has_value() ? rapidjson::Value(nestedInstanceDom->get(), prefabDom.GetAllocator())
+                                                      : PrefabDomValue(),
+                        prefabDom.GetAllocator());
+                    return true;
+                }
+                else if (nestedInstanceDom.has_value())
+                {
+                    // Nested instance already exists in the prefab DOM, so just update its contents
+                    instanceMember->value.CopyFrom(nestedInstanceDom->get(), prefabDom.GetAllocator());
+                    return true;
+                }
+
+                return false;
+            }
         } // namespace PrefabDomUtils
     } // namespace Prefab
 } // namespace AzToolsFramework

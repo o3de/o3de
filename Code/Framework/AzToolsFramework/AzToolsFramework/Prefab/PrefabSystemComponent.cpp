@@ -810,34 +810,8 @@ namespace AzToolsFramework
             PrefabDom& targetTemplateDom = targetTemplate.GetPrefabDom();
             auto memberFound = targetTemplateDom.FindMember(PrefabDomUtils::InstancesName);
 
-            PrefabDomValueReference instancesValue;
-            if (memberFound == targetTemplateDom.MemberEnd())
+            if (PrefabDomUtils::AddOrUpdateNestedInstance(targetTemplateDom, instanceAlias))
             {
-                //add the instance alias to the template dom
-                instancesValue = targetTemplateDom.AddMember(rapidjson::StringRef(PrefabDomUtils::InstancesName),
-                    PrefabDomValue(),
-                    targetTemplateDom.GetAllocator());
-
-                //when AddMember returns, it returns the object that the member was added to, not the added
-                //member itself, so we need to move instancesValue to the correct position for the next insert
-                memberFound = instancesValue->get().FindMember(PrefabDomUtils::InstancesName);
-                instancesValue = memberFound->value;
-            }
-            else
-            {
-                instancesValue = memberFound->value;
-            }
-
-            if (!instancesValue->get().IsObject())
-            {
-                instancesValue->get().SetObject();
-            }
-            // Only add the instance if it's not there already
-            if (instancesValue->get().FindMember(rapidjson::StringRef(instanceAlias.c_str())) == instancesValue->get().MemberEnd())
-            {
-                instancesValue->get().AddMember(
-                    rapidjson::Value(instanceAlias.c_str(), targetTemplateDom.GetAllocator()), PrefabDomValue(),
-                    targetTemplateDom.GetAllocator());
                 SetTemplateDirtyFlag(linkTargetId, true);
             }
 
