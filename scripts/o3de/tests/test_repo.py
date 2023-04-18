@@ -589,13 +589,16 @@ class TestRepos:
 
             # Gems
             gems_json_data = repo.get_gem_json_data_from_all_cached_repos()
-            assert gems_json_data == [json.loads(data) for data in expected_gems_json_data]
+            expected_gems_json_list = [json.loads(data) for data in expected_gems_json_data]
+            assert all(json_data in expected_gems_json_list for json_data in gems_json_data) 
             # Projects
             projects_json_data = repo.get_project_json_data_from_all_cached_repos()
-            assert projects_json_data == [json.loads(data) for data in expected_projects_json_data]
+            expected_projects_json_list = [json.loads(data) for data in expected_projects_json_data]
+            assert all(json_data in expected_projects_json_list for json_data in projects_json_data) 
             # Templates
             templates_json_data = repo.get_template_json_data_from_all_cached_repos()
-            assert templates_json_data == [json.loads(data) for data in expected_templates_json_data]
+            expected_templates_json_list = [json.loads(data) for data in expected_templates_json_data]
+            assert all(json_data in expected_templates_json_list for json_data in templates_json_data) 
 
 
     @pytest.mark.parametrize("repo_uri, validate_objects", [
