@@ -8,12 +8,14 @@
 
  
 #include <scenesrg.srgi>
-#include <Atom/Features/VertexUtility.azsli>
+#include <viewsrg.srgi>
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/VertexUtility.azsli>
 
-void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
+void CalcPositions(float3 inPosition, uint instanceId, out float3 worldPos, out float4 clipPos)
 {        
-    worldPos = LocalSpaceToWorldSpace(inPosition);
+    worldPos = LocalSpaceToWorldSpace(inPosition, instanceId);
     clipPos = WorldSpaceToClipSpace(worldPos);
 }
 
@@ -32,11 +34,16 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
         float3 worldPosition : UV0;
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    struct VsSystemValues
+    {
+        uint m_instanceId;
+    };
+
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
     {        
         VsOutput output;
 
-        CalcPositions(IN.position, output.worldPosition, output.position);
+        CalcPositions(IN.position, SV.m_instanceId, output.worldPosition, output.position);
 
         output.normal = IN.normal;
 
@@ -106,23 +113,28 @@ void CalcPositions(float3 inPosition, out float3 worldPos, out float4 clipPos)
 #endif
     };
 
-    VsOutput EvaluateVertexGeometry(VsInput IN)
+    struct VsSystemValues
+    {
+        uint m_instanceId;
+    };
+
+    VsOutput EvaluateVertexGeometry(VsInput IN, VsSystemValues SV)
     {
         float3 worldPosition;
 
         VsOutput output;
-        CalcPositions(IN.m_position, worldPosition, output.m_position);
+        CalcPositions(IN.m_position, SV.m_instanceId, worldPosition, output.m_position);
         
 #if MATERIALPIPELINE_USES_PREV_VERTEX_POSITION
         output.m_worldPos = worldPosition;
 
         if (o_prevPosition_isBound)
         {
-            output.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
+            output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_optional_prevPosition, 1.0)).xyz;
         }
         else
         {
-            output.m_worldPosPrev = mul(SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId), float4(IN.m_position, 1.0)).xyz;
+            output.m_worldPosPrev = mul(GetObjectToWorldMatrixPrev(SV.m_instanceId), float4(IN.m_position, 1.0)).xyz;
         }
 #endif
 

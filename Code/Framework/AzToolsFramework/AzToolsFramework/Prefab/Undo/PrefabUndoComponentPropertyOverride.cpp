@@ -47,7 +47,7 @@ namespace AzToolsFramework
 
         void PrefabUndoComponentPropertyOverride::CaptureAndRedo(
             Instance& owningInstance,
-            AZ::Dom::Path relativePathFromOwningPrefab,
+            const AZ::Dom::Path pathToPropertyFromOwningPrefab,
             const PrefabDomValue& afterStateOfComponentProperty)
         {
             InstanceOptionalReference focusedInstance =
@@ -77,7 +77,7 @@ namespace AzToolsFramework
             // Configure paths from focused and top templates. The top template is the source template of the link.
             AZ::Dom::Path pathToPropertyFromTopPrefab =
                 AZ::Dom::Path(PrefabInstanceUtils::GetRelativePathFromClimbedInstances(climbUpResult.m_climbedInstances, true)) /
-                relativePathFromOwningPrefab;
+                pathToPropertyFromOwningPrefab;
             AZ::Dom::Path pathToPropertyFromFocusedPrefab(PrefabDomUtils::InstancesName);
             pathToPropertyFromFocusedPrefab /= climbUpResult.m_climbedInstances.back()->GetInstanceAlias(); // top instance alias
             pathToPropertyFromFocusedPrefab /= pathToPropertyFromTopPrefab;
@@ -92,7 +92,7 @@ namespace AzToolsFramework
             {
                 PrefabDom changePatches;
                 m_instanceToTemplateInterface->GeneratePatch(changePatches, *currentPropertyDomValue, afterStateOfComponentProperty);
-                m_changed = !changePatches.GetArray().Empty();
+                m_changed = !(changePatches.GetArray().Empty());
             }
             else
             {
@@ -137,8 +137,8 @@ namespace AzToolsFramework
                 // Preemptively updates the cached DOM to prevent reloading instance DOM.
                 if (cachedOwningInstanceDom.has_value())
                 {
-                    PrefabUndoUtils::UpdateEntityInInstanceDom(
-                        cachedOwningInstanceDom, afterStateOfComponentProperty, pathToPropertyFromFocusedPrefab.ToString());
+                    PrefabUndoUtils::UpdateValueInPrefabDom(
+                        cachedOwningInstanceDom, afterStateOfComponentProperty, pathToPropertyFromOwningPrefab.ToString());
                 }
 
                 // Redo - Update target template of the link.
@@ -160,19 +160,23 @@ namespace AzToolsFramework
 
         void PrefabUndoComponentPropertyOverride::UpdateLink()
         {
-            LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
-            if (link.has_value())
+            if (m_changed)
             {
-                // In redo, after-state subtrees in map will be moved to the link tree.
-                // In undo, before-state subtrees in map will be moved to the link tree.
-                // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
-                PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(m_overriddenPropertyPath));
-                link->get().AddOverrides(m_overriddenPropertyPath, AZStd::move(m_overriddenPropertySubTree));
-                m_overriddenPropertySubTree = AZStd::move(subtreeInLink);
+                LinkReference link = m_prefabSystemComponentInterface->FindLink(m_linkId);
+                if (link.has_value())
+                {
+                    // In redo, after-state subtrees in map will be moved to the link tree.
+                    // In undo, before-state subtrees in map will be moved to the link tree.
+                    // The previous states of subtrees in link are moved back to the map for next undo/redo if any.
+                    AZ_Assert(!m_overriddenPropertyPath.IsEmpty(), "PrefabUndoComponentPropertyOverride - Overriden property path is empty.");
+                    PrefabOverridePrefixTree subtreeInLink = AZStd::move(link->get().RemoveOverrides(m_overriddenPropertyPath));
+                    link->get().AddOverrides(m_overriddenPropertyPath, AZStd::move(m_overriddenPropertySubTree));
+                    m_overriddenPropertySubTree = AZStd::move(subtreeInLink);
 
-                link->get().UpdateTarget();
-                m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
-                m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                    link->get().UpdateTarget();
+                    m_prefabSystemComponentInterface->SetTemplateDirtyFlag(link->get().GetTargetTemplateId(), true);
+                    m_prefabSystemComponentInterface->PropagateTemplateChanges(link->get().GetTargetTemplateId());
+                }
             }
         }
     } // namespace Prefab

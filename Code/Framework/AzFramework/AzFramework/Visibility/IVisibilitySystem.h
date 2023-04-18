@@ -35,7 +35,8 @@ namespace AzFramework
         {
             TYPE_None = 0,
             TYPE_Entity = 1 << 0,      // All entities
-            TYPE_RPI_Cullable = 1 << 2 // Cullable by the render system
+            TYPE_RPI_Cullable = 1 << 2, // Cullable by the render system
+            TYPE_RPI_VisibleObjectList = 1 << 3 // Culled by the render system, then output to a a list of visible objects
         };
 
         AZ::Aabb m_boundingVolume = AZ::Aabb::CreateNull();

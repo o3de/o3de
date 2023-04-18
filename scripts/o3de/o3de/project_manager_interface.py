@@ -10,8 +10,9 @@ Contains functions for the project manager to call that gather data from o3de sc
 """
 
 import logging
+import pathlib
 
-from o3de import manifest, utils, compatibility, enable_gem
+from o3de import manifest, utils, compatibility, enable_gem, register, project_properties
 
 logger = logging.getLogger('o3de.project_manager_interface')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -68,13 +69,23 @@ def get_project_template_infos() -> list:
 
 #### Project methods ###
 
-def register_project(project_path: str):
+def register_project(project_path: pathlib.Path, force:bool) -> int:
     """
-        Registers project with engine
+        Registers project with engine and sets the user/project.json engine_path
+        in case there are multiple versions of this project on the user's machine
 
         :param project_path: Project path to register
+        :param force: Whether to force registeration, bypassing compatibility checks
+        :return 0 on success or a non-zero error code
     """
-    pass
+    result = register.register(project_path=project_path, force=force)
+    if result == 0:
+        result = project_properties.edit_project_props(proj_path=project_path, 
+                                                       user=True, 
+                                                       new_engine_path=manifest.get_this_engine_path())
+
+    return result
+
 
 
 def unregister_project(project_path: str):
@@ -160,8 +171,6 @@ def get_all_project_infos() -> list:
     return project_infos
 
 
-
-
 def set_project_info(project_info: dict):
     """
         Call edit_project_props using parameters gathered from project_info
@@ -171,19 +180,37 @@ def set_project_info(project_info: dict):
     pass
 
 
-def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set():
+def get_project_engine_incompatible_objects(project_path: pathlib.Path, engine_path: pathlib.Path = None) -> set() or int:
+    """
+        Checks for compatibility issues between the provided project and engine
+
+        :param project_path: Project path 
+        :param engine_path: Optional engine path 
+        :return a set of all incompatible objects which may include APIs and gems or an error code on failure
+    """
+    engine_path = engine_path or manifest.get_this_engine_path()
+    if not manifest.get_engine_json_data(engine_path=engine_path):
+        return 1
+    if not manifest.get_project_json_data(project_path=project_path):
+        return 2
+
+    return compatibility.get_project_engine_incompatible_objects(project_path=project_path, 
+                                                                 engine_path=engine_path)
+
+
+def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path: str) -> set() or int:
     """
         Checks for compatibility issues between the provided gems and project
 
         :param gem_paths: Gem paths for the gems to check
         :param gem_names: Gem names with optional version specifiers
         :param project_path: Project path 
-        :return a set of all incompatible gems
+        :return a set of all incompatible gems or int error code
     """
     # we need to know the engine to check compatibility 
     engine_path = manifest.get_project_engine_path(project_path)
     if not engine_path:
-        return set()
+        return 1
 
     # check compatibility for all gems at once for speeeeeeeeed
     incompatible_objects = compatibility.get_gems_project_incompatible_objects(
@@ -192,6 +219,7 @@ def get_incompatible_project_gems(gem_paths:list, gem_names: list, project_path:
         logger.error(f"The following dependency issues were found:\n"
             "\n  ".join(incompatible_objects))
     return incompatible_objects
+
 
 def add_gems_to_project(gem_paths:list, gem_names: list, project_path: str, force: bool = False) -> int:
     """
@@ -268,18 +296,47 @@ def get_gem_info(gem_path: str) -> dict or None:
     return dict()
 
 
-def get_all_gem_infos(project_path: str) -> list:
+def get_all_gem_infos(project_path: pathlib.Path or None) -> list:
     """
-        Get list of all avaliable gem paths for project at project_path using get_all_gems
-
-        Gather together list of dicts for each gem using get_gem_json_data
+        Get list of all avaliable gem json data for a project. If no project
+        path is provided, the gems for this engine are returned.
 
         :param project_path: Project path to gather avaliable gem infos for
 
-        :return list of dicts containing gem infos.
+        :return list of dicts containing gem json data
     """
-    return list()
+    # it's easier to determine which gems are engine gems here rather than in c++
+    # because the project might be using a different engine than the one Project Manager is
+    # running out of
+    engine_path = manifest.get_project_engine_path(project_path=project_path) if project_path else manifest.get_this_engine_path() 
 
+    # get all gem json data by path so we can use it for detecting engine and project gems
+    # without re-opening and parsing gem.json files again
+    all_gem_json_data = manifest.get_gems_json_data_by_path(engine_path=engine_path,
+                                                            project_path=project_path,
+                                                            include_engine_gems=True,
+                                                            include_manifest_gems=True)
+    # include gems inside gems
+    recurse = True
+    engine_gem_paths = [pathlib.PurePath(path) for path in manifest.get_engine_gems(engine_path, recurse, all_gem_json_data)]
+    if project_path:
+        project_gem_paths = [pathlib.PurePath(path) for path in manifest.get_project_gems(project_path, recurse, all_gem_json_data)]
+
+    # convert all_gem_json_data to have gem names as keys with values that are gem version lists
+    utils.replace_dict_keys_with_value_key(all_gem_json_data, value_key='gem_name', replaced_key_name='path', place_values_in_list=True)
+
+    # flatten into a single list
+    all_gem_json_data = [gem_json_data for gem_versions in all_gem_json_data.values() for gem_json_data in gem_versions]
+
+    for i, gem_json_data in enumerate(all_gem_json_data):
+        if project_path:
+            if gem_json_data['path'] in project_gem_paths:
+                all_gem_json_data[i]['project_gem'] = True
+        
+        if gem_json_data['path'] in engine_gem_paths:
+            all_gem_json_data[i]['engine_gem'] = True
+
+    return all_gem_json_data
 
 def download_gem(gem_name: str, force_overwrite: bool = False, progress_callback = None):
     """

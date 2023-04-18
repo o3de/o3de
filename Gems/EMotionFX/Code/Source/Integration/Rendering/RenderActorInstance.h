@@ -47,6 +47,8 @@ namespace EMotionFX
             virtual void SetIsVisible(bool isVisible);
             virtual bool IsInCameraFrustum() const;
 
+            virtual void SetExcludeFromReflectionCubeMaps(bool excludeFromReflectionCubeMaps) = 0;
+
             Actor* GetActor() const;
 
         protected:

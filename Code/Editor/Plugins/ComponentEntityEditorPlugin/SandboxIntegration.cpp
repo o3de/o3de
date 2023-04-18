@@ -84,7 +84,6 @@
 #include <Editor/CryEditDoc.h>
 #include <Editor/GameEngine.h>
 #include <Editor/DisplaySettings.h>
-#include <Editor/IconManager.h>
 #include <Editor/Settings.h>
 #include <Editor/QtViewPaneManager.h>
 #include <Editor/EditorViewportSettings.h>
@@ -1183,11 +1182,6 @@ AZ::Vector3 SandboxIntegrationManager::GetWorldPositionAtViewportCenter()
     return AZ::Vector3::CreateZero();
 }
 
-int SandboxIntegrationManager::GetIconTextureIdFromEntityIconPath(const AZStd::string& entityIconPath)
-{
-    return GetIEditor()->GetIconManager()->GetIconTexture(entityIconPath.c_str());
-}
-
 void SandboxIntegrationManager::ClearRedoStack()
 {
     // We have two separate undo systems that are assumed to be kept in sync,
@@ -1818,36 +1812,21 @@ void SandboxIntegrationManager::GoToEntitiesInViewports(const AzToolsFramework::
     AZ::Vector3 center;
     aabb.GetAsSphere(center, radius);
 
-    // minimum center size is 40cm
-    const float minSelectionRadius = 0.4f;
-    const float selectionSize = AZ::GetMax(minSelectionRadius, radius);
-
     auto viewportContextManager = AZ::Interface<AZ::RPI::ViewportContextRequestsInterface>::Get();
-
     const int viewCount = GetIEditor()->GetViewManager()->GetViewCount(); // legacy call
     for (int viewIndex = 0; viewIndex < viewCount; ++viewIndex)
     {
         if (auto viewportContext = viewportContextManager->GetViewportContextById(viewIndex))
         {
-            const AZ::Transform cameraTransform = viewportContext->GetCameraTransform();
-            // do not attempt to interpolate to where we currently are
-            if (cameraTransform.GetTranslation().IsClose(center))
+            if (const AZStd::optional<AZ::Transform> nextCameraTransform = SandboxEditor::CalculateGoToEntityTransform(
+                    viewportContext->GetCameraTransform(),
+                    AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix()),
+                    center,
+                    radius);
+                nextCameraTransform.has_value())
             {
-                continue;
+                SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(*nextCameraTransform);
             }
-
-            const AZ::Vector3 forward = (center - cameraTransform.GetTranslation()).GetNormalized();
-
-            // move camera 25% further back than required
-            const float centerScale = 1.25f;
-            // compute new camera transform
-            const float fov = AzFramework::RetrieveFov(viewportContext->GetCameraProjectionMatrix());
-            const float fovScale = (1.0f / AZStd::tan(fov * 0.5f));
-            const float distanceToLookAt = selectionSize * fovScale * centerScale;
-            const AZ::Transform nextCameraTransform =
-                AZ::Transform::CreateLookAt(aabb.GetCenter() - (forward * distanceToLookAt), aabb.GetCenter());
-
-            SandboxEditor::HandleDefaultViewportCameraTransitionFromSetting(nextCameraTransform);
         }
     }
 }

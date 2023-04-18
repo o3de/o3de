@@ -579,6 +579,7 @@ def register_restricted_path(json_data: dict,
 def register_repo(json_data: dict,
                   repo_uri: str,
                   remove: bool = False) -> int:
+    repo_uri = repo.sanitized_repo_uri(repo_uri)
     manifest_uri = repo.get_repo_manifest_uri(repo_uri)
 
     if not manifest_uri:

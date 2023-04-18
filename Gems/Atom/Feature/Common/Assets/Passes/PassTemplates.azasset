@@ -559,6 +559,10 @@
             {
                 "Name": "SplashScreenPassTemplate",
                 "Path": "Passes/SplashScreen.pass"
+            },
+            {
+                "Name": "TaaParentTemplate",
+                "Path": "Passes/TaaParent.pass"
             }
         ]
     }

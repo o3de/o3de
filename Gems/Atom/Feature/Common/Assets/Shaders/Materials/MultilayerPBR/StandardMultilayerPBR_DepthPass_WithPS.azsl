@@ -26,4 +26,3 @@ COMMON_OPTIONS_PARALLAX(o_layer3_)
 
 #define MULTILAYER 1
 #define ENABLE_ALPHA_CLIP 0
-#include "../DepthPass_WithPS.azsli"

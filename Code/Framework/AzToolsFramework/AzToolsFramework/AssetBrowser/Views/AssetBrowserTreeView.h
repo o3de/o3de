@@ -110,6 +110,8 @@ namespace AzToolsFramework
             void SetAttachedThumbnailView(AssetBrowserThumbnailView* thumbnailView);
             void SetAttachedExpandedTableView(AssetBrowserExpandedTableView* tableView);
 
+            void SetApplySnapshot(bool applySnapshot);
+
         Q_SIGNALS:
             void selectionChangedSignal(const QItemSelection& selected, const QItemSelection& deselected);
             void ClearStringFilter();
@@ -121,6 +123,7 @@ namespace AzToolsFramework
 
         protected:
             QModelIndexList selectedIndexes() const override;
+            void dropEvent(QDropEvent* event) override;
 
         protected Q_SLOTS:
             void selectionChanged(const QItemSelection& selected, const QItemSelection& deselected) override;
@@ -132,6 +135,8 @@ namespace AzToolsFramework
             EntryDelegate* m_delegate = nullptr;
 
             bool m_expandToEntriesByDefault = false;
+
+            bool m_applySnapshot = true;
 
             QTimer* m_scTimer = nullptr;
             const int m_scUpdateInterval = 100;

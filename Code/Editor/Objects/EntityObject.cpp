@@ -20,7 +20,6 @@
 // Editor
 #include "Settings.h"
 #include "Viewport.h"
-#include "LineGizmo.h"
 #include "Include/IObjectManager.h"
 #include "Objects/ObjectManager.h"
 #include "ViewManager.h"
@@ -1209,17 +1208,6 @@ void CEntityObject::ResolveEventTarget(CBaseObject* object, unsigned int index)
         object->AddEventListener(this);
     }
     m_eventTargets[index].target = object;
-
-    // Make line gizmo.
-    if (!m_eventTargets[index].pLineGizmo && object)
-    {
-        CLineGizmo* pLineGizmo = new CLineGizmo;
-        pLineGizmo->SetObjects(this, object);
-        pLineGizmo->SetColor(Vec3(0.8f, 0.4f, 0.4f), Vec3(0.8f, 0.4f, 0.4f));
-        pLineGizmo->SetName(m_eventTargets[index].event.toUtf8().data());
-        AddGizmo(pLineGizmo);
-        m_eventTargets[index].pLineGizmo = pLineGizmo;
-    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1365,17 +1353,6 @@ int CEntityObject::AddEventTarget(CBaseObject* target, const QString& event, con
         et.target->AddEventListener(this);
     }
 
-    if (target)
-    {
-        // Make line gizmo.
-        CLineGizmo* pLineGizmo = new CLineGizmo;
-        pLineGizmo->SetObjects(this, target);
-        pLineGizmo->SetColor(Vec3(0.8f, 0.4f, 0.4f), Vec3(0.8f, 0.4f, 0.4f));
-        pLineGizmo->SetName(event.toUtf8().data());
-        AddGizmo(pLineGizmo);
-        et.pLineGizmo = pLineGizmo;
-    }
-
     m_eventTargets.push_back(et);
 
     SetModified(false);
@@ -1388,11 +1365,6 @@ void CEntityObject::RemoveEventTarget(int index, [[maybe_unused]] bool bUpdateSc
     if (index >= 0 && index < m_eventTargets.size())
     {
         StoreUndo();
-
-        if (m_eventTargets[index].pLineGizmo)
-        {
-            RemoveGizmo(m_eventTargets[index].pLineGizmo);
-        }
 
         if (m_eventTargets[index].target)
         {
@@ -1425,26 +1397,10 @@ int CEntityObject::AddEntityLink(const QString& name, GUID targetEntityId)
 
     StoreUndo();
 
-    CLineGizmo* pLineGizmo = nullptr;
-
-    // Assign event target.
-    if (target)
-    {
-        target->AddEventListener(this);
-
-        // Make line gizmo.
-        pLineGizmo = new CLineGizmo;
-        pLineGizmo->SetObjects(this, target);
-        pLineGizmo->SetColor(Vec3(0.4f, 1.0f, 0.0f), Vec3(0.0f, 1.0f, 0.0f));
-        pLineGizmo->SetName(name.toUtf8().data());
-        AddGizmo(pLineGizmo);
-    }
-
     CEntityLink lnk;
     lnk.targetId = targetEntityId;
     lnk.target = target;
     lnk.name = name;
-    lnk.pLineGizmo = pLineGizmo;
     m_links.push_back(lnk);
 
     SetModified(false);
@@ -1473,11 +1429,6 @@ void CEntityObject::RemoveEntityLink(int index)
         CEntityLink& link = m_links[index];
         StoreUndo();
 
-        if (link.pLineGizmo)
-        {
-            RemoveGizmo(link.pLineGizmo);
-        }
-
         if (link.target)
         {
             link.target->RemoveEventListener(this);
@@ -1495,11 +1446,6 @@ void CEntityObject::RenameEntityLink(int index, const QString& newName)
     if (index >= 0 && index < m_links.size())
     {
         StoreUndo();
-
-        if (m_links[index].pLineGizmo)
-        {
-            m_links[index].pLineGizmo->SetName(newName.toUtf8().data());
-        }
 
         m_links[index].name = newName;
 

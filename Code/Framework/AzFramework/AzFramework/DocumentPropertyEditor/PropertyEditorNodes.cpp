@@ -59,10 +59,12 @@ namespace AZ::DocumentPropertyEditor::Nodes
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::EnumUnderlyingType);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::InternalEnumValueKey);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ChangeNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::AddNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::RemoveNotify);
-        system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ClearNotify);
         system->RegisterNodeAttribute<PropertyEditor>(PropertyEditor::ValueHashed);
+
+        system->RegisterNode<Container>();
+        system->RegisterNodeAttribute<PropertyEditor>(Container::AddNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::RemoveNotify);
+        system->RegisterNodeAttribute<PropertyEditor>(Container::ClearNotify);
 
         system->RegisterPropertyEditor<UIElement>();
         system->RegisterNodeAttribute<UIElement>(UIElement::Handler);
@@ -82,6 +84,9 @@ namespace AZ::DocumentPropertyEditor::Nodes
 
         system->RegisterPropertyEditor<Button>();
         system->RegisterNodeAttribute<Button>(Button::ButtonText);
+
+        system->RegisterPropertyEditor<GenericButton>();
+        system->RegisterNodeAttribute<GenericButton>(GenericButton::OnActivate);
 
         system->RegisterPropertyEditor<ContainerActionButton>();
         system->RegisterNodeAttribute<ContainerActionButton>(ContainerActionButton::Action);

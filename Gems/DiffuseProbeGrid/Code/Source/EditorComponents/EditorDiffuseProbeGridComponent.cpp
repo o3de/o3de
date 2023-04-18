@@ -20,6 +20,7 @@
 AZ_PUSH_DISABLE_WARNING(4251 4800, "-Wunknown-warning-option") // disable warnings spawned by QT
 #include <QApplication>
 #include <QMessageBox>
+#include <QProgressDialog>
 AZ_POP_DISABLE_WARNING
 
 namespace AZ
@@ -587,8 +588,25 @@ namespace AZ
             m_bakeInProgress = true;
             m_controller.BakeTextures(bakeTexturesCallback);
 
+            QProgressDialog bakeDialog;
+            bakeDialog.setWindowFlags(bakeDialog.windowFlags() & ~Qt::WindowCloseButtonHint);
+            bakeDialog.setLabelText(QObject::tr("Baking Diffuse Probe Grid..."));
+            bakeDialog.setWindowModality(Qt::WindowModal);
+            bakeDialog.setMaximumSize(QSize(256, 96));
+            bakeDialog.setMaximum(0);
+            bakeDialog.setMinimumDuration(0);
+            bakeDialog.setAutoClose(false);
+            bakeDialog.setCancelButton(nullptr);
+            bakeDialog.show();
+
             while (m_bakeInProgress)
             {
+                if (bakeDialog.wasCanceled())
+                {
+                    m_bakeInProgress = false;
+                    break;
+                }
+
                 QApplication::processEvents();
                 AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(100));
             }

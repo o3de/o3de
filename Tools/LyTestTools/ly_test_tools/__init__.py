@@ -8,6 +8,7 @@ OS and devices are detected and set as constants when ly_test_tools.__init__() c
 """
 import logging
 import sys
+import platform
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +47,7 @@ if WINDOWS:
     LAUNCHERS['windows_atom_tools'] = WinAtomToolsLauncher
     LAUNCHERS['android'] = AndroidLauncher
 elif MAC:
+    ARM64 = platform.machine() == 'arm64'
     HOST_OS_PLATFORM = 'mac'
     HOST_OS_EDITOR = NotImplementedError('LyTestTools does not yet support Mac editor')
     HOST_OS_DEDICATED_SERVER = NotImplementedError('LyTestTools does not yet support Mac dedicated server')
@@ -53,6 +55,7 @@ elif MAC:
     from ly_test_tools.launchers import MacLauncher
     LAUNCHERS['mac'] = MacLauncher
 elif LINUX:
+    ARM64 = platform.machine() == 'aarch64'
     HOST_OS_PLATFORM = 'linux'
     HOST_OS_EDITOR = 'linux_editor'
     HOST_OS_DEDICATED_SERVER = 'linux_dedicated'
@@ -64,5 +67,6 @@ elif LINUX:
     LAUNCHERS['linux_dedicated'] = DedicatedLinuxLauncher
     LAUNCHERS['linux_atom_tools'] = LinuxAtomToolsLauncher
 else:
+    ARM64 = False
     logger.warning(f'WARNING: LyTestTools only supports Windows, Mac, and Linux. '
                    f'Unexpectedly detected HOST_OS_PLATFORM: "{HOST_OS_PLATFORM}".')

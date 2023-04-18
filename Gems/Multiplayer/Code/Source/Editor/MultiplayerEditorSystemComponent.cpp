@@ -181,6 +181,8 @@ namespace Multiplayer
         AZ::TickBus::Handler::BusDisconnect();
         AzToolsFramework::Prefab::PrefabToInMemorySpawnableNotificationBus::Handler::BusDisconnect();
         AzToolsFramework::EditorEntityContextNotificationBus::Handler::BusDisconnect();
+
+        ResetLevelSendData();
     }
 
     void MultiplayerEditorSystemComponent::NotifyRegisterViews()
@@ -189,6 +191,12 @@ namespace Multiplayer
         m_editor = nullptr;
         AzToolsFramework::EditorRequests::Bus::BroadcastResult(m_editor, &AzToolsFramework::EditorRequests::GetEditor);
         m_editor->RegisterNotifyListener(this);
+    }
+
+    void MultiplayerEditorSystemComponent::ResetLevelSendData()
+    {
+        // Clear out the temporary buffer so that it doesn't consume any memory when not in use.
+        m_levelSendData = {};
     }
 
     void MultiplayerEditorSystemComponent::OnEditorNotifyEvent(EEditorNotifyEvent event)
@@ -207,6 +215,7 @@ namespace Multiplayer
             // Kill the configured server if it's active
             AZ::TickBus::Handler::BusDisconnect();
             m_connectionEvent.RemoveFromQueue();
+            ResetLevelSendData();
             
             if (m_serverProcessWatcher)
             {
@@ -345,9 +354,14 @@ namespace Multiplayer
 
             if (editorsv_print_server_logs)
             {
-                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(m_serverProcessWatcher->GetCommunicator(), "EditorServer");
-                AZ::TickBus::Handler::BusConnect();
+                // Create a threaded trace printer so that it will keep the output pipes flowing smoothly even while sending the
+                // editor data over to the server.
+                m_serverProcessTracePrinter = AZStd::make_unique<ProcessCommunicatorTracePrinter>(
+                    m_serverProcessWatcher->GetCommunicator(), "EditorServer", ProcessCommunicatorTracePrinter::TraceProcessing::Threaded);
             }
+
+            // Connect to the tick bus to listen for unexpected server process disconnections
+            AZ::TickBus::Handler::BusConnect();
         }
         else
         {
@@ -376,12 +390,11 @@ namespace Multiplayer
             return;
         }
         
-        MultiplayerEditorServerNotificationBus::Broadcast(&MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData);
         AZ_TracePrintf("MultiplayerEditor", "Editor is sending the editor-server the level data packet.")
 
-
-        AZStd::vector<uint8_t> buffer;
-        AZ::IO::ByteContainerStream byteStream(&buffer);
+        m_levelSendData.m_sendConnection = connection;
+        m_levelSendData.m_byteStream =
+            AZStd::make_unique<AZ::IO::ByteContainerStream<AZStd::vector<uint8_t>>>(&m_levelSendData.m_sendBuffer);
 
         // Serialize Asset information and AssetData into a potentially large buffer
         for (const auto& preAliasedSpawnableData : m_preAliasedSpawnablesForServer)
@@ -389,61 +402,130 @@ namespace Multiplayer
             // This is an un-aliased level spawnable (example: Root.spawnable and Root.network.spawnable) which we'll send to the server
             auto hintSize = aznumeric_cast<uint32_t>(preAliasedSpawnableData.assetHint.size());
 
-            byteStream.Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnableData.assetId));
-            byteStream.Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
-            byteStream.Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
-            AZ::Utils::SaveObjectToStream(byteStream, AZ::DataStream::ST_BINARY, preAliasedSpawnableData.spawnable.get(), preAliasedSpawnableData.spawnable->GetType());
+            m_levelSendData.m_byteStream->Write(sizeof(AZ::Data::AssetId), reinterpret_cast<const void*>(&preAliasedSpawnableData.assetId));
+            m_levelSendData.m_byteStream->Write(sizeof(uint32_t), reinterpret_cast<void*>(&hintSize));
+            m_levelSendData.m_byteStream->Write(preAliasedSpawnableData.assetHint.size(), preAliasedSpawnableData.assetHint.data());
+            AZ::Utils::SaveObjectToStream(
+                *m_levelSendData.m_byteStream,
+                AZ::DataStream::ST_BINARY,
+                preAliasedSpawnableData.spawnable.get(),
+                preAliasedSpawnableData.spawnable->GetType());
         }
         
         // Spawnable library needs to be rebuilt since now we have newly registered in-memory spawnable assets
         AZ::Interface<INetworkSpawnableLibrary>::Get()->BuildSpawnablesList();
 
         // Read the buffer into EditorServerLevelData packets until we've flushed the whole thing
-        byteStream.Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
+        m_levelSendData.m_byteStream->Seek(0, AZ::IO::GenericStream::SeekMode::ST_SEEK_BEGIN);
 
-        while (byteStream.GetCurPos() < byteStream.GetLength())
+        // Send an initial notification showing how much data will be sent.
+        MultiplayerEditorServerNotificationBus::Broadcast(
+            &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+            0,
+            aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetLength()));
+
+        // The actual data will get sent "asynchronously" during the OnTick callback over multiple frames.
+    }
+
+    void MultiplayerEditorSystemComponent::SendLevelDataToServer()
+    {
+        // This controls the maximum time slice to use for sending packets. Lower numbers will make the total send time take longer,
+        // but will give the Editor more time to do other work. Larger numbers will make the total send time faster, but will starve
+        // the Editor. The current value attempts to balance between the two.
+        static constexpr AZ::TimeMs MaxSendTimeMs = AZ::TimeMs{ 5 };
+
+        // These control how many retries and how to space them out for packet send failures.
+        static constexpr int MaxRetries = 20;
+        static constexpr AZ::TimeMs InitialMsDelayPerRetry = AZ::TimeMs { 10 };
+        static constexpr AZ::TimeMs MaxMsDelayPerRetry = AZ::TimeMs { 1000 };
+
+        // If there's no data left to send, exit.
+        if (!m_levelSendData.m_byteStream)
+        {
+            return;
+        }
+
+        bool updateFinished = false;
+        bool updateSuccessful = true;
+
+        AZ::TimeMs startTime = AZ::GetElapsedTimeMs();
+
+        // Loop and send packets until we've reached our max send time slice for this frame.
+        while (!updateFinished && ((AZ::GetElapsedTimeMs() - startTime) < MaxSendTimeMs))
         {
             MultiplayerEditorPackets::EditorServerLevelData editorServerLevelDataPacket;
             auto& outBuffer = editorServerLevelDataPacket.ModifyAssetData();
 
             // Size the packet's buffer appropriately
             size_t readSize = outBuffer.GetCapacity();
-            const size_t byteStreamSize = byteStream.GetLength() - byteStream.GetCurPos();
+            const size_t byteStreamSize = m_levelSendData.m_byteStream->GetLength() - m_levelSendData.m_byteStream->GetCurPos();
             if (byteStreamSize < readSize)
             {
                 readSize = byteStreamSize;
             }
 
             outBuffer.Resize(readSize);
-            byteStream.Read(readSize, outBuffer.GetBuffer());
+            m_levelSendData.m_byteStream->Read(readSize, outBuffer.GetBuffer());
 
             // If we've run out of buffer, mark that we're done
-            if (byteStream.GetCurPos() == byteStream.GetLength())
+            if (m_levelSendData.m_byteStream->GetCurPos() == m_levelSendData.m_byteStream->GetLength())
             {
                 editorServerLevelDataPacket.SetLastUpdate(true);
+                updateFinished = true;
             }
 
             // Try to send the packet to the Editor server. Retry if necessary.
             bool packetSent = false;
-            static constexpr int MaxRetries = 20;
-            int millisecondDelayPerRetry = 10;
+            AZ::TimeMs millisecondDelayPerRetry = InitialMsDelayPerRetry;
             int numRetries = 0;
             while (!packetSent && (numRetries < MaxRetries))
             {
-                packetSent = connection->SendReliablePacket(editorServerLevelDataPacket);
+                packetSent = m_levelSendData.m_sendConnection->SendReliablePacket(editorServerLevelDataPacket);
                 if (!packetSent)
                 {
-                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(millisecondDelayPerRetry));
+                    AZStd::this_thread::sleep_for(AZStd::chrono::milliseconds(aznumeric_cast<int>(millisecondDelayPerRetry)));
                     numRetries++;
 
-                    // Keep doubling the time between retries up to 1 second, then clamp it there.
-                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * 2, 1000);
+                    // Keep doubling the time between retries up to the max amount, then clamp it there.
+                    millisecondDelayPerRetry = AZStd::min(millisecondDelayPerRetry * AZ::TimeMs{ 2 }, MaxMsDelayPerRetry);
 
                     // Force the networking buffers to try and flush before sending the packet again.
                     AZ::Interface<AzNetworking::INetworking>::Get()->ForceUpdate();
                 }
             }
-            AZ_Assert(packetSent, "Failed to send level packet after %d tries. Server will fail to run the level correctly.", numRetries);
+
+            if (packetSent)
+            {
+                // Update our information to track the current amount of data sent.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelData,
+                    aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetCurPos()),
+                    aznumeric_cast<uint32_t>(m_levelSendData.m_byteStream->GetLength()));
+            }
+            else
+            {
+                updateFinished = true;
+                updateSuccessful = false;
+            }
+        }
+
+        if (updateFinished)
+        {
+            // After we're done sending the level data, clear out our temporary buffer.
+            ResetLevelSendData();
+
+            if (updateSuccessful)
+            {
+                // Notify that the level has successfully been sent.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelDataSuccess);
+            }
+            else
+            {
+                // Notify that the level send failed.
+                MultiplayerEditorServerNotificationBus::Broadcast(
+                    &MultiplayerEditorServerNotificationBus::Events::OnEditorSendingLevelDataFailed);
+            }
         }
     }
 
@@ -466,17 +548,8 @@ namespace Multiplayer
             AZ_Warning("MultiplayerEditorSystemComponent", false, "The editor server process has unexpectedly stopped running. Did it crash or get accidentally closed?")
         }
 
-        if (m_serverProcessTracePrinter)
-        {
-            m_serverProcessTracePrinter->Pump();
-        }
-        else
-        {
-            AZ::TickBus::Handler::BusDisconnect();
-            AZ_Warning(
-                "MultiplayerEditorSystemComponent", false,
-                "The server process trace printer is NULL so we won't be able to pipe server logs to the editor. Please update the code to call AZ::TickBus::Handler::BusDisconnect whenever the editor-server is terminated.")
-        }
+        // Continue sending the level data to the server if any more data exists that needs to be sent.
+        SendLevelDataToServer();
     }
 
     void MultiplayerEditorSystemComponent::Connect()

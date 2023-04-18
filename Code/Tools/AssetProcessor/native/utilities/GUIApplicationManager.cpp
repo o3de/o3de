@@ -485,6 +485,11 @@ bool GUIApplicationManager::OnAssert(const char* message)
     return true;
 }
 
+WId GUIApplicationManager::GetWindowId() const
+{
+    return m_mainWindow->effectiveWinId();
+}
+
 bool GUIApplicationManager::Activate()
 {
     m_startupErrorCollector = AZStd::make_unique<ErrorCollector>(m_mainWindow);

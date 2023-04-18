@@ -354,11 +354,11 @@ namespace AZ::Reflection
                         Dom::Value readOnlyValue;
                         if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
                         {
-                            readOnlyValue = readOnlyAttribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                            readOnlyValue = readOnlyAttribute->DomInvoke(parentData.m_instance, Dom::Value(Dom::Type::Array));
                         }
                         else
                         {
-                            readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                            readOnlyValue = readOnlyAttribute->GetAsDomValue(parentData.m_instance);
                         }
 
                         if (readOnlyValue.IsBool())
@@ -836,13 +836,15 @@ namespace AZ::Reflection
                 if (nodeData.m_disableEditor)
                 {
                     nodeData.m_cachedAttributes.push_back(
-                        { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::Disabled.GetName(), Dom::Value(true) });
+                        { group, AZ::DocumentPropertyEditor::Nodes::NodeWithVisiblityControl::Disabled.GetName(), Dom::Value(true) });
                 }
 
                 if (nodeData.m_isAncestorDisabled)
                 {
                     nodeData.m_cachedAttributes.push_back(
-                        { group, AZ::DocumentPropertyEditor::Nodes::PropertyEditor::AncestorDisabled.GetName(), Dom::Value(true) });
+                        { group,
+                          AZ::DocumentPropertyEditor::Nodes::NodeWithVisiblityControl::AncestorDisabled.GetName(),
+                          Dom::Value(true) });
                 }
 
                 if (nodeData.m_classData->m_container)

@@ -12,6 +12,7 @@
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabPropertyEditorNodes.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapperInterface.h>
+#include <AzToolsFramework/Prefab/Instance/InstanceUpdateExecutorInterface.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabDomUtils.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -19,6 +20,8 @@
 #include <AzToolsFramework/Prefab/PrefabSystemComponentInterface.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyEdit.h>
 #include <AzToolsFramework/Prefab/Undo/PrefabUndoComponentPropertyOverride.h>
+#include <AzToolsFramework/ToolsComponents/EditorDisabledCompositionBus.h>
+#include <AzToolsFramework/ToolsComponents/EditorPendingCompositionBus.h>
 
 namespace AzToolsFramework::Prefab
 {
@@ -49,9 +52,17 @@ namespace AzToolsFramework::Prefab
         // Otherwise, an empty component alias will be used in DOM data.
         AZ_Assert(componentInstance, "PrefabComponentAdapter::SetComponent - component is null.")
         m_componentAlias = componentInstance->GetSerializedIdentifier();
-        AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
+
+        // Do not assert on empty alias for disabled or pending components.
+        // See GHI: https://github.com/o3de/o3de/issues/15546
+        if (!IsComponentDisabled(componentInstance) && !IsComponentPending(componentInstance))
+        {
+            AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::SetComponent - Component alias should not be empty.");
+        }
 
         ComponentAdapter::SetComponent(componentInstance);
+
+        m_currentUndoBatch = nullptr;
     }
 
     void PrefabComponentAdapter::CreateLabel(
@@ -63,16 +74,15 @@ namespace AzToolsFramework::Prefab
         adapterBuilder->Attribute(PrefabOverrideLabel::Text, labelText);
 
         AZ::Dom::Path relativePathFromEntity;
-        if (!serializedPath.empty())
+        if (!m_componentAlias.empty() && !serializedPath.empty())
         {
-            AZ_Assert(!m_componentAlias.empty(), "PrefabComponentAdapter::CreateLabel - Component alias should not be empty.");
-
             relativePathFromEntity /= PrefabDomUtils::ComponentsName;
             relativePathFromEntity /= m_componentAlias;
             relativePathFromEntity /= AZ::Dom::Path(serializedPath);
         }
 
         adapterBuilder->Attribute(PrefabOverrideLabel::RelativePath, relativePathFromEntity.ToString());
+        adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
 
         // Do not show override visualization on container entities or for empty serialized paths.
         if (m_prefabPublicInterface->IsInstanceContainerEntity(m_entityId) || relativePathFromEntity.IsEmpty())
@@ -83,11 +93,6 @@ namespace AzToolsFramework::Prefab
         {
             bool isOverridden = m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, relativePathFromEntity.ToString());
             adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isOverridden);
-
-            if (isOverridden)
-            {
-                adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
-            }
         }
 
         adapterBuilder->EndPropertyEditor();
@@ -107,8 +112,27 @@ namespace AzToolsFramework::Prefab
 
     void PrefabComponentAdapter::UpdateDomContents(const PropertyChangeInfo& propertyChangeInfo)
     {
-        if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+        if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::InProgressEdit)
         {
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(true);
+            }
+
+            if (m_currentUndoBatch)
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch,
+                    &AzToolsFramework::ToolsApplicationRequests::ResumeUndoBatch,
+                    m_currentUndoBatch,
+                    "Modify Entity Property");
+            }
+            else
+            {
+                AzToolsFramework::ToolsApplicationRequests::Bus::BroadcastResult(
+                    m_currentUndoBatch, &AzToolsFramework::ToolsApplicationRequests::BeginUndoBatch, "Modify Entity Property");
+            }
+
             AZ::Dom::Path serializedPath = propertyChangeInfo.path / AZ::Reflection::DescriptorAttributes::SerializedPath;
 
             AZ::Dom::Path relativePathFromOwningPrefab(PrefabDomUtils::EntitiesName);
@@ -121,7 +145,6 @@ namespace AzToolsFramework::Prefab
 
             relativePathFromOwningPrefab /= AZ::Dom::Path(serializedPathValue.GetString());
 
-
             auto prefabFocusPublicInterface = AZ::Interface<PrefabFocusPublicInterface>::Get();
             if (prefabFocusPublicInterface->IsOwningPrefabBeingFocused(m_entityId))
             {
@@ -129,7 +152,6 @@ namespace AzToolsFramework::Prefab
                 {
                     NotifyContentsChanged(
                         { AZ::Dom::PatchOperation::ReplaceOperation(propertyChangeInfo.path / "Value", propertyChangeInfo.newValue) });
-
                 }
             }
             else if (prefabFocusPublicInterface->IsOwningPrefabInFocusHierarchy(m_entityId))
@@ -163,6 +185,17 @@ namespace AzToolsFramework::Prefab
                     NotifyContentsChanged(patches);
                 }
             }
+
+            AzToolsFramework::ToolsApplicationRequests::Bus::Broadcast(&AzToolsFramework::ToolsApplicationRequests::EndUndoBatch);
+        }
+        else if (propertyChangeInfo.changeType == AZ::DocumentPropertyEditor::Nodes::ValueChangeType::FinishedEdit)
+        {
+            if (auto instanceUpdateExecutorInterface = AZ::Interface<Prefab::InstanceUpdateExecutorInterface>::Get())
+            {
+                instanceUpdateExecutorInterface->SetShouldPauseInstancePropagation(false);
+            }
+
+            m_currentUndoBatch = nullptr;
         }
     }
 
@@ -192,32 +225,24 @@ namespace AzToolsFramework::Prefab
                     return false;
                 }
 
-                auto prefabSystemComponentInterface = AZ::Interface<PrefabSystemComponentInterface>::Get();
-
-                if (!prefabSystemComponentInterface)
-                {
-                    AZ_Assert(false, "PrefabSystemComponentInterface is not found.");
-                    return false;
-                }
-
-                const PrefabDom& templateDom = prefabSystemComponentInterface->FindTemplateDom(owningInstance->get().GetTemplateId());
-                PrefabDomPath prefabDomPathToComponentProperty(relativePathFromOwningPrefab.data());
-                const PrefabDomValue* beforeValueOfComponentProperty = prefabDomPathToComponentProperty.Get(templateDom);
-
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
+
                 ScopedUndoBatch undoBatch("Update component in a prefab template");
+
                 PrefabUndoComponentPropertyEdit* state = aznew PrefabUndoComponentPropertyEdit("Undo Updating Component");
-                state->SetParent(undoBatch.GetUndoBatch());
-                state->Capture(*beforeValueOfComponentProperty, afterValueOfComponentProperty, m_entityId, relativePathFromOwningPrefab);
+                state->SetParent(m_currentUndoBatch);
+                state->Capture(
+                    owningInstance->get(), AZ::Dom::Path(relativePathFromOwningPrefab).ToString(), afterValueOfComponentProperty);
                 state->Redo();
 
-                return true;
+                return state->Changed();
             }
         }
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. "
+                "It should have been a serialized value.");
             return false;
         }
     }
@@ -249,19 +274,40 @@ namespace AzToolsFramework::Prefab
                 }
 
                 PrefabDom afterValueOfComponentProperty = convertToRapidJsonOutcome.TakeValue();
-                ScopedUndoBatch undoBatch("override a component in a nested prefab template");
                 PrefabUndoComponentPropertyOverride* state = aznew PrefabUndoComponentPropertyOverride("Undo overriding Component");
-                state->SetParent(undoBatch.GetUndoBatch());
+                state->SetParent(m_currentUndoBatch);
                 state->CaptureAndRedo(owningInstance->get(), relativePathFromOwningPrefab, afterValueOfComponentProperty);
 
-                return true;
+                return state->Changed();
             }
         }
         else
         {
             AZ_Assert(
-                false, "Opaque property encountered in PrefabComponentAdapter::GeneratePropertyEditPatch. It should have been a serialized value.");
+                false, "Opaque property encountered in PrefabComponentAdapter::CreateAndApplyComponentOverridePatch. "
+                "It should have been a serialized value.");
             return false;
         }
     }
+
+    bool PrefabComponentAdapter::IsComponentDisabled(const AZ::Component* component)
+    {
+        AZ_Assert(component, "Unable to check a component that is nullptr");
+
+        bool result = false;
+        EditorDisabledCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorDisabledCompositionRequests::IsComponentDisabled, component);
+        return result;
+    }
+
+    bool PrefabComponentAdapter::IsComponentPending(const AZ::Component* component)
+    {
+        AZ_Assert(component, "Unable to check a component that is nullptr");
+
+        bool result = false;
+        EditorPendingCompositionRequestBus::EventResult(
+            result, component->GetEntityId(), &EditorPendingCompositionRequests::IsComponentPending, component);
+        return result;
+    }
+
 } // namespace AzToolsFramework::Prefab

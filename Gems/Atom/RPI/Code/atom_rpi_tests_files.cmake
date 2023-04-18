@@ -45,6 +45,7 @@ set(FILES
     Tests/ShaderResourceGroup/ShaderResourceGroupConstantBufferTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupImageTests.cpp
     Tests/ShaderResourceGroup/ShaderResourceGroupGeneralTests.cpp
+    Tests/System/CullingTests.cpp
     Tests/System/FeatureProcessorFactoryTests.cpp
     Tests/System/GpuQueryTests.cpp
     Tests/System/RenderPipelineTests.cpp

@@ -94,6 +94,7 @@ namespace AZ
         {
             m_drawListMask.reset();
             m_drawListContext.Shutdown();
+            m_visibleObjectContext.Shutdown();
             m_passesByDrawList = nullptr;
         }
 
@@ -113,11 +114,24 @@ namespace AZ
             m_drawListContext.AddDrawPacket(drawPacket, depth);
         }        
 
-        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, Vector3 worldPosition)
+        void View::AddDrawPacket(const RHI::DrawPacket* drawPacket, const Vector3& worldPosition)
         {
             Vector3 cameraToObject = worldPosition - m_position;
             float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
             AddDrawPacket(drawPacket, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, float depth)
+        {
+            // This function is thread safe since VisibleObjectContext has storage per thread for draw item data.
+            m_visibleObjectContext.AddVisibleObject(userData, depth);
+        }
+
+        void View::AddVisibleObject(const void* userData, const Vector3& worldPosition)
+        {
+            Vector3 cameraToObject = worldPosition - m_position;
+            float depth = cameraToObject.Dot(-m_viewToWorldMatrix.GetBasisZAsVector3());
+            AddVisibleObject(userData, depth);
         }
 
         void View::AddDrawItem(RHI::DrawListTag drawListTag, const RHI::DrawItemProperties& drawItemProperties)
@@ -354,6 +368,16 @@ namespace AZ
         RHI::DrawListView View::GetDrawList(RHI::DrawListTag drawListTag)
         {
             return m_drawListContext.GetList(drawListTag);
+        }
+
+        VisibleObjectListView View::GetVisibleObjectList()
+        {
+            return m_visibleObjectContext.GetList();
+        }
+
+        void View::FinalizeVisibleObjectList()
+        {
+            m_visibleObjectContext.FinalizeLists();
         }
 
         void View::FinalizeDrawListsTG(AZ::TaskGraphEvent& finalizeDrawListsTGEvent)

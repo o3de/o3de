@@ -8,7 +8,6 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
 #include <AzCore/RTTI/TypeInfoSimple.h>
 #include <AzCore/RTTI/RTTIMacros.h>
 

@@ -10,6 +10,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserExpandedTableViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Entries/SourceAssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
 namespace AzToolsFramework
 {
@@ -90,7 +91,7 @@ namespace AzToolsFramework
             case Qt::UserRole:
                 return QString(assetBrowserEntry->GetFullPath().c_str());
             case Qt::UserRole + 1:
-                return assetBrowserEntry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Folder;
+                return AssetBrowserViewUtils::GetThumbnail(assetBrowserEntry);
             }
             return QAbstractProxyModel::data(index, role);
         }
