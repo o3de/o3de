@@ -542,9 +542,9 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
             menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath](){
 
-                AzAssetBrowserWindow* browser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
+                AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
                 
-                browser->SelectAsset(fullFilePath.c_str());
+                newAssetBrowser->SelectAsset(fullFilePath.c_str());
             });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;
