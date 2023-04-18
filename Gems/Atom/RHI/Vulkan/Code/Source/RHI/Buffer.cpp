@@ -15,7 +15,6 @@
 #include <RHI/BufferPool.h>
 #include <Atom/RHI.Reflect/Vulkan/Conversion.h>
 #include <RHI/MemoryView.h>
-#include <RHI/MemoryAllocator.h>
 #include <RHI/Device.h>
 #include <RHI/Queue.h>
 #include <RHI/ReleaseContainer.h>
@@ -51,11 +50,11 @@ namespace AZ
             return &m_memoryView;
         }
 
-        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, BufferMemoryView& memmoryView)
+        RHI::ResultCode Buffer::Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memoryView)
         {
             DeviceObject::Init(device);
             m_ownerQueue.Init(bufferDescriptor);
-            m_memoryView = memmoryView;
+            m_memoryView = memoryView;
 
             SetName(GetName());
             return RHI::ResultCode::Success;

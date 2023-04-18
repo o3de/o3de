@@ -868,5 +868,39 @@ namespace AZ
 
             return accessFlagBits;
         }
+
+        VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle)
+        {
+            switch (swizzle)
+            {
+            case ImageComponentMapping::Swizzle::Identity:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
+            case ImageComponentMapping::Swizzle::Zero:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_ZERO;
+            case ImageComponentMapping::Swizzle::One:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_ONE;
+            case ImageComponentMapping::Swizzle::R:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_R;
+            case ImageComponentMapping::Swizzle::G:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_G;
+            case ImageComponentMapping::Swizzle::B:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_B;
+            case ImageComponentMapping::Swizzle::A:
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_A;
+            default:
+                AZ_Assert(false, "Invalid component swizzle %d", swizzle);
+                return VkComponentSwizzle::VK_COMPONENT_SWIZZLE_IDENTITY;
+            }
+        }
+
+        VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping)
+        {
+            VkComponentMapping vkMapping;
+            vkMapping.r = ConvertComponentSwizzle(mapping.m_red);
+            vkMapping.g = ConvertComponentSwizzle(mapping.m_green);
+            vkMapping.b = ConvertComponentSwizzle(mapping.m_blue);
+            vkMapping.a = ConvertComponentSwizzle(mapping.m_alpha);
+            return vkMapping;
+        }
     }
 }

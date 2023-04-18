@@ -14,6 +14,8 @@
 #include <Atom/RHI.Reflect/Bits.h>
 #include <Atom/RHI.Reflect/AttachmentEnums.h>
 
+#include <vma/vk_mem_alloc.h>
+
 #if !defined(_RELEASE)
     #define AZ_VULKAN_USE_DEBUG_LABELS
 #endif

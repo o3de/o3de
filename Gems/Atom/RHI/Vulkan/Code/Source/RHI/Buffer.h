@@ -68,7 +68,7 @@ namespace AZ
 
         private:
             Buffer() = default;
-            RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, BufferMemoryView& memmoryView);
+            RHI::ResultCode Init(Device& device, const RHI::BufferDescriptor& bufferDescriptor, const BufferMemoryView& memoryView);
 
             void Invalidate();
 

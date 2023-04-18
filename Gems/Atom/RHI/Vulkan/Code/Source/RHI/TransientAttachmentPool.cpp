@@ -222,9 +222,7 @@ namespace AZ
             RHI::Ptr<AliasedAttachmentAllocator> allocator = AliasedAttachmentAllocator::Create();
             AliasedAttachmentAllocator::Descriptor heapDesc;
             heapDesc.m_cacheSize = ObjectCacheSize;
-            heapDesc.m_memoryTypeMask = memRequirements.memoryTypeBits;
-            heapDesc.m_memoryFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
-            heapDesc.m_alignment = memRequirements.alignment;
+            heapDesc.m_memoryRequirements = memRequirements;
             heapDesc.m_budgetInBytes = budgetInBytes;
             heapDesc.m_resourceTypeMask = resourceTypeMask;
             heapDesc.m_allocationParameters = heapParameters;

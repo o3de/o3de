@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <Atom_RHI_Vulkan_Platform.h>
 #include <algorithm>
 #include <Atom/RHI/BufferScopeAttachment.h>
 #include <Atom/RHI/BufferProperty.h>

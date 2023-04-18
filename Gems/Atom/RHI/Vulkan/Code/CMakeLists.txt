@@ -34,12 +34,10 @@ if(NOT PAL_TRAIT_ATOM_RHI_VULKAN_SUPPORTED)
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
-                Include/Atom/RHI.Loader/Glad
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
                 Gem::Atom_RHI.Reflect
-                3rdParty::glad_vulkan
     )
 
     if(PAL_TRAIT_BUILD_HOST_TOOLS)
@@ -119,6 +117,7 @@ ly_add_target(
             Gem::Atom_RHI.Reflect
             Gem::Atom_RHI_Vulkan.Reflect
             Gem::Atom_RHI_Vulkan.Glad.Static
+            3rdParty::amd_vma
             ${AFTERMATH_BUILD_DEPENDENCY}
     COMPILE_DEFINITIONS 
         PRIVATE

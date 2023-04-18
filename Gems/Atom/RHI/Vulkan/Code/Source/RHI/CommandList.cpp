@@ -841,7 +841,8 @@ namespace AZ
                 static_cast<Device&>(GetDevice())
                     .GetContext()
                     .CmdBindIndexBuffer(
-                        m_nativeCommandBuffer, indexBufferMemoryView->GetNativeBuffer(),
+                        m_nativeCommandBuffer,
+                        indexBufferMemoryView->GetNativeBuffer(),
                         indexBufferMemoryView->GetOffset() + indexBufferView.GetByteOffset(),
                         ConvertIndexBufferFormat(indexBufferView.GetIndexFormat()));
             }

@@ -8,8 +8,6 @@
 #pragma once
 
 #include <Atom/RHI/ImagePool.h>
-#include <Atom/RHI.Reflect/Vulkan/ImagePoolDescriptor.h>
-#include <RHI/MemoryAllocator.h>
 
 namespace AZ
 {
@@ -27,15 +25,8 @@ namespace AZ
 
             static RHI::Ptr<ImagePool> Create();
 
-            void GarbageCollect();
-
         private:
             ImagePool() = default;
-
-            //////////////////////////////////////////////////////////////////////////
-            // FrameSchedulerEventBus::Handler
-            void OnFrameEnd() override;
-            //////////////////////////////////////////////////////////////////////////
 
             //////////////////////////////////////////////////////////////////////////
             // RHI::ImagePool
@@ -45,13 +36,6 @@ namespace AZ
             void ShutdownInternal() override;
             void ShutdownResourceInternal(RHI::Resource& resourceBase) override;
             //////////////////////////////////////////////////////////////////////////
-
-            //////////////////////////////////////////////////////////////////////////
-            // RHI::Object
-            void SetNameInternal(const AZStd::string_view& name) override;
-            //////////////////////////////////////////////////////////////////////////
-
-            MemoryAllocator m_memoryAllocator;
         };
     }
 }

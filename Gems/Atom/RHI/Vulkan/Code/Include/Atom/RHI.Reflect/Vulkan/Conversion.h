@@ -25,6 +25,7 @@
 #include <Atom/RHI.Reflect/ScopeAttachmentDescriptor.h>
 #include <Atom/RHI.Reflect/Size.h>
 #include <Atom/RHI.Reflect/VariableRateShadingEnums.h>
+#include <Atom/RHI.Reflect/Vulkan/ImageViewDescriptor.h>
 
 namespace AZ
 {
@@ -66,5 +67,7 @@ namespace AZ
         VkImageUsageFlags ImageUsageFlagsOfFormatFeatureFlags(VkFormatFeatureFlags formatFeatureFlags);
         VkAccessFlags GetSupportedAccessFlags(VkPipelineStageFlags pipelineStageFlags);
         bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags);
+        VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle);
+        VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping);
     }
 }

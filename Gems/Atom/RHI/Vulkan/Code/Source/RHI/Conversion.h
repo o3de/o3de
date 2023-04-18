@@ -12,6 +12,8 @@
 #include <Atom/RHI/Query.h>
 #include <Atom/RHI/PipelineStateDescriptor.h>
 
+#include <vma/vk_mem_alloc.h>
+
 namespace AZ
 {
     namespace RHI
@@ -34,6 +36,6 @@ namespace AZ
         VkAccessFlags GetResourceAccessFlags(const RHI::ImageBindFlags& bindFlags);
         VkImageLayout GetImageAttachmentLayout(const RHI::ImageScopeAttachment& imageScopeAttachment);
         bool HasExplicitClear(const RHI::ScopeAttachment& scopeAttachment, const RHI::ScopeAttachmentDescriptor& descriptor);
-
+        VmaAllocationCreateInfo GetVmaAllocationCreateInfo(const RHI::HeapMemoryLevel level);
     }
 }

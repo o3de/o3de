@@ -457,6 +457,25 @@ namespace AZ
                 return true;
             }
             return false;
-        }   
+        }
+
+        VmaAllocationCreateInfo GetVmaAllocationCreateInfo(const RHI::HeapMemoryLevel level)
+        {
+            VmaAllocationCreateInfo allocInfo = {};
+            allocInfo.flags = VMA_ALLOCATION_CREATE_STRATEGY_MIN_MEMORY_BIT;
+            switch (level)
+            {
+            case RHI::HeapMemoryLevel::Host:
+                allocInfo.flags |= VMA_ALLOCATION_CREATE_HOST_ACCESS_RANDOM_BIT;
+                allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT;
+                break;
+            case RHI::HeapMemoryLevel::Device:
+                allocInfo.requiredFlags |= VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+                break;
+            default:
+                break;
+            }
+            return allocInfo;
+        }
     }
 }

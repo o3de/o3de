@@ -37,8 +37,7 @@
 #include <RHI/RenderPass.h>
 #include <RHI/Sampler.h>
 #include <RHI/SemaphoreAllocator.h>
-
-#include "BindlessDescriptorPool.h"
+#include <RHI/BindlessDescriptorPool.h>
 
 namespace AZ
 {
@@ -49,6 +48,21 @@ namespace AZ
         class GraphicsPipeline;
         class SwapChain;
         class AsyncUploadQueue;
+
+        //! Helper class to contain a vulkan create info structure
+        //! Since the create info points into memory arrays, we need to keep the
+        //! arrays alive when returning the create info from a function.
+        template<class T>
+        struct CreateInfoContainer
+        {
+            //! Vulkan create info structure
+            T m_vkCreateInfo = {};
+            //! Vector of queue families that the create info structure points to
+            AZStd::vector<uint32_t> m_queueFamilyIndices;
+        };
+
+        using BufferCreateInfo = CreateInfoContainer<VkBufferCreateInfo>;
+        using ImageCreateInfo = CreateInfoContainer<VkImageCreateInfo>;
 
         class Device final
             : public RHI::Device
@@ -81,7 +95,7 @@ namespace AZ
             // For example, a GPU cannot use a image of BC1_UNORM format for storage image
             // (and a certain kind of GPU might be able to use it).
             // GetImageUsageFromFormat gives capabilities of images of the given format for this device.
-            VkImageUsageFlags GetImageUsageFromFormat(RHI::Format format);
+            VkImageUsageFlags GetImageUsageFromFormat(RHI::Format format) const;
 
             CommandQueueContext& GetCommandQueueContext();
             const CommandQueueContext& GetCommandQueueContext() const;
@@ -106,18 +120,14 @@ namespace AZ
             RHI::Ptr<CommandList> AcquireCommandList(uint32_t familyQueueIndex, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
             RHI::Ptr<CommandList> AcquireCommandList(RHI::HardwareQueueClass queueClass, VkCommandBufferLevel level = VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 
-            RHI::Ptr<Memory> AllocateMemory(
-                uint64_t sizeInBytes,
-                const uint32_t memoryTypeMask,
-                const VkMemoryPropertyFlags flags,
-                const RHI::BufferBindFlags bufferBindFlags = RHI::BufferBindFlags::None);
-            
             uint32_t GetCurrentFrameIndex() const;
 
             NullDescriptorManager& GetNullDescriptorManager();
 
-            VkBuffer CreateBufferResouce(const RHI::BufferDescriptor& descriptor) const;
-            void DestroyBufferResource(VkBuffer vkBuffer) const;
+            //! Fills a vulkan buffer create info with the provided descriptor
+            BufferCreateInfo BuildBufferCreateInfo(const RHI::BufferDescriptor& descriptor) const;
+            //! Fills a vulkan image create info with the provided descriptor
+            ImageCreateInfo BuildImageCreateInfo(const RHI::ImageDescriptor& descriptor) const;
 
             // Supported modes when specifiying the shading rate through an image.
             enum class ShadingRateImageMode : uint32_t
@@ -130,6 +140,9 @@ namespace AZ
             ShadingRateImageMode GetImageShadingRateMode() const;
 
             RHI::Ptr<BufferPool> GetConstantBufferPool();
+
+            //! Returns the VMA allocator used by this device.
+            VmaAllocator& GetVmaAllocator();
 
         private:
             Device();
@@ -173,7 +186,14 @@ namespace AZ
             //! Flags will be corrected if required features or extensions are not enabled.
             VkBufferUsageFlags GetBufferUsageFlagBitsUnderRestrictions(RHI::BufferBindFlags bindFlags) const;
 
+            RHI::ResultCode InitVulkanAllocator(RHI::PhysicalDevice& physicalDevice);
+            void ShutdownVulkanAllocator();
+
+            VkImageUsageFlags CalculateImageUsageFlags(const RHI::ImageDescriptor& descriptor) const;
+            VkImageCreateFlags CalculateImageCreateFlags(const RHI::ImageDescriptor& descriptor) const;
+
             VkDevice m_nativeDevice = VK_NULL_HANDLE;
+            VmaAllocator m_vmaAllocator = VK_NULL_HANDLE;
             VkPhysicalDeviceFeatures m_enabledDeviceFeatures{};
             VkPipelineStageFlags m_supportedPipelineStageFlagsMask = std::numeric_limits<VkPipelineStageFlags>::max();
 
@@ -184,7 +204,7 @@ namespace AZ
             CommandListAllocator m_commandListAllocator;
             SemaphoreAllocator m_semaphoreAllocator;
 
-            AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
+            mutable AZStd::unordered_map<RHI::Format, VkImageUsageFlags> m_imageUsageOfFormat;
 
             RHI::Ptr<BufferPool> m_stagingBufferPool;
 
