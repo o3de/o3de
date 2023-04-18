@@ -72,7 +72,7 @@ namespace O3DE::ProjectManager
         const QSet<QString>& GetFeatures() const { return m_featureFilter; }
         void SetFeatures(const QSet<QString>& features) { m_featureFilter = features; InvalidateFilter(); }
 
-        const bool GetCompatibleFilterFlag() const { return m_compatibleOnlyFilter; }
+        bool GetCompatibleFilterFlag() const { return m_compatibleOnlyFilter; }
 
         void InvalidateFilter();
         void ResetFilters(bool clearSearchString = true);
