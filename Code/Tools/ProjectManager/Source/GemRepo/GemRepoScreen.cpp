@@ -60,6 +60,12 @@ namespace O3DE::ProjectManager
         m_notificationsView->SetOffset(QPoint(10, 10));
         m_notificationsView->SetMaxQueuedNotifications(1);
         m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions
+
+        ScreensCtrl* screensCtrl = GetScreensCtrl(this);
+        if (screensCtrl)
+        {
+            connect(this, &GemRepoScreen::NotifyRemoteContentRefreshed, screensCtrl, &ScreensCtrl::NotifyRemoteContentRefreshed);
+        }
     }
 
     void GemRepoScreen::NotifyCurrentScreen()
@@ -67,6 +73,9 @@ namespace O3DE::ProjectManager
         constexpr bool downloadMissingOnly = true;
         PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
+
+        // we might have downloading missing data so make sure to update the GemCatalog
+        emit NotifyRemoteContentRefreshed();
     }
 
     void GemRepoScreen::Reinit()
@@ -132,7 +141,7 @@ namespace O3DE::ProjectManager
                 ShowStandardToastNotification(tr("Repo added successfully!"));
 
                 Reinit();
-                emit OnRefresh();
+                emit NotifyRemoteContentRefreshed();
             }
             else
             {
@@ -160,7 +169,7 @@ namespace O3DE::ProjectManager
                 ShowStandardToastNotification(tr("Repo removed"));
 
                 Reinit();
-                emit OnRefresh();
+                emit NotifyRemoteContentRefreshed();
             }
             else
             {
@@ -177,7 +186,7 @@ namespace O3DE::ProjectManager
         constexpr bool downloadMissingOnly = false;
         bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
-        emit OnRefresh();
+        emit NotifyRemoteContentRefreshed();
 
         if (refreshResult)
         {
@@ -201,7 +210,7 @@ namespace O3DE::ProjectManager
         if (refreshResult.IsSuccess())
         {
             Reinit();
-            emit OnRefresh();
+            emit NotifyRemoteContentRefreshed();
 
             ShowStandardToastNotification(tr("%1 updated").arg(repoName));
         }

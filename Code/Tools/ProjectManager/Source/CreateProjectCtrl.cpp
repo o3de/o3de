@@ -224,6 +224,11 @@ namespace O3DE::ProjectManager
             if(auto outcome = CurrentScreenIsValid(); outcome.IsSuccess())
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
+                ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
+                if (currentScreen)
+                {
+                    currentScreen->NotifyCurrentScreen();
+                }
                 Update();
             }
             else if (!outcome.GetError().isEmpty())
@@ -243,6 +248,11 @@ namespace O3DE::ProjectManager
         if (m_stack->currentIndex() > 0)
         {
             m_stack->setCurrentIndex(m_stack->currentIndex() - 1);
+            ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
+            if (currentScreen)
+            {
+                currentScreen->NotifyCurrentScreen();
+            }
             Update();
         }
     }

@@ -19,6 +19,7 @@
 #include <GemCatalog/GemUpdateDialog.h>
 #include <GemCatalog/GemUninstallDialog.h>
 #include <GemCatalog/GemItemDelegate.h>
+#include <GemRepo/GemRepoScreen.h>
 #include <DownloadController.h>
 #include <ProjectUtils.h>
 #include <AdjustableHeaderWidget.h>
@@ -79,7 +80,11 @@ namespace O3DE::ProjectManager
         connect(m_headerWidget, &GemCatalogHeaderWidget::UpdateGemCart, this, &GemCatalogScreen::UpdateAndShowGemCart);
         connect(m_downloadController, &DownloadController::Done, this, &GemCatalogScreen::OnGemDownloadResult);
 
-        SetUpScreensControl(parent);
+        ScreensCtrl* screensCtrl = GetScreensCtrl(this);
+        if (screensCtrl)
+        {
+            connect(screensCtrl, &ScreensCtrl::NotifyRemoteContentRefreshed, [this]() { m_needRefresh = true; });
+        }
 
         QHBoxLayout* hLayout = new QHBoxLayout();
         hLayout->setMargin(0);
@@ -194,8 +199,13 @@ namespace O3DE::ProjectManager
             // init the read only catalog the first time it is shown
             ReinitForProject(m_projectPath);
         }
+        else if (m_needRefresh)
+        {
+            // generally we need to refresh because remote repos were updated
+            m_needRefresh = false;
+            Refresh();
+        }
     }
-
 
     void GemCatalogScreen::NotifyProjectRemoved(const QString& projectPath)
     {
@@ -296,7 +306,7 @@ namespace O3DE::ProjectManager
         }
     }
 
-    void GemCatalogScreen::Refresh()
+    void GemCatalogScreen::Refresh(bool refreshRemoteRepos)
     {
         QSet<QPersistentModelIndex> validIndexes;
 
@@ -304,6 +314,11 @@ namespace O3DE::ProjectManager
         {
             const auto& indexes = m_gemModel->AddGems(outcome.GetValue(), /*updateExisting=*/true);
             validIndexes = QSet(indexes.cbegin(), indexes.cend());
+        }
+
+        if(refreshRemoteRepos)
+        {
+            PythonBindingsInterface::Get()->RefreshAllGemRepos();
         }
 
         if (const auto& outcome = PythonBindingsInterface::Get()->GetGemInfosForAllRepos(); outcome.IsSuccess())

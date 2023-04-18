@@ -45,9 +45,6 @@ namespace O3DE::ProjectManager
 
         void NotifyCurrentScreen() override;
 
-    signals:
-        void OnRefresh();
-
     public slots:
         void ShowStandardToastNotification(const QString& notification);
         void HandleAddRepoButton();

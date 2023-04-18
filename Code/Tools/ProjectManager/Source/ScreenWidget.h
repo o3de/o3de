@@ -29,6 +29,7 @@ namespace O3DE::ProjectManager
             : QFrame(parent)
         {
         }
+
         ~ScreenWidget() = default;
 
         virtual ProjectManagerScreen GetScreenEnum()
@@ -64,10 +65,21 @@ namespace O3DE::ProjectManager
         {
         }
 
+        ScreensCtrl* GetScreensCtrl(QObject* widget)
+        {
+            if (!widget)
+            {
+                return nullptr;
+            }
+
+            ScreensCtrl* screensCtrl = qobject_cast<ScreensCtrl*> (widget);
+            return screensCtrl ? screensCtrl : GetScreensCtrl(widget->parent());
+        }
+
         //! Returns true if this screen is the current screen 
         virtual bool IsCurrentScreen()
         {
-            ScreensCtrl* screensCtrl = qobject_cast<ScreensCtrl*>(parent());
+            ScreensCtrl* screensCtrl = GetScreensCtrl(this);
             return screensCtrl ? screensCtrl->GetCurrentScreen() == this : false;
         }
 
@@ -83,7 +95,7 @@ namespace O3DE::ProjectManager
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
         void NotifyProjectRemoved(const QString& projectPath);
-
+        void NotifyRemoteContentRefreshed();
     };
 
 } // namespace O3DE::ProjectManager
