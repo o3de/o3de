@@ -66,6 +66,7 @@ namespace O3DE::ProjectManager
         };
 
         void SetRepoEnabled(const QModelIndex& modelIndex, bool isEnabled);
+        QPersistentModelIndex FindModelIndexByRepoUri(const QString& repoUri);
 
     signals:
         void ShowToastNotification(const QString& notification);

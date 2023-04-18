@@ -248,4 +248,20 @@ namespace O3DE::ProjectManager
         return !modelIndex.data(RoleAdditionalInfo).toString().isEmpty();
     }
 
+    QPersistentModelIndex GemRepoModel::FindModelIndexByRepoUri(const QString& repoUri)
+    {
+        // the number of repos should be small enough that we don't need a hash
+        for (int row = 0; row < rowCount(); ++row)
+        {
+            QModelIndex modelIndex = index(row, /*column*/ 0);
+            if (modelIndex.isValid() && modelIndex.data(RoleRepoUri).toString() == repoUri)
+            {
+                return modelIndex;
+            }
+        }
+
+        return {};
+    }
+
+
 } // namespace O3DE::ProjectManager

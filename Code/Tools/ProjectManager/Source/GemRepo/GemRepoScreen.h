@@ -20,6 +20,7 @@ QT_FORWARD_DECLARE_CLASS(QTableWidget)
 QT_FORWARD_DECLARE_CLASS(QFrame)
 QT_FORWARD_DECLARE_CLASS(QStackedWidget)
 QT_FORWARD_DECLARE_CLASS(QSortFilterProxyModel)
+QT_FORWARD_DECLARE_CLASS(QItemSelectionModel)
 
 namespace O3DE::ProjectManager
 {
@@ -73,6 +74,7 @@ namespace O3DE::ProjectManager
         GemRepoInspector* m_gemRepoInspector = nullptr;
         GemRepoModel* m_gemRepoModel = nullptr;
         GemRepoProxyModel* m_sortProxyModel = nullptr;
+        QItemSelectionModel* m_selectionModel = nullptr;
 
         QLabel* m_lastAllUpdateLabel;
     };

@@ -30,6 +30,7 @@
 #include <QFrame>
 #include <QStackedWidget>
 #include <QMessageBox>
+#include <QItemSelectionModel>
 
 namespace O3DE::ProjectManager
 {
@@ -68,6 +69,14 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::Reinit()
     {
+        QString selectedRepoUri;
+        QPersistentModelIndex selectedIndex = m_selectionModel->currentIndex();
+        if (selectedIndex.isValid())
+        {
+            selectedIndex = m_sortProxyModel->mapToSource(selectedIndex);
+            selectedRepoUri = GemRepoModel::GetRepoUri(selectedIndex);
+        }
+
         disconnect(m_gemRepoModel, &GemRepoModel::dataChanged, this, &GemRepoScreen::OnModelDataChanged);
 
         m_gemRepoModel->clear();
@@ -79,17 +88,27 @@ namespace O3DE::ProjectManager
         if (m_gemRepoModel->rowCount())
         {
             m_contentStack->setCurrentWidget(m_repoContent);
+
+            QPersistentModelIndex modelIndex;
+            if (!selectedRepoUri.isEmpty())
+            {
+                // attempt to re-select the row with the unique RepoURI if it still exists
+                modelIndex = m_gemRepoModel->FindModelIndexByRepoUri(selectedRepoUri);
+                modelIndex = m_sortProxyModel->mapFromSource(modelIndex);
+            }
+
+            if (!modelIndex.isValid())
+            {
+                // fallback to selecting the first item in the list
+                modelIndex = m_sortProxyModel->index(0, 0);
+            }
+
+            m_gemRepoListView->selectionModel()->setCurrentIndex(modelIndex, QItemSelectionModel::ClearAndSelect);
         }
         else
         {
             m_contentStack->setCurrentWidget(m_noRepoContent);
         }
-
-        // Select the first entry after everything got correctly sized
-        QTimer::singleShot(200, [=]{
-            QModelIndex firstModelIndex = m_gemRepoListView->model()->index(0,0);
-            m_gemRepoListView->selectionModel()->setCurrentIndex(firstModelIndex, QItemSelectionModel::ClearAndSelect);
-        });
     }
 
     void GemRepoScreen::HandleAddRepoButton()
@@ -156,7 +175,11 @@ namespace O3DE::ProjectManager
         Reinit();
         emit OnRefresh();
 
-        if (!refreshResult)
+        if (refreshResult)
+        {
+            ShowStandardToastNotification(tr("Repos updated"));
+        }
+        else
         {
             QMessageBox::critical(
                 this, tr("Operation failed"), QString("Some repos failed to refresh."));
@@ -379,15 +402,15 @@ namespace O3DE::ProjectManager
         m_sortProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
         m_sortProxyModel->setSortRole(GemRepoModel::UserRole::RoleName);
 
-        auto selectionModel = new QItemSelectionModel(m_sortProxyModel, this);
-        m_gemRepoListView = new GemRepoListView(m_sortProxyModel, selectionModel, m_gemRepoHeaderTable, this);
+        m_selectionModel = new QItemSelectionModel(m_sortProxyModel, this);
+        m_gemRepoListView = new GemRepoListView(m_sortProxyModel, m_selectionModel, m_gemRepoHeaderTable, this);
         connect(m_gemRepoListView, &GemRepoListView::RefreshRepo, this, &GemRepoScreen::HandleRefreshRepoButton);
         middleVLayout->addWidget(m_gemRepoListView);
 
         hLayout->addLayout(middleVLayout);
         hLayout->addSpacing(middleLayoutIndent);
 
-        m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, selectionModel, this);
+        m_gemRepoInspector = new GemRepoInspector(m_gemRepoModel, m_selectionModel, this);
         connect(m_gemRepoInspector, &GemRepoInspector::RemoveRepo, this, &GemRepoScreen::HandleRemoveRepoButton);
         connect(m_gemRepoInspector, &GemRepoInspector::ShowToastNotification, this, &GemRepoScreen::ShowStandardToastNotification);
         m_gemRepoInspector->setFixedWidth(inspectorWidth);
