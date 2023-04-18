@@ -175,7 +175,7 @@ Please note that only those seed files will get updated that are active for your
         for (auto& file : pathMatches)
         {
             QString databaseSourceName;
-
+            int sourcesSize = sources.size();
             PlatformConfiguration::ConvertToRelativePath(file, scanFolderInfo, databaseSourceName);
             filesNotInAssetDatabase.insert(databaseSourceName);
             m_stateData->QuerySourceBySourceNameScanFolderID(
