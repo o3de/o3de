@@ -32,14 +32,13 @@ namespace AZ
                     if (elem.Is<Data::Asset<RPI::ImageAsset>>())
                     {
                         const auto& imageBinding = elem.GetValue<Data::Asset<RPI::ImageAsset>>();
-                        const auto& assetId = imageBinding.GetId();
-                        if (assetId.IsValid())
+                        if (imageBinding && imageBinding.IsReady())
                         {
                             return imageBinding->GetImageDescriptor().m_size;
                         }
                     }
                 }
-                AZ_Assert(false, "GetSizeFromMaterial() unable to find an image in the given material.");
+                AZ_Error("DecalTextureArrayFeatureProcessor", false, "GetTextureSizeFromMaterialAsset() unable to find an image in the given material.")
                 return {};
             }
 
