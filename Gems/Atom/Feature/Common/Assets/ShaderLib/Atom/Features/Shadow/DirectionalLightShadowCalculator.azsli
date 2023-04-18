@@ -17,6 +17,7 @@ enum class ShadowFilterMethod {None, Pcf, Esm, EsmPcf};
 
 // avoiding artifact when near depth bounds.
 #define DEPTH_MARGIN (1e-8)
+#define ESM_CASCADE_MARGIN (1.0 - 1e-3)
 
 // Call GetVisibility() to determine if an object is shadowed by a directional light.
 // The reason this is a standalone class is because it can be used either in a Forward Shader or in a fullscreen pass shader.
@@ -58,8 +59,7 @@ class DirectionalShadowCalculator
         m_filterMode = filterMode;
     }
 
-    int GetShadowCascade(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowMapSize);
-    void GetShadowCascade(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade);
+    void GetShadowCascadeRange(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade);
     float GetVisibility();
     float GetThickness();
 
@@ -92,7 +92,7 @@ class DirectionalShadowCalculator
     Texture2DArray<float> m_directionalLightExponentialShadowmap;        
 };
 
-void DirectionalShadowCalculator::GetShadowCascade(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade)
+void DirectionalShadowCalculator::GetShadowCascadeRange(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade)
 {
     float xyMax = shadowmapSize - PIXEL_MARGIN;
     float xyMin = PIXEL_MARGIN;
@@ -130,7 +130,12 @@ float DirectionalShadowCalculator::GetThickness()
     if(m_maxCascade >= 0)
     {
         float3 shadowCoord = m_shadowCoords[m_maxCascade];
-        const float depthBufferValue = shadowmap.SampleLevel(PassSrg::PointSampler, float3(shadowCoord.xy, m_maxCascade), 0).r;
+        
+        float depthBufferValue = 1.0;
+        for (int cascade = m_minCascade; cascade <= m_maxCascade && depthBufferValue != 1.0; ++cascade)
+        {
+            depthBufferValue = shadowmap.SampleLevel(PassSrg::PointSampler, float3(shadowCoord.xy, m_maxCascade), 0).r;
+        }
 
         // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
         const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
@@ -163,7 +168,7 @@ void DirectionalShadowCalculator::ComputeShadowCoords()
         m_shadowCoords[index] = clipSpacePos.xyz / clipSpacePos.w;
     }
 
-    GetShadowCascade(m_shadowCoords, m_cascadeCount, size, m_minCascade, m_maxCascade);
+    GetShadowCascadeRange(m_shadowCoords, m_cascadeCount, size, m_minCascade, m_maxCascade);
 
 // Todo: No ddx in compute, find a way to leverage world space normal for this
 #if !USING_COMPUTE_SHADER_DIRECTIONAL_LIGHT
@@ -225,7 +230,7 @@ float DirectionalShadowCalculator::GetVisibility()
         }
     }
 
-    float lit = 1;
+    float lit = 1.0;
 
     [branch]
     if (m_maxCascade < 0)
@@ -303,7 +308,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightPcf()
     float lit = 1.0;
     for (int indexOfCascade = m_minCascade; indexOfCascade <= m_maxCascade && lit > 0.01; ++indexOfCascade)
     {
-        lit = SamplePcfBicubic(m_shadowCoords[indexOfCascade], indexOfCascade);
+        lit = min(lit, SamplePcfBicubic(m_shadowCoords[indexOfCascade], indexOfCascade));
     }
 
     if(m_blendBetweenCascadesEnable) 
@@ -336,7 +341,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsm()
             const float distanceWithinCameraView = depthDiff / (1. - distanceMin);
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
             const float occluder = m_directionalLightExponentialShadowmap.SampleLevel(PassSrg::LinearSampler, coord, 0).r;
-            if (occluder < 1.0 - .001)
+            if (occluder < ESM_CASCADE_MARGIN)
             {
                 const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
                 const float ratio = exp(exponent);
@@ -362,7 +367,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
             const float3 coord = float3(shadowCoord.xy, indexOfCascade);
             const float occluder = m_directionalLightExponentialShadowmap.SampleLevel(PassSrg::LinearSampler, coord, 0).r;
             
-            if (occluder < 1.0 - .001)
+            if (occluder < ESM_CASCADE_MARGIN)
             {
                 const float exponent = -EsmExponentialShift * (distanceWithinCameraView - occluder);
                 float ratio = exp(exponent);
