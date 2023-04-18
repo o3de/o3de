@@ -792,8 +792,14 @@ namespace O3DE::ProjectManager
             {
                 for (auto item : pybind11::dict(enabledGemsData))
                 {
-                    enabledGems.insert(Py_To_String(item.first), Py_To_String(item.second));
+                    // check for missing gem paths here otherwise case will convert the None type to "None"
+                    // which looks like an incorrect path instead of a missing path
+                    enabledGems.insert(Py_To_String(item.first), pybind11::isinstance<pybind11::none>(item.second) ? "" : Py_To_String(item.second));
                 }
+            }
+            else
+            {
+                throw std::runtime_error("Failed to get the active gems for project");
             }
         });
 
@@ -909,7 +915,7 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    AZ::Outcome<ProjectInfo> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
+    AZ::Outcome<ProjectInfo, IPythonBindings::ErrorPair> PythonBindings::CreateProject(const QString& projectTemplatePath, const ProjectInfo& projectInfo, bool registerProject)
     {
         using namespace pybind11::literals;
 
@@ -932,7 +938,7 @@ namespace O3DE::ProjectManager
 
         if (!result || !createdProjectInfo.IsValid())
         {
-            return AZ::Failure();
+            return AZ::Failure(GetErrorPair());
         }
         else
         {

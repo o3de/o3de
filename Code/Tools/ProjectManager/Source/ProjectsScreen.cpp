@@ -517,55 +517,9 @@ namespace O3DE::ProjectManager
         QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, title, defaultPath));
         if (!path.isEmpty())
         {
-            // check if this project is compatible with this engine
-            auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(path);
-
-            AZStd::string errorTitle, generalError, detailedError;
-            if (!incompatibleObjectsResult)
-            {
-                errorTitle = "Failed to check project compatibility";
-                generalError = incompatibleObjectsResult.GetError().first;
-                generalError.append("\nDo you still want to add this project?");
-                detailedError = incompatibleObjectsResult.GetError().second;
-            }
-            else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
-            {
-                // provide a couple more user friendly error messages for uncommon cases
-                if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
-                {
-                    errorTitle = "Failed to read engine.json";
-                    generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
-                }
-                else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
-                {
-                    errorTitle = "Invalid project, failed to read project.json";
-                    generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
-                }
-                else
-                {
-                    // could be gems, apis or both
-                    errorTitle = "Project may not be compatible with this engine";
-                    generalError = incompatibleObjects.join("\n").toUtf8().constData();
-                    generalError.append("\nDo you still want to add this project?");
-                }
-            }
-
-            if (!generalError.empty())
-            {
-                QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, this);
-                warningDialog.setDetailedText(detailedError.c_str());
-                if(warningDialog.exec() == QMessageBox::No)
-                {
-                    return;
-                }
-                AZ_Warning("ProjectManager", false, "Proceeding with project registration after compatibility check failed.");
-            }
-
-            if (auto addProjectResult = PythonBindingsInterface::Get()->AddProject(path, /*force=*/true); !addProjectResult)
-            {
-                ProjectUtils::DisplayDetailedError(tr("Failed to add project"), addProjectResult, this);
-            }
-            else
+            // RegisterProject will check compatibility and prompt user to continue if issues found
+            // it will also handle detailed error messaging
+            if(ProjectUtils::RegisterProject(path, this))
             {
                 // notify the user the project was added successfully
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
@@ -700,9 +654,16 @@ namespace O3DE::ProjectManager
     {
         if (!WarnIfInBuildQueue(projectPath))
         {
+            QString projectName = tr("Project");
+            auto getProjectResult = PythonBindingsInterface::Get()->GetProject(projectPath);
+            if (getProjectResult)
+            {
+                projectName = getProjectResult.GetValue().m_displayName;
+            }
+
             QMessageBox::StandardButton warningResult = QMessageBox::warning(this,
-                tr("Delete Project"),
-                tr("Are you sure?\nProject will be unregistered from O3DE and project directory will be deleted from your disk."),
+                tr("Delete %1").arg(projectName),
+                tr("%1 will be unregistered from O3DE and the project directory '%2' will be deleted from your disk.\n\nAre you sure you want to delete %1?").arg(projectName, projectPath),
                 QMessageBox::No | QMessageBox::Yes);
 
             if (warningResult == QMessageBox::Yes)

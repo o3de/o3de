@@ -276,29 +276,35 @@ namespace O3DE::ProjectManager
             ProjectInfo projectInfo = m_newProjectSettingsScreen->GetProjectInfo();
             QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
 
-            auto result = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo);
-            if (result.IsSuccess())
+            // create in 2 steps for better error handling
+            auto createResult = PythonBindingsInterface::Get()->CreateProject(projectTemplatePath, projectInfo, /*registerProject*/false);
+            if (!createResult)
             {
-                // don't need to register here, the project is already registered in CreateProject()
-
-                const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
-                if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
-                {
-                    QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
-                }
-                if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
-                {
-                    return;
-                }
-
-                projectInfo.m_needsBuild = true;
-                emit NotifyBuildProject(projectInfo);
-                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                const IPythonBindings::ErrorPair& error = createResult.GetError();
+                ProjectUtils::DisplayDetailedError(tr("Failed to create project"), error.first, error.second, this);
+                return;
             }
-            else
+
+            // RegisterProject will check compatibility and prompt user to continue if issues found
+            // it will also handle detailed error messaging
+            if(!ProjectUtils::RegisterProject(projectInfo.m_path, this))
             {
-                QMessageBox::critical(this, tr("Project creation failed"), tr("Failed to create project."));
+                return;
             }
+
+            const ProjectGemCatalogScreen::ConfiguredGemsResult gemResult = m_projectGemCatalogScreen->ConfigureGemsForProject(projectInfo.m_path);
+            if (gemResult == ProjectGemCatalogScreen::ConfiguredGemsResult::Failed)
+            {
+                QMessageBox::critical(this, tr("Failed to configure gems"), tr("Failed to configure gems for template."));
+            }
+            if (gemResult != ProjectGemCatalogScreen::ConfiguredGemsResult::Success)
+            {
+                return;
+            }
+
+            projectInfo.m_needsBuild = true;
+            emit NotifyBuildProject(projectInfo);
+            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
         }
         else
         {
