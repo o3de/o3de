@@ -96,6 +96,6 @@ def get_github_provider(parsed_uri: ParseResult) -> GitHubProvider or None:
             return None
 
         if components[1].endswith(".git"):
-            return GitHubProvider
+            return GitHubProvider()
 
     return None

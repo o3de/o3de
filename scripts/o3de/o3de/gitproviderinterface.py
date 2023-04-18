@@ -9,12 +9,12 @@
 This file contains the interface for the Git providers
 """
 
-import abc
 import pathlib
+from abc import ABC, abstractmethod
 from urllib.parse import ParseResult
 
-class GitProviderInterface(abc.ABC):
-    @abc.abstractmethod
+class GitProviderInterface(ABC):
+    @abstractmethod
     def get_specific_file_uri(self, parsed_uri: ParseResult):
         """
         Gets a uri that can be used to download a resource if the provide allows it, otherwise returns the unmodified uri
@@ -23,7 +23,7 @@ class GitProviderInterface(abc.ABC):
         """
         pass
 
-    @abc.abstractmethod
+    @abstractmethod
     def clone_from_git(self, uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
         """
         Clones a git repository from a uri into a given folder
