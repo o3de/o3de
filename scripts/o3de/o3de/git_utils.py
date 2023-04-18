@@ -22,11 +22,11 @@ logger = logging.getLogger('o3de.git_utils')
 logging.basicConfig(format=LOG_FORMAT)
 
 class GenericGitProvider(gitproviderinterface.GitProviderInterface):
-    def get_specific_file_uri(parsed_uri):
+    def get_specific_file_uri(self, parsed_uri: ParseResult):
         logger.warning(f"GenericGitProvider does not yet support retrieving individual files")
         return parsed_uri
 
-    def clone_from_git(uri, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
+    def clone_from_git(self, uri, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
         """
         :param uri: uniform resource identifier
         :param download_path: location path on disk to download file
@@ -64,11 +64,11 @@ class GenericGitProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
 
-def get_generic_git_provider(parsed_uri:ParseResult) -> GenericGitProvider or None:
+def get_generic_git_provider(parsed_uri: ParseResult) -> GenericGitProvider or None:
     # the only requirement we have is one of the path components ends in .git
     # this could be relaxed further 
     if parsed_uri.netloc and parsed_uri.scheme and parsed_uri.path:
         for element in parsed_uri.path.split('/'):
             if element.strip().endswith(".git"):
-                return GenericGitProvider
+                return GenericGitProvider()
     return None

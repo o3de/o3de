@@ -29,7 +29,7 @@ namespace O3DE::ProjectManager
 
         bool operator<(const GemRepoInfo& gemRepoInfo) const;
 
-        enum BadgeType
+        enum class BadgeType
         {
             NoBadge = 0,
             BlueBadge,

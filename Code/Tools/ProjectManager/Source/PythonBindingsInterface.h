@@ -245,7 +245,7 @@ namespace O3DE::ProjectManager
         virtual DetailedOutcome AddGemsToProject(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath, bool force = false) = 0;
 
         /**
-         * Get gems that are incompatibile with this project 
+         * Get gems that are incompatible with this project 
          * @param gemPaths the absolute paths to the gems
          * @param gemNames the names of the gems to add with optional version specifiers
          * @param projectPath the absolute path to the project
@@ -254,7 +254,7 @@ namespace O3DE::ProjectManager
         virtual AZ::Outcome<QStringList, AZStd::string> GetIncompatibleProjectGems(const QStringList& gemPaths, const QStringList& gemNames, const QString& projectPath) = 0;
 
         /**
-         * Get objects that are incompatibile with the provided project and engine.
+         * Get objects that are incompatible with the provided project and engine.
          * The objects could be engine APIs or gems dependencies that might prevent this project from compiling
          * with the engine.
          * @param projectPath the absolute path to the project

@@ -254,7 +254,7 @@ namespace O3DE::ProjectManager
             }
             else
             {
-                m_compatibilityTextLabel->setText(tr("This version has missing on incompatible gem dependencies"));
+                m_compatibilityTextLabel->setText(tr("This version has missing or incompatible gem dependencies"));
             }
         }
 

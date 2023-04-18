@@ -129,7 +129,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
     else:
         origin_uri = downloadable_object_data.get('download_source_uri')
         if not origin_uri:
-            # fallback to schemaVersion 1.0.0
+            # legacy repo.json schema used origin_uri instead of download_source_uri
             origin_uri = downloadable_object_data.get('origin_uri')
         
         if not origin_uri:
@@ -385,29 +385,29 @@ def add_parser_args(parser):
     :param parser: the caller passes an argparse parser like instance to this method
     """
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-e', '--engine-name', type=str, required=False,
+    group.add_argument('--engine-name', '-e', type=str, required=False,
                        help='Downloadable engine name.')
-    group.add_argument('-p', '--project-name', type=str, required=False,
+    group.add_argument('--project-name', '-p', type=str, required=False,
                        help='Downloadable project name with optional version specifier e.g. project==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
-    group.add_argument('-g', '--gem-name', type=str, required=False,
+    group.add_argument('--gem-name', '-g', type=str, required=False,
                        help='Downloadable gem name with optional version specifier e.g. gem==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
-    group.add_argument('-t', '--template-name', type=str, required=False,
+    group.add_argument('--template-name', '-t', type=str, required=False,
                        help='Downloadable template name with optional version specifier e.g. template==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
-    parser.add_argument('-dp', '--dest-path', type=str, required=False,
+    parser.add_argument('--dest-path', '-dp', type=str, required=False,
                             default=None,
                             help='Optional destination folder to download into.'
                                  ' i.e. download --project-name "CustomProject" --dest-path "C:/projects"'
                                  ' will result in C:/projects/CustomProject'
                                  ' If blank will download to default object type folder')
-    parser.add_argument('-sar', '--skip-auto-register', action='store_true', required=False,
+    parser.add_argument('--skip-auto-register', '-sar', action='store_true', required=False,
                             default=False,
                             help = 'Skip the automatic registration of new object download')
-    parser.add_argument('-f', '--force', action='store_true', required=False,
+    parser.add_argument('--force', '-f', action='store_true', required=False,
                             default=False,
                             help = 'Force overwrite the current object')
-    parser.add_argument('-s', '--use-source-control', action='store_true', required=False,
+    parser.add_argument('--use-source-control', '--src', action='store_true', required=False,
                             default=False,
-                            help = 'Acquire from source control instead of downloading a .zip archive.  Requires that the object has ')
+                            help = 'Acquire from source control instead of downloading a .zip archive.  Requires that the object has a valid source_control_uri.')
 
     parser.set_defaults(func=_run_download)
 

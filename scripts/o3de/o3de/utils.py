@@ -206,7 +206,7 @@ def backup_folder(folder: str or pathlib.Path) -> None:
                 renamed = True
 
 
-def get_git_provider(parsed_uri:ParseResult):
+def get_git_provider(parsed_uri: ParseResult):
     """
     Returns a git provider if one exists given the passed uri
     :param parsed_uri: uniform resource identifier of a possible git repository
@@ -222,7 +222,7 @@ def get_git_provider(parsed_uri:ParseResult):
     return git_provider
 
 
-def download_file(parsed_uri:ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
+def download_file(parsed_uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, object_name: str = "", download_progress_callback = None) -> int:
     """
     Download file
     :param parsed_uri: uniform resource identifier to zip file to download
@@ -231,25 +231,16 @@ def download_file(parsed_uri:ParseResult, download_path: pathlib.Path, force_ove
     :param object_name: name of the object being downloaded
     :param download_progress_callback: callback called with the download progress as a percentage, returns true to request to cancel the download
     """
-    file_exists = False
-    if download_path.is_file():
-        if not force_overwrite:
-            file_exists = True
-        else:
-            try:
-                os.unlink(download_path)
-            except OSError:
-                logger.error(f'Could not remove existing download path {download_path}.')
-                return 1
+    file_exists = download_path.is_file()
 
     if parsed_uri.scheme in ['http', 'https', 'ftp', 'ftps']:
         try:
             current_request = urllib.request.Request(parsed_uri.geturl())
             resume_position = 0
-            if not force_overwrite:
-                if file_exists:
-                    resume_position = os.path.getsize(download_path)
-                    current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+            if file_exists and not force_overwrite:
+                resume_position = os.path.getsize(download_path)
+                current_request.add_header("If-Range", "bytes=%d-" % resume_position)
+
             with urllib.request.urlopen(current_request) as s:
                 download_file_size = int(s.headers.get('content-length',0))
 
@@ -265,6 +256,14 @@ def download_file(parsed_uri:ParseResult, download_path: pathlib.Path, force_ove
                 else:
                     logger.error(f'HTTP status {e.code} opening {parsed_uri.geturl()}')
                     return 1
+                
+                # remove the file only after we have a response from the server and something to replace it with
+                if file_exists and force_overwrite:
+                    try:
+                        os.unlink(download_path)
+                    except OSError:
+                        logger.error(f'Could not remove existing download path {download_path}.')
+                        return 1
 
                 def print_progress(downloaded, total_size):
                     end_ch = '\r'

@@ -78,7 +78,9 @@ TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
     "summary": "Studios Repository for the testgem3 Gem.",
     "additional_info": "",
     "last_updated": "2023-01-19",
-    "gems":[],
+    "gems":[
+        "https://legacygemrepo.com"
+    ],
     "gems_data": [{
         "gem_name": "testgem3",
         "display_name": "testgem3 2",

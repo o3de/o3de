@@ -163,7 +163,7 @@ namespace O3DE::ProjectManager
 
         if (mostCompatibleVersion.isEmpty() && !newVersionIsCompatible)
         {
-            // no compatibile versions available (yet) so refresh if version is the same or higher
+            // no compatible versions available (yet) so refresh if version is the same or higher
             return versionResult >= 0;
         }
 
@@ -533,14 +533,6 @@ namespace O3DE::ProjectManager
             return {};
         }
 
-        const GemInfo& gemInfo = versionList.at(0).value<GemInfo>();
-        if (gemInfo.IsCompatible())
-        {
-            // most common case is this gem is an engine gem,
-            // or the gem is compatible
-            return gemInfo.m_version;
-        }
-
         // versions are sorted from highest to lowest so return the first compatible version
         for (const auto& versionVariant : versionList)
         {
@@ -900,7 +892,7 @@ namespace O3DE::ProjectManager
             }
 
             // if this is a remote gem that hasn't been downloaded, show that the update is
-            // available the user has downloaded an older version
+            // available if the user has downloaded an older version
             if (gemInfo.m_gemOrigin == GemInfo::Remote &&
                 gemInfo.m_downloadStatus == GemInfo::NotDownloaded)
             {

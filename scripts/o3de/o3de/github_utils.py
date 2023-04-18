@@ -25,7 +25,7 @@ logger = logging.getLogger('o3de.github_utils')
 logging.basicConfig(format=LOG_FORMAT)
 
 class GitHubProvider(gitproviderinterface.GitProviderInterface):
-    def get_specific_file_uri(parsed_uri:ParseResult):
+    def get_specific_file_uri(self, parsed_uri: ParseResult):
         components = parsed_uri.path.split('/')
         components = [ele for ele in components if ele.strip()]
 
@@ -49,7 +49,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return parsed_uri
 
-    def clone_from_git(uri:ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
+    def clone_from_git(self, uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
         """
         :param uri: uniform resource identifier
         :param download_path: location path on disk to download file
@@ -87,7 +87,7 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
 
-def get_github_provider(parsed_uri:ParseResult) -> GitHubProvider or None:
+def get_github_provider(parsed_uri: ParseResult) -> GitHubProvider or None:
     if 'github.com' in parsed_uri.netloc:
         components = parsed_uri.path.split('/')
         components = [ele for ele in components if ele.strip()]

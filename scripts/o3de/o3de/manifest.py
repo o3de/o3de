@@ -260,16 +260,29 @@ def get_manifest_restricted() -> list:
     return json_data['restricted'] if 'restricted' in json_data else []
 
 
-def get_manifest_repos() -> list:
+def get_manifest_repos(project_path: pathlib.Path = None) -> list:
     repos = set()
 
-    engine_json_data = get_engine_json_data(engine_path=get_this_engine_path())
-    if engine_json_data:
-        repos.update(set(engine_json_data.get('repos', [])))
+    if project_path:
+        project_json_data = get_project_json_data(project_path=project_path)
+        if project_json_data:
+            repos.update(set(project_json_data.get('repos', [])))
+
+        # if a project is provided we only want the repos from the project's engine
+        engine_path = get_project_engine_path(project_path=project_path)
+    else:
+        # no project path provided, use the current engine's repos
+        engine_path = get_this_engine_path()
+
+    if engine_path:
+        engine_json_data = get_engine_json_data(engine_path=engine_path)
+        if engine_json_data:
+            repos.update(set(engine_json_data.get('repos', [])))
 
     manifest_json_data = load_o3de_manifest()
     if manifest_json_data:
         repos.update(set(manifest_json_data.get('repos', [])))
+
 
     return list(repos)
 
@@ -424,6 +437,10 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
     gems listed in project.json and the deprecated enabled_gems.json
     """
     project_json_data = get_project_json_data(project_path=project_path)
+    if not project_json_data:
+        logger.error(f"Failed to get project json data for the project at '{project_path}'")
+        return None
+
     active_gem_names = project_json_data.get('gem_names',[])
     enabled_gems_file = get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
@@ -482,7 +499,7 @@ def get_project_enabled_gems(project_path: pathlib.Path, include_dependencies:bo
             gem_name = gem.gem_json_data['gem_name']
             gem_name_with_specifier = gem_names_with_version_specifiers.get(gem_name,gem_name)
             if gem_name_with_specifier in result or include_dependencies:
-                result[gem_name_with_specifier] = gem.gem_json_data['path'].as_posix()
+                result[gem_name_with_specifier] = gem.gem_json_data['path'].as_posix() if gem.gem_json_data['path'] else None
     else:
         # Likely there is no resolution because gems are missing or wrong version
         # Provide the paths for the gems that are available
