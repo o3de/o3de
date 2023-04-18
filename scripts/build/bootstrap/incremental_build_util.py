@@ -200,7 +200,7 @@ def get_ec2_resource(region):
 def get_ec2_instance_id():
     try:
         instance_id = IMDSFetcher()._get_request("/latest/meta-data/instance-id", None).text
-        return instance_id.decode("utf-8")
+        return instance_id
     except Exception as e:
         print(e)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
@@ -209,7 +209,7 @@ def get_ec2_instance_id():
 def get_availability_zone():
     try:
         availability_zone = IMDSFetcher()._get_request("/latest/meta-data/placement/availability-zone", None).text
-        return availability_zone.decode("utf-8")
+        return availability_zone
     except Exception as e:
         print(e)
         error('No EC2 metadata! Check if you are running this script on an EC2 instance.')
