@@ -1531,7 +1531,7 @@ namespace O3DE::ProjectManager
                     "repo_uri"_a = QString_To_Py_String(repoUri), "enabled_only"_a = enabledOnly
                     );
 
-                if (pybind11::isinstance<pybind11::set>(pyTemplates))
+                if (pybind11::isinstance<pybind11::list>(pyTemplates))
                 {
                     for (auto pyTemplateJsonData : pyTemplates)
                     {
