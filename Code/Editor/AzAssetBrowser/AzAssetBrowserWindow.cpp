@@ -462,7 +462,7 @@ void AzAssetBrowserWindow::CreateToolsMenu()
 
     if (ed_useWIPAssetBrowserDesign)
     {
-        auto* openNewAction = new QAction(tr("Open New Instance"), this);
+        auto* openNewAction = new QAction(tr("Open Another Asset Browser"), this);
         connect(openNewAction, &QAction::triggered, this, [] { AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow(); });
         m_toolsMenu->addAction(openNewAction);
 
