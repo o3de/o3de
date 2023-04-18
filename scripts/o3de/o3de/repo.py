@@ -13,7 +13,7 @@ import pathlib
 import urllib.parse
 import urllib.request
 import hashlib
-from datetime import datetime
+from datetime import datetime, timezone
 from o3de import manifest, utils, validation
 
 logger = logging.getLogger('o3de.repo')
@@ -96,13 +96,12 @@ def get_repo_schema_version(repo_data: dict):
     return repo_data.get("$schemaVersion", REPO_IMPLICIT_SCHEMA_VERSION)
 
 def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False) -> bool:
-    manifest_uri = get_repo_manifest_uri(repo_uri)
 
+    manifest_uri = get_repo_manifest_uri(repo_uri)
     if not manifest_uri:
         return False
 
     cache_file = download_repo_manifest(manifest_uri)
-
     if not cache_file:
         logger.error(f'Could not download file at {manifest_uri}')
         return False
@@ -154,12 +153,11 @@ def validate_remote_repo(repo_uri: str, validate_contained_objects: bool = False
                 if "versions_data" in gem_json:
                     versions_data = gem_json["versions_data"]
                     for version in versions_data:
-                        if not all(key in version for key in ['last_updated', 'version']):
-                            logger.error("Invalid gem JSON - {gem_json} Both last_updated and version fields must be defined for each entry in the versions_data field")
+                        if not all(key in version for key in ['version']):
+                            logger.error("Invalid gem JSON - {gem_json} The version field must be defined for each entry in the versions_data field")
                             return False
                         
                         source_control_uri_defined = "source_control_uri" in version
-                        
                         download_source_uri_defined = "download_source_uri" in version
                         origin_uri_defined = "origin_uri" in version
                         
@@ -202,10 +200,12 @@ def process_add_o3de_repo(file_name: str or pathlib.Path,
 
     with file_name.open('w') as f:
         try:
-            time_now = datetime.now()
-            # %H is 24 hour
-            time_str = time_now.strftime('%d/%m/%Y %H:%M')
-            repo_data.update({'last_updated': time_str})
+            # write the ISO8601 format which includes UTC offset
+            # YYYY-MM-DDTHH:MM:SS.mmmmmmTZD  (e.g. 2012-03-29T10:05:45.12345+06:00)
+            # TZD (time zone designator may have + or - indicating how far ahead or 
+            # behind a time zone is from UTC)
+            # because we are writing out UTC dates, the TZD will always be +00:00
+            repo_data.update({'last_updated': datetime.now(timezone.utc).isoformat()})
             f.write(json.dumps(repo_data, indent=4) + '\n')
         except Exception as e:
             logger.error(f'{file_name} failed to save: {str(e)}')
@@ -507,10 +507,12 @@ def set_repo_enabled(repo_uri:str, enabled:bool) -> int:
 
     with repo_json_cache_file.open('w') as f:
         try:
-            time_now = datetime.now()
-            # %H is 24 hour
-            time_str = time_now.strftime('%d/%m/%Y %H:%M')
-            repo_json_data.update({'last_updated': time_str})
+            # write the ISO8601 format which includes UTC offset
+            # YYYY-MM-DDTHH:MM:SS.mmmmmmTZD  (e.g. 2012-03-29T10:05:45.12345+06:00)
+            # TZD (time zone designator may have + or - indicating how far ahead or 
+            # behind a time zone is from UTC)
+            # because we are writing out UTC dates, the TZD will always be +00:00
+            repo_json_data.update({'last_updated': datetime.now(timezone.utc).isoformat()})
             repo_json_data.update({'enabled': enabled})
             f.write(json.dumps(repo_json_data, indent=4) + '\n')
         except Exception as e:

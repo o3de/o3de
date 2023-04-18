@@ -1773,17 +1773,26 @@ namespace O3DE::ProjectManager
                 auto repoPath = m_manifest.attr("get_repo_path")(repoUri);
                 gemRepoInfo.m_path = gemRepoInfo.m_directoryLink = Py_To_String(repoPath);
 
-                QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
-                // this is NOT the same as RepoTimeFormat which uses 12 hour + am/pm
-                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, "dd/MM/yyyy HH:mm");
+                const QString lastUpdated = Py_To_String_Optional(data, "last_updated", "");
+
+                // first attempt to read in the ISO8601 UTC python format with milliseconds
+                gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, Qt::ISODateWithMs).toLocalTime();
                 if (!gemRepoInfo.m_lastUpdated.isValid())
                 {
-                    // attempt with default Repo format
-                    gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, RepoTimeFormat);
-                    if (!gemRepoInfo.m_lastUpdated.isValid())
+                    // try without milliseconds
+                    gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, Qt::ISODate).toLocalTime();
+                }
+
+                if (!gemRepoInfo.m_lastUpdated.isValid())
+                {
+                    const QStringList legacyFormats{ "dd/MM/yyyy HH:mm", RepoTimeFormat };
+                    for (auto format : legacyFormats)
                     {
-                        // fallback to ISO 8601 (without milliseconds) 
-                        gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, Qt::ISODate);
+                        gemRepoInfo.m_lastUpdated = QDateTime::fromString(lastUpdated, format);
+                        if (gemRepoInfo.m_lastUpdated.isValid())
+                        {
+                            break;
+                        }
                     }
                 }
 

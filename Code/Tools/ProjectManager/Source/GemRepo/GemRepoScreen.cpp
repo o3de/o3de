@@ -210,7 +210,15 @@ namespace O3DE::ProjectManager
 
             if (!allGemRepoInfos.isEmpty())
             {
-                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(oldestRepoUpdate.toString(RepoTimeFormat)));
+                // get the month day and year in the preferred locale's format (QLocale defaults to the OS locale)
+                QString monthDayYear = oldestRepoUpdate.toString(QLocale().dateFormat(QLocale::ShortFormat));
+
+                // always show 12 hour + minutes + am/pm
+                QString hourMinuteAMPM = oldestRepoUpdate.toString("h:mmap");
+
+                QString repoUpdatedDate = QString("%1 %2").arg(monthDayYear, hourMinuteAMPM);
+
+                m_lastAllUpdateLabel->setText(tr("Last Updated: %1").arg(repoUpdatedDate));
             }
             else
             {
