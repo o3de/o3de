@@ -28,7 +28,7 @@ install_dependencies () {
     fi
 
     # if we're building a container app, create a package from o3de then install that to remove absolute paths to o3de scripts
-    if [ $O3DE_BUILDING_CONTAINER == 1 ]; then
+    if [ "$O3DE_PACKAGE_TYPE" == "SNAP" ]; then
         pushd $DIR/../scripts/o3de/
         $DIR/python.sh setup.py sdist
         popd
