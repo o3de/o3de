@@ -306,15 +306,17 @@ namespace O3DE::ProjectManager
         /**
          * Refresh gem repo in the current engine.
          * @param repoUri the absolute filesystem path or url to the gem repo.
+         * @param downloadMissingOnly true to only download missing objects, if false, re-download everything
          * @return An outcome with the success flag as well as an error message in case of a failure.
          */
-        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) = 0;
+        virtual AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri, bool downloadMissingOnly = false) = 0;
 
         /**
          * Refresh all gem repos in the current engine.
+         * @param downloadMissingOnly true to only download missing objects, if false, re-download everything
          * @return true on success, false on failure.
          */
-        virtual bool RefreshAllGemRepos() = 0;
+        virtual bool RefreshAllGemRepos(bool downloadMissingOnly = false) = 0;
 
         /**
          * Registers this gem repo with the current engine.

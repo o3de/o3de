@@ -72,8 +72,8 @@ namespace O3DE::ProjectManager
         bool RemoveInvalidProjects() override;
 
         // Remote Repos
-        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri) override;
-        bool RefreshAllGemRepos() override;
+        AZ::Outcome<void, AZStd::string> RefreshGemRepo(const QString& repoUri, bool downloadMissingOnly = false) override;
+        bool RefreshAllGemRepos(bool downloadMissingOnly = false) override;
         DetailedOutcome AddGemRepo(const QString& repoUri) override;
         bool RemoveGemRepo(const QString& repoUri) override;
         bool SetRepoEnabled(const QString& repoUri, bool enabled) override;

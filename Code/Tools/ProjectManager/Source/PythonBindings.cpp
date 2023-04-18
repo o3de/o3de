@@ -1581,14 +1581,14 @@ namespace O3DE::ProjectManager
         }
     }
 
-    AZ::Outcome<void, AZStd::string> PythonBindings::RefreshGemRepo(const QString& repoUri)
+    AZ::Outcome<void, AZStd::string> PythonBindings::RefreshGemRepo(const QString& repoUri, bool downloadMissingOnly)
     {
         bool refreshResult = false;
         AZ::Outcome<void, AZStd::string> result = ExecuteWithLockErrorHandling(
             [&]
             {
                 auto pyUri = QString_To_Py_String(repoUri);
-                auto pythonRefreshResult = m_repo.attr("refresh_repo")(pyUri);
+                auto pythonRefreshResult = m_repo.attr("refresh_repo")(pyUri, downloadMissingOnly);
 
                 // Returns an exit code so boolify it then invert result
                 refreshResult = !pythonRefreshResult.cast<bool>();
@@ -1606,13 +1606,13 @@ namespace O3DE::ProjectManager
         return AZ::Success();
     }
 
-    bool PythonBindings::RefreshAllGemRepos()
+    bool PythonBindings::RefreshAllGemRepos(bool downloadMissingOnly)
     {
         bool refreshResult = false;
         bool result = ExecuteWithLock(
             [&]
             {
-                auto pythonRefreshResult = m_repo.attr("refresh_repos")();
+                auto pythonRefreshResult = m_repo.attr("refresh_repos")(downloadMissingOnly);
 
                 // Returns an exit code so boolify it then invert result
                 refreshResult = !pythonRefreshResult.cast<bool>();

@@ -64,6 +64,8 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::NotifyCurrentScreen()
     {
+        constexpr bool downloadMissingOnly = true;
+        PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
     }
 
@@ -171,7 +173,9 @@ namespace O3DE::ProjectManager
 
     void GemRepoScreen::HandleRefreshAllButton()
     {
-        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos();
+        // re-download everything when the user presses the refresh all button
+        constexpr bool downloadMissingOnly = false;
+        bool refreshResult = PythonBindingsInterface::Get()->RefreshAllGemRepos(downloadMissingOnly);
         Reinit();
         emit OnRefresh();
 
@@ -191,7 +195,9 @@ namespace O3DE::ProjectManager
         const QString repoUri = m_gemRepoModel->GetRepoUri(modelIndex);
         const QString repoName = m_gemRepoModel->GetName(modelIndex);
 
-        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri);
+        // re-download everything when the user presses the refresh all button
+        constexpr bool downloadMissingOnly = false;
+        AZ::Outcome<void, AZStd::string> refreshResult = PythonBindingsInterface::Get()->RefreshGemRepo(repoUri, downloadMissingOnly);
         if (refreshResult.IsSuccess())
         {
             Reinit();
