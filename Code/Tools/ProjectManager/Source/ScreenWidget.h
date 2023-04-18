@@ -68,6 +68,7 @@ namespace O3DE::ProjectManager
         void ResetScreenRequest(ProjectManagerScreen screen);
         void NotifyCurrentProject(const QString& projectPath);
         void NotifyBuildProject(const ProjectInfo& projectInfo);
+        void NotifyProjectRemoved(const QString& projectPath);
 
     };
 
