@@ -132,13 +132,13 @@ float DirectionalShadowCalculator::GetThickness()
         float3 shadowCoord = m_shadowCoords[m_maxCascade];
         
         float depthBufferValue = 1.0;
-        for (int cascade = m_minCascade; cascade <= m_maxCascade && depthBufferValue != 1.0; ++cascade)
+        for (int cascade = m_minCascade; cascade <= m_maxCascade && depthBufferValue == 1.0; ++cascade)
         {
             depthBufferValue = shadowmap.SampleLevel(PassSrg::PointSampler, float3(shadowCoord.xy, m_maxCascade), 0).r;
         }
 
         // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
-        const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
+        const float deltaDepth = max(shadowCoord.z - depthBufferValue, 0.0);
 
         const float viewSpaceThickness = ViewSrg::m_directionalLightShadows[m_lightIndex].m_far_minus_near * deltaDepth;
         return viewSpaceThickness;

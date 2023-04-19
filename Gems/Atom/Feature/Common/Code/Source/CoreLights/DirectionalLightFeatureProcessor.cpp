@@ -32,7 +32,7 @@ namespace AZ
 {
     namespace Render
     {
-        AZ_CVAR(bool, r_exludeItemsInSmallerShadowCascades, true, nullptr, ConsoleFunctorFlags::Null, "Set to true to exclude drawing items to a directional shadow cascade that are already covered by a smaller cascade.");
+        AZ_CVAR(bool, r_excludeItemsInSmallerShadowCascades, true, nullptr, ConsoleFunctorFlags::Null, "Set to true to exclude drawing items to a directional shadow cascade that are already covered by a smaller cascade.");
 
         // --- Camera Configuration ---
 
@@ -249,12 +249,12 @@ namespace AZ
                     UpdateBorderDepthsForSegments(m_shadowingLightHandle);
                     property.m_borderDepthsForSegmentsNeedsUpdate = false;
                 }
-                if (property.m_shadowmapViewNeedsUpdate || m_previousExcludeCvarValue != r_exludeItemsInSmallerShadowCascades)
+                if (property.m_shadowmapViewNeedsUpdate || m_previousExcludeCvarValue != r_excludeItemsInSmallerShadowCascades)
                 {
                     UpdateShadowmapViews(m_shadowingLightHandle);
                     UpdateFilterParameters(m_shadowingLightHandle);
                     property.m_shadowmapViewNeedsUpdate = false;
-                    m_previousExcludeCvarValue = r_exludeItemsInSmallerShadowCascades;
+                    m_previousExcludeCvarValue = r_excludeItemsInSmallerShadowCascades;
                 }
                 SetShadowParameterToShadowData(m_shadowingLightHandle);
             }
@@ -1374,7 +1374,7 @@ namespace AZ
                         segment.m_view->SetCameraTransform(lightTransform);
                         segment.m_view->SetViewToClipMatrix(viewToClipMatrix);
 
-                        if (cascadeIndex > 0 && r_exludeItemsInSmallerShadowCascades)
+                        if (cascadeIndex > 0 && r_excludeItemsInSmallerShadowCascades)
                         {
                             Vector3 excludeAabbMin = previousAabbMin;
                             Vector3 excludeAabbMax = previousAabbMax;

@@ -140,6 +140,7 @@ float3 DirectionalLightShadow::AddDebugColoring(float3 color, uint lightIndex, f
 
     if (calc.m_maxCascade < cascadeCount)
     {
+        // Each cascade has an assigned color. Pixels that are a blend of cascades will blend the colors.
         static const float3 debuggingColors[ViewSrg::MaxCascadeCount] = 
         {
             float3(1., 0., 0.), 

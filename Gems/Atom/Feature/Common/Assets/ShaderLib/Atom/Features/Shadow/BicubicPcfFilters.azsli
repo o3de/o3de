@@ -66,6 +66,7 @@ float SampleShadowMapBicubic_4Tap(SampleShadowMapBicubicParameters param)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;       
         float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
         fragmentDistance = min(fragmentDistance, DepthMargin);
 
         shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
@@ -114,6 +115,7 @@ float SampleShadowMapBicubic_9Tap(SampleShadowMapBicubicParameters param)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
         float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
         fragmentDistance = min(fragmentDistance, DepthMargin);
        
         shadowResult += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
@@ -165,6 +167,7 @@ float SampleShadowMapBicubic_16Tap(SampleShadowMapBicubicParameters param)
     {
         const float2 texCoordOffset = uvOffsets[i] * param.invShadowMapSize;
         float fragmentDistance = param.comparisonValue + ApplyReceiverPlaneDepthBias(param.receiverPlaneDepthBias, texCoordOffset);
+        // Make sure the sample being compared is inside the frustum of the shadow map or it will always pass the compare test (in shadow).
         fragmentDistance = min(fragmentDistance, DepthMargin);
 
         shadow += weights[i] * param.shadowMap.SampleCmpLevelZero(param.samplerState, float3(texelCenter + texCoordOffset, param.shadowPos.z), fragmentDistance);
