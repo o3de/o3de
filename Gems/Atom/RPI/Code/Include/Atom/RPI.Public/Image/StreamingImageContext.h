@@ -20,6 +20,7 @@ namespace AZ
     namespace RPI
     {
         class StreamingImage;
+        class StreamingImageController;
 
         //! A context owned by a streaming controller which tracks a streaming image asset instance.
         //! The context has shared ownership between the streaming image and the streaming image controller.
@@ -53,6 +54,9 @@ namespace AZ
             //! Returns the timestamp of last access.
             size_t GetLastAccessTimestamp() const;
 
+            //! Update mip stats
+            void UpdateMipStats();
+
         private:
 
             // Holds a weak (raw) reference to the parent streaming image.
@@ -67,6 +71,20 @@ namespace AZ
 
             // Tracks the last timestamp the image was requested.
             AZStd::atomic_size_t m_lastAccessTimestamp = {0};
+
+            // Stats which need to be updated every time after a mip is expanded or evicted.
+            // These stats are used to decide the image's streaming priority in StreamingImageController
+            
+            // The target mip level which applied global mip bias
+            uint16_t m_mipLevelTargetAdjusted = {0};
+            // The most detailed mip which is resident
+            uint16_t m_residentMip;
+            // The number of mips which can be evicted
+            uint16_t m_evictableMips;
+            // The mips which are missing to reach m_mipLevelTargetAdjusted 
+            uint16_t m_missingMips;
+            // The size of the most detailed mip
+            uint32_t m_residentMipSize;
         };
 
         using StreamingImageContextPtr = AZStd::intrusive_ptr<StreamingImageContext>;
