@@ -142,7 +142,6 @@ namespace AzToolsFramework
             const int m_scUpdateInterval = 100;
 
             AssetBrowserThumbnailView* m_attachedThumbnailView = nullptr;
-            ;
 
             QString m_name;
 
