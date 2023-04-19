@@ -8,7 +8,6 @@ import argparse
 import boto3
 from botocore.utils import IMDSFetcher
 import datetime
-import urllib.request, urllib.error, urllib.parse
 import os
 import psutil
 import time
