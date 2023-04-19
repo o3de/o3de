@@ -372,7 +372,7 @@ namespace O3DE::ProjectManager
 
     void GemCatalogScreen::OnGemStatusChanged(const QString& gemName, uint32_t numChangedDependencies) 
     {
-        if (m_notificationsEnabled)
+        if (m_notificationsEnabled && !m_readOnly)
         {
             auto modelIndex = m_gemModel->FindIndexByNameString(gemName);
             bool added = GemModel::IsAdded(modelIndex);
