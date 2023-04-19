@@ -492,6 +492,15 @@ function(ly_setup_cmake_install)
         list(JOIN relative_templates ",\n${indent}" O3DE_INSTALL_TEMPLATES)
     endif()
 
+    # Read the "repos" key from the source engine.json
+    o3de_read_json_array(engine_repos ${LY_ROOT_FOLDER}/engine.json "repos")
+    if(engine_repos)
+        foreach(repo_uri ${engine_repos})
+            list(APPEND repos "\"${repo_uri}\"")
+        endforeach()
+        list(JOIN repos ",\n${indent}" O3DE_INSTALL_REPOS)
+    endif()
+
     # Read the "api_versions" key from the source engine.json
     o3de_read_json_key(O3DE_INSTALL_API_VERSIONS ${LY_ROOT_FOLDER}/engine.json "api_versions")
 

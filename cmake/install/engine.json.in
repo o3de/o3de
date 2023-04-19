@@ -9,5 +9,6 @@
     "build": @O3DE_INSTALL_BUILD_VERSION@,
     "external_subdirectories": [@O3DE_INSTALL_EXTERNAL_SUBDIRS@],
     "projects": [@O3DE_INSTALL_PROJECTS@],
+    "repos": [@O3DE_INSTALL_REPOS@],
     "templates": [@O3DE_INSTALL_TEMPLATES@]
 }
