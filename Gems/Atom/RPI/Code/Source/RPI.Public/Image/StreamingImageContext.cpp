@@ -32,7 +32,7 @@ namespace AZ
         {
             m_mipLevelTargetAdjusted = m_streamingImage->m_streamingController->GetImageTargetMip(m_streamingImage);
             m_residentMip = m_streamingImage->GetResidentMipLevel();
-            AZ_Assert(m_residentMip == m_streamingImage->m_imageAsset->GetMipLevel(m_streamingImage->m_mipChainState.m_residencyTarget), "something wrong");
+
             if (m_residentMip > m_mipLevelTargetAdjusted)
             {
                 m_missingMips = m_residentMip - m_mipLevelTargetAdjusted;

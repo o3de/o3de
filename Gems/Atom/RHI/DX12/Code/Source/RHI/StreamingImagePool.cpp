@@ -645,6 +645,7 @@ namespace AZ
             }
 
             bool releaseSuccess = true;
+            // If the new budget is smaller than the memory are in use, we need to release some memory
             if (newBudget < heapMemoryUsage.m_usedResidentInBytes)
             {
                 releaseSuccess = m_memoryReleaseCallback(newBudget);

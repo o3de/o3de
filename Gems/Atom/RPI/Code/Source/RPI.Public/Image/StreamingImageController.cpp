@@ -52,9 +52,11 @@ namespace AZ
                 image->m_streamingContext = AZStd::move(context);
             }
             
+            {
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
+                m_streamableImages.insert(image);
+            }
 
-            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
-            m_streamableImages.insert(image);
             ReinsertImageToLists(image);
         }
 
@@ -135,13 +137,15 @@ namespace AZ
                 }
 
                 // clear the expanding images
-                AZStd::lock_guard<AZStd::recursive_mutex> imageListAccesslock(m_imageListAccessMutex);
-                for (auto image:m_expandingImages)
                 {
-                    image->CancelExpanding();
-                    EndExpandImage(image);
+                    AZStd::lock_guard<AZStd::recursive_mutex> imageListAccesslock(m_imageListAccessMutex);
+                    for (auto image:m_expandingImages)
+                    {
+                        image->CancelExpanding();
+                        EndExpandImage(image);
+                    }
+                    m_expandingImages.clear();
                 }
-                m_expandingImages.clear();
             }
 
             // Finalize the mip expansion events generated from the controller. This is done once per update. Anytime

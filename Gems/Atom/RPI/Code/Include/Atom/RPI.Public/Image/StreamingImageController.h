@@ -95,7 +95,7 @@ namespace AZ
             // Return true if any mipmaps were evicted
             bool EvictUnusedMips(StreamingImage* image);
 
-            // Called when the RHI::StreamingImagePool is low on memory for new allocation
+            // A callback function to release memory until the StreamingImagePool's device memory usage is same or less than the input number
             bool ReleaseMemory(size_t targetMemoryUsage);
 
             // Get gpu memory usage of the streaming image pool
@@ -134,14 +134,14 @@ namespace AZ
             // All the images which are managed by StreamingImageController
             AZStd::set<StreamingImage*> m_streamableImages;
 
-            // All the images which are managed by StreamingImageController can be one or few of the following lists
+            // All the images which are managed by StreamingImageController can be in one or few of the following lists
             // m_expandableImages, m_evictableImages or m_expandingImages
             // - When an image hasn't reached its target mipmap level, it will be in the m_expandableImages list
-            // - When an image has mipmaps can be evicted, it's in m_evictableImages list
+            // - When an image has mipmaps that can be evicted, it's in m_evictableImages list
             // - When an image is in the process of expanding, it will be removed from m_expandableImages and added to m_expandingImages list
             // - It's possible for an image to be in both m_expandableImages and m_evictableImages list.
             // - Expanding will be canceled when memory is low
-            // - When an image is done expanding or evicted, they will get re-insert to m_expandableImages and m_evictableImages list
+            // - When an image is done expanding or evicted, they will get re-inserted back into m_expandableImages and m_evictableImages list
             
             // A list of expandable images which are sorted by their expanding priority
             struct ExpandPriorityComparator
@@ -160,7 +160,7 @@ namespace AZ
             AZStd::recursive_mutex m_imageListAccessMutex;
 
             // The images which are expanding will be added to this list and removed from m_streamableImages list.
-            // Once their expanding are finished, they would be removed from this list and added back to m_evictableImages or/and m_expandableImages list
+            // Once their expansion is finished, they would be removed from this list and added back to m_evictableImages or/and m_expandableImages list
             AZStd::unordered_set<StreamingImage*> m_expandingImages;
 
             // A monotonically increasing counter used to track image mip requests. Useful for sorting contexts by LRU.
