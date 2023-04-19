@@ -5,7 +5,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "CppToolGem",
+    "display_name": "CppToolGem Template",
     "summary": "A gem template for a custom tool in C++ that gets registered with the Editor.",
     "canonical_tags": [
         "Template",
