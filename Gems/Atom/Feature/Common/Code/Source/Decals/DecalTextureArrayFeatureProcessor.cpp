@@ -18,6 +18,8 @@
 #include <Atom/RPI.Reflect/Image/StreamingImageAssetHandler.h>
 #include <AtomCore/Instance/InstanceDatabase.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
+
 
 namespace AZ
 {
@@ -38,7 +40,14 @@ namespace AZ
                         }
                     }
                 }
-                AZ_Error("DecalTextureArrayFeatureProcessor", false, "GetTextureSizeFromMaterialAsset() unable to find an image in the given material.")
+
+                AZ_Error(
+                    "DecalTextureFeatureProcessor",
+                    false,
+                    "GetSizeFromMaterial() unable to load image in material '%s'",
+                    RPI::AssetUtils::GetSourcePathByAssetId(materialAsset->GetId()).c_str()
+                );
+
                 return {};
             }
 
