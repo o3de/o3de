@@ -458,7 +458,7 @@ namespace AZ::SceneAPI
                 }
             }
 
-            nodeEntityMap.insert(AZStd::make_pair(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName())));
+            nodeEntityMap.emplace(thisNodeIndex, AZStd::make_pair(entityId, nodeNameForEntity.GetName()));
         }
 
         return nodeEntityMap;
@@ -559,7 +559,7 @@ namespace AZ::SceneAPI
         // create prefab group for entire stack
         AzToolsFramework::Prefab::PrefabSystemScriptingBus::BroadcastResult(
             prefabTemplateId,
-            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplateWithCustomAliases,
+            &AzToolsFramework::Prefab::PrefabSystemScriptingBus::Events::CreatePrefabTemplateWithCustomEntityAliases,
             entities,
             prefabTemplateName);
 

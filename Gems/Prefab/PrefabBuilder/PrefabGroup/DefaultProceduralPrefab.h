@@ -53,7 +53,6 @@ namespace AZ::SceneAPI
         using NodeDataMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, NodeDataForEntity>; // NodeIndex -> NodeDataForEntity
         using ManifestUpdates = AZStd::vector<AZStd::shared_ptr<DataTypes::IManifestObject>>;
 
-        // NodeIndex -> <EntityId, EntityAlias>
         using NodeEntityMap = AZStd::unordered_map<Containers::SceneGraph::NodeIndex, AZStd::pair<AZ::EntityId, AZStd::string>>;
         using EntityIdMap = AZStd::unordered_map<AZ::EntityId, AZStd::string>;
 

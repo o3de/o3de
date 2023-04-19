@@ -30,7 +30,10 @@ namespace AzToolsFramework
             virtual TemplateId CreatePrefabTemplate(
                 const AZStd::vector<AZ::EntityId>& entityIds, const AZStd::string& filePath) = 0;
 
-            virtual TemplateId CreatePrefabTemplateWithCustomAliases(
+            //! Creates a prefab template using the custom entity aliases provided.
+            //! @param entities The map of entity ids to entity aliases.
+            //! @param filepath The filepath corresponding to the new template to be created.
+            virtual TemplateId CreatePrefabTemplateWithCustomEntityAliases(
                 const AZStd::unordered_map<AZ::EntityId, AZStd::string>& entities, const AZStd::string& filePath) = 0;
         };
         
