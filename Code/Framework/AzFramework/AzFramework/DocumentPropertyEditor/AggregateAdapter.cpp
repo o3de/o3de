@@ -227,21 +227,23 @@ namespace AZ::DocumentPropertyEditor
                                         {
                                             NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(
                                                 nodePath,
-                                                (entriesMatch ? GenerateAggregateRow(ancestorRowNode) : GenerateValuesDifferRow(ancestorRowNode))) });
+                                                (entriesMatch ? GenerateAggregateRow(ancestorRowNode)
+                                                              : GenerateValuesDifferRow(ancestorRowNode))) });
                                         }
                                     }
                                 }
                                 else
                                 {
-                                    // <apm> no longer the same row, check for a matching sibling, and if there isn't one, split off a new
-                                    // node
+                                    // no longer the same row, check for a matching sibling, and if there isn't one, split off a new node
+                                    AZ_Assert(0, "replace operation morphing node is not supported yet!");
                                 }
                             }
                             else
                             {
-                                // <apm> handle case where there's only one entry in this node, but it might've changed.
+                                // handle case where there's only one entry in this node, but it might've changed.
                                 // need to check if it has changed to match a parallel node, in which case it should join
                                 // that node, and this one should be destroyed.
+                                AZ_Assert(0, "replace operation changing value of single entry node is not supported yet!");
                             }
                         }
                     }
@@ -506,11 +508,22 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (currChild->EntryCount() == numAdapters)
                 {
+                    // add all row children first, so that functions like GetPathForNode can make simplifying assumptions
+                    auto aggregateRow = Dom::Value::CreateNode(Nodes::Row::Name);
+                    AddChildrenToValue(currChild.get(), aggregateRow, AddChildrenToValue);
+
+                    // row children have been added, now add the actual label/PropertyEditor children
                     auto generatedValue =
                         (currChild->m_allEntriesMatch ? GenerateAggregateRow(currChild.get()) : GenerateValuesDifferRow(currChild.get()));
 
-                    AddChildrenToValue(currChild.get(), generatedValue, AddChildrenToValue);
-                    value.ArrayPushBack(generatedValue);
+                    auto& aggregateRowArray = aggregateRow.GetMutableArray();
+                    auto& generatedValueArray = generatedValue.GetArray();
+                    aggregateRowArray.insert(
+                        aggregateRowArray.end(),
+                        AZStd::make_move_iterator(generatedValueArray.begin()),
+                        AZStd::make_move_iterator(generatedValueArray.end()));
+
+                    value.ArrayPushBack(aggregateRow);
                 }
             }
         };
@@ -521,37 +534,65 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value RowAggregateAdapter::HandleMessage(const AdapterMessage& message)
     {
-        auto handlePropertyEditorChanged = [&](const Dom::Value& valueFromEditor, Nodes::ValueChangeType changeType)
+        AZ::Dom::Value messageResult;
+        const auto messagesToForward = GetMessagesToForward();
+        if (AZStd::find(messagesToForward.begin(), messagesToForward.end(), message.m_messageName) != messagesToForward.end())
         {
-            (void)valueFromEditor;
-            (void)changeType;
-
-            // need to make a new message origin, get the row, which is one up from this widget's path
             auto nodePath = message.m_messageOrigin;
             auto originalColumn = nodePath.Back().GetIndex();
             nodePath.Pop();
             auto messageNode = GetNodeAtPath(nodePath);
             AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
 
+            AZ::Dom::Value retval;
             for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
             {
-                AdapterMessage forwardedMessage(message);
-                forwardedMessage.m_messageOrigin = messageNode->GetPathForAdapter(adapterIndex) / originalColumn;
-                m_adapters[adapterIndex]->adapter->SendAdapterMessage(forwardedMessage);
+                auto attributePath = messageNode->GetPathForAdapter(adapterIndex) / originalColumn / message.m_messageName;
+                auto attributeValue = m_adapters[adapterIndex]->adapter->GetContents()[attributePath];
+                AZ_Assert(!attributeValue.IsNull(), "function attribute should exist for each adapter!");
+                auto adapterFunction = BoundAdapterMessage::TryMarshalFromDom(attributeValue);
+
+                if (adapterFunction.has_value())
+                {
+                    // it's a bound adapter message, just call it, hooray!
+                    messageResult = adapterFunction.value()(message.m_messageParameters);
+                }
+                else if (auto typeField = attributeValue.FindMember(AZ::Attribute::GetTypeField());
+                         typeField != attributeValue.MemberEnd() && typeField->second.IsString() &&
+                         typeField->second.GetString() == Attribute::GetTypeName())
+                {
+                    // last chance! Check if it's an invokable Attribute
+                    void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(attributeValue[AZ::Attribute::GetInstanceField()]);
+                    AZ::Attribute* attribute =
+                        AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeValue[AZ::Attribute::GetAttributeField()]);
+
+                    const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
+                    AZ_Assert(canInvoke, "message attribute is not invokable!");
+                    if (canInvoke)
+                    {
+                        messageResult = attribute->DomInvoke(instance, message.m_messageParameters);
+                    }
+                }
+                else
+                {
+                    AZ_Assert(0, "unhandled message format found!");
+                }
             }
-        };
-
-        auto handleEditAnyway = [&]()
+        }
+        else
         {
-            // get the affected row by pulling off the trailing column index on the address
-            auto rowPath = message.m_messageOrigin;
-            rowPath.Pop();
+            auto handleEditAnyway = [&]()
+            {
+                // get the affected row by pulling off the trailing column index on the address
+                auto rowPath = message.m_messageOrigin;
+                rowPath.Pop();
 
-            NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
-        };
+                NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
+            };
 
-        return message.Match(
-            Nodes::PropertyEditor::OnChanged, handlePropertyEditorChanged, Nodes::GenericButton::OnActivate, handleEditAnyway);
+            messageResult = message.Match(Nodes::GenericButton::OnActivate, handleEditAnyway);
+        }
+        return messageResult;
     }
 
     AZStd::string_view LabeledRowAggregateAdapter::GetFirstLabel(const Dom::Value& rowValue)
@@ -567,12 +608,19 @@ namespace AZ::DocumentPropertyEditor
         return AZStd::string_view();
     }
 
+    AZStd::vector<AZ::Name> LabeledRowAggregateAdapter::GetMessagesToForward()
+    {
+        return { Nodes::PropertyEditor::OnChanged.GetName(),
+                 Nodes::PropertyEditor::ChangeNotify.GetName(),
+                 Nodes::PropertyEditor::RequestTreeUpdate.GetName() };
+    }
+
     Dom::Value LabeledRowAggregateAdapter::GenerateAggregateRow(AggregateNode* matchingNode)
     {
         auto multiRow = GetComparisonRow(matchingNode);
 
         const auto editorName = AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>();
-        const auto onChangedName = Nodes::PropertyEditor::OnChanged.GetName();
+        const auto messagesToForward = GetMessagesToForward();
 
         for (size_t childIndex = 0, numChildren = multiRow.ArraySize(); childIndex < numChildren; ++childIndex)
         {
@@ -583,13 +631,20 @@ namespace AZ::DocumentPropertyEditor
                      attributeIter != attributeEnd;
                      ++attributeIter)
                 {
-                    if (attributeIter->first == onChangedName)
+                    for (const auto& messageName : messagesToForward)
                     {
-                        childValue.RemoveMember(attributeIter);
-                        auto nodePath = GetPathForNode(matchingNode);
-                        AZ_Assert(!nodePath.IsEmpty(), "shouldn't be generating an aggregate row for a non-matching node!");
-                        BoundAdapterMessage changedAttribute = { this, onChangedName, nodePath / childIndex, {} };
-                        childValue[onChangedName] = changedAttribute.MarshalToDom();
+                        if (attributeIter->first == messageName)
+                        {
+                            auto nodePath = GetPathForNode(matchingNode);
+                            AZ_Assert(!nodePath.IsEmpty(), "shouldn't be generating an aggregate row for a non-matching node!");
+                            BoundAdapterMessage changedAttribute = { this, messageName, nodePath / childIndex, {} };
+                            auto newValue = changedAttribute.MarshalToDom();
+                            childValue.RemoveMember(attributeIter);
+                            childValue[messageName] = newValue;
+
+                            // we've found the matching message, break out of the inner loop
+                            break;
+                        }
                     }
                 }
             }

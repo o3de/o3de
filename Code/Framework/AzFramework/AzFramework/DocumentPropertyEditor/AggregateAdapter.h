@@ -50,6 +50,8 @@ namespace AZ::DocumentPropertyEditor
             AZStd::vector<AZStd::unique_ptr<AggregateNode>> m_childRows;
         };
 
+        virtual AZStd::vector<AZ::Name> GetMessagesToForward() = 0;
+
         // virtual function to generate an aggregate row that represents all the matching Dom::Values with in this node
         virtual Dom::Value GenerateAggregateRow(AggregateNode* matchingNode) = 0;
 
@@ -111,6 +113,7 @@ namespace AZ::DocumentPropertyEditor
     protected:
         static AZStd::string_view GetFirstLabel(const Dom::Value& rowValue);
 
+        AZStd::vector<AZ::Name> GetMessagesToForward();
         Dom::Value GenerateAggregateRow(AggregateNode* matchingNode) override;
         Dom::Value GenerateValuesDifferRow(AggregateNode* mismatchNode) override;
         bool SameRow(const Dom::Value& newRow, const Dom::Value& existingRow) override;
