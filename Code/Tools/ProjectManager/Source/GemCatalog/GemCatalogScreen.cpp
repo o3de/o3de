@@ -165,7 +165,7 @@ namespace O3DE::ProjectManager
         hLayout->addWidget(m_rightPanelStack);
         m_rightPanelStack->addWidget(m_gemInspector);
 
-        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("GemCatalogNotificationsView"));
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC_CE("GemCatalogNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 70));
         m_notificationsView->SetMaxQueuedNotifications(1);
         m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions
@@ -411,7 +411,7 @@ namespace O3DE::ProjectManager
                 if (added)
                 {
                     if (newVersion.isEmpty() && (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::NotDownloaded) ||
-                    (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
+                        (GemModel::GetDownloadStatus(modelIndex) == GemInfo::DownloadStatus::DownloadFailed))
                     {
                         // download the current version
                         DownloadGem(modelIndex, gemInfo.m_version, gemInfo.m_path);

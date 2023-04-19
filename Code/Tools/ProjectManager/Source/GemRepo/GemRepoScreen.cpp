@@ -56,7 +56,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addWidget(m_contentStack);
 
-        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC("ReposNotificationsView"));
+        m_notificationsView = AZStd::make_unique<AzToolsFramework::ToastNotificationsView>(this, AZ_CRC_CE("ReposNotificationsView"));
         m_notificationsView->SetOffset(QPoint(10, 10));
         m_notificationsView->SetMaxQueuedNotifications(1);
         m_notificationsView->SetRejectDuplicates(false); // we want to show notifications if a user repeats actions

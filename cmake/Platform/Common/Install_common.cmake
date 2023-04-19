@@ -498,6 +498,7 @@ function(ly_setup_cmake_install)
         foreach(repo_uri ${engine_repos})
             list(APPEND repos "\"${repo_uri}\"")
         endforeach()
+        list(SORT repos CASE INSENSITIVE)
         list(JOIN repos ",\n${indent}" O3DE_INSTALL_REPOS)
     endif()
 

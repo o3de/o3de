@@ -77,11 +77,11 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
         if has_compatible_version([project_engine], engine_name, engine_version):
 
             # prefer the engine this project or template resides in if it is compatible
-            if pathlib.Path(engine_path) in pathlib.Path(project_path).parents:
+            if pathlib.PurePath(project_path).is_relative_to(pathlib.PurePath(engine_path)):
                 most_compatible_engine_path = pathlib.Path(engine_path)
                 most_compatible_engine_version = Version(engine_version)
-                # don't consider any other engines, if a user wants to override this they can
-                # override engine_path or engine using a user/project.json 
+                # don't consider other engines, if a user wants to override 
+                # they can set the engine_path or engine in user/project.json 
                 break
             elif not most_compatible_engine_path:
                 most_compatible_engine_path = pathlib.Path(engine_path)
