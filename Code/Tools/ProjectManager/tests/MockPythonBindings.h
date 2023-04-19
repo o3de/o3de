@@ -51,8 +51,8 @@ namespace O3DE::ProjectManager
         MOCK_METHOD0(GetGemTemplates, AZ::Outcome<QVector<TemplateInfo>>());
 
         // Gem Repos
-        MOCK_METHOD1(RefreshGemRepo, AZ::Outcome<void, AZStd::string>(const QString&));
-        MOCK_METHOD0(RefreshAllGemRepos, bool());
+        MOCK_METHOD2(RefreshGemRepo, AZ::Outcome<void, AZStd::string>(const QString&, bool));
+        MOCK_METHOD1(RefreshAllGemRepos, bool(bool));
         MOCK_METHOD1(AddGemRepo, DetailedOutcome(const QString&));
         MOCK_METHOD1(RemoveGemRepo, bool(const QString&));
         MOCK_METHOD0(GetAllGemRepoInfos, AZ::Outcome<QVector<GemRepoInfo>, AZStd::string>());
