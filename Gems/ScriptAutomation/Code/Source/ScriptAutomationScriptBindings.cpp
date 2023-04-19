@@ -276,7 +276,7 @@ namespace AZ::ScriptAutomation
             AZStd::string renderPipelinePath;
             console->GetCvarValue("r_default_pipeline_name", renderPipelinePath);
             AZ_Assert(renderPipelinePath.size() > 0, "Invalid render pipeline path obtained from r_default_pipeline_name CVAR");
-            return AZ::IO::PathView(renderPipelinePath).Stem().FixedMaxPathString().c_str();
+            return AZ::IO::PathView(renderPipelinePath).Stem().String();
         }
 
         AZStd::string GetPlatformName()
@@ -697,7 +697,7 @@ namespace AZ::ScriptAutomation
                         AZ_Error(
                             "ScriptAutomation", 
                             false,
-                            "%s screenshot compare failed. Diff score %f exceeds threshold of %f ('%s').",
+                            "%s screenshot compare failed. Diff score %.5f exceeds threshold of %.5f ('%s').",
                             compareName.c_str(),
                             diffScore,
                             toleranceLevel.m_threshold,
@@ -710,7 +710,7 @@ namespace AZ::ScriptAutomation
                     {
                         AZ_Printf(
                             "ScriptAutomation",
-                            "%s screenshot compare passed. Diff score is %.5f, threshold of %f ('%s').\n",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %.5f ('%s').\n",
                             compareName.c_str(),
                             diffScore,
                             toleranceLevel.m_threshold,

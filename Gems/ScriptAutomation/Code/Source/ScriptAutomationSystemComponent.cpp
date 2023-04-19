@@ -387,7 +387,7 @@ namespace AZ::ScriptAutomation
         }
     }
 
-    void ScriptAutomationSystemComponent::OnCatalogLoaded(const char* /*catalogFile*/)
+    void ScriptAutomationSystemComponent::OnCatalogLoaded(const char*)
     {
         AZ::TickBus::QueueFunction([&]()
             {
