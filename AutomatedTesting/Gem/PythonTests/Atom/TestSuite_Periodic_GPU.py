@@ -33,7 +33,7 @@ atom_feature_test_list = [
         "Atom_DepthOfField", 
         "depth_of_field_screenshot1.png", 
         "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", 
-        "levels/atomtests/feature/depthoffield/depthoffield.spawnable", 
+        "levels/atomscreenshottests/feature/depthoffield/depthoffield.spawnable", 
         "Level D"
     )
 ]

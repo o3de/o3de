@@ -18,7 +18,7 @@ namespace UnitTest
     {
         CreateApplication({ });
 
-        auto automationSystem = ScriptAutomation::ScriptAutomationInterface::Get();
+        auto automationSystem = AZ::ScriptAutomation::ScriptAutomationInterface::Get();
         ASSERT_TRUE(automationSystem);
 
         auto behaviorContext = automationSystem->GetAutomationContext();
