@@ -199,8 +199,8 @@ def get_ec2_resource(region):
 
 def get_ec2_instance_id():
     try:
-        token = (IMDSFetcher()._fetch_metadata_token()).text
-        instance_id = IMDSFetcher()._get_request("/latest/meta-data/instance-id", token).text
+        token = IMDSFetcher()._fetch_metadata_token()
+        instance_id = IMDSFetcher()._get_request("/latest/meta-data/instance-id", None, token).text
         return instance_id
     except Exception as e:
         print(e)
@@ -209,8 +209,8 @@ def get_ec2_instance_id():
 
 def get_availability_zone():
     try:
-        token = (IMDSFetcher()._fetch_metadata_token()).text
-        availability_zone = IMDSFetcher()._get_request("/latest/meta-data/placement/availability-zone", token).text
+        token = IMDSFetcher()._fetch_metadata_token()
+        availability_zone = IMDSFetcher()._get_request("/latest/meta-data/placement/availability-zone", None, token).text
         return availability_zone
     except Exception as e:
         print(e)
