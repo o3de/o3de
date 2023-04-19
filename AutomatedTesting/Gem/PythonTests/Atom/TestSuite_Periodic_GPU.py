@@ -33,11 +33,22 @@ atom_feature_test_list = [
         "Atom_DepthOfField", 
         "depth_of_field_screenshot1.png", 
         "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", 
-        "levels/atomtests/feature/depthoffield/depthoffield.spawnable", "Level D"
+        "levels/atomtests/feature/depthoffield/depthoffield.spawnable", 
+        "Level D"
     )
 ]
 
+# default names are windows
+launcher_name = "AutomatedTesting.GameLauncher.exe"
+ap_name = "AssetProcessor.exe"
 WINDOWS = sys.platform.startswith('win')
+LINUX = sys.platform == "linux"
+#MAC = sys.platform == "darwin"
+
+if LINUX:
+    launcher_name = "AutomatedTesting.GameLauncher"
+    ap_name = "AssetProcessor"
+
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.REQUIRES_gpu
@@ -61,16 +72,17 @@ class TestPeriodicSuite_DX12_GPU(object):
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageName={screenshot_name}" ',
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageComparisonLevel={compare_tolerance}" '])
         game_launcher.start()
-        waiter.wait_for(lambda: process_utils.process_exists(f"AutomatedTesting.GameLauncher.exe", ignore_extensions=True))
+        waiter.wait_for(lambda: process_utils.process_exists(launcher_name, ignore_extensions=True))
 
-        # Verify that the GameLauncher.exe was able to connect to the ServerLauncher.exe by checking the logs
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
-        game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=True, timeout=400)
-        process_utils.kill_processes_named("AssetProcessor.exe", ignore_extensions=True)
+         # test may do multiple image capture & compare so don't halt on unexpected
+        game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=False, timeout=400)
+        process_utils.kill_processes_named(ap_name, ignore_extensions=True)
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.REQUIRES_gpu
+@pytest.mark.skipif(not WINDOWS and not LINUX, reason="Vulkan is only supported on windows, linux, & android")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows, linux"])
 class TestPeriodicSuite_Vulkan_GPU(object):
@@ -90,10 +102,10 @@ class TestPeriodicSuite_Vulkan_GPU(object):
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageName={screenshot_name}" ',
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageComparisonLevel={compare_tolerance}" '])
         game_launcher.start()
-        waiter.wait_for(lambda: process_utils.process_exists(f"AutomatedTesting.GameLauncher.exe", ignore_extensions=True))
+        waiter.wait_for(lambda: process_utils.process_exists(launcher_name, ignore_extensions=True))
 
-        # Verify that the GameLauncher.exe was able to connect to the ServerLauncher.exe by checking the logs
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
-        game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=True, timeout=400)
-        process_utils.kill_processes_named("AssetProcessor.exe", ignore_extensions=True)
+         # test may do multiple image capture & compare so don't halt on unexpected
+        game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=False, timeout=400)
+        process_utils.kill_processes_named(ap_name, ignore_extensions=True)
