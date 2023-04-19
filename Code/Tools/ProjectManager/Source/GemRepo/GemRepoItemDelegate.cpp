@@ -259,8 +259,6 @@ namespace O3DE::ProjectManager
     QRect GemRepoItemDelegate::CalcBadgeRect(const QRect& contentRect) const
     {
         const auto bounds = CalcColumnXBounds(HeaderOrder::Badge);
-        const int centerX = (bounds.first + bounds.second) / 2;
-
         const QPoint topLeft = QPoint(bounds.first, contentRect.center().y() - s_badgeHeight / 2);
         return QRect(topLeft, QSize(s_badgeWidth, s_badgeHeight));
     }
