@@ -43,6 +43,7 @@ namespace O3DE::ProjectManager
 
         void AddObjectDownload(const QString& objectName, const QString& destinationPath, DownloadObjectType objectType);
         void CancelObjectDownload(const QString& objectName, DownloadObjectType objectType);
+        bool IsDownloadingObject(const QString& objectName, DownloadObjectType objectType);
 
         bool IsDownloadQueueEmpty()
         {

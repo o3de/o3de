@@ -31,6 +31,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QPushButton>
+#include <QFileDialog>
 #include <QMenu>
 #include <QListView>
 #include <QSpacerItem>
@@ -73,7 +74,7 @@ namespace O3DE::ProjectManager
 
         vLayout->addWidget(m_stack);
 
-        connect(reinterpret_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyBuildProject, this, &ProjectsScreen::SuggestBuildProject);
 
         connect(m_downloadController, &DownloadController::Done, this, &ProjectsScreen::HandleDownloadResult);
         connect(m_downloadController, &DownloadController::ObjectDownloadProgress, this, &ProjectsScreen::HandleDownloadProgress);
@@ -500,9 +501,74 @@ namespace O3DE::ProjectManager
 
     void ProjectsScreen::HandleAddProjectButton()
     {
-        if (ProjectUtils::AddProjectDialog(this))
+        QString title{ QObject::tr("Select Project Directory") };
+        QString defaultPath;
+
+        // get the default path to look for new projects in
+        AZ::Outcome<EngineInfo> engineInfoResult = PythonBindingsInterface::Get()->GetEngineInfo();
+        if (engineInfoResult.IsSuccess())
         {
-            emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+            defaultPath = engineInfoResult.GetValue().m_defaultProjectsFolder;
+        }
+
+        QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(this, title, defaultPath));
+        if (!path.isEmpty())
+        {
+            // check if this project is compatible with this engine
+            auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(path);
+
+            AZStd::string errorTitle, generalError, detailedError;
+            if (!incompatibleObjectsResult)
+            {
+                errorTitle = "Failed to check project compatibility";
+                generalError = incompatibleObjectsResult.GetError().first;
+                generalError.append("\nDo you still want to add this project?");
+                detailedError = incompatibleObjectsResult.GetError().second;
+            }
+            else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
+            {
+                // provide a couple more user friendly error messages for uncommon cases
+                if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                {
+                    errorTitle = "Failed to read engine.json";
+                    generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
+                }
+                else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                {
+                    errorTitle = "Invalid project, failed to read project.json";
+                    generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
+                }
+                else
+                {
+                    // could be gems, apis or both
+                    errorTitle = "Project may not be compatible with this engine";
+                    generalError = incompatibleObjects.join("\n").toUtf8().constData();
+                    generalError.append("\nDo you still want to add this project?");
+                }
+            }
+
+            if (!generalError.empty())
+            {
+                QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, this);
+                warningDialog.setDetailedText(detailedError.c_str());
+                if(warningDialog.exec() == QMessageBox::No)
+                {
+                    return;
+                }
+                AZ_Warning("ProjectManager", false, "Proceeding with project registration after compatibility check failed.");
+            }
+
+            if (auto addProjectResult = PythonBindingsInterface::Get()->AddProject(path, /*force=*/true); !addProjectResult)
+            {
+                ProjectUtils::DisplayDetailedError(tr("Failed to add project"), addProjectResult, this);
+            }
+            else
+            {
+                // notify the user the project was added successfully
+                emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+
+                QMessageBox::information(this, "Project added", "Project added successfully");
+            }
         }
     }
 
@@ -622,6 +688,7 @@ namespace O3DE::ProjectManager
             if (ProjectUtils::UnregisterProject(projectPath))
             {
                 emit ChangeScreenRequest(ProjectManagerScreen::Projects);
+                emit NotifyProjectRemoved(projectPath);
             }
         }
     }
@@ -642,6 +709,8 @@ namespace O3DE::ProjectManager
                 HandleRemoveProject(projectPath);
                 ProjectUtils::DeleteProjectFiles(projectPath);
                 QGuiApplication::restoreOverrideCursor();
+
+                emit NotifyProjectRemoved(projectPath);
             }
         }
     }

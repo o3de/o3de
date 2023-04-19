@@ -44,7 +44,7 @@ namespace PhysX
                     ->DataElement(0, &EditorHingeJointComponent::m_angularLimit, "Angular Limit", "The rotation angle limit around the joint's axis.")
                     ->DataElement(0, &EditorHingeJointComponent::m_motorConfiguration, "Motor Configuration", "Joint's motor configuration.")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &EditorHingeJointComponent::m_componentModeDelegate, "Component Mode", "Hinge Joint Component Mode.")
-                      ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
+                    ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
                     ;
             }
         }
@@ -235,11 +235,12 @@ namespace PhysX
         AZ::Vector3 axis = AZ::Vector3::CreateAxisX();
 
         const AZ::EntityId& entityId = GetEntityId();
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
 
         // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
-        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(worldTransform.GetTranslation(), cameraState);
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
         const float size = 2.0f * scaleMultiply;
 
@@ -247,15 +248,7 @@ namespace PhysX
         debugDisplay.CullOff();
         debugDisplay.SetAlpha(s_alpha);
 
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(
-            localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue,
-            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
-
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        debugDisplay.PushMatrix(jointWorldTransform);
 
         // draw a cylinder to indicate the axis of revolution.
         const float cylinderThickness = 0.05f * scaleMultiply;
@@ -336,8 +329,7 @@ namespace PhysX
             debugDisplay.DrawWireCone(pointOnCircle, -AZ::Vector3::CreateAxisY(), coneRadius, coneHeight);
         }
 
-        debugDisplay.PopMatrix(); // pop local transform
-        debugDisplay.PopMatrix(); // pop global transform
+        debugDisplay.PopMatrix(); // pop joint world transform
         debugDisplay.SetState(stateBefore);
     }
 }

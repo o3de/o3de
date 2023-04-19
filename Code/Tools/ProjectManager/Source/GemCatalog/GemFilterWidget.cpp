@@ -227,7 +227,6 @@ namespace O3DE::ProjectManager
         for (int i = 0; i < showCount; ++i)
         {
             elements[i]->show();
-            //elements[i]->style()->polish(elements[i]);
         }
 
         for (int i = showCount; i < elements.size(); ++i)

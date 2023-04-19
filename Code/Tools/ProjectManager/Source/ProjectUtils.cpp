@@ -16,7 +16,6 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QtMath>
-#include <QMessageBox>
 #include <QFileInfo>
 #include <QProcess>
 #include <QProcessEnvironment>
@@ -283,17 +282,6 @@ namespace O3DE::ProjectManager
                     QMessageBox::Close);
 
                 return false;
-            }
-
-            return false;
-        }
-
-        bool AddProjectDialog(QWidget* parent)
-        {
-            QString path = QDir::toNativeSeparators(QFileDialog::getExistingDirectory(parent, QObject::tr("Select Project Directory")));
-            if (!path.isEmpty())
-            {
-                return RegisterProject(path, parent);
             }
 
             return false;
@@ -714,11 +702,19 @@ namespace O3DE::ProjectManager
             return defaultPath;
         }
 
-        void DisplayDetailedError(const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
+        int DisplayDetailedError(
+            const QString& title, const AZ::Outcome<void, AZStd::pair<AZStd::string, AZStd::string>>& outcome, QWidget* parent)
         {
-            const AZStd::string& generalError = outcome.GetError().first;
-            const AZStd::string& detailedError = outcome.GetError().second;
+            return DisplayDetailedError(title, outcome.GetError().first, outcome.GetError().second, parent);
+        }
 
+        int DisplayDetailedError(
+            const QString& title,
+            const AZStd::string& generalError,
+            const AZStd::string& detailedError,
+            QWidget* parent,
+            QMessageBox::StandardButtons buttons)
+        {
             if (!detailedError.empty())
             {
                 QMessageBox errorDialog(parent);
@@ -726,11 +722,12 @@ namespace O3DE::ProjectManager
                 errorDialog.setWindowTitle(title);
                 errorDialog.setText(generalError.c_str());
                 errorDialog.setDetailedText(detailedError.c_str());
-                errorDialog.exec();
+                errorDialog.setStandardButtons(buttons);
+                return errorDialog.exec();
             }
             else
             {
-                QMessageBox::critical(parent, title, generalError.c_str());
+                return QMessageBox::critical(parent, title, generalError.c_str(), buttons);
             }
         }
 
