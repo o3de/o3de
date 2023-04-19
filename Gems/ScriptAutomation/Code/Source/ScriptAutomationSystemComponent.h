@@ -15,7 +15,7 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <AzFramework\Asset\AssetCatalogBus.h>
+#include <AzFramework/Asset/AssetCatalogBus.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>

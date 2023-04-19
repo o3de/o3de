@@ -29,11 +29,19 @@ unexpected_lines = [
 ]
 
 atom_feature_test_list = [
-    pytest.param("Atom_DepthOfField", "depth_of_field_screenshot1.png", "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", "levels/atomtests/feature/depthoffield/depthoffield.spawnable", "Level D")
+    pytest.param(
+        "Atom_DepthOfField", 
+        "depth_of_field_screenshot1.png", 
+        "@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericRenderScreenshotTest.lua", 
+        "levels/atomtests/feature/depthoffield/depthoffield.spawnable", "Level D"
+    )
 ]
+
+WINDOWS = sys.platform.startswith('win')
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.REQUIRES_gpu
+@pytest.mark.skipif(not WINDOWS, reason="DX12 is only supported on windows")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows"])
 class TestPeriodicSuite_DX12_GPU(object):

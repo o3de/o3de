@@ -19,4 +19,4 @@ g_imperceptibleImageDiffLevel = 0.01
 
 SetScreenshotFolder(g_screenshotOutputFolder)
 SetTestEnvPath(g_testEnv)
-SetOfficialBaselineImageFolder('@projectroot@/AutomationScripts/Expectedscreenshots/')
+SetOfficialBaselineImageFolder('@projectroot@/AutomationScripts/ExpectedScreenshots/')
