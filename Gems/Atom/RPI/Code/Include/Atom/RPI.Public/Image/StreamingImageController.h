@@ -157,7 +157,7 @@ namespace AZ
 
             AZStd::set<StreamingImage*, EvictPriorityComparator> m_evictableImages;
             // mutex for access the image lists
-            AZStd::mutex m_imageListAccessMutex;
+            AZStd::recursive_mutex m_imageListAccessMutex;
 
             // The images which are expanding will be added to this list and removed from m_streamableImages list.
             // Once their expanding are finished, they would be removed from this list and added back to m_evictableImages or/and m_expandableImages list

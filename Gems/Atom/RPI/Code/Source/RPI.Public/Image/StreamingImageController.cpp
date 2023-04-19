@@ -52,7 +52,8 @@ namespace AZ
                 image->m_streamingContext = AZStd::move(context);
             }
             
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             m_streamableImages.insert(image);
             ReinsertImageToLists(image);
         }
@@ -64,7 +65,7 @@ namespace AZ
             // Remove image from the list first before clearing the image streaming context
             // since the compare functions may use the image's StreamingImageContext
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+                AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
                 m_streamableImages.erase(image);
                 m_expandingImages.erase(image);
                 m_expandableImages.erase(image);
@@ -87,7 +88,7 @@ namespace AZ
 
         void StreamingImageController::ReinsertImageToLists(StreamingImage* image)
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             m_expandableImages.erase(image);
             m_evictableImages.erase(image);
 
@@ -134,7 +135,7 @@ namespace AZ
                 }
 
                 // clear the expanding images
-                AZStd::lock_guard<AZStd::mutex> imageListAccesslock(m_imageListAccessMutex);
+                AZStd::lock_guard<AZStd::recursive_mutex> imageListAccesslock(m_imageListAccessMutex);
                 for (auto image:m_expandingImages)
                 {
                     image->CancelExpanding();
@@ -218,7 +219,6 @@ namespace AZ
             // update image priority and re-insert the image
             if (!context->m_queuedForMipExpand)
             {
-                AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
                 EvictUnusedMips(image);
             }
 
@@ -317,7 +317,7 @@ namespace AZ
             m_globalMipBias = mipBias;
 
             // we need go through all the streamable image to update their streaming context and regenerate the lists
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             m_expandableImages.clear();
             m_evictableImages.clear();
 
@@ -356,7 +356,7 @@ namespace AZ
 
         bool StreamingImageController::EvictOneMipChain()
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             for (auto itr = m_evictableImages.begin(); itr != m_evictableImages.end(); itr++)
             {
                 StreamingImage* image = *itr;
@@ -393,7 +393,7 @@ namespace AZ
 
         bool StreamingImageController::ExpandOneMipChain()
         {
-            AZStd::lock_guard<AZStd::mutex> lock(m_imageListAccessMutex);
+            AZStd::lock_guard<AZStd::recursive_mutex> lock(m_imageListAccessMutex);
             if (m_expandableImages.size() == 0)
             {
                 return false; 
