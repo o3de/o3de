@@ -72,15 +72,12 @@ namespace AZ
                 // AssetCatalogEventBus::Handler overrides...
                 void OnCatalogAssetChanged(const AZ::Data::AssetId& assetId) override;
                 void OnCatalogAssetAdded(const AZ::Data::AssetId& assetId) override;
-                //void OnCatalogAssetRemoved(const AZ::Data::AssetId& assetId, const AZ::Data::AssetInfo& assetInfo) override;
 
                 void OnModelReloaded(Data::Asset<Data::AssetData> asset);
-                /*
                 ModelReloadedEvent::Handler m_modelReloadedEventHandler{ [&](Data::Asset<RPI::ModelAsset> modelAsset)
                                                                          {
                                                                              OnModelReloaded(modelAsset);
-                                                                         } };*/
-                ModelReloadedEvent::Handler m_modelReloadedEventHandler;
+                                                                         } };
                 MeshFeatureProcessorInterface::ModelChangedEvent m_modelChangedEvent;
                 Data::Asset<RPI::ModelAsset> m_modelAsset;
                 ModelDataInstance* m_parent = nullptr;
