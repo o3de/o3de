@@ -561,13 +561,12 @@ namespace AZ::ScriptAutomation
             auto operation = [=]()
             {
 
-                const ImageComparisonToleranceLevel* toleranceLevelPtr = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
-                if (!toleranceLevelPtr)
+                const ImageComparisonToleranceLevel* toleranceLevel = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevel)
                 {
                     AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
                     return;
                 }
-                const ImageComparisonToleranceLevel toleranceLevel = *toleranceLevelPtr; // duplicate in case data is reloaded
                 AZStd::string resolvedPathA = ResolvePath(filePathA);
                 AZStd::string resolvedPathB = ResolvePath(filePathB);
 
@@ -588,20 +587,20 @@ namespace AZ::ScriptAutomation
                 );
                 if (compareOutcome.IsSuccess())
                 {
-                    float diffScore = toleranceLevel.m_filterImperceptibleDiffs
+                    float diffScore = toleranceLevel->m_filterImperceptibleDiffs
                         ? compareOutcome.GetValue().m_diffScore
                         : compareOutcome.GetValue().m_filteredDiffScore;
 
-                    if (diffScore > toleranceLevel.m_threshold)
+                    if (diffScore > toleranceLevel->m_threshold)
                     {
                         AZ_Error(
                             "ScriptAutomation", 
                             false,
-                            "%s screenshot compare failed. Diff score %f exceeds threshold of %f ('%s').",
+                            "%s screenshot compare failed. Diff score %.5f exceeds threshold of %.5f ('%s').",
                             compareName.c_str(),
                             diffScore,
-                            toleranceLevel.m_threshold,
-                            toleranceLevel.m_name.c_str()
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
                         );
 
                         // TODO: open image compare app if CVAR is set
@@ -610,11 +609,11 @@ namespace AZ::ScriptAutomation
                     {
                         AZ_Printf(
                             "ScriptAutomation",
-                            "%s screenshot compare passed. Diff score is %.5f, threshold of %f ('%s').",
+                            "%s screenshot compare passed. Diff score is %.5f, threshold of %.5f ('%s').",
                             compareName.c_str(),
                             diffScore,
-                            toleranceLevel.m_threshold,
-                            toleranceLevel.m_name.c_str()
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
                         );
                     }
                 }
@@ -630,14 +629,12 @@ namespace AZ::ScriptAutomation
             auto operation = [=]()
             {
 
-                const ImageComparisonToleranceLevel* toleranceLevelPtr = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
-                if (!toleranceLevelPtr)
+                const ImageComparisonToleranceLevel* toleranceLevel = ScriptAutomationInterface::Get()->FindToleranceLevel(comparisonLevel);
+                if (!toleranceLevel)
                 {
                     AZ_Error("ScriptAutomation", false, "Failed to find image comparison level named %s", comparisonLevel.c_str());
                     return;
                 }
-                const ImageComparisonToleranceLevel toleranceLevel = *toleranceLevelPtr; // duplicate in case data is reloaded
-
 
                 // build test image filepath
                 AZ::Render::FrameCapturePathOutcome pathOutcome;
@@ -688,11 +685,11 @@ namespace AZ::ScriptAutomation
                 );
                 if (compareOutcome.IsSuccess())
                 {
-                    float diffScore = toleranceLevel.m_filterImperceptibleDiffs
+                    float diffScore = toleranceLevel->m_filterImperceptibleDiffs
                         ? compareOutcome.GetValue().m_diffScore
                         : compareOutcome.GetValue().m_filteredDiffScore;
 
-                    if (diffScore > toleranceLevel.m_threshold)
+                    if (diffScore > toleranceLevel->m_threshold)
                     {
                         AZ_Error(
                             "ScriptAutomation", 
@@ -700,8 +697,8 @@ namespace AZ::ScriptAutomation
                             "%s screenshot compare failed. Diff score %.5f exceeds threshold of %.5f ('%s').",
                             compareName.c_str(),
                             diffScore,
-                            toleranceLevel.m_threshold,
-                            toleranceLevel.m_name.c_str()
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
                         );
 
                         // TODO: open image compare app if CVAR is set
@@ -713,8 +710,8 @@ namespace AZ::ScriptAutomation
                             "%s screenshot compare passed. Diff score is %.5f, threshold of %.5f ('%s').\n",
                             compareName.c_str(),
                             diffScore,
-                            toleranceLevel.m_threshold,
-                            toleranceLevel.m_name.c_str()
+                            toleranceLevel->m_threshold,
+                            toleranceLevel->m_name.c_str()
                         );
                     }
                 }
