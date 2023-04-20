@@ -125,5 +125,8 @@
         "Templates/PythonToolGem",
         "Templates/ScriptCanvasNode",
         "Templates/UnifiedMultiplayerGem"
+    ],
+    "repos": [
+        "https://canonical.o3de.org"
     ]
 }

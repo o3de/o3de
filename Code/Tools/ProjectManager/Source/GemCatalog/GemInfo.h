@@ -72,6 +72,7 @@ namespace O3DE::ProjectManager
         bool IsPlatformSupported(Platform platform) const;
         QString GetNameWithVersionSpecifier(const QString& comparator = "==") const;
         bool IsValid() const;
+        bool IsCompatible() const;
 
         bool operator<(const GemInfo& gemInfo) const;
 
@@ -103,6 +104,11 @@ namespace O3DE::ProjectManager
         int m_binarySizeInKB = 0;
         QStringList m_dependencies;
         QStringList m_compatibleEngines;
+        QStringList m_incompatibleEngineDependencies; //! Specific to the current project's engine 
+        QStringList m_incompatibleGemDependencies; //! Specific to the current project and engine
+        QString m_downloadSourceUri;
+        QString m_sourceControlUri;
+        QString m_sourceControlRef;
     };
 } // namespace O3DE::ProjectManager
 

@@ -210,7 +210,7 @@ function(resolve_gem_dependencies object_type object_path)
         )
 
     if(O3DE_CLI_RESULT)
-        message(WARNING "Dependecy resolution failed\n  Error: ${O3DE_CLI_OUT}")
+        message(WARNING "Dependecy resolution failed.\n  If needed, set the O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION variable to bypass dependency resolution.\n  Error: ${O3DE_CLI_OUT}")
         return()
     endif()
 

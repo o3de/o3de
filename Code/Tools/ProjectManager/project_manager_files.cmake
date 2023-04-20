@@ -156,4 +156,6 @@ set(FILES
     Source/GemRepo/GemRepoListView.cpp
     Source/GemRepo/GemRepoModel.h
     Source/GemRepo/GemRepoModel.cpp
+    Source/GemRepo/GemRepoProxyModel.h
+    Source/GemRepo/GemRepoProxyModel.cpp
 )
