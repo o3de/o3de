@@ -222,6 +222,7 @@ namespace AzToolsFramework
                 if (!m_aggregateAdapter)
                 {
                     m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+                    m_aggregateAdapter->SetGenerateDiffRows(false);
                     m_aggregateAdapter->AddAdapter(m_adapter);
                     m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
                     m_dpe->SetAdapter(m_filterAdapter);

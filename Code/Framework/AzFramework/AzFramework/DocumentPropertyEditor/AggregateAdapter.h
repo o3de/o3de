@@ -26,7 +26,10 @@ namespace AZ::DocumentPropertyEditor
         void RemoveAdapter(DocumentAdapterPtr sourceAdapter);
         void ClearAdapters();
 
-        static bool IsRow(const Dom::Value& domValue);
+        void SetGenerateDiffRows(bool generateDiffRows)
+        {
+            m_generateDiffRows = generateDiffRows;
+        }
 
     protected:
         struct AggregateNode
@@ -104,7 +107,7 @@ namespace AZ::DocumentPropertyEditor
 
         // monotonically increasing frame counter that increments whenever a source adapter gets an update
         unsigned int m_updateFrame = 0;
-
+        bool m_generateDiffRows = true;
         AdapterBuilder m_builder;
     };
 

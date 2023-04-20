@@ -64,11 +64,6 @@ namespace AZ::DocumentPropertyEditor
         NotifyResetDocument();
     }
 
-    bool RowAggregateAdapter::IsRow(const Dom::Value& domValue)
-    {
-        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
-    }
-
     bool RowAggregateAdapter::AggregateNode::HasEntryForAdapter(size_t adapterIndex)
     {
         return (m_pathEntries.size() > adapterIndex && m_pathEntries[adapterIndex] != InvalidEntry);
@@ -227,8 +222,8 @@ namespace AZ::DocumentPropertyEditor
                                         {
                                             NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(
                                                 nodePath,
-                                                (entriesMatch ? GenerateAggregateRow(ancestorRowNode)
-                                                              : GenerateValuesDifferRow(ancestorRowNode))) });
+                                                (entriesMatch || !m_generateDiffRows ? GenerateAggregateRow(ancestorRowNode)
+                                                                                     : GenerateValuesDifferRow(ancestorRowNode))) });
                                         }
                                     }
                                 }
@@ -514,7 +509,8 @@ namespace AZ::DocumentPropertyEditor
 
                     // row children have been added, now add the actual label/PropertyEditor children
                     auto generatedValue =
-                        (currChild->m_allEntriesMatch ? GenerateAggregateRow(currChild.get()) : GenerateValuesDifferRow(currChild.get()));
+                        (currChild->m_allEntriesMatch || !m_generateDiffRows ? GenerateAggregateRow(currChild.get())
+                                                                             : GenerateValuesDifferRow(currChild.get()));
 
                     auto& aggregateRowArray = aggregateRow.GetMutableArray();
                     auto& generatedValueArray = generatedValue.GetArray();
@@ -557,25 +553,28 @@ namespace AZ::DocumentPropertyEditor
                     // it's a bound adapter message, just call it, hooray!
                     messageResult = adapterFunction.value()(message.m_messageParameters);
                 }
-                else if (auto typeField = attributeValue.FindMember(AZ::Attribute::GetTypeField());
-                         typeField != attributeValue.MemberEnd() && typeField->second.IsString() &&
-                         typeField->second.GetString() == Attribute::GetTypeName())
+                else if (attributeValue.IsObject())
                 {
-                    // last chance! Check if it's an invokable Attribute
-                    void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(attributeValue[AZ::Attribute::GetInstanceField()]);
-                    AZ::Attribute* attribute =
-                        AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeValue[AZ::Attribute::GetAttributeField()]);
-
-                    const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
-                    AZ_Assert(canInvoke, "message attribute is not invokable!");
-                    if (canInvoke)
+                    auto typeField = attributeValue.FindMember(AZ::Attribute::GetTypeField());
+                    if (typeField != attributeValue.MemberEnd() && typeField->second.IsString() &&
+                        typeField->second.GetString() == Attribute::GetTypeName())
                     {
-                        messageResult = attribute->DomInvoke(instance, message.m_messageParameters);
+                        // last chance! Check if it's an invokable Attribute
+                        void* instance = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(attributeValue[AZ::Attribute::GetInstanceField()]);
+                        AZ::Attribute* attribute =
+                            AZ::Dom::Utils::ValueToTypeUnsafe<AZ::Attribute*>(attributeValue[AZ::Attribute::GetAttributeField()]);
+
+                        const bool canInvoke = attribute->IsInvokable() && attribute->CanDomInvoke(message.m_messageParameters);
+                        AZ_Assert(canInvoke, "message attribute is not invokable!");
+                        if (canInvoke)
+                        {
+                            messageResult = attribute->DomInvoke(instance, message.m_messageParameters);
+                        }
                     }
                 }
                 else
                 {
-                    AZ_Assert(0, "unhandled message format found!");
+                    AZ_Warning("RowAggregateAdapter", false, "unhandled message format found!");
                 }
             }
         }
