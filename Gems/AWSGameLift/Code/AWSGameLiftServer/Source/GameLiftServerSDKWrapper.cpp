@@ -39,6 +39,12 @@ namespace AWSGameLift
         return Aws::GameLift::Server::GetComputeCertificate();
     }
 
+    Aws::GameLift::GetFleetRoleCredentialsOutcome GameLiftServerSDKWrapper::GetFleetRoleCredentials(
+        Aws::GameLift::Server::Model::GetFleetRoleCredentialsRequest request)
+    {
+        return Aws::GameLift::Server::GetFleetRoleCredentials(request);
+    }
+
     Aws::GameLift::GenericOutcome GameLiftServerSDKWrapper::ProcessReady(
         const Aws::GameLift::Server::ProcessParameters& processParameters)
     {

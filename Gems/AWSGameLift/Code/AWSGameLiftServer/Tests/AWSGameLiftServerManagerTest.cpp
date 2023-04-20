@@ -748,6 +748,18 @@ R"({
         EXPECT_TRUE(actualResult[0].m_playerAttributes.size() == 4);
     }
 
+    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSDisabled_GetEmptyResult)
+    {
+        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
+            .Times(1)
+            .WillOnce(Return(Aws::GameLift::GetComputeCertificateOutcome()));
+
+        AZ_TEST_START_TRACE_SUPPRESSION;
+        auto actualResult = m_serverManager->GetExternalSessionCertificate();
+        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
+        EXPECT_STREQ(actualResult.c_str(), "");
+    }
+
     TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSEnabled_GetExpectedResult)
     {
         AZStd::string expectedResult = "gameliftunittestcertificate.pem";
@@ -763,59 +775,9 @@ R"({
         EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
     }
 
-    TEST_F(GameLiftServerManagerTest, GetExternalSessionCertificate_CallWithTLSDisabled_GetEmptyResult)
-    {
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
-            .Times(1)
-            .WillOnce(Return(Aws::GameLift::GetComputeCertificateOutcome()));
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto actualResult = m_serverManager->GetExternalSessionCertificate();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-        EXPECT_STREQ(actualResult.c_str(), "");
-    }
-
-    TEST_F(GameLiftServerManagerTest, GetExternalSessionPrivateKey_CallWithTLSEnabled_GetExpectedResult)
-    {
-        AZStd::string expectedResult = "gameliftunittestprivatekey.pem";
-        Aws::GameLift::Server::Model::GetComputeCertificateResult certificateResult;
-
-        // TODO - Add path correctly
-        /*
-        certificateResult.SetPrivateKeyPath(expectedResult.c_str());
-        */
-
-        Aws::GameLift::GetComputeCertificateOutcome certificateOutcome(certificateResult);
-
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
-            .Times(1)
-            .WillOnce(Return(certificateOutcome));
-
-        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
-        EXPECT_STREQ(actualResult.c_str(), expectedResult.c_str());
-    }
-
-    TEST_F(GameLiftServerManagerTest, GetExternalSessionSecretAccessKey_CallWithTLSDisabled_GetEmptyResult)
-    {
-        EXPECT_CALL(*(m_serverManager->m_gameLiftServerSDKWrapperMockPtr), GetComputeCertificate())
-            .Times(1)
-            .WillOnce(Return(Aws::GameLift::GetComputeCertificateOutcome()));
-
-        AZ_TEST_START_TRACE_SUPPRESSION;
-        auto actualResult = m_serverManager->GetExternalSessionPrivateKey();
-        AZ_TEST_STOP_TRACE_SUPPRESSION(1);
-        EXPECT_STREQ(actualResult.c_str(), "");
-    }
-
     TEST_F(GameLiftServerManagerTest, GetInternalSessionCertificate_Call_GetEmptyResult)
     {
         auto actualResult = m_serverManager->GetInternalSessionCertificate();
-        EXPECT_STREQ(actualResult.c_str(), "");
-    }
-
-    TEST_F(GameLiftServerManagerTest, GetInternalSessionPrivateKey_Call_GetEmptyResult)
-    {
-        auto actualResult = m_serverManager->GetInternalSessionPrivateKey();
         EXPECT_STREQ(actualResult.c_str(), "");
     }
 
