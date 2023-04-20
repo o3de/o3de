@@ -258,10 +258,11 @@ namespace AZ
                             continue;
                         }
                     }
-                    else if (worklistData->m_hasExcludeFrustum && ShapeIntersection::Classify(worklistData->m_excludeFrustum, c->m_cullData.m_boundingSphere) == IntersectResult::Interior)
+
+                    if (worklistData->m_hasExcludeFrustum &&
+                        ShapeIntersection::Classify(worklistData->m_excludeFrustum, c->m_cullData.m_boundingSphere) == IntersectResult::Interior)
                     {
-                        // Only check the exclusion frustum against entries in nodes that are contained. In the case of shadow cascades, it's
-                        // unlikely that an intersecting node would have entries that are contained in the exclusion frustum.
+                        // Skip item contained in exclude frustum.
                         continue;
                     }
 

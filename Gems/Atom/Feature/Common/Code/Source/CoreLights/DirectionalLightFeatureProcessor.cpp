@@ -213,7 +213,7 @@ namespace AZ
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
 
-                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_BlendBetweenCascadesEnableName, AZ::RPI::ShaderOptionValue{cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetwenCascades });
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_BlendBetweenCascadesEnableName, AZ::RPI::ShaderOptionValue{cascadeCount > 1 && m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_blendBetweenCascades });
 
                 ShadowProperty& property = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
                 bool segmentsNeedUpdate = property.m_segments.empty();
@@ -595,7 +595,7 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::SetCascadeBlendingEnabled(LightHandle handle, bool enable)
         {
-            m_shadowProperties.GetData(handle.GetIndex()).m_blendBetwenCascades = enable;
+            m_shadowProperties.GetData(handle.GetIndex()).m_blendBetweenCascades = enable;
         }
 
         void DirectionalLightFeatureProcessor::SetShadowBias(LightHandle handle, float bias) 
@@ -1345,8 +1345,8 @@ namespace AZ
             {
                 const float invShadowmapSize = 1.0f / GetShadowmapSizeFromCameraView(handle, segmentIt.first);
 
-                Vector3 previousAabbMin;
-                Vector3 previousAabbMax;
+                Vector3 previousAabbMin = Vector3::CreateZero();
+                Vector3 previousAabbMax = Vector3::CreateZero();
                 float previousNear = 0.0f;
                 float previousFar = 0.0f;
 
@@ -1376,11 +1376,15 @@ namespace AZ
 
                         if (cascadeIndex > 0 && r_excludeItemsInSmallerShadowCascades)
                         {
+                            // Build a matrix (which will be turned into a frustum during culling) to exclude items completely
+                            // contained in the previous cascade.
+
                             Vector3 excludeAabbMin = previousAabbMin;
                             Vector3 excludeAabbMax = previousAabbMax;
 
-                            if (property.m_blendBetwenCascades)
+                            if (property.m_blendBetweenCascades)
                             {
+                                // Adjust the size of the exclude matrix to be slightly smaller due to the blend region.
                                 Vector3 previousAabbDiff = previousAabbMin - previousAabbMax;
                                 previousAabbDiff *= CascadeBlendArea;
                                 excludeAabbMin += previousAabbDiff;
@@ -1744,7 +1748,7 @@ namespace AZ
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
                 m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
-                m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetwenCascades);
+                m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetweenCascades);
                 m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
                 m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
             }

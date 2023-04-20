@@ -92,10 +92,15 @@ class DirectionalShadowCalculator
     Texture2DArray<float> m_directionalLightExponentialShadowmap;        
 };
 
+// Find all shadow cascades which could affect a sample. Typically min and max will be the same, however in cases where the view direction lines up with the 
+// light direction, and the sample is far away, there may be several cascades which could contain occluders for that sample. This is important because
+// shadow cascades might not render objects in them which are already covered in smaller cascades.
 void DirectionalShadowCalculator::GetShadowCascadeRange(float3 shadowCoords[ViewSrg::MaxCascadeCount], int cascadeCount, uint shadowmapSize, out int minShadowCascade, out int maxShadowCascade)
 {
     float xyMax = shadowmapSize - PIXEL_MARGIN;
     float xyMin = PIXEL_MARGIN;
+
+    // Initilaize min/max to -1. If the sample isn't inside any cascade, then -1 will result in no shadowing.
     minShadowCascade = -1;
     maxShadowCascade = -1;
 
@@ -105,8 +110,13 @@ void DirectionalShadowCalculator::GetShadowCascadeRange(float3 shadowCoords[View
         shadowCoord.xy *= shadowmapSize;
         if (all(shadowCoord.xy >= xyMin) && all(shadowCoord.xy <= xyMax))
         {
+            // The shadow coord is inside the shadow frustum in the xy direction. Subsequent shadow cascades will be larger,
+            // so they do not need to be explicitly checked in the xy direction.
             minShadowCascade = index;
-            // continue searching for max cascade if this shadow coord's depth is beyond the min cascade
+
+            // Continue searching for max cascade if this shadow coord's depth is beyond the min cascade (ie, the light ray
+            // passes through this shadow frustum before hitting the sample). For most pixels, the shadow coord's z will already
+            // be within the frustum's z extent and this loop will not execute.
             while (index < m_cascadeCount && shadowCoords[index].z > (1.0 - DEPTH_MARGIN))
             {
                 ++index;
@@ -196,6 +206,14 @@ float DirectionalShadowCalculator::GetVisibility()
 {
     ComputeShadowCoords();
 
+    float lit = 1.0;
+
+    [branch]
+    if (m_maxCascade < 0)
+    {
+        return lit;
+    }
+
     // Todo: slope bias exhibits noticeable artifacts, especially with sharp normal values derived from fullscreen
     // depth values which accentuate geometry polygons. Revisit the math and determine if this can be remedied or
     // whether it should be removed altogether. In the meantime, normal shadow bias is plenty capable.
@@ -228,14 +246,6 @@ float DirectionalShadowCalculator::GetVisibility()
         {
             m_slopeBias[cascadeIndex] = 0;
         }
-    }
-
-    float lit = 1.0;
-
-    [branch]
-    if (m_maxCascade < 0)
-    {
-        return lit;
     }
 
     switch(m_filterMode)
@@ -375,7 +385,7 @@ float DirectionalShadowCalculator::GetVisibilityFromLightEsmPcf()
                 static const float pcfFallbackThreshold = 1.04;
                 if (ratio > pcfFallbackThreshold)
                 {
-                    ratio = GetVisibilityFromLightPcf();
+                    ratio = SamplePcfBicubic(shadowCoord, indexOfCascade);
                 }
                 return saturate(ratio);
             }

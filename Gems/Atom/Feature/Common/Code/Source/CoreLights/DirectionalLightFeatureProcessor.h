@@ -189,7 +189,7 @@ namespace AZ
                 // with the ddx/ddy functions. 
                 bool m_isReceiverPlaneBiasEnabled = true;
 
-                bool m_blendBetwenCascades = false;
+                bool m_blendBetweenCascades = false;
 
                 // Fullscreen Blur...
 

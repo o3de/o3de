@@ -273,12 +273,12 @@ namespace AZ
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
         }
 
-        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClip)
+        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude)
         {
-            if (viewToClip)
+            if (viewToClipExclude)
             {
-                m_viewToClipExcludeMatrix.emplace(*viewToClip);
-                m_worldToClipExcludeMatrix = *viewToClip * m_worldToViewMatrix;
+                m_viewToClipExcludeMatrix = *viewToClipExclude;
+                m_worldToClipExcludeMatrix = *viewToClipExclude * m_worldToViewMatrix;
             }
             else
             {
