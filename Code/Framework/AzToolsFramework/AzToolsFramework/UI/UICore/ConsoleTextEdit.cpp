@@ -8,8 +8,8 @@
 
 #include <AzCore/Debug/Trace.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
+#include <AzToolsFramework/Editor/ActionManagerUtils.h>
 #include <AzToolsFramework/UI/UICore/ConsoleTextEdit.hxx>
 
 #include <QMenu>
@@ -90,18 +90,12 @@ namespace AzToolsFramework
             }
         );
 
-        if (auto hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get())
-        {
-            hotKeyManagerInterface->AssignWidgetToActionContext(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
-        }
+        AssignWidgetToActionContextHelper(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
     }
 
     ConsoleTextEdit::~ConsoleTextEdit()
     {
-        if (auto hotKeyManagerInterface = AZ::Interface<HotKeyManagerInterface>::Get())
-        {
-            hotKeyManagerInterface->RemoveWidgetFromActionContext(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
-        }
+        RemoveWidgetFromActionContextHelper(EditorIdentifiers::EditorConsoleActionContextIdentifier, this);
     }
 
     bool ConsoleTextEdit::searchEnabled()

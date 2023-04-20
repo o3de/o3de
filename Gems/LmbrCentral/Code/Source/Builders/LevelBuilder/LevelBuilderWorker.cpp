@@ -194,10 +194,6 @@ namespace LevelBuilder
         //  The defines exist in CryEngine code that we can't link from here.
         //  We want to minimize engine changes to make it easier for game teams to incorporate these dependency improvements.
 
-        // CCullThread::LoadLevel attempts to load the occluder mesh, if it exists.
-        //      AZ::IO::HandleType fileHandle = gEnv->pCryPak->FOpen((string(pFolderName) + "/occluder.ocm").c_str(), "rbx");
-        AddLevelRelativeSourcePathProductDependency("occluder.ocm", sourceLevelPakPath, productPathDependencies);
-
         // C3DEngine::LoadLevel attempts to load this file for the current level, if it exists.
         //      GetISystem()->LoadConfiguration(GetLevelFilePath(LEVEL_CONFIG_FILE));
         AddLevelRelativeSourcePathProductDependency("level.cfg", sourceLevelPakPath, productPathDependencies);

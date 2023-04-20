@@ -22,7 +22,6 @@
 
 #include "Objects/EntityObject.h"
 #include "ViewManager.h"
-#include "Export/ExportManager.h"
 #include <Editor/Util/fastlib.h>
 
 #include "QtUtilWin.h"

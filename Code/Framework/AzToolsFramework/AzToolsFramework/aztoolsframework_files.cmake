@@ -26,6 +26,9 @@ set(FILES
     ActionManager/HotKey/HotKeyManager.h
     ActionManager/HotKey/HotKeyManagerInterface.h
     ActionManager/HotKey/HotKeyManagerInternalInterface.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.cpp
+    ActionManager/HotKey/HotKeyWidgetRegistrationHelper.h
+    ActionManager/HotKey/HotKeyWidgetRegistrationInterface.h
     ActionManager/Menu/EditorMenu.cpp
     ActionManager/Menu/EditorMenu.h
     ActionManager/Menu/EditorMenuBar.cpp
@@ -402,26 +405,28 @@ set(FILES
     UI/DocumentPropertyEditor/ContainerActionButtonHandler.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.h
     UI/DocumentPropertyEditor/DPEComponentAdapter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.cpp
-    UI/DocumentPropertyEditor/ValueStringFilter.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
+    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
     UI/DocumentPropertyEditor/FilteredDPE.cpp
     UI/DocumentPropertyEditor/FilteredDPE.h
     UI/DocumentPropertyEditor/FilteredDPE.ui
+    UI/DocumentPropertyEditor/GenericButtonHandler.cpp
+    UI/DocumentPropertyEditor/GenericButtonHandler.h
+    UI/DocumentPropertyEditor/IPropertyEditor.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
+    UI/DocumentPropertyEditor/KeyQueryDPE.h
+    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/PropertyEditorToolsSystemInterface.h
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.cpp
     UI/DocumentPropertyEditor/PropertyEditorToolsSystem.h
     UI/DocumentPropertyEditor/PropertyHandlerWidget.cpp
     UI/DocumentPropertyEditor/PropertyHandlerWidget.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditor.h
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.cpp
-    UI/DocumentPropertyEditor/DocumentPropertyEditorSettings.h
-    UI/DocumentPropertyEditor/IPropertyEditor.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.cpp
-    UI/DocumentPropertyEditor/KeyQueryDPE.h
-    UI/DocumentPropertyEditor/KeyQueryDPE.ui
     UI/DocumentPropertyEditor/SettingsRegistrar.cpp
     UI/DocumentPropertyEditor/SettingsRegistrar.h
+    UI/DocumentPropertyEditor/ValueStringFilter.cpp
+    UI/DocumentPropertyEditor/ValueStringFilter.h
     UI/DPEDebugViewer/DPEDebugModel.cpp
     UI/DPEDebugViewer/DPEDebugModel.h
     UI/DPEDebugViewer/DPEDebugTextView.cpp

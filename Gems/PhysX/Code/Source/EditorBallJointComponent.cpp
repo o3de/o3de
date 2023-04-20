@@ -222,22 +222,16 @@ namespace PhysX
         }
 
         const AZ::EntityId entityId = GetEntityId();
-        AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId);
+        AZ::Transform jointWorldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(entityId) *
+            GetTransformValue(PhysX::JointsComponentModeCommon::ParameterNames::Transform);
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         // scaleMultiply will represent a scale for the debug draw that makes it remain the same size on screen
-        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(worldTransform.GetTranslation(), cameraState);
-
-        AZ::Transform localTransform;
-        EditorJointRequestBus::EventResult(localTransform,
-            AZ::EntityComponentIdPair(entityId, GetId()),
-            &EditorJointRequests::GetTransformValue, 
-            PhysX::JointsComponentModeCommon::ParameterNames::Transform);
+        float scaleMultiply = AzToolsFramework::CalculateScreenToWorldMultiplier(jointWorldTransform.GetTranslation(), cameraState);
 
         AZ::u32 stateBefore = debugDisplay.GetState();
         debugDisplay.CullOff();
 
-        debugDisplay.PushMatrix(worldTransform);
-        debugDisplay.PushMatrix(localTransform);
+        debugDisplay.PushMatrix(jointWorldTransform);
 
         const float xAxisArrowLength = 2.0f * scaleMultiply;
         debugDisplay.SetColor(AZ::Color(1.0f, 0.0f, 0.0f, 1.0f));
@@ -276,8 +270,7 @@ namespace PhysX
             debugDisplay.DrawTri(AZ::Vector3(0.0f, 0.0f, 0.0f), ellipseSamples[i], ellipseSamples[nextIndex]);
         }
 
-        debugDisplay.PopMatrix();//pop local transform
-        debugDisplay.PopMatrix();//pop world transform
+        debugDisplay.PopMatrix();//pop joint world transform
 
         debugDisplay.SetState(stateBefore);
     }

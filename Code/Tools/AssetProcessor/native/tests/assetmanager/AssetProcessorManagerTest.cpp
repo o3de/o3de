@@ -2403,7 +2403,10 @@ bool SearchDependencies(AzToolsFramework::AssetDatabase::ProductDependencyDataba
     return false;
 }
 
-void VerifyDependencies(AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer, AZStd::initializer_list<AZ::Data::AssetId> assetIds, AZStd::initializer_list<const char*> unresolvedPaths = {})
+void VerifyDependencies(
+    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer,
+    AZStd::vector<AZ::Data::AssetId> assetIds, 
+    AZStd::initializer_list<const char*> unresolvedPaths = {})
 {
     EXPECT_EQ(dependencyContainer.size(), assetIds.size() + unresolvedPaths.size());
 
@@ -2440,6 +2443,88 @@ void VerifyDependencies(AzToolsFramework::AssetDatabase::ProductDependencyDataba
 
         ASSERT_TRUE(found) << "Unresolved path " << unresolvedPath << " was not found";
     }
+}
+
+void VerifyDependencies(
+    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer,
+    AZStd::initializer_list<AZ::Data::AssetId> assetIds,
+    AZStd::initializer_list<const char*> unresolvedPaths = {})
+{
+    VerifyDependencies(dependencyContainer, AZStd::vector<AZ::Data::AssetId>(assetIds), unresolvedPaths);
+}
+
+void PathDependencyTest::RunWildcardDependencyTestOnPaths(
+    const AZStd::string& wildcardDependency,
+    const AZStd::vector<AZStd::string>& expectedMatchingPaths,
+    const AZStd::vector<AZStd::string>& expectedNotMatchingPaths)
+{
+    using namespace AssetProcessor;
+    using namespace AssetBuilderSDK;
+
+    AZStd::vector<AZ::Data::AssetId> expectedMatchingProducts;
+
+    for (const auto& assetName : expectedMatchingPaths)
+    {
+        TestAsset testAsset(assetName.c_str());
+
+        bool result = ProcessAsset(testAsset, { { ".txt" }, {} });
+        ASSERT_TRUE(result) << "Failed to Process Assets";
+
+        expectedMatchingProducts.push_back(testAsset.m_products[0]);
+    }
+
+    for (const auto& assetName : expectedNotMatchingPaths)
+    {
+        TestAsset testAsset(assetName.c_str());
+
+        bool result = ProcessAsset(testAsset, { { ".txt" }, {} });
+        ASSERT_TRUE(result) << "Failed to Process Assets";
+    }
+
+    TestAsset primaryFile("test_text");
+    bool result =
+        ProcessAsset(primaryFile, { { ".asset" }, {} }, { { wildcardDependency.c_str(), ProductPathDependencyType::ProductFile } });
+    ASSERT_TRUE(result) << "Failed to Process main test asset";
+
+    AzToolsFramework::AssetDatabase::ProductDependencyDatabaseEntryContainer dependencyContainer;
+    result = m_sharedConnection->GetProductDependencies(dependencyContainer);
+    ASSERT_TRUE(result) << "Failed to Get Product Dependencies";
+
+    VerifyDependencies(dependencyContainer, expectedMatchingProducts, { wildcardDependency.c_str() });
+}
+
+// Wildcard matching does not extend past directory markers.
+// So a dependency on "Root/Path/*.txt" will only match text files in Root/Path, and not subfolders.
+// For example, "Root/Path/Subfolder/file.txt" would not be matched.
+TEST_F(PathDependencyTest, WildcardDependencies_WildcardWithPath_ResolveCorrectly)
+{
+    RunWildcardDependencyTestOnPaths(
+        "root/path/*.txt",
+        // Should match - this file is in the matching subfolder
+        /*expectedMatchingPaths*/ { "root/path/file1.txt" },
+        /*expectedNotMatchingPaths*/
+        { // Should not match - This is in a subfolder, and wildcards don't cross directory markers.
+          "root/path/subfolder/file3.txt",
+          // Should not match - This is in the root folder, and wildcards don't cross directory markers.
+          "root/file4.txt" });
+}
+
+TEST_F(PathDependencyTest, WildcardDependencies_WildcardWithSecondExtension_MatchesFile)
+{
+    RunWildcardDependencyTestOnPaths(
+        "root/path/*.txt",
+        // Should match - the matching rules with wildcard here will match if there are multiple extensions and one matches.
+        /*expectedMatchingPaths*/ { "root/path/file1.txt.ext2" },
+        /*expectedNotMatchingPaths*/ {});
+}
+
+TEST_F(PathDependencyTest, WildcardDependencies_WildcardOnFilenameNoDirectories_MatchesAll)
+{
+    RunWildcardDependencyTestOnPaths(
+        "*.txt",
+        // Should match - If a directory is not included in the search, it matches all files regardless of directory.
+        /*expectedMatchingPaths*/ { "root/path/to/file1.txt", "another/folder/path/file2.txt", "file3.txt" },
+        /*expectedNotMatchingPaths*/ {});
 }
 
 TEST_F(DuplicateProcessTest, SameAssetProcessedTwice_DependenciesResolveWithoutError)

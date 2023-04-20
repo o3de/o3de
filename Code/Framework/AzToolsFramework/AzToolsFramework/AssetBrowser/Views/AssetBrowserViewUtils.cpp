@@ -13,11 +13,16 @@
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Network/AssetProcessorConnection.h>
 #include <AzFramework/StringFunc/StringFunc.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerBus.h>
+#include <AzToolsFramework/AssetBrowser/Previewer/PreviewerFactory.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
+#include <AzToolsFramework/AssetBrowser/Entries/FolderAssetBrowserEntry.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeViewDialog.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetSelectionModel.h>
+#include <AzToolsFramework/Thumbnails/ThumbnailerBus.h>
 
 #include <AzQtComponents/Components/Widgets/MessageBox.h>
 
@@ -509,6 +514,110 @@ namespace AzToolsFramework
                     }
                 }
             }
+        }
+        QVariant AssetBrowserViewUtils::GetThumbnail(const AssetBrowserEntry* entry)
+        {
+            // Check if this entry is a folder
+            QString iconPathToUse;
+            AZ::IO::FixedMaxPath engineRoot = AZ::Utils::GetEnginePath();
+            AZ_Assert(!engineRoot.empty(), "Engine Root not initialized");
+            if (auto folderEntry = azrtti_cast<const FolderAssetBrowserEntry*>(entry))
+            {
+                if (folderEntry->IsGemFolder())
+                {
+                    static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/GemFolder_80.svg";
+                    iconPathToUse = (engineRoot / FolderIconPath).c_str();
+                }
+                else
+                {
+                    static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_80.svg";
+                    iconPathToUse = (engineRoot / FolderIconPath).c_str();
+                }
+                return iconPathToUse;
+            }
+
+            // Check if this entry has a custom previewer, if so use that thumbnail
+            AZ::EBusAggregateResults<const PreviewerFactory*> factories;
+            PreviewerRequestBus::BroadcastResult(factories, &PreviewerRequests::GetPreviewerFactory, entry);
+            for (const auto factory : factories.values)
+            {
+                if (factory)
+                {
+                    SharedThumbnail thumbnail;
+
+                    ThumbnailerRequestBus::BroadcastResult(
+                        thumbnail, &ThumbnailerRequests::GetThumbnail, entry->GetThumbnailKey());
+                    AZ_Assert(thumbnail, "The shared thumbnail was not available from the ThumbnailerRequestBus.");
+                    if (thumbnail && thumbnail->GetState() != Thumbnail::State::Failed)
+                    {
+                        return thumbnail->GetPixmap();
+                    }
+                }
+            }
+            // Helper function to find the full path for a given icon
+            auto findIconPath = [](QString resultPath)
+            {
+                // is it an embedded resource or absolute path?
+                bool isUsablePath =
+                    (resultPath.startsWith(":") || (!AzFramework::StringFunc::Path::IsRelative(resultPath.toUtf8().constData())));
+
+                if (!isUsablePath)
+                {
+                    // getting here means it needs resolution.  Can we find the real path of the file?  This also searches in gems
+                    // for sources.
+                    bool foundIt = false;
+                    AZStd::string watchFolder;
+                    AZ::Data::AssetInfo assetInfo;
+                    AssetSystemRequestBus::BroadcastResult(
+                        foundIt,
+                        &AssetSystemRequestBus::Events::GetSourceInfoBySourcePath,
+                        resultPath.toUtf8().constData(),
+                        assetInfo,
+                        watchFolder);
+
+                    if (foundIt)
+                    {
+                        // the absolute path is join(watchfolder, relativepath); // since its relative to the watch folder.
+                        resultPath = QDir(watchFolder.c_str()).absoluteFilePath(assetInfo.m_relativePath.c_str());
+                    }
+                }
+                return resultPath;
+            };
+
+            // Check if this is a product asset with an overridden icon
+            if (auto productEntry = azrtti_cast<const ProductAssetBrowserEntry*>(entry))
+            {
+                AZ::AssetTypeInfoBus::EventResult(iconPathToUse, productEntry->GetAssetType(), &AZ::AssetTypeInfo::GetBrowserIcon);
+                if (!iconPathToUse.isEmpty())
+                {
+                    return findIconPath(iconPathToUse);
+                }
+            }
+            // Check if this asset has a custom icon
+            AZ::EBusAggregateResults<SourceFileDetails> results;
+            AssetBrowserInteractionNotificationBus::BroadcastResult(
+                results, &AssetBrowserInteractionNotificationBus::Events::GetSourceFileDetails, entry->GetFullPath().c_str());
+
+            auto it = AZStd::find_if(
+                results.values.begin(),
+                results.values.end(),
+                [](const SourceFileDetails& details)
+                {
+                    return !details.m_sourceThumbnailPath.empty();
+                });
+
+            if (it != results.values.end())
+            {
+                iconPathToUse = findIconPath(QString::fromUtf8(it->m_sourceThumbnailPath.c_str()));
+            }
+
+            // No icon found - use default.
+            if (iconPathToUse.isEmpty())
+            {
+                static constexpr const char* DefaultFileIconPath = "Assets/Editor/Icons/AssetBrowser/Default_16.svg";
+                iconPathToUse = (engineRoot / DefaultFileIconPath).c_str();
+            }
+            return iconPathToUse;
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

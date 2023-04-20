@@ -25,6 +25,7 @@
 #include <QStackedWidget>
 #include <QLabel>
 #include <QSizePolicy>
+#include <QFileInfo>
 
 namespace O3DE::ProjectManager
 {
@@ -57,6 +58,8 @@ namespace O3DE::ProjectManager
 
         connect(m_projectGemCatalogScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
         connect(m_gemRepoScreen, &GemRepoScreen::OnRefresh, m_projectGemCatalogScreen, &ProjectGemCatalogScreen::Refresh);
+        connect(static_cast<ScreensCtrl*>(parent), &ScreensCtrl::NotifyProjectRemoved, m_projectGemCatalogScreen, &GemCatalogScreen::NotifyProjectRemoved);
+
 
         // When there are multiple project templates present, we re-gather the gems when changing the selected the project template.
         connect(m_newProjectSettingsScreen, &NewProjectSettingsScreen::OnTemplateSelectionChanged, this, [=](int oldIndex, [[maybe_unused]] int newIndex)
@@ -97,6 +100,7 @@ namespace O3DE::ProjectManager
         vLayout->addWidget(buttons);
 
         m_primaryButton = buttons->addButton(tr("Create Project"), QDialogButtonBox::ApplyRole);
+        m_primaryButton->setProperty("primary", true);
         connect(m_primaryButton, &QPushButton::clicked, this, &CreateProjectCtrl::HandlePrimaryButton);
         connect(m_newProjectSettingsScreen, &ScreenWidget::ChangeScreenRequest, this, &CreateProjectCtrl::OnChangeScreenRequest);
 
@@ -118,7 +122,7 @@ namespace O3DE::ProjectManager
     // Called when pressing "Create New Project"
     void CreateProjectCtrl::NotifyCurrentScreen()
     {
-        ScreenWidget* currentScreen = reinterpret_cast<ScreenWidget*>(m_stack->currentWidget());
+        ScreenWidget* currentScreen = static_cast<ScreenWidget*>(m_stack->currentWidget());
         if (currentScreen)
         {
             currentScreen->NotifyCurrentScreen();
@@ -201,13 +205,32 @@ namespace O3DE::ProjectManager
     {
         if (m_stack->currentIndex() < m_stack->count())
         {
-            if(CurrentScreenIsValid())
+            // special case where we need to download the template before proceeding
+            if (m_stack->currentWidget() == m_newProjectSettingsScreen)
+            {
+                if (m_newProjectSettingsScreen->GetProjectTemplatePath().isEmpty() &&
+                    !m_newProjectSettingsScreen->IsDownloadingTemplate())
+                {
+                    m_newProjectSettingsScreen->ShowDownloadTemplateDialog();
+                    return;
+                }
+                else if (m_newProjectSettingsScreen->IsDownloadingTemplate())
+                {
+                    QMessageBox::warning(this, tr("Cannot configure gems"), tr("Cannot configure gems until the template has finished downloading."));
+                    return;
+                }
+            }
+
+            if(auto outcome = CurrentScreenIsValid(); outcome.IsSuccess())
             {
                 m_stack->setCurrentIndex(m_stack->currentIndex() + 1);
-
                 Update();
             }
-            else
+            else if (!outcome.GetError().isEmpty())
+            {
+                QMessageBox::warning(this, tr("Cannot continue"), outcome.GetError());
+            }
+            else 
             {
                 QMessageBox::warning(this, tr("Invalid project settings"), tr("Please correct the indicated project settings and try again."));
             }
@@ -229,14 +252,14 @@ namespace O3DE::ProjectManager
         CreateProject();
     }
 
-    bool CreateProjectCtrl::CurrentScreenIsValid()
+    AZ::Outcome<void, QString> CreateProjectCtrl::CurrentScreenIsValid()
     {
         if (m_stack->currentWidget() == m_newProjectSettingsScreen)
         {
-            return m_newProjectSettingsScreen->Validate().IsSuccess();
+            return m_newProjectSettingsScreen->Validate();
         }
 
-        return true;
+        return AZ::Success();
     }
 
     void CreateProjectCtrl::CreateProject()
@@ -295,6 +318,11 @@ namespace O3DE::ProjectManager
     void CreateProjectCtrl::ReinitGemCatalogForSelectedTemplate()
     {
         const QString projectTemplatePath = m_newProjectSettingsScreen->GetProjectTemplatePath();
+        if (projectTemplatePath.isEmpty())
+        {
+            return;
+        }
+
         m_projectGemCatalogScreen->ReinitForProject(projectTemplatePath + "/Template");
     }
 } // namespace O3DE::ProjectManager

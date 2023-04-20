@@ -7,6 +7,7 @@
  */
 #include <AzQtComponents/Components/Widgets/AssetFolderThumbnailView.h>
 
+#include <AzCore/Debug/Trace.h>
 #include <AzQtComponents/Components/Style.h>
 
 AZ_PUSH_DISABLE_WARNING(4244 4251 4800, "-Wunknown-warning-option") // 4244: 'initializing': conversion from 'int' to 'float', possible loss of data
@@ -162,7 +163,8 @@ namespace AzQtComponents
             QIcon icon;
             if (const auto& path = qVariant.value<QString>(); !path.isEmpty())
             {
-                icon.addFile(path, rect.size(), QIcon::Normal, QIcon::Off);
+                icon.addFile(path, imageRect.size(), QIcon::Normal, QIcon::Off);
+                AZ_Assert(!icon.isNull(), "Asset Browser Icon not found for file '%s'", path.toUtf8().constData());
                 icon.paint(painter, imageRect);
             }
             else if (const auto& pixmap = qVariant.value<QPixmap>(); !pixmap.isNull())
@@ -411,13 +413,6 @@ namespace AzQtComponents
     {
         setItemDelegate(m_delegate);
 
-        // Enable drag/drop.
-        setDragEnabled(true);
-        setAcceptDrops(true);
-        setDragDropMode(QAbstractItemView::DragDrop);
-        setDropIndicatorShown(true);
-        setDragDropOverwriteMode(true);
-
         connect(
             m_delegate,
             &AssetFolderThumbnailViewDelegate::RenameThumbnail,
@@ -426,6 +421,13 @@ namespace AzQtComponents
             {
                 emit afterRename(value);
             });
+
+        // Enable drag/drop.
+        setDragEnabled(true);
+        setAcceptDrops(true);
+        setDragDropMode(QAbstractItemView::DragDrop);
+        setDropIndicatorShown(true);
+        setDragDropOverwriteMode(true);
     }
 
     AssetFolderThumbnailView::~AssetFolderThumbnailView() = default;
@@ -847,29 +849,9 @@ namespace AzQtComponents
 
     void AssetFolderThumbnailView::contextMenuEvent(QContextMenuEvent* event)
     {
-
         const auto p = event->pos() + QPoint{ horizontalOffset(), verticalOffset() };
         auto idx = indexAtPos(p);
-
-        if (idx.isValid() && m_showSearchResultsMode)
-        {
-            QMenu* menu = new QMenu;
-            auto action = menu->addAction("Show In Folder");
-            connect(
-                action,
-                &QAction::triggered,
-                this,
-                [this, idx]()
-                {
-                    emit showInFolderTriggered(idx);
-                });
-            menu->exec(event->globalPos());
-            delete menu;
-        }
-        else
-        {
-            emit contextMenu(idx);
-        }
+        emit contextMenu(idx);
     }
 
     int AssetFolderThumbnailView::rootThumbnailSizeInPixels() const
@@ -1063,6 +1045,11 @@ namespace AzQtComponents
     void AssetFolderThumbnailView::SetShowSearchResultsMode(bool searchMode)
     {
         m_showSearchResultsMode = searchMode;
+    }
+
+    bool AssetFolderThumbnailView::InSearchResultsMode() const
+    {
+        return m_showSearchResultsMode;
     }
 } // namespace AzQtComponents
 

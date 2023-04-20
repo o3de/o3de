@@ -205,7 +205,7 @@ namespace AzToolsFramework
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".bnk"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/Audio_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/BNK_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".cgf"))
@@ -215,12 +215,12 @@ namespace AzToolsFramework
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".font"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/Font_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/Font_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".fontfamily"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/Font_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/FontFamily_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".i_caf"))
@@ -235,12 +235,12 @@ namespace AzToolsFramework
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".lua"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/Lua_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/Lua_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".prefab"))
                 {
-                    return SourceFileDetails(":Entity/prefab_edit.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/Prefab_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), AzToolsFramework::SliceUtilities::GetSliceFileExtension().c_str()))
@@ -255,37 +255,73 @@ namespace AzToolsFramework
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".ttf"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/Font_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/Font_80.svg");
                 }
 
                 if (AzFramework::StringFunc::Equal(extension.c_str(), ".xml"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/XML_16.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/XML_80.svg");
                 }
 
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".uicanvas"))
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".assetinfo"))
                 {
-                    return SourceFileDetails("Icons/AssetBrowser/UICanvas.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/AssetInfo_80.svg");
                 }
 
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".pxmesh"))
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".shader"))
                 {
-                    return SourceFileDetails("Icons/Components/PhysXMeshCollider.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/Shader_80.svg");
                 }
 
-                if (AzFramework::StringFunc::Equal(extension.c_str(), ".procprefab"))
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".py"))
                 {
-                    return SourceFileDetails("Icons/Components/Box.svg");
+                    return SourceFileDetails("Icons/AssetBrowser/PY_80.svg");
                 }
 
-                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr" };
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".txt"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/TXT_80.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".json"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/JSON_80.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".wav"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/WAV_80.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".wwu"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/WWU_80.svg");
+                }
+
+                if (AzFramework::StringFunc::Equal(extension.c_str(), ".wproj"))
+                {
+                    return SourceFileDetails("Icons/AssetBrowser/WPROJ_80.svg");
+                }
+
+                static const char* CFormats[] = { ".c", ".cpp", ".cxx", ".h", ".hpp", ".hxx", ".inl" };
+
+                for (unsigned int CImageFormats = 0, numFormats = AZ_ARRAY_SIZE(CFormats); CImageFormats < numFormats; ++CImageFormats)
+                {
+                    const char* sourceFormatExtension = CFormats[CImageFormats];
+                    if (AzFramework::StringFunc::Equal(extension.c_str(), sourceFormatExtension))
+                    {
+                        return SourceFileDetails("Icons/AssetBrowser/CPP_80.svg");
+                    }
+                }
+
+                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr", ".svg" };
 
                 for (unsigned int sourceImageFormatIndex = 0, numSources = AZ_ARRAY_SIZE(sourceFormats); sourceImageFormatIndex < numSources; ++sourceImageFormatIndex)
                 {
                     const char* sourceFormatExtension = sourceFormats[sourceImageFormatIndex];
                     if (AzFramework::StringFunc::Equal(extension.c_str(), sourceFormatExtension))
                     {
-                        return SourceFileDetails("Icons/AssetBrowser/Image_16.svg");
+                        return SourceFileDetails("Icons/AssetBrowser/Image_80.svg");
                     }
                 }
             }

@@ -196,7 +196,6 @@ public:
     void OnDocumentationAWSSupport();
     void OnCommercePublish();
     void OnCommerceMerch();
-    void OnExportSelectedObjects();
     void OnEditHold();
     void OnEditFetch();
     void OnFileExportToGameNoSurfaceTexture();
@@ -395,8 +394,6 @@ private:
 public:
     void ExportLevel(bool bExportToGame, bool bExportTexture, bool bAutoExport);
     static bool Command_ExportToEngine();
-
-    void OnFileExportOcclusionMesh();
 };
 
 //////////////////////////////////////////////////////////////////////////

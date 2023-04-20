@@ -85,4 +85,16 @@ namespace ${Name}
             return;
         }
     }
+
+    void Editor${Name}Component::OnEntityVisibilityChanged(bool visibility)
+    {
+        if (visibility)
+        {
+            m_controller.EnableFeatureProcessor(GetEntityId());
+        }
+        else
+        {
+            m_controller.DisableFeatureProcessor();
+        }
+    }
 }

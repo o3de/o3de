@@ -276,16 +276,12 @@ set(FILES
     Include/ICommandManager.h
     Include/IDisplayViewport.h
     Include/IEditorClassFactory.h
-    Include/IExportManager.h
-    Include/IGizmoManager.h
-    Include/IIconManager.h
     Include/ILogFile.h
     Include/IKeyTimeSet.h
     Include/IObjectManager.h
     Include/IPlugin.h
     Include/IPreferencesPage.h
     Include/ISourceControl.h
-    Include/ITransformManipulator.h
     Include/ObjectEvent.h
     Util/AffineParts.cpp
     Objects/BaseObject.cpp
@@ -417,12 +413,6 @@ set(FILES
     Dialogs/PythonScriptsDialog.ui
     Dialogs/Generic/UserOptions.cpp
     Dialogs/Generic/UserOptions.h
-    Export/ExportManager.cpp
-    Export/ExportManager.h
-    Export/OBJExporter.cpp
-    Export/OBJExporter.h
-    Export/OCMExporter.cpp
-    Export/OCMExporter.h
     EditorFileMonitor.cpp
     EditorFileMonitor.h
     Include/IEditorFileMonitor.h
@@ -442,7 +432,6 @@ set(FILES
     LevelIndependentFileMan.h
     LogFileImpl.cpp
     LogFileImpl.h
-    Objects/ClassDesc.cpp
     Objects/ClassDesc.h
     Objects/DisplayContextShared.inl
     Objects/SelectionGroup.cpp
@@ -457,22 +446,10 @@ set(FILES
     Objects/DisplayContext.h
     Objects/EntityObject.cpp
     Objects/EntityObject.h
-    Objects/AxisGizmo.cpp
-    Objects/Gizmo.cpp
-    Objects/GizmoManager.cpp
-    Objects/LineGizmo.cpp
-    Objects/TrackGizmo.cpp
-    Objects/AxisGizmo.h
-    Objects/Gizmo.h
-    Objects/GizmoManager.h
-    Objects/LineGizmo.h
-    Objects/TrackGizmo.h
     PythonEditorFuncs.cpp
     PythonEditorFuncs.h
     QtUI/WaitCursor.h
     QtUI/WaitCursor.cpp
-    RenderHelpers/AxisHelper.cpp
-    RenderHelpers/AxisHelper.h
     CustomizeKeyboardDialog.h
     CustomizeKeyboardDialog.cpp
     CustomizeKeyboardDialog.ui
@@ -527,8 +504,6 @@ set(FILES
     DisplaySettingsPythonFuncs.cpp
     ErrorReport.cpp
     ErrorReport.h
-    IconManager.cpp
-    IconManager.h
     ProcessInfo.h
     TrackView/AtomOutputFrameCapture.cpp
     TrackView/AtomOutputFrameCapture.h

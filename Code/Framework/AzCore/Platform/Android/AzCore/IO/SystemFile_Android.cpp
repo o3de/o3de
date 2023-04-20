@@ -28,10 +28,7 @@
 #include <AzCore/Android/APKFileHandler.h>
 #include <AzCore/Android/Utils.h>
 
-namespace AZ::IO
-{
-
-namespace UnixLikePlatformUtil
+namespace AZ::IO::UnixLikePlatformUtil
 {
     bool CanCreateDirRecursive(char* dirPath)
     {
@@ -43,99 +40,134 @@ namespace UnixLikePlatformUtil
     }
 }
 
-namespace
+namespace AZ::IO
 {
-    static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    namespace
+    {
+        static const SystemFile::FileHandleType PlatformSpecificInvalidHandle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+    }
 }
 
-bool SystemFile::PlatformOpen(int mode, int platformFlags)
+namespace AZ::IO
 {
-    const char* openMode = nullptr;
-    if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
+     SystemFile SystemFile::GetStdin()
     {
-        openMode = "r";
+        SystemFile systemFile;
+        systemFile.m_handle = stdin;
+        systemFile.m_fileName = "/dev/stdin";
+        // The destructor of the SystemFile will not close the stdin handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
     }
-    else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY)
+
+    SystemFile SystemFile::GetStdout()
     {
-        if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+        SystemFile systemFile;
+        systemFile.m_handle = stdout;
+        systemFile.m_fileName = "/dev/stdout";
+        // The destructor of the SystemFile will not close the stdout handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+    SystemFile SystemFile::GetStderr()
+    {
+        SystemFile systemFile;
+        systemFile.m_handle = stderr;
+        systemFile.m_fileName = "/dev/stderr";
+        // The destructor of the SystemFile will not close the stderr handle
+        systemFile.m_closeOnDestruction = false;
+        return systemFile;
+    }
+
+    bool SystemFile::PlatformOpen(int mode, int platformFlags)
+    {
+        const char* openMode = nullptr;
+        if ((mode & SF_OPEN_READ_ONLY) == SF_OPEN_READ_ONLY)
         {
-            openMode = "a+";
+            openMode = "r";
         }
-        else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+        else if ((mode & SF_OPEN_WRITE_ONLY) == SF_OPEN_WRITE_ONLY)
         {
-            openMode = "w+";
+            if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+            {
+                openMode = "a+";
+            }
+            else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+            {
+                openMode = "w+";
+            }
+            else
+            {
+                openMode = "w";
+            }
+        }
+        else if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
+        {
+            if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
+            {
+                openMode = "a+";
+            }
+            else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+            {
+                openMode = "w+";
+            }
+            else
+            {
+                openMode = "r+";
+            }
         }
         else
-        {
-            openMode = "w";
-        }
-    }
-    else if ((mode & SF_OPEN_READ_WRITE) == SF_OPEN_READ_WRITE)
-    {
-        if ((mode & SF_OPEN_APPEND) == SF_OPEN_APPEND)
-        {
-            openMode = "a+";
-        }
-        else if (mode & (SF_OPEN_TRUNCATE | SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
-        {
-            openMode = "w+";
-        }
-        else
-        {
-            openMode = "r+";
-        }
-    }
-    else
-    {
-        return false;
-    }
-
-    bool createPath = false;
-    if (mode & (SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
-    {
-        createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
-    }
-
-    bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
-
-    if (createPath)
-    {
-        if (isApkFile)
         {
             return false;
         }
 
-        CreatePath(m_fileName.c_str());
+        bool createPath = false;
+        if (mode & (SF_OPEN_CREATE_NEW | SF_OPEN_CREATE))
+        {
+            createPath = (mode & SF_OPEN_CREATE_PATH) == SF_OPEN_CREATE_PATH;
+        }
+
+        bool isApkFile = AZ::Android::Utils::IsApkPath(m_fileName.c_str());
+
+        if (createPath)
+        {
+            if (isApkFile)
+            {
+                return false;
+            }
+
+            CreatePath(m_fileName.c_str());
+        }
+
+        if (isApkFile)
+        {
+            AZ::u64 size = 0;
+            m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
+        }
+        else
+        {
+            m_handle = fopen(m_fileName.c_str(), openMode);
+        }
+
+        if (m_handle == PlatformSpecificInvalidHandle)
+        {
+            return false;
+        }
+
+        return true;
     }
 
-    if (isApkFile)
+    void SystemFile::PlatformClose()
     {
-        AZ::u64 size = 0;
-        m_handle = AZ::Android::APKFileHandler::Open(m_fileName.c_str(), openMode, size);
+        if (m_handle != PlatformSpecificInvalidHandle)
+        {
+            fclose(m_handle);
+            m_handle = PlatformSpecificInvalidHandle;
+        }
     }
-    else
-    {
-        m_handle = fopen(m_fileName.c_str(), openMode);
-    }
+} // namespace AZ::IO
 
-    if (m_handle == PlatformSpecificInvalidHandle)
-    {
-        return false;
-    }
-
-    return true;
-}
-
-void SystemFile::PlatformClose()
-{
-    if (m_handle != PlatformSpecificInvalidHandle)
-    {
-        fclose(m_handle);
-        m_handle = PlatformSpecificInvalidHandle;
-    }
-}
-
-namespace Platform::Internal
+namespace AZ::IO::Platform::Internal
 {
     void FindFilesOnDisk(const char* filter, const SystemFile::FindFileCB& cb)
     {
@@ -191,9 +223,9 @@ namespace Platform::Internal
         };
         AZ::Android::APKFileHandler::ParseDirectory(filterDir.c_str(), ParseDirectoryFindFile);
     }
-}
+} // namespace AZ::IO::Platform::Internal
 
-namespace Platform
+namespace AZ::IO::Platform
 {
     using FileHandleType = SystemFile::FileHandleType;
 
@@ -353,8 +385,6 @@ namespace Platform
         return false;
     }
 } // namespace AZ::IO::Platform
-
-} // namespace AZ::IO
 
 namespace AZ::IO::PosixInternal
 {

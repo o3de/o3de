@@ -134,7 +134,8 @@ endfunction()
 #! of the engine.json, project.json, o3de_manifest.json and any gem.json files found visiting
 function(get_all_external_subdirectories output_subdirs)
     # Gather user supplied external subdirectories via the Cache Variable
-    get_property(all_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS)
+    get_property(o3de_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
+    list(APPEND all_external_subdirs ${o3de_external_subdirs})
     get_property(manifest_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_O3DE_MANIFEST)
     list(APPEND all_external_subdirs ${manifest_external_subdirs})
     get_property(engine_external_subdirs GLOBAL PROPERTY O3DE_EXTERNAL_SUBDIRS_ENGINE)
@@ -201,8 +202,12 @@ function(resolve_gem_dependencies object_type object_path)
 
     set(ENV{PYTHONNOUSERSITE} 1)
     string(TOLOWER ${object_type} object_type_lower)
+    get_property(user_external_subdirs CACHE O3DE_EXTERNAL_SUBDIRS PROPERTY VALUE)
+    if(user_external_subdirs)
+        set(user_external_subdir_option -ed "${user_external_subdirs}")
+    endif()
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}"
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" ${user_external_subdir_option}
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
         OUTPUT_VARIABLE resolved_gem_dependency_output 

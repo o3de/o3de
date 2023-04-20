@@ -138,6 +138,8 @@ set(FILES
     Components/NonUniformScaleComponent.cpp
     DocumentPropertyEditor/AdapterBuilder.cpp
     DocumentPropertyEditor/AdapterBuilder.h
+    DocumentPropertyEditor/AggregateAdapter.cpp
+    DocumentPropertyEditor/AggregateAdapter.h
     DocumentPropertyEditor/BasicAdapter.cpp
     DocumentPropertyEditor/BasicAdapter.h
     DocumentPropertyEditor/DocumentAdapter.cpp
