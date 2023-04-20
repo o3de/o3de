@@ -403,7 +403,6 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::LoadLevel(const char* levelName)
     {
-        AZ_Printf("ScriptAutomation" "Level load requested of %s\n", levelName);
         AZ_Assert(!m_levelLoading, "Attempting to load a level while still waiting for a level to load");
         m_levelLoading = true;
         m_levelName = levelName;
@@ -419,7 +418,6 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::OnLevelNotFound(const char* levelName)
     {
-        AZ_Printf("ScriptAutomation" "OnLevelNotFound of %s\n", levelName);
         if (m_levelName == levelName)
         {
             m_levelLoading = false;
@@ -432,7 +430,6 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::OnLoadingComplete(const char* levelName)
     {
-        AZ_Printf("ScriptAutomation" "OnLoadingComplete of %s\n", levelName);
         if (m_levelName == levelName)
         {
             m_levelLoading = false;
@@ -443,7 +440,6 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::OnLoadingError(const char* levelName, [[maybe_unused]] const char* error)
     {
-        AZ_Printf("ScriptAutomation" "OnLoadingError of %s\n", levelName);
         if (m_levelName == levelName)
         {
             m_levelLoading = false;
