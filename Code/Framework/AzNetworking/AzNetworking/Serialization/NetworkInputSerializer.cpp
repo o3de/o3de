@@ -34,11 +34,6 @@ namespace AzNetworking
         return SerializeBytes((const uint8_t*)&serializeValue, sizeof(uint8_t));
     }
 
-    bool NetworkInputSerializer::Serialize(char& value, [[maybe_unused]] const char* name, char minValue, char maxValue)
-    {
-        return SerializeBoundedValue<char>(minValue, maxValue, value);
-    }
-
     bool NetworkInputSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, int8_t minValue, int8_t maxValue)
     {
         return SerializeBoundedValue<int8_t>(minValue, maxValue, value);

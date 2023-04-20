@@ -93,7 +93,7 @@ namespace UnitTest
         EXPECT_TRUE(trackChangedSerializer.GetTrackedChangesFlag());
 
         trackChangedSerializer.ClearTrackedChangesFlag();
-        trackChangedSerializer.Serialize(outElement.testChar, "TestChar", AZStd::numeric_limits<char>::min(), AZStd::numeric_limits<char>::max());
+        trackChangedSerializer.Serialize(outElement.testChar, "TestChar");
         EXPECT_TRUE(trackChangedSerializer.GetTrackedChangesFlag());
 
         trackChangedSerializer.ClearTrackedChangesFlag();

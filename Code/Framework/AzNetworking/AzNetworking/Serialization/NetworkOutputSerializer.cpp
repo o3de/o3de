@@ -36,11 +36,6 @@ namespace AzNetworking
         return m_serializerValid;
     }
 
-    bool NetworkOutputSerializer::Serialize(char& value, [[maybe_unused]] const char* name, char minValue, char maxValue)
-    {
-        return SerializeBoundedValue<char>(minValue, maxValue, value);
-    }
-
     bool NetworkOutputSerializer::Serialize(int8_t& value, [[maybe_unused]] const char* name, int8_t minValue, int8_t maxValue)
     {
         return SerializeBoundedValue<int8_t>(minValue, maxValue, value);
