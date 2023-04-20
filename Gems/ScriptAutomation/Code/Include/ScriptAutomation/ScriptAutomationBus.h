@@ -73,6 +73,9 @@ namespace AZ::ScriptAutomation
 
         //! Find the named tolerance level
         virtual const ImageComparisonToleranceLevel* FindToleranceLevel(const AZStd::string& name) = 0;
+
+        virtual void LoadLevel(const char* levelName) = 0;
+
     };
 
     class ScriptAutomationRequestsBusTraits

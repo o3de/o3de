@@ -98,7 +98,13 @@ namespace AZ::ScriptAutomation
     {
         m_isStarted = false;
         m_automationScript = "";
-        AZ::TickBus::Handler::BusDisconnect();
+        AZStd::queue<ScriptAutomationRequests::ScriptOperation> empty;
+        empty.swap(m_scriptOperations); // clear the script operations
+        m_scriptPaused = false;
+        m_scriptIdleFrames = 0;
+        m_scriptIdleSeconds = 0.0f;
+        m_scriptPauseTimeout = 0.0f;
+        // continue to tick so end of script is handled
     }
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
@@ -394,5 +400,59 @@ namespace AZ::ScriptAutomation
                 PostAssetCatalogInit();
             });
     }
+
+    void ScriptAutomationSystemComponent::LoadLevel(const char* levelName)
+    {
+        AZ_Printf("ScriptAutomation" "Level load requested of %s\n", levelName);
+        AZ_Assert(!m_levelLoading, "Attempting to load a level while still waiting for a level to load");
+        m_levelLoading = true;
+        m_levelName = levelName;
+        AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusConnect();
+        PauseAutomation();
+
+        auto loadLevelString = AZStd::string::format("LoadLevel %s", levelName);
+
+        AzFramework::ConsoleRequestBus::Broadcast(
+            &AzFramework::ConsoleRequests::ExecuteConsoleCommand, loadLevelString.c_str());
+
+    }
+
+    void ScriptAutomationSystemComponent::OnLevelNotFound(const char* levelName)
+    {
+        AZ_Printf("ScriptAutomation" "OnLevelNotFound of %s\n", levelName);
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            m_levelName = "";
+            AZ_Error("ScriptAutomation", false, "Level not found \"%s\"", levelName);
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            DeactivateScripts();
+        }
+    }
+
+    void ScriptAutomationSystemComponent::OnLoadingComplete(const char* levelName)
+    {
+        AZ_Printf("ScriptAutomation" "OnLoadingComplete of %s\n", levelName);
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            ResumeAutomation();
+        }
+    }
+
+    void ScriptAutomationSystemComponent::OnLoadingError(const char* levelName, [[maybe_unused]] const char* error)
+    {
+        AZ_Printf("ScriptAutomation" "OnLoadingError of %s\n", levelName);
+        if (m_levelName == levelName)
+        {
+            m_levelLoading = false;
+            m_levelName = "";
+            AZ_Error("ScriptAutomation", false, "Failed to load level \"%s\", error \"%s\"", levelName, error);
+            AzFramework::LevelSystemLifecycleNotificationBus::Handler::BusDisconnect();
+            DeactivateScripts();
+        }
+    }
+
 
 } // namespace AZ::ScriptAutomation

@@ -6,7 +6,6 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import logging
 import os
-import psutil
 import sys
 
 import pytest
@@ -25,7 +24,9 @@ expected_lines = [
 
 unexpected_lines = [
     "screenshot compare failed. Diff score",
-    "screenshot compare error. Error"
+    "screenshot compare error. Error",
+    "Level not found",
+    "Failed to load level"
 ]
 
 atom_feature_test_list = [
@@ -65,8 +66,10 @@ def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path
         game_launcher_log_file = os.path.join(game_launcher.workspace.paths.project_log(), 'Game.log')
         game_launcher_log_monitor = LogMonitor(game_launcher, game_launcher_log_file)
          # test may do multiple image capture & compare so don't halt on unexpected
-        game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=False, timeout=400)
-        process_utils.kill_processes_named(ap_name, ignore_extensions=True)
+        try:
+            game_launcher_log_monitor.monitor_log_for_lines(expected_lines, unexpected_lines, halt_on_unexpected=False, timeout=400)
+        finally:
+            process_utils.kill_processes_named(ap_name, ignore_extensions=True)
 
 
 

@@ -16,6 +16,7 @@
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
 #include <AzFramework/Asset/AssetCatalogBus.h>
+#include <AzFramework/API/ApplicationAPI.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
 #include <Atom/Feature/Utils/FrameCaptureBus.h>
@@ -46,6 +47,7 @@ namespace AZ::ScriptAutomation
         , public AZ::Render::ProfilingCaptureNotificationBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
         , public AzFramework::AssetCatalogEventBus::Handler
+        , public AzFramework::LevelSystemLifecycleNotificationBus::Handler
     {
     public:
         AZ_COMPONENT(ScriptAutomationSystemComponent, "{755280BF-F227-4048-B323-D5E28EC55D61}", ScriptAutomationRequests);
@@ -83,6 +85,7 @@ namespace AZ::ScriptAutomation
         void QueueScriptOperation(ScriptAutomationRequests::ScriptOperation&& operation) override;
         void ExecuteScript(const char* scriptFilePath) override;
         const ImageComparisonToleranceLevel* FindToleranceLevel(const AZStd::string& name) override;
+        void LoadLevel(const char* levelName) override;
 
         // FrameCaptureNotificationBus implementation
         void OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string& info) override;
@@ -96,6 +99,11 @@ namespace AZ::ScriptAutomation
         // AssetCatalogEventBus implementation
         void OnCatalogLoaded(const char* /*catalogFile*/) override;
 
+        // LevelSystemLifecycleNotificationBus implementation
+        void OnLevelNotFound(const char* levelName) override;
+        void OnLoadingComplete(const char* levelName) override;
+        void OnLoadingError(const char* levelName, const char* error) override;
+
         // Internal functions
         void PostAssetCatalogInit();
 
@@ -106,6 +114,9 @@ namespace AZ::ScriptAutomation
         AZStd::queue<ScriptAutomationRequests::ScriptOperation> m_scriptOperations;
 
         AZStd::string m_automationScript;
+
+        AZStd::string m_levelName;
+        bool m_levelLoading = false;
 
         int m_scriptIdleFrames = 0;
         float m_scriptIdleSeconds = 0.0f;

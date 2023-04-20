@@ -289,6 +289,18 @@ namespace AZ::ScriptAutomation
             return Utils::GetProfilingPath(normalized).String();
         }
 
+        void LoadLevel(const AZStd::string& levelName)
+        {
+            auto operation = [levelName]()
+            {
+                auto scriptAutomationInterface = ScriptAutomationInterface::Get();
+
+                scriptAutomationInterface->LoadLevel(levelName.c_str());
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
         bool PrepareForScreenCapture(const AZStd::string& imageName)
         {
             AZ::Render::FrameCapturePathOutcome pathOutcome;
@@ -744,6 +756,8 @@ namespace AZ::ScriptAutomation
         behaviorContext->Method("GetRenderPipelineName", &Bindings::GetRenderPipelineName);
         behaviorContext->Method("GetPlatformName", &Bindings::GetPlatformName);
         behaviorContext->Method("GetProfilingOutputPath", &Bindings::GetProfilingOutputPath);
+
+        behaviorContext->Method("LoadLevel", &Bindings::LoadLevel);
 
         // Screenshots...
         behaviorContext->Method("SetScreenshotFolder", &Bindings::SetScreenshotFolder);
