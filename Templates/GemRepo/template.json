@@ -3,7 +3,7 @@
     "origin_url": "https://github.com/o3de/o3de",
     "license": "Apache-2.0 or MIT",
     "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
-    "display_name": "GemRepo",
+    "display_name": "GemRepo Template",
     "summary": "A Gem Repository that contains a single Gem.",
     "canonical_tags": [
         "Gem",
