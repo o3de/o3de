@@ -158,10 +158,10 @@ namespace Terrain
         }
         m_candidateSectors.clear();
         m_sectorsThatNeedSrgCompiled.clear();
+        RemoveRayTracedMeshes();
         m_sectorLods.clear();
         m_xyPositions.clear();
         m_cachedDrawData.clear();
-        RemoveRayTracedMeshes();
 
         m_rebuildSectors = true;
     }

@@ -65,6 +65,122 @@ TEST_O3DE_REPOB_JSON_PAYLOAD = '''
 }
 '''
 
+# This holds the repo 2.0.0 schema, which houses all relevant objects in file
+# A possible future field for the version data is download_prebuilt_uri, 
+# which indicates where to download dedicated binaries of a version of the O3DE object. 
+TEST_O3DE_REPO_JSON_VERSION_2_FILENAME = '3b14717bafd5a3bd768d3d0791a44998c3bd0fb2bfa1a7e2ee8bb1a39b04d631.json'
+TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD = '''
+{
+    "repo_name": "testgem3",
+
+    "origin": "Studios",
+
+    "$schemaVersion":"2.0.0",
+    
+    "repo_uri": "https://downloads.testgem3.com/o3de-repo",
+
+    "summary": "Studios Repository for the testgem3 Gem.",
+
+    "additional_info": "",
+
+    "last_updated": "2023-01-19",
+
+    "gems": [{
+        "gem_name": "testgem3",
+        "display_name": "testgem3 2",
+        "download_api": "HTTP",
+        "license": "Community",
+        "license_url": "https://www.testgem3.com/testgem3-community-license",
+        "origin": "Persistant Studios - testgem3.com",
+        "requirements": "Users will need to download testgem3 Editor from the <a href='https://www.testgem3.com/download/'>testgem3 Web Site</a> to edit/author effects.",
+        "documentation_url": "https://www.testgem3.com/docs/testgem3-v2/plugins/o3de-gem/",
+        "type": "Code",
+        "summary": "The testgem3 Gem provides real-time FX solution for particle effects.",
+        "canonical_tags": [
+            "Gem"
+        ],
+        "user_tags": [
+            "Particles",
+            "Simulation",
+            "SDK"
+        ],
+        "dependencies": [],
+        "versions_data": [{
+                "origin_uri": "https://downloads.testgem3.com/o3de-repo/testgem3-2.15/O3DE_testgem3Gem_v2.0.0_Win64_Linux64_Mac64.zip",
+                "version": "2.0.0",
+                "last_updated": "2021-03-09"
+            },
+            {
+                "display_name": "testgem3 2.15.4",
+                "download_source_uri": "https://downloads.testgem3.com/o3de-repo/testgem3-2.15/O3DE_testgem3Gem_v2.15.4_Win64_Linux64_Mac64.zip",
+                "version": "2.15.4",
+                "last_updated": "2023-03-09"
+            },
+            {
+                "display_name": "testgem3 3.1.2",
+                "source_control_uri": "https://github.com/testgem3/O3DEtestgem3Plugin.git",
+                "version": "3.1.2",
+                "last_updated": "2025-02-19"
+            },
+            {
+                "display_name": "testgem3 3.2.0",
+                "origin_uri": "https://github.com/testgem3/O3DEtestgem3Plugin",
+                "version": "3.2.0",
+                "last_updated": "2025-02-19"
+            }
+        ]
+    }],
+
+    "projects":[{
+            "project_name": "TestProject",
+            "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+            "version" : "0.0.0",
+            "compatible_engines" : [
+                "o3de-sdk==2205.01"
+            ],
+            "engine_api_dependencies" : [
+                "framework==1.2.3"
+            ],
+            "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
+            "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
+            "display_name": "TestProject",
+            "summary": "A short description of TestProject.",
+            "canonical_tags": [
+                "Project"
+            ],
+            "user_tags": [
+                "TestProject"
+            ],
+            "icon_path": "preview.png",
+            "engine": "o3de-install",
+            "restricted_name": "projects",
+            "external_subdirectories": [
+                "D:/TestGem"
+            ]
+        }
+    ],
+
+    "templates":[{
+            "template_name": "TestTemplate",
+            "license": "Apache-2.0 Or MIT",
+            "origin": "Test Creator",
+            "origin_uri": "http://o3derepo.org/TestTemplate/template.zip",
+            "repo_uri": "http://o3derepo.org",
+            "type": "Tool",
+            "summary": "A test downloadable gem.",
+            "canonical_tags": [
+                "Template"
+            ],
+            "user_tags": [],
+            "icon_path": "preview.png",
+            "requirements": "",
+            "documentation_url": "",
+            "dependencies": []
+        }
+    ]
+}
+'''
+
 TEST_O3DE_REPO_BROKEN_JSON_PAYLOAD = '''
 {
     "repo_name": "Test Repo",
@@ -103,6 +219,58 @@ TEST_O3DE_REPO_GEM_JSON_PAYLOAD = '''
     "summary": "A test downloadable gem.",
     "canonical_tags": [
         "Gem"
+    ],
+    "user_tags": [],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "documentation_url": "",
+    "dependencies": []
+}
+'''
+
+TEST_O3DE_REPO_PROJECT_FILE_NAME = '233c6e449888b4dc1355b2bf668b91b53715888e6777a2791df0e7aec9d08989.json'
+TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD = '''
+{
+    "project_name": "TestProject",
+    "project_id": "{24114e69-306d-4de6-b3b4-4cb1a3eca58e}",
+    "version" : "0.0.0",
+    "compatible_engines" : [
+        "o3de-sdk==2205.01"
+    ],
+    "engine_api_dependencies" : [
+        "framework==1.2.3"
+    ],
+    "origin": "The primary repo for TestProject goes here: i.e. http://www.mydomain.com",
+    "license": "What license TestProject uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "display_name": "TestProject",
+    "summary": "A short description of TestProject.",
+    "canonical_tags": [
+        "Project"
+    ],
+    "user_tags": [
+        "TestProject"
+    ],
+    "icon_path": "preview.png",
+    "engine": "o3de-install",
+    "restricted_name": "projects",
+    "external_subdirectories": [
+        "D:/TestGem"
+    ]
+}
+'''
+
+TEST_O3DE_REPO_TEMPLATE_FILE_NAME = '7802eae005ca1c023e14611ed63182299bf87e760708b4dba8086a134e309f3a.json'
+TEST_O3DE_REPO_TEMPLATE_JSON_PAYLOAD = '''
+{
+    "template_name": "TestTemplate",
+    "license": "Apache-2.0 Or MIT",
+    "origin": "Test Creator",
+    "origin_uri": "http://o3derepo.org/TestTemplate/template.zip",
+    "repo_uri": "http://o3derepo.org",
+    "type": "Tool",
+    "summary": "A test downloadable gem.",
+    "canonical_tags": [
+        "Template"
     ],
     "user_tags": [],
     "icon_path": "preview.png",
@@ -273,7 +441,15 @@ class TestRepos:
                     assert len(object_set) == 2
         assert True
 
-    def test_validation(self):
+
+    @pytest.mark.parametrize("repo_uri, validate_objects", [
+        pytest.param('http://o3de.org/repoA', False),
+        pytest.param('http://o3de.org/repoA', True),
+        #tests with version schema 2.0.0
+        pytest.param('http://o3de.org/repoC', False),
+        pytest.param('http://o3de.org/repoC', True)
+    ])
+    def test_validation(self, repo_uri, validate_objects):
         self.o3de_manifest_data = json.loads(TEST_O3DE_MANIFEST_JSON_PAYLOAD)
         self.o3de_manifest_data["repos"] = []
         self.created_files.clear()
@@ -291,7 +467,11 @@ class TestRepos:
             else:
                 url_str = url
 
-            if url_str in ['http://o3de.org/repoA/repo.json']:
+            if url_str in ['http://o3de.org/repoA/repo.json',
+                           'http://o3de.org/repoC/repo.json',
+                           'http://o3derepo.org/TestProject/project.json',
+                           'http://o3derepo.org/TestGem/gem.json',
+                           'http://o3derepo.org/TestTemplate/template.json']:
                 custom_mock = MagicMock()
                 custom_mock.getcode.return_value = 200
                 custom_mock.read.return_value = 0
@@ -303,10 +483,21 @@ class TestRepos:
 
         def mocked_open(path, mode, *args, **kwargs):
             file_data = bytes(0)
-            if pathlib.Path(path).name == TEST_O3DE_REPOA_FILENAME:
+            pathname = pathlib.Path(path).name
+            if pathname == TEST_O3DE_REPOA_FILENAME:
                 file_data = TEST_O3DE_REPOA_JSON_PAYLOAD
-            elif pathlib.Path(path).name == TEST_O3DE_REPOB_FILENAME:
+            elif pathname == TEST_O3DE_REPOB_FILENAME:
                 file_data = TEST_O3DE_REPOB_JSON_PAYLOAD
+            elif pathname == TEST_O3DE_REPO_JSON_VERSION_2_FILENAME:
+                file_data = TEST_O3DE_REPO_JSON_VERSION_2_PAYLOAD
+
+            elif pathname == TEST_O3DE_REPO_GEM_FILE_NAME:
+                file_data = TEST_O3DE_REPO_GEM_JSON_PAYLOAD
+            elif pathname == TEST_O3DE_REPO_PROJECT_FILE_NAME:
+                file_data = TEST_O3DE_REPO_PROJECT_JSON_PAYLOAD
+            elif pathname == TEST_O3DE_REPO_TEMPLATE_FILE_NAME:
+                file_data = TEST_O3DE_REPO_TEMPLATE_JSON_PAYLOAD
+            
             mockedopen = mock_open(mock=MagicMock(), read_data=file_data)
             if 'w' in mode:
                 self.created_files.append(path)
@@ -323,5 +514,5 @@ class TestRepos:
                 patch('pathlib.Path.open', mocked_open) as _3, \
                 patch('urllib.request.urlopen', side_effect=mocked_requests_get) as _4, \
                 patch('pathlib.Path.is_file', mocked_isfile) as _5:
-                    valid = repo.validate_remote_repo('http://o3de.org/repoA')
+                    valid = repo.validate_remote_repo(repo_uri, validate_objects)
                     assert valid

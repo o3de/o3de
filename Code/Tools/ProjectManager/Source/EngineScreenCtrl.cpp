@@ -77,7 +77,7 @@ namespace O3DE::ProjectManager
 
     void EngineScreenCtrl::NotifyCurrentScreen()
     {
-        ScreenWidget* screen = reinterpret_cast<ScreenWidget*>(m_tabWidget->currentWidget());
+        ScreenWidget* screen = static_cast<ScreenWidget*>(m_tabWidget->currentWidget());
         if (screen)
         {
             screen->NotifyCurrentScreen();

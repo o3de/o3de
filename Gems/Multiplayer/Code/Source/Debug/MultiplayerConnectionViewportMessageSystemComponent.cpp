@@ -382,6 +382,18 @@ namespace Multiplayer
             AZStd::fixed_string<MaxMessageLength>::format(OnEditorSendingLevelDataMessage, bytesSent, bytesTotal);
     }   
 
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataFailed()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
+        m_centerViewportDebugText = OnEditorSendingLevelDataFailedMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataSuccess()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
+        m_centerViewportDebugText = OnEditorSendingLevelDataSuccessMessage;
+    }
+
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;

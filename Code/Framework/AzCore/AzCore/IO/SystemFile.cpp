@@ -74,7 +74,7 @@ namespace AZ::IO
 
     SystemFile::~SystemFile()
     {
-        if (IsOpen())
+        if (IsOpen() && m_closeOnDestruction)
         {
             Close();
         }
@@ -113,6 +113,10 @@ namespace AZ::IO
         }
 
         AZ_Assert(!IsOpen(), "This file (%s) is already open!", m_fileName.c_str());
+
+        // Sets the close on destruction option if
+        // the skip close on destruction mode is set
+        m_closeOnDestruction = (mode & OpenMode::SF_SKIP_CLOSE_ON_DESTRUCTION) == 0;
 
         return PlatformOpen(mode, platformFlags);
     }

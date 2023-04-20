@@ -82,6 +82,7 @@ namespace AzToolsFramework::Prefab
         }
 
         adapterBuilder->Attribute(PrefabOverrideLabel::RelativePath, relativePathFromEntity.ToString());
+        adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
 
         // Do not show override visualization on container entities or for empty serialized paths.
         if (m_prefabPublicInterface->IsInstanceContainerEntity(m_entityId) || relativePathFromEntity.IsEmpty())
@@ -92,11 +93,6 @@ namespace AzToolsFramework::Prefab
         {
             bool isOverridden = m_prefabOverridePublicInterface->AreOverridesPresent(m_entityId, relativePathFromEntity.ToString());
             adapterBuilder->Attribute(PrefabOverrideLabel::IsOverridden, isOverridden);
-
-            if (isOverridden)
-            {
-                adapterBuilder->AddMessageHandler(this, PrefabOverrideLabel::RevertOverride);
-            }
         }
 
         adapterBuilder->EndPropertyEditor();
