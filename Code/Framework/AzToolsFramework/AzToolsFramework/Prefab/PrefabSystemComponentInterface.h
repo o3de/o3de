@@ -82,7 +82,7 @@ namespace AzToolsFramework
                 InstanceOptionalReference parent = AZStd::nullopt,
                 const InstantiatedEntitiesCallback& instantiatedEntitiesCallback = {}) = 0;
             virtual AZStd::unique_ptr<Instance> CreatePrefab(const AZStd::vector<AZ::Entity*>& entities,
-                AZStd::vector<AZStd::unique_ptr<Instance>>&& instancesToConsume, AZ::IO::PathView filePath,
+                AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances, AZ::IO::PathView filePath,
                 AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr, InstanceOptionalReference parent = AZStd::nullopt,
                 bool shouldCreateLinks = true) = 0;
 

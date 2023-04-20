@@ -473,7 +473,8 @@ namespace AZ::SceneAPI
 
         for (const auto& nodeEntity : nodeEntityMap)
         {
-            entities.emplace(nodeEntity.second.first, nodeEntity.second.second);
+            const AZStd::pair<AZ::EntityId, AzToolsFramework::Prefab::EntityAlias>& entityIdAliasPair = nodeEntity.second;
+            entities.emplace(entityIdAliasPair.first, entityIdAliasPair.second);
 
             // find matching parent EntityId (if any)
             AZ::EntityId parentEntityId;
@@ -501,7 +502,7 @@ namespace AZ::SceneAPI
                 }
             }
 
-            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(nodeEntity.second.first);
+            AZ::Entity* entity = AZ::Interface<AZ::ComponentApplicationRequests>::Get()->FindEntity(entityIdAliasPair.first);
             auto* entityTransform = entity->FindComponent<AzToolsFramework::Components::TransformComponent>();
             if (!entityTransform)
             {
@@ -529,7 +530,7 @@ namespace AZ::SceneAPI
                 entityTransform->SetLocalTM(AZ::Transform::CreateUniformScale(1.0f));
             }
 
-            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, nodeEntity.second.first);
+            PrefabGroupNotificationBus::Broadcast(&PrefabGroupNotificationBus::Events::OnUpdatePrefabEntity, entityIdAliasPair.first);
         }
 
         return entities;
