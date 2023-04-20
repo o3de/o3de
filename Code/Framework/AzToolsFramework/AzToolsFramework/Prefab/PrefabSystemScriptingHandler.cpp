@@ -131,7 +131,7 @@ namespace AzToolsFramework::Prefab
         
         AZStd::unique_ptr<AZ::Entity> containerEntity = CreateContainerEntityAndParentEntities(entitiesVector);
 
-        auto prefab = m_prefabSystemComponentInterface->CreatePrefab(
+        auto prefab = m_prefabSystemComponentInterface->CreatePrefabWithCustomEntityAliases(
             entities, {}, AZ::IO::PathView(AZStd::string_view(filePath)), AZStd::move(containerEntity));
 
         if (!prefab)

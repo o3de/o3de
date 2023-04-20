@@ -200,7 +200,7 @@ namespace AzToolsFramework
             return newInstance;
         }
 
-        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefab(
+        AZStd::unique_ptr<Instance> PrefabSystemComponent::CreatePrefabWithCustomEntityAliases(
             const AZStd::map<EntityAlias, AZ::Entity*>& entities,
             AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
             AZ::IO::PathView filePath,

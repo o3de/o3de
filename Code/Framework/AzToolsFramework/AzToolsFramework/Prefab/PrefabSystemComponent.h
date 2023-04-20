@@ -235,7 +235,7 @@ namespace AzToolsFramework
                 AZ::IO::PathView filePath, AZStd::unique_ptr<AZ::Entity> containerEntity = nullptr,
                 InstanceOptionalReference parent = AZStd::nullopt, bool shouldCreateLinks = true) override;
 
-            AZStd::unique_ptr<Instance> CreatePrefab(
+            AZStd::unique_ptr<Instance> CreatePrefabWithCustomEntityAliases(
                 const AZStd::map<EntityAlias, AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
                 AZ::IO::PathView filePath,

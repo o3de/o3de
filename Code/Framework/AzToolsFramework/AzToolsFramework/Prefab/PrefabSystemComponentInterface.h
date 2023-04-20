@@ -93,7 +93,7 @@ namespace AzToolsFramework
             //! @param containerEntity The container entity for the new instance.
             //! @param parent The parent instance of the newly created instance.
             //! @return The new instance created.
-            virtual AZStd::unique_ptr<Instance> CreatePrefab(
+            virtual AZStd::unique_ptr<Instance> CreatePrefabWithCustomEntityAliases(
                 const AZStd::map<EntityAlias, AZ::Entity*>& entities,
                 AZStd::vector<AZStd::unique_ptr<Instance>>&& nestedInstances,
                 AZ::IO::PathView filePath,
