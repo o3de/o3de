@@ -13,6 +13,7 @@
 #include <PrefabGroup/PrefabGroupBus.h>
 #include <SceneAPI/SceneCore/Containers/SceneGraph.h>
 #include <AzCore/Component/EntityId.h>
+#include <AzToolsFramework/Prefab/Instance/Instance.h>
 
 namespace AZ::SceneAPI
 {
