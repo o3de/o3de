@@ -707,6 +707,16 @@ namespace AzFramework
         provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
     }
 
+    // Gruer patch begin aoreshko: MADPORT-12
+#if defined(CARBONATED)
+    // Ignore network updates... currently
+    void TransformComponent::SetClientSimulated(bool clientSim)
+    {
+        m_isClientSimulated = clientSim;
+    }
+#endif
+    // Gruber patch end aoreshko
+
     void TransformComponent::Reflect(AZ::ReflectContext* reflection)
     {
         AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(reflection);

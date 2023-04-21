@@ -366,6 +366,45 @@ namespace PhysX
         }
     }
 
+    // Gruber patch begin aoreshko: MADPORT-12
+ #if defined(CARBONATED)
+    // Pilfered/inspired from SystemComponent::UpdateMaterialSelection
+    void CharacterControllerComponent::SetMaterialByName(uint32_t index, const AZStd::string& name)
+    {
+        AZ_Assert(m_characterConfig, "Character Config is null!");
+
+        Physics::MaterialFromAssetConfiguration materialConfig;
+        const Physics::MaterialLibraryAsset* materialLibrary = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetData();
+        if (materialLibrary == nullptr)
+        {
+            AZ::Data::AssetId materialLibraryAssetId = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetId();
+            m_characterConfig->m_materialSelection.SetMaterialLibrary(materialLibraryAssetId);
+
+            // Try again
+            materialLibrary = m_characterConfig->m_materialSelection.GetMaterialLibraryAssetData();
+        }
+
+        if (materialLibrary && materialLibrary->GetDataForMaterialName(name, materialConfig))
+        {
+            m_characterConfig->m_materialSelection.SetMaterialId(materialConfig.m_id, index);
+            m_controller->SetMaterial(m_characterConfig->m_materialSelection);
+        }
+        else
+        {
+            AZ_TracePrintf(
+                "CharacterControllerComponent",
+                "SetMaterialByName failed!  Could not load the Material Library or get the material data for '%s'",
+                name.c_str());
+        }
+    }
+
+    void CharacterControllerComponent::SetTag(const AZ::Crc32& tag)
+    {
+        m_controller->SetColliderTag(tag);
+    }
+#endif
+    // Gruber patch end aoreshko
+
     // TransformNotificationBus
     void CharacterControllerComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
     {

@@ -163,6 +163,16 @@ namespace AZ
         //! The positive rotation direction is defined such that the x-axis is rotated into the y-axis.
         Vector2 GetPerpendicular() const;
 
+ #if defined(CARBONATED)
+        /**
+         * Rotates the vector r radians.
+         */
+        AZ_MATH_FORCE_INLINE const Vector2 Rotate(float r) const
+        {
+            return Vector2(cos(r) * m_x - sin(r) * m_y, sin(r) * m_x + cos(r) * m_y);
+        }
+#endif
+
         //! Checks the vector is equal to another within a floating point tolerance.
         bool IsClose(const Vector2& v, float tolerance = 0.001f) const;
 

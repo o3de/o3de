@@ -433,3 +433,112 @@ inline void Color_tpl<T>::clamp(T bottom, T top)
 
 #define Col_TrackviewDefault    ColorF (0.187820792f, 0.187820792f, 1.0f)
 #define Clr_Empty                               ColorF(0.0f, 0.0f, 0.0f, 1.0f)
+
+// Gruer patch begin aoreshko: MADPORT-12
+//////////////////////////////////////////////////////////////////////////////////////////////
+//#define RGBA8(r,g,b,a)   (ColorB((uint8)(r),(uint8)(g),(uint8)(b),(uint8)(a)))
+#if defined(NEED_ENDIAN_SWAP)
+#define RGBA8(a, b, g, r)                                                                                                                  \
+    ((uint32)(((uint8)(r) | ((uint16)((uint8)(g)) << 8)) | (((uint32)(uint8)(b)) << 16)) | (((uint32)(uint8)(a)) << 24))
+#else
+#define RGBA8(r, g, b, a)                                                                                                                  \
+    ((uint32)(((uint8)(r) | ((uint16)((uint8)(g)) << 8)) | (((uint32)(uint8)(b)) << 16)) | (((uint32)(uint8)(a)) << 24))
+#endif
+#define Col_Black ColorF(0.000f, 0.000f, 0.000f) // 0xFF000000   RGB: 0, 0, 0
+#define Col_White ColorF(1.000f, 1.000f, 1.000f) // 0xFFFFFFFF   RGB: 255, 255, 255
+#define Col_Aquamarine ColorF(0.498f, 1.000f, 0.831f) // 0xFF7FFFD4   RGB: 127, 255, 212
+#define Col_Azure ColorF(0.000f, 0.498f, 1.000f) // 0xFF007FFF       RGB: 0, 127, 255
+#define Col_Blue ColorF(0.000f, 0.000f, 1.000f) // 0xFF0000FF   RGB: 0, 0, 255
+#define Col_BlueViolet ColorF(0.541f, 0.169f, 0.886f) // 0xFF8A2BE2   RGB: 138, 43, 226
+#define Col_Brown ColorF(0.647f, 0.165f, 0.165f) // 0xFFA52A2A   RGB: 165, 42, 42
+#define Col_CadetBlue ColorF(0.373f, 0.620f, 0.627f) // 0xFF5F9EA0   RGB: 95, 158, 160
+#define Col_Coral ColorF(1.000f, 0.498f, 0.314f) // 0xFFFF7F50   RGB: 255, 127, 80
+#define Col_CornflowerBlue ColorF(0.392f, 0.584f, 0.929f) // 0xFF6495ED   RGB: 100, 149, 237
+#define Col_Cyan ColorF(0.000f, 1.000f, 1.000f) // 0xFF00FFFF   RGB: 0, 255, 255
+#define Col_DarkGray ColorF(0.663f, 0.663f, 0.663f) // 0xFFA9A9A9   RGB: 169, 169, 169
+#define Col_DarkGrey ColorF(0.663f, 0.663f, 0.663f) // 0xFFA9A9A9   RGB: 169, 169, 169
+#define Col_DarkGreen ColorF(0.000f, 0.392f, 0.000f) // 0xFF006400   RGB: 0, 100, 0
+#define Col_DarkOliveGreen ColorF(0.333f, 0.420f, 0.184f) // 0xFF556B2F   RGB: 85, 107, 47
+#define Col_DarkOrchid ColorF(0.600f, 0.196f, 0.800f) // 0xFF9932CC   RGB: 153, 50, 204
+#define Col_DarkSlateBlue ColorF(0.282f, 0.239f, 0.545f) // 0xFF483D8B   RGB: 72, 61, 139
+#define Col_DarkSlateGray ColorF(0.184f, 0.310f, 0.310f) // 0xFF2F4F4F   RGB: 47, 79, 79
+#define Col_DarkSlateGrey ColorF(0.184f, 0.310f, 0.310f) // 0xFF2F4F4F   RGB: 47, 79, 79
+#define Col_DarkTurquoise ColorF(0.000f, 0.808f, 0.820f) // 0xFF00CED1       RGB: 0, 206, 209
+#define Col_DarkWood ColorF(0.050f, 0.010f, 0.005f) // 0xFF0D0301       RGB: 13, 3, 1
+#define Col_DeepPink ColorF(1.000f, 0.078f, 0.576f) // 0xFFFF1493       RGB: 255, 20, 147
+#define Col_DimGray ColorF(0.412f, 0.412f, 0.412f) // 0xFF696969   RGB: 105, 105, 105
+#define Col_DimGrey ColorF(0.412f, 0.412f, 0.412f) // 0xFF696969   RGB: 105, 105, 105
+#define Col_FireBrick ColorF(0.698f, 0.133f, 0.133f) // 0xFFB22222   RGB: 178, 34, 34
+#define Col_ForestGreen ColorF(0.133f, 0.545f, 0.133f) // 0xFF228B22   RGB: 34, 139, 34
+#define Col_Gold ColorF(1.000f, 0.843f, 0.000f) // 0xFFFFD700   RGB: 255, 215, 0
+#define Col_Goldenrod ColorF(0.855f, 0.647f, 0.125f) // 0xFFDAA520   RGB: 218, 165, 32
+#define Col_Gray ColorF(0.502f, 0.502f, 0.502f) // 0xFF808080   RGB: 128, 128, 128
+#define Col_Grey ColorF(0.502f, 0.502f, 0.502f) // 0xFF808080   RGB: 128, 128, 128
+#define Col_Green ColorF(0.000f, 0.502f, 0.000f) // 0xFF008000   RGB: 0, 128, 0
+#define Col_GreenYellow ColorF(0.678f, 1.000f, 0.184f) // 0xFFADFF2F   RGB: 173, 255, 47
+#define Col_IndianRed ColorF(0.804f, 0.361f, 0.361f) // 0xFFCD5C5C   RGB: 205, 92, 92
+#define Col_Khaki ColorF(0.941f, 0.902f, 0.549f) // 0xFFF0E68C   RGB: 240, 230, 140
+#define Col_LightBlue ColorF(0.678f, 0.847f, 0.902f) // 0xFFADD8E6   RGB: 173, 216, 230
+#define Col_LightGray ColorF(0.827f, 0.827f, 0.827f) // 0xFFD3D3D3   RGB: 211, 211, 211
+#define Col_LightGrey ColorF(0.827f, 0.827f, 0.827f) // 0xFFD3D3D3   RGB: 211, 211, 211
+#define Col_LightSteelBlue ColorF(0.690f, 0.769f, 0.871f) // 0xFFB0C4DE   RGB: 176, 196, 222
+#define Col_LightWood ColorF(0.600f, 0.240f, 0.100f) // 0xFF993D1A       RGB: 153, 61, 26
+#define Col_Lime ColorF(0.000f, 1.000f, 0.000f) // 0xFF00FF00   RGB: 0, 255, 0
+#define Col_LimeGreen ColorF(0.196f, 0.804f, 0.196f) // 0xFF32CD32   RGB: 50, 205, 50
+#define Col_Magenta ColorF(1.000f, 0.000f, 1.000f) // 0xFFFF00FF   RGB: 255, 0, 255
+#define Col_Maroon ColorF(0.502f, 0.000f, 0.000f) // 0xFF800000   RGB: 128, 0, 0
+#define Col_MedianWood ColorF(0.300f, 0.120f, 0.030f) // 0xFF4D1F09       RGB: 77, 31, 9
+#define Col_MediumAquamarine ColorF(0.400f, 0.804f, 0.667f) // 0xFF66CDAA   RGB: 102, 205, 170
+#define Col_MediumBlue ColorF(0.000f, 0.000f, 0.804f) // 0xFF0000CD   RGB: 0, 0, 205
+#define Col_MediumForestGreen ColorF(0.420f, 0.557f, 0.137f) // 0xFF6B8E23       RGB: 107, 142, 35
+#define Col_MediumGoldenrod ColorF(0.918f, 0.918f, 0.678f) // 0xFFEAEAAD       RGB: 234, 234, 173
+#define Col_MediumOrchid ColorF(0.729f, 0.333f, 0.827f) // 0xFFBA55D3   RGB: 186, 85, 211
+#define Col_MediumSeaGreen ColorF(0.235f, 0.702f, 0.443f) // 0xFF3CB371   RGB: 60, 179, 113
+#define Col_MediumSlateBlue ColorF(0.482f, 0.408f, 0.933f) // 0xFF7B68EE   RGB: 123, 104, 238
+#define Col_MediumSpringGreen ColorF(0.000f, 0.980f, 0.604f) // 0xFF00FA9A   RGB: 0, 250, 154
+#define Col_MediumTurquoise ColorF(0.282f, 0.820f, 0.800f) // 0xFF48D1CC   RGB: 72, 209, 204
+#define Col_MediumVioletRed ColorF(0.780f, 0.082f, 0.522f) // 0xFFC71585   RGB: 199, 21, 133
+#define Col_MidnightBlue ColorF(0.098f, 0.098f, 0.439f) // 0xFF191970   RGB: 25, 25, 112
+#define Col_Navy ColorF(0.000f, 0.000f, 0.502f) // 0xFF000080   RGB: 0, 0, 128
+#define Col_NavyBlue ColorF(0.137f, 0.137f, 0.557f) // 0xFF23238E       RGB: 35, 35, 142
+#define Col_Orange ColorF(1.000f, 0.647f, 0.000f) // 0xFFFFA500   RGB: 255, 165, 0
+#define Col_OrangeRed ColorF(1.000f, 0.271f, 0.000f) // 0xFFFF4500   RGB: 255, 69, 0
+#define Col_Orchid ColorF(0.855f, 0.439f, 0.839f) // 0xFFDA70D6   RGB: 218, 112, 214
+#define Col_PaleGreen ColorF(0.596f, 0.984f, 0.596f) // 0xFF98FB98   RGB: 152, 251, 152
+#define Col_Pink ColorF(1.000f, 0.753f, 0.796f) // 0xFFFFC0CB   RGB: 255, 192, 203
+#define Col_Plum ColorF(0.867f, 0.627f, 0.867f) // 0xFFDDA0DD   RGB: 221, 160, 221
+#define Col_Red ColorF(1.000f, 0.000f, 0.000f) // 0xFFFF0000   RGB: 255, 0, 0
+#define Col_Salmon ColorF(0.980f, 0.502f, 0.447f) // 0xFFFA8072   RGB: 250, 128, 114
+#define Col_SeaGreen ColorF(0.180f, 0.545f, 0.341f) // 0xFF2E8B57   RGB: 46, 139, 87
+#define Col_Sienna ColorF(0.627f, 0.322f, 0.176f) // 0xFFA0522D   RGB: 160, 82, 45
+#define Col_SkyBlue ColorF(0.529f, 0.808f, 0.922f) // 0xFF87CEEB   RGB: 135, 206, 235
+#define Col_SlateBlue ColorF(0.416f, 0.353f, 0.804f) // 0xFF6A5ACD   RGB: 106, 90, 205
+#define Col_SpringGreen ColorF(0.000f, 1.000f, 0.498f) // 0xFF00FF7F   RGB: 0, 255, 127
+#define Col_SteelBlue ColorF(0.275f, 0.510f, 0.706f) // 0xFF4682B4   RGB: 70, 130, 180
+#define Col_Tan ColorF(0.824f, 0.706f, 0.549f) // 0xFFD2B48C   RGB: 210, 180, 140
+#define Col_Thistle ColorF(0.847f, 0.749f, 0.847f) // 0xFFD8BFD8   RGB: 216, 191, 216
+#define Col_Transparent ColorF(0.0f, 0.0f, 0.0f, 0.0f) // 0x00000000       RGB: 0, 0, 0
+#define Col_Turquoise ColorF(0.251f, 0.878f, 0.816f) // 0xFF40E0D0   RGB: 64, 224, 208
+#define Col_Violet ColorF(0.933f, 0.510f, 0.933f) // 0xFFEE82EE   RGB: 238, 130, 238
+#define Col_VioletRed ColorF(0.800f, 0.196f, 0.600f) // 0xFFCC3299       RGB: 204, 50, 153
+#define Col_Wheat ColorF(0.961f, 0.871f, 0.702f) // 0xFFF5DEB3   RGB: 245, 222, 179
+#define Col_Yellow ColorF(1.000f, 1.000f, 0.000f) // 0xFFFFFF00   RGB: 255, 255, 0
+#define Col_YellowGreen ColorF(0.604f, 0.804f, 0.196f) // 0xFF9ACD32   RGB: 154, 205, 50
+
+#define Clr_Empty ColorF(0.0f, 0.0f, 0.0f, 1.0f)
+#define Clr_Dark ColorF(0.15f, 0.15f, 0.15f, 1.0f)
+#define Clr_White ColorF(1.0f, 1.0f, 1.0f, 1.0f)
+#define Clr_WhiteTrans ColorF(1.0f, 1.0f, 1.0f, 0.0f)
+#define Clr_Full ColorF(1.0f, 1.0f, 1.0f, 1.0f)
+#define Clr_Neutral ColorF(1.0f, 1.0f, 1.0f, 1.0f)
+#define Clr_Transparent ColorF(0.0f, 0.0f, 0.0f, 0.0f)
+#define Clr_FrontVector ColorF(0.0f, 0.0f, 0.5f, 1.0f)
+#define Clr_Static ColorF(127.0f / 255.0f, 127.0f / 255.0f, 0.0f, 0.0f)
+#define Clr_Median ColorF(0.5f, 0.5f, 0.5f, 0.0f)
+#define Clr_MedianHalf ColorF(0.5f, 0.5f, 0.5f, 0.5f)
+#define Clr_FarPlane ColorF(1.0f, 0.0f, 0.0f, 0.0f)
+#define Clr_FarPlane_R ColorF(bReverseDepth ? 0.0f : 1.0f, 0.0f, 0.0f, 0.0f)
+#define Clr_Unknown ColorF(0.0f, 0.0f, 0.0f, 0.0f)
+#define Clr_Unused ColorF(0.0f, 0.0f, 0.0f, 0.0f)
+#define Clr_Debug ColorF(1.0f, 0.0f, 0.0f, 1.0f)
+// Gruer patch end aoreshko

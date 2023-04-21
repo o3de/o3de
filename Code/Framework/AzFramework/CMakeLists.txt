@@ -11,6 +11,8 @@ include(AzFramework/feature_options.cmake)
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} ${O3DE_ENGINE_RESTRICTED_PATH} ${LY_ROOT_FOLDER})
 set(common_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/Common)
 
+add_compile_definitions(CARBONATED)
+
 ly_add_target(
     NAME AzFramework STATIC
     NAMESPACE AZ

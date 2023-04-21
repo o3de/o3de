@@ -125,6 +125,13 @@ namespace PhysX
         float GetHalfForwardExtent() override;
         void SetHalfForwardExtent(float halfForwardExtent) override;
 
+        // Gruber patch begin aoreshko: MADPORT-12
+#if defined(CARBONATED)
+        void SetMaterialByName(uint32_t index, const AZStd::string& name) override;
+        void SetTag(const AZ::Crc32& tag) override;
+#endif
+        // Gruber patch end aoreshko
+
         // TransformNotificationBus
         void OnTransformChanged(const AZ::Transform& local, const AZ::Transform& world) override;
 

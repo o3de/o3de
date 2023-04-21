@@ -302,6 +302,13 @@ namespace AZ
 
         //! Set the behavior at runtime when this entity's parent's transform changes.
         virtual void SetOnParentChangedBehavior([[maybe_unused]] OnParentChangedBehavior onParentChangedBehavior) {}
+
+        // Gruer patch begin aoreshko: MADPORT-12
+#if defined(CARBONATED)
+        // Ignore network updates... currently
+        virtual void SetClientSimulated(bool /* clientSim */){};
+#endif
+       // Gruber patch end aoreshko
     };
 
     //! The EBus for requests to position and parent an entity.

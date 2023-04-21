@@ -74,6 +74,11 @@ namespace AzFramework
         //! This will use worldTM as a localTM and move the transform relative to the parent.
         void SetParentRelative(AZ::EntityId id) override;
 
+#if defined(CARBONATED)
+        // Ignore network updates... currently
+        void SetClientSimulated(bool clientSim);
+#endif
+
     protected:
 
         // Component
@@ -190,5 +195,9 @@ namespace AzFramework
         bool m_isStatic = false; ///< If true, the transform is static and doesn't move while entity is active.
         /// Behavior for this entity's transform when its parent's transform changes.
         AZ::OnParentChangedBehavior m_onParentChangedBehavior = AZ::OnParentChangedBehavior::Update;
+
+#if defined(CARBONATED)
+        bool m_isClientSimulated;
+#endif
     };
 }   // namespace AZ

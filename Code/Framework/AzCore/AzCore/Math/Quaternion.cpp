@@ -517,4 +517,14 @@ namespace AZ
             return halfAngle * 2.0f * (imaginary / length);
         }
     }
+
+    // Gruer patch begin aoreshko: MADPORT-12
+    AZ_FORCE_INLINE const Vector3 Quaternion::operator*(const Vector3& v) const
+    {
+        // inverse must come last, this ensures associativity, (q1*q2)*v = q1*(q2*v)
+        // TODO: can be optimized a little by inlining one of the multiplies and removing the w1(=0) terms
+        Quaternion result = (*this) * Quaternion::CreateFromVector3(v) * GetInverseFast();
+        return Vector3(result.m_value);
+    }
+    // Gruer patch end aoreshko
 }
