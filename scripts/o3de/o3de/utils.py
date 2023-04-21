@@ -13,7 +13,6 @@ import importlib.util
 import logging
 import os
 import pathlib
-import psutil
 import re
 import shutil
 import subprocess
@@ -736,10 +735,8 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     def on_terminate(proc) -> None:
         try:
             process_logger.info(f"process '{proc.args[0]}' with PID({proc.pid}) terminated with exit code {proc.returncode}")
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        except Exception:  # purposefully broad
+            process_logger.error("Exception encountered with termination request, with stacktrace:", exc_info=True)
 
     if not process_logger:
         process_logger = logger
@@ -748,18 +745,12 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
         try:
             process_logger.info(f"Terminating process '{proc.args[0]}' with PID({proc.pid})")
             proc.kill()
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
         except Exception:  # purposefully broad
             process_logger.error("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
     try:
-        psutil.wait_procs(processes, timeout=30, callback=on_terminate)
-    except psutil.AccessDenied:
-        process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-    except psutil.NoSuchProcess:
-        process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        for proc in processes:
+            proc.wait(timeout=30)
+            on_terminate(proc)
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 
