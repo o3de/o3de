@@ -23,6 +23,60 @@
 #include <AzCore/std/bind/bind.h>
 #include <Multiplayer/Session/SessionNotifications.h>
 
+AZ_CVAR(
+    bool,
+    sv_gameliftAnywhereEnabled,
+    false,
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "Enable GameLift Anywhere for the AWSGameLift Server Manager."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereWebSocketUrl,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "WebSocketUrl setting for GameLift Anywhere."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereAuthToken,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "AuthToken setting for GameLift Anywhere."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereFleetId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "FleetId setting for GameLift Anywhere."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereHostId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "HostId setting for GameLift Anywhere."
+);
+
+AZ_CVAR(
+    AZ::CVarFixedString,
+    sv_gameliftAnywhereProcessId,
+    "",
+    nullptr,
+    AZ::ConsoleFunctorFlags::DontReplicate,
+    "ProcessId setting for GameLift Anywhere."
+);
+
 namespace AWSGameLift
 {
     AWSGameLiftServerManager::AWSGameLiftServerManager()
@@ -432,10 +486,35 @@ namespace AWSGameLift
             return;
         }
 
+        Aws::GameLift::Server::Model::ServerParameters serverParameters;
+
+        if (sv_gameliftAnywhereEnabled)
+        {
+            if (auto webSocketUrl = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereWebSocketUrl); !webSocketUrl.empty())
+            {
+                serverParameters.SetWebSocketUrl(webSocketUrl.c_str());
+            }
+            if (auto authToken = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereAuthToken); !authToken.empty())
+            {
+                serverParameters.SetAuthToken(authToken.c_str());
+            }
+            if (auto fleetId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereFleetId); !fleetId.empty())
+            {
+                serverParameters.SetFleetId(fleetId.c_str());
+            }
+            if (auto hostId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereHostId); !hostId.empty())
+            {
+                serverParameters.SetHostId(hostId.c_str());
+            }
+            if (auto processId = static_cast<AZ::CVarFixedString>(sv_gameliftAnywhereProcessId); !processId.empty())
+            {
+                serverParameters.SetProcessId(processId.c_str());
+            }
+        }
+
         AZ_TracePrintf(AWSGameLiftServerManagerName, "Initiating Amazon GameLift Server SDK ...");
         // Pass a default-constructed ServerParameters object for Amazon GameLift managed EC2 initialization.
-        Aws::GameLift::Server::InitSDKOutcome initOutcome =
-            m_gameLiftServerSDKWrapper->InitSDK(Aws::GameLift::Server::Model::ServerParameters());
+        Aws::GameLift::Server::InitSDKOutcome initOutcome = m_gameLiftServerSDKWrapper->InitSDK(serverParameters);
         AZ_TracePrintf(AWSGameLiftServerManagerName, "InitSDK request against Amazon GameLift service is complete.");
 
         m_serverSDKInitialized = initOutcome.IsSuccess();
