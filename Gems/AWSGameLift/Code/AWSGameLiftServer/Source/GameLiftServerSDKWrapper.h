@@ -37,21 +37,29 @@ namespace AWSGameLift
         //! Use this action to get information for a single player session,
         //! for all player sessions in a game session, or for all player sessions associated with a single player ID.
         //! @param  describePlayerSessionsRequest The request object describing which player sessions to retrieve.
-        //! @return If successful, returns a DescribePlayerSessionsOutcome object containing a set of player session objects that fit the request parameters.
+        //! @return If successful, returns a DescribePlayerSessionsOutcome object containing a set of player session objects
+        //!         that fit the request parameters.
         virtual Aws::GameLift::DescribePlayerSessionsOutcome DescribePlayerSessions(
             const Aws::GameLift::Server::Model::DescribePlayerSessionsRequest& describePlayerSessionsRequest);
 
-        //! Retrieves the file location of a pem-encoded TLS certificate that is associated with the fleet and its
-        //! instances. This certificate is generated when a new fleet is created with the certificate configuration set to
-        //! GENERATED. Use this certificate to establish a secure connection with a game client and to encrypt client server communication. 
-        //! @return If successful, returns a GetInstanceCertificateOutcome object containing the location of the fleet's TLS certificate file,
-        //!         which is stored on the instance. If not successful, returns an error message.
-        virtual Aws::GameLift::GetInstanceCertificateOutcome GetInstanceCertificate();
+        //! Retrieves the path to the TLS certificate used to encrypt the network connection between your Amazon GameLift Anywhere
+        //! compute resource and Amazon GameLift. You can use the certificate path when you register your compute device to a
+        //! Amazon GameLift Anywhere fleet.
+        //! @return If successful, returns a GetComputeCertificateOutcome object containing the location of the fleet's TLS certificate
+        //!         file, which is stored on the instance. If not successful, returns an error message.
+        virtual Aws::GameLift::GetComputeCertificateOutcome GetComputeCertificate();
+
+        //! Retrieves the service role credentials that you create to extend permissions to your other AWS services to Amazon GameLift.
+        //! These credentials allow your game server to use your AWS resources.
+        //! @return If successful, returns a GetFleetRoleCredentialsOutcome object containing the service role credentials.
+        //!         If not successful, returns an error message.
+        virtual Aws::GameLift::GetFleetRoleCredentialsOutcome GetFleetRoleCredentials(
+            Aws::GameLift::Server::Model::GetFleetRoleCredentialsRequest request);
 
         //! Initializes the GameLift SDK.
         //! Should be called when the server starts, before any GameLift-dependent initialization happens.
         //! @return If successful, returns an InitSdkOutcome object indicating that the server process is ready to call ProcessReady().
-        virtual Aws::GameLift::Server::InitSDKOutcome InitSDK();
+        virtual Aws::GameLift::Server::InitSDKOutcome InitSDK(Aws::GameLift::Server::Model::ServerParameters serverParameters);
 
         //! Notifies the GameLift service that the server process is ready to host game sessions.
         //! @param processParameters A ProcessParameters object communicating the names of callback methods, port number and game

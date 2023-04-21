@@ -123,10 +123,9 @@ namespace AWSGameLift
         void HandleDestroySession() override;
         bool ValidatePlayerJoinSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
         void HandlePlayerLeaveSession(const Multiplayer::PlayerConnectionConfig& playerConnectionConfig) override;
-        AZ::IO::Path GetExternalSessionCertificate() override;
-        AZ::IO::Path GetExternalSessionPrivateKey() override;
+
         AZ::IO::Path GetInternalSessionCertificate() override;
-        AZ::IO::Path GetInternalSessionPrivateKey() override;
+        AZ::IO::Path GetExternalSessionCertificate() override;
 
     protected:
         void SetGameLiftServerSDKWrapper(AZStd::unique_ptr<GameLiftServerSDKWrapper> gameLiftServerSDKWrapper);
