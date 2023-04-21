@@ -574,7 +574,8 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    AZ_Warning("RowAggregateAdapter", false, "unhandled message format found!");
+                    // it's not a function object, it's most likely a pass-through Value, so pass it through
+                    messageResult = attributeValue;
                 }
             }
         }
@@ -588,7 +589,6 @@ namespace AZ::DocumentPropertyEditor
 
                 NotifyContentsChanged({ Dom::PatchOperation::ReplaceOperation(rowPath, GenerateAggregateRow(GetNodeAtPath(rowPath))) });
             };
-
             messageResult = message.Match(Nodes::GenericButton::OnActivate, handleEditAnyway);
         }
         return messageResult;
@@ -638,8 +638,7 @@ namespace AZ::DocumentPropertyEditor
                             AZ_Assert(!nodePath.IsEmpty(), "shouldn't be generating an aggregate row for a non-matching node!");
                             BoundAdapterMessage changedAttribute = { this, messageName, nodePath / childIndex, {} };
                             auto newValue = changedAttribute.MarshalToDom();
-                            childValue.RemoveMember(attributeIter);
-                            childValue[messageName] = newValue;
+                            attributeIter->second = newValue;
 
                             // we've found the matching message, break out of the inner loop
                             break;
