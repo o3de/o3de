@@ -67,6 +67,22 @@ namespace AZ::ScriptAutomation
                 return {};
             }
         }
+
+        void LuaErrorLog([[maybe_unused]] ScriptContext* context, ScriptContext::ErrorType error, [[maybe_unused]] const char* message)
+        {
+            switch(error)
+            {
+                case ScriptContext::ErrorType::Log:
+                    AZ_Info("ScriptAutomation", "Lua log: %s", message);
+                    break;
+                case ScriptContext::ErrorType::Warning:
+                    AZ_Warning("ScriptAutomation", false, "Lua warning: %s", message);
+                    break;
+                case ScriptContext::ErrorType::Error:
+                    AZ_Error("ScriptAutomation", false, "Lua error: %s", message);
+                    break;
+            }
+        }
     } // namespace
 
     void ExecuteLuaScript(const AZ::ConsoleCommandContainer& arguments)
@@ -193,6 +209,7 @@ namespace AZ::ScriptAutomation
 
         ReflectScriptBindings(m_scriptBehaviorContext.get());
         m_scriptContext->BindTo(m_scriptBehaviorContext.get());
+        m_scriptContext->SetErrorHook(LuaErrorLog);
 
         AZ::ComponentApplication* application = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(application, &AZ::ComponentApplicationBus::Events::GetApplication);

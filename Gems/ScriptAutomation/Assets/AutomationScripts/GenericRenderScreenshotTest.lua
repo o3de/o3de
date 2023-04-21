@@ -40,7 +40,7 @@ if (not succeeded) then return end
 local imageComparisonLevel = GetOptionalStringValue(ImageComparisonLevelRegistryKey, "Level A") -- default to most strict comparison
 
 
-RunScript("@gemroot:ScriptAutomation@/Assets/Automationscripts/GenericImageComparisonTestEnvironment.lua")
+RunScript("@gemroot:ScriptAutomation@/Assets/AutomationScripts/GenericImageComparisonTestEnvironment.lua")
 captureName = testGroupName .. "/" .. imageName
 
 IdleFrames(3) -- tick 3 frames to allow tick delta to settle
