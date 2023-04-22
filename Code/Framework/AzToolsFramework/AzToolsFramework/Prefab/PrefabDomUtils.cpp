@@ -545,7 +545,7 @@ namespace AzToolsFramework
                 return prefabBuffer.GetString();
             }
 
-            bool AddOrUpdateNestedInstance(
+            void AddNestedInstance(
                 PrefabDom& prefabDom,
                 const InstanceAlias& nestedInstanceAlias,
                 PrefabDomValueConstReference nestedInstanceDom)
@@ -574,16 +574,13 @@ namespace AzToolsFramework
                         nestedInstanceDom.has_value() ? rapidjson::Value(nestedInstanceDom->get(), prefabDom.GetAllocator())
                                                       : PrefabDomValue(),
                         prefabDom.GetAllocator());
-                    return true;
                 }
-                else if (nestedInstanceDom.has_value())
+                else
                 {
-                    // Nested instance already exists in the prefab DOM, so just update its contents
-                    instanceMember->value.CopyFrom(nestedInstanceDom->get(), prefabDom.GetAllocator());
-                    return true;
+                    AZ_Assert(
+                        false,
+                        "PrefabDomUtils::AddNestedInstance - Nested instance already exists in prefab DOM.");
                 }
-
-                return false;
             }
         } // namespace PrefabDomUtils
     } // namespace Prefab

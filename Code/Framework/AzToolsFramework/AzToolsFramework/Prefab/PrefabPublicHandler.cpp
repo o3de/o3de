@@ -575,7 +575,7 @@ namespace AzToolsFramework
                     const PrefabDomValue* instanceValue = instancePath.Get(targetTemplatePrefabDom);
                     if (instanceValue)
                     {
-                        PrefabDomUtils::AddOrUpdateNestedInstance(
+                        PrefabDomUtils::AddNestedInstance(
                             cachedOwningInstanceDom->get(), instanceToCreate->get().GetInstanceAlias(), *instanceValue);
                     }
                 }
