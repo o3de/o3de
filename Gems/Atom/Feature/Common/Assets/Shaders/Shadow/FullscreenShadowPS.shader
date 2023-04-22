@@ -1,11 +1,10 @@
 {
-    "Source" : "FullscreenShadow.azsl",
+    "Source" : "FullscreenShadowPS.azsl",
 
     "RasterState" :
     {
         "CullMode" : "None"
     },
-
     "DepthStencilState" :
     {
         "Depth" :
@@ -13,7 +12,6 @@
             "Enable" : false
         }
     },
-
     "ProgramSettings":
     {
       "EntryPoints": 
@@ -28,7 +26,6 @@
         }
       ]
     },
-
     "Supervariants":
     [
         {
@@ -38,17 +35,5 @@
             }
         }
     ]
-
-    // Todo: test Compute Shader version with async compute and LDS optimizations
-    // "ProgramSettings" :
-    // {
-    //     "EntryPoints":
-    //     [
-    //         {
-    //             "name" : "MainCS",
-    //             "type" : "Compute"
-    //         }
-    //     ]
-    // }
 
 }

@@ -72,16 +72,6 @@ namespace AZ
 
         void FullscreenShadowPass::SetConstantData()
         {
-            struct alignas(16) ConstantData
-            {
-                AZStd::array<float, 2> m_screenSize;
-                int m_lightIndex;
-                int m_filterMode;
-                int m_blendBetweenCascadesEnable;
-                int m_receiverShadowPlaneBiasEnable;
-
-            } constantData;
-
             const RHI::Size resolution = GetDepthBufferDimensions();
             constantData.m_lightIndex = m_lightIndex;
             constantData.m_screenSize = { static_cast<float>(resolution.m_width), static_cast<float>(resolution.m_height) };

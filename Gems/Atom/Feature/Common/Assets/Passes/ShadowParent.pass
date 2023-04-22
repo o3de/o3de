@@ -187,7 +187,7 @@
                 },
                 {
                     "Name": "FullscreenShadowPass",
-                    "TemplateName": "FullscreenShadowTemplate",
+                    "TemplateName": "FullscreenShadowCSTemplate",
                     "Connections": [
                         {
                             "LocalSlot": "DirectionalShadowmaps",

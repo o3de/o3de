@@ -237,8 +237,12 @@
                 "Path": "Passes/EsmShadowmaps.pass"
             },
             {
-                "Name": "FullscreenShadowTemplate",
-                "Path": "Passes/FullscreenShadow.pass"
+                "Name": "FullscreenShadowPSTemplate",
+                "Path": "Passes/FullscreenShadowPS.pass"
+            },
+            {
+                "Name": "FullscreenShadowCSTemplate",
+                "Path": "Passes/FullscreenShadowCS.pass"
             },
             {
                 "Name": "LightCullingHeatmapTemplate",

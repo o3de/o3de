@@ -1,0 +1,39 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/Shadow/FullscreenShadowCommon.azsli>
+    
+void ComputeWorldNormalAndPositionPS(VSOutput IN, out float3 outPositionWS, out float3 outNormalWS)
+{
+    const float2 pixelSize = rcp(PassSrg::m_constantData.m_screenSize.xy);  // How big a pixel is in screen UV space
+    const float2 screenUV  = IN.m_texCoord.xy;                              // The UV value [0, 1] of the screen pixel
+
+    ComputeWorldNormalAndPosition(pixelSize, screenUV, outPositionWS, outNormalWS);
+}
+
+PSOutput MainPS(VSOutput IN)
+{
+    float3 positionWS;
+    float3 normalWS;
+    ComputeWorldNormalAndPositionPS(IN, positionWS, normalWS);
+
+    DirectionalShadowCalculator calc;
+    calc.SetLightIndex(PassSrg::m_constantData.m_lightIndex);
+    calc.SetWorldNormal(normalWS);
+    calc.SetReceiverShadowPlaneBiasEnable(PassSrg::m_constantData.m_receiverShadowPlaneBiasEnable);
+    calc.SetFilterMode((ShadowFilterMethod)PassSrg::m_constantData.m_filterMode);
+    calc.SetBlendBetweenCascadesEnable(PassSrg::m_constantData.m_blendBetweenCascadesEnable);
+    calc.SetShadowmaps(PassSrg::m_directionalShadowmaps, PassSrg::m_directionalShadowmapsESM);
+    calc.SetWorldPos(positionWS);
+
+    PSOutput OUT;
+    float vis = calc.GetVisibility();
+    OUT.m_color = saturate(vis.xxxx);
+   
+    return OUT; 
+}

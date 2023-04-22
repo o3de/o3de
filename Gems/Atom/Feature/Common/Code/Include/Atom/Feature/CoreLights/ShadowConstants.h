@@ -34,7 +34,7 @@ namespace AZ
             Pcf, // Percentage Closer Filtering
             Esm, // Exponential Shadow Maps
             EsmPcf, // ESM with PCF fallback
-
+            
             Count
         };
 
@@ -44,6 +44,17 @@ namespace AZ
             static constexpr uint16_t MaxNumberOfCascades = 4;
             static constexpr uint16_t MaxPcfSamplingCount = 64;
         } // namespace Shadow
+
+        struct FullScreenShadowConstantData
+        {
+            AZStd::array<float, 2> m_screenSize;
+            int m_lightIndex;
+            int m_filterMode;
+            int m_blendBetweenCascadesEnable;
+            int m_receiverShadowPlaneBiasEnable;
+            int m_msaaCount;
+            float m_invMsaaCount;
+        };
 
     } // namespace Render
 

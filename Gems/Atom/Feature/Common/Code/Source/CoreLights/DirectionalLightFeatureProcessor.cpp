@@ -26,6 +26,7 @@
 #include <AzCore/Math/Obb.h>
 #include <PostProcessing/FastDepthAwareBlurPasses.h>
 #include <Shadows/FullscreenShadowPass.h>
+#include <Shadows/FullscreenShadowComputePass.h>
 
 namespace AZ
 {
@@ -207,6 +208,7 @@ namespace AZ
                 const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowFilteringMethodName, AZ::RPI::ShaderOptionValue{shadowFilterMethod});
                 RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_directionalShadowReceiverPlaneBiasEnableName, AZ::RPI::ShaderOptionValue{ m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_isReceiverPlaneBiasEnabled });
+                RPI::ShaderSystemInterface::Get()->SetGlobalShaderOption(m_fullScreenBlurEnableName, AZ::RPI::ShaderOptionValue{m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex()).m_fullscreenBlurEnabled});
 
                 const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
 
@@ -708,8 +710,25 @@ namespace AZ
 
         void DirectionalLightFeatureProcessor::CacheFullscreenPass()
         {
+#if USING_SCREENSHADOW_COMPUTEPASS
+            m_fullscreenShadowComputePass = nullptr;
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("FullscreenShadowCSTemplate"), GetParentScene());
+            RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
+                {
+                    RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
+                    const RPI::RenderPipelineId pipelineId = pipeline->GetId();
+
+                    FullscreenShadowComputePass* shadowPass = azrtti_cast<FullscreenShadowComputePass*>(pass);
+                    AZ_Assert(shadowPass, "It is not a FullscreenShadowComputePass.");
+                    if (pipeline->GetDefaultView())
+                    {
+                        m_fullscreenShadowComputePass = shadowPass;
+                    }
+                    return RPI::PassFilterExecutionFlow::StopVisitingPasses;
+                });
+#else
             m_fullscreenShadowPass = nullptr;
-            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("FullscreenShadowTemplate"), GetParentScene());
+            RPI::PassFilter passFilter = RPI::PassFilter::CreateWithTemplateName(Name("FullscreenShadowPSTemplate"), GetParentScene());
             RPI::PassSystemInterface::Get()->ForEachPass(passFilter, [this](RPI::Pass* pass) -> RPI::PassFilterExecutionFlow
                 {
                     RPI::RenderPipeline* pipeline = pass->GetRenderPipeline();
@@ -723,6 +742,7 @@ namespace AZ
                     }
                     return RPI::PassFilterExecutionFlow::StopVisitingPasses;
                 });
+#endif
 
             m_fullscreenShadowBlurPass = nullptr;
             RPI::PassFilter blurPassFilter = RPI::PassFilter::CreateWithPassName(Name("FullscreenShadowBlur"), GetParentScene());
@@ -1701,20 +1721,40 @@ namespace AZ
         void DirectionalLightFeatureProcessor::SetFullscreenPassSettings()
         {
             ShadowProperty& shadowProperty = m_shadowProperties.GetData(m_shadowingLightHandle.GetIndex());
+            bool fullscreenBlurEnabled = shadowProperty.m_fullscreenBlurEnabled;
 
+#if USING_SCREENSHADOW_COMPUTEPASS
+            if (m_fullscreenShadowComputePass)
+            {
+                m_fullscreenShadowComputePass->SetEnabled(fullscreenBlurEnabled);
+                if(fullscreenBlurEnabled)
+                {
+                    const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
+                    const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
+                    m_fullscreenShadowComputePass->SetLightIndex(m_shadowingLightHandle.GetIndex());
+                    m_fullscreenShadowComputePass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetwenCascades);
+                    m_fullscreenShadowComputePass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
+                    m_fullscreenShadowComputePass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
+                }
+            }
+#else
             if (m_fullscreenShadowPass)
             {
-                const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
-                const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
-                m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
-                m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetwenCascades);
-                m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
-                m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
+                m_fullscreenShadowPass->SetEnabled(fullscreenBlurEnabled);
+                if(fullscreenBlurEnabled)
+                {
+                    const uint32_t shadowFilterMethod = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_shadowFilterMethod;
+                    const uint32_t cascadeCount = m_shadowData.at(nullptr).GetData(m_shadowingLightHandle.GetIndex()).m_cascadeCount;
+                    m_fullscreenShadowPass->SetLightIndex(m_shadowingLightHandle.GetIndex());
+                    m_fullscreenShadowPass->SetBlendBetweenCascadesEnable(cascadeCount > 1 && shadowProperty.m_blendBetwenCascades);
+                    m_fullscreenShadowPass->SetFilterMethod(static_cast<ShadowFilterMethod>(shadowFilterMethod));
+                    m_fullscreenShadowPass->SetReceiverShadowPlaneBiasEnable(shadowProperty.m_isReceiverPlaneBiasEnabled);
+                }
             }
+#endif
 
             if (m_fullscreenShadowBlurPass)
             {
-                bool fullscreenBlurEnabled = shadowProperty.m_fullscreenBlurEnabled;
                 m_fullscreenShadowBlurPass->SetEnabled(fullscreenBlurEnabled);
 
                 if(fullscreenBlurEnabled)

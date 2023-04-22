@@ -4,8 +4,8 @@
     "ClassName": "PassAsset",
     "ClassData": {
         "PassTemplate": {
-            "Name": "FullscreenShadowTemplate",
-            "PassClass": "FullscreenShadowPass",
+            "Name": "FullscreenShadowCSTemplate",
+            "PassClass": "FullscreenShadowComputePass",
             "Slots": [
                 {
                     "Name": "DirectionalShadowmaps",
@@ -45,14 +45,12 @@
                 {
                     "Name": "Output",
                     "SlotType": "Output",
-                    "ScopeAttachmentUsage": "RenderTarget",
+                    "ScopeAttachmentUsage": "Shader",
+                    "ShaderInputName": "m_fullscreenShadowOutput",
                     "LoadStoreAction": {
                         "LoadAction": "DontCare",
                         "StoreAction": "Store"
                     }
-                    // Todo: test Compute Shader version with async compute and LDS optimizations
-                    //"ScopeAttachmentUsage": "Shader",
-                    //"ShaderInputName": "m_fullscreenShadowOutput"
                 }
             ],
             "ImageAttachments": [
@@ -94,21 +92,13 @@
                 }
             ],
             "PassData": {
-                "$type": "FullscreenTrianglePassData",
+                "$type": "ComputePassData",
                 "ShaderAsset": {
-                    "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
+                    "FilePath": "Shaders/Shadow/FullscreenShadowCS.shader"
                 },
+                "Make Fullscreen Pass": true,
                 "PipelineViewTag": "MainCamera"
             }
-            // Todo: test Compute Shader version with async compute and LDS optimizations
-            // "PassData": {
-            //     "$type": "ComputePassData",
-            //     "ShaderAsset": {
-            //         "FilePath": "Shaders/Shadow/FullscreenShadow.shader"
-            //     },
-            //     "Make Fullscreen Pass": true,
-            //     "PipelineViewTag": "MainCamera"
-            // }
         }
     }
 }

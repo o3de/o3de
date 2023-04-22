@@ -296,6 +296,8 @@ set(FILES
     Source/ScreenSpace/DeferredFogPass.h
     Source/Shadows/FullscreenShadowPass.h
     Source/Shadows/FullscreenShadowPass.cpp
+    Source/Shadows/FullscreenShadowComputePass.h
+    Source/Shadows/FullscreenShadowComputePass.cpp
     Source/Shadows/ProjectedShadowFeatureProcessor.h
     Source/Shadows/ProjectedShadowFeatureProcessor.cpp
     Source/SkinnedMesh/SkinnedMeshComputePass.cpp

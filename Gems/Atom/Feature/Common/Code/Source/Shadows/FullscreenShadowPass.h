@@ -77,6 +77,7 @@ namespace AZ
             void SetConstantData();
 
             AZ::RHI::ShaderInputNameIndex m_constantDataIndex = "m_constantData";
+            FullScreenShadowConstantData constantData;
 
             int m_lightIndex = 0;
 
