@@ -49,22 +49,8 @@ namespace AZ
             bool canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
             if (!canAllocate && m_memoryReleaseCallback)
             {
-                bool releaseSuccess = false;
-                while (!canAllocate)
-                {
-                    // Request to release some memory
-                    releaseSuccess = m_memoryReleaseCallback();
-
-                    // break out of the loop if memory release did not happen
-                    if (!releaseSuccess)
-                    {
-                        break;
-                    }
-
-                    // re-evaluation page memory allocation since there are tiles were released.
-                    pageAllocationInBytes = m_tileAllocator.EvaluateMemoryAllocation(blockCount);
-                    canAllocate = heapMemoryUsage.CanAllocate(pageAllocationInBytes);
-                }
+                uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - blockCount;
+                bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
 
                 if (!releaseSuccess)
                 {
@@ -93,7 +79,6 @@ namespace AZ
         {
             m_tileAllocator.DeAllocate(heapTiles);
             heapTiles.clear();
-            m_tileAllocator.GarbageCollect();
         }
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
@@ -245,6 +230,7 @@ namespace AZ
         void StreamingImagePool::OnFrameEnd()
         {
             m_memoryAllocator.GarbageCollect();
+            m_tileAllocator.GarbageCollect();
             Base::OnFrameEnd();
         }
 
@@ -262,51 +248,36 @@ namespace AZ
         RHI::ResultCode StreamingImagePool::SetMemoryBudgetInternal(size_t newBudget)
         {
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(RHI::HeapMemoryLevel::Device);
-
+            
             if (newBudget == 0)
             {
-                heapMemoryUsage.m_budgetInBytes = newBudget;
                 return RHI::ResultCode::Success;
             }
 
             // Can't set to new budget if the new budget is smaller than allocated and there is no memory release handling
-            if (newBudget < heapMemoryUsage.m_totalResidentInBytes && !m_memoryReleaseCallback)
+            if (newBudget < heapMemoryUsage.m_usedResidentInBytes && !m_memoryReleaseCallback)
             {
                 AZ_Warning("StreamingImagePool", false, "Can't set pool memory budget to %u because the memory release callback wasn't set", newBudget);
                 return RHI::ResultCode::InvalidArgument;
             }
 
             bool releaseSuccess = true;
-            while (newBudget < heapMemoryUsage.m_totalResidentInBytes && releaseSuccess)
+            // If the new budget is smaller than the memory are in use, we need to release some memory
+            if (newBudget < heapMemoryUsage.m_usedResidentInBytes)
             {
-                size_t previousTotalResidentInBytes = heapMemoryUsage.m_totalResidentInBytes;
-                size_t previousUsedResidentInBytes = heapMemoryUsage.m_usedResidentInBytes;
-
-                // Request to release some memory
-                releaseSuccess = m_memoryReleaseCallback();
-
-                // Ensure there were memory released in the m_memoryReleaseCallback() call
-                if (releaseSuccess)
-                {
-                    releaseSuccess = previousTotalResidentInBytes > heapMemoryUsage.m_totalResidentInBytes
-                        || previousUsedResidentInBytes > heapMemoryUsage.m_usedResidentInBytes;
-                    if (!releaseSuccess)
-                    {
-                        AZ_Warning("StreamingImagePool", false, "bad release function");
-                    }
-                }
+                releaseSuccess = m_memoryReleaseCallback(newBudget);
             }
 
-            // Failed to release memory to desired budget. Set current budget to current total resident.
             if (!releaseSuccess)
             {
-                heapMemoryUsage.m_budgetInBytes = heapMemoryUsage.m_totalResidentInBytes;
+                heapMemoryUsage.m_budgetInBytes = heapMemoryUsage.m_usedResidentInBytes;
                 AZ_Warning("StreamingImagePool", false, "Failed to set pool memory budget to %u, set to %u instead", newBudget, heapMemoryUsage.m_budgetInBytes);
             }
             else
             {
                 heapMemoryUsage.m_budgetInBytes = newBudget;
             }
+            
             return RHI::ResultCode::Success;
         }
         
