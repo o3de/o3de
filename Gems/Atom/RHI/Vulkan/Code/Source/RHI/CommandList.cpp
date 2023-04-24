@@ -517,13 +517,30 @@ namespace AZ
             rayGenerationTable.size = shaderTableBuffers.m_rayGenerationTableSize;
 
             // miss table
-            addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
-            VkDeviceAddress missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            VkDeviceAddress missTableAddress = 0;
+            if (shaderTableBuffers.m_missTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_missTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                missTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
 
             VkStridedDeviceAddressRegionKHR missTable = {};
             missTable.deviceAddress = missTableAddress;
             missTable.stride = shaderTableBuffers.m_missTableStride;
             missTable.size = shaderTableBuffers.m_missTableSize;
+
+            // callable table
+            VkDeviceAddress callableTableAddress = 0;
+            if (shaderTableBuffers.m_callableTable)
+            {
+                addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_callableTable.get())->GetBufferMemoryView()->GetNativeBuffer();
+                callableTableAddress = context.GetBufferDeviceAddress(m_descriptor.m_device->GetNativeDevice(), &addressInfo);
+            }
+
+            VkStridedDeviceAddressRegionKHR callableTable = {};
+            callableTable.deviceAddress = callableTableAddress;
+            callableTable.stride = shaderTableBuffers.m_callableTableStride;
+            callableTable.size = shaderTableBuffers.m_callableTableSize;
 
             // hit group table
             addressInfo.buffer = static_cast<Buffer*>(shaderTableBuffers.m_hitGroupTable.get())->GetBufferMemoryView()->GetNativeBuffer();
@@ -533,8 +550,6 @@ namespace AZ
             hitGroupTable.deviceAddress = hitGroupTableAddress;
             hitGroupTable.stride = shaderTableBuffers.m_hitGroupTableStride;
             hitGroupTable.size = shaderTableBuffers.m_hitGroupTableSize;
-
-            VkStridedDeviceAddressRegionKHR callableTable = {};
 
             context.CmdTraceRaysKHR(
                 m_nativeCommandBuffer,
