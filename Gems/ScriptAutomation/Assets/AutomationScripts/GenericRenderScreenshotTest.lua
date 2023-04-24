@@ -48,7 +48,7 @@ IdleFrames(3) -- tick 3 frames to allow tick delta to settle
 ExecuteConsoleCommand("r_displayInfo=0")
 LoadLevel(levelPath) -- waits for the engine to say the level is finished loading
 
-IdleSeconds(1) -- Wait for assets to finish loading.
+IdleSeconds(2) -- Wait for assets to finish loading.
 
 Print("Saving screenshots to " .. ResolvePath(g_screenshotOutputFolder .. "/" .. g_testEnv .. "/" .. testGroupName))
 
