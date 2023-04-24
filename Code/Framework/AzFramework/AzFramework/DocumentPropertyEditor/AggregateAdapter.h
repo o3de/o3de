@@ -26,6 +26,8 @@ namespace AZ::DocumentPropertyEditor
         void RemoveAdapter(DocumentAdapterPtr sourceAdapter);
         void ClearAdapters();
 
+        /*! determines whether to generate "values differ" rows at all
+        *   if not, just generates rows based on the first adapter */
         void SetGenerateDiffRows(bool generateDiffRows)
         {
             m_generateDiffRows = generateDiffRows;
@@ -53,20 +55,21 @@ namespace AZ::DocumentPropertyEditor
             AZStd::vector<AZStd::unique_ptr<AggregateNode>> m_childRows;
         };
 
+        //! implemented by child adapters to return a vector of message Names to forward to each sub-adapter
         virtual AZStd::vector<AZ::Name> GetMessagesToForward() = 0;
 
-        // virtual function to generate an aggregate row that represents all the matching Dom::Values with in this node
+        //! virtual function to generate an aggregate row that represents all the matching Dom::Values with in this node
         virtual Dom::Value GenerateAggregateRow(AggregateNode* matchingNode) = 0;
 
-        // pure virtual to generate a "values differ" row that is appropriate for this type of AggregateAdapter
-        // mismatchNode is provided so the row presented can include information from individual mismatched Dom::Values, if desired
+        /*! pure virtual to generate a "values differ" row that is appropriate for this type of AggregateAdapter
+            mismatchNode is provided so the row presented can include information from individual mismatched Dom::Values, if desired */
         virtual Dom::Value GenerateValuesDifferRow(AggregateNode* mismatchNode) = 0;
 
-        // pure virtual to determine if the row value from one adapter should be
-        // considered the same aggregate row as a value from another adapter
+        /*! pure virtual to determine if the row value from one adapter should be
+            considered the same aggregate row as a value from another adapter */
         virtual bool SameRow(const Dom::Value& newRow, const Dom::Value& existingRow) = 0;
 
-        // pure virtual to determine if two row values match such that they can be edited by one PropertyHandler
+        //! pure virtual to determine if two row values match such that they can be edited by one PropertyHandler
         virtual bool ValuesMatch(const Dom::Value& left, const Dom::Value& right) = 0;
 
         // message handlers for all owned adapters
@@ -99,13 +102,13 @@ namespace AZ::DocumentPropertyEditor
             DocumentAdapterPtr adapter;
         };
 
-        // all the adapters represented in this aggregate (multi-edit)
+        //! all the adapters represented in this aggregate (multi-edit)
         AZStd::vector<AZStd::unique_ptr<AdapterInfo>> m_adapters;
 
         // potential rows always in the row order of the first adapter in m_adapters
         AZStd::unique_ptr<AggregateNode> m_rootNode;
 
-        // monotonically increasing frame counter that increments whenever a source adapter gets an update
+        //! monotonically increasing frame counter that increments whenever a source adapter gets an update
         unsigned int m_updateFrame = 0;
         bool m_generateDiffRows = true;
         AdapterBuilder m_builder;

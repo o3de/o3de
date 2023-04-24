@@ -154,7 +154,10 @@ namespace AzToolsFramework
         if (DocumentPropertyEditor::ShouldReplaceRPE())
         {
             // Instantiate the DPE without the RPE
-            m_adapter = (Prefab::IsInspectorOverrideManagementEnabled() ? AZStd::make_shared<Prefab::PrefabComponentAdapter>() : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+            m_adapter = (Prefab::IsInspectorOverrideManagementEnabled() ?
+                AZStd::make_shared<Prefab::PrefabComponentAdapter>() :
+                AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);
@@ -222,6 +225,9 @@ namespace AzToolsFramework
                 if (!m_aggregateAdapter)
                 {
                     m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
+
+                    // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
+                    // and the output is noisy and unpleasant.
                     m_aggregateAdapter->SetGenerateDiffRows(false);
                     m_aggregateAdapter->AddAdapter(m_adapter);
                     m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);

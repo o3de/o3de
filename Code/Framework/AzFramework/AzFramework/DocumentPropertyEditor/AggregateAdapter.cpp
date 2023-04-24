@@ -136,6 +136,8 @@ namespace AZ::DocumentPropertyEditor
 
     void RowAggregateAdapter::HandleDomChange(DocumentAdapterPtr adapter, const Dom::Patch& patch)
     {
+        // Note that many types of patch operations are still unsupported at this time
+        // Please see: https://github.com/o3de/o3de/issues/15612
         const auto adapterIndex = GetIndexForAdapter(adapter);
 
         for (auto operationIterator = patch.begin(), endIterator = patch.end(); operationIterator != endIterator; ++operationIterator)
@@ -146,7 +148,7 @@ namespace AZ::DocumentPropertyEditor
                 auto* nodeAtPath = GetNodeAtAdapterPath(adapterIndex, patchPath);
                 if (nodeAtPath)
                 {
-                    // <apm> remove this entry from the node, update the "values differ"
+                    // TODO: remove this entry from the node, update the "values differ"
                 }
                 else
                 {
@@ -155,15 +157,17 @@ namespace AZ::DocumentPropertyEditor
                     parentPath.Pop();
                     auto* rowParentNode = GetNodeAtAdapterPath(adapterIndex, parentPath);
                     (void)rowParentNode;
-                    /* <apm> see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use
-                    a different GetComparisonRow), if not, remove it and place it where it actually goes. If yes, update the node's "values
-                    differ" status */
-                    // <apm> it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same
-                    // bucket, but need to track exactly what's been updated since last frame for patching purposes
+                    /* TODO:
+                    - see if the entry for rowParentNode at adapterIndex still is SameRow (NB: if adapterIndex is 0, you need to use
+                      a different GetComparisonRow), if not, remove it and place it where it actually goes. If yes, update the node's "values
+                      differ" status
+                    - Suggestion: it's almost certainly simpler to remove this parent node and repopulate to see if it ends up in the same
+                      bucket, but need to track exactly what's been updated since last frame for patching purposes */
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Replace)
             {
+                // nodes represent entire aggregate rows, so if there's a node, it a replace for a full row
                 auto* nodeAtPath = GetNodeAtAdapterPath(adapterIndex, patchPath);
                 if (!nodeAtPath)
                 {
@@ -229,13 +233,13 @@ namespace AZ::DocumentPropertyEditor
                                 }
                                 else
                                 {
-                                    // no longer the same row, check for a matching sibling, and if there isn't one, split off a new node
+                                    // TODO: no longer the same row, check for a matching sibling, and if there isn't one, split off a new node
                                     AZ_Assert(0, "replace operation morphing node is not supported yet!");
                                 }
                             }
                             else
                             {
-                                // handle case where there's only one entry in this node, but it might've changed.
+                                // TODO: handle case where there's only one entry in this node, but it might've changed.
                                 // need to check if it has changed to match a parallel node, in which case it should join
                                 // that node, and this one should be destroyed.
                                 AZ_Assert(0, "replace operation changing value of single entry node is not supported yet!");
@@ -245,20 +249,19 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else
                 {
-                    // <apm> incomplete
+                    // TODO: handle row being replaced
                 }
             }
             else if (operationIterator->GetType() == AZ::Dom::PatchOperation::Type::Add)
             {
-                // <apm>
+                // TODO: handle new nodes being added
             }
         }
 
-        // <apm> adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
-        // of child
-        // <apm> need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all
-        // row children <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one
-        // adapter adds or removes children
+        /* TODO: adds or removes cause all subsequent entries to change index. Update m_pathIndexToChildMaps of parent *and* m_pathEntries
+           of child. Note! We need to only change out column children when swapping "values differ" state, so that we don't have to cull and re-add all
+           row children <apm> it's possible / likely that a node may be removed then added in very quick succession, as more than one
+           adapter adds or removes children */
     }
 
     void RowAggregateAdapter::HandleDomMessage(
@@ -292,13 +295,9 @@ namespace AZ::DocumentPropertyEditor
 
         for (const auto& pathEntry : path)
         {
-            if (!pathEntry.IsIndex())
+            if (!pathEntry.IsIndex() || adapterIndex >= currNode->m_pathIndexToChildMaps.size())
             {
-                // this path includes a non-index entry, and is therefore not a row
-                return nullptr;
-            }
-            if (adapterIndex >= currNode->m_pathIndexToChildMaps.size())
-            {
+                // this path includes a non-index entry or an index out of bounds, and is therefore invalid
                 return nullptr;
             }
             auto& pathMap = currNode->m_pathIndexToChildMaps[adapterIndex];
@@ -503,7 +502,8 @@ namespace AZ::DocumentPropertyEditor
             {
                 if (currChild->EntryCount() == numAdapters)
                 {
-                    // add all row children first, so that functions like GetPathForNode can make simplifying assumptions
+                    /* add all row children first (before any labels or PropertyHandlers in this row),
+                    so that functions like GetPathForNode can make simplifying assumptions */
                     auto aggregateRow = Dom::Value::CreateNode(Nodes::Row::Name);
                     AddChildrenToValue(currChild.get(), aggregateRow, AddChildrenToValue);
 
@@ -512,6 +512,7 @@ namespace AZ::DocumentPropertyEditor
                         (currChild->m_allEntriesMatch || !m_generateDiffRows ? GenerateAggregateRow(currChild.get())
                                                                              : GenerateValuesDifferRow(currChild.get()));
 
+                    // move all the non-row items that were generated for the standalone row to this new full row
                     auto& aggregateRowArray = aggregateRow.GetMutableArray();
                     auto& generatedValueArray = generatedValue.GetArray();
                     aggregateRowArray.insert(
@@ -531,6 +532,8 @@ namespace AZ::DocumentPropertyEditor
     Dom::Value RowAggregateAdapter::HandleMessage(const AdapterMessage& message)
     {
         AZ::Dom::Value messageResult;
+
+        // check if this message is one of the ones that the AggregateAdapter is meant to manipulate and forward to sub-adapters
         const auto messagesToForward = GetMessagesToForward();
         if (AZStd::find(messagesToForward.begin(), messagesToForward.end(), message.m_messageName) != messagesToForward.end())
         {
@@ -540,6 +543,7 @@ namespace AZ::DocumentPropertyEditor
             auto messageNode = GetNodeAtPath(nodePath);
             AZ_Assert(messageNode, "can't find node for given AdapterMessage!");
 
+            // it's a forwarded message, we need to look up the original handler for each adapter and call them individually
             AZ::Dom::Value retval;
             for (size_t adapterIndex = 0, numAdapters = m_adapters.size(); adapterIndex < numAdapters; ++adapterIndex)
             {
@@ -555,6 +559,7 @@ namespace AZ::DocumentPropertyEditor
                 }
                 else if (attributeValue.IsObject())
                 {
+                    // it's an object, it should be a callable attribute
                     auto typeField = attributeValue.FindMember(AZ::Attribute::GetTypeField());
                     if (typeField != attributeValue.MemberEnd() && typeField->second.IsString() &&
                         typeField->second.GetString() == Attribute::GetTypeName())
@@ -616,6 +621,9 @@ namespace AZ::DocumentPropertyEditor
 
     Dom::Value LabeledRowAggregateAdapter::GenerateAggregateRow(AggregateNode* matchingNode)
     {
+        /* use the row generated by the first matching adapter as a template, but replace its message
+           handlers with a redirect to our own adapter. These will then be forwarded as needed in
+           RowAggregateAdapter::HandleMessage */
         auto multiRow = GetComparisonRow(matchingNode);
 
         const auto editorName = AZ::Dpe::GetNodeName<AZ::Dpe::Nodes::PropertyEditor>();
@@ -632,6 +640,7 @@ namespace AZ::DocumentPropertyEditor
                 {
                     for (const auto& messageName : messagesToForward)
                     {
+                        // check if the adapter wants this message forwarded, and replace it with our own handler if it does
                         if (attributeIter->first == messageName)
                         {
                             auto nodePath = GetPathForNode(matchingNode);
