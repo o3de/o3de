@@ -28,7 +28,7 @@ namespace Camera
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<CameraComponentConfig, AZ::ComponentConfig>()
-                ->Version(5)
+                ->Version(6)
                 ->Field("Orthographic", &CameraComponentConfig::m_orthographic)
                 ->Field("Orthographic Half Width", &CameraComponentConfig::m_orthographicHalfWidth)
                 ->Field("Field of View", &CameraComponentConfig::m_fov)
