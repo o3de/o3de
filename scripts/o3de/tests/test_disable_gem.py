@@ -121,28 +121,31 @@ class TestDisableGemCommand:
         return self
 
     @pytest.mark.parametrize("enable_gem_name, enable_gem_version, disable_gem_name, test_gem_path, "
-                             "project_path, gem_registered_with_project, "
+                             "project_path, unregister_gem, gem_registered_with_project, "
                              "gem_registered_with_engine, enabled_in_cmake, expected_result", [
-        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, True, 0),
-        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
-        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), True, False, False, 0),
-        pytest.param(None, None, None, pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, True, True, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, False, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestProject/TestGem'), pathlib.PurePath('TestProject'), False, True, False, False, 0),
+        pytest.param(None, None, None, pathlib.PurePath('TestGem'), pathlib.PurePath('TestProject'), False, False, False, False, 0),
         # when requested to remove by name with no version expect success
-        pytest.param('TestGem', None, 'TestGem', None, pathlib.PurePath('TestProject'), False, False, True, 0),
+        pytest.param('TestGem', None, 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, True, 0),
         # when requested to remove a gem with matching version expect success
-        pytest.param('TestGem==1.0.0', None, 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 0),
+        pytest.param('TestGem==1.0.0', None, 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, False, 0),
         # when a gem specifier is included but the gem doesn't match, expect failure
-        pytest.param('TestGem', 'None', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, 2),
+        pytest.param('TestGem', 'None', 'TestGem==1.0.0', None, pathlib.PurePath('TestProject'), False, False, False, False, 2),
         # when a gem name with no specifier is provided, expect any gem with that name is removed 
-        pytest.param('TestGem==1.2.3', '1.2.3', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, 0),
+        pytest.param('TestGem==1.2.3', '1.2.3', 'TestGem', None, pathlib.PurePath('TestProject'), False, False, False, False, 0),
+        # a gem can be removed even if it isn't registered
+        pytest.param('TestGem', None, 'TestGem', None, pathlib.PurePath('TestProject'), True, False, False, False, 0),
         ]
     )
     def test_disable_gem_registers_gem_name_with_project_json(self, enable_gem_name, enable_gem_version, disable_gem_name, 
-                                                              test_gem_path, project_path, gem_registered_with_project,
+                                                              test_gem_path, project_path, unregister_gem, gem_registered_with_project,
                                                               gem_registered_with_engine, enabled_in_cmake, expected_result):
 
         project_gem_dependencies = []
         default_gem_path = pathlib.PurePath('TestGem')
+        self.gem_registered = True
 
         def get_registered(engine_name: str = None,
                         project_name: str = None,
@@ -154,7 +157,7 @@ class TestDisableGemCommand:
                         project_path: pathlib.Path = None) -> pathlib.Path or None:
             if project_name:
                 return project_path
-            elif gem_name:
+            elif gem_name and self.gem_registered:
                 return test_gem_path if test_gem_path else default_gem_path
             elif engine_name:
                 return pathlib.PurePath('o3de')
@@ -242,6 +245,11 @@ class TestDisableGemCommand:
             # Check that the gem is enabled in project.json
             project_json = get_project_json_data(project_path=project_path)
             assert expected_gem_name in project_json.get('gem_names', [])
+
+            # if unregister_gem is set, then set the gem_registered flag to false
+            # to simulate that the gem is now unregistered so we can test disabling a gem
+            # that is not registered 
+            self.gem_registered = not unregister_gem
 
             # Disable the gem
             result = disable_gem.disable_gem_in_project(gem_name=disable_gem_name, gem_path=test_gem_path, project_path=project_path)

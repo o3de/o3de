@@ -173,6 +173,10 @@ namespace AZ
 
             m_worldToViewMatrix = worldToView;
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             m_onWorldToViewMatrixChange.Signal(m_worldToViewMatrix);
@@ -211,6 +215,10 @@ namespace AZ
             m_worldToViewMatrix = m_viewToWorldMatrix.GetInverseFast();
 
             m_worldToClipMatrix = m_viewToClipMatrix * m_worldToViewMatrix;
+            if (m_viewToClipExcludeMatrix.has_value())
+            {
+                m_worldToClipExcludeMatrix = m_viewToClipExcludeMatrix.value() * m_worldToViewMatrix;
+            }
             m_clipToWorldMatrix = m_worldToClipMatrix.GetInverseFull();
 
             // Only signal an update when there is a change, otherwise this might block
@@ -263,6 +271,20 @@ namespace AZ
             m_unprojectionConstants.SetW(float(tanHalfFovY));
 
             m_onWorldToClipMatrixChange.Signal(m_worldToClipMatrix);
+        }
+
+        void View::SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude)
+        {
+            if (viewToClipExclude)
+            {
+                m_viewToClipExcludeMatrix = *viewToClipExclude;
+                m_worldToClipExcludeMatrix = *viewToClipExclude * m_worldToViewMatrix;
+            }
+            else
+            {
+                m_viewToClipExcludeMatrix.reset();
+                m_worldToClipExcludeMatrix.reset();
+            }
         }
 
         void View::SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth)
@@ -348,6 +370,11 @@ namespace AZ
         const AZ::Matrix4x4& View::GetViewToClipMatrix() const
         {
             return m_viewToClipMatrix;
+        }
+
+        const AZ::Matrix4x4* View::GetWorldToClipExcludeMatrix() const
+        {
+            return m_worldToClipExcludeMatrix.has_value() ? &m_worldToClipExcludeMatrix.value() : nullptr;
         }
 
         const AZ::Matrix4x4& View::GetWorldToClipMatrix() const

@@ -59,27 +59,27 @@ def disable_gem_in_project(gem_name: str = None,
         logger.error(f'Must either specify a Gem path or Gem Name.')
         return 1
 
-    # if gem name resolve it into a path
-    if gem_name and not gem_path:
-        gem_path = manifest.get_registered(gem_name=gem_name, project_path=project_path)
-    if not gem_path:
-        logger.error(f'Unable to locate gem path from the registered manifest.json files:'
-                     f' {str(pathlib.Path.home() / ".o3de/manifest.json")},'
-                     f' {project_path / "project.json"}, engine.json')
-        return 1
-    gem_path = pathlib.Path(gem_path).resolve()
-    # make sure the gem path is a directory
-    if not gem_path.is_dir():
-        logger.error(f'Gem Path {gem_path} does not exist.')
-        return 1
+    # We need a gem name to deactivate in the project
+    # The gem doesn't have to exist or be registered for a user
+    # to be allowed to deactivate it
+    if not gem_name and gem_path:
+        gem_path = pathlib.Path(gem_path).resolve()
 
-    # Read gem.json from the gem path
-    gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
-    if not gem_json_data:
-        logger.error(f'Could not read gem.json content under {gem_path}.')
-        return 1
+        # Make sure the gem path is a directory
+        if not gem_path.is_dir():
+            logger.error(f'Gem Path {gem_path} does not exist. The name of the gem to remove cannot be determined without a valid path.')
+            return 1
 
-    gem_name = gem_name or gem_json_data.get('gem_name','')
+        gem_json_data = manifest.get_gem_json_data(gem_path=gem_path, project_path=project_path)
+        if not gem_json_data:
+            logger.error(f'Could not read gem.json content under {gem_path}.')
+            return 1
+
+        gem_name = gem_json_data.get('gem_name','')
+        if not gem_name:
+            logger.error(f'Unable to determine the gem to remove because the gem name is empty in gem.json content under {gem_path}.')
+            return 1
+
     gem_name_without_specifier, version_specifier = utils.get_object_name_and_optional_version_specifier(gem_name)
     ret_val = 0
 
@@ -98,7 +98,8 @@ def disable_gem_in_project(gem_name: str = None,
     if not project_json_data:
         logger.error(f'Could not read project.json content under {project_path}.')
         return 1
-    gem_names = project_json_data.get('gem_names',[])
+    
+    gem_names = utils.get_gem_names_set(project_json_data.get('gem_names',[]), include_optional=True)
 
     # Remove the gem with the exact match, or any entry with the gem name if 
     # they don't include a version specifier 

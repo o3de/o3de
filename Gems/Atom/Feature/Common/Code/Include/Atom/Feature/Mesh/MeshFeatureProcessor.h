@@ -140,7 +140,7 @@ namespace AZ
             MeshFeatureProcessorInterface::ObjectSrgCreatedEvent m_objectSrgCreatedEvent;
             AZStd::unique_ptr<MeshLoader> m_meshLoader;
             RPI::Scene* m_scene = nullptr;
-            RHI::DrawItemSortKey m_sortKey;
+            RHI::DrawItemSortKey m_sortKey = 0;
 
             TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
             AZ::Uuid m_rayTracingUuid;

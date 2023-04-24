@@ -35,4 +35,9 @@ namespace PhysX
     /// The type ID of runtime component PhysX::StaticRigidBodyComponent.
     ///
     static constexpr AZ::TypeId StaticRigidBodyComponentTypeId("{A2CCCD3D-FB31-4D65-8DCD-2CD7E1D09538}");
+
+    ///
+    /// The type ID of runtime component PhysX::ArticulationLinkComponent.
+    ///
+    static constexpr AZ::TypeId ArticulationLinkComponentTypeId("{48751E98-B35F-4A2F-A908-D9CDD5230264}");
 }

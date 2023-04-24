@@ -44,16 +44,18 @@ def get_most_compatible_project_engine_path(project_path:pathlib.Path,
             'Please verify the path is correct, the file exists and is formatted correctly.')
         return None
     
-    # take into account any user project.json overrides 
+    # look for user project.json overrides if none are provided
     if not isinstance(user_project_json_data, dict):
         user_project_json_path = pathlib.Path(project_path) / 'user' / 'project.json'
         if user_project_json_path.is_file():
             user_project_json_data = manifest.get_json_data_file(user_project_json_path, 'project', validation.always_valid)
-            if user_project_json_data:
-                project_json_data.update(user_project_json_data)
-                user_engine_path = project_json_data.get('engine_path', '')
-                if user_engine_path:
-                    return pathlib.Path(user_engine_path)
+
+    # take into account any user project.json overrides 
+    if user_project_json_data:
+        project_json_data.update(user_project_json_data)
+        user_engine_path = project_json_data.get('engine_path', '')
+        if user_engine_path:
+            return pathlib.Path(user_engine_path)
 
     project_engine = project_json_data.get('engine')
     if not project_engine:
@@ -142,7 +144,7 @@ def get_incompatible_gem_dependencies(gem_json_data:dict, all_gems_json_data:dic
 def get_gems_project_incompatible_objects(gem_paths:list, gem_names:list, project_path:pathlib.Path) -> set():
     """
     Returns any incompatible objects for the gem names provided and project.
-    :param gem_names: names of all the gems 
+    :param gem_names: names of all the gems to add or replace 
     :param gem_paths: paths of all the gems 
     :param project_path: path to the project
     """
@@ -173,9 +175,12 @@ def get_gems_project_incompatible_objects(gem_paths:list, gem_names:list, projec
     enabled_gems_file = manifest.get_enabled_gem_cmake_file(project_path=project_path)
     if enabled_gems_file and enabled_gems_file.is_file():
         active_gem_names.extend(manifest.get_enabled_gems(enabled_gems_file))
-    active_gem_names.extend(gem_names)
 
-    active_gem_names = utils.get_gem_names_set(active_gem_names)
+    # convert the list into a set of strings that removes any dictionaries and optional gems
+    active_gem_names = utils.get_gem_names_set(active_gem_names, include_optional=False)
+
+    # gem_names will add new gems or replace any existing gems
+    active_gem_names = utils.add_or_replace_object_names(active_gem_names, gem_names)
 
     # Dependency resolution takes into account gem and engine requirements so if 
     # it succeeds, all is well

@@ -1442,7 +1442,10 @@ namespace AZ
 
         void Pass::SortDrawList(RHI::DrawList& drawList) const
         {
-            RHI::SortDrawList(drawList, m_drawListSortType);
+            if (!drawList.empty())
+            {
+                RHI::SortDrawList(drawList, m_drawListSortType);
+            }
         }
 
         // --- Debug & Validation functions ---
