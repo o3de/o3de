@@ -1606,7 +1606,7 @@ namespace AssetProcessor
     // This function is one of the most frequently called ones in the entire application
     // and is invoked several times per file.  It can frequently become a bottleneck, so
     // avoid doing expensive operations here, especially memory or IO operations.
-    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder) const
+    QString PlatformConfiguration::FindFirstMatchingFile(QString relativeName, bool skipIntermediateScanFolder, const ScanFolderInfo** outScanFolderInfo) const
     {
         if (relativeName.isEmpty())
         {
@@ -1671,6 +1671,11 @@ namespace AssetProcessor
             {
                 if (fileStateInterface->GetFileInfo(absolutePath, &fileStateInfo))
                 {
+                    if (outScanFolderInfo)
+                    {
+                        *outScanFolderInfo = &scanFolderInfo;
+                    }
+
                     return AssetUtilities::NormalizeFilePath(fileStateInfo.m_absolutePath);
                 }
             }

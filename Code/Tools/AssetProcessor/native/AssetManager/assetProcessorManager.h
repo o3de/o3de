@@ -690,6 +690,11 @@ namespace AssetProcessor
 
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
 
+        // Cache of source -> list of dependencies for startup
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<AzToolsFramework::AssetDatabase::PathOrUuid>> m_dependencyCache;
+        // Cache is turned off after initial idle, it is not meant to handle invalidation or mixed dependency type queries.
+        bool m_dependencyCacheEnabled = true;
+
 protected Q_SLOTS:
         void FinishAnalysis(SourceAssetReference sourceAsset);
         //////////////////////////////////////////////////////////
