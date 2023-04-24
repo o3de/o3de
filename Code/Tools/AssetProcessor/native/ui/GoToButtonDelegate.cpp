@@ -26,14 +26,16 @@ namespace AssetProcessor
 
         if (index.data().canConvert<GoToButtonData>())
         {
+            constexpr int MarginPX = 3;
+            auto marginRect = option.rect.marginsRemoved(QMargins(MarginPX, MarginPX, MarginPX, MarginPX));
+
             if (option.state & QStyle::State_MouseOver)
             {
-
-                m_hoverIcon.paint(painter, option.rect);
+                m_hoverIcon.paint(painter, marginRect);
             }
             else
             {
-                m_icon.paint(painter, option.rect);
+                m_icon.paint(painter, marginRect);
             }
         }
     }

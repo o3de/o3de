@@ -44,7 +44,8 @@ namespace AssetProcessor
 
     protected:
 
-        QIcon m_icon, m_hoverIcon;
+        QIcon m_icon;
+        QIcon m_hoverIcon;
     };
 } // namespace AssetProcessor
 
