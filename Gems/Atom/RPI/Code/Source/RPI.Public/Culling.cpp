@@ -156,12 +156,15 @@ namespace AZ
             const Scene* m_scene = nullptr;
             View* m_view = nullptr;
             Frustum m_frustum;
+            Frustum m_excludeFrustum;
             AZ::Job* m_parentJob = nullptr;
             AZ::TaskGraphEvent* m_taskGraphEvent = nullptr;
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
             MaskedOcclusionCulling* m_maskedOcclusionCulling = nullptr;
 #endif
+            bool m_hasExcludeFrustum = false;
 #ifdef AZ_CULL_DEBUG_ENABLED
+
             AuxGeomDrawPtr GetAuxGeomPtr()
             {
                 if (m_debugCtx->m_debugDraw && (m_view->GetName() == m_debugCtx->m_currentViewSelectionName))
@@ -254,6 +257,13 @@ namespace AZ
                         {
                             continue;
                         }
+                    }
+
+                    if (worklistData->m_hasExcludeFrustum &&
+                        ShapeIntersection::Classify(worklistData->m_excludeFrustum, c->m_cullData.m_boundingSphere) == IntersectResult::Interior)
+                    {
+                        // Skip item contained in exclude frustum.
+                        continue;
                     }
 
 #if AZ_TRAIT_MASKED_OCCLUSION_CULLING_SUPPORTED
@@ -571,6 +581,12 @@ namespace AZ
             AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, taskGraphEvent);
             static const AZ::TaskDescriptor descriptor{ "AZ::RPI::ProcessWorklist", "Graphics" };
 
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
+            {
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+            }
+            
             auto nodeVisitorLambda = [worklistData, taskGraph, parentJob, &worklist](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
                 auto entriesInNode = nodeData.m_entries.size();
@@ -615,7 +631,14 @@ namespace AZ
 
             if (m_debugCtx.m_enableFrustumCulling)
             {
-                m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                if (worklistData->m_hasExcludeFrustum)
+                {
+                    m_visScene->Enumerate(frustum, worklistData->m_excludeFrustum, nodeVisitorLambda);
+                }
+                else
+                {
+                    m_visScene->Enumerate(frustum, nodeVisitorLambda);
+                }
             }
             else
             {
@@ -663,6 +686,12 @@ namespace AZ
             AZStd::shared_ptr<EntryListType> entryList = AZStd::make_shared<EntryListType>();
             entryList->m_entries.reserve(r_numEntriesPerCullingJob);
             AZStd::shared_ptr<WorklistData> worklistData = MakeWorklistData(m_debugCtx, scene, view, frustum, maskedOcclusionCulling, parentJob, nullptr);
+
+            if (const Matrix4x4* worldToClipExclude = view.GetWorldToClipExcludeMatrix())
+            {
+                worklistData->m_hasExcludeFrustum = true;
+                worklistData->m_excludeFrustum = Frustum::CreateFromMatrixColumnMajor(*worldToClipExclude);
+            }
 
             auto nodeVisitorLambda = [worklistData, parentJob, &entryList](const AzFramework::IVisibilityScene::NodeData& nodeData) -> void
             {
@@ -795,7 +824,7 @@ namespace AZ
                     for (uint32_t lodIndex = 0; lodIndex < static_cast<uint32_t>(lodData.m_lods.size()); ++lodIndex)
                     {
                         const Cullable::LodData::Lod& lod = lodData.m_lods[lodIndex];
-                        // Note that this supports overlapping lod ranges (to suport cross-fading lods, for example)
+                        // Note that this supports overlapping lod ranges (to support cross-fading lods, for example)
                         if (approxScreenPercentage >= lod.m_screenCoverageMin && approxScreenPercentage <= lod.m_screenCoverageMax)
                         {
                             addLodToDrawPacket(lod);
