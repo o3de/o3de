@@ -61,6 +61,9 @@ namespace AZ
             const RayTracingShaderTableRecordList& GetMissRecords() const { return m_missRecords; }
             RayTracingShaderTableRecordList& GetMissRecords() { return m_missRecords; }
 
+            const RayTracingShaderTableRecordList& GetCallableRecords() const { return m_callableRecords; }
+            RayTracingShaderTableRecordList& GetCallableRecords() { return m_callableRecords; }
+
             const RayTracingShaderTableRecordList& GetHitGroupRecords() const { return m_hitGroupRecords; }
             RayTracingShaderTableRecordList& GetHitGroupRecords() { return m_hitGroupRecords; }
 
@@ -70,6 +73,7 @@ namespace AZ
             RayTracingShaderTableDescriptor* Build(const AZ::Name& name, const RHI::Ptr<RayTracingPipelineState>& rayTracingPipelineState);
             RayTracingShaderTableDescriptor* RayGenerationRecord(const AZ::Name& name);
             RayTracingShaderTableDescriptor* MissRecord(const AZ::Name& name);
+            RayTracingShaderTableDescriptor* CallableRecord(const AZ::Name& name);
             RayTracingShaderTableDescriptor* HitGroupRecord(const AZ::Name& name, uint32_t key = RayTracingShaderTableRecord::InvalidKey);
             RayTracingShaderTableDescriptor* ShaderResourceGroup(const RHI::ShaderResourceGroup* shaderResourceGroup);
 
@@ -78,6 +82,7 @@ namespace AZ
             RHI::Ptr<RayTracingPipelineState> m_rayTracingPipelineState;
             RayTracingShaderTableRecordList m_rayGenerationRecord;  // limited to one record, but stored as a list to simplify processing
             RayTracingShaderTableRecordList m_missRecords;
+            RayTracingShaderTableRecordList m_callableRecords;
             RayTracingShaderTableRecordList m_hitGroupRecords;
 
             RayTracingShaderTableRecord* m_buildContext = nullptr;

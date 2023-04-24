@@ -34,7 +34,7 @@ namespace AZ
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 serializeContext->Class<EditorDiffuseProbeGridComponent, BaseClass>()
-                    ->Version(2, ConvertToEditorRenderComponentAdapter<1>)
+                    ->Version(3, ConvertToEditorRenderComponentAdapter<1>) // added emissive multiplier
                     ->Field("probeSpacingX", &EditorDiffuseProbeGridComponent::m_probeSpacingX)
                     ->Field("probeSpacingY", &EditorDiffuseProbeGridComponent::m_probeSpacingY)
                     ->Field("probeSpacingZ", &EditorDiffuseProbeGridComponent::m_probeSpacingZ)
