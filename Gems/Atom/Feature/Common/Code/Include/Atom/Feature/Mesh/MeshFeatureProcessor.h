@@ -327,15 +327,14 @@ namespace AZ
                     , m_sortInstanceData({})
                 {
                 }
-                // We need a copy constructor in order to re-size a vector of these,
-                // even though we only resize empty vectors that never actually need to copy anything
+
                 InstanceGroupBucket(const InstanceGroupBucket& rhs)
                 {
                     m_currentElementIndex = rhs.m_currentElementIndex.load();
                     m_sortInstanceData = rhs.m_sortInstanceData;
                 }
 
-                void operator=(const InstanceGroupBucket& rhs)
+                 void operator=(const InstanceGroupBucket& rhs)
                 {
                     m_currentElementIndex = rhs.m_currentElementIndex.load();
                     m_sortInstanceData = rhs.m_sortInstanceData;
@@ -359,6 +358,7 @@ namespace AZ
             bool m_reportShaderOptionFlags = false;
             bool m_enablePerMeshShaderOptionFlags = false;
             bool m_enableMeshInstancing = false;
+            bool m_enableMeshInstancingForTransparentObjects = false;
         };
     } // namespace Render
 } // namespace AZ

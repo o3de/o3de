@@ -158,6 +158,23 @@ namespace AZ
                 console->PerformCommand(
                     AZStd::string::format("r_meshInstancingEnabled %s", m_enableMeshInstancing ? "true" : "false")
                         .c_str());
+
+                console->GetCvarValue("r_meshInstancingEnabledForTransparentObjects", m_enableMeshInstancingForTransparentObjects);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format(
+                        "r_meshInstancingEnabledForTransparentObjects %s", m_enableMeshInstancingForTransparentObjects ? "true" : "false")
+                        .c_str());
+
+                size_t meshInstancingBucketSortScatterBatchSize;
+                console->GetCvarValue("r_meshInstancingBucketSortScatterBatchSize", meshInstancingBucketSortScatterBatchSize);
+
+                // push the cvars value so anything in this dll can access it directly.
+                console->PerformCommand(
+                    AZStd::string::format(
+                        "r_meshInstancingBucketSortScatterBatchSize %zu", meshInstancingBucketSortScatterBatchSize)
+                        .c_str());
             }
         }
 
@@ -229,7 +246,7 @@ namespace AZ
 
         void MeshFeatureProcessor::CheckForInstancingCVarChange()
         {
-            if (m_enableMeshInstancing != r_meshInstancingEnabled)
+            if (m_enableMeshInstancing != r_meshInstancingEnabled || m_enableMeshInstancingForTransparentObjects != r_meshInstancingEnabledForTransparentObjects)
             {
                 // DeInit and re-init every object
                 for (auto& modelDataInstance : m_modelData)
@@ -237,6 +254,7 @@ namespace AZ
                     modelDataInstance.ReInit(this);
                 }
                 m_enableMeshInstancing = r_meshInstancingEnabled;
+                m_enableMeshInstancingForTransparentObjects = r_meshInstancingEnabledForTransparentObjects;
             }
         }
 
@@ -435,9 +453,13 @@ namespace AZ
             if (r_meshInstancingEnabled)
             {
                 AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: OnEndCulling");
+
+                // If necessary, allocate memory up front for the work that needs to be done this frame
                 ResizePerViewInstanceVectors(packet.m_views.size());
 
                 {
+                    // Iterate over all of the visible objects for each view, and perform the first stage of the bucket sort
+                    // where each visible object is sorted into its bucket
                     AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Add Visible Objects to Buckets");
                     AZ::TaskGraphEvent addVisibleObjectsToBucketsTGEvent{ "AddVisibleObjectsToBuckets Wait" };
                     AZ::TaskGraph addVisibleObjectsToBucketsTG{ "AddVisibleObjectsToBuckets" };
@@ -451,6 +473,7 @@ namespace AZ
                 }
 
                 {
+                    // Now that the buckets have been filled, create a task for each bucket to sort each individual bucket in parallel
                     AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Sort Buckets");
                     AZ::TaskGraphEvent sortInstanceBufferBucketsTGEvent{ "SortInstanceBufferBuckets Wait" };
                     AZ::TaskGraph sortInstanceBufferBucketsTG{ "SortInstanceBufferBuckets" };
@@ -465,8 +488,9 @@ namespace AZ
                 }
 
                 {
+                    // For each bucket, create a task to iterate over the instance buffer to calculate the offset and count
+                    // to use with each instanced draw call, and add the draw calls to the view.
                     AZ_PROFILE_SCOPE(RPI, "MeshFeatureProcessor: Build Instance Buffer and Draw Calls");
-                    // Create the task graph;
                     AZ::TaskGraphEvent buildInstanceBufferTGEvent{ "BuildInstanceBuffer Wait" };
                     AZ::TaskGraph buildInstanceBufferTG{ "BuildInstanceBuffer" };
                     for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
@@ -481,6 +505,7 @@ namespace AZ
 
                 for (size_t viewIndex = 0; viewIndex < packet.m_views.size(); ++viewIndex)
                 {
+                    // Now that the per-view instance buffers are up to date on the CPU, update them on the GPU
                     UpdateGPUInstanceBufferForView(viewIndex, packet.m_views[viewIndex]);
                 }
             }
@@ -513,6 +538,9 @@ namespace AZ
                 m_perViewInstanceDataBufferHandlers.reserve(viewCount);
                 while (m_perViewInstanceDataBufferHandlers.size() < viewCount)
                 {
+                    // We construct and add these one at a time instead of a single call to resize
+                    // because copying a GpuBufferHandler will result in a new one that refers to the same buffer,
+                    // and we want a unique GpuBufferHandler referring to a unique buffer for each view.
                     m_perViewInstanceDataBufferHandlers.push_back(GpuBufferHandler(desc));
                 }
             }
@@ -592,7 +620,7 @@ namespace AZ
                     "AZ::Render::MeshFeatureProcessor::OnEndCulling - AddVisibleObjectsToBuckets", "Graphics"
                 };
 
-                size_t batchSize = 512;
+                size_t batchSize = r_meshInstancingBucketSortScatterBatchSize;
                 size_t batchCount = AZ::DivideAndRoundUp(visibleObjectCount, batchSize);
 
                 for (size_t batchIndex = 0; batchIndex < batchCount; ++batchIndex)
@@ -651,6 +679,10 @@ namespace AZ
 
             for (InstanceGroupBucket& instanceGroupBucket : currentViewInstanceGroupBuckets)
             {
+                // We're creating one task per bucket here. That is ideal when the buckets are all close to the same size,
+                // but it can lead to an imperfect distribution of work if one bucket has more objects than any of the others.
+                // If this becomes a performance bottleneck, it could be alleviated by adding an heuristic to sort any overfull
+                // buckets using a parallel std sort rather than using a single task, or by breaking it up into smaller buckets.
                 sortInstanceBufferBucketsTG.AddTask(
                     sortInstanceBufferBucketsTaskDescriptor,
                     [&instanceGroupBucket]()
@@ -1771,7 +1803,11 @@ namespace AZ
                         if (drawListTag == transparentDrawListTag)
                         {
                             isTransparent = true;
-                            return false;
+                            if (!r_meshInstancingEnabledForTransparentObjects)
+                            {
+                                shadersSupportInstancing = false;
+                                return false; // break
+                            }
                         }
                     }
 
@@ -1873,7 +1909,7 @@ namespace AZ
                     instancingSupport = CanSupportInstancing(
                         material, m_flags.m_hasForwardPassIblSpecularMaterial, meshFeatureProcessor->GetTransparentDrawListTag());
 
-                    if (instancingSupport.m_canSupportInstancing && !r_meshInstancingForceOneObjectPerDrawCall)
+                    if (instancingSupport.m_canSupportInstancing && !r_meshInstancingDebugForceUniqueObjectsForProfiling)
                     {
                         // If this object can be instanced, it gets a null uuid that will match other objects that can be instanced with it
                         key.m_forceInstancingOff = Uuid::CreateNull();
@@ -1883,6 +1919,10 @@ namespace AZ
                         // When instancing is enabled, everything goes down the instancing path, including this object
                         // However, using a random uuid here will give it its own unique instance group, with it's own unique ObjectSrg,
                         // so it will end up as an instanced draw call with a count of 1
+
+                        // We also use this path when r_meshInstancingDebugForceUniqueObjectsForProfiling is true, which makes meshes that
+                        // would otherwise be instanced end up in a unique group. This is helpful for performance profiling to test the
+                        // worst case scenario of lots of objects that don't actually end up getting instanced but still go down the instancing path
                         key.m_forceInstancingOff = Uuid::CreateRandom();
                     }
 
