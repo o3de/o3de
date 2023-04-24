@@ -43,7 +43,6 @@
 #include <AzCore/Name/NameDictionary.h>
 
 #include <algorithm>
-#include <execution>
 
 namespace AZ
 {

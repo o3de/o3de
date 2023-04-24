@@ -307,7 +307,7 @@ namespace AZ
                 float m_depth = 0.0f;
                 TransformServiceFeatureProcessorInterface::ObjectId m_objectId;
 
-                bool operator<(const SortInstanceData& rhs)
+                bool operator<(const SortInstanceData& rhs) const
                 {
                     return AZStd::tie(m_instanceGroupHandle, m_depth) < AZStd::tie(rhs.m_instanceGroupHandle, rhs.m_depth);
                 }
