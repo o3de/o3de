@@ -75,6 +75,8 @@ namespace UnitTest
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTransformStaticNoOverrideForUnchangedDefaultValue)
     {
+        // This test validates that changing from default value 'false' to 'false' would not incur an override edit.
+
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
         CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
@@ -229,6 +231,9 @@ namespace UnitTest
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTranslationOverridePersistsAfterChangingBackToDefault)
     {
+        // This test validates that override edit should persist when changing an overridden value '[10, 20, 0]' back
+        // to its default value '[0, 0, 0]'.
+
         InstanceInfo carInstanceInfo;
         EntityInfo wheelEntityInfo;
         CreateCarPrefabHierarchy(carInstanceInfo, wheelEntityInfo);
