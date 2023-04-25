@@ -12,9 +12,8 @@ import argparse
 import importlib.util
 import logging
 import os
-import pathlib
 import stat
-
+import pathlib
 import re
 import shutil
 import subprocess
@@ -26,7 +25,7 @@ import zipfile
 from packaging.version import Version
 from packaging.specifiers import SpecifierSet
 
-from o3de import gitproviderinterface, github_utils, validation as valid
+from o3de import github_utils, git_utils, validation as valid
 from subprocess import Popen, PIPE
 from typing import List, Tuple
 
