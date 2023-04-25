@@ -45,7 +45,6 @@ def Menus_FileMenuOptions_Work():
         ("Open Project",),
         # Disabling "Show Log File" for CI testing as it launches an external app. Uncomment as needed for local testing
         # ("Show Log File",),
-        ("Exit",),
     ]
 
     # 1) Open an existing simple level
