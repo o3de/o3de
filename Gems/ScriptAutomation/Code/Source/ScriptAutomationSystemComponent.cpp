@@ -25,6 +25,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
+#include <AzFramework/Components/ConsoleBus.h>
 #include <AzFramework/Script/ScriptComponent.h>
 
 namespace AZ::ScriptAutomation
