@@ -112,6 +112,30 @@ namespace UnitTest
         // Validate that there is no override created.
         EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
             wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
+
+        // Undo
+        undoNode.Undo();
+        PropagateAllTemplateChanges();
+
+        currentStaticValue = true; // reset to opposite value
+        AZ::TransformBus::EventResult(currentStaticValue, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::IsStaticTransform);
+        EXPECT_EQ(currentStaticValue, defaultStaticValue);
+
+        // Validate that there is no override created.
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
+
+        // Redo
+        undoNode.Redo();
+        PropagateAllTemplateChanges();
+
+        currentStaticValue = true; // reset to opposite value
+        AZ::TransformBus::EventResult(currentStaticValue, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::IsStaticTransform);
+        EXPECT_EQ(currentStaticValue, defaultStaticValue);
+
+        // Validate that there is no override created.
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTranslationSucceeds)
