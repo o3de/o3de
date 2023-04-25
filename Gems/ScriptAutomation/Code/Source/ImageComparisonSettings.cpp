@@ -7,28 +7,28 @@
  */
 
 #include <ImageComparisonSettings.h>
-#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AzCore/Settings/SettingsRegistry.h>
 
 namespace AZ::ScriptAutomation
 {
-    void ImageComparisonSettings::Activate()
+    void ImageComparisonSettings::GetToleranceLevelsFromSettingsRegistry()
     {
-        m_configAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::AnyAsset>("config/imagecomparisonconfig.azasset", AZ::RPI::AssetUtils::TraceLevel::Assert);
-        if (m_configAsset)
+        auto settingsRegistry = AZ::SettingsRegistry::Get();
+        if (settingsRegistry)
         {
-            AZ::Data::AssetBus::Handler::BusConnect(m_configAsset.GetId());
-            OnAssetReloaded(m_configAsset);
-        }
-    }
+            const char* imageComparisonSettingsPath = "/O3DE/ScriptAutomation/ImageComparisonSettings";
 
-    void ImageComparisonSettings::Deactivate()
-    {
-        m_configAsset.Release();
-        AZ::Data::AssetBus::Handler::BusDisconnect();
+            m_ready = settingsRegistry->GetObject(m_config, imageComparisonSettingsPath);
+        }
     }
 
     ImageComparisonToleranceLevel* ImageComparisonSettings::FindToleranceLevel(const AZStd::string& name)
     {
+        if (!IsReady())
+        {
+            GetToleranceLevelsFromSettingsRegistry();
+        }
+        AZ_Assert(IsReady(), "Failed to get image comparison tolerance levels from the settings registry");
         size_t foundIndex = m_config.m_toleranceLevels.size();
 
         for (size_t i = 0; i < m_config.m_toleranceLevels.size(); ++i)
@@ -46,17 +46,5 @@ namespace AZ::ScriptAutomation
         }
 
         return &m_config.m_toleranceLevels[foundIndex];
-    }
-
-    const AZStd::vector<ImageComparisonToleranceLevel>& ImageComparisonSettings::GetAvailableToleranceLevels() const
-    {
-        return m_config.m_toleranceLevels;
-    }
-
-    void ImageComparisonSettings::OnAssetReloaded(AZ::Data::Asset<AZ::Data::AssetData> asset)
-    {
-        m_configAsset = asset;
-        m_config = *m_configAsset->GetDataAs<ImageComparisonConfig>();
-        m_ready = true;
     }
 } // namespace AZ::ScriptAutomation

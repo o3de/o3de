@@ -25,7 +25,6 @@
 #include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzFramework/API/ApplicationAPI.h>
-#include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Script/ScriptComponent.h>
 
 namespace AZ::ScriptAutomation
@@ -201,7 +200,6 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::Activate()
     {
-        AzFramework::AssetCatalogEventBus::Handler::BusConnect(); // listen for OnCatalogLoaded
         ScriptAutomationRequestBus::Handler::BusConnect();
 
         m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
@@ -227,17 +225,9 @@ namespace AZ::ScriptAutomation
         }
     }
 
-    void ScriptAutomationSystemComponent::PostAssetCatalogInit()
-    {
-        m_imageComparisonSettings.Activate();
-
-    }
-
     void ScriptAutomationSystemComponent::Deactivate()
     {
         DeactivateScripts();
-
-        m_imageComparisonSettings.Deactivate();
 
         m_scriptBehaviorContext = nullptr;
         m_scriptContext = nullptr;
@@ -247,7 +237,7 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
-        if (!m_isStarted && m_imageComparisonSettings.IsReady())
+        if (!m_isStarted)
         {
             m_isStarted = true;
             ExecuteScript(m_automationScript.c_str());
@@ -408,14 +398,6 @@ namespace AZ::ScriptAutomation
         {
             AZ_Assert(false, "ScriptAutomation Screen Capture - HDR Not Supported, Screen capture to image is not supported from RGB10A2 display format. Please change the system configuration to disable the HDR display feature.");
         }
-    }
-
-    void ScriptAutomationSystemComponent::OnCatalogLoaded(const char*)
-    {
-        AZ::TickBus::QueueFunction([&]()
-            {
-                PostAssetCatalogInit();
-            });
     }
 
     void ScriptAutomationSystemComponent::LoadLevel(const char* levelName)

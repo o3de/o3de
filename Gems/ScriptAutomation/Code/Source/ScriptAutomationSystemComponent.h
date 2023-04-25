@@ -15,7 +15,6 @@
 #include <AzCore/Component/TickBus.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
 
-#include <AzFramework/Asset/AssetCatalogBus.h>
 #include <AzFramework/API/ApplicationAPI.h>
 
 #include <Atom/Feature/Utils/ProfilingCaptureBus.h>
@@ -46,7 +45,6 @@ namespace AZ::ScriptAutomation
         , public ScriptAutomationRequestBus::Handler
         , public AZ::Render::ProfilingCaptureNotificationBus::Handler
         , public AZ::Render::FrameCaptureNotificationBus::Handler
-        , public AzFramework::AssetCatalogEventBus::Handler
         , public AzFramework::LevelSystemLifecycleNotificationBus::Handler
     {
     public:
@@ -96,16 +94,10 @@ namespace AZ::ScriptAutomation
         void OnCaptureQueryPipelineStatisticsFinished(bool result, const AZStd::string& info) override;
         void OnCaptureBenchmarkMetadataFinished(bool result, const AZStd::string& info) override;
 
-        // AssetCatalogEventBus implementation
-        void OnCatalogLoaded(const char* /*catalogFile*/) override;
-
         // LevelSystemLifecycleNotificationBus implementation
         void OnLevelNotFound(const char* levelName) override;
         void OnLoadingComplete(const char* levelName) override;
         void OnLoadingError(const char* levelName, const char* error) override;
-
-        // Internal functions
-        void PostAssetCatalogInit();
 
         AZStd::unique_ptr<AZ::ScriptContext> m_scriptContext; //< Provides the lua scripting system
         AZStd::unique_ptr<AZ::BehaviorContext> m_scriptBehaviorContext; //< Used to bind script callback functions to lua

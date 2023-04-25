@@ -101,7 +101,8 @@ namespace AZ::ScriptAutomation
         {
             auto func = [message]()
             {
-                AZ_TracePrintf("ScriptAutomation", "Script: %s\n", message.c_str());
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
+                AZ_Info("ScriptAutomation", "Script: %s\n", message.c_str());
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(func));
@@ -111,6 +112,7 @@ namespace AZ::ScriptAutomation
         {
             auto func = [message]()
             {
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
                 AZ_Warning("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
@@ -121,6 +123,7 @@ namespace AZ::ScriptAutomation
         {
             auto func = [message]()
             {
+                AZ_UNUSED(message); // mark explicitly captured variable `message` as used because AZ_Error is a nop in release builds
                 AZ_Error("ScriptAutomation", false, "Script: %s", message.c_str());
             };
 
