@@ -1072,6 +1072,12 @@ namespace AzToolsFramework
             }
         }
 
+        bool PrefabPublicHandler::IsOwnedByPrefabInstance(AZ::EntityId entityId) const
+        {
+            InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
+            return instanceReference.has_value();
+        }
+
         bool PrefabPublicHandler::IsOwnedByProceduralPrefabInstance(AZ::EntityId entityId) const
         {
             if (InstanceOptionalReference instanceReference = m_instanceEntityMapperInterface->FindOwningInstance(entityId);
