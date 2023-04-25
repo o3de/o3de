@@ -215,7 +215,7 @@ namespace AzToolsFramework
                 // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter
                 if (m_aggregateAdapter)
                 {
-                    m_dpe->SetAdapter(m_adapter);
+                    m_filterAdapter->SetSourceAdapter(m_adapter);
                     m_aggregateAdapter.reset();
                 }
             }
@@ -233,7 +233,6 @@ namespace AzToolsFramework
                     // add the original adapter which was already set in a prior AddInstance with a null aggregateInstance
                     m_aggregateAdapter->AddAdapter(m_adapter);
                     m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
-                    m_dpe->SetAdapter(m_filterAdapter);
                 }
 
                 // create the new ComponentAdapter for the componentInstance using the factory from our constructor
