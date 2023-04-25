@@ -51,6 +51,7 @@ AZ_POP_DISABLE_WARNING
 #include <AzToolsFramework/ComponentMode/ComponentModeDelegate.h>
 #include <AzToolsFramework/Entity/EditorEntityHelpers.h>
 #include <AzToolsFramework/Entity/ReadOnly/ReadOnlyEntityInterface.h>
+#include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabComponentAdapter.h>
 #include <AzToolsFramework/Prefab/DocumentPropertyEditor/PrefabOverrideLabelHandler.h>
 #include <AzToolsFramework/Prefab/Overrides/PrefabOverridePublicInterface.h>
 #include <AzToolsFramework/Prefab/PrefabFocusPublicInterface.h>
@@ -1894,8 +1895,23 @@ namespace AzToolsFramework
         //caching allocated component editors for reuse and to preserve order
         if (m_componentEditorsUsed >= m_componentEditors.size())
         {
-            //create a new component editor since cache has been exceeded
-            auto componentEditor = new ComponentEditor(m_serializeContext, this, this);
+            // create a new component editor since cache has been exceeded
+
+            /* create a factory for component adapters
+             * depending on the preferences state, create the correct type of adapter, or none at all */
+            ComponentEditor::ComponentAdapterFactory adapterFactory =
+                [&]() -> AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter>
+            {
+                if (DocumentPropertyEditor::ShouldReplaceRPE())
+                {
+                    return (
+                        Prefab::IsInspectorOverrideManagementEnabled()
+                            ? AZStd::make_shared<Prefab::PrefabComponentAdapter>()
+                            : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+                }
+                return nullptr;
+            };
+            auto componentEditor = new ComponentEditor(m_serializeContext, this, this, adapterFactory);
             componentEditor->setAcceptDrops(true);
 
             connect(componentEditor, &ComponentEditor::OnExpansionContractionDone, this, [this]()

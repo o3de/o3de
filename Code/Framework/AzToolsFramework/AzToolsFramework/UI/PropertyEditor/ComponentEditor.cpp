@@ -145,19 +145,17 @@ namespace AzToolsFramework
     ComponentEditor::ComponentEditor(
         AZ::SerializeContext* context,
         IPropertyEditorNotify* notifyTarget /* = nullptr */,
-        QWidget* parent /* = nullptr */)
+        QWidget* parent /* = nullptr */,
+        ComponentAdapterFactory adapterFactory /* nullptr factory */)
         : AzQtComponents::Card(new ComponentEditorHeader(), parent)
         , m_serializeContext(context)
+        , m_adapterFactory(adapterFactory)
     {
         GetHeader()->SetTitle(ComponentEditorConstants::kUnknownComponentTitle);
 
-        if (DocumentPropertyEditor::ShouldReplaceRPE())
+        m_adapter = m_adapterFactory();
+        if (m_adapter)
         {
-            // Instantiate the DPE without the RPE
-            m_adapter = (Prefab::IsInspectorOverrideManagementEnabled() ?
-                AZStd::make_shared<Prefab::PrefabComponentAdapter>() :
-                AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
-
             m_filterAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::ValueStringFilter>();
             m_dpe = new DocumentPropertyEditor(this);
             m_filterAdapter->SetSourceAdapter(m_adapter);
@@ -208,12 +206,13 @@ namespace AzToolsFramework
 
         if (m_adapter)
         {
+            // aggregateInstance will be null unless we're adding to multi-edit
             if (!aggregateInstance)
             {
-                // Set the adapter component to this instance.
+                // not in multi-edit, just set the adapter component to this instance.
                 m_adapter->SetComponent(componentInstance);
 
-                // set the DPE back to the regular adapter and destroy the aggregate adapter
+                // if we were in multi-edit before, set the DPE back to the regular adapter and destroy the aggregate adapter
                 if (m_aggregateAdapter)
                 {
                     m_dpe->SetAdapter(m_adapter);
@@ -222,6 +221,7 @@ namespace AzToolsFramework
             }
             else
             {
+                // there's an aggregateInstance, so we're in multi-edit. Create the AggregateAdapter if it doesn't exist yet
                 if (!m_aggregateAdapter)
                 {
                     m_aggregateAdapter = AZStd::make_shared<AZ::DocumentPropertyEditor::LabeledRowAggregateAdapter>();
@@ -229,14 +229,16 @@ namespace AzToolsFramework
                     // for now, disable "values differ rows", since there are so many pointer and opaque types in the Inspector
                     // and the output is noisy and unpleasant.
                     m_aggregateAdapter->SetGenerateDiffRows(false);
+
+                    // add the original adapter which was already set in a prior AddInstance with a null aggregateInstance
                     m_aggregateAdapter->AddAdapter(m_adapter);
                     m_filterAdapter->SetSourceAdapter(m_aggregateAdapter);
                     m_dpe->SetAdapter(m_filterAdapter);
                 }
 
-                AZStd::shared_ptr<AZ::DocumentPropertyEditor::ComponentAdapter> newAdapter =
-                    (Prefab::IsInspectorOverrideManagementEnabled() ? AZStd::make_shared<Prefab::PrefabComponentAdapter>()
-                                                                    : AZStd::make_shared<AZ::DocumentPropertyEditor::ComponentAdapter>());
+                // create the new ComponentAdapter for the componentInstance using the factory from our constructor
+                auto newAdapter = m_adapterFactory();
+                AZ_Assert(newAdapter, "m_adapterFactory should always return a valid ComponentAdapter in DPE mode!");
                 newAdapter->SetComponent(componentInstance);
                 m_aggregateAdapter->AddAdapter(newAdapter);
             }
