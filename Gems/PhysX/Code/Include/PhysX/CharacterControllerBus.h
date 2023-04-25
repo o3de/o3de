@@ -54,6 +54,13 @@ namespace PhysX
         /// Sets the half forward extent of the controller (for box controllers only).
         /// @param halfForwardExtent The new half forward extent for the controller.
         virtual void SetHalfForwardExtent(float halfForwardExtent) = 0;
+
+        // carbonated begin enable_catbonated_1: Methods called from o2de-gruber
+#if defined(CARBONATED)
+        virtual void SetMaterialByName(uint32_t index, const AZStd::string& name) = 0;
+        virtual void SetTag(const AZ::Crc32& tag) = 0;
+#endif
+        // carbonated end enable_catbonated_1
     };
     using CharacterControllerRequestBus = AZ::EBus<CharacterControllerRequests>;
 } // namespace PhysX
