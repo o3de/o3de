@@ -50,13 +50,16 @@ namespace AZ
             BufferCreateInfo createInfo = device.BuildBufferCreateInfo(descriptor);
             VmaAllocationCreateInfo allocInfo = GetVmaAllocationCreateInfo(descriptor.m_heapMemoryLevel);
             VmaAllocation vmaAlloc;
-            VkResult vkResult = vmaCreateBuffer(
+            VkResult vkResult;
+            vkResult = vmaCreateBufferWithAlignment(
                 device.GetVmaAllocator(),
                 &createInfo.m_vkCreateInfo,
                 &allocInfo,
+                RHI::IsPowerOfTwo(descriptor.m_alignment) ? descriptor.m_alignment : 1,
                 &m_vkBuffer,
                 &vmaAlloc,
                 nullptr);
+            
             AssertSuccess(vkResult);
             RHI::ResultCode result = ConvertResult(vkResult);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
