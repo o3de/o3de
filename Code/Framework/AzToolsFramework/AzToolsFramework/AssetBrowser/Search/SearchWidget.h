@@ -33,7 +33,7 @@ namespace AzToolsFramework
 
             void Setup(bool stringFilter, bool assetTypeFilter);
 
-            void ToggleProjectSourceAssetFilter(bool checked);
+            void ToggleEngineFilter(bool checked);
 
             void ToggleUnusableProductsFilter(bool checked);
 
@@ -49,7 +49,7 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetTypesFilter() const;
 
-            QSharedPointer<CompositeFilter> GetProjectSourceFilter() const;
+            QSharedPointer<CompositeFilter> GetEngineFilter() const;
 
             QSharedPointer<CompositeFilter> GetUnusableProductsFilter() const;
 
@@ -62,7 +62,7 @@ namespace AzToolsFramework
             QSharedPointer<CompositeFilter> m_filter;
             QSharedPointer<CompositeFilter> m_stringFilter;
             QSharedPointer<CompositeFilter> m_typesFilter;
-            QSharedPointer<CompositeFilter> m_projectSourceFilter;
+            QSharedPointer<CompositeFilter> m_engineFilter;
             QSharedPointer<CompositeFilter> m_unusableProductsFilter;
             QSharedPointer<CompositeFilter> m_folderFilter;
         };
