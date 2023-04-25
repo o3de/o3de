@@ -86,7 +86,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
     float distanceToLight2 = dot(posToLight, posToLight); // light distance squared
     float falloff = distanceToLight2 * light.m_invAttenuationRadiusSquared;
 
-    bool doubleSided = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    bool doubleSided = (light.m_flags & EmitsBothDirections) > 0;
     if (doubleSided)
     {
         lightDirection *= sign(posToLightDotLightDirection);
@@ -108,7 +108,7 @@ void ApplyQuadLight(ViewSrg::QuadLight light, Surface surface, inout LightingDat
         float3 p2 = posToLight +  left + -up;
         float3 p3 = posToLight +  left +  up;
 
-        bool useFastApproximation = (light.m_flags & QuadLightFlag::UseFastApproximation) > 0;
+        bool useFastApproximation = (light.m_flags & UseFastApproximation) > 0;
         if (!useFastApproximation && o_enableQuadLightLTC)
         {
             float3 p[4] = {p0, p1, p2, p3};
@@ -231,7 +231,7 @@ void ValidateQuadLight(ViewSrg::QuadLight light, Surface surface, inout Lighting
     float3 specularAcc = float3(0.0, 0.0, 0.0);
     float3 translucentAcc = float3(0.0, 0.0, 0.0);
 
-    bool emitsBothDirections = (light.m_flags & QuadLightFlag::EmitsBothDirections) > 0;
+    bool emitsBothDirections = (light.m_flags & EmitsBothDirections) > 0;
     float bothDirectionsFactor = emitsBothDirections ? -1.0 : 0.0;
 
     for (uint i = 0; i < sampleCount; ++i)
