@@ -33,7 +33,7 @@ namespace UnitTest
         ConvertToPrefabDomValue(propertyDomValue, changePatch.m_propertyValue);
 
         AZStd::string wheelEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(wheelEntityInfo.m_entityId);
-        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToProperty;
+        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToPropertyFromOwningEntity;
 
         // Create an undo node
         PrefabUndoComponentPropertyOverride undoNode("Modify transform static");
@@ -49,8 +49,8 @@ namespace UnitTest
         bool currentStaticValue = defaultStaticValue; // default to opposite value
         AZ::TransformBus::EventResult(currentStaticValue, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::IsStaticTransform);
         EXPECT_EQ(currentStaticValue, overriddenStaticValue);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Undo
         undoNode.Undo();
@@ -59,8 +59,8 @@ namespace UnitTest
         currentStaticValue = overriddenStaticValue; // reset to opposite value
         AZ::TransformBus::EventResult(currentStaticValue, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::IsStaticTransform);
         EXPECT_EQ(currentStaticValue, defaultStaticValue);
-        EXPECT_FALSE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Redo
         undoNode.Redo();
@@ -69,8 +69,8 @@ namespace UnitTest
         currentStaticValue = defaultStaticValue; // reset to opposite value
         AZ::TransformBus::EventResult(currentStaticValue, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::IsStaticTransform);
         EXPECT_EQ(currentStaticValue, overriddenStaticValue);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTransformStaticNoOverrideForUnchangedDefaultValue)
@@ -90,7 +90,7 @@ namespace UnitTest
         ConvertToPrefabDomValue(propertyDomValue, changePatch.m_propertyValue);
 
         AZStd::string wheelEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(wheelEntityInfo.m_entityId);
-        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToProperty;
+        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToPropertyFromOwningEntity;
 
         // Create an undo node
         PrefabUndoComponentPropertyOverride undoNode("Modify transform static to default value");
@@ -108,8 +108,8 @@ namespace UnitTest
         EXPECT_EQ(currentStaticValue, defaultStaticValue);
 
         // Validate that there is no override created.
-        EXPECT_FALSE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTranslationSucceeds)
@@ -131,7 +131,7 @@ namespace UnitTest
         ConvertToPrefabDomValue(propertyDomValue, changePatch.m_propertyValue);
 
         AZStd::string wheelEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(wheelEntityInfo.m_entityId);
-        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToProperty;
+        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToPropertyFromOwningEntity;
 
         // Create an undo node
         PrefabUndoComponentPropertyOverride undoNode("Modify transform translation");
@@ -146,8 +146,8 @@ namespace UnitTest
         AZ::Vector3 currentWheelTranslate(-1.0f); // init to other value.
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, overriddenTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Undo
         undoNode.Undo();
@@ -156,8 +156,8 @@ namespace UnitTest
         currentWheelTranslate = AZ::Vector3(-1.0f); // reset
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, defaultTranslation);
-        EXPECT_FALSE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Redo
         undoNode.Redo();
@@ -166,8 +166,8 @@ namespace UnitTest
         currentWheelTranslate = AZ::Vector3(-1.0f); // reset
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, overriddenTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTranslationOnEntityInNestedPrefabSucceeds)
@@ -188,7 +188,7 @@ namespace UnitTest
         ConvertToPrefabDomValue(propertyDomValue, changePatch.m_propertyValue);
 
         AZStd::string wheelEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(wheelEntityInfo.m_entityId);
-        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToProperty;
+        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToPropertyFromOwningEntity;
 
         // Create an undo node
         PrefabUndoComponentPropertyOverride undoNode("Modify transform translation");
@@ -203,8 +203,8 @@ namespace UnitTest
         AZ::Vector3 currentWheelTranslate(-1.0f); // init to other value
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, overriddenTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Undo
         undoNode.Undo();
@@ -213,8 +213,8 @@ namespace UnitTest
         currentWheelTranslate = AZ::Vector3(-1.0f); // reset
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, defaultTranslation);
-        EXPECT_FALSE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_FALSE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Redo
         undoNode.Redo();
@@ -223,8 +223,8 @@ namespace UnitTest
         currentWheelTranslate = AZ::Vector3(-1.0f); // reset
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, overriddenTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
     TEST_F(PrefabUndoComponentPropertyOverrideTests, EditTranslationOverridePersistsAfterChangingBackToDefault)
@@ -245,7 +245,7 @@ namespace UnitTest
         ConvertToPrefabDomValue(propertyDomValue, changePatch.m_propertyValue);
 
         AZStd::string wheelEntityAliasPath = m_instanceToTemplateInterface->GenerateEntityAliasPath(wheelEntityInfo.m_entityId);
-        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToProperty;
+        AZ::Dom::Path pathToPropertyFromOwningPrefab = AZ::Dom::Path(wheelEntityAliasPath) / changePatch.m_pathToPropertyFromOwningEntity;
 
         // Create an undo node
         PrefabUndoComponentPropertyOverride undoNode("Modify transform translation to non-default value");
@@ -260,8 +260,8 @@ namespace UnitTest
         AZ::Vector3 currentWheelTranslate(-1.0f); // init to other value
         AZ::TransformBus::EventResult(currentWheelTranslate, wheelEntityInfo.m_entityId, &AZ::TransformBus::Events::GetLocalTranslation);
         EXPECT_EQ(currentWheelTranslate, overriddenTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
 
         // Change back to default value
         AZ::TransformBus::Event(wheelEntityInfo.m_entityId, &AZ::TransformInterface::SetLocalTranslation, defaultTranslation);
@@ -272,7 +272,8 @@ namespace UnitTest
         ConvertToPrefabDomValue(defaultPropertyDomValue, changePatchToDefault.m_propertyValue);
 
         PrefabUndoComponentPropertyOverride undoNodeToDefault("Modify transform translation to default value");
-        undoNodeToDefault.CaptureAndRedo(carInstance->get(), changePatchToDefault.m_pathToProperty, defaultPropertyDomValue);
+        undoNodeToDefault.CaptureAndRedo(
+            carInstance->get(), changePatchToDefault.m_pathToPropertyFromOwningEntity, defaultPropertyDomValue);
         PropagateAllTemplateChanges();
 
         currentWheelTranslate = AZ::Vector3(-1.0f); // reset
@@ -280,8 +281,8 @@ namespace UnitTest
 
         // Validate the value changes back to default and the override patch still persists.
         EXPECT_EQ(currentWheelTranslate, defaultTranslation);
-        EXPECT_TRUE(
-            m_prefabOverridePublicInterface->AreOverridesPresent(wheelEntityInfo.m_entityId, changePatch.m_pathToProperty.ToString()));
+        EXPECT_TRUE(m_prefabOverridePublicInterface->AreOverridesPresent(
+            wheelEntityInfo.m_entityId, changePatch.m_pathToPropertyFromOwningEntity.ToString()));
     }
 
 } // namespace UnitTest

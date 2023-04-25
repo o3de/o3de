@@ -41,7 +41,7 @@ namespace UnitTest
         //! Contains a change patch to the property value.
         struct PropertyChangePatch
         {
-            AZ::Dom::Path m_pathToProperty; // relative to entity, so no entity alias path is included.
+            AZ::Dom::Path m_pathToPropertyFromOwningEntity;
             AZ::Dom::Value m_propertyValue;
         };
 
