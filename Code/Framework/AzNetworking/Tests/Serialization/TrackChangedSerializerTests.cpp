@@ -75,7 +75,7 @@ namespace UnitTest
     TEST_F(TrackChangedSerializerTests, TestTrackChangedSerializer)
     {
         const size_t Capacity = 2048;
-        const int8_t ExpectedSerializedBytes = 50;
+        const int8_t ExpectedSerializedBytes = 46;
         AZStd::array<uint8_t, Capacity> buffer;
 
         TrackChangedSerializerInElement inElement;

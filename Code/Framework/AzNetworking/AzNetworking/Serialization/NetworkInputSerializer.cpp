@@ -123,20 +123,20 @@ namespace AzNetworking
     {
         m_serializerValid &= (inputValue >= minValue);
         m_serializerValid &= (inputValue <= maxValue);
-        const uint64_t valueRange = static_cast<uint64_t>(maxValue - minValue);
+        const uint64_t valueRange = static_cast<uint64_t>(maxValue) - static_cast<uint64_t>(minValue);
         if (valueRange <= AZStd::numeric_limits<uint8_t>::max())
         {
-            return SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint8_t>(static_cast<uint8_t>(inputValue) - static_cast<uint8_t>(minValue));
         }
         else if (valueRange <= AZStd::numeric_limits<uint16_t>::max())
         {
-            return SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint16_t>(static_cast<uint16_t>(inputValue) - static_cast<uint16_t>(minValue));
         }
         else if (valueRange <= AZStd::numeric_limits<uint32_t>::max())
         {
-            return SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(inputValue - minValue));
+            return SerializeBoundedValueHelper<uint32_t>(static_cast<uint32_t>(inputValue) - static_cast<uint32_t>(minValue));
         }
-        return SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(inputValue - minValue));
+        return SerializeBoundedValueHelper<uint64_t>(static_cast<uint64_t>(inputValue) - static_cast<uint64_t>(minValue));
     }
 
     inline uint8_t HostToNetwork(uint8_t value)
