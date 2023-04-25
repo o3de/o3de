@@ -18,7 +18,6 @@
         "Gem"
     ],
     "gem_names": [
-        "${Name}",
         "Atom",
         "CameraFramework",
         "ImGui"

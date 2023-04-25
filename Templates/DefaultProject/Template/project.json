@@ -19,7 +19,6 @@
     ],
     "restricted": "${Name}",
     "gem_names": [
-        "${Name}",
         "Atom",
         "AudioSystem",
         "AWSCore",
