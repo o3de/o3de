@@ -110,7 +110,7 @@ namespace UnitTest
     * \param[in] expectedSize  The expected buffer size to compare the results to
     */
     template<typename T>
-    void InternalTestSerializeType(T value, const char* label, const void* expectedData, const size_t expectedSize)
+    void InternalTestSerializeType(T value, const char* label, AZStd::span<uint8_t> expectedData)
     {
         constexpr size_t Capacity = 32;
         AZStd::array<uint8_t, Capacity> buffer;
@@ -122,82 +122,82 @@ namespace UnitTest
 
         EXPECT_TRUE(serializer.Serialize(value, label)) << "Serialize failed for " << label;
 
-        EXPECT_EQ(serializer.GetSize(), expectedSize) << "Resulting buffer size for " << label << "does not match expected (" << serializer.GetSize() << " != " << expectedSize << ")";
+        EXPECT_EQ(serializer.GetSize(), expectedData.size()) << "Resulting buffer size for " << label << "does not match expected (" << serializer.GetSize() << " != " << expectedData.size() << ")";
 
         auto resultHexStr = AZStd::MemoryToASCII::ToString(serializer.GetBuffer(), serializer.GetSize(), serializer.GetSize(), 512, AZStd::MemoryToASCII::Options::Binary);
         AZ::StringFunc::TrimWhiteSpace(resultHexStr, true, true);
-        auto expectedHexStr = AZStd::MemoryToASCII::ToString(expectedData, expectedSize,expectedSize, 512, AZStd::MemoryToASCII::Options::Binary);
+        auto expectedHexStr = AZStd::MemoryToASCII::ToString(expectedData.data(), expectedData.size(), expectedData.size(), 512, AZStd::MemoryToASCII::Options::Binary);
         AZ::StringFunc::TrimWhiteSpace(expectedHexStr, true, true);
 
-        EXPECT_TRUE(memcmp(serializer.GetBuffer(), expectedData, serializer.GetSize())==0) << "Resulting bytes for " << label << " do not match expected (" << resultHexStr.c_str() << " != " << expectedHexStr.c_str() << ")";
+        EXPECT_TRUE(memcmp(serializer.GetBuffer(), expectedData.data(), serializer.GetSize())==0) << "Resulting bytes for " << label << " do not match expected (" << resultHexStr.c_str() << " != " << expectedHexStr.c_str() << ")";
     }
 
     TEST_F(InputOutputSerializerTests, TestFixedSerialization)
     {
         {
             bool testValue = true;
-            unsigned char expected[] = { 0x01 };
-            InternalTestSerializeType(testValue, "bool(true)", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x01 });
+            InternalTestSerializeType(testValue, "bool(true)", expected);
         }
         {
             bool testValue = false;
-            unsigned char expected[] = { 0x00 };
-            InternalTestSerializeType(testValue, "boolfalse)", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x00 });
+            InternalTestSerializeType(testValue, "boolfalse)", expected);
         }
         {
             int8_t testValue = 0x12;
-            unsigned char expected[] = { 0x92 };
-            InternalTestSerializeType(testValue, "int8", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x92 });
+            InternalTestSerializeType(testValue, "int8", expected);
         }
         {
             int16_t testValue = 0x1234;
-            unsigned char expected[] = { 0x92, 0x34 };
-            InternalTestSerializeType(testValue, "int16", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x92, 0x34 });
+            InternalTestSerializeType(testValue, "int16", expected);
         }
         {
             int32_t testValue = 0x12345678;
-            unsigned char expected[] = { 0x92, 0x34, 0x56, 0x78 };
-            InternalTestSerializeType(testValue, "int32", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x92, 0x34, 0x56, 0x78 });
+            InternalTestSerializeType(testValue, "int32", expected);
         }
         {
             int64_t testValue = 0x123456789abcdef;
-            unsigned char expected[] = { 0x81, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
-            InternalTestSerializeType(testValue, "int64", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x81, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef });
+            InternalTestSerializeType(testValue, "int64", expected);
         }
         {
             uint8_t testValue = 0x12;
-            unsigned char expected[] = { 0x12 };
-            InternalTestSerializeType(testValue, "uint8", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x12 });
+            InternalTestSerializeType(testValue, "uint8", expected);
         }
         {
             uint16_t testValue = 0x1234;
-            unsigned char expected[] = { 0x12, 0x34 };
-            InternalTestSerializeType(testValue, "uint16", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x12, 0x34 });
+            InternalTestSerializeType(testValue, "uint16", expected);
         }
         {
             uint32_t testValue = 0x12345678;
-            unsigned char expected[] = { 0x12, 0x34, 0x56, 0x78 };
-            InternalTestSerializeType(testValue, "uint32", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x12, 0x34, 0x56, 0x78 });
+            InternalTestSerializeType(testValue, "uint32", expected);
         }
         {
             uint64_t testValue = 0x123456789abcdef;
-            unsigned char expected[] = { 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef };
-            InternalTestSerializeType(testValue, "uint64", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x01, 0x23, 0x45, 0x67, 0x89, 0xab, 0xcd, 0xef });
+            InternalTestSerializeType(testValue, "uint64", expected);
         }
         {
             double testValue = 1.0;
-            unsigned char expected[] = { 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
-            InternalTestSerializeType(testValue, "double", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x3f, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 });
+            InternalTestSerializeType(testValue, "double", expected);
         }
         {
             float testValue = 1.;
-            unsigned char expected[] = { 0x3f, 0x80, 0x00, 0x00 };
-            InternalTestSerializeType(testValue, "float", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x3f, 0x80, 0x00, 0x00 });
+            InternalTestSerializeType(testValue, "float", expected);
         }
         {
             AZStd::fixed_string<32> testValue = "Fixed";
-            unsigned char expected[] = { 0x05, 0x05, 0x46, 0x69, 0x78, 0x65, 0x64 };
-            InternalTestSerializeType(testValue, "string", expected, sizeof(expected));
+            auto expected = AZStd::to_array<uint8_t>({ 0x05, 0x05, 0x46, 0x69, 0x78, 0x65, 0x64 });
+            InternalTestSerializeType(testValue, "string", expected);
         }
 
     }
