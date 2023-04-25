@@ -202,7 +202,7 @@ function(resolve_gem_dependencies object_type object_path)
     set(ENV{PYTHONNOUSERSITE} 1)
     string(TOLOWER ${object_type} object_type_lower)
     execute_process(COMMAND 
-        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}"
+        ${LY_PYTHON_CMD} "${LY_ROOT_FOLDER}/scripts/o3de/o3de/cmake.py" --${object_type_lower}-path "${object_path}" --engine-path "${LY_ROOT_FOLDER}"
         WORKING_DIRECTORY ${LY_ROOT_FOLDER}
         RESULT_VARIABLE O3DE_CLI_RESULT
         OUTPUT_VARIABLE resolved_gem_dependency_output 
