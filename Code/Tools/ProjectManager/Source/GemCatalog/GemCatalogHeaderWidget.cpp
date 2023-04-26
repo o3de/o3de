@@ -538,7 +538,7 @@ namespace O3DE::ProjectManager
         hLayout->addSpacing(16);
 
         QMenu* gemMenu = new QMenu(this);
-        gemMenu->addAction( tr("Refresh"), [this]() { emit RefreshGems(); });
+        gemMenu->addAction(tr("Refresh"), [this]() { emit RefreshGems(/*refreshRemoteRepos*/true); });
         gemMenu->addAction( tr("Show Gem Repos"), [this]() { emit OpenGemsRepo(); });
         gemMenu->addSeparator();
         gemMenu->addAction( tr("Add Existing Gem"), [this]() { emit AddGem(); });

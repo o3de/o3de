@@ -35,7 +35,7 @@ namespace O3DE::ProjectManager
         m_tabWidget->tabBar()->setFocusPolicy(Qt::TabFocus);
 
         m_engineSettingsScreen = new EngineSettingsScreen();
-        m_gemRepoScreen = new GemRepoScreen();
+        m_gemRepoScreen = new GemRepoScreen(parent);
 
         m_tabWidget->addTab(m_engineSettingsScreen, tr("General"));
         m_tabWidget->addTab(m_gemRepoScreen, tr("Remote Sources"));

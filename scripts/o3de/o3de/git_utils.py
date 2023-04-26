@@ -9,47 +9,24 @@
 This file contains utility functions for using GitHub
 """
 
-import json
 import logging
 import pathlib
-import urllib.parse
 from urllib.parse import ParseResult
-import urllib.request
 import subprocess
 
 from o3de import gitproviderinterface, utils
 
 LOG_FORMAT = '[%(levelname)s] %(name)s: %(message)s'
 
-logger = logging.getLogger('o3de.github_utils')
+logger = logging.getLogger('o3de.git_utils')
 logging.basicConfig(format=LOG_FORMAT)
 
-class GitHubProvider(gitproviderinterface.GitProviderInterface):
+class GenericGitProvider(gitproviderinterface.GitProviderInterface):
     def get_specific_file_uri(self, parsed_uri: ParseResult):
-        components = parsed_uri.path.split('/')
-        components = [ele for ele in components if ele.strip()]
-
-        if len(components) < 3:
-            return parsed_uri
-
-        user = components[0]
-        repository = components[1].replace('.git','')
-        filepath = '/'.join(components[2:len(components)])
-        api_url = f'http://api.github.com/repos/{user}/{repository}/contents/{filepath}'
-
-        try:
-            with urllib.request.urlopen(api_url) as url:
-                json_data = json.loads(url.read().decode())
-                download_url = json_data['download_url']
-                parsed_uri = urllib.parse.urlparse(download_url)
-        except urllib.error.HTTPError as e:
-            logger.error(f'HTTP Error {e.code} opening {api_url.geturl()}')
-        except urllib.error.URLError as e:
-            logger.error(f'URL Error {e.reason} opening {api_url.geturl()}')
-
+        logger.warning(f"GenericGitProvider does not yet support retrieving individual files")
         return parsed_uri
 
-    def clone_from_git(self, uri: ParseResult, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
+    def clone_from_git(self, uri, download_path: pathlib.Path, force_overwrite: bool = False, ref: str = None) -> int:
         """
         :param uri: uniform resource identifier
         :param download_path: location path on disk to download file
@@ -87,15 +64,11 @@ class GitHubProvider(gitproviderinterface.GitProviderInterface):
 
         return proc.returncode
 
-def get_github_provider(parsed_uri: ParseResult) -> GitHubProvider or None:
-    if 'github.com' in parsed_uri.netloc:
-        components = parsed_uri.path.split('/')
-        components = [ele for ele in components if ele.strip()]
-
-        if len(components) < 2:
-            return None
-
-        if components[1].endswith(".git"):
-            return GitHubProvider()
-
+def get_generic_git_provider(parsed_uri: ParseResult) -> GenericGitProvider or None:
+    # the only requirement we have is one of the path components ends in .git
+    # this could be relaxed further 
+    if parsed_uri.netloc and parsed_uri.scheme and parsed_uri.path:
+        for element in parsed_uri.path.split('/'):
+            if element.strip().endswith(".git"):
+                return GenericGitProvider()
     return None

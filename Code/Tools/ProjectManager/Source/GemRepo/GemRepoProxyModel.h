@@ -9,23 +9,19 @@
 #pragma once
 
 #if !defined(Q_MOC_RUN)
-#include <GemCatalog/GemFilterTagWidget.h>
-#include <GemCatalog/GemSortFilterProxyModel.h>
-#include <QFrame>
+#include <QSortFilterProxyModel>
 #endif
 
 namespace O3DE::ProjectManager
 {
-    class GemListHeaderWidget
-        : public QFrame
+    class GemRepoProxyModel
+        : public QSortFilterProxyModel
     {
         Q_OBJECT
-
     public:
-        explicit GemListHeaderWidget(GemSortFilterProxyModel* proxyModel, QWidget* parent = nullptr);
-        ~GemListHeaderWidget() = default;
+        explicit GemRepoProxyModel(QObject* parent = nullptr);
 
-    signals:
-        void OnRefresh(bool refreshRemoteRepos);
+    protected:
+        bool lessThan(const QModelIndex& left, const QModelIndex& right) const override;
     };
 } // namespace O3DE::ProjectManager
