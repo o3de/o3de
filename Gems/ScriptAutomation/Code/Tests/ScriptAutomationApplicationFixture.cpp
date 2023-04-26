@@ -40,7 +40,7 @@ namespace UnitTest
         if (scriptPath)
         {
             m_args.push_back(cachePlatformOverride.c_str());
-            m_args.push_back("--run-automation-suite");
+            m_args.push_back("--run-automation-suite ");
             m_args.push_back(scriptPath);
 
             if (exitOnFinish)
@@ -63,20 +63,6 @@ namespace UnitTest
         AZ::DynamicModuleDescriptor dynamicModuleDescriptor;
         dynamicModuleDescriptor.m_dynamicLibraryPath = "ScriptAutomation";
         appDesc.m_modules.push_back(dynamicModuleDescriptor);
-
-        // We need the resolved gem root folder since storing aliases in the settings registry will cause StorageDrive to try to read from 
-        // unresolved paths. The resolved gem root can only be found after the Application is instantiated. So we override the project cache 
-        // path here instead of passing it as a command line parameter above. The cache root folder is the <project_cache_path>/<asset_platform_folder>.
-        if (auto registry = AZ::SettingsRegistry::Get(); registry != nullptr)
-        {
-            const auto gemPathKey = AZ::StringFunc::Path::FixedString::format("%s/ScriptAutomation/Path", AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
-            if (AZ::IO::Path gemRootPath; registry->Get(gemRootPath.Native(), gemPathKey))
-            {
-                AZ::IO::Path cachePath = gemRootPath / "Code/Tests/Scripts";
-                const auto cachePathKey = AZ::StringFunc::Path::FixedString::format("%s/project_cache_path", AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey);
-                registry->Set(cachePathKey, cachePath.Native());
-            }
-        }
 
         m_application->Start(appDesc);
 
