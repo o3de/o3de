@@ -969,7 +969,7 @@ namespace AZ
             return m_pipelines;
         }
         
-        void Scene::OnSceneNotifictaionHandlerConnected(SceneNotification* handler)
+        void Scene::OnSceneNotificationHandlerConnected(SceneNotification* handler)
         {
             for (auto renderPipeline : m_pipelines)
             {

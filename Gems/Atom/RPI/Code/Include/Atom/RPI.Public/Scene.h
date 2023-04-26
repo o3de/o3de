@@ -198,7 +198,7 @@ namespace AZ
 
         protected:
             // SceneFinder overrides...
-            void OnSceneNotifictaionHandlerConnected(SceneNotification* handler);
+            void OnSceneNotificationHandlerConnected(SceneNotification* handler);
             void PipelineStateLookupNeedsRebuild() override;
 
             // Cpu simulation which runs all active FeatureProcessor Simulate() functions.
