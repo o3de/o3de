@@ -156,6 +156,11 @@ namespace AssetProcessor
             "    FOREIGN KEY (ProductPK) REFERENCES "
             "        Products(ProductID) ON DELETE CASCADE);";
 
+        static const char* CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK =
+            "AssetProcessor::CreateIndexMissingProductDependencies_ProductPK";
+        static const char* CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK_STATEMENT =
+            "CREATE INDEX IF NOT EXISTS MissingProductDependencies_ProductPK ON MissingProductDependencies (ProductPK);";
+
         static const char* CREATE_FILES_TABLE = "AssetProcessor::CreateFilesTable";
         static const char* CREATE_FILES_TABLE_STATEMENT =
             "CREATE TABLE IF NOT EXISTS Files( "
@@ -1212,6 +1217,15 @@ namespace AssetProcessor
             }
         }
 
+        if (foundVersion == DatabaseVersion::AddedJobFailureSourceColumn)
+        {
+            if (m_databaseConnection->ExecuteOneOffStatement(CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK))
+            {
+                foundVersion = DatabaseVersion::AddedMissingDependenciesIndex;
+                AZ_TracePrintf(
+                    AssetProcessor::ConsoleChannel, "Upgraded Asset Database to version %i (AddedMissingDependenciesIndex)\n", foundVersion);
+            }
+        }
 
         if (foundVersion == CurrentDatabaseVersion())
         {
@@ -1511,6 +1525,10 @@ namespace AssetProcessor
         m_createStatements.push_back(CREATEINDEX_SOURCEDEPENDENCY_SOURCEGUID);
 
         m_databaseConnection->AddStatement(DELETE_AUTO_SUCCEED_JOBS, DELETE_AUTO_SUCCEED_JOBS_STATEMENT);
+
+        m_databaseConnection->AddStatement(
+            CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK, CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK_STATEMENT);
+        m_createStatements.push_back(CREATEINDEX_MISSINGPRODUCTDEPENDENCY_PRODUCTPK);
     }
 
     void AssetDatabaseConnection::VacuumAndAnalyze()

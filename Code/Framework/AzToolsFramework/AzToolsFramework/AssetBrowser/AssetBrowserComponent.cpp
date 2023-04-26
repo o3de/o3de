@@ -310,18 +310,18 @@ namespace AzToolsFramework
                     const char* sourceFormatExtension = CFormats[CImageFormats];
                     if (AzFramework::StringFunc::Equal(extension.c_str(), sourceFormatExtension))
                     {
-                        return SourceFileDetails("Icons/AssetBrowser/CPP_80");
+                        return SourceFileDetails("Icons/AssetBrowser/CPP_80.svg");
                     }
                 }
 
-                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr" };
+                static const char* sourceFormats[] = { ".tif", ".bmp", ".gif", ".jpg", ".jpeg", ".jpe", ".tga", ".png", ".exr", ".svg" };
 
                 for (unsigned int sourceImageFormatIndex = 0, numSources = AZ_ARRAY_SIZE(sourceFormats); sourceImageFormatIndex < numSources; ++sourceImageFormatIndex)
                 {
                     const char* sourceFormatExtension = sourceFormats[sourceImageFormatIndex];
                     if (AzFramework::StringFunc::Equal(extension.c_str(), sourceFormatExtension))
                     {
-                        return SourceFileDetails("Icons/AssetBrowser/Image_80");
+                        return SourceFileDetails("Icons/AssetBrowser/Image_80.svg");
                     }
                 }
             }

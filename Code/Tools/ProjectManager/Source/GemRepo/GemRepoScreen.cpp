@@ -234,6 +234,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
         addRepoButton->setObjectName("gemRepoAddButton");
+        addRepoButton->setProperty("secondary", true);
         addRepoButton->setMinimumWidth(120);
         hLayout->addWidget(addRepoButton);
 
@@ -288,6 +289,7 @@ namespace O3DE::ProjectManager
 
         QPushButton* addRepoButton = new QPushButton(tr("Add Repository"), this);
         addRepoButton->setObjectName("gemRepoAddButton");
+        addRepoButton->setProperty("secondary", true);
         topMiddleHLayout->addWidget(addRepoButton);
 
         connect(addRepoButton, &QPushButton::clicked, this, &GemRepoScreen::HandleAddRepoButton);

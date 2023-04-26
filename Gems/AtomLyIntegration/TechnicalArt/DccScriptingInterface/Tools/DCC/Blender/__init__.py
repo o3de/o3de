@@ -80,7 +80,7 @@ ENVAR_DCCSI_BLENDER_VERSION = "DCCSI_BLENDER_VERSION"
 SLUG_DCCSI_BLENDER_VERSION = "3.1"
 
 ENVAR_DCCSI_BLENDER_LOCATION = "PATH_DCCSI_BLENDER_LOCATION"
-PATH_DCCSI_BLENDER_ROOT = f'C:\\Program Files\\Blender Foundation\\Blender'
+PATH_DCCSI_BLENDER_ROOT = f'C:\\Program Files\\Blender Foundation\\Blender' # default
 PATH_DCCSI_BLENDER_LOCATION = f'{PATH_DCCSI_BLENDER_ROOT} {SLUG_DCCSI_BLENDER_VERSION}'
 
 ENVAR_PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS = "PATH_DCCSI_BLENDER_SCRIPTS"
@@ -95,15 +95,3 @@ PATH_DCCSI_BLENDER_EXE = f"{PATH_DCCSI_BLENDER_LOCATION}\\{SLUG_BLENDER_EXE}"
 SLUG_DCCSI_BLENDER_BOOTSTRAP = "bootstrap.py"
 ENVAR_PATH_DCCSI_BLENDER_BOOTSTRAP = "PATH_DCCSI_BLENDER_BOOTSTRAP"
 PATH_DCCSI_BLENDER_BOOTSTRAP = f'{PATH_DCCSI_TOOLS_DCC_BLENDER_SCRIPTS}\\{SLUG_DCCSI_BLENDER_BOOTSTRAP}'
-
-# This code is here as it relates to setting up default settings
-# for dynaconf, it's not currently used but may re-enable in next PR
-
-# settings = LazySettings(
-#     SETTINGS_FILE_FOR_DYNACONF=PATH_DCCSI_TOOLS_DCC_BLENDER_SETTINGS.as_posix(),
-#     INCLUDES_FOR_DYNACONF=[PATH_DCCSI_TOOLS_DCC_BLENDER_LOCAL_SETTINGS.as_posix()]
-# )
-#
-# # need to create a json validator for settings.local.json
-# settings.setenv()
-# -------------------------------------------------------------------------

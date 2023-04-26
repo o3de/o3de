@@ -13,7 +13,6 @@ import importlib.util
 import logging
 import os
 import pathlib
-import psutil
 import re
 import shutil
 import subprocess
@@ -365,14 +364,10 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
                     resume_position = os.path.getsize(download_path)
                     current_request.add_header("If-Range", "bytes=%d-" % resume_position)
             with urllib.request.urlopen(current_request) as s:
-                download_file_size = 0
-                try:
-                    download_file_size = s.headers['content-length']
-                except KeyError:
-                    pass
+                download_file_size = int(s.headers.get('content-length',0))
 
                 # if the server does not return a content length we also have to assume we would be replacing a complete file
-                if file_exists and (resume_position == int(download_file_size) or int(download_file_size) == 0) and not force_overwrite:
+                if file_exists and (resume_position == download_file_size or download_file_size == 0) and not force_overwrite:
                     logger.error(f'File already downloaded to {download_path} and force_overwrite is not set.')
                     return 1
 
@@ -398,7 +393,7 @@ def download_file(parsed_uri, download_path: pathlib.Path, force_overwrite: bool
 
                 def download_progress(downloaded_bytes):
                     if download_progress_callback:
-                        return download_progress_callback(int(downloaded_bytes), int(download_file_size))
+                        return download_progress_callback(int(downloaded_bytes), download_file_size)
                     return False
 
                 with download_path.open(file_mode) as f:
@@ -518,6 +513,29 @@ def get_gem_names_set(gems: list, include_optional:bool = True) -> set:
             return not gem.get('optional', False)
 
     return set([gem['name'] if isinstance(gem, dict) else gem for gem in gems if should_include_gem(gem)])
+
+
+def add_or_replace_object_names(object_names:set, new_object_names:list) -> list:
+    """
+    Returns a list of object names with optional version specifiers, where all objects in
+    the object_names list are replaced with objects in the new_object_names list.  Any object_names, that 
+    don't exist in object_names are added to the new list
+    NOTE: this function only accepts lists of strings, it does not work with lists that contain dicts
+    :param object_names: The set of object names with optional version specifiers
+    :param new_object_names: The object names with optional version specifiers to add or replace in object_names 
+    :return: the combined list of object_names modified with new_object_names 
+    """
+    object_name_map = {}
+    for object_name_with_specifier in object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+    
+    # overwrite or add objects from new_object_names
+    for object_name_with_specifier in new_object_names:
+        object_name, _ = get_object_name_and_optional_version_specifier(object_name_with_specifier)
+        object_name_map[object_name] = object_name_with_specifier
+
+    return object_name_map.values()
 
 
 def contains_object_name(object_name:str, candidates:list) -> bool:
@@ -717,10 +735,8 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
     def on_terminate(proc) -> None:
         try:
             process_logger.info(f"process '{proc.args[0]}' with PID({proc.pid}) terminated with exit code {proc.returncode}")
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        except Exception:  # purposefully broad
+            process_logger.error("Exception encountered with termination request, with stacktrace:", exc_info=True)
 
     if not process_logger:
         process_logger = logger
@@ -729,18 +745,12 @@ def safe_kill_processes(*processes: List[Popen], process_logger: logging.Logger 
         try:
             process_logger.info(f"Terminating process '{proc.args[0]}' with PID({proc.pid})")
             proc.kill()
-        except psutil.AccessDenied:
-            process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-        except psutil.NoSuchProcess:
-            process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
         except Exception:  # purposefully broad
             process_logger.error("Unexpected exception ignored while terminating process, with stacktrace:", exc_info=True)
     try:
-        psutil.wait_procs(processes, timeout=30, callback=on_terminate)
-    except psutil.AccessDenied:
-        process_logger.warning("Termination failed, Access Denied with stacktrace:", exc_info=True)
-    except psutil.NoSuchProcess:
-        process_logger.warning("Termination request ignored, process was already terminated during iteration with stacktrace:", exc_info=True)
+        for proc in processes:
+            proc.wait(timeout=30)
+            on_terminate(proc)
     except Exception:  # purposefully broad
         process_logger.error("Unexpected exception while waiting for processes to terminate, with stacktrace:", exc_info=True)
 

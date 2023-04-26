@@ -95,14 +95,14 @@ namespace AZ
             return this;
         }
 
-        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(RHI::Ptr<RHI::RayTracingBlas>& blas)
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(const RHI::Ptr<RHI::RayTracingBlas>& blas)
         {
             AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");
             m_buildContext->m_blas = blas;
             return this;
         }
 
-        RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(RHI::Ptr<RHI::Buffer>& instancesBuffer)
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::InstancesBuffer(const RHI::Ptr<RHI::Buffer>& instancesBuffer)
         {
             AZ_Assert(!m_buildContext, "InstancesBuffer property can only be added to the top level");
             AZ_Assert(m_instances.size() == 0, "InstancesBuffer cannot exist with instance entries");

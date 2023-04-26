@@ -37,6 +37,7 @@
 #include <AzToolsFramework/Metadata/MetadataManager.h>
 #include <native/utilities/UuidManager.h>
 #include <native/utilities/ProductOutputUtil.h>
+#include <native/AssetManager/FileStateCache.h>
 
 namespace AssetProcessor
 {
@@ -3210,6 +3211,8 @@ namespace AssetProcessor
                 AZ_TracePrintf(ConsoleChannel, "Builder optimization: %i / %i files required full analysis, %i sources found but not processed by anyone\n", m_numSourcesNeedingFullAnalysis, m_numTotalSourcesFound, m_numSourcesNotHandledByAnyBuilder);
             }
 
+            m_dependencyCache = {};
+            m_dependencyCacheEnabled = false;
             m_pathDependencyManager->ProcessQueuedDependencyResolves();
             QTimer::singleShot(20, this, SLOT(RemoveEmptyFolders()));
         }
@@ -5584,13 +5587,13 @@ namespace AssetProcessor
 
         // then we add database dependencies.  We have to query this recursively so that we get dependencies of dependencies:
         AZStd::unordered_set<PathOrUuid> results;
-        AZStd::queue<PathOrUuid> queryQueue;
-        queryQueue.push(PathOrUuid(sourceUuid));
+        AZStd::unordered_set<PathOrUuid> queryQueue;
+        queryQueue.emplace(PathOrUuid(sourceUuid));
 
         while (!queryQueue.empty())
         {
-            PathOrUuid toSearch = queryQueue.front();
-            queryQueue.pop();
+            PathOrUuid toSearch = *queryQueue.begin();
+            queryQueue.erase(toSearch);
 
             // if we've already queried it, dont do it again (breaks recursion)
             if (results.contains(toSearch))
@@ -5609,20 +5612,23 @@ namespace AssetProcessor
                 // If the dependency is not an asset, this will resolve to an invalid UUID which will simply return no results for our
                 // search
 
-                QString absolutePath;
-
                 if (AZ::IO::PathView(toSearch.GetPath()).IsAbsolute())
                 {
-                    absolutePath = toSearch.GetPath().c_str();
+                    if (AZ::Interface<IFileStateRequests>::Get()->Exists(toSearch.GetPath().c_str()))
+                    {
+                        searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(toSearch.GetPath().c_str())).GetValueOr(AZ::Uuid());
+                    }
                 }
                 else
                 {
-                    absolutePath = m_platformConfig->FindFirstMatchingFile(toSearch.GetPath().c_str());
-                }
+                    const ScanFolderInfo* scanFolder = nullptr;
+                    m_platformConfig->FindFirstMatchingFile(toSearch.GetPath().c_str(), false, &scanFolder);
 
-                if (AZ::IO::FileIOBase::GetInstance()->Exists(absolutePath.toUtf8().constData()))
-                {
-                    searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(absolutePath.toUtf8().constData())).GetValueOr(AZ::Uuid());
+                    if (scanFolder)
+                    {
+                        searchUuid = AssetUtilities::GetSourceUuid(SourceAssetReference(
+                            scanFolder->ScanFolderID(), scanFolder->ScanPath().toUtf8().constData(), toSearch.GetPath().c_str())).GetValueOr(AZ::Uuid());
+                    }
                 }
             }
             else
@@ -5630,13 +5636,30 @@ namespace AssetProcessor
                 searchUuid = toSearch.GetUuid();
             }
 
-            auto callbackFunction = [&queryQueue](SourceFileDependencyEntry& entry)
-            {
-                queryQueue.push(entry.m_dependsOnSource);
-                return true;
-            };
+            auto cacheEntry = m_dependencyCache.find(searchUuid);
 
-            m_stateData->QueryDependsOnSourceBySourceDependency(searchUuid, dependencyType, callbackFunction);
+            if (dependencyType == AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any &&
+                cacheEntry != m_dependencyCache.end())
+            {
+                queryQueue.insert(cacheEntry->second.begin(), cacheEntry->second.end());
+            }
+            else
+            {
+                auto callbackFunction = [this, &queryQueue, dependencyType](SourceFileDependencyEntry& entry)
+                {
+                    queryQueue.emplace(entry.m_dependsOnSource);
+
+                    if (m_dependencyCacheEnabled &&
+                        dependencyType == AzToolsFramework::AssetDatabase::SourceFileDependencyEntry::TypeOfDependency::DEP_Any)
+                    {
+                        m_dependencyCache[entry.m_sourceGuid].emplace_back(entry.m_dependsOnSource);
+                    }
+
+                    return true;
+                };
+
+                m_stateData->QueryDependsOnSourceBySourceDependency(searchUuid, dependencyType, callbackFunction);
+            }
         }
 
         for (const PathOrUuid& dep : results)
@@ -5674,6 +5697,7 @@ namespace AssetProcessor
             finalDependencyList.insert(AZStd::make_pair(absolutePath.toUtf8().constData(), dep.ToString().c_str()));
         }
     }
+
     bool AssetProcessorManager::AreBuildersUnchanged(AZStd::string_view builderEntries, int& numBuildersEmittingSourceDependencies)
     {
         // each entry here is of the format "builderID~builderFingerprint"

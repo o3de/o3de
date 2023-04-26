@@ -61,6 +61,6 @@ private:
     AZStd::string m_stringBeingConcatenated;
     AZStd::string m_errorStringBeingConcatenated;
     AZStd::thread m_pumpThread;
-    AZStd::atomic_bool m_runThread = true;
+    AZStd::atomic_bool m_runThread = false;
     const TraceProcessing m_processingType;
 };

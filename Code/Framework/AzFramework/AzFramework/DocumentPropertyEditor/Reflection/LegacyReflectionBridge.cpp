@@ -354,11 +354,11 @@ namespace AZ::Reflection
                         Dom::Value readOnlyValue;
                         if (readOnlyAttribute->CanDomInvoke(Dom::Value(Dom::Type::Array)))
                         {
-                            readOnlyValue = readOnlyAttribute->DomInvoke(instance, Dom::Value(Dom::Type::Array));
+                            readOnlyValue = readOnlyAttribute->DomInvoke(parentData.m_instance, Dom::Value(Dom::Type::Array));
                         }
                         else
                         {
-                            readOnlyValue = readOnlyAttribute->GetAsDomValue(instance);
+                            readOnlyValue = readOnlyAttribute->GetAsDomValue(parentData.m_instance);
                         }
 
                         if (readOnlyValue.IsBool())

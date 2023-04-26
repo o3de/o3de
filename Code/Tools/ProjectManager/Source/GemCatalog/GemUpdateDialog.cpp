@@ -57,6 +57,7 @@ namespace O3DE::ProjectManager
         cancelButton->setProperty("secondary", true);
         QPushButton* updateButton =
             dialogButtons->addButton(tr("%1Update Gem").arg(updateAvaliable ? "" : tr("Force ")), QDialogButtonBox::ApplyRole);
+        updateButton->setProperty("primary", true);
 
         connect(cancelButton, &QPushButton::clicked, this, &QDialog::reject);
         connect(updateButton, &QPushButton::clicked, this, &QDialog::accept);

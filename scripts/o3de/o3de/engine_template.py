@@ -2458,12 +2458,12 @@ def add_args(subparsers) -> None:
                                                 ' --template-restricted-path C:/restricted'
                                                 ' --template-restricted-platform-relative-path some/folder'
                                                 ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_template_subparser.add_argument('-kr', '--keep-restricted-in-template', action='store_true',
+    create_template_subparser.add_argument('--keep-restricted-in-template', '-kr', action='store_true',
                                            default=False,
                                            help='Should the template keep the restricted platforms in the template, or'
                                                 ' create the restricted files in the restricted folder, default is'
                                                 ' False so it will create a restricted folder by default')
-    create_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_template_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                            default=False,
                                            help='Should license in the template files text be kept in the'
                                                 ' instantiation, default is False, so will not keep license text'
@@ -2477,7 +2477,7 @@ def add_args(subparsers) -> None:
                                                 ' Note: <TemplateName> is automatically ${Name}'
                                                 ' Note: <templatename> is automatically ${NameLower}'
                                                 ' Note: <TEMPLATENAME> is automatically ${NameUpper}')
-    create_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_template_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                            help='Copies to new template directory even if it exist.')
     create_template_subparser.add_argument('--no-register', action='store_true', default=False,
                                            help='If the template is created successfully, it will not register the'
@@ -2550,12 +2550,12 @@ def add_args(subparsers) -> None:
                                                      ' --template-restricted-path C:/restricted'
                                                      ' --template-restricted-platform-relative-path some/folder'
                                                      ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_from_template_subparser.add_argument('-kr', '--keep-restricted-in-instance', action='store_true',
+    create_from_template_subparser.add_argument('--keep-restricted-in-instance', '-kr', action='store_true',
                                                 default=False,
                                                 help='Should the instance keep the restricted platforms in the instance,'
                                                      ' or create the restricted files in the restricted folder, default'
                                                      ' is False')
-    create_from_template_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_from_template_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                                 default=False,
                                                 help='Should license in the template files text be kept in the instantiation,'
                                                      ' default is False, so will not keep license text by default.'
@@ -2569,7 +2569,7 @@ def add_args(subparsers) -> None:
                                                      ' Note: ${Name} is automatically <DestinationName>'
                                                      ' Note: ${NameLower} is automatically <destinationname>'
                                                      ' Note: ${NameUpper} is automatically <DESTINATIONNAME>')
-    create_from_template_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_from_template_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                                 help='Copies over instantiated template directory even if it exist.')
     create_from_template_subparser.add_argument('--no-register', action='store_true', default=False,
                                                 help='If the project template is instantiated successfully, it will not register the'
@@ -2639,11 +2639,11 @@ def add_args(subparsers) -> None:
                                                ' --template-restricted-path C:/restricted'
                                                ' --template-restricted-platform-relative-path some/folder'
                                                ' => C:/restricted/<platform>/some/folder/<template_name>')
-    create_project_subparser.add_argument('-kr', '--keep-restricted-in-project', action='store_true',
+    create_project_subparser.add_argument('--keep-restricted-in-project', '-kr', action='store_true',
                                           default=False,
                                           help='Should the new project keep the restricted platforms in the project, or'
                                                'create the restricted files in the restricted folder, default is False')
-    create_project_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_project_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                           default=False,
                                           help='Should license in the template files text be kept in the instantiation,'
                                                ' default is False, so will not keep license text by default.'
@@ -2673,7 +2673,7 @@ def add_args(subparsers) -> None:
     create_project_subparser.add_argument('--project-id', type=str, required=False,
                                           help='The str id you want to associate with the project, default is a random uuid'
                                                ' Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
-    create_project_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_project_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                           help='Copies over instantiated template directory even if it exist.')
     create_project_subparser.add_argument('--no-register', action='store_true', default=False,
                                           help='If the project template is instantiated successfully, it will not register the'
@@ -2754,11 +2754,11 @@ def add_args(subparsers) -> None:
                                            ' Note: ${Name} is automatically <GemName>'
                                            ' Note: ${NameLower} is automatically <gemname>'
                                            ' Note: ${NameUpper} is automatically <GEMANME>')
-    create_gem_subparser.add_argument('-kr', '--keep-restricted-in-gem', action='store_true',
+    create_gem_subparser.add_argument('--keep-restricted-in-gem', '-kr', action='store_true',
                                       default=False,
                                       help='Should the new gem keep the restricted platforms in the project, or'
                                            'create the restricted files in the restricted folder, default is False')
-    create_gem_subparser.add_argument('-kl', '--keep-license-text', action='store_true',
+    create_gem_subparser.add_argument('--keep-license-text', '-kl', action='store_true',
                                       default=False,
                                       help='Should license in the template files text be kept in the instantiation,'
                                            ' default is False, so will not keep license text by default.'
@@ -2774,7 +2774,7 @@ def add_args(subparsers) -> None:
     create_gem_subparser.add_argument('--module-id', type=uuid.UUID, required=False,
                                       help='The uuid you want to associate with the gem module,'
                                            ' default is a random uuid Ex. {b60c92eb-3139-454b-a917-a9d3c5819594}')
-    create_gem_subparser.add_argument('-f', '--force', action='store_true', default=False,
+    create_gem_subparser.add_argument('--force', '-f', action='store_true', default=False,
                                       help='Copies over instantiated template directory even if it exist.')
     create_gem_subparser.add_argument('--no-register', action='store_true', default=False,
                                       help='If the gem template is instantiated successfully, it will not register the'

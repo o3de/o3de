@@ -48,7 +48,7 @@ namespace UnitTest
         }
     };
 
-    TEST_F(PrefabScriptingTest, CreatePrefabTemplate_GeneratesContainerWithStableTransformComponentId)
+    TEST_F(PrefabScriptingTest, CreatePrefabTemplate_GeneratesComponentsWithTypeNamesAsSerializedIdentifiers)
     {
         AZ::EntityId entityId;
         AzToolsFramework::EntityUtilityBus::BroadcastResult(entityId, &AzToolsFramework::EntityUtilityBus::Events::CreateEditorReadyEntity, "test");
@@ -76,10 +76,8 @@ namespace UnitTest
         auto transformComponent1 = referenceWrapper1->get().FindComponent<AzToolsFramework::Components::TransformComponent>();
         auto transformComponent2 = referenceWrapper2->get().FindComponent<AzToolsFramework::Components::TransformComponent>();
 
-        ASSERT_NE(transformComponent1, nullptr);
-        ASSERT_NE(transformComponent2, nullptr);
-
-        ASSERT_EQ(transformComponent1->GetId(), transformComponent2->GetId());
+        EXPECT_EQ(transformComponent1->GetSerializedIdentifier(), transformComponent1->RTTI_GetTypeName());
+        EXPECT_EQ(transformComponent2->GetSerializedIdentifier(), transformComponent1->RTTI_GetTypeName());
     }
 
     TEST_F(PrefabScriptingTest, PrefabScripting_CreatePrefab)

@@ -249,6 +249,9 @@ namespace AssetProcessor
         //! This is used to prevent AP generating new metadata files while someone is trying to rename an existing file.
         void SetMetaCreationDelay(AZ::u32 milliseconds);
 
+        //! Gets the maximum amount of time to wait before generating a metadata file.
+        AZ::u32 GetMetaCreationDelay() const { return m_metaCreationDelayMs; }
+
         void PrepareForFileMove(AZ::IO::PathView oldPath, AZ::IO::PathView newPath) override;
 
     Q_SIGNALS:
@@ -686,6 +689,11 @@ namespace AssetProcessor
         bool m_builderDebugFlag = false;
 
         AZStd::unique_ptr<ExcludedFolderCache> m_excludedFolderCache{};
+
+        // Cache of source -> list of dependencies for startup
+        AZStd::unordered_map<AZ::Uuid, AZStd::vector<AzToolsFramework::AssetDatabase::PathOrUuid>> m_dependencyCache;
+        // Cache is turned off after initial idle, it is not meant to handle invalidation or mixed dependency type queries.
+        bool m_dependencyCacheEnabled = true;
 
 protected Q_SLOTS:
         void FinishAnalysis(SourceAssetReference sourceAsset);

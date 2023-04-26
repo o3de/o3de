@@ -472,10 +472,10 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         connect(projectSourceAssets, &QAction::triggered, this,
             [this, projectSourceAssets]
             {
-                m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+                m_ui->m_searchWidget->ToggleEngineFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
-        m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+        m_ui->m_searchWidget->ToggleEngineFilter(projectSourceAssets->isChecked());
 
         auto* unusableProductAssets = new QAction(tr("Hide Unusable Product Assets"), this);
         unusableProductAssets->setCheckable(true);
