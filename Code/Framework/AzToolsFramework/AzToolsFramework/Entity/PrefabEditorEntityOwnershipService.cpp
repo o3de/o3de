@@ -429,14 +429,13 @@ namespace AzToolsFramework
             filePath, instanceToParentUnder,
             [this](const EntityList& entities)
             {
-                HandleEntitiesAdded(entities);
+                HandleEntitiesAdded(entities); // includes container entity
             });
 
         if (instantiatedPrefabInstance)
         {
             Prefab::Instance& addedInstance = instanceToParentUnder->get().AddInstance(
                 AZStd::move(instantiatedPrefabInstance));
-            HandleEntitiesAdded({addedInstance.m_containerEntity.get()});
             return addedInstance;
         }
 
