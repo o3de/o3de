@@ -231,6 +231,17 @@ function(resolve_gem_dependencies object_type object_path)
                 cmake_path(SET current_gem_path "${current_gem_path}")
                 cmake_path(COMPARE "${gem_path}" NOT_EQUAL "${current_gem_path}" paths_are_different)
                 if (paths_are_different)
+                    # Changing the case can cause problems on Windows where the drive
+                    # letter can be upper or lower case in CMake 
+                    string(TOLOWER "${current_gem_path}" current_gem_path_lower)
+                    string(TOLOWER "${gem_path}" gem_path_lower)
+
+                    if(current_gem_path_lower STREQUAL gem_path_lower)
+                        message(VERBOSE "Not replacing existing path '${current_gem_path}' with different case '${gem_path}'")
+                        unset(gem_name)
+                        continue()
+                    endif()
+
                     message(VERBOSE "Multiple paths were found for the same gem '${gem_name}'.\n  Current:'${current_gem_path}'\n  New:'${gem_path}'")
                 endif()
             else()
