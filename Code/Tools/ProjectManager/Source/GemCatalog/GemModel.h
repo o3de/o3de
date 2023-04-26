@@ -54,6 +54,14 @@ namespace O3DE::ProjectManager
         QVector<Tag> GetDependingGemTags(const QModelIndex& modelIndex);
         bool HasDependentGems(const QModelIndex& modelIndex) const;
 
+        /*
+         * Get the GemInfo for the currently displayed item if no version or path is specified,
+         * otherwise, return the gem info for the requested version and/or path
+         * @param modelIndex The model index for the gem
+         * @param version The optional version to find
+         * @param path The optional path to find, this is often preferred over version because it is possible the user
+         *             has multiple instances of the same gem registered
+         */
         static const GemInfo GetGemInfo(const QPersistentModelIndex& modelIndex, const QString& version = "", const QString& path = "");
         static const QList<QVariant> GetGemVersions(const QModelIndex& modelIndex);
         static QString GetName(const QModelIndex& modelIndex);
@@ -78,7 +86,9 @@ namespace O3DE::ProjectManager
         static bool NeedsToBeAdded(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool NeedsToBeRemoved(const QModelIndex& modelIndex, bool includeDependencies = false);
         static bool HasRequirement(const QModelIndex& modelIndex);
-        static bool HasUpdates(const QModelIndex& modelIndex);
+        static bool HasUpdates(const QModelIndex& modelIndex, bool compatibleOnly = true);
+        static bool IsCompatible(const QModelIndex& modelIndex);
+        static bool IsAddedMissing(const QModelIndex& modelIndex);
         static void UpdateDependencies(QAbstractItemModel& model, const QString& gemName, bool isAdded);
         static void UpdateWithVersion(
             QAbstractItemModel& model, const QPersistentModelIndex& modelIndex, const QString& version, const QString& path = "");
@@ -94,6 +104,7 @@ namespace O3DE::ProjectManager
         QVector<QModelIndex> GatherGemsToBeRemoved(bool includeDependencies = false) const;
 
         int TotalAddedGems(bool includeDependencies = false) const;
+        void ShowCompatibleGems();
 
     signals:
         void gemStatusChanged(const QString& gemName, uint32_t numChangedDependencies);
@@ -106,6 +117,9 @@ namespace O3DE::ProjectManager
     private:
         void GetAllDependingGems(const QModelIndex& modelIndex, QSet<QPersistentModelIndex>& inOutGems);
         QStringList GetDependingGems(const QModelIndex& modelIndex);
+        QString GetMostCompatibleVersion(const QModelIndex& modelIndex); 
+        bool VersionIsCompatible(const QModelIndex& modelIndex, const QString& version); 
+        bool ShouldUpdateItemDataFromGemInfo(const QModelIndex& modelIndex, const GemInfo& gemInfo);
 
         QHash<QString, QPersistentModelIndex> m_nameToIndexMap;
         QItemSelectionModel* m_selectionModel = nullptr;

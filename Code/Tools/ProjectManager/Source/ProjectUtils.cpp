@@ -289,11 +289,56 @@ namespace O3DE::ProjectManager
 
         bool RegisterProject(const QString& path, QWidget* parent)
         {
-            if (auto result = PythonBindingsInterface::Get()->AddProject(path); !result)
+            auto incompatibleObjectsResult = PythonBindingsInterface::Get()->GetProjectEngineIncompatibleObjects(path);
+
+            AZStd::string errorTitle, generalError, detailedError;
+            if (!incompatibleObjectsResult)
             {
-                DisplayDetailedError("Failed to add project", result, parent);
+                errorTitle = "Failed to check project compatibility";
+                generalError = incompatibleObjectsResult.GetError().first;
+                generalError.append("\nDo you still want to add this project?");
+                detailedError = incompatibleObjectsResult.GetError().second;
+            }
+            else if (const auto& incompatibleObjects = incompatibleObjectsResult.GetValue(); !incompatibleObjects.isEmpty())
+            {
+                // provide a couple more user friendly error messages for uncommon cases
+                if (incompatibleObjects.at(0).contains("engine.json", Qt::CaseInsensitive))
+                {
+                    errorTitle = "Failed to read engine.json";
+                    generalError = "The projects compatibility with this engine could not be checked because the engine.json could not be read";
+                }
+                else if (incompatibleObjects.at(0).contains("project.json", Qt::CaseInsensitive))
+                {
+                    errorTitle = "Invalid project, failed to read project.json";
+                    generalError = "The projects compatibility with this engine could not be checked because the project.json could not be read.";
+                }
+                else
+                {
+                    // could be gems, apis or both
+                    errorTitle = "Project may not be compatible with this engine";
+                    generalError = incompatibleObjects.join("\n").toUtf8().constData();
+                    generalError.append("\nDo you still want to add this project?");
+                }
+            }
+
+            if (!generalError.empty())
+            {
+                QMessageBox warningDialog(QMessageBox::Warning, errorTitle.c_str(), generalError.c_str(), QMessageBox::Yes | QMessageBox::No, parent);
+                warningDialog.setDetailedText(detailedError.c_str());
+                if(warningDialog.exec() == QMessageBox::No)
+                {
+                    return false;
+                }
+                AZ_Warning("ProjectManager", false, "Proceeding with project registration after compatibility check failed.");
+            }
+
+            if (auto addProjectResult = PythonBindingsInterface::Get()->AddProject(path, /*force=*/true); !addProjectResult)
+            {
+                DisplayDetailedError(QObject::tr("Failed to add project"), addProjectResult, parent);
+                AZ_Error("ProjectManager", false, "Failed to register project at path '%s'", path.toUtf8().constData());
                 return false;
             }
+
             return true;
         }
 

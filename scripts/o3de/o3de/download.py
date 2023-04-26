@@ -23,7 +23,7 @@ import zipfile
 from datetime import datetime
 from tempfile import TemporaryDirectory
 
-from o3de import manifest, repo, utils, validation, register
+from o3de import manifest, repo, utils, register
 
 logger = logging.getLogger('o3de.download')
 logging.basicConfig(format=utils.LOG_FORMAT)
@@ -85,16 +85,13 @@ def get_downloadable(engine_name: str = None,
                      gem_name: str = None,
                      template_name: str = None,
                      restricted_name: str = None) -> dict or None:
-    json_data = manifest.load_o3de_manifest()
-    try:
-        o3de_object_uris = json_data['repos']
-    except KeyError as key_err:
-        logger.error(f'Unable to load repos from o3de manifest: {str(key_err)}')
+    repos = manifest.get_manifest_repos()
+    if not repos:
         return None
 
     manifest_json = 'repo.json'
-    search_func = lambda manifest_json_data: repo.search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name)
-    return repo.search_o3de_object(manifest_json, o3de_object_uris, search_func)
+    search_func = lambda manifest_json_data: repo.search_repo(manifest_json_data, engine_name, project_name, gem_name, template_name, restricted_name)
+    return repo.search_o3de_object(manifest_json, repos, search_func)
 
 def replace_parent_with_subdir(parent_path:pathlib.Path, subdir_path:pathlib.Path):
     with TemporaryDirectory() as tmp_dir:
@@ -111,9 +108,11 @@ def replace_parent_with_subdir(parent_path:pathlib.Path, subdir_path:pathlib.Pat
 
 def download_o3de_object(object_name: str, default_folder_name: str, dest_path: str or pathlib.Path,
                          object_type: str, downloadable_kwarg_key, skip_auto_register: bool,
-                         force_overwrite: bool, download_progress_callback = None) -> int:
+                         force_overwrite: bool, download_progress_callback = None,
+                         use_source_control: bool = False) -> int:
 
-    download_path = manifest.get_o3de_cache_folder() / default_folder_name / object_name
+    object_name_without_version_specifier, version_specifier = utils.get_object_name_and_optional_version_specifier(object_name)
+    download_path = manifest.get_o3de_cache_folder() / default_folder_name / object_name_without_version_specifier
     download_path.mkdir(parents=True, exist_ok=True)
     download_zip_path = download_path / f'{object_type}.zip'
 
@@ -122,23 +121,49 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
         logger.error(f'Downloadable o3de object {object_name} not found.')
         return 1
 
-    origin_uri = downloadable_object_data['origin_uri']
+    if use_source_control:
+        origin_uri = downloadable_object_data.get('source_control_uri')
+        if not origin_uri:
+            logger.error(f"Tried to use source control to acquire {object_name} but the 'source_control_uri' is empty or missing.")
+            return 1
+    else:
+        origin_uri = downloadable_object_data.get('download_source_uri')
+        if not origin_uri:
+            # legacy repo.json schema used origin_uri instead of download_source_uri
+            origin_uri = downloadable_object_data.get('origin_uri')
+        
+        if not origin_uri:
+            logger.error(f"Cannot download remote object {object_name} because neither the 'download_source_uri' or 'origin_uri' are set.")
+            return 1
+
+    object_version = downloadable_object_data.get('version', '0.0.0')
+    if not object_version:
+        logger.warning(f"The 'version' value for {object_name} was empty, using '0.0.0'")
+        object_version = '0.0.0'
+
     parsed_uri = urllib.parse.urlparse(origin_uri)
 
     if not dest_path:
         dest_path = manifest.get_registered(default_folder=default_folder_name)
         dest_path = pathlib.Path(dest_path).resolve()
-        dest_path = dest_path / object_name
+        dest_path = dest_path / object_name_without_version_specifier / object_version
     else:
         dest_path = pathlib.Path(dest_path).resolve()
 
     # If we have a git link then we should clone to the given download path here otherwise download and extract the zip
     git_provider = utils.get_git_provider(parsed_uri)
     if git_provider:
-        clone_result = git_provider.clone_from_git(parsed_uri.geturl(), dest_path)
+        source_control_ref = downloadable_object_data.get('source_control_ref')
+        clone_result = git_provider.clone_from_git(parsed_uri.geturl(), dest_path, force_overwrite, source_control_ref)
         if clone_result:
-            logger.error(f'Could not clone {parsed_uri.geturl()}')
+            if source_control_ref:
+                logger.error(f"Could not clone '{parsed_uri.geturl()}' reference '{source_control_ref}'. Please verify the repository uri and reference are correct and accessible.")
+            else:
+                logger.error(f"Could not clone '{parsed_uri.geturl()}'. Please verify the repository uri and reference are correct and accessible.")
             return 1
+    elif use_source_control:
+        logger.error(f"Currently only git repositories are supported and the provided uri '{parsed_uri.geturl()}' does not have the '.git' extension ")
+        return 1
     else:
         download_zip_result = utils.download_zip_file(parsed_uri, download_zip_path, force_overwrite, object_name, download_progress_callback)
         if download_zip_result != 0:
@@ -163,7 +188,7 @@ def download_o3de_object(object_name: str, default_folder_name: str, dest_path: 
                     logger.error(f'Could not remove existing destination path {dest_path}.')
                     return 1
 
-        dest_path.mkdir(exist_ok=True)
+        dest_path.mkdir(parents=True, exist_ok=True)
 
         # extract zip
         with zipfile.ZipFile(download_zip_path, 'r') as zip_file_ref:
@@ -198,7 +223,8 @@ def download_engine(engine_name: str,
                     dest_path: str or pathlib.Path,
                     skip_auto_register: bool,
                     force_overwrite: bool,
-                    download_progress_callback = None) -> int:
+                    download_progress_callback = None,
+                    use_source_control: bool = False) -> int:
     return download_o3de_object(engine_name,
                                 'engines',
                                 dest_path,
@@ -206,14 +232,16 @@ def download_engine(engine_name: str,
                                 'engine_name',
                                 skip_auto_register,
                                 force_overwrite,
-                                download_progress_callback)
+                                download_progress_callback,
+                                use_source_control)
 
 
 def download_project(project_name: str,
                      dest_path: str or pathlib.Path,
                      skip_auto_register: bool,
                      force_overwrite: bool,
-                     download_progress_callback = None) -> int:
+                     download_progress_callback = None,
+                     use_source_control: bool = False) -> int:
     return download_o3de_object(project_name,
                                 'projects',
                                 dest_path,
@@ -221,14 +249,16 @@ def download_project(project_name: str,
                                 'project_name',
                                 skip_auto_register,
                                 force_overwrite,
-                                download_progress_callback)
+                                download_progress_callback,
+                                use_source_control)
 
 
 def download_gem(gem_name: str,
                  dest_path: str or pathlib.Path,
                  skip_auto_register: bool,
                  force_overwrite: bool,
-                 download_progress_callback = None) -> int:
+                 download_progress_callback = None,
+                 use_source_control: bool = False) -> int:
     return download_o3de_object(gem_name,
                                 'gems',
                                 dest_path,
@@ -236,14 +266,16 @@ def download_gem(gem_name: str,
                                 'gem_name',
                                 skip_auto_register,
                                 force_overwrite,
-                                download_progress_callback)
+                                download_progress_callback,
+                                use_source_control)
 
 
 def download_template(template_name: str,
                       dest_path: str or pathlib.Path,
                       skip_auto_register: bool,
                       force_overwrite: bool,
-                      download_progress_callback = None) -> int:
+                      download_progress_callback = None,
+                      use_source_control: bool = False) -> int:
     return download_o3de_object(template_name,
                                 'templates',
                                 dest_path,
@@ -251,15 +283,16 @@ def download_template(template_name: str,
                                 'template_name',
                                 skip_auto_register,
                                 force_overwrite,
-                                download_progress_callback)
-
+                                download_progress_callback,
+                                use_source_control)
 
 
 def download_restricted(restricted_name: str,
                         dest_path: str or pathlib.Path,
                         skip_auto_register: bool,
                         force_overwrite: bool,
-                        download_progress_callback = None) -> int:
+                        download_progress_callback = None,
+                        use_source_control: bool = False) -> int:
     return download_o3de_object(restricted_name,
                                 'restricted',
                                 dest_path,
@@ -267,7 +300,8 @@ def download_restricted(restricted_name: str,
                                 'restricted_name',
                                 skip_auto_register,
                                 force_overwrite,
-                                download_progress_callback)
+                                download_progress_callback,
+                                use_source_control)
 
 def is_o3de_object_update_available(object_name: str, downloadable_kwarg_key, local_last_updated: str) -> bool:
     downloadable_object_data = get_downloadable(**{downloadable_kwarg_key : object_name})
@@ -316,22 +350,30 @@ def _run_download(args: argparse) -> int:
         return download_engine(args.engine_name,
                                args.dest_path,
                                args.skip_auto_register,
-                               args.force)
+                               args.force,
+                               download_progress_callback=None,
+                               use_source_control=args.use_source_control)
     elif args.project_name:
         return download_project(args.project_name,
                                 args.dest_path,
                                 args.skip_auto_register,
-                                args.force)
+                                args.force,
+                                download_progress_callback=None,
+                                use_source_control=args.use_source_control)
     elif args.gem_name:
         return download_gem(args.gem_name,
                             args.dest_path,
                             args.skip_auto_register,
-                            args.force)
+                            args.force,
+                            download_progress_callback=None,
+                            use_source_control=args.use_source_control)
     elif args.template_name:
         return download_template(args.template_name,
                                  args.dest_path,
                                  args.skip_auto_register,
-                                 args.force)
+                                 args.force,
+                                 download_progress_callback=None,
+                                 use_source_control=args.use_source_control)
 
     return 1
 
@@ -343,26 +385,29 @@ def add_parser_args(parser):
     :param parser: the caller passes an argparse parser like instance to this method
     """
     group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument('-e', '--engine-name', type=str, required=False,
+    group.add_argument('--engine-name', '-e', type=str, required=False,
                        help='Downloadable engine name.')
-    group.add_argument('-p', '--project-name', type=str, required=False,
-                       help='Downloadable project name.')
-    group.add_argument('-g', '--gem-name', type=str, required=False,
-                       help='Downloadable gem name.')
-    group.add_argument('-t', '--template-name', type=str, required=False,
-                       help='Downloadable template name.')
-    parser.add_argument('-dp', '--dest-path', type=str, required=False,
+    group.add_argument('--project-name', '-p', type=str, required=False,
+                       help='Downloadable project name with optional version specifier e.g. project==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
+    group.add_argument('--gem-name', '-g', type=str, required=False,
+                       help='Downloadable gem name with optional version specifier e.g. gem==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
+    group.add_argument('--template-name', '-t', type=str, required=False,
+                       help='Downloadable template name with optional version specifier e.g. template==1.2.3\nIf no version specifier is provided, the most recent version will be downloaded.')
+    parser.add_argument('--dest-path', '-dp', type=str, required=False,
                             default=None,
                             help='Optional destination folder to download into.'
                                  ' i.e. download --project-name "CustomProject" --dest-path "C:/projects"'
                                  ' will result in C:/projects/CustomProject'
                                  ' If blank will download to default object type folder')
-    parser.add_argument('-sar', '--skip-auto-register', action='store_true', required=False,
+    parser.add_argument('--skip-auto-register', '-sar', action='store_true', required=False,
                             default=False,
                             help = 'Skip the automatic registration of new object download')
-    parser.add_argument('-f', '--force', action='store_true', required=False,
+    parser.add_argument('--force', '-f', action='store_true', required=False,
                             default=False,
                             help = 'Force overwrite the current object')
+    parser.add_argument('--use-source-control', '--src', action='store_true', required=False,
+                            default=False,
+                            help = 'Acquire from source control instead of downloading a .zip archive.  Requires that the object has a valid source_control_uri.')
 
     parser.set_defaults(func=_run_download)
 
