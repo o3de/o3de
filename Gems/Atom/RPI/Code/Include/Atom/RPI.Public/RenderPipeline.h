@@ -108,7 +108,11 @@ namespace AZ
             using PipelineViewMap = AZStd::unordered_map<PipelineViewTag, PipelineViews>;
             using ViewToViewTagMap = AZStd::map<const View*, PipelineViewTag>;
 
-            //! Assign a view for a PipelineViewTag used in this pipeline. 
+            // Removes a registered view from the pipeline, either transient or persistent
+            // This is only needed if you want to re-register a view with another viewtag
+            void UnregisterView(ViewPtr view);
+
+            //! Assign a view for a PipelineViewTag used in this pipeline.
             //! This reference of this view will be saved until it's replaced in another SetPersistentView call.
             void SetPersistentView(const PipelineViewTag& viewId, ViewPtr view);
 
@@ -248,6 +252,10 @@ namespace AZ
 
             // Checks if the view is already registered with a different viewTag
             bool CanRegisterView(const PipelineViewTag& allowedViewTag, const View* view) const;
+
+            // Removes a registered view from the pipeline
+            void RemoveTransientView(const PipelineViewTag viewId, ViewPtr view);
+            void ResetPersistentView(const PipelineViewTag viewId, ViewPtr view);
 
             // Clears the lists of global attachments and binding that passes use to reference attachments in a global manner
             // This is called from the pipeline root pass during the pass reset phase
