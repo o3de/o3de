@@ -433,14 +433,14 @@ function(get_external_subdirectories_in_use output_subdirs)
     get_all_external_subdirectories_for_o3de_object(engine_external_subdirs "ENGINE" "" ${LY_ROOT_FOLDER} "engine.json")
     list(APPEND all_external_subdirs ${engine_external_subdirs})
 
-    # Visit each LY_PROJECTS entry and append the external subdirectories
+    # Visit each O3DE_PROJECTS_PATHS entry and append the external subdirectories
     # the project provides and references
     get_property(O3DE_PROJECTS_NAME GLOBAL PROPERTY O3DE_PROJECTS_NAME)
-    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME LY_PROJECTS)
-        file(REAL_PATH ${project_path} full_directory_path BASE_DIRECTORY ${CMAKE_SOURCE_DIR})
+    get_property(O3DE_PROJECTS_PATHS GLOBAL PROPERTY O3DE_PROJECTS_PATHS)
+    foreach(project_name project_path IN ZIP_LISTS O3DE_PROJECTS_NAME O3DE_PROJECTS_PATHS)
         # Append the project root path to the list of external subdirectories so that it is visited
         list(APPEND all_external_subdirs ${project_path})
-        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" ${full_directory_path} "project.json")
+        get_all_external_subdirectories_for_o3de_object(external_subdirs "PROJECT" "${project_name}" "${project_path}" "project.json")
         list(APPEND all_external_subdirs ${external_subdirs})
     endforeach()
 
