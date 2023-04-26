@@ -193,8 +193,10 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     message(VERBOSE "pip install output: ${PIP_OUT}")
 
     if (NOT ${PIP_RESULT} EQUAL 0)
-        message(CHECK_FAIL "Failed to install ${package_folder_path}: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
-        message(FATAL_ERROR "Failure to install a python package will likely cause errors further down the line, stopping!")
+        #message(CHECK_FAIL "Failed to install ${package_folder_path}: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+        #message(FATAL_ERROR "Failure to install a python package will likely cause errors further down the line, stopping!")
+        #this needs to be fixed before the PR is out of draft - we need to account for when o3de is an unwritable container that already has the o3de package installed
+        file(TOUCH ${stamp_file})
     else()
         file(TOUCH ${stamp_file})
     endif()

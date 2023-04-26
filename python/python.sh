@@ -7,6 +7,7 @@
 #
 
 SOURCE="${BASH_SOURCE[0]}"
+
 # While $SOURCE is a symlink, resolve it
 while [[ -h "$SOURCE" ]]; do
     DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"

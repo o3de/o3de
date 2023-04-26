@@ -56,6 +56,10 @@ endif()
 cmake_path(SET engine_root_folder NORMALIZE ${current_path}/..)
 set_property(GLOBAL PROPERTY O3DE_ENGINE_ROOT_FOLDER "${engine_root_folder}")
 
+list(APPEND CMAKE_REQUIRED_INCLUDES "$ENV{SNAP}/usr/include;$ENV{SNAP}/usr/include/x86_64-linux-gnu;/snap/core22/current/usr/include;/snap/core22/current/usr/include/x86_64-linux-gnu")
+list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "Wl,-L$ENV{SNAP}/usr/lib/x86_64-linux-gnu")
+list(APPEND CMAKE_REQUIRED_LINK_OPTIONS "-print-target-triple")
+
 # Inject the CompilerSettings.cmake to be included before the project command
 set(CMAKE_PROJECT_INCLUDE_BEFORE "${engine_root_folder}cmake/CompilerSettings.cmake")
 
