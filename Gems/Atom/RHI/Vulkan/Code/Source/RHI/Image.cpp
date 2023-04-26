@@ -718,18 +718,17 @@ namespace AZ
             }
             else 
             {
-                AZStd::vector<RHI::Ptr<MemoryAllocation>> memoryAlloc;
-                result = imagePool.AllocateMemoryBlocks(1, m_memoryRequirements, memoryAlloc);
-                if (result != RHI::ResultCode::Success)
+                RHI::Ptr<MemoryAllocation> alloc = imagePool.AllocateMemory(m_memoryRequirements);
+                if (!alloc)
                 {
-                    return result;
+                    return RHI::ResultCode::OutOfMemory;
                 }
 
                 VkResult vkResult = device.GetContext().BindImageMemory(
                     device.GetNativeDevice(),
                     m_vkImage,
-                    memoryAlloc.front()->GetNativeDeviceMemory(),
-                    memoryAlloc.front()->GetOffset());
+                    alloc->GetNativeDeviceMemory(),
+                    alloc->GetOffset());
 
                 AssertSuccess(vkResult);
                 result = ConvertResult(vkResult);
@@ -737,11 +736,11 @@ namespace AZ
 
                 if (result != RHI::ResultCode::Success)
                 {
-                    imagePool.DeAllocateMemoryBlocks(memoryAlloc);
+                    imagePool.DeAllocateMemory(alloc);
                     return result;
                 }
 
-                m_memoryView = MemoryView(memoryAlloc.front());
+                m_memoryView = MemoryView(alloc);
                 SetResidentSizeInBytes(m_memoryRequirements.size);
                 m_highestMipLevel = 0;
             }
@@ -880,8 +879,7 @@ namespace AZ
             {
                 if (m_memoryView.IsValid())
                 {
-                    AZStd::vector<RHI::Ptr<MemoryAllocation>> alloc = {m_memoryView.GetAllocation()};
-                    imagePool.DeAllocateMemoryBlocks(alloc);
+                    imagePool.DeAllocateMemory(m_memoryView.GetAllocation());
                     m_memoryView = MemoryView{ };
                 }
             }

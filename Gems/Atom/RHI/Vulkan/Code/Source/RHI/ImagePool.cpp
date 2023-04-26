@@ -52,6 +52,7 @@ namespace AZ
             RHI::ResultCode result = image->Init(device, imageDescriptor, Image::InitFlags::None);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+            heapMemoryUsage.m_usedResidentInBytes += requirements.size;
             heapMemoryUsage.m_totalResidentInBytes += requirements.size;
             return result;
         }
@@ -77,6 +78,7 @@ namespace AZ
             auto& image = static_cast<Image&>(resourceBase);
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            heapMemoryUsage.m_usedResidentInBytes -= image.m_memoryRequirements.size;
             heapMemoryUsage.m_totalResidentInBytes -= image.m_memoryRequirements.size;
 
             device.QueueForRelease(image.m_memoryView.GetAllocation());

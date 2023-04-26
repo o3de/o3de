@@ -76,6 +76,7 @@ namespace AZ
             result = buffer.Init(device, descriptor, BufferMemoryView(memory));
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
 
+            heapMemoryUsage.m_usedResidentInBytes += requirements.size;
             heapMemoryUsage.m_totalResidentInBytes += requirements.size;
             return result;
         }
@@ -96,7 +97,9 @@ namespace AZ
 
             RHI::HeapMemoryLevel heapMemoryLevel = GetDescriptor().m_heapMemoryLevel;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
-            heapMemoryUsage.m_totalResidentInBytes -= buffer.m_memoryView.GetSize();
+            size_t sizeInBytes = buffer.m_memoryView.GetSize();
+            heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
 
             // Deallocate the BufferMemory
             device.QueueForRelease(buffer.m_memoryView.GetAllocation());

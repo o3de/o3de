@@ -29,7 +29,37 @@ namespace AZ
         {
             return aznew StreamingImagePool();
         }
-        
+
+        RHI::Ptr<MemoryAllocation> StreamingImagePool::AllocateMemory(const VkMemoryRequirements& memReq)
+        {
+            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            bool canAllocate = heapMemoryUsage.CanAllocate(memReq.size);
+            if (!canAllocate)
+            {
+                AZ_Warning(
+                    "Vulkan::StreamingImagePool",
+                    false,
+                    "There isn't enough memory."
+                    "Try increase the StreamingImagePool memory budget");
+            }
+
+            auto& device = static_cast<Device&>(GetDevice());
+            VmaAllocation vmaAlloc;
+            VmaAllocationCreateInfo allocCreateInfo = GetVmaAllocationCreateInfo(RHI::HeapMemoryLevel::Device);
+            VkResult vkResult = vmaAllocateMemory(device.GetVmaAllocator(), &memReq, &allocCreateInfo, &vmaAlloc, nullptr);
+            AssertSuccess(vkResult);
+            if (vkResult == VK_SUCCESS)
+            {
+                RHI::Ptr<MemoryAllocation> alloc = MemoryAllocation::Create();
+                alloc->Init(device, vmaAlloc);
+                heapMemoryUsage.m_usedResidentInBytes += memReq.size;
+                heapMemoryUsage.m_totalResidentInBytes += memReq.size;
+                return alloc;
+            }
+            return nullptr;
+        }
+
         RHI::ResultCode StreamingImagePool::AllocateMemoryBlocks(
             uint32_t blockCount,
             const VkMemoryRequirements& memReq,
@@ -47,8 +77,8 @@ namespace AZ
             bool canAllocate = heapMemoryUsage.CanAllocate(neededMemoryInBytes);
             if (!canAllocate && m_memoryReleaseCallback)
             {
-                uint32_t maxUsedTiles = m_tileAllocator.GetTotalTileCount() - blockCount;
-                bool releaseSuccess = m_memoryReleaseCallback(maxUsedTiles * m_tileAllocator.GetDescriptor().m_tileSizeInBytes);
+                size_t targetUsage = heapMemoryUsage.m_budgetInBytes - neededMemoryInBytes;
+                bool releaseSuccess = m_memoryReleaseCallback(targetUsage);
 
                 if (!releaseSuccess)
                 {
@@ -83,12 +113,24 @@ namespace AZ
                         return memAlloc;
                     });
 
+                heapMemoryUsage.m_usedResidentInBytes += neededMemoryInBytes;
                 heapMemoryUsage.m_totalResidentInBytes += neededMemoryInBytes;
             }
             return ConvertResult(vkResult);
         }
 
-        void StreamingImagePool::DeAllocateMemoryBlocks(const AZStd::vector<RHI::Ptr<MemoryAllocation>>& blocks)
+        void StreamingImagePool::DeAllocateMemory(RHI::Ptr<MemoryAllocation> alloc)
+        {
+            auto& device = static_cast<Device&>(GetDevice());
+            RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
+            RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            size_t sizeInBytes = alloc->GetSize();
+            heapMemoryUsage.m_usedResidentInBytes -= sizeInBytes;
+            heapMemoryUsage.m_totalResidentInBytes -= sizeInBytes;
+            device.QueueForRelease(alloc);
+        }
+
+        void StreamingImagePool::DeAllocateMemoryBlocks(AZStd::vector<RHI::Ptr<MemoryAllocation>>& blocks)
         {
             auto& device = static_cast<Device&>(GetDevice());
             size_t usedMem = 0;
@@ -103,7 +145,9 @@ namespace AZ
 
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
+            heapMemoryUsage.m_usedResidentInBytes -= usedMem;
             heapMemoryUsage.m_totalResidentInBytes -= usedMem;
+            blocks.clear();
         }        
 
         RHI::ResultCode StreamingImagePool::InitInternal(RHI::Device& deviceBase, [[maybe_unused]] const RHI::StreamingImagePoolDescriptor& descriptor)
