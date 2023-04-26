@@ -45,11 +45,6 @@ namespace AZ::DocumentPropertyEditor
         DocumentAdapter::SendAdapterMessage(message);
     }
 
-    bool MetaAdapter::IsRow(const Dom::Value& domValue)
-    {
-        return (domValue.IsNode() && domValue.GetNodeName() == Dpe::GetNodeName<Dpe::Nodes::Row>());
-    }
-
     bool MetaAdapter::IsRow(const Dom::Path& sourcePath) const
     {
         const auto& sourceRoot = m_sourceAdapter->GetContents();
