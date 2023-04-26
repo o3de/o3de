@@ -30,6 +30,7 @@ ly_add_target(
             AZ::AzFramework
             Gem::ScriptAutomation.API
             Gem::Atom_Feature_Common.Public
+            Gem::Atom_Component_DebugCamera
 )
 
 ly_add_target(

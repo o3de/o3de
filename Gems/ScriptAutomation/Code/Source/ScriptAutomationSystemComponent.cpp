@@ -6,12 +6,6 @@
  *
  */
 
-#include <ScriptAutomationSystemComponent.h>
-
-#include <ScriptAutomationScriptBindings.h>
-
-#include <AzCore/Asset/AssetCommon.h>
-#include <AzCore/Asset/AssetManager.h>
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/IO/FileIO.h>
@@ -26,6 +20,17 @@
 #include <AzFramework/API/ApplicationAPI.h>
 #include <AzFramework/Asset/AssetSystemBus.h>
 #include <AzFramework/Script/ScriptComponent.h>
+
+#include <Atom/Component/DebugCamera/CameraComponent.h>
+#include <Atom/Component/DebugCamera/NoClipControllerComponent.h>
+#include <Atom/Component/DebugCamera/ArcBallControllerComponent.h>
+#include <Atom/Feature/ImGui/SystemBus.h>
+
+#include <ImGui/ImGuiSaveFilePath.h>
+#include <ImGui/ImGuiSidebar.h>
+#include <ScriptableImGui.h>
+#include <ScriptAutomationScriptBindings.h>
+#include <ScriptAutomationSystemComponent.h>
 
 namespace ScriptAutomation
 {
@@ -102,6 +107,11 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::Reflect(AZ::ReflectContext* context)
     {
+        ImGuiAssetBrowser::Reflect(context);
+        ImGuiSidebar::Reflect(context);
+        ImGuiSaveFilePath::Reflect(context);
+        ImageComparisonConfig::Reflect(context);
+
         if (AZ::SerializeContext* serialize = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serialize->Class<ScriptAutomationSystemComponent, AZ::Component>()
@@ -135,6 +145,7 @@ namespace ScriptAutomation
     }
 
     ScriptAutomationSystemComponent::ScriptAutomationSystemComponent()
+        : m_scriptBrowser("@user@/lua_script_browser.xml")
     {
         if (ScriptAutomationInterface::Get() == nullptr)
         {
@@ -169,20 +180,49 @@ namespace ScriptAutomation
         AZ::Render::FrameCaptureNotificationBus::Handler::BusConnect(frameCaptureId);
     }
 
+    void ScriptAutomationSystemComponent::StartFrameCapture(const AZStd::string& imageName)
+    {
+        AZ_Assert(m_scriptFrameCaptureId == AZ::Render::InvalidFrameCaptureId,
+            "Attempting to start a capture while one is in progress");
+        m_scriptReporter.AddScreenshotTest(imageName);
+        m_isCapturePending = true;
+    }
+
+    void ScriptAutomationSystemComponent::StopFrameCapture()
+    {
+        m_isCapturePending = false;
+        m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
+    }
+
+    void ScriptAutomationSystemComponent::SetImageComparisonToleranceLevel(const AZStd::string& presetName)
+    {
+        m_imageComparisonOptions.SelectToleranceLevel(presetName);
+    }
+
     void ScriptAutomationSystemComponent::StartProfilingCapture()
     {
+        m_isCapturePending = true;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusConnect();
     }
 
     void ScriptAutomationSystemComponent::Activate()
     {
         ScriptAutomationRequestBus::Handler::BusConnect();
+        ScriptableImGui::Create();
 
         m_scriptContext = AZStd::make_unique<AZ::ScriptContext>();
         m_scriptBehaviorContext = AZStd::make_unique<AZ::BehaviorContext>();
 
         ReflectScriptBindings(m_scriptBehaviorContext.get());
         m_scriptContext->BindTo(m_scriptBehaviorContext.get());
+
+        m_scriptBrowser.SetFilter([](const AZ::Data::AssetInfo& assetInfo)
+        {
+            return AzFramework::StringFunc::EndsWith(assetInfo.m_relativePath, ".bv.luac");
+        });
+
+        m_scriptBrowser.Activate();
+        m_imageComparisonOptions.Activate();
 
         AZ::ComponentApplication* application = nullptr;
         AZ::ComponentApplicationBus::BroadcastResult(application, &AZ::ComponentApplicationBus::Events::GetApplication);
@@ -202,16 +242,69 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::Deactivate()
     {
+        DeactivateScripts();
+
         m_scriptContext = nullptr;
         m_scriptBehaviorContext = nullptr;
 
-        DeactivateScripts();
+        m_scriptBrowser.Deactivate();
+        m_imageComparisonOptions.Deactivate();
+
+        ScriptableImGui::Destory();
 
         ScriptAutomationRequestBus::Handler::BusDisconnect();
     }
 
+    void ScriptAutomationSystemComponent::SetCameraEntity(AZ::Entity* cameraEntity)
+    {
+        AZ::Debug::CameraControllerNotificationBus::Handler::BusDisconnect();
+        m_cameraEntity = cameraEntity;
+        AZ::Debug::CameraControllerNotificationBus::Handler::BusConnect(m_cameraEntity->GetId());
+    }
+
+    const AZ::Entity* ScriptAutomationSystemComponent::GetCameraEntity() const
+    {
+        return m_cameraEntity;
+    }
+
+    void ScriptAutomationSystemComponent::StartAssetTracking()
+    {
+        m_assetStatusTracker.StartTracking();
+    }
+
+    void ScriptAutomationSystemComponent::StopAssetTracking()
+    {
+        m_assetStatusTracker.StopTracking();
+    }
+
+    void ScriptAutomationSystemComponent::ExpectAssets(const AZStd::string& sourceAssetPath, uint32_t expectedCount)
+    {
+        m_assetStatusTracker.ExpectAsset(sourceAssetPath, expectedCount);
+    }
+
+    void ScriptAutomationSystemComponent::WaitForExpectAssetsFinish(float timeout)
+    {
+        AZ_Assert(m_waitForAssetTracker, "It shouldn't be possible to run the next command until m_waitForAssetTracker is false");
+
+        m_waitForAssetTracker = true;
+        m_assetTrackingTimeout = timeout;
+    }
+
     void ScriptAutomationSystemComponent::OnTick(float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
+        // All actions must be consumed each frame. Otherwise, this indicates that a script is
+        // scheduling ScriptableImGui actions for fields that don't exist.
+        ScriptableImGui::CheckAllActionsConsumed();
+        ScriptableImGui::ClearActions();
+
+        // We delayed PopScript() until after the above CheckAllActionsConsumed(), so that any errors
+        // reported by that function will be associated with the proper script.
+        if (m_shouldPopScript)
+        {
+            m_scriptReporter.PopScript();
+            m_shouldPopScript = false;
+        }
+
         if (!m_isStarted)
         {
             m_isStarted = true;
@@ -220,7 +313,7 @@ namespace ScriptAutomation
             ScriptAutomationNotificationBus::Broadcast(&ScriptAutomationNotificationBus::Events::OnAutomationStarted);
         }
 
-        while (true)
+        while (!m_scriptOperations.empty())
         {
             if (m_scriptPaused)
             {
@@ -229,6 +322,28 @@ namespace ScriptAutomation
                 {
                     AZ_Error("ScriptAutomation", false, "Script pause timed out. Continuing...");
                     m_scriptPaused = false;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (m_waitForAssetTracker)
+            {
+                m_assetTrackingTimeout -= deltaTime;
+                if (m_assetTrackingTimeout < 0)
+                {
+                    auto incomplateAssetList = m_assetStatusTracker.GetIncompleteAssetList();
+                    AZStd::string incompleteAssetListString;
+                    AzFramework::StringFunc::Join(incompleteAssetListString, incomplateAssetList.begin(), incomplateAssetList.end(), "\n    ");
+                    AZ_Error("Automation", false, "Script asset tracking timed out waiting for:\n    %s \n Continuing...", incompleteAssetListString.c_str());
+                    m_waitForAssetTracker = false;
+                }
+                else if (m_assetStatusTracker.DidExpectedAssetsFinish())
+                {
+                    AZ_Printf("Automation", "Asset Tracker finished with %f seconds remaining.", m_assetTrackingTimeout);
+                    m_waitForAssetTracker = false;
                 }
                 else
                 {
@@ -272,6 +387,44 @@ namespace ScriptAutomation
                 break;
             }
         }
+
+        if (m_shouldPopScript)
+        {
+            // We need to proceed for one more frame to do the last PopScript() before final cleanup
+            return;
+        }
+
+        if (m_doFinalScriptCleanup)
+        {
+            bool frameCapturePending = false;
+            //SampleComponentManagerRequestBus::BroadcastResult(frameCapturePending, &SampleComponentManagerRequests::IsFrameCapturePending);
+            if (!frameCapturePending && !m_isCapturePending)
+            {
+                AZ_Assert(m_scriptPaused == false, "Script manager is in an unexpected state.");
+                AZ_Assert(m_scriptIdleFrames == 0, "Script manager is in an unexpected state.");
+                AZ_Assert(m_scriptIdleSeconds <= 0.0f, "Script manager is in an unexpected state.");
+                AZ_Assert(m_waitForAssetTracker == false, "Script manager is in an unexpected state.");
+                AZ_Assert(!m_scriptReporter.HasActiveScript(), "Script manager is in an unexpected state.");
+                AZ_Assert(m_executingScripts.size() == 0, "Script manager is in an unexpected state");
+
+                m_assetStatusTracker.StopTracking();
+
+                if (m_shouldRestoreViewportSize)
+                {
+                    Utils::ResizeClientArea(m_savedViewportWidth, m_savedViewportHeight, AzFramework::WindowPosOptions());
+                    m_shouldRestoreViewportSize = false;
+                }
+
+                // In case scripts were aborted while ImGui was temporarily hidden, show it again.
+                SetShowImGui(true);
+
+                m_scriptReporter.SortScriptReports();
+                m_scriptReporter.OpenReportDialog();
+
+                m_shouldPopScript = false;
+                m_doFinalScriptCleanup = false;
+            }
+        }
     }
 
     AZ::BehaviorContext* ScriptAutomationSystemComponent::GetAutomationContext()
@@ -287,7 +440,7 @@ namespace ScriptAutomation
 
     void ScriptAutomationSystemComponent::ResumeAutomation()
     {
-        AZ_Warning("ScriptAutomation", m_scriptPaused, "Script is not paused");
+        AZ_Warning("ScriptAutomation", m_scriptPaused, "Script is not paused.");
         m_scriptPaused = false;
     }
 
@@ -296,82 +449,374 @@ namespace ScriptAutomation
         m_scriptOperations.push(AZStd::move(operation));
     }
 
-    void ScriptAutomationSystemComponent::ExecuteScript(const char* scriptFilePath [[maybe_unused]])
+    void ScriptAutomationSystemComponent::PrepareAndExecuteScript(const AZStd::string& scriptFilePath)
     {
-        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath, *m_scriptContext.get());
+        // Save the window size so we can restore it after running the script, in case the script calls ResizeViewport
+        AzFramework::NativeWindowHandle defaultWindowHandle;
+        AzFramework::WindowSize windowSize;
+        AzFramework::WindowSystemRequestBus::BroadcastResult(
+            defaultWindowHandle, &AzFramework::WindowSystemRequestBus::Events::GetDefaultWindowHandle);
+        AzFramework::WindowRequestBus::EventResult(windowSize, defaultWindowHandle, &AzFramework::WindowRequests::GetClientAreaSize);
+        m_savedViewportWidth = windowSize.m_width;
+        m_savedViewportHeight = windowSize.m_height;
+        if (m_savedViewportWidth == 0 || m_savedViewportHeight == 0)
+        {
+            AZ_Assert(false, "Could not get current window size");
+        }
+        else
+        {
+            m_shouldRestoreViewportSize = true;
+        }
+
+        // Setup the ScriptReporter to track and report the results
+        m_scriptReporter.Reset();
+        m_scriptReporter.SetAvailableToleranceLevels(m_imageComparisonOptions.GetAvailableToleranceLevels());
+        if (m_imageComparisonOptions.IsLevelAdjusted())
+        {
+            m_scriptReporter.SetInvalidationMessage("Results are invalid because the tolerance level has been adjusted.");
+        }
+        else
+        {
+            m_scriptReporter.SetInvalidationMessage("");
+        }
+
+        AZ_Assert(m_executingScripts.empty(), "There should be no active scripts at this point");
+
+        ExecuteScript(scriptFilePath.c_str());
+    }
+
+    void ScriptAutomationSystemComponent::ExecuteScript(const AZStd::string& scriptFilePath)
+    {
+        AZ::Data::Asset<AZ::ScriptAsset> scriptAsset = LoadScriptAssetFromPath(scriptFilePath.c_str(), *m_scriptContext.get());
         if (!scriptAsset)
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
-            // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
-            // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
+            QueueScriptOperation(
+                [scriptFilePath]()
                 {
-                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath);
-                }
-            );
-#endif
+                    AZ_Error("ScriptAutomation", false, "Script: Could not find or load script asset '%s'.", scriptFilePath.c_str());
+                });
             return;
         }
 
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
-        QueueScriptOperation([scriptFilePath]()
-            {
-                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath);
-            }
-        );
-#endif
-
-        if (!m_scriptContext->Execute(scriptAsset->m_data.GetScriptBuffer().data(), scriptFilePath, scriptAsset->m_data.GetScriptBuffer().size()))
+        if (m_executingScripts.find(scriptAsset.GetId()) != m_executingScripts.end())
         {
-#ifndef _RELEASE // AZ_Error is a no-op in release builds
+            QueueScriptOperation(
+                [scriptFilePath]()
+                {
+                    AZ_Error(
+                        "ScriptAutomation",
+                        false,
+                        "Calling script '%s' would likely cause an infinite loop and crash. Skipping.",
+                        scriptFilePath.c_str());
+                });
+            return;
+        }
+
+        // Clear the preset before each script to make sure the script is selecting it.
+        m_imageComparisonOptions.SelectToleranceLevel(nullptr);
+
+        // Execute(script) will add commands to the m_scriptOperations. These should be considered part of their own test script, for
+        // reporting purposes.
+        QueueScriptOperation(
+            [scriptFilePath, this]()
+            {
+                m_scriptReporter.PushScript(scriptFilePath);
+            });
+
+        QueueScriptOperation(
+            [scriptFilePath]()
+            {
+                AZ_Printf("ScriptAutomation", "Running script '%s'...\n", scriptFilePath.c_str());
+            });
+
+        m_executingScripts.insert(scriptAsset.GetId());
+
+        auto& scriptData = scriptAsset->m_data;
+        if (!m_scriptContext->Execute(scriptData.GetScriptBuffer().data(), scriptFilePath.c_str(), scriptData.GetScriptBuffer().size()))
+        {
             // Push an error operation on the back of the queue instead of reporting it immediately so it doesn't get lost
             // in front of a bunch of queued m_scriptOperations.
-            QueueScriptOperation([scriptFilePath]()
-                {
-                    AZ_Error("ScriptAutomation", false, "Script: Error running script '%s'.", scriptFilePath);
-                }
-            );
-#endif
+            AZ_Error("ScriptAutomation", false, "Error running script '%s'.", scriptAsset.ToString<AZStd::string>().c_str());
         }
+
+        m_executingScripts.erase(scriptAsset.GetId());
+
+        // Execute(script) will have added commands to the m_scriptOperations. When they finish, consider this test as completed, for
+        // reporting purposes.
+        QueueScriptOperation(
+            [this]()
+            {
+                // We don't call m_scriptReporter.PopScript() yet because some cleanup needs to happen in TickScript() on the next frame.
+                AZ_Assert(!m_shouldPopScript, "m_shouldPopScript is already true");
+                m_shouldPopScript = true;
+            });
+    }
+
+    void ScriptAutomationSystemComponent::AbortScripts(const AZStd::string& reason)
+    {
+        m_scriptReporter.SetInvalidationMessage(reason);
+
+        m_scriptOperations = {};
+        m_executingScripts.clear();
+        m_scriptPaused = false;
+        m_scriptIdleFrames = 0;
+        m_scriptIdleSeconds = 0.0f;
+        m_waitForAssetTracker = false;
+        while (m_scriptReporter.HasActiveScript())
+        {
+            m_scriptReporter.PopScript();
+        }
+
+        m_doFinalScriptCleanup = true;
     }
 
     void ScriptAutomationSystemComponent::OnCaptureQueryTimestampFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
+        m_isCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnCaptureCpuFrameTimeFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
+        m_isCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnCaptureQueryPipelineStatisticsFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
+        m_isCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnCaptureBenchmarkMetadataFinished([[maybe_unused]] bool result, [[maybe_unused]] const AZStd::string& info)
     {
+        m_isCapturePending = false;
         AZ::Render::ProfilingCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
     }
 
     void ScriptAutomationSystemComponent::OnFrameCaptureFinished(AZ::Render::FrameCaptureResult result, const AZStd::string &info)
     {
-        m_scriptFrameCaptureId = AZ::Render::InvalidFrameCaptureId;
+        StopFrameCapture();
         AZ::Render::FrameCaptureNotificationBus::Handler::BusDisconnect();
         ResumeAutomation();
 
         // This is checking for the exact scenario that results from an HDR setup. The goal is to add a very specific and prominent message that will
         // alert users to a common issue and what action to take. Any other Format issues will be reported by FrameCaptureSystemComponent with a
         // "Can't save image with format %s to a ppm file" message.
-        if (result == AZ::Render::FrameCaptureResult::UnsupportedFormat && info.find(AZ::RHI::ToString(AZ::RHI::Format::R10G10B10A2_UNORM)) != AZStd::string::npos)
+        if (result == AZ::Render::FrameCaptureResult::UnsupportedFormat
+            && info.find(AZ::RHI::ToString(AZ::RHI::Format::R10G10B10A2_UNORM)) != AZStd::string::npos)
         {
-            AZ_Assert(false, "ScriptAutomation Screen Capture - HDR Not Supported, Screen capture to image is not supported from RGB10A2 display format. Please change the system configuration to disable the HDR display feature.");
+            AZ_Assert(false,
+                "ScriptAutomation Screen Capture - HDR Not Supported, "
+                "Screen capture to image is not supported from RGB10A2 display format. "
+                "Please change the system configuration to disable the HDR display feature.");
         }
     }
 
+    void ScriptAutomationSystemComponent::OnCameraMoveEnded(AZ::TypeId controllerTypeId, uint32_t channels)
+    {
+        if (controllerTypeId == azrtti_typeid<AZ::Debug::ArcBallControllerComponent>())
+        {
+            if (channels & AZ::Debug::ArcBallControllerChannel_Center)
+            {
+                AZ::Vector3 center = AZ::Vector3::CreateZero();
+                AZ::Debug::ArcBallControllerRequestBus::EventResult(
+                    center, m_cameraEntity->GetId(), &AZ::Debug::ArcBallControllerRequests::GetCenter);
+
+                AZ_TracePrintf(
+                    "ScriptAutomation",
+                    "ArcBallCameraController_SetCenter(Vector3(%f, %f, %f))\n",
+                    (float)center.GetX(),
+                    (float)center.GetY(),
+                    (float)center.GetZ());
+            }
+
+            if (channels & AZ::Debug::ArcBallControllerChannel_Pan)
+            {
+                AZ::Vector3 pan = AZ::Vector3::CreateZero();
+                AZ::Debug::ArcBallControllerRequestBus::EventResult(
+                    pan, m_cameraEntity->GetId(), &AZ::Debug::ArcBallControllerRequests::GetPan);
+
+                AZ_TracePrintf(
+                    "ScriptAutomation",
+                    "ArcBallCameraController_SetPan(Vector3(%f, %f, %f))",
+                    (float)pan.GetX(),
+                    (float)pan.GetY(),
+                    (float)pan.GetZ());
+            }
+
+            if (channels & AZ::Debug::ArcBallControllerChannel_Heading)
+            {
+                float heading = 0.0;
+                AZ::Debug::ArcBallControllerRequestBus::EventResult(
+                    heading, m_cameraEntity->GetId(), &AZ::Debug::ArcBallControllerRequests::GetHeading);
+
+                AZ_TracePrintf("ScriptAutomation", "ArcBallCameraController_SetHeading(DegToRad(%f))", AZ::RadToDeg(heading));
+            }
+
+            if (channels & AZ::Debug::ArcBallControllerChannel_Pitch)
+            {
+                float pitch = 0.0;
+                AZ::Debug::ArcBallControllerRequestBus::EventResult(
+                    pitch, m_cameraEntity->GetId(), &AZ::Debug::ArcBallControllerRequests::GetPitch);
+
+                AZ_TracePrintf("ScriptAutomation", "ArcBallCameraController_SetPitch(DegToRad(%f))", AZ::RadToDeg(pitch));
+            }
+
+            if (channels & AZ::Debug::ArcBallControllerChannel_Distance)
+            {
+                float distance = 0.0;
+                AZ::Debug::ArcBallControllerRequestBus::EventResult(
+                    distance, m_cameraEntity->GetId(), &AZ::Debug::ArcBallControllerRequests::GetDistance);
+
+                AZ_TracePrintf("ScriptAutomation", "ArcBallCameraController_SetDistance(%f)", distance);
+            }
+        }
+
+        if (controllerTypeId == azrtti_typeid<AZ::Debug::NoClipControllerComponent>())
+        {
+            if (channels & AZ::Debug::NoClipControllerChannel_Position)
+            {
+                AZ::Vector3 position = AZ::Vector3::CreateZero();
+                AZ::Debug::NoClipControllerRequestBus::EventResult(
+                    position, m_cameraEntity->GetId(), &AZ::Debug::NoClipControllerRequests::GetPosition);
+
+                AZ_TracePrintf(
+                    "ScriptAutomation",
+                    "NoClipCameraController_SetPosition(Vector3(%f, %f, %f))",
+                    (float)position.GetX(),
+                    (float)position.GetY(),
+                    (float)position.GetZ());
+            }
+
+            if (channels & AZ::Debug::NoClipControllerChannel_Orientation)
+            {
+                float heading = 0.0;
+                AZ::Debug::NoClipControllerRequestBus::EventResult(
+                    heading, m_cameraEntity->GetId(), &AZ::Debug::NoClipControllerRequests::GetHeading);
+                AZ_TracePrintf("ScriptAutomation", "NoClipCameraController_SetHeading(DegToRad(%f))", AZ::RadToDeg(heading));
+
+                float pitch = 0.0;
+                AZ::Debug::NoClipControllerRequestBus::EventResult(
+                    pitch, m_cameraEntity->GetId(), &AZ::Debug::NoClipControllerRequests::GetPitch);
+                AZ_TracePrintf("ScriptAutomation", "NoClipCameraController_SetPitch(DegToRad(%f))", AZ::RadToDeg(pitch));
+            }
+
+            if (channels & AZ::Debug::NoClipControllerChannel_Fov)
+            {
+                float fov = 0.0;
+                AZ::Debug::NoClipControllerRequestBus::EventResult(
+                    fov, m_cameraEntity->GetId(), &AZ::Debug::NoClipControllerRequests::GetFov);
+                 AZ_TracePrintf("ScriptAutomation", "NoClipCameraController_SetFov(DegToRad(%f))", AZ::RadToDeg(fov));
+            }
+        }
+    }
+
+    void ScriptAutomationSystemComponent::SetShowImGui(bool show)
+    {
+        m_prevShowImGui = m_showImGui;
+        if (show)
+        {
+            AZ::Render::ImGuiSystemRequestBus::Broadcast(&AZ::Render::ImGuiSystemRequestBus::Events::ShowAllImGuiPasses);
+        }
+        else
+        {
+            AZ::Render::ImGuiSystemRequestBus::Broadcast(&AZ::Render::ImGuiSystemRequestBus::Events::HideAllImGuiPasses);
+        }
+        m_showImGui = show;
+    }
+
+    void ScriptAutomationSystemComponent::RestoreShowImGui()
+    {
+        SetShowImGui(m_prevShowImGui);
+    }
+
+    void ScriptAutomationSystemComponent::OpenScriptRunnerDialog()
+    {
+        m_showScriptRunnerDialog = true;
+    }
+
+    void ScriptAutomationSystemComponent::RenderScriptRunnerDialog()
+    {
+        if (ImGui::Begin("Script Runner", &m_showScriptRunnerDialog))
+        {
+            auto drawAbortButton = [this](const char* uniqueId)
+            {
+                ImGui::PushID(uniqueId);
+
+                if (ImGui::Button("Abort"))
+                {
+                    AbortScripts("Script(s) manually aborted.");
+                }
+
+                ImGui::PopID();
+            };
+
+            // The main buttons are at the bottom, but show the Abort button at the top too, in case the window size is small.
+            if (!m_scriptOperations.empty())
+            {
+                drawAbortButton("Button1");
+            }
+
+            ImGuiAssetBrowser::WidgetSettings assetBrowserSettings;
+            assetBrowserSettings.m_labels.m_root = "Lua Scripts";
+            m_scriptBrowser.Tick(assetBrowserSettings);
+
+            AZStd::string selectedFileName = "<none>";
+            AzFramework::StringFunc::Path::GetFullFileName(m_scriptBrowser.GetSelectedAssetPath().c_str(), selectedFileName);
+            ImGui::LabelText("##SelectedScript", "Selected: %s", selectedFileName.c_str());
+
+            ImGui::Separator();
+
+            ImGui::Text("Settings");
+            ImGui::Indent();
+
+            m_imageComparisonOptions.DrawImGuiSettings();
+            if (ImGui::Button("Reset"))
+            {
+                m_imageComparisonOptions.ResetImGuiSettings();
+            }
+
+            ImGui::Unindent();
+
+            ImGui::Separator();
+
+            if (ImGui::Button("Run"))
+            {
+                auto scriptAsset = m_scriptBrowser.GetSelectedAsset<AZ::ScriptAsset>();
+                if (scriptAsset.GetId().IsValid())
+                {
+                    PrepareAndExecuteScript(m_scriptBrowser.GetSelectedAssetPath());
+                }
+            }
+
+            if (ImGui::Button("View Latest Results"))
+            {
+                m_scriptReporter.OpenReportDialog();
+            }
+
+            if (m_scriptOperations.size() > 0)
+            {
+                ImGui::LabelText("##RunningScript", "Running %zu operations...", m_scriptOperations.size());
+
+                drawAbortButton("Button2");
+            }
+        }
+
+        ImGui::End();
+    }
+
+    void ScriptAutomationSystemComponent::RenderImGui()
+    {
+        if (m_showScriptRunnerDialog)
+        {
+            RenderScriptRunnerDialog();
+        }
+
+        m_scriptReporter.TickImGui();
+    }
 } // namespace ScriptAutomation
