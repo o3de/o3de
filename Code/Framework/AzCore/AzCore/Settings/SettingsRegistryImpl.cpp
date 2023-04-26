@@ -1323,7 +1323,18 @@ namespace AZ
 
         Pointer pointer(AZ_SETTINGS_REGISTRY_HISTORY_KEY "/-");
 
-        FileReader fileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr, path);
+        FileReader fileReader;
+        // If the path of "-" is supplied, then use a FileReader
+        // that reads from stdin
+        if (AZ::IO::PathView pathView(path);
+            pathView == "-")
+        {
+            fileReader = FileReader::GetStdin();
+        }
+        else
+        {
+            fileReader = FileReader(m_useFileIo ? AZ::IO::FileIOBase::GetInstance() : nullptr, path);
+        }
         if (!fileReader.IsOpen())
         {
             pointer.Create(m_settings, m_settings.GetAllocator()).SetObject()
