@@ -197,7 +197,7 @@ namespace AZ
             }
 
         protected:
-            // SceneFinder overrides...
+            // SceneRequestBus::Handler overrides...
             void OnSceneNotificationHandlerConnected(SceneNotification* handler);
             void PipelineStateLookupNeedsRebuild() override;
 
