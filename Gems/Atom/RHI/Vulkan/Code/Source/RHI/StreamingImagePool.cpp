@@ -38,7 +38,7 @@ namespace AZ
             AZ_Assert(outAllocatedBlocks.empty(), "outAllocatedBlocks should be empty");
             AZ_Assert(blockCount, "Try to allocate 0 block");
 
-             // Check if heap memory is enough for the tiles.
+            // Check if heap memory is enough for the tiles.
             RHI::HeapMemoryLevel heapMemoryLevel = RHI::HeapMemoryLevel::Device;
             RHI::HeapMemoryUsage& heapMemoryUsage = m_memoryUsage.GetHeapMemoryUsage(heapMemoryLevel);
             size_t neededMemoryInBytes = memReq.alignment * blockCount;
@@ -128,22 +128,21 @@ namespace AZ
             imageDescriptor.m_bindFlags |= RHI::ImageBindFlags::CopyWrite;
             imageDescriptor.m_sharedQueueMask |= RHI::HardwareQueueClassMask::Copy;
             const uint16_t expectedResidentMipLevel = static_cast<uint16_t>(request.m_descriptor.m_mipLevels - request.m_tailMipSlices.size());
+            Image::InitFlags flags = Image::InitFlags::DontAllocate;
+            flags |= m_enableTileResource ? Image::InitFlags::TrySparse : Image::InitFlags::None;
 
-            RHI::ResultCode result = image.Init(device, imageDescriptor, m_enableTileResource ? Image::InitFlags::TrySparse : Image::InitFlags::None);
+            RHI::ResultCode result = image.Init(device, imageDescriptor, flags);
             if (result != RHI::ResultCode::Success)
             {
                 AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to create image");
                 return result;
             }
 
-            if (!image.m_memoryView.IsValid())
+            result = image.AllocateAndBindMemory(*this, expectedResidentMipLevel);
+            if (result != RHI::ResultCode::Success)
             {
-                result = image.AllocateAndBindMemory(*this, expectedResidentMipLevel);
-                if (result != RHI::ResultCode::Success)
-                {
-                    AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
-                    return result;
-                }
+                AZ_Warning("Vulkan:StreamingImagePool", false, "Failed to allocate or bind memory for image");
+                return result;
             }
 
             // Queue upload tail mip slices and wait for it finished.

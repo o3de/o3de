@@ -529,12 +529,13 @@ namespace AZ
             return m_usageFlags;
         }
 
-        void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor)
+        void Image::OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, Image::InitFlags flags)
         {
             RHI::DeviceObject::Init(device);
             SetDescriptor(descriptor);
             m_isSparse = false;
             m_isOwnerOfNativeImage = true;
+            m_initFlags = flags;
         }
 
         RHI::ResultCode Image::Init(
@@ -543,7 +544,7 @@ namespace AZ
             const RHI::ImageDescriptor& descriptor)
         {
             AZ_Assert(image != VK_NULL_HANDLE, "Vulkan Image is null.");
-            OnPreInit(device, descriptor);
+            OnPreInit(device, descriptor, InitFlags::None);
             m_vkImage = image;
             m_isOwnerOfNativeImage = false;
             OnPostInit();
@@ -555,7 +556,7 @@ namespace AZ
             const RHI::ImageDescriptor& descriptor,
             const Image::InitFlags flags)
         {
-            OnPreInit(device, descriptor);
+            OnPreInit(device, descriptor, flags);
             // try create sparse image first
             if (RHI::CheckBitsAll(flags, Image::InitFlags::TrySparse))
             {
@@ -579,7 +580,7 @@ namespace AZ
             const MemoryView& memoryView,
             [[maybe_unused]] const Image::InitFlags flags)
         {
-            OnPreInit(device, descriptor);
+            OnPreInit(device, descriptor, flags);
             RHI::ResultCode result = BuildNativeImage(&memoryView);
             RETURN_RESULT_IF_UNSUCCESSFUL(result);
             OnPostInit();
@@ -741,7 +742,7 @@ namespace AZ
                 }
 
                 m_memoryView = MemoryView(memoryAlloc.front());
-                m_residentSizeInBytes = m_memoryRequirements.size;
+                SetResidentSizeInBytes(m_memoryRequirements.size);
                 m_highestMipLevel = 0;
             }
 
@@ -826,7 +827,16 @@ namespace AZ
                 if (result == VK_SUCCESS)
                 {
                     m_memoryView = *memoryView;
+                    m_highestMipLevel = 0;
                 }
+            }
+            else if (RHI::CheckBitsAll(m_initFlags, InitFlags::DontAllocate))
+            {
+                result = device.GetContext().CreateImage(
+                    device.GetNativeDevice(),
+                    &createInfo.m_vkCreateInfo,
+                    VkSystemAllocator::Get(),
+                    &m_vkImage);
             }
             else
             {
@@ -846,6 +856,7 @@ namespace AZ
                     alloc->Init(device, vmaAlloc);
                     m_memoryView = MemoryView(alloc);
                     SetResidentSizeInBytes(m_memoryView.GetSize());
+                    m_highestMipLevel = 0;
                 }
             }
 

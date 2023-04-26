@@ -170,7 +170,8 @@ namespace AZ
             enum class InitFlags : uint32_t
             {
                 None = 0,
-                TrySparse = AZ_BIT(0), // Try to create a sparse image first
+                TrySparse = AZ_BIT(0),  // Try to create a sparse image first
+                DontAllocate = AZ_BIT(1)// Do not allocate or bind memory
             };
 
         private:
@@ -180,7 +181,7 @@ namespace AZ
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const InitFlags flags);
             RHI::ResultCode Init(Device& device, const RHI::ImageDescriptor& descriptor, const MemoryView& memoryView, const InitFlags flags);
 
-            void OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor);
+            void OnPreInit(Device& device, const RHI::ImageDescriptor& descriptor, InitFlags flags);
             void OnPostInit();
 
             // Allocate memory and bind memory which can store mips up to residentMipLevel 
@@ -257,6 +258,9 @@ namespace AZ
 
             // Usage flags used for creating the image.
             VkImageUsageFlags m_usageFlags;
+
+            // Flags used for initializing the image.
+            InitFlags m_initFlags = InitFlags::None;
         };
 
         AZ_DEFINE_ENUM_BITWISE_OPERATORS(Image::InitFlags);
