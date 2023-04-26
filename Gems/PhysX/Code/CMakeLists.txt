@@ -25,6 +25,8 @@ else()
     set(physx_editor_files physx_unsupported_files.cmake)
 endif()
 
+add_compile_definitions(CARBONATED)
+
 ly_add_target(
     NAME PhysX.Static STATIC
     NAMESPACE Gem

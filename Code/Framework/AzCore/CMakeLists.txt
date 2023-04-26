@@ -53,6 +53,8 @@ ly_add_target(
             ${common_dir}
 )
 
+add_compile_definitions(CARBONATED)
+
 ly_add_target(
     NAME AzCore STATIC
     NAMESPACE AZ
