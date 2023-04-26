@@ -216,32 +216,38 @@ namespace AZ::SettingsRegistryMergeUtils
     //! Merges the registry folder which contains the build targets that the active project depends on for loading
     //! In most cases these build targets are the gem modules and are generated automatically by the build system(CMake in this case)
     //! The files are normally generated in a Registry next to the executable
-    void MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_TargetBuildDependencyRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the engine settings to the Settings Registry.
-    void MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_EngineRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Merges all the registry folders found in the listed gems.
-    void MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_GemRegistries(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Merges all the registry folders found in the listed gems.
-    void MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_ProjectRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the development settings added by individual users of the project to the Settings Registry.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_ProjectUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the user settings from the users home directory of "~/.o3de/Registry"
     //! '~' corresponds to %USERPROFILE% on Windows and $HOME on Unix-like platforms(Linux, Mac)
     //! Note that this function is only called in development builds and is compiled out in release builds.
     //! It is merged before the command line settings are merged so that the command line always takes precedence
-    void MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
-        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr);
+    auto MergeSettingsToRegistry_O3deUserRegistry(SettingsRegistryInterface& registry, const AZStd::string_view platform,
+        const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
+        -> SettingsRegistryInterface::MergeSettingsResult;
 
     //! Adds the settings set through the command line to the Settings Registry. This will also execute any Settings
     //! Registry related arguments. Note that --regset, --regset-file and -regremove will run in the order in which they are parsed

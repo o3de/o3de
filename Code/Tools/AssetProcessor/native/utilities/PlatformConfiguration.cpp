@@ -1347,7 +1347,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch).IsSuccess();
+            return static_cast<bool>(settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
