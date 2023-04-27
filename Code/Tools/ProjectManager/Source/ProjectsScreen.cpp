@@ -645,7 +645,7 @@ namespace O3DE::ProjectManager
         SuggestBuildProjectMsg(projectInfo, true);
     }
 
-    void ProjectsScreen::QueueBuildProject(const ProjectInfo& projectInfo)
+    void ProjectsScreen::QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
         auto requiredIter = RequiresBuildProjectIterator(projectInfo.m_path);
         if (requiredIter != m_requiresBuild.end())
@@ -657,7 +657,7 @@ namespace O3DE::ProjectManager
         {
             if (m_buildQueue.empty() && !m_currentBuilder)
             {
-                StartProjectBuild(projectInfo);
+                StartProjectBuild(projectInfo, skipDialogBox);
                 // Projects Content is already reset in function
             }
             else
@@ -717,7 +717,7 @@ namespace O3DE::ProjectManager
 
                             if ((*foundButton).second->GetState() == ProjectButtonState::DownloadingBuildQueued)
                             {
-                                QueueBuildProject(projectInfo);
+                                QueueBuildProject(projectInfo, true);
                             }
                             else
                             {
@@ -865,17 +865,23 @@ namespace O3DE::ProjectManager
         return displayFirstTimeContent;
     }
 
-    bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo)
+    bool ProjectsScreen::StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox)
     {
         if (ProjectUtils::FindSupportedCompiler(this))
         {
-            QMessageBox::StandardButton buildProject = QMessageBox::information(
-                this,
-                tr("Building \"%1\"").arg(projectInfo.GetProjectDisplayName()),
-                tr("Ready to build \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
-                QMessageBox::No | QMessageBox::Yes);
+            bool proceedToBuild = skipDialogBox;
+            if (!proceedToBuild)
+            {
+                QMessageBox::StandardButton buildProject = QMessageBox::information(
+                    this,
+                    tr("Building \"%1\"").arg(projectInfo.GetProjectDisplayName()),
+                    tr("Ready to build \"%1\"?").arg(projectInfo.GetProjectDisplayName()),
+                    QMessageBox::No | QMessageBox::Yes);
 
-            if (buildProject == QMessageBox::Yes)
+                proceedToBuild = buildProject == QMessageBox::Yes;
+            }
+            
+            if (proceedToBuild)
             {
                 m_currentBuilder = new ProjectBuilderController(projectInfo, nullptr, this);
                 UpdateWithProjects(GetAllProjects());

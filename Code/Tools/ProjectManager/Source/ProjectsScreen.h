@@ -61,7 +61,7 @@ namespace O3DE::ProjectManager
         void HandleDeleteProject(const QString& projectPath);
 
         void SuggestBuildProject(const ProjectInfo& projectInfo);
-        void QueueBuildProject(const ProjectInfo& projectInfo);
+        void QueueBuildProject(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         void UnqueueBuildProject(const ProjectInfo& projectInfo);
 
         void StartProjectDownload(const QString& projectName, const QString& destinationPath, bool queueBuild);
@@ -84,7 +84,7 @@ namespace O3DE::ProjectManager
         bool ShouldDisplayFirstTimeContent(bool projectsFound);
         void RemoveProjectButtonsFromFlowLayout(const QVector<ProjectInfo>& projectsToKeep);
 
-        bool StartProjectBuild(const ProjectInfo& projectInfo);
+        bool StartProjectBuild(const ProjectInfo& projectInfo, bool skipDialogBox = false);
         QList<ProjectInfo>::iterator RequiresBuildProjectIterator(const QString& projectPath);
         bool BuildQueueContainsProject(const QString& projectPath);
         bool WarnIfInBuildQueue(const QString& projectPath);
