@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/EntityIdSerializer.h>
 #include <AzCore/Serialization/Json/JsonSerializationResult.h>
 #include <AzCore/std/sort.h>
 #include <AzToolsFramework/Entity/EditorEntitySortComponent.h>
@@ -122,9 +123,30 @@ namespace AzToolsFramework::Components
             const EntityOrderArray* defaultChildEntityOrderArray =
                 defaultsortComponentInstance ? &defaultsortComponentInstance->m_childEntityOrderArray : nullptr;
 
+            // Sort order array may contain stale entityIds that can be ignored. This is because
+            // adding/removing a child entity also affects its parent entity's sort order component.
+            // So when an entity is added/removed as a prefab override, two separate overrides are
+            // generated, one referencing the child and one referencing the parent.
+            // Reverting prefab overrides only affects one entity at a time, so reverting overrides on
+            // a parent whose child was deleted as an override would cause the deleted child's entityId
+            // to be added back to the parent's sort order array
+            AZ::JsonEntityIdSerializer::JsonEntityIdMapper** idMapper =
+                context.GetMetadata().Find<AZ::JsonEntityIdSerializer::JsonEntityIdMapper*>();
+            bool prevAcceptUnregisteredEntity = false;
+            if (idMapper && *idMapper)
+            {
+                prevAcceptUnregisteredEntity = (*idMapper)->GetAcceptUnregisteredEntity();
+                (*idMapper)->SetAcceptUnregisteredEntity(true);
+            }
+
             JSR::ResultCode resultParentEntityId = ContinueStoringToJsonObjectField(
                 outputValue, "Child Entity Order", childEntityOrderArray, defaultChildEntityOrderArray,
                 azrtti_typeid<decltype(sortComponentInstance->m_childEntityOrderArray)>(), context);
+
+            if (idMapper && *idMapper)
+            {
+                (*idMapper)->SetAcceptUnregisteredEntity(prevAcceptUnregisteredEntity);
+            }
 
             result.Combine(resultParentEntityId);
         }
