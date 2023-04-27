@@ -711,7 +711,7 @@ namespace AZ
             MergeSettingsResult mergeResult;
             mergeResult.m_returnCode = MergeSettingsReturnCode::Failure;
             mergeResult.m_operationMessages = AZStd::string::format(
-                R"(Unable to parse data due to json error "%s" at offset %llu.)",
+                R"(Unable to parse data due to json error "%s" at offset %zu.)",
                 GetParseError_En(jsonPatch.GetParseError()), jsonPatch.GetErrorOffset());
             return mergeResult;
         }
@@ -804,7 +804,7 @@ namespace AZ
             {
                 MergeSettingsResult result;
                 result.m_returnCode = MergeSettingsReturnCode::Failure;
-                result.m_operationMessages = AZStd::string::format(R"(Failed to fully merge data into registry.)",
+                result.m_operationMessages = AZStd::string::format(R"(Failed to fully merge data into registry.)"
                     " Merge failed with resultCode %s.",
                     mergeResult.ToString(anchorKey).c_str());
                 return result;
