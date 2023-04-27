@@ -678,6 +678,8 @@ namespace O3DE::ProjectManager
     {
         m_downloadController->AddObjectDownload(projectName, destinationPath, DownloadController::DownloadObjectType::Project);
 
+        UpdateIfCurrentScreen();
+
         auto foundButton = AZStd::ranges::find_if(m_projectButtons,
             [&projectName](const AZStd::unordered_map<AZ::IO::Path, ProjectButton*>::value_type& value)
             {
