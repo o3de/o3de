@@ -651,6 +651,8 @@ namespace AZ
             // Any containers that maintain references to DeviceObjects need to be cleared here to ensure the device
             // refcount reaches 0 before shutdown.
 
+            m_nullDescriptorManager.reset();
+
             m_commandQueueContext.Shutdown();
 
             m_bindlessDescriptorPool.Shutdown();
@@ -664,8 +666,6 @@ namespace AZ
             m_semaphoreAllocator.Shutdown();
             m_asyncUploadQueue.reset();
             m_commandListAllocator.Shutdown();
-
-            m_nullDescriptorManager.reset();
 
             // Make sure this is last to flush any objects released in the above calls.
             m_releaseQueue.Shutdown();

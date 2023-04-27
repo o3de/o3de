@@ -66,7 +66,6 @@ namespace AZ
         RHI::ShadingRate ConvertFragmentShadingRate(const VkExtent2D rate);
         VkImageUsageFlags ImageUsageFlagsOfFormatFeatureFlags(VkFormatFeatureFlags formatFeatureFlags);
         VkAccessFlags GetSupportedAccessFlags(VkPipelineStageFlags pipelineStageFlags);
-        bool ShouldApplyDeviceAddressBit(RHI::BufferBindFlags bindFlags);
         VkComponentSwizzle ConvertComponentSwizzle(const ImageComponentMapping::Swizzle swizzle);
         VkComponentMapping ConvertComponentMapping(const ImageComponentMapping& mapping);
     }

@@ -99,7 +99,7 @@ namespace AZ
                     RHI::ImageBindFlags::ShaderReadWrite | RHI::ImageBindFlags::CopyWrite,
                     256,
                     256,
-                    RHI::Format::R32G32B32A32_UINT);
+                    RHI::Format::R32G32B32A32_FLOAT);
                 desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
             }
             {
@@ -144,7 +144,7 @@ namespace AZ
                     256,
                     256,
                     1,
-                    RHI::Format::R32G32B32A32_UINT);
+                    RHI::Format::R32G32B32A32_FLOAT);
                 desc.m_layout = VK_IMAGE_LAYOUT_GENERAL;
             }
             {
@@ -221,6 +221,7 @@ namespace AZ
                         viewDesc.m_isArray = true;
                         break;
                     case NullDescriptorManager::ImageTypes::GeneralCube:
+                    case NullDescriptorManager::ImageTypes::ReadOnlyCube:
                         viewDesc.m_isCubemap = true;
                         break;
                     default:
