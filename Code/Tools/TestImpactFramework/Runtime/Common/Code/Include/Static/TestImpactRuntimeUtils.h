@@ -490,6 +490,7 @@ namespace TestImpact
         const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
         AZStd::optional<AZStd::function<void(const AZStd::vector<TestJob>& jobs)>> updateCoverage)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         TestRunData<TestJob> selectedTestRunData, draftedTestRunData;
         AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
@@ -574,6 +575,7 @@ namespace TestImpact
             (*updateCoverage)(ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs));
         }
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 } // namespace TestImpact

@@ -57,6 +57,8 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
+        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+
         // Construct the build targets from the build target descriptors
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
         auto buildTargets = CompileNativeTargetLists(
@@ -153,6 +155,7 @@ namespace TestImpact
                     m_sparTiaFile.c_str())
                     .c_str());
         }
+        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
     }
 
     NativeRuntime::~NativeRuntime() = default;
@@ -225,6 +228,8 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
+        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+
         const Timer sequenceTimer;
         AZStd::vector<const NativeTestTarget*> includedTestTargets;
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
@@ -276,6 +281,7 @@ namespace TestImpact
         RegularTestSequenceNotificationBus::Broadcast(
             &RegularTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
+        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
         return sequenceReport;
     }
 
@@ -286,6 +292,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
+        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
         const Timer sequenceTimer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
@@ -310,6 +317,7 @@ namespace TestImpact
                 }
             }
 
+            AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
             return AZStd::pair{ selectedTestTargets, discardedNotDraftedTestTargets };
         };
 
@@ -376,10 +384,12 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 updateCoverage);
+                AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
         }
         else
         {
-            return ImpactAnalysisTestSequenceWrapper(
+                AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+                return ImpactAnalysisTestSequenceWrapper(
                 m_maxConcurrency,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
                 m_suiteSet,
@@ -403,6 +413,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
         TestRunData<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
         TestRunData<TestEngineRegularRun<NativeTestTarget>> discardedTestRunData;
@@ -553,6 +564,7 @@ namespace TestImpact
                     m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 
@@ -560,6 +572,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
         AZStd::vector<const NativeTestTarget*> includedTestTargets;
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
@@ -621,6 +634,7 @@ namespace TestImpact
                     m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 

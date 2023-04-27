@@ -197,6 +197,7 @@ namespace TestImpact
         , m_artifactDir(artifactDir)
         , m_shardedArtifactDir(shardedArtifactDir)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     NativeTestEngine::~NativeTestEngine() = default;
@@ -217,11 +218,13 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         DeleteXmlArtifacts();
 
         const auto shardedJobInfos =
             m_shardedRegularTestJobInfoGenerator->GenerateJobInfos(GenerateTestTargetAndEnumerations(testTargets));
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return RunTests(
             m_shardedTestRunner.get(),
             shardedJobInfos,
@@ -243,6 +246,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         DeleteXmlArtifacts();
 
         const auto shardedJobInfos =
@@ -266,6 +270,7 @@ namespace TestImpact
             AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
         }
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return result;
     }
 
