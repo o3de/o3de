@@ -707,7 +707,7 @@ namespace AzFramework
         provided.push_back(AZ_CRC("TransformService", 0x8ee22c50));
     }
 
-    // carbonated begin enable_catbonated_1: Methods called from o2de-gruber
+    // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
 #if defined(CARBONATED)
     // Ignore network updates... currently
     void TransformComponent::SetClientSimulated(bool clientSim)
@@ -715,7 +715,7 @@ namespace AzFramework
         m_isClientSimulated = clientSim;
     }
 #endif
-    // carbonated end enable_catbonated_1
+    // carbonated end enable_carbonated_1
 
     void TransformComponent::Reflect(AZ::ReflectContext* reflection)
     {

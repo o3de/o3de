@@ -163,7 +163,7 @@ namespace AZ
         //! The positive rotation direction is defined such that the x-axis is rotated into the y-axis.
         Vector2 GetPerpendicular() const;
 
-       // carbonated begin enable_catbonated_1: Methods called from o2de-gruber
+       // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
 #if defined(CARBONATED)
 #define AZ_MATH_FORCE_INLINE AZ_FORCE_INLINE
         /**
@@ -174,7 +174,7 @@ namespace AZ
             return Vector2(cos(r) * m_x - sin(r) * m_y, sin(r) * m_x + cos(r) * m_y);
         }
 #endif
-        // carbonated end enable_catbonated_1
+        // carbonated end enable_carbonated_1
 
         //! Checks the vector is equal to another within a floating point tolerance.
         bool IsClose(const Vector2& v, float tolerance = 0.001f) const;
