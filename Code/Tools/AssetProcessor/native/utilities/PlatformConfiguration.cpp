@@ -705,7 +705,7 @@ namespace AssetProcessor
     #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         if (commandLine)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, {});
         }
     #endif
 

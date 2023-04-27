@@ -264,7 +264,6 @@ namespace AssetProcessor
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
 
-                constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
                 AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
@@ -273,7 +272,7 @@ namespace AssetProcessor
 
                 if (commandLine)
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, {});
                 }
 
                 if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);

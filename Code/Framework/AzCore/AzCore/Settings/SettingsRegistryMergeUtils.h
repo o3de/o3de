@@ -249,6 +249,15 @@ namespace AZ::SettingsRegistryMergeUtils
         const SettingsRegistryInterface::Specializations& specializations, AZStd::vector<char>* scratchBuffer = nullptr)
         -> SettingsRegistryInterface::MergeSettingsResult;
 
+    //! Filter for determining whether the current invocation of MergeSettingsToRegistry_CommandLine
+    //! should parse run the regdump and regset-file commands
+    struct CommandsToParse
+    {
+        bool m_parseRegdumpCommands{};
+        bool m_parseRegsetCommands{ true };
+        bool m_parseRegremoveCommands{ true };
+        bool m_parseRegsetFileCommands{};
+    };
     //! Adds the settings set through the command line to the Settings Registry. This will also execute any Settings
     //! Registry related arguments. Note that --regset, --regset-file and -regremove will run in the order in which they are parsed
     //! --regset <arg> Sets a value in the registry. See MergeCommandLineArgument for options for <arg>
@@ -266,7 +275,8 @@ namespace AZ::SettingsRegistryMergeUtils
     //!     example: --regdump /My/Array/With/Objects
     //! --regdumpall Dumps the entire settings registry to output.
     //! Note that this function is only called in development builds and is compiled out in release builds.
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeCommands);
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine,
+        const CommandsToParse& commandsToParse = {});
 
     //! Stores the command line settings into the Setting Registry
     //! The arguments can be used later anywhere the command line is needed

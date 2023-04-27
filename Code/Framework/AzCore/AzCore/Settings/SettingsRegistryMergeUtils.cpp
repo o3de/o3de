@@ -1252,13 +1252,13 @@ namespace AZ::SettingsRegistryMergeUtils
     // code in the loop makes calls that mutates the `commandLine` instance, invalidating the iterators. Making a copy
     // ensures that the iterators remain valid.
     // NOLINTNEXTLINE(performance-unnecessary-value-param)
-    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, bool executeRegdumpCommands)
+    void MergeSettingsToRegistry_CommandLine(SettingsRegistryInterface& registry, AZ::CommandLine commandLine, const CommandsToParse& commandsToParse)
     {
         // Iterate over all the command line options in order to parse the --regset and --regremove
         // arguments in the order they were supplied
         for (const CommandLine::CommandArgument& commandArgument : commandLine)
         {
-            if (commandArgument.m_option == "regset")
+            if (commandsToParse.m_parseRegsetCommands && commandArgument.m_option == "regset")
             {
                 if (!registry.MergeCommandLineArgument(commandArgument.m_value, AZStd::string_view{}))
                 {
@@ -1267,7 +1267,8 @@ namespace AZ::SettingsRegistryMergeUtils
                     continue;
                 }
             }
-            else if (commandArgument.m_option == "regset-file")
+            // Only merge the regset-file when executeReg
+            else if (commandsToParse.m_parseRegsetFileCommands && commandArgument.m_option == "regset-file")
             {
                 AZStd::string_view fileArg(commandArgument.m_value);
                 AZStd::string_view jsonAnchorPath;
@@ -1285,15 +1286,19 @@ namespace AZ::SettingsRegistryMergeUtils
                     const auto mergeFormat = filePath.Extension() != ".setregpatch"
                         ? AZ::SettingsRegistryInterface::Format::JsonMergePatch
                         : AZ::SettingsRegistryInterface::Format::JsonPatch;
-                    if (!registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath))
+                    if (auto mergeResult = registry.MergeSettingsFile(filePath.Native(), mergeFormat, jsonAnchorPath);
+                        !mergeResult)
                     {
-                        AZ_Warning("SettingsRegistryMergeUtils", false, R"(Merging of file "%.*s" to the Settings Registry has failed at anchor  "%.*s".)",
-                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath));
+                        AZ_Warning("SettingsRegistryMergeUtils", false,
+                            R"(Merging of file "%.*s" to the Settings Registry has failed at anchor "%.*s".)" "\n"
+                            "Error message is %s",
+                            AZ_STRING_ARG(filePath.Native()), AZ_STRING_ARG(jsonAnchorPath)
+                            , mergeResult.GetMessages().c_str());
                         continue;
                     }
                 }
             }
-            else if (commandArgument.m_option == "regremove")
+            else if (commandsToParse.m_parseRegremoveCommands && commandArgument.m_option == "regremove")
             {
                 if (!registry.Remove(commandArgument.m_value))
                 {
@@ -1304,7 +1309,7 @@ namespace AZ::SettingsRegistryMergeUtils
             }
         }
 
-        if (executeRegdumpCommands)
+        if (commandsToParse.m_parseRegdumpCommands)
         {
             constexpr bool prettifyOutput = true;
             const size_t regdumpSwitchValues = commandLine.GetNumSwitchValues("regdump");
