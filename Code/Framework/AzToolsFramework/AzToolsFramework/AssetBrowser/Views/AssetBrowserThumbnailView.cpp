@@ -75,7 +75,7 @@ namespace AzToolsFramework
                     {
                         QMenu menu(this);
                         const AssetBrowserEntry* entry = index.data(AssetBrowserModel::Roles::EntryRole).value<const AssetBrowserEntry*>();
-                        AZStd::vector<const AssetBrowserEntry*> entries{ entry };
+                        AZStd::vector<const AssetBrowserEntry*> entries = GetSelectedAssets();
                         if (m_thumbnailViewWidget->InSearchResultsMode())
                         {
                             auto action = menu.addAction(tr("Show In Folder"));
