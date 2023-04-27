@@ -121,6 +121,7 @@ namespace TestImpact
     BuildGraph<ProductionTarget, TestTarget>::BuildGraph(
         const BuildTargetList<ProductionTarget, TestTarget>& buildTargetList)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         // Build dependency graphs
         for (const auto& buildTarget : buildTargetList.GetBuildTargets())
         {
@@ -182,6 +183,7 @@ namespace TestImpact
                 dependencyVertex.m_dependers.m_runtime.insert(&vertex);
             }
         }
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     template<typename ProductionTarget, typename TestTarget>
