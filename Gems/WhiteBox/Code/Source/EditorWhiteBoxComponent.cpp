@@ -577,7 +577,7 @@ namespace WhiteBox
         const auto absoluteSavePathFn = [](const AZStd::string& initialAbsolutePath)
         {
             const QString fileFilter =
-                AZStd::string::format("*.%s", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
+                AZStd::string::format("WhiteBoxMesh (*.%s)", Pipeline::WhiteBoxMeshAssetHandler::AssetFileExtension).c_str();
             const QString absolutePath = AzQtComponents::FileDialog::GetSaveFileName(
                 nullptr, "Save As Asset...", QString(initialAbsolutePath.c_str()), fileFilter);
 
