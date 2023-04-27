@@ -280,10 +280,6 @@ namespace AzToolsFramework
                     {
                         return false;
                     }
-                    using namespace AzFramework::AssetSystem;
-                    EntryTypeFilter* foldersFilter = new EntryTypeFilter();
-                    foldersFilter->SetEntryType(AssetBrowserEntry::AssetEntryType::Folder);
-
                     AZStd::string folderPath = item->GetFullPath();
                     bool connectedToAssetProcessor = false;
                     AzFramework::AssetSystemRequestBus::BroadcastResult(
