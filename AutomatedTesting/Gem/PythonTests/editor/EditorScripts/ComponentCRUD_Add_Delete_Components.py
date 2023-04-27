@@ -130,6 +130,8 @@ def ComponentCRUD_Add_Delete_Components():
         # Mesh Component is the 3rd component added to the entity including the default Transform component
         # There is one QVBoxLayout child before the QFrames, making the Mesh component the 4th child in the list
         mesh_frame = comp_list_contents.children()[3]
+        mesh_frame.activateWindow()
+        mesh_frame.setFocus()
         QtTest.QTest.mouseClick(mesh_frame, Qt.LeftButton, Qt.NoModifier)
         QtTest.QTest.keyClick(mesh_frame, Qt.Key_Delete, Qt.NoModifier)
         general.idle_wait_frames(3)  # Wait for Inspector to refresh

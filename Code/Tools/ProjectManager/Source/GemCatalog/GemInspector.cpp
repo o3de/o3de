@@ -20,6 +20,8 @@
 #include <QIcon>
 #include <QPushButton>
 #include <QComboBox>
+#include <QClipboard>
+#include <QGuiApplication>
 
 namespace O3DE::ProjectManager
 {
@@ -158,8 +160,7 @@ namespace O3DE::ProjectManager
         m_summaryLabel->setText(gemInfo.m_summary);
         m_summaryLabel->adjustSize();
 
-        // Manually define remaining space to elide text because spacer would like to take all of the space
-        SetLabelElidedText(m_licenseLinkLabel, gemInfo.m_licenseText, width() - m_licenseLabel->width() - 35);
+        m_licenseLinkLabel->SetText(gemInfo.m_licenseText);
         m_licenseLinkLabel->SetUrl(gemInfo.m_licenseLink);
 
         m_directoryLinkLabel->SetUrl(gemInfo.m_directoryLink);
@@ -184,6 +185,7 @@ namespace O3DE::ProjectManager
 
         // Additional information
         m_lastUpdatedLabel->setText(tr("Last Updated: %1").arg(gemInfo.m_lastUpdatedDate));
+        m_copyDownloadLinkLabel->setVisible(!gemInfo.m_downloadSourceUri.isEmpty());
         if (gemInfo.m_binarySizeInKB)
         {
             m_binarySizeLabel->setText(tr("Binary Size:  %1 KB").arg(gemInfo.m_binarySizeInKB));
@@ -236,6 +238,26 @@ namespace O3DE::ProjectManager
             connect(m_versionComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &GemInspector::OnVersionChanged);
         }
 
+        m_compatibilityTextLabel->setVisible(!gemInfo.IsCompatible());
+        if(!gemInfo.IsCompatible())
+        {
+            if(!gemInfo.m_compatibleEngines.isEmpty())
+            {
+                if (m_readOnly)
+                {
+                    m_compatibilityTextLabel->setText(tr("This version is not known to be compatible with the current engine"));
+                }
+                else
+                {
+                    m_compatibilityTextLabel->setText(tr("This version is not known to be compatible with the engine this project uses"));
+                }
+            }
+            else
+            {
+                m_compatibilityTextLabel->setText(tr("This version has missing or incompatible gem dependencies"));
+            }
+        }
+
         // Compatible engines
         m_enginesTitleLabel->setVisible(!gemInfo.m_isEngineGem);
         m_enginesLabel->setVisible(!gemInfo.m_isEngineGem);
@@ -273,9 +295,9 @@ namespace O3DE::ProjectManager
 
         m_updateGemButton->setVisible(isRemote && isDownloaded && !isMissing);
         m_uninstallGemButton->setText(isRemote ? tr("Uninstall Gem") : tr("Remove Gem"));
-        m_uninstallGemButton->setVisible((isRemote && isDownloaded && !isMissing) || isLocal);
+        m_uninstallGemButton->setVisible(!isMissing && ((isRemote && isDownloaded) || isLocal));
         m_editGemButton->setVisible(!isMissing && (!isRemote || (isRemote && isDownloaded)));
-        m_downloadGemButton->setVisible(m_readOnly && isRemote && !isDownloaded);
+        m_downloadGemButton->setVisible(isRemote && !isDownloaded);
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -292,9 +314,40 @@ namespace O3DE::ProjectManager
     void GemInspector::OnVersionChanged([[maybe_unused]] int index)
     {
         Update(m_curModelIndex, GetVersion(), GetVersionPath());
-        if (!GemModel::IsAdded(m_curModelIndex))
+
+        // we don't update the version in the gem list when read only
+        // because it can cause the row to disappear due to changing filters
+        // but in a project-specific view it is necessary because
+        // the checkbox to activate the gem is on the row
+        if (!GemModel::IsAdded(m_curModelIndex) && !m_readOnly)
         {
             GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
+        }
+    }
+
+    void GemInspector::OnCopyDownloadLinkClicked()
+    {
+        const GemInfo& gemInfo = m_model->GetGemInfo(m_curModelIndex, GetVersion(), GetVersionPath());
+        if (!gemInfo.m_downloadSourceUri.isEmpty())
+        {
+            if(QClipboard* clipboard = QGuiApplication::clipboard(); clipboard != nullptr)
+            {
+                clipboard->setText(gemInfo.m_downloadSourceUri);
+
+                QString displayname = gemInfo.m_displayName.isEmpty() ? gemInfo.m_name : gemInfo.m_displayName;
+                if (gemInfo.m_version.isEmpty() || gemInfo.m_displayName.contains(gemInfo.m_version) || gemInfo.m_version.contains("Unknown", Qt::CaseInsensitive))
+                {
+                    emit ShowToastNotification(tr("%1 download URL copied to clipboard").arg(displayname));
+                }
+                else
+                {
+                    emit ShowToastNotification(tr("%1 %2 download URL copied to clipboard").arg(displayname, gemInfo.m_version));
+                }
+            }
+            else
+            {
+                emit ShowToastNotification("Failed to copy download URL to clipboard");
+            }
         }
     }
 
@@ -342,8 +395,28 @@ namespace O3DE::ProjectManager
             connect(m_updateVersionButton, &QPushButton::clicked, this , [this]{
                 GemModel::SetIsAdded(*m_model, m_curModelIndex, true, GetVersion());
                 GemModel::UpdateWithVersion(*m_model, m_curModelIndex, GetVersion(), GetVersionPath());
+
+                const GemInfo& gemInfo = GemModel::GetGemInfo(m_curModelIndex);
+                if (!gemInfo.m_repoUri.isEmpty())
+                {
+                    // this gem comes from a remote repository, see if we should download it
+                    const auto downloadStatus = GemModel::GetDownloadStatus(m_curModelIndex);
+                    if (downloadStatus == GemInfo::NotDownloaded || downloadStatus == GemInfo::DownloadFailed) 
+                    {
+                        emit DownloadGem(m_curModelIndex, GetVersion(), GetVersionPath());
+                    }
+                }
+
                 m_updateVersionButton->setVisible(false);
             });
+
+            // Compatibility 
+            m_compatibilityTextLabel = new QLabel();
+            m_compatibilityTextLabel->setObjectName("GemCatalogCompatibilityWarning");
+            m_compatibilityTextLabel->setWordWrap(true);
+            m_compatibilityTextLabel->setTextInteractionFlags(Qt::TextBrowserInteraction);
+            m_compatibilityTextLabel->setOpenExternalLinks(true);
+            versionVLayout->addWidget(m_compatibilityTextLabel);
 
             m_enginesTitleLabel = new QLabel(tr("Compatible Engines: "));
             versionVLayout->addWidget(m_enginesTitleLabel);
@@ -374,8 +447,6 @@ namespace O3DE::ProjectManager
 
             m_licenseLinkLabel = new LinkLabel("", QUrl(), s_baseFontSize);
             licenseHLayout->addWidget(m_licenseLinkLabel);
-
-            licenseHLayout->addStretch();
 
             m_mainLayout->addSpacing(5);
         }
@@ -423,6 +494,9 @@ namespace O3DE::ProjectManager
 
         m_lastUpdatedLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
         m_binarySizeLabel = CreateStyledLabel(m_mainLayout, s_baseFontSize, s_textColor);
+        m_copyDownloadLinkLabel = new LinkLabel(tr("Copy Download URL"));
+        m_mainLayout->addWidget(m_copyDownloadLinkLabel);
+        connect(m_copyDownloadLinkLabel, &LinkLabel::clicked, this, &GemInspector::OnCopyDownloadLinkClicked);
 
         m_mainLayout->addSpacing(20);
 
@@ -438,7 +512,7 @@ namespace O3DE::ProjectManager
         m_updateGemButton = new QPushButton(tr("Update Gem"));
         m_updateGemButton->setProperty("secondary", true);
         m_mainLayout->addWidget(m_updateGemButton);
-        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex); });
+        connect(m_updateGemButton, &QPushButton::clicked, this , [this]{ emit UpdateGem(m_curModelIndex, GetVersion(), GetVersionPath()); });
 
         m_mainLayout->addSpacing(10);
 

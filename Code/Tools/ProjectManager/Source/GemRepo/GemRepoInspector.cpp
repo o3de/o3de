@@ -9,17 +9,23 @@
 #include <GemRepo/GemRepoInspector.h>
 #include <GemRepo/GemRepoItemDelegate.h>
 #include <PythonBindingsInterface.h>
+#include <AzQtComponents/Components/Widgets/ElidingLabel.h>
 
 #include <QFrame>
 #include <QLabel>
 #include <QVBoxLayout>
 #include <QIcon>
+#include <QPushButton>
+#include <QClipboard>
+#include <QGuiApplication>
+#include <QItemSelectionModel>
 
 namespace O3DE::ProjectManager
 {
-    GemRepoInspector::GemRepoInspector(GemRepoModel* model, QWidget* parent)
+    GemRepoInspector::GemRepoInspector(GemRepoModel* model, QItemSelectionModel* selectionModel,QWidget* parent)
         : QScrollArea(parent)
         , m_model(model)
+        , m_selectionModel(selectionModel)
     {
         setObjectName("gemRepoInspector");
         setWidgetResizable(true);
@@ -36,7 +42,7 @@ namespace O3DE::ProjectManager
 
         InitMainWidget();
 
-        connect(m_model->GetSelectionModel(), &QItemSelectionModel::selectionChanged, this, &GemRepoInspector::OnSelectionChanged);
+        connect(selectionModel, &QItemSelectionModel::selectionChanged, this, &GemRepoInspector::OnSelectionChanged);
         Update({});
     }
 
@@ -54,6 +60,8 @@ namespace O3DE::ProjectManager
 
     void GemRepoInspector::Update(const QModelIndex& modelIndex)
     {
+        m_curModelIndex = modelIndex;
+
         if (!modelIndex.isValid())
         {
             m_mainWidget->hide();
@@ -63,7 +71,11 @@ namespace O3DE::ProjectManager
         m_nameLabel->setText(m_model->GetName(modelIndex));
 
         const QString repoUri = m_model->GetRepoUri(modelIndex);
-        m_repoLinkLabel->setText(repoUri);
+        // ideally we would use Qt::TextWrapAnywhere to wrap and display the full URL
+        // but QLabel only supports word-break wrapping so elide the text
+        // clicking on the link will display the full URL and ask the user
+        // to confirm they want to visit it
+        m_repoLinkLabel->SetText(repoUri);
         m_repoLinkLabel->SetUrl(repoUri);
 
         // Repo summary
@@ -89,7 +101,26 @@ namespace O3DE::ProjectManager
         }
 
         // Included Gems
-        m_includedGems->Update(tr("Included Gems"), "", m_model->GetIncludedGemTags(modelIndex));
+        const QVector<Tag>& gemTags = m_model->GetIncludedGemTags(modelIndex);
+        m_includedGems->setVisible(!gemTags.isEmpty());
+        if (!gemTags.empty())
+        {
+            m_includedGems->Update(tr("Included Gems"), "", gemTags);
+        }
+
+        const QVector<Tag>& projectTags = m_model->GetIncludedProjectTags(modelIndex);
+        m_includedProjects->setVisible(!projectTags.isEmpty());
+        if (!projectTags.empty())
+        {
+            m_includedProjects->Update(tr("Included Projects"), "", projectTags);
+        }
+
+        const QVector<Tag>& templateTags = m_model->GetIncludedProjectTemplateTags(modelIndex);
+        m_includedTemplates->setVisible(!templateTags.isEmpty());
+        if (!templateTags.empty())
+        {
+            m_includedTemplates->Update(tr("Included Project Templates"), "", templateTags);
+        }
 
         m_mainWidget->adjustSize();
         m_mainWidget->show();
@@ -98,12 +129,16 @@ namespace O3DE::ProjectManager
     void GemRepoInspector::InitMainWidget()
     {
         // Repo name and url link
-        m_nameLabel = new QLabel();
+        m_nameLabel = new AzQtComponents::ElidingLabel();
         m_nameLabel->setObjectName("gemRepoInspectorNameLabel");
+        m_nameLabel->setWordWrap(true);
         m_mainLayout->addWidget(m_nameLabel);
 
-        m_repoLinkLabel = new LinkLabel(tr("Repo Url"), QUrl(), 12, this);
+        m_repoLinkLabel = new LinkLabel(tr("Repo URL"), QUrl(), 12, this);
         m_mainLayout->addWidget(m_repoLinkLabel);
+        m_copyDownloadLinkLabel = new LinkLabel(tr("Copy Repo URL"));
+        m_mainLayout->addWidget(m_copyDownloadLinkLabel);
+        connect(m_copyDownloadLinkLabel, &LinkLabel::clicked, this, &GemRepoInspector::OnCopyDownloadLinkClicked);
         m_mainLayout->addSpacing(5);
 
         // Repo summary
@@ -136,12 +171,42 @@ namespace O3DE::ProjectManager
         m_mainLayout->addWidget(m_addInfoTextLabel);
 
         // Conditional spacing for additional info section
-        m_addInfoSpacer = new QSpacerItem(0, 0, QSizePolicy::Expanding);
+        m_addInfoSpacer = new QSpacerItem(0, 20, QSizePolicy::Fixed);
         m_mainLayout->addSpacerItem(m_addInfoSpacer);
 
         // Included Gems
         m_includedGems = new GemsSubWidget();
         m_mainLayout->addWidget(m_includedGems);
+
+        m_includedProjects = new GemsSubWidget();
+        m_mainLayout->addWidget(m_includedProjects);
+
+        m_includedTemplates = new GemsSubWidget();
+        m_mainLayout->addWidget(m_includedTemplates);
+
         m_mainLayout->addSpacing(20);
+
+        m_removeRepoButton = new QPushButton(tr("Remove"));
+        m_removeRepoButton->setProperty("danger", true);
+        m_mainLayout->addWidget(m_removeRepoButton);
+        connect(m_removeRepoButton, &QPushButton::clicked, this , [this]{ emit RemoveRepo(m_curModelIndex); });
+    }
+
+    void GemRepoInspector::OnCopyDownloadLinkClicked()
+    {
+        const auto& url = m_repoLinkLabel->GetUrl();
+
+        if (!url.toString().isEmpty())
+        {
+            if(QClipboard* clipboard = QGuiApplication::clipboard(); clipboard != nullptr)
+            {
+                clipboard->setText(url.toString());
+                emit ShowToastNotification(tr("%1 URL copied to clipboard").arg(m_nameLabel->text()));
+            }
+            else
+            {
+                emit ShowToastNotification("Failed to copy URL to clipboard");
+            }
+        }
     }
 } // namespace O3DE::ProjectManager

@@ -26,6 +26,8 @@ def Menus_FileMenuOptions_Work():
     :return: None
     """
 
+    import azlmbr.legacy.general as general
+
     import editor_python_test_tools.hydra_editor_utils as hydra
     import pyside_utils
     from editor_python_test_tools.utils import Report
@@ -33,7 +35,7 @@ def Menus_FileMenuOptions_Work():
     file_menu_options = [
         ("New Level",),
         ("Open Level",),
-        ("Import",),
+        ("Open Recent",),
         ("Save",),
         ("Save As",),
         ("Save Level Statistics",),
@@ -41,12 +43,17 @@ def Menus_FileMenuOptions_Work():
         ("Edit Platform Settings",),
         ("New Project",),
         ("Open Project",),
-        ("Show Log File",),
-        ("Exit",),
+        # Disabling "Show Log File" for CI testing as it launches an external app. Uncomment as needed for local testing
+        # ("Show Log File",),
     ]
 
     # 1) Open an existing simple level
     hydra.open_base_level()
+
+    # The action manager doesn't register the menus until the next system tick, so need to wait
+    # until the menu bar has been populated
+    general.idle_enable(True)
+    general.idle_wait_frames(1)
 
     # 2) Interact with File Menu options
     editor_window = pyside_utils.get_editor_main_window()

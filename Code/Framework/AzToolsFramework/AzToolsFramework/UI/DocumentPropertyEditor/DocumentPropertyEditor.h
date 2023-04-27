@@ -110,8 +110,8 @@ namespace AzToolsFramework
         void SetAttributesFromDom(const AZ::Dom::Value& domArray);
 
         void SetPropertyEditorAttributes(size_t domIndex, const AZ::Dom::Value& domArray, QWidget* childWidget);
-        void RemoveAttributes(size_t domIndex);
-        void ClearAttributes();
+        void RemoveCachedAttributes(size_t domIndex);
+        void ClearCachedAttributes();
 
         //! handles a patch operation at the given path, or delegates to a child that will
         void HandleOperationAtPath(const AZ::Dom::PatchOperation& domOperation, size_t pathIndex = 0);
@@ -150,17 +150,14 @@ namespace AzToolsFramework
             AZ::Dpe::Nodes::PropertyEditor::Align m_alignment = AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment;
             bool m_sharePriorColumn = false;
             bool m_minimumWidth = false;
-            AZStd::string_view m_descriptionString = {};
-            bool m_isDisabled = false;
 
             bool IsDefault() const
             {
-                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !m_sharePriorColumn &&
-                    !m_minimumWidth && m_descriptionString.empty() && !m_isDisabled;
+                return m_alignment == AZ::Dpe::Nodes::PropertyEditor::Align::UseDefaultAlignment && !m_sharePriorColumn && !m_minimumWidth;
             }
         };
-        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToAttributeInfo;
-        AttributeInfo* GetAttributes(size_t domIndex);
+        AZStd::unordered_map<size_t, AttributeInfo> m_childIndexToCachedAttributeInfo;
+        AttributeInfo* GetCachedAttributes(size_t domIndex);
 
         // row attributes extracted from the DOM
         AZStd::optional<bool> m_forceAutoExpand;
