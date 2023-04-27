@@ -405,7 +405,9 @@ namespace AZ
         //! @param data The json data stored in a string.
         //! @param format The format of the provided data.
         //! @param anchorKey The key where the merged json content will be anchored under.
-        //! @return True if the data was successfully merged, otherwise false.
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the data was successfully merged.
+        //!         If the json string was not merged successfully, the `MergeSettingsResult::GetMessages()` function
+        //!         contains messages around why the operation has failed.
         virtual MergeSettingsResult MergeSettings(AZStd::string_view data, Format format, AZStd::string_view anchorKey = "") = 0;
         //! Loads a settings file and merges it into the registry.
         //! @param path The path to the registry file.
@@ -413,7 +415,9 @@ namespace AZ
         //! @param anchorKey The key where the content of the settings file will be anchored.
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return An AZ::Success if the registry file was successfully merged, or AZ::Failure with an error message.
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the registry file was successfully merged.
+        //!         If the file is is not merged successfully the MergeSettingsResult messages structure will be populated
+        //!         with error messages of why the operation failed
         virtual MergeSettingsResult MergeSettingsFile(AZStd::string_view path, Format format, AZStd::string_view anchorKey = "",
             AZStd::vector<char>* scratchBuffer = nullptr) = 0;
         //! Loads all settings files in a folder and merges them into the registry.
@@ -432,7 +436,7 @@ namespace AZ
         //! @param anchorKey The registry path location where the settings will be anchored
         //! @param scratchBuffer An optional buffer that's used to load the file into. Use this when loading multiple patches to
         //!     reduce the number of intermediate memory allocations.
-        //! @return True if the registry folder was successfully merged, otherwise false.
+        //! @return MergeSettingsResult value that is convertible to bool(true) if the registry folder was successfully merged.
         virtual MergeSettingsResult MergeSettingsFolder(AZStd::string_view path, const Specializations& specializations,
             AZStd::string_view platform = {}, AZStd::string_view anchorKey = "", AZStd::vector<char>* scratchBuffer = nullptr) = 0;
 
