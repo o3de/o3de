@@ -17,6 +17,12 @@ float CalculateLinearDepth(const float zDepth)
     return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
 }
 
+//! Returns the linear depth values of the specified non-linear depth values.
+float4 CalculateLinearDepth(const float4 zDepth)
+{
+    return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
+}
+
 //! Returns the calculated color after blending original framebuffer color with the calculated feedback effect.
 float4 CalculateOutputColor(const float3 inColor, const float3 finalEffect, const float t)
 {
@@ -76,4 +82,61 @@ partial ShaderResourceGroup PassSrg : SRG_PerPass_WithFallback
     {
         return CalculateOutputColor(inColor, finalEffect, PassSrg::CalculateFinalBlendAmount(t));
     }
+}
+
+//! Calculates the view position and normal from the fragment position.
+void ComputeViewNormalAndPosition(VSOutput IN, out float3 outPositionWS, out float3 outNormalWS)
+{
+    const float2 pixelSize = PassSrg::m_maskDimensions.zw;  // How big a pixel is in screen UV space
+    const float2 halfPixel = pixelSize * 0.5f;
+    const int2   screenPos = IN.m_position.xy;              // The coordinates of the screen pixel being shaded
+    const float2 screenUV  = IN.m_texCoord.xy;              // The UV value [0, 1] of the screen pixel
+
+    // Do 2 depth gather ops to get 5 depth values (cross centered on pixel being shaded). Reminder that gather is laid out like so:
+    //  W Z
+    //  X Y
+    float4 depthUpLeft = PassSrg::m_depth.Gather(PassSrg::PointSampler, screenUV - halfPixel);
+    float4 depthBottomRight = PassSrg::m_depth.Gather(PassSrg::PointSampler, screenUV + halfPixel);
+
+    depthUpLeft = CalculateLinearDepth(depthUpLeft);
+    depthBottomRight = CalculateLinearDepth(depthBottomRight);
+
+    float3 positionVS = ViewSrg::GetViewSpacePosition(screenUV, depthUpLeft.y);
+
+    float3 diffX;
+    {
+        float3 positionLeft  = ViewSrg::GetViewSpacePosition( float2(screenUV.x - pixelSize.x, screenUV.y), depthUpLeft.x);
+        float3 positionRight = ViewSrg::GetViewSpacePosition( float2(screenUV.x + pixelSize.x, screenUV.y), depthBottomRight.z);
+        float3 diffLeft = positionVS - positionLeft;
+        float3 diffRight = positionRight - positionVS;
+        diffX = (abs(diffLeft.z) < abs(diffRight.z)) ? diffLeft : diffRight;
+    }
+    float3 diffY;
+    {
+        float3 positionUp   = ViewSrg::GetViewSpacePosition( float2(screenUV.x, screenUV.y - pixelSize.y), depthUpLeft.z);
+        float3 positionDown = ViewSrg::GetViewSpacePosition( float2(screenUV.x, screenUV.y + pixelSize.y), depthBottomRight.x);
+        float3 diffUp = positionVS - positionUp;
+        float3 diffDown = positionDown - positionVS;
+        diffY = (abs(diffUp.z) < abs(diffDown.z)) ? diffUp : diffDown;
+    }
+
+    float3 normalVS = normalize( cross(diffX, diffY) );
+    
+    positionVS.z = -positionVS.z;
+    normalVS.z = -normalVS.z;
+
+    outPositionWS = positionVS;
+    outNormalWS = normalVS;
+}
+
+//! Returns the world position from the view position.
+float3 ComputeWorldPositionFromViewPosition(in float3 positionVS)
+{
+    return mul(ViewSrg::m_viewMatrixInverse, float4(positionVS, 1) ).xyz;
+}
+
+//! Returns the world normal from the view normal.
+float3 ComputeWorldNormalFromViewNormal(in float3 normalVS)
+{
+    return mul(ViewSrg::m_viewMatrixInverse, float4(normalVS, 0) ).xyz;
 }
