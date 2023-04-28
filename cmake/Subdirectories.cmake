@@ -215,7 +215,7 @@ function(resolve_gem_dependencies object_type object_path)
         )
 
     if(O3DE_CLI_RESULT)
-        message(WARNING "Dependecy resolution failed\n  Error: ${O3DE_CLI_OUT}")
+        message(WARNING "Dependecy resolution failed.\n  If needed, set the O3DE_DISABLE_GEM_DEPENDENCY_RESOLUTION variable to bypass dependency resolution.\n  Error: ${O3DE_CLI_OUT}")
         return()
     endif()
 
@@ -342,8 +342,18 @@ function(get_all_external_subdirectories_for_o3de_object output_subdirs object_t
         resolve_gem_dependencies(${object_type} "${object_path}")
     endif()
 
-    foreach(gem_name_with_version_specifier IN LISTS initial_gem_names)
+    # Cache the "gem_names" field entries as read from the <o3de_object>.json file
+    # This will be used in the Install code to generate an "engine.json" with the same
+    # set of active gems into its "gem_names" field
+    get_property(explicit_active_gems GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_${object_type}")
+    # Append to any existing active gems mapped using the ${object_type} key
+    list(APPEND explicit_active_gems ${initial_gem_names})
+    # Make the list of active gems unique
+    list(REMOVE_DUPLICATES explicit_active_gems)
+    # Update the ${object_type} -> active gem GLOBAL property
+    set_property(GLOBAL PROPERTY "O3DE_EXPLICIT_ACTIVE_GEMS_${object_type}" "${explicit_active_gems}")
 
+    foreach(gem_name_with_version_specifier IN LISTS initial_gem_names)
         # Use the ERROR_VARIABLE to catch the common case when it's a simple string and not a json type.
         string(JSON json_type ERROR_VARIABLE json_error TYPE ${gem_name_with_version_specifier})
         set(gem_optional FALSE)

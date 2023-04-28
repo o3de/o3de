@@ -10,7 +10,7 @@
 
 #include <AzCore/EBus/EBus.h>
 #include <AzCore/Interface/Interface.h>
-#include <AzCore/std/string/string_view.h>
+#include <AzCore/std/string/string.h>
 
 
 namespace AZ
@@ -22,8 +22,12 @@ namespace AZ
     }
 } // namespace AZ
 
-namespace ScriptAutomation
+namespace AZ::ScriptAutomation
 {
+    // Forward declare
+    struct ImageComparisonToleranceLevel;
+
+    // Constants
     static constexpr float DefaultPauseTimeout = 10.0f;
     static constexpr AZ::Crc32 AutomationServiceCrc = AZ_CRC_CE("AutomationService");
 
@@ -61,8 +65,17 @@ namespace ScriptAutomation
         //! tell the automation system that a profiling capture has started
         virtual void StartProfilingCapture() = 0;
 
+        //! Call out to another script and put it in the operation queue
+        virtual void ExecuteScript(const char* scriptPath) = 0;
+
         //! Add an operation into the queue for processing later
         virtual void QueueScriptOperation(ScriptOperation&& action) = 0;
+
+        //! Find the named tolerance level
+        virtual const ImageComparisonToleranceLevel* FindToleranceLevel(const AZStd::string& name) = 0;
+
+        virtual void LoadLevel(const char* levelName) = 0;
+
     };
 
     class ScriptAutomationRequestsBusTraits
@@ -87,4 +100,4 @@ namespace ScriptAutomation
         virtual void OnAutomationFinished() = 0;
     };
     using ScriptAutomationNotificationBus = AZ::EBus<ScriptAutomationNotifications>;
-} // namespace ScriptAutomation
+} // namespace AZ::ScriptAutomation

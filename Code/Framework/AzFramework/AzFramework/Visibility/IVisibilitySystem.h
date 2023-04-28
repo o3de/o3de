@@ -104,6 +104,13 @@ namespace AzFramework
         //! @param callback the callback to invoke when a node is visible
         virtual void Enumerate(const AZ::Frustum& frustum, const EnumerateCallback& callback) const = 0;
 
+        //! Intersects a frustum against the visibility system, but rejects everything entirely contained inside the excludeFrustum.
+        //! This is useful for cascade shadows where a larger cascade need not render things completely covered by a smaller cascade.
+        //! @param includeFrustum the frustum to test against for inclusion
+        //! @param excludeFrustum the frustum to test against for exclusion
+        //! @param callback the callback to invoke when a node is visible
+        virtual void Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const = 0;
+
         //! Enumerate *all* OctreeNodes that have any entries in them (without any culling).
         //! @param callback the callback to invoke when a node is visible
         virtual void EnumerateNoCull(const EnumerateCallback& callback) const = 0;

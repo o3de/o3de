@@ -415,36 +415,38 @@ namespace AzToolsFramework
         }
 
         //////////////////////////////////////////////////////////////////////////
-        // AssetPathFilter
+        // EngineFilter
         //////////////////////////////////////////////////////////////////////////
-        AssetPathFilter::AssetPathFilter()
-            : m_assetPath("")
+        EngineFilter::EngineFilter()
+            : m_enginePath("")
+            , m_projectPath("")
         {
         }
 
-        void AssetPathFilter::SetAssetPath(AZ::IO::Path path)
+        void EngineFilter::SetEngineAndProject(AZ::IO::Path enginePath, AZ::IO::Path projectPath)
         {
-            m_assetPath = path.LexicallyNormal();
+            m_enginePath = enginePath.LexicallyNormal();
+            m_projectPath = projectPath.LexicallyNormal();
         }
 
-        QString AssetPathFilter::GetNameInternal() const
+        QString EngineFilter::GetNameInternal() const
         {
-            return QString::fromUtf8(m_assetPath.c_str(), static_cast<int32_t>(m_assetPath.Native().size()));
+            return QString::fromUtf8(m_enginePath.c_str(), static_cast<int32_t>(m_enginePath.Native().size()));
         }
 
-        bool AssetPathFilter::MatchInternal(const AssetBrowserEntry* entry) const
+        bool EngineFilter::MatchInternal(const AssetBrowserEntry* entry) const
         {
-            if (m_assetPath.empty())
+            if (m_enginePath.empty() || m_projectPath.empty())
             {
-                return false;
+                return true;
             }
 
             AZ::IO::Path absolutePath =
                 (entry->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product && entry->GetParent()
                     ? entry->GetParent()->GetFullPath()
-                    : AZ::IO::Path(entry->GetFullPath()));
+                    : entry->GetFullPath());
 
-            return absolutePath.IsRelativeTo(m_assetPath);
+            return (absolutePath.IsRelativeTo(m_projectPath) ? true : !absolutePath.IsRelativeTo(m_enginePath));
         }
 
         //////////////////////////////////////////////////////////////////////////

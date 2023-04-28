@@ -68,7 +68,6 @@
         "Gems/Prefab/PrefabBuilder",
         "Gems/Presence",
         "Gems/PrimitiveAssets",
-        "Gems/Streamer",
         "Gems/Profiler",
         "Gems/PythonAssetBuilder",
         "Gems/QtForPython",
@@ -89,6 +88,7 @@
         "Gems/StartingPointCamera",
         "Gems/StartingPointInput",
         "Gems/StartingPointMovement",
+        "Gems/Streamer",
         "Gems/SurfaceData",
         "Gems/Terrain",
         "Gems/TestAssetBuilder",
@@ -102,10 +102,10 @@
         "Gems/WhiteBox"
     ],
     "gem_names": [
-        "AtomShader",
         "Atom_Bootstrap",
-        "CommonFeaturesAtom",
+        "AtomShader",
         "Camera",
+        "CommonFeaturesAtom",
         "Maestro",
         "PrefabBuilder",
         "SceneProcessing"
@@ -114,16 +114,19 @@
         "AutomatedTesting"
     ],
     "templates": [
-        "Templates/UnifiedMultiplayerGem",
-        "Templates/PrebuiltGem",
-        "Templates/GemRepo",
         "Templates/AssetGem",
+        "Templates/CppToolGem",
         "Templates/DefaultComponent",
         "Templates/DefaultGem",
         "Templates/DefaultProject",
-        "Templates/CppToolGem",
+        "Templates/GemRepo",
         "Templates/MinimalProject",
+        "Templates/PrebuiltGem",
+        "Templates/PythonToolGem",
         "Templates/ScriptCanvasNode",
-        "Templates/PythonToolGem"
+        "Templates/UnifiedMultiplayerGem"
+    ],
+    "repos": [
+        "https://canonical.o3de.org"
     ]
 }

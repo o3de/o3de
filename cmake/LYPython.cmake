@@ -143,6 +143,11 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     set(stamp_file ${CMAKE_BINARY_DIR}/packages/pip_installs/${pip_package_name}.stamp)
     get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
     file(MAKE_DIRECTORY ${stamp_file_directory})
+    
+    # for the first release of the o3de snap we will only use packages shipped with o3de
+    if ($ENV{O3DE_SNAP})
+        file(TOUCH ${stamp_file})
+    endif()
    
     # we only ever need to do this once per runtime install, since its a link
     # not an actual install:
