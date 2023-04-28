@@ -57,7 +57,7 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
-        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
 
         // Construct the build targets from the build target descriptors
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
@@ -104,6 +104,8 @@ namespace TestImpact
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
 
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
+
         try
         {
             if (dataFile.has_value())
@@ -137,11 +139,13 @@ namespace TestImpact
                 //        AZStd::nullopt);
                 //}
             }
+            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         }
         catch (const DependencyException& e)
         {
             if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
+                AZ_Info("TIAFDEBUG:ERROR", "%s Check %d : %s\n", __FILE__, __LINE__, e.what());
                 throw RuntimeException(e.what());
             }
         }
@@ -155,7 +159,7 @@ namespace TestImpact
                     m_sparTiaFile.c_str())
                     .c_str());
         }
-        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     NativeRuntime::~NativeRuntime() = default;
@@ -228,7 +232,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
 
         const Timer sequenceTimer;
         AZStd::vector<const NativeTestTarget*> includedTestTargets;
@@ -281,7 +285,7 @@ namespace TestImpact
         RegularTestSequenceNotificationBus::Broadcast(
             &RegularTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
-        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 
@@ -292,7 +296,7 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
@@ -317,7 +321,7 @@ namespace TestImpact
                 }
             }
 
-            AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             return AZStd::pair{ selectedTestTargets, discardedNotDraftedTestTargets };
         };
 
@@ -384,11 +388,11 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 updateCoverage);
-                AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         }
         else
         {
-                AZ_Info("TIAFDEBUG", "Check%d\n", __LINE__);
+                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
                 return ImpactAnalysisTestSequenceWrapper(
                 m_maxConcurrency,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
@@ -405,6 +409,7 @@ namespace TestImpact
                 AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun<NativeTestTarget>>& jobs)>>{
                     AZStd::nullopt });
         }
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     Client::SafeImpactAnalysisSequenceReport NativeRuntime::SafeImpactAnalysisTestSequence(
