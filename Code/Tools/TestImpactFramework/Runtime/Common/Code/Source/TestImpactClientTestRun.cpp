@@ -8,6 +8,7 @@
 
 #include <TestImpactFramework/TestImpactClientTestRun.h>
 
+#include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/tuple.h>
 
 namespace TestImpact
@@ -98,6 +99,10 @@ namespace TestImpact
             : m_name(testName)
             , m_result(result)
         {
+        }
+        Test::~Test()
+        {
+            AZ_Info("TIAFDEBUG", "DELETE ('%s')", m_name.c_str());
         }
 
         const AZStd::string& Test::GetName() const

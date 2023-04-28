@@ -284,10 +284,7 @@ namespace TestImpact
             AZStd::back_inserter(testNames),
             [](const TestTarget* testTarget)
             {
-                if (testTarget == nullptr)
-                {
-                    AZ_Info("TIAFDEBUG", "%s Check %d : IsNULL\n", __FILE__, __LINE__);
-                }
+                AZ_Info("TIAFDEBUG", "%s Check %d : (0x%llx)) \n", __FILE__, __LINE__, static_cast<uint64_t>(testTarget));
                 return testTarget->GetName();
             });
 
@@ -437,6 +434,15 @@ namespace TestImpact
             }
             else
             {
+                AZ_Info(
+                    "TIAFDEBUG",
+                    "%s Check %d : (0x%llx : '%s')) \n",
+                    __FILE__,
+                    __LINE__,
+                    static_cast<uint64_t>(testTarget),
+                    testTarget->GetName().c_str());
+
+                
                 includedTestTargets.push_back(testTarget);
             }
         }

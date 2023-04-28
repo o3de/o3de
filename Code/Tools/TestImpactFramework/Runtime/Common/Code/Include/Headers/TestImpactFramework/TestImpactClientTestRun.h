@@ -128,6 +128,8 @@ namespace TestImpact
             //! Constructs the test with the specified name and result.
             Test(const AZStd::string& testName, TestResult result);
 
+            ~Test();
+
             //! Returns the name of this test.
             const AZStd::string& GetName() const;
 
