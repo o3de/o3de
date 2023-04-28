@@ -327,6 +327,13 @@ namespace TestImpact
             {
                 if (!draftedTestTargetsSet.count(testTarget))
                 {
+                    AZ_Info(
+                        "TIAFDEBUG",
+                        "%s Check %d : (0x%p : '%s')) \n",
+                        __FILE__,
+                        __LINE__,
+                        reinterpret_cast<const void*>(testTarget),
+                        testTarget->GetName().c_str());
                     discardedNotDraftedTestTargets.push_back(testTarget);
                 }
             }
