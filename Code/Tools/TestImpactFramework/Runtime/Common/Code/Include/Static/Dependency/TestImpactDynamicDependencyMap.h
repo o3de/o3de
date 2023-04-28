@@ -176,12 +176,20 @@ namespace TestImpact
         {
             AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
+            auto cant_find= (m_autogenInputToOutputMap.find(sourceCoverage.GetPath().String()) == m_autogenInputToOutputMap.end());
+            if (cant_find)
+            {
+                AZ_Info("TIAFDEBUG", "%s Check %d: ERROR: Couldn't replace source coverage for %s, source file is an autogen input file\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
+            }
+
             AZ_TestImpact_Eval(
-                m_autogenInputToOutputMap.find(sourceCoverage.GetPath().String()) == m_autogenInputToOutputMap.end(), DependencyException,
+                cant_find,
+                DependencyException,
                 AZStd::string::format(
                     "Couldn't replace source coverage for %s, source file is an autogen input file", sourceCoverage.GetPath().c_str())
                     .c_str());
 
+            AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             auto [sourceDependencyIt, inserted] = m_sourceDependencyMap.insert(sourceCoverage.GetPath().String());
             auto& [source, sourceDependency] = *sourceDependencyIt;
 
