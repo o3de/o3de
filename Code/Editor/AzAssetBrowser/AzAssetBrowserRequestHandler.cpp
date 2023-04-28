@@ -539,16 +539,43 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
-            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, caller](){
+            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, thumbnailView, expandedTableView, caller](){
                 auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
                 const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
                 auto* browser2 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(name2)->Widget());
+
                 if (browser1->ViewWidgetBelongsTo(caller))
                 {
+                    if (thumbnailView)
+                    {
+                        browser2->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                    }
+                    else if (expandedTableView)
+                    {
+                        browser2->SetCurrentMode(AssetBrowserMode::TableView);
+                    }
+                    else
+                    {
+                        browser2->SetCurrentMode(AssetBrowserMode::ListView);
+                    }
+
                     browser2->SelectAsset(fullFilePath.c_str());
                 }
                 else
                 {
+                    if (thumbnailView)
+                    {
+                        browser1->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                    }
+                    else if (expandedTableView)
+                    {
+                        browser1->SetCurrentMode(AssetBrowserMode::TableView);
+                    }
+                    else
+                    {
+                        browser1->SetCurrentMode(AssetBrowserMode::ListView);
+                    }
+
                     browser1->SelectAsset(fullFilePath.c_str());
                 }
             });
