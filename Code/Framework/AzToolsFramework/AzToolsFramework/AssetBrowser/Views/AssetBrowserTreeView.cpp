@@ -277,9 +277,9 @@ namespace AzToolsFramework
             {
                 m_attachedThumbnailView->SelectEntry(entries.back().data());
             }
-            if (m_attachedExpendedTableView)
+            if (m_attachedExpandedTableView)
             {
-                m_attachedExpendedTableView->SelectEntry(entries.back().data());
+                m_attachedExpandedTableView->SelectEntry(entries.back().data());
             }
 
             SelectEntry(QModelIndex(), entries);
