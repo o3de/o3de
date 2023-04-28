@@ -366,10 +366,10 @@ namespace PhysX
         }
     }
 
-    // carbonated begin enable_catbonated_1: Methods called from o2de-gruber
+    // carbonated begin enable_carbonated_1: Methods called from o3de-gruber
  #if defined(CARBONATED)
     // Pilfered/inspired from SystemComponent::UpdateMaterialSelection
-    void CharacterControllerComponent::SetMaterialByName(uint32_t index, const AZStd::string& name)
+    void CharacterControllerComponent::SetMaterialByName(uint32_t /*index*/, const AZStd::string& /*name*/) // Parameters are temporary commented to prevent warning
     {
         AZ_Assert(m_characterConfig, "Character Config is null!");
 
@@ -402,7 +402,7 @@ namespace PhysX
         */
     }
 
-    void CharacterControllerComponent::SetTag(const AZ::Crc32& tag)
+    void CharacterControllerComponent::SetTag(const AZ::Crc32& /*tag*/) // Parameter name is temporary commented to prevent warning
     {
         // This code is commented because not compatible with o3de
         /*
@@ -410,7 +410,7 @@ namespace PhysX
         */
     }
 #endif
-    // carbonated end enable_catbonated_1
+    // carbonated end enable_carbonated_1
 
     // TransformNotificationBus
     void CharacterControllerComponent::OnTransformChanged(const AZ::Transform& /*local*/, const AZ::Transform& world)
