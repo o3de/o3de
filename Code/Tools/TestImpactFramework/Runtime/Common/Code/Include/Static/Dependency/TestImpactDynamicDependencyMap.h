@@ -225,6 +225,7 @@ namespace TestImpact
             AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
+                AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, unresolvedTestTarget.c_str());
                 if (const TestTarget* testTarget =
                         m_buildTargetList->GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
