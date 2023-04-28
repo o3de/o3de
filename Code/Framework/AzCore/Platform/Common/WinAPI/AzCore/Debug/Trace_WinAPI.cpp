@@ -218,6 +218,8 @@ namespace AZ::Debug
         
         Debug::Trace::Instance().Output(nullptr, "==================================================================\n");
 
+        fflush(stdout);
+
         // allowing continue of execution is not valid here.  This handler gets called for serious exceptions.
         // programs wanting things like a message box can implement them on a case-by-case basis, but we want no such 
         // default behavior - this code is used in automated build systems and UI applications alike.
