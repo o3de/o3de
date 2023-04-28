@@ -284,7 +284,7 @@ namespace TestImpact
             AZStd::back_inserter(testNames),
             [](const TestTarget* testTarget)
             {
-                AZ_Info("TIAFDEBUG", "%s Check %d : (0x%llx)) \n", __FILE__, __LINE__, static_cast<uint64_t>(testTarget));
+                AZ_Info("TIAFDEBUG", "%s Check %d : (%p)) \n", __FILE__, __LINE__, reinterpret_cast<const void*>(testTarget));
                 return testTarget->GetName();
             });
 
@@ -436,10 +436,10 @@ namespace TestImpact
             {
                 AZ_Info(
                     "TIAFDEBUG",
-                    "%s Check %d : (0x%llx : '%s')) \n",
+                    "%s Check %d : (0x%p : '%s')) \n",
                     __FILE__,
                     __LINE__,
-                    static_cast<uint64_t>(testTarget),
+                    reinterpret_cast<const void*>(testTarget),
                     testTarget->GetName().c_str());
 
                 

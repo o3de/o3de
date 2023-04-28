@@ -102,7 +102,7 @@ namespace TestImpact
         }
         Test::~Test()
         {
-            AZ_Info("TIAFDEBUG", "DELETE ('%s')", m_name.c_str());
+            AZ_Info("TIAFDEBUG", "DELETE ( %p '%s')", reinterpret_cast<void*>(this), m_name.c_str());
         }
 
         const AZStd::string& Test::GetName() const
