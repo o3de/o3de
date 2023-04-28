@@ -254,7 +254,7 @@ namespace TestImpact
                         unresolvedTestTarget.c_str());
                 }
             }
-
+            AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             // If the new coverage data results in a parentless and coverageless entry, consider it a dead entry and remove accordingly
             if (sourceDependency.m_coveringTestTargets.empty() && sourceDependency.m_parentTargets.empty() && pruneIfNoParentsOrCoverage)
             {

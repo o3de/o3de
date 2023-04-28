@@ -16,6 +16,9 @@ int main(int argc, char** argv)
 {
     const AZ::Debug::Trace tracer;
 
+    AZ::Debug::Trace::HandleExceptions(true);
+
+
     TestImpact::Console::ReturnCode returnCode = TestImpact::Console::Main(argc, argv);
 
     return aznumeric_cast<int>(returnCode);
