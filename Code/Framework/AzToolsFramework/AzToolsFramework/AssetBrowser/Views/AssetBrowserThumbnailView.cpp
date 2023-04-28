@@ -15,6 +15,7 @@
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntry.h>
 #include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Editor/ActionManagerUtils.h>
+#include <AzToolsFramework/AssetBrowser/Views/AssetBrowserExpandedTableView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserTreeView.h>
 #include <AzToolsFramework/AssetBrowser/Views/AssetBrowserViewUtils.h>
 
@@ -283,6 +284,7 @@ namespace AzToolsFramework
             }
 
             m_assetTreeView = treeView;
+            m_assetTreeView->SetAttachedThumbnailView(this);
 
             if (!m_assetTreeView)
             {
@@ -413,6 +415,29 @@ namespace AzToolsFramework
             filterCopy->SetFilterPropagation(AssetBrowserEntryFilter::Down);
 
             m_assetFilterModel->SetFilter(FilterConstType(filterCopy));
+        }
+
+        void AssetBrowserThumbnailView::SelectEntry(QString assetName)
+        {
+            QModelIndex rootIndex = m_thumbnailViewProxyModel->GetRootIndex();
+
+            auto model = GetThumbnailViewWidget()->model();
+
+            for (int rowIndex = 0; rowIndex < model->rowCount(rootIndex); rowIndex++)
+            {
+                auto index = model->index(rowIndex, 0, rootIndex);
+                if (!index.isValid())
+                {
+                    continue;
+                }
+
+                auto str = index.data().toString();
+                if (assetName == str)
+                {
+                    m_thumbnailViewWidget->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                    m_thumbnailViewWidget->scrollTo(index, QAbstractItemView::ScrollHint::PositionAtCenter);
+                }
+            }
         }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

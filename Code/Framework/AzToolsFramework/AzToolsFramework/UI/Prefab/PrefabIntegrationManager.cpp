@@ -860,6 +860,11 @@ namespace AzToolsFramework
 
                             AZ::EntityId selectedEntityId = selectedEntities.front();
 
+                            if (!s_prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
+                            {
+                                return;
+                            }
+
                             if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
                                 m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
                                 m_prefabOverridePublicInterface->GetEntityOverrideType(selectedEntityId) != OverrideType::AddEntity)
@@ -884,6 +889,13 @@ namespace AzToolsFramework
                             }
 
                             AZ::EntityId selectedEntityId = selectedEntities.front();
+
+                            // Returns false if the selected entity is not owned by a prefab instance. This could happen when the callback is
+                            // triggered after entity selection changes, but prefab propagation does not finish yet to create/reload the entity.
+                            if (!prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntityId))
+                            {
+                                return false;
+                            }
 
                             return !prefabPublicInterface->IsInstanceContainerEntity(selectedEntityId) &&
                                 prefabOverridePublicInterface->AreOverridesPresent(selectedEntityId) &&
@@ -1382,7 +1394,9 @@ namespace AzToolsFramework
                 if (IsOutlinerOverrideManagementEnabled() && selectedEntities.size() == 1)
                 {
                     AZ::EntityId selectedEntity = selectedEntities[0];
-                    if (!s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
+
+                    if (s_prefabPublicInterface->IsOwnedByPrefabInstance(selectedEntity) &&
+                        !s_prefabPublicInterface->IsInstanceContainerEntity(selectedEntity) &&
                         m_prefabOverridePublicInterface->AreOverridesPresent(selectedEntity))
                     {
                         QAction* revertAction = menu->addAction(QObject::tr("Revert Overrides"));

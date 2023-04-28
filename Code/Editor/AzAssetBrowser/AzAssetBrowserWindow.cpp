@@ -20,6 +20,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserTableModel.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserThumbnailViewProxyModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
 
@@ -255,9 +256,9 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         }
     });
 
-    connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_thumbnailView); });
-    connect(m_ui->m_expandedTableViewButton, &QAbstractButton::clicked, this, [this] { SetTwoColumnMode(m_ui->m_expandedTableView); });
-    connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::SetOneColumnMode);
+    connect(m_ui->m_thumbnailViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::ThumbnailView); });
+    connect(m_ui->m_expandedTableViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::TableView); });
+    connect(m_ui->m_treeViewButton, &QAbstractButton::clicked, this, [this] { SetCurrentMode(AssetBrowserMode::ListView); });
 
     m_ui->m_assetBrowserTreeViewWidget->setModel(m_filterModel.data());
     m_ui->m_thumbnailView->SetAssetTreeView(m_ui->m_assetBrowserTreeViewWidget);
@@ -424,7 +425,10 @@ QObject* AzAssetBrowserWindow::createListenerForShowAssetEditorEvent(QObject* pa
 
 bool AzAssetBrowserWindow::ViewWidgetBelongsTo(QWidget* viewWidget)
 {
-    return m_ui->m_assetBrowserTreeViewWidget == viewWidget || m_ui->m_assetBrowserTableViewWidget == viewWidget || m_ui->m_thumbnailView == viewWidget;
+    return m_ui->m_assetBrowserTreeViewWidget == viewWidget ||
+        m_ui->m_assetBrowserTableViewWidget == viewWidget ||
+        m_ui->m_thumbnailView == viewWidget ||
+        m_ui->m_expandedTableView == viewWidget;
 }
 
 void AzAssetBrowserWindow::resizeEvent(QResizeEvent* resizeEvent)
@@ -472,10 +476,10 @@ void AzAssetBrowserWindow::CreateToolsMenu()
         connect(projectSourceAssets, &QAction::triggered, this,
             [this, projectSourceAssets]
             {
-                m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+                m_ui->m_searchWidget->ToggleEngineFilter(projectSourceAssets->isChecked());
             });
         m_toolsMenu->addAction(projectSourceAssets);
-        m_ui->m_searchWidget->ToggleProjectSourceAssetFilter(projectSourceAssets->isChecked());
+        m_ui->m_searchWidget->ToggleEngineFilter(projectSourceAssets->isChecked());
 
         auto* unusableProductAssets = new QAction(tr("Hide Unusable Product Assets"), this);
         unusableProductAssets->setCheckable(true);
@@ -786,32 +790,48 @@ static void ExpandTreeToIndex(QTreeView* treeView, const QModelIndex& index)
 
 void AzAssetBrowserWindow::SelectAsset(const QString& assetPath)
 {
-    QModelIndex index = m_assetBrowserModel->findIndex(assetPath);
-    if (index.isValid())
+    if (ed_useWIPAssetBrowserDesign)
     {
-        m_ui->m_searchWidget->ClearTextFilter();
-        m_ui->m_searchWidget->ClearTypeFilter();
-
-        // Queue the expand and select stuff, so that it doesn't get processed the same
-        // update as the search widget clearing - something with the search widget clearing
-        // interferes with the update from the select and expand, and if you don't
-        // queue it, the tree doesn't expand reliably.
-
         QTimer::singleShot(
-            0, this,
-            [this, filteredIndex = index]
+            0,
+            this,
+            [this, assetPath]
             {
-                // the treeview has a filter model so we have to backwards go from that
-                QModelIndex index = m_filterModel->mapFromSource(filteredIndex);
+                m_ui->m_searchWidget->ClearTextFilter();
+                m_ui->m_searchWidget->ClearTypeFilter();
 
-                QTreeView* treeView = m_ui->m_assetBrowserTreeViewWidget;
-                ExpandTreeToIndex(treeView, index);
-
-                treeView->scrollTo(index);
-                treeView->setCurrentIndex(index);
-
-                treeView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
+                m_ui->m_assetBrowserTreeViewWidget->SelectFileAtPathAfterUpdate(assetPath.toUtf8().data());
             });
+    }
+    else
+    {
+        QModelIndex index = m_assetBrowserModel->findIndex(assetPath);
+        if (index.isValid())
+        {
+            m_ui->m_searchWidget->ClearTextFilter();
+            m_ui->m_searchWidget->ClearTypeFilter();
+
+            // Queue the expand and select stuff, so that it doesn't get processed the same
+            // update as the search widget clearing - something with the search widget clearing
+            // interferes with the update from the select and expand, and if you don't
+            // queue it, the tree doesn't expand reliably.
+
+            QTimer::singleShot(
+                0,
+                this,
+                [this, filteredIndex = index]
+                {
+                    // the treeview has a filter model so we have to backwards go from that
+                    QModelIndex modelIndex = m_filterModel->mapFromSource(filteredIndex);
+
+                    QTreeView* treeView = m_ui->m_assetBrowserTreeViewWidget;
+                    ExpandTreeToIndex(treeView, modelIndex);
+
+                    treeView->scrollTo(modelIndex);
+                    treeView->setCurrentIndex(modelIndex);
+                    treeView->selectionModel()->select(modelIndex, QItemSelectionModel::ClearAndSelect);
+                });
+        }
     }
 }
 
@@ -882,6 +902,32 @@ void AzAssetBrowserWindow::BreadcrumbsPathChangedSlot(const QString& path) const
     {
         m_ui->m_assetBrowserTreeViewWidget->SelectFolder(path.toUtf8().constData());
     }
+}
+
+AssetBrowserMode AzAssetBrowserWindow::GetCurrentMode() const
+{
+    return m_currentMode;
+}
+
+void AzAssetBrowserWindow::SetCurrentMode(const AssetBrowserMode mode)
+{
+    if (ed_useWIPAssetBrowserDesign)
+    {
+        switch (mode)
+        {
+        case AssetBrowserMode::TableView:
+            SetTwoColumnMode(m_ui->m_expandedTableView);
+            break;
+        case AssetBrowserMode::ListView:
+            SetOneColumnMode();
+            break;
+        default:
+            SetTwoColumnMode(m_ui->m_thumbnailView);
+            break;
+        }
+    }
+
+    m_currentMode = mode;
 }
 
 #include <AzAssetBrowser/moc_AzAssetBrowserWindow.cpp>

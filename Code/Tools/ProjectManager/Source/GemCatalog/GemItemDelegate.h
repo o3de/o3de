@@ -76,7 +76,7 @@ namespace O3DE::ProjectManager
         inline constexpr static int s_platformTextWrapAroundLineMaxCount = 2;
 
         // Version
-        inline constexpr static int s_versionSize = 50;
+        inline constexpr static int s_versionSize = 70;
         inline constexpr static int s_versionSizeSpacing = 25;
 
         // Status icon

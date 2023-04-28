@@ -53,5 +53,9 @@
         <file>Cloud.svg</file>
         <file>Cloud_Hover.svg</file>
         <file>error.svg</file>
+        <file>Visible.svg</file>
+        <file>Hidden.svg</file>
+        <file>BannerBlue.svg</file>
+        <file>BannerGreen.svg</file>
     </qresource>
 </RCC>

@@ -57,6 +57,11 @@ namespace AZ
 
             uint32_t shaderTableSize = shaderRecordSize * static_cast<uint32_t>(recordList.size());
 
+            if (shaderTableSize == 0)
+            {
+                return nullptr;
+            }
+
             // create shader table buffer
             RHI::Ptr<RHI::Buffer> shaderTableBuffer = RHI::Factory::Get().CreateBuffer();
             AZ::RHI::BufferDescriptor shaderTableBufferDescriptor;
@@ -130,6 +135,9 @@ namespace AZ
                 buffers.m_missTable = nullptr;
                 buffers.m_missTableSize = 0;
                 buffers.m_missTableStride = 0;
+                buffers.m_callableTable = nullptr;
+                buffers.m_callableTableSize = 0;
+                buffers.m_callableTableStride = 0;
                 buffers.m_hitGroupTable = nullptr;
                 buffers.m_hitGroupTableSize = 0;
                 buffers.m_hitGroupTableStride = 0;
@@ -162,7 +170,16 @@ namespace AZ
                 buffers.m_missTableSize = shaderRecordSize * static_cast<uint32_t>(m_descriptor->GetMissRecords().size());
                 buffers.m_missTableStride = shaderRecordSize;
             }
-            
+
+            // callable shader table
+            {
+                uint32_t shaderRecordSize = RHI::AlignUp(FindLargestRecordSize(m_descriptor->GetCallableRecords()), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
+
+                buffers.m_callableTable = BuildTable(GetDevice(), *m_bufferPools, m_descriptor->GetCallableRecords(), shaderRecordSize, L"Callable Shader Table", stateObjectProperties);
+                buffers.m_callableTableSize = shaderRecordSize * static_cast<uint32_t>(m_descriptor->GetCallableRecords().size());
+                buffers.m_callableTableStride = shaderRecordSize;
+            }
+
             // hit group shader table
             {
                 uint32_t shaderRecordSize = RHI::AlignUp(FindLargestRecordSize(m_descriptor->GetHitGroupRecords()), D3D12_RAYTRACING_SHADER_RECORD_BYTE_ALIGNMENT);
