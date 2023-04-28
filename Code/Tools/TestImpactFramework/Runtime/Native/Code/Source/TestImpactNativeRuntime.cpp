@@ -119,30 +119,35 @@ namespace TestImpact
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)
-            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
-            const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
-            if (tiaData.GetNumSources())
             {
-                m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
-                m_hasImpactAnalysisData = true;
+                const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
+                const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
+                if (tiaData.GetNumSources())
+                {
+                    AZ_Info("TIAFDEBUG", "%s Check %d: GetNumSource()=%d\n", __FILE__, __LINE__, tiaData.GetNumSources());
+                    m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
+                    m_hasImpactAnalysisData = true;
 
-                // Enumerate new test targets
-                //const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
-                //if (!testTargetsWithNoEnumeration.empty())
-                //{
-                //    m_testEngine->UpdateEnumerationCache(
-                //        testTargetsWithNoEnumeration,
-                //        Policy::ExecutionFailure::Ignore,
-                //        Policy::TestFailure::Continue,
-                //        AZStd::nullopt,
-                //        AZStd::nullopt,
-                //        AZStd::nullopt);
-                //}
+                    // Enumerate new test targets
+                    // const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                    // if (!testTargetsWithNoEnumeration.empty())
+                    //{
+                    //    m_testEngine->UpdateEnumerationCache(
+                    //        testTargetsWithNoEnumeration,
+                    //        Policy::ExecutionFailure::Ignore,
+                    //        Policy::TestFailure::Continue,
+                    //        AZStd::nullopt,
+                    //        AZStd::nullopt,
+                    //        AZStd::nullopt);
+                    //}
+                }
+                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             }
             AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         }
         catch (const DependencyException& e)
         {
+            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
                 AZ_Info("TIAFDEBUG:ERROR", "%s Check %d : %s\n", __FILE__, __LINE__, e.what());
@@ -151,6 +156,7 @@ namespace TestImpact
         }
         catch ([[maybe_unused]]const Exception& e)
         {
+            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             AZ_Printf(
                 LogCallSite,
                 AZStd::string::format(
