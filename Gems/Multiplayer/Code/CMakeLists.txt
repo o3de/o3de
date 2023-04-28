@@ -337,7 +337,6 @@ if (PAL_TRAIT_BUILD_TESTS_SUPPORTED)
     )
     ly_add_googletest(
         NAME Gem::Multiplayer.Tests
-        LABELS REQUIRES_tiaf
     )
     ly_add_googlebenchmark(
         NAME Gem::Multiplayer.Benchmarks
