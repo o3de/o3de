@@ -170,9 +170,11 @@ namespace TestImpact
     void DynamicDependencyMap<ProductionTarget, TestTarget>::ReplaceSourceCoverageInternal(
         const SourceCoveringTestsList& sourceCoverageDelta, bool pruneIfNoParentsOrCoverage)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         AZStd::vector<AZStd::string> killList;
         for (const auto& sourceCoverage : sourceCoverageDelta.GetCoverage())
         {
+            AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             // Autogen input files are not compiled sources and thus supplying coverage data for them makes no sense
             AZ_TestImpact_Eval(
                 m_autogenInputToOutputMap.find(sourceCoverage.GetPath().String()) == m_autogenInputToOutputMap.end(), DependencyException,
@@ -189,6 +191,7 @@ namespace TestImpact
             // 3. Clear any existing coverage for the delta
 
             // 1.
+            AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             for (const auto& testTarget : sourceDependency.m_coveringTestTargets)
             {
                 if (auto coveringTestTargetIt = m_testTargetSourceCoverage.find(testTarget);
@@ -211,12 +214,14 @@ namespace TestImpact
             sourceDependency.m_coveringTestTargets.clear();
 
             // Update the dependency with any new coverage data
+            AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, sourceCoverage.GetPath().String().c_str());
             for (const auto& unresolvedTestTarget : sourceCoverage.GetCoveringTestTargets())
             {
                 if (const TestTarget* testTarget =
                         m_buildTargetList->GetTestTargetList().GetTarget(unresolvedTestTarget);
                     testTarget)
                 {
+                    AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, unresolvedTestTarget.c_str());
                     // Source to covering test target mapping
                     sourceDependency.m_coveringTestTargets.insert(testTarget);
 
@@ -226,11 +231,13 @@ namespace TestImpact
                     // Build target to covering test target mapping
                     for (const auto& parentTarget : sourceDependency.m_parentTargets)
                     {
+                        AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, parentTarget.GetTarget()->GetName().c_str());
                         m_buildTargetCoverage[parentTarget].insert(testTarget);
                     }
                 }
                 else
                 {
+                    AZ_Info("TIAFDEBUG", "%s Check %d: %s\n", __FILE__, __LINE__, unresolvedTestTarget.c_str());
                     AZ_Warning(
                         "ReplaceSourceCoverage",
                         false,
@@ -245,6 +252,7 @@ namespace TestImpact
                 m_sourceDependencyMap.erase(sourceDependencyIt);
             }
         }
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     template<typename ProductionTarget, typename TestTarget>
