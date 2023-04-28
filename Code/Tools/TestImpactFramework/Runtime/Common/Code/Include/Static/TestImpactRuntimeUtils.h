@@ -276,6 +276,7 @@ namespace TestImpact
     template<typename TestTarget>
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
     {
+        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         AZStd::vector<AZStd::string> testNames;
         AZStd::transform(
             testTargets.begin(),
@@ -283,6 +284,10 @@ namespace TestImpact
             AZStd::back_inserter(testNames),
             [](const TestTarget* testTarget)
             {
+                if (testTarget == nullptr)
+                {
+                    AZ_Info("TIAFDEBUG", "%s Check %d : IsNULL\n", __FILE__, __LINE__);
+                }
                 return testTarget->GetName();
             });
 
