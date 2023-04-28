@@ -644,7 +644,8 @@ namespace AZ::Debug
                     continue;
                 }
 
-                azstrcat(lines[i], AZ_ARRAY_SIZE(lines[i]), "\n");
+                size_t endOfStr = AZStd::min(strlen(lines[i]), AZ_ARRAY_SIZE(lines[i]) - 1);
+                lines[i][endOfStr] = '\n';
 
                 // Use Output instead of AZ_Printf to be consistent with the exception output code and avoid
                 // this accidentally being suppressed as a normal message
