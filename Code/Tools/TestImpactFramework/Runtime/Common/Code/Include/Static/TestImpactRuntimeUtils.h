@@ -429,7 +429,14 @@ namespace TestImpact
             if (const auto* excludedTests = testTargetExcludeList.GetExcludedTestsForTarget(testTarget);
                 excludedTests != nullptr && excludedTests->empty())
             {
-                // If the test filter is empty, the entire suite is excluded
+                AZ_Info(
+                    "TIAFDEBUG",
+                    "%s Check %d : (0x%p : '%s')) \n",
+                    __FILE__,
+                    __LINE__,
+                    reinterpret_cast<const void*>(testTarget),
+                    testTarget->GetName().c_str());
+            // If the test filter is empty, the entire suite is excluded
                 excludedTestTargets.push_back(testTarget);
             }
             else

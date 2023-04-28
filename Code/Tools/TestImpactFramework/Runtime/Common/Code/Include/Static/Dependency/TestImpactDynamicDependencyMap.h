@@ -666,6 +666,13 @@ namespace TestImpact
         {
             if (coveringSources.empty())
             {
+                AZ_Info(
+                    "TIAFDEBUG",
+                    "%s Check %d : (0x%p : '%s')) \n",
+                    __FILE__,
+                    __LINE__,
+                    reinterpret_cast<const void*>(testTarget),
+                    testTarget->GetName().c_str());
                 notCovering.push_back(testTarget);
             }
         }
