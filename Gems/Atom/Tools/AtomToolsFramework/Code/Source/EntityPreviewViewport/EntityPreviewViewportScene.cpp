@@ -74,6 +74,10 @@ namespace AtomToolsFramework
         m_scene->Activate();
 
         AZ::RPI::RPISystemInterface::Get()->RegisterScene(m_scene);
+
+        // set the application-wide MSAA state
+        // Note: this is done after the scene is registered in order to properly update the pipeline
+        AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(m_activeRenderPipeline->GetRenderSettings().m_multisampleState);
     }
 
     EntityPreviewViewportScene::~EntityPreviewViewportScene()
@@ -143,10 +147,6 @@ namespace AtomToolsFramework
 
             m_activeRenderPipelineId = iter->first;
             m_activeRenderPipeline = iter->second;
-
-            // TODO SetApplicationMultisampleState should only be called once per application and will need to consider multiple viewports
-            // and pipelines. The default pipeline determines the initial MSAA state for the application.
-            AZ::RPI::RPISystemInterface::Get()->SetApplicationMultisampleState(m_activeRenderPipeline->GetRenderSettings().m_multisampleState);
         }
 
         return true;
