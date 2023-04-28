@@ -32,6 +32,11 @@
                     "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",
                     "sub_id": -1556988544,
                     "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                },
+                {
+                    "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.fbx.abdata.json", 
+                    "sub_id": 0, 
+                    "asset_type": "00000000000000000000000000000000"
                 }
             ]
         }
@@ -64,6 +69,11 @@
                     "product_name": "twomeshtwomaterial/multiple_mesh_multiple_material.dbgsg.xml",
                     "sub_id": -1556988544,
                     "asset_type": "51f376140d774f369ac67ed70a0ac868"
+                },
+                {
+                    "product_name":"twomeshtwomaterial/multiple_mesh_multiple_material.fbx.abdata.json",
+                    "sub_id": 0,
+                    "asset_type":"00000000000000000000000000000000"
                 }
             ]
         }

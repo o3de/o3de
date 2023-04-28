@@ -5,20 +5,24 @@ For complete copyright and license terms please see the LICENSE at the root of t
 SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 
-import os
+from dataclasses import dataclass
+from os import PathLike, path
+from typing import List
 import json
 import pytest
-from typing import List
-from dataclasses import dataclass
-
 from _pytest.mark import ParameterSet
+
+from assetpipeline.scene_tests_fixtures.scene_tests_utilities import find_files_in_dir
 
 from automatedtesting_shared import asset_database_utils as asset_db_utils
 
 
 @dataclass
 class BlackboxAssetTest:
-
+    """
+    Data class used in the construction and parametrization of a scene test.
+    Contains the general information for a scene test.
+    """
     test_name: str
     asset_folder: str
     override_asset_folder: str = ""
@@ -28,41 +32,42 @@ class BlackboxAssetTest:
     override_assets: List[asset_db_utils.DBSourceAsset] = ()
 
 
-def populate_product_list_from_json(data_products: {iter}) -> list[asset_db_utils.DBProduct]:
+def populate_product_list_from_json(product_data: {iter}) -> List[asset_db_utils.DBProduct]:
     """
     Helper function used by the test_builder.py module to populate an expected product assets list from a json file.
-    :param data_products: The "product" key from the target json dict.
-    :return: list_products: A list of products.
+    :param product_data: The "product" key from the target json dict.
+    :return: product_list: A list of DBProduct assets.
     """
 
-    list_products = []
-    for product in data_products:
-        list_products.append(
+    product_list = []
+    for product in product_data:
+        product_list.append(
             asset_db_utils.DBProduct(
                 product_name=product["product_name"],
                 sub_id=product["sub_id"],
                 asset_type=bytes(product["asset_type"], 'utf-8')
             )
         )
-    return list_products
+    return product_list
 
 
-def build_test(scenetest_file: object) -> BlackboxAssetTest:
+def build_test(scene_test_file: str | bytes | PathLike[str] | PathLike[bytes]) -> BlackboxAssetTest:
     """
-    A function that reads the contents of a scenetest json file to create a test.
-    Returns the test parameters and data as an instance of the BlackboxAssetTest dataclass.
-    Scene Test json template example at '\assetpipeline\scene_tests\tests\template.json'
-    :param scenetest_file: A json formatted file that provides the data required to drive a test.
+    A function that reads the contents of a '.scenetest' json file to create a test.
+    Returns the test parameters as an instance of the BlackboxAssetTest dataclass.
+    Scene Test json template example available at
+    'AutomatedTesting/Gem/PythonTests/assetpipeline/scene_tests/tests/template.json'
+    :param scene_test_file: Path to a json formatted file that provides the data required to drive a test.
     :return: Test data to be parametrized using pytest.param() from within the test runner module in
-    '\assetpipeline\scene_tests\scene_tests.py'.
+        'AutomatedTesting/Gem/PythonTests/assetpipeline/scene_tests/scene_tests.py'.
     """
 
     # Open the json file and load it into a variable.
-    with open(scenetest_file) as file:
+    with open(scene_test_file) as file:
         data = json.load(file)
 
     # Create an instance of the BlackboxAssetTest dataclass and populate the parameters with data from the json file.
-    TestParams = BlackboxAssetTest(
+    test_params = BlackboxAssetTest(
         test_name=data["test_name"],
         asset_folder=data["asset_folder"],
         override_asset_folder=data["override_asset_folder"],
@@ -100,29 +105,28 @@ def build_test(scenetest_file: object) -> BlackboxAssetTest:
         ] if data["override_assets"] is not None else None
     )
 
-    return TestParams
+    return test_params
 
 
-def parametrize_blackbox_scene_test(dir_test_path: str) -> tuple[list[ParameterSet], list]:
+def parametrize_scene_test(dir_test_path: str | bytes | PathLike[str] | PathLike[bytes]) \
+        -> tuple[list[ParameterSet], list]:
     """
-    Summary:
-    Helper function that parametrizes tests based on json files found within the test directory and all sub-folders.
-
+    Parametrize tests based on .scenetest files found within the test directory and all sub-folders.
     :returns:
-    blackbox_scene_tests: List of parametrized tests
-    blackbox_test_ids: Name of tests to be used as IDs during parametrization
+    scene_tests: List of parametrized tests
+    test_ids: Name of tests to be used as IDs during parametrization
     """
-    blackbox_scene_tests = []
-    blackbox_test_ids = []
+    scene_tests = []
+    test_ids = []
+    test_path_list = find_files_in_dir(dir_test_path, ".scenetest")
 
-    for root, dirs, files in os.walk(dir_test_path):
-        file_list = [file for file in files if file.endswith(".scenetest")]
-        for test in file_list:
-            test_path = os.path.join(root, os.path.relpath(test))
-            blackbox_scene_tests.append(
-                pytest.param(
-                    build_test(test_path)
-                )
+    for path_to_test in test_path_list:
+        test_name = path.basename(path_to_test.split(".")[0])
+        scene_tests.append(
+            pytest.param(
+                build_test(path_to_test)
             )
-            blackbox_test_ids.append(test.split(".")[0])
-    return blackbox_scene_tests, blackbox_test_ids
+        )
+        test_ids.append(test_name)
+
+    return scene_tests, test_ids
