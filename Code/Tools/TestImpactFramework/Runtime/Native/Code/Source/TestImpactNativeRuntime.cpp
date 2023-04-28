@@ -141,6 +141,10 @@ namespace TestImpact
                     //        AZStd::nullopt);
                     //}
                 }
+                else
+                {
+                    AZ_Info("TIAFDEBUG", "%s Check %d: GetNumSource()=0!!!\n", __FILE__, __LINE__);
+                }
                 AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             }
             AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);

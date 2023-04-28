@@ -123,12 +123,9 @@ namespace TestImpact
     {
         AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
 
-        int index = 0;
         // Build dependency graphs
         for (const auto& buildTarget : buildTargetList.GetBuildTargets())
         {
-            ++index;
-            AZ_Info("TIAFDEBUG", "%s Check %d: %d\n", __FILE__, __LINE__, index);
             const auto addOrRetrieveVertex = [this](const BuildTarget<ProductionTarget, TestTarget>& buildTarget)
             {
                 if (auto it = m_buildGraphVertices.find(buildTarget);
@@ -150,10 +147,8 @@ namespace TestImpact
             const auto resolveDependencies =
                 [&](const DependencyList& unresolvedDependencies, TargetBuildGraphSet<ProductionTarget, TestTarget>& resolveDependencies)
             {
-                int index = 0;
                 for (const auto& buildDependency : unresolvedDependencies)
                 {
-                    index++;
                     const auto buildDependencyTarget = buildTargetList.GetBuildTarget(buildDependency);
                     if (!buildDependencyTarget.has_value())
                     {
@@ -161,14 +156,6 @@ namespace TestImpact
                             "BuildTargetDependencyGraph",
                             false,
                             "Couldn't find build dependency '%s' for build target '%s'",
-                            buildDependency.c_str(),
-                            buildTarget.GetTarget()->GetName().c_str());
-                        AZ_Info(
-                            "TIAFDEBUG",
-                            "%s Check %d:%d Warn : Couldn't find build dependency '%s' for build target '%s'\n",
-                            __FILE__,
-                            __LINE__,
-                            index,
                             buildDependency.c_str(),
                             buildTarget.GetTarget()->GetName().c_str());
                         continue;
@@ -186,12 +173,9 @@ namespace TestImpact
         }
 
         AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-        index = 0;
         // Build depender graphs
         for (auto& [buildTarget, vertex] : m_buildGraphVertices)
         {
-            ++index;
-            AZ_Info("TIAFDEBUG", "%s Check %d:%d\n", __FILE__, __LINE__, index);
             for (auto* dependency : vertex.m_dependencies.m_build)
             {
                 auto& dependencyVertex = m_buildGraphVertices.find(dependency->m_buildTarget)->second;
