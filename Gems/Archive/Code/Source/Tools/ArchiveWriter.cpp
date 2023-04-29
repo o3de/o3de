@@ -107,7 +107,7 @@ namespace Archive
             errorResult.m_compressionAlgorithm = fileSettings.m_compressionAlgorithm;
             errorResult.m_resultOutcome = AZStd::unexpected(
                 ResultString::format(R"(Unable to successfully read all bytes(%zu) from input stream.)"
-                    " %zu bytes were read.",
+                    " %llu bytes were read.",
                     fileData.size(), bytesRead));
             return errorResult;
         }
