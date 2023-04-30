@@ -270,7 +270,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         TestEngineJobMap<typename TestJobRunner::JobInfo::IdType, TestTargetType> engineJobs;
         TestJobRunnerNotificationHandler<TestJobRunner, TestTargetType> handler(
             jobInfos, testTargets, engineJobs, executionFailurePolicy, testFailurePolicy, errorCheckerCallback);
@@ -281,7 +280,6 @@ namespace TestImpact
             testTargetTimeout,
             globalTimeout);
         auto engineRuns = CompileTestEngineRuns<TestJobRunner, TestTargetType>(testTargets, runnerJobs, AZStd::move(engineJobs));
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return AZStd::pair{ CalculateSequenceResult(result, engineRuns, executionFailurePolicy), AZStd::move(engineRuns) };
     }
 } // namespace TestImpact

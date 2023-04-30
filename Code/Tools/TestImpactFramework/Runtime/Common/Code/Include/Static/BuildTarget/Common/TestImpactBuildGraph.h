@@ -121,8 +121,6 @@ namespace TestImpact
     BuildGraph<ProductionTarget, TestTarget>::BuildGraph(
         const BuildTargetList<ProductionTarget, TestTarget>& buildTargetList)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-
         // Build dependency graphs
         for (const auto& buildTarget : buildTargetList.GetBuildTargets())
         {
@@ -131,7 +129,6 @@ namespace TestImpact
                 if (auto it = m_buildGraphVertices.find(buildTarget);
                     it == m_buildGraphVertices.end())
                 {
-                    AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
                     return &m_buildGraphVertices
                                 .emplace(
                                     AZStd::piecewise_construct, AZStd::forward_as_tuple(buildTarget), AZStd::forward_as_tuple(buildTarget))
@@ -139,7 +136,6 @@ namespace TestImpact
                 }
                 else
                 {
-                    AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
                     return &it->second;
                 }
             };
@@ -166,13 +162,11 @@ namespace TestImpact
                 }
             };
 
-            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             auto& vertex = *addOrRetrieveVertex(buildTarget);
             resolveDependencies(buildTarget.GetTarget()->GetDependencies().m_build, vertex.m_dependencies.m_build);
             resolveDependencies(buildTarget.GetTarget()->GetDependencies().m_runtime, vertex.m_dependencies.m_runtime);
         }
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         // Build depender graphs
         for (auto& [buildTarget, vertex] : m_buildGraphVertices)
         {
@@ -188,7 +182,6 @@ namespace TestImpact
                 dependencyVertex.m_dependers.m_runtime.insert(&vertex);
             }
         }
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     template<typename ProductionTarget, typename TestTarget>

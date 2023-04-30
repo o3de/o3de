@@ -57,8 +57,6 @@ namespace TestImpact
         , m_targetOutputCapture(targetOutputCapture)
         , m_maxConcurrency(maxConcurrency.value_or(AZStd::thread::hardware_concurrency()))
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-
         // Construct the build targets from the build target descriptors
         auto targetDescriptors = ReadTargetDescriptorFiles(m_config.m_commonConfig.m_buildTargetDescriptor);
         auto buildTargets = CompileNativeTargetLists(
@@ -104,8 +102,6 @@ namespace TestImpact
             m_config.m_testEngine.m_instrumentation.m_binary,
             m_maxConcurrency);
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-
         try
         {
             if (dataFile.has_value())
@@ -119,48 +115,36 @@ namespace TestImpact
             }
            
             // Populate the dynamic dependency map with the existing source coverage data (if any)
+            const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
+            const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
+            if (tiaData.GetNumSources())
             {
-                const auto tiaDataRaw = ReadFileContents<Exception>(m_sparTiaFile);
-                const auto tiaData = DeserializeSourceCoveringTestsList(tiaDataRaw);
-                if (tiaData.GetNumSources())
-                {
-                    AZ_Info("TIAFDEBUG", "%s Check %d: GetNumSource()=%d\n", __FILE__, __LINE__, tiaData.GetNumSources());
-                    m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
-                    m_hasImpactAnalysisData = true;
+                m_dynamicDependencyMap->ReplaceSourceCoverage(tiaData);
+                m_hasImpactAnalysisData = true;
 
-                    // Enumerate new test targets
-                    // const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
-                    // if (!testTargetsWithNoEnumeration.empty())
-                    //{
-                    //    m_testEngine->UpdateEnumerationCache(
-                    //        testTargetsWithNoEnumeration,
-                    //        Policy::ExecutionFailure::Ignore,
-                    //        Policy::TestFailure::Continue,
-                    //        AZStd::nullopt,
-                    //        AZStd::nullopt,
-                    //        AZStd::nullopt);
-                    //}
-                }
-                else
-                {
-                    AZ_Info("TIAFDEBUG", "%s Check %d: GetNumSource()=0!!!\n", __FILE__, __LINE__);
-                }
-                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
+                // Enumerate new test targets
+                //const auto testTargetsWithNoEnumeration = m_dynamicDependencyMap->GetNotCoveringTests();
+                //if (!testTargetsWithNoEnumeration.empty())
+                //{
+                //    m_testEngine->UpdateEnumerationCache(
+                //        testTargetsWithNoEnumeration,
+                //        Policy::ExecutionFailure::Ignore,
+                //        Policy::TestFailure::Continue,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt,
+                //        AZStd::nullopt);
+                //}
             }
-            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         }
         catch (const DependencyException& e)
         {
-            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             if (integrationFailurePolicy == Policy::IntegrityFailure::Abort)
             {
-                AZ_Info("TIAFDEBUG:ERROR", "%s Check %d : %s\n", __FILE__, __LINE__, e.what());
                 throw RuntimeException(e.what());
             }
         }
         catch ([[maybe_unused]]const Exception& e)
         {
-            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             AZ_Printf(
                 LogCallSite,
                 AZStd::string::format(
@@ -169,7 +153,6 @@ namespace TestImpact
                     m_sparTiaFile.c_str())
                     .c_str());
         }
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     NativeRuntime::~NativeRuntime() = default;
@@ -242,8 +225,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-
         const Timer sequenceTimer;
         AZStd::vector<const NativeTestTarget*> includedTestTargets;
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
@@ -295,7 +276,6 @@ namespace TestImpact
         RegularTestSequenceNotificationBus::Broadcast(
             &RegularTestSequenceNotificationBus::Events::OnTestSequenceComplete, sequenceReport);
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 
@@ -306,7 +286,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
 
         // Draft in the test targets that have no coverage entries in the dynamic dependency map
@@ -338,7 +317,6 @@ namespace TestImpact
                 }
             }
 
-            AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
             return AZStd::pair{ selectedTestTargets, discardedNotDraftedTestTargets };
         };
 
@@ -405,12 +383,10 @@ namespace TestImpact
                 testTargetTimeout,
                 globalTimeout,
                 updateCoverage);
-                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         }
         else
         {
-                AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
-                return ImpactAnalysisTestSequenceWrapper(
+            return ImpactAnalysisTestSequenceWrapper(
                 m_maxConcurrency,
                 GenerateImpactAnalysisSequencePolicyState(testPrioritizationPolicy, dynamicDependencyMapPolicy),
                 m_suiteSet,
@@ -426,7 +402,6 @@ namespace TestImpact
                 AZStd::optional<AZStd::function<void(const AZStd::vector<TestEngineRegularRun<NativeTestTarget>>& jobs)>>{
                     AZStd::nullopt });
         }
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
     }
 
     Client::SafeImpactAnalysisSequenceReport NativeRuntime::SafeImpactAnalysisTestSequence(
@@ -435,7 +410,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
         TestRunData<TestEngineInstrumentedRun<NativeTestTarget, TestCoverage>> selectedTestRunData, draftedTestRunData;
         TestRunData<TestEngineRegularRun<NativeTestTarget>> discardedTestRunData;
@@ -586,7 +560,6 @@ namespace TestImpact
                     m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 
@@ -594,7 +567,6 @@ namespace TestImpact
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
         AZStd::optional<AZStd::chrono::milliseconds> globalTimeout)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         const Timer sequenceTimer;
         AZStd::vector<const NativeTestTarget*> includedTestTargets;
         AZStd::vector<const NativeTestTarget*> excludedTestTargets;
@@ -656,7 +628,6 @@ namespace TestImpact
                     m_config.m_commonConfig.m_repo.m_root,
                     m_sparTiaFile).value_or(m_hasImpactAnalysisData);
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 

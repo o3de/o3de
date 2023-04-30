@@ -276,7 +276,6 @@ namespace TestImpact
     template<typename TestTarget>
     AZStd::vector<AZStd::string> ExtractTestTargetNames(const AZStd::vector<const TestTarget*>& testTargets)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         AZStd::vector<AZStd::string> testNames;
         AZStd::transform(
             testTargets.begin(),
@@ -284,7 +283,6 @@ namespace TestImpact
             AZStd::back_inserter(testNames),
             [](const TestTarget* testTarget)
             {
-                AZ_Info("TIAFDEBUG", "%s Check %d : (%p)) \n", __FILE__, __LINE__, reinterpret_cast<const void*>(testTarget));
                 return testTarget->GetName();
             });
 
@@ -508,7 +506,6 @@ namespace TestImpact
         const AZStd::optional<AZStd::chrono::milliseconds>& globalTimeout,
         AZStd::optional<AZStd::function<void(const AZStd::vector<TestJob>& jobs)>> updateCoverage)
     {
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         TestRunData<TestJob> selectedTestRunData, draftedTestRunData;
         AZStd::optional<AZStd::chrono::milliseconds> sequenceTimeout = globalTimeout;
 
@@ -593,7 +590,6 @@ namespace TestImpact
             (*updateCoverage)(ConcatenateVectors(selectedTestRunData.m_jobs, draftedTestRunData.m_jobs));
         }
 
-        AZ_Info("TIAFDEBUG", "%s Check %d\n", __FILE__, __LINE__);
         return sequenceReport;
     }
 } // namespace TestImpact
