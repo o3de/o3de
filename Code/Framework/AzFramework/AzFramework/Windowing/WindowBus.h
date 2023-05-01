@@ -59,6 +59,15 @@ namespace AzFramework
         //! On some platforms this may not be the correct size until Activate is called.
         virtual WindowSize GetClientAreaSize() const = 0;
 
+        //! Get the maximum supported client area size for this window.
+        //! This can return different sizes depending on which monitor the window is on.
+        //! On some platforms this may not be the correct size until Activate is called.
+        virtual WindowSize GetMaximumClientAreaSize() const
+        {
+            AZ_Assert(false, "GetMaximumClientAreaSize() not supported.");
+            return { AZStd::numeric_limits<uint32_t>::max(), AZStd::numeric_limits<uint32_t>::max() };
+        }
+
         //! Set the client area size. This is the size that can be rendered to.
         //! \param[in] clientAreaSize Size of the client area in pixels
         //! \param[in] options Options for resizing and moving the window.
@@ -118,6 +127,9 @@ namespace AzFramework
 
         //! This is called if the window's underyling DPI scaling factor changes.
         virtual void OnDpiScaleFactorChanged(float dpiScaleFactor) { AZ_UNUSED(dpiScaleFactor); }
+
+        //! This is called when the fullscreen mode of the window changes.
+        virtual void OnFullScreenModeChanged([[maybe_unused]] bool fullscreen) {}
 
         //! This is called when the window is deactivated from code or if the user closes the window.
         virtual void OnWindowClosed() {};
