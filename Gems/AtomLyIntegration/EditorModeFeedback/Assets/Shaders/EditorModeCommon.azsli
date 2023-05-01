@@ -7,12 +7,19 @@
  */
 #include <viewsrg.srgi>
 
-#include <Atom/Features/SrgSemantics.azsli> 
 #include <Atom/Features/PostProcessing/FullscreenPixelInfo.azsli>
 #include <Atom/Features/PostProcessing/FullscreenVertex.azsli>
+#include <Atom/Features/ScreenSpace/ScreenSpaceUtil.azsli>
+#include <Atom/Features/SrgSemantics.azsli> 
 
 //! Returns the linear depth value of the specified non-linear depth value.
 float CalculateLinearDepth(const float zDepth)
+{
+    return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
+}
+
+//! Returns the linear depth values of the specified non-linear depth values.
+float4 CalculateLinearDepth(const float4 zDepth)
 {
     return abs(((ViewSrg::GetFarZTimesNearZ()) / (ViewSrg::GetFarZMinusNearZ() * zDepth - ViewSrg::GetFarZ()))); 
 }
