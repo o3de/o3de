@@ -12,6 +12,7 @@
 #include <viewsrg.srgi>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/InstancedTransforms.azsli>
 #include "AutoBrick_Common.azsli"
 #include <Atom/Features/Pipeline/Forward/ForwardPassSrg.azsli>
 #include <Atom/Features/Pipeline/Forward/ForwardPassOutput.azsli>
@@ -36,13 +37,14 @@ struct VSOutput
     float4 m_tangent : TANGENT;
     float3 m_worldPosition : UV0;
     float2 m_uv : UV1;
+    uint m_instanceId : SV_InstanceID;
 };
 
-VSOutput AutoBrick_ForwardPassVS(VSInput IN)
+VSOutput AutoBrick_ForwardPassVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
  
     OUT.m_uv = IN.m_uv;
 
@@ -50,7 +52,7 @@ VSOutput AutoBrick_ForwardPassVS(VSInput IN)
     OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, float4(OUT.m_worldPosition, 1.0));
     OUT.m_normal = IN.m_normal;
     OUT.m_tangent = IN.m_tangent;
-
+    OUT.m_instanceId = instanceId;
     return OUT;
 }
 
@@ -129,8 +131,8 @@ DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
 
 ForwardPassOutput AutoBrick_ForwardPassPS(VSOutput IN)
 {
-    real4x4 objectToWorld = real4x4(ObjectSrg::GetWorldMatrix());
-    real3x3 objectToWorldIT = real3x3(ObjectSrg::GetWorldMatrixInverseTranspose());
+    real4x4 objectToWorld = real4x4(GetObjectToWorldMatrix(IN.m_instanceId));
+    real3x3 objectToWorldIT = real3x3(GetObjectToWorldMatrixInverseTranspose(IN.m_instanceId));
 
     float3 normalWS, tangentWS, bitangentWS;
     ConstructTBN(real3(IN.m_normal), real4(IN.m_tangent), objectToWorld, objectToWorldIT, normalWS, tangentWS, bitangentWS);
