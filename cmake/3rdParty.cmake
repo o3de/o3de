@@ -6,6 +6,8 @@
 #
 #
 
+set(O3DE_RADEON_GPU_ANALYZER_ENABLED FALSE CACHE BOOL "Whether to download Radeon GPU Analyzer from Github.")
+
 define_property(TARGET PROPERTY LY_SYSTEM_LIBRARY
     BRIEF_DOCS "Defines a 3rdParty library as a system library"
     FULL_DOCS [[
@@ -365,4 +367,7 @@ if(NOT INSTALLED_ENGINE)
     ly_include_cmake_file_list(cmake/3rdParty/cmake_files.cmake)
     o3de_pal_dir(pal_3rdparty_dir ${CMAKE_CURRENT_SOURCE_DIR}/cmake/3rdParty/Platform/${PAL_PLATFORM_NAME} "${O3DE_ENGINE_RESTRICTED_PATH}" "${LY_ROOT_FOLDER}")
     ly_include_cmake_file_list(${pal_3rdparty_dir}/cmake_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake)
+    if(O3DE_RADEON_GPU_ANALYZER_ENABLED)
+        include(cmake/3rdParty/FetchRGA.cmake)
+    endif()
 endif()

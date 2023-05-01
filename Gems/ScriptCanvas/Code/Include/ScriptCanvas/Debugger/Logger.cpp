@@ -62,7 +62,8 @@ namespace ScriptCanvas
                 return {};
             }
 
-            if (ExecutionLogAsset* logAsset = reinterpret_cast<ExecutionLogAsset*>(AZ::Utils::LoadObjectFromStream(fileStream, serializeContext, &AZ::AzTypeInfo<ExecutionLogAsset>::Uuid(), AZ::ObjectStream::FilterDescriptor())))
+            AZ::TypeId executionLogTypeId = AZ::AzTypeInfo<ExecutionLogAsset>::Uuid();
+            if (ExecutionLogAsset* logAsset = reinterpret_cast<ExecutionLogAsset*>(AZ::Utils::LoadObjectFromStream(fileStream, serializeContext, &executionLogTypeId, AZ::ObjectStream::FilterDescriptor())))
             {
                 return AZ::Data::Asset<ExecutionLogAsset>(logAsset, AZ::Data::AssetLoadBehavior::Default);
             }
@@ -72,7 +73,7 @@ namespace ScriptCanvas
                 return {};
             }
         }
-        
+
         void Logger::SaveToRelativePath(AZStd::string_view path)
         {
             AZ::SerializeContext* serializeContext = nullptr;
@@ -90,7 +91,7 @@ namespace ScriptCanvas
             m_logExecutionOverrideEnabled = true;
             m_logExecutionOverride = value;
         }
-        
+
         void Logger::GraphActivated(const ScriptCanvas::GraphActivation& activation)
         {
             AddToLog(activation);
@@ -114,8 +115,8 @@ namespace ScriptCanvas
         void Logger::SignaledOutput(const ScriptCanvas::OutputSignal& signal)
         {
             AddToLog(signal);
-        }   
-    
+        }
+
         void Logger::VariableChanged(const ScriptCanvas::VariableChange& variableChange)
         {
             AddToLog(variableChange);

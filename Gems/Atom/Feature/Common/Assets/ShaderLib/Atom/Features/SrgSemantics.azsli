@@ -50,10 +50,16 @@ ShaderResourceGroupSemantic SRG_PerScene
     FrequencyId = 6;
 };
 
+ShaderResourceGroupSemantic SRG_Bindless
+{
+    FrequencyId = 7;
+};
+
 // Ray tracing SRGs
 ShaderResourceGroupSemantic SRG_RayTracingGlobal
 {
     FrequencyId = 0;
+    ShaderVariantFallback = 128; // The minimal size to use Shader Options.
 };
 
 ShaderResourceGroupSemantic SRG_RayTracingScene

@@ -95,7 +95,7 @@ namespace LmbrCentral
         EXPECT_EQ(polygonPrism->m_vertexContainer.GetVertices(), sourceVertices);
     }
 
-    class EditorPolygonPrismShapeComponentFixture : public UnitTest::ToolsApplicationFixture
+    class EditorPolygonPrismShapeComponentFixture : public UnitTest::ToolsApplicationFixture<>
     {
     public:
         void SetUpEditorFixtureImpl() override;

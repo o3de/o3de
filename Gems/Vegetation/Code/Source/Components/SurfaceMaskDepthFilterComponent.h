@@ -32,7 +32,7 @@ namespace Vegetation
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(SurfaceMaskDepthFilterConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceMaskDepthFilterConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceMaskDepthFilterConfig, "{5F0CD700-EC2B-468D-B708-F6EEA7782C46}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         FilterStage m_filterStage = FilterStage::Default;
@@ -47,7 +47,7 @@ namespace Vegetation
         void AddTag(AZStd::string tag);
     };
 
-    static const AZ::Uuid SurfaceMaskDepthFilterComponentTypeId = "{A54BB0B2-8B30-4583-B44E-EFA17173040B}";
+    inline constexpr AZ::TypeId SurfaceMaskDepthFilterComponentTypeId{ "{A54BB0B2-8B30-4583-B44E-EFA17173040B}" };
 
     /**
     * This component filters based on the depth between two surface masks (using labels)

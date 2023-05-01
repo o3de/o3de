@@ -74,7 +74,6 @@ namespace LyShine
                 auto editInfo = ec->Class<LyShineSystemComponent>("LyShine", "In-game User Interface System");
                 editInfo->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                     ->Attribute(AZ::Edit::Attributes::Category, "UI")
-                    ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->Attribute(AZ::Edit::Attributes::AutoExpand, true);
 
                 editInfo->DataElement(0, &LyShineSystemComponent::m_cursorImagePathname, "CursorImagePath", "The cursor image path.")
@@ -97,6 +96,7 @@ namespace LyShine
                 ->Event("IsUiCursorVisible", &UiCursorBus::Events::IsUiCursorVisible)
                 ->Event("SetUiCursor", &UiCursorBus::Events::SetUiCursor)
                 ->Event("GetUiCursorPosition", &UiCursorBus::Events::GetUiCursorPosition)
+                ->Event("SetUiCursorPosition", &UiCursorBus::Events::SetUiCursorPosition)
                 ;
         }
         
@@ -150,8 +150,6 @@ namespace LyShine
     ////////////////////////////////////////////////////////////////////////////////////////////////////
     void LyShineSystemComponent::Activate()
     {
-        LyShineAllocatorScope::ActivateAllocators();
-
         UiSystemBus::Handler::BusConnect();
         UiSystemToolsBus::Handler::BusConnect();
         UiFrameworkBus::Handler::BusConnect();
@@ -221,8 +219,6 @@ namespace LyShine
         UiSystemToolsBus::Handler::BusDisconnect();
         UiFrameworkBus::Handler::BusDisconnect();
         CrySystemEventBus::Handler::BusDisconnect();
-
-        LyShineAllocatorScope::DeactivateAllocators();
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////

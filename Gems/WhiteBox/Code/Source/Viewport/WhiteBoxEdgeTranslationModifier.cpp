@@ -23,7 +23,7 @@
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EdgeTranslationModifier, AZ::SystemAllocator)
 
     static bool BeginningExtrude(
         const AzToolsFramework::PlanarManipulator::Action& action, const AppendStage appendStage)
@@ -345,7 +345,7 @@ namespace WhiteBox
             }
             else
             {
-                view->SetColor(cl_whiteBoxEdgeHoveredColor, cl_whiteBoxEdgeHoveredColor);
+                view->SetColor(ed_whiteBoxOutlineHover, ed_whiteBoxOutlineHover);
             }
 
             view->SetWidth(m_width, m_hoverWidth);

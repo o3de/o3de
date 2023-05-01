@@ -30,32 +30,32 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromPoint(Vector3(0.0f));
         EXPECT_TRUE(aabb.IsValid());
         EXPECT_TRUE(aabb.IsFinite());
-        EXPECT_TRUE(aabb.GetMin().IsClose(aabb.GetMax()));
+        EXPECT_THAT(aabb.GetMin(), IsClose(aabb.GetMax()));
     }
 
     TEST(MATH_Aabb, TestCreateFromMinMax)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f), Vector3(1.0f));
         EXPECT_TRUE(aabb.IsValid());
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(1.0f)));
     }
 
     TEST(MATH_Aabb, TestCreateCenterHalfExtents)
     {
         Aabb aabb = Aabb::CreateCenterHalfExtents(Vector3(1.0f), Vector3(1.0f));
         EXPECT_TRUE(aabb.IsValid());
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(2.0f)));
-        EXPECT_TRUE(aabb.GetCenter().IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetCenter(), IsClose(Vector3(1.0f)));
     }
 
     TEST(MATH_Aabb, TestCreateCenterRadius)
     {
         Aabb aabb = Aabb::CreateCenterRadius(Vector3(4.0f), 2.0f);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(2.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(6.0f)));
-        EXPECT_TRUE(aabb.GetExtents().IsClose(Vector3(4.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(6.0f)));
+        EXPECT_THAT(aabb.GetExtents(), IsClose(Vector3(4.0f)));
     }
 
     TEST(MATH_Aabb, TestCreatePoints)
@@ -68,8 +68,8 @@ namespace UnitTest
             Vector3(0.0f, -10.0f, 10.0f)
         };
         Aabb aabb = Aabb::CreatePoints(points, numPoints);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-10.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-10.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f)));
     }
 
     TEST(MATH_Aabb, TestCreatePointsSlice)
@@ -81,8 +81,8 @@ namespace UnitTest
             Vector3(0.0f, -10.0f, 10.0f)
         };
         Aabb aabb = Aabb::CreatePoints(points);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-10.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-10.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f)));
     }
 
     TEST(MATH_Aabb, TestCreatePointsEmpty)
@@ -105,48 +105,48 @@ namespace UnitTest
         const Vector3 halfLengths = Vector3::CreateOne();
         const Obb obb = Obb::CreateFromPositionRotationAndHalfLengths(position, rotation, halfLengths);
         Aabb aabb = Aabb::CreateFromObb(obb);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-0.414f, -0.414f, 0.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(2.414f, 2.414f, 2.0f)));
-        EXPECT_TRUE(aabb.GetCenter().IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-0.414f, -0.414f, 0.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(2.414f, 2.414f, 2.0f)));
+        EXPECT_THAT(aabb.GetCenter(), IsClose(Vector3(1.0f, 1.0f, 1.0f)));
     }
 
     TEST(MATH_Aabb, TestSetters)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(1.0f), Vector3(4.0f));
 
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(4.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(4.0f)));
 
         aabb.SetMin(Vector3(0.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f)));
-        EXPECT_TRUE(aabb.GetCenter().IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f)));
+        EXPECT_THAT(aabb.GetCenter(), IsClose(Vector3(2.0f)));
 
         aabb.SetMax(Vector3(6.0f));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(6.0f)));
-        EXPECT_TRUE(aabb.GetCenter().IsClose(Vector3(3.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(6.0f)));
+        EXPECT_THAT(aabb.GetCenter(), IsClose(Vector3(3.0f)));
     }
 
     TEST(MATH_Aabb, TestGetExtents)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f), Vector3(1.0f, 2.0f, 3.0f));
 
-        EXPECT_TRUE(AZ::IsClose(aabb.GetXExtent(), 1.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetYExtent(), 2.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetZExtent(), 3.0f));
+        EXPECT_NEAR(aabb.GetXExtent(), 1.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetYExtent(), 2.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetZExtent(), 3.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestSupport)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f), Vector3(1.0f));
 
-        EXPECT_TRUE(aabb.GetSupport(Vector3( 0.5774,  0.5774,  0.5774)).IsClose(Vector3(0.0f, 0.0f, 0.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3( 0.5774,  0.5774, -0.5774)).IsClose(Vector3(0.0f, 0.0f, 1.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3( 0.5774, -0.5774,  0.5774)).IsClose(Vector3(0.0f, 1.0f, 0.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3( 0.5774, -0.5774, -0.5774)).IsClose(Vector3(0.0f, 1.0f, 1.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3(-0.5774,  0.5774,  0.5774)).IsClose(Vector3(1.0f, 0.0f, 0.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3(-0.5774,  0.5774, -0.5774)).IsClose(Vector3(1.0f, 0.0f, 1.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3(-0.5774, -0.5774,  0.5774)).IsClose(Vector3(1.0f, 1.0f, 0.0f)));
-        EXPECT_TRUE(aabb.GetSupport(Vector3(-0.5774, -0.5774, -0.5774)).IsClose(Vector3(1.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774,  0.5774,  0.5774)), IsClose(Vector3(0.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774,  0.5774, -0.5774)), IsClose(Vector3(0.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774, -0.5774,  0.5774)), IsClose(Vector3(0.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3( 0.5774, -0.5774, -0.5774)), IsClose(Vector3(0.0f, 1.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774,  0.5774,  0.5774)), IsClose(Vector3(1.0f, 0.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774,  0.5774, -0.5774)), IsClose(Vector3(1.0f, 0.0f, 1.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774, -0.5774,  0.5774)), IsClose(Vector3(1.0f, 1.0f, 0.0f)));
+        EXPECT_THAT(aabb.GetSupport(Vector3(-0.5774, -0.5774, -0.5774)), IsClose(Vector3(1.0f, 1.0f, 1.0f)));
     }
 
     TEST(MATH_Aabb, TestGetAsSphere)
@@ -156,8 +156,8 @@ namespace UnitTest
         Vector3 center;
         float radius;
         aabb.GetAsSphere(center, radius);
-        EXPECT_TRUE(center.IsClose(Vector3(0.0f)));
-        EXPECT_TRUE(AZ::IsClose(radius, 2.0f));
+        EXPECT_THAT(center, IsClose(Vector3(0.0f)));
+        EXPECT_NEAR(radius, 2.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestContains)
@@ -203,9 +203,9 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f), Vector3(2.0f));
 
         aabb.Expand(Vector3(1.0f));
-        EXPECT_TRUE(aabb.GetCenter().IsClose(Vector3(1.0f)));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(3.0f)));
+        EXPECT_THAT(aabb.GetCenter(), IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(3.0f)));
     }
 
     TEST(MATH_Aabb, TestGetExpanded)
@@ -213,8 +213,8 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
         aabb = aabb.GetExpanded(Vector3(9.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-10.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(10.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-10.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(10.0f)));
     }
 
     TEST(MATH_Aabb, TestAddPoint)
@@ -222,11 +222,11 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
         aabb.AddPoint(Vector3(1.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(1.0f)));
         aabb.AddPoint(Vector3(2.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(2.0f)));
     }
 
     TEST(MATH_Aabb, TestAddAabb)
@@ -235,26 +235,26 @@ namespace UnitTest
         Aabb aabb2 = Aabb::CreateFromMinMax(Vector3(-2.0f), Vector3(0.0f));
 
         aabb.AddAabb(aabb2);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-2.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-2.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(2.0f)));
     }
 
     TEST(MATH_Aabb, TestGetDistance)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
-        EXPECT_TRUE(AZ::IsClose(aabb.GetDistance(Vector3(2.0f, 0.0f, 0.0f)), 1.0f));
+        EXPECT_NEAR(aabb.GetDistance(Vector3(2.0f, 0.0f, 0.0f)), 1.0f, AZ::Constants::Tolerance);
         // make sure a point inside the box returns zero, even if that point isn't the center.
-        EXPECT_TRUE(AZ::IsClose(aabb.GetDistance(Vector3(0.5f, 0.0f, 0.0f)), 0.0f));
+        EXPECT_NEAR(aabb.GetDistance(Vector3(0.5f, 0.0f, 0.0f)), 0.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestGetDistanceSq)
     {
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
-        EXPECT_TRUE(AZ::IsClose(aabb.GetDistanceSq(Vector3(0.0f, 3.0f, 0.0f)), 4.0f));
+        EXPECT_NEAR(aabb.GetDistanceSq(Vector3(0.0f, 3.0f, 0.0f)), 4.0f, AZ::Constants::Tolerance);
         // make sure a point inside the box returns zero, even if that point isn't the center.
-        EXPECT_TRUE(AZ::IsClose(aabb.GetDistanceSq(Vector3(0.0f, 0.5f, 0.0f)), 0.0f));
+        EXPECT_NEAR(aabb.GetDistanceSq(Vector3(0.0f, 0.5f, 0.0f)), 0.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestGetMaxDistance)
@@ -262,25 +262,25 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
         // The max distance for all of the following should be the square root of (4^2 + 3^2 + 2^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(3.0f, 2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(3.0f, 2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(3.0f, -2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(3.0f, -2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-3.0f, 2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-3.0f, 2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-3.0f, -2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-3.0f, -2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f)));
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(3.0f, 2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(3.0f, 2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(3.0f, -2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(3.0f, -2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-3.0f, 2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-3.0f, 2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-3.0f, -2.0f, 1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-3.0f, -2.0f, -1.0f)), sqrtf(16.0f + 9.0f + 4.0f), AZ::Constants::Tolerance);
         // make sure points inside the box return a correct max distance as well - sqrt of (1.5^2 + 1.5^2 + 1.5^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(0.5f, 0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(0.5f, 0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(0.5f, -0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(0.5f, -0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-0.5f, 0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-0.5f, 0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-0.5f, -0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(-0.5f, -0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f)));
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(0.5f, 0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(0.5f, 0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(0.5f, -0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(0.5f, -0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-0.5f, 0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-0.5f, 0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-0.5f, -0.5f, 0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(-0.5f, -0.5f, -0.5f)), sqrtf(2.25f + 2.25f + 2.25f), AZ::Constants::Tolerance);
         // make sure the center returns our minimal max distance (1^2 + 1^2 + 1^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistance(Vector3(0.0f, 0.0f, 0.0f)), sqrtf(1.0f + 1.0f + 1.0f)));
+        EXPECT_NEAR(aabb.GetMaxDistance(Vector3(0.0f, 0.0f, 0.0f)), sqrtf(1.0f + 1.0f + 1.0f), AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestGetMaxDistanceSq)
@@ -288,25 +288,25 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
         // The max distance for all of the following should be (4^2 + 3^2 + 2^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(3.0f, 2.0f, 1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(3.0f, 2.0f, -1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(3.0f, -2.0f, 1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(3.0f, -2.0f, -1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-3.0f, 2.0f, 1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-3.0f, 2.0f, -1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-3.0f, -2.0f, 1.0f)), 16.0f + 9.0f + 4.0f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-3.0f, -2.0f, -1.0f)), 16.0f + 9.0f + 4.0f));
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(3.0f, 2.0f, 1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(3.0f, 2.0f, -1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(3.0f, -2.0f, 1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(3.0f, -2.0f, -1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-3.0f, 2.0f, 1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-3.0f, 2.0f, -1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-3.0f, -2.0f, 1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-3.0f, -2.0f, -1.0f)), 16.0f + 9.0f + 4.0f, AZ::Constants::Tolerance);
         // make sure points inside the box return a correct max distance as well: (1.5^2 + 1.5^2 + 1.5^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(0.5f, 0.5f, 0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(0.5f, 0.5f, -0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(0.5f, -0.5f, 0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(0.5f, -0.5f, -0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-0.5f, 0.5f, 0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-0.5f, 0.5f, -0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-0.5f, -0.5f, 0.5f)), 2.25f + 2.25f + 2.25f));
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(-0.5f, -0.5f, -0.5f)), 2.25f + 2.25f + 2.25f));
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(0.5f, 0.5f, 0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(0.5f, 0.5f, -0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(0.5f, -0.5f, 0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(0.5f, -0.5f, -0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-0.5f, 0.5f, 0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-0.5f, 0.5f, -0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-0.5f, -0.5f, 0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(-0.5f, -0.5f, -0.5f)), 2.25f + 2.25f + 2.25f, AZ::Constants::Tolerance);
         // make sure the center returns our minimal max distance (1^2 + 1^2 + 1^2)
-        EXPECT_TRUE(AZ::IsClose(aabb.GetMaxDistanceSq(Vector3(0.0f, 0.0f, 0.0f)), 1.0f + 1.0f + 1.0f));
+        EXPECT_NEAR(aabb.GetMaxDistanceSq(Vector3(0.0f, 0.0f, 0.0f)), 1.0f + 1.0f + 1.0f, AZ::Constants::Tolerance);
     }
 
     TEST(MATH_Aabb, TestGetClamped)
@@ -315,8 +315,8 @@ namespace UnitTest
         Aabb aabb2 = Aabb::CreateFromMinMax(Vector3(1.0f), Vector3(4.0f));
 
         aabb = aabb.GetClamped(aabb2);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(2.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(2.0f)));
     }
 
     TEST(MATH_Aabb, TestClamp)
@@ -325,8 +325,8 @@ namespace UnitTest
         Aabb aabb2 = Aabb::CreateFromMinMax(Vector3(-2.0f), Vector3(1.0f));
 
         aabb.Clamp(aabb2);
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(0.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(0.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(1.0f)));
     }
 
     TEST(MATH_Aabb, TestSetNull)
@@ -342,8 +342,8 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(-1.0f), Vector3(1.0f));
 
         aabb.Translate(Vector3(2.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(3.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(3.0f)));
     }
 
     TEST(MATH_Aabb, TestGetTranslated)
@@ -351,8 +351,8 @@ namespace UnitTest
         Aabb aabb = Aabb::CreateFromMinMax(Vector3(1.0f), Vector3(3.0f));
 
         aabb = aabb.GetTranslated(Vector3(-2.0f));
-        EXPECT_TRUE(aabb.GetMin().IsClose(Vector3(-1.0f)));
-        EXPECT_TRUE(aabb.GetMax().IsClose(Vector3(1.0f)));
+        EXPECT_THAT(aabb.GetMin(), IsClose(Vector3(-1.0f)));
+        EXPECT_THAT(aabb.GetMax(), IsClose(Vector3(1.0f)));
     }
 
     TEST(MATH_Aabb, TestGetSurfaceArea)
@@ -404,10 +404,24 @@ namespace UnitTest
         aabb.ApplyTransform(tm);
 
         // compare the transformations
-        EXPECT_TRUE(transAabb.GetMin().IsClose(transAabb2.GetMin()));
-        EXPECT_TRUE(transAabb.GetMax().IsClose(transAabb2.GetMax()));
-        EXPECT_TRUE(aabb.GetMin().IsClose(transAabb.GetMin()));
-        EXPECT_TRUE(aabb.GetMax().IsClose(transAabb.GetMax()));
+        EXPECT_THAT(transAabb.GetMin(), IsClose(transAabb2.GetMin()));
+        EXPECT_THAT(transAabb.GetMax(), IsClose(transAabb2.GetMax()));
+        EXPECT_THAT(aabb.GetMin(), IsClose(transAabb.GetMin()));
+        EXPECT_THAT(aabb.GetMax(), IsClose(transAabb.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbCorrectResult)
+    {
+        // create aabb
+        const Vector3 min(20.0f, 30.0f, 40.0f);
+        const Vector3 max(50.0f, 80.0f, 60.0f);
+        const Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        const Transform transform(Vector3(10.0f, 15.0f, 25.0f), Quaternion(0.08f, 0.44f, 0.16f, 0.88f), 0.5f);
+        const Aabb transformedAabb = aabb.GetTransformedAabb(transform);
+
+        EXPECT_THAT(transformedAabb.GetMin(), IsClose(Vector3(23.168f, 32.56f, 22.504f)));
+        EXPECT_THAT(transformedAabb.GetMax(), IsClose(Vector3(44.872f, 61.24f, 46.776f)));
     }
 
     TEST(MATH_AabbTransform, GetTransformedObbMatrix3x4)
@@ -468,6 +482,89 @@ namespace UnitTest
 
         EXPECT_THAT(transformedAabb.GetMin(), IsClose(aabbContainingTransformedObb.GetMin()));
         EXPECT_THAT(transformedAabb.GetMax(), IsClose(aabbContainingTransformedObb.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbMatrix3x4EqualsGetTransformedAabbTransform)
+    {
+        Vector3 min(2.0f, 3.0f, 5.0f);
+        Vector3 max(6.0f, 5.0f, 11.0f);
+        Aabb aabb = Aabb::CreateFromMinMax(min, max);
+
+        Quaternion rotation(0.34f, 0.46f, 0.58f, 0.58f);
+        Vector3 translation(-3.0f, -4.0f, -5.0f);
+
+        Transform transform = Transform::CreateFromQuaternionAndTranslation(rotation, translation);
+        transform.MultiplyByUniformScale(1.5f);
+        Aabb aabbFromTransform = aabb.GetTransformedAabb(transform);
+
+        Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+        matrix3x4.MultiplyByScale(Vector3(1.5f));
+        Aabb aabbFromMatrix = aabb.GetTransformedAabb(matrix3x4);
+
+        EXPECT_THAT(aabbFromTransform.GetMin(), IsClose(aabbFromMatrix.GetMin()));
+        EXPECT_THAT(aabbFromTransform.GetMax(), IsClose(aabbFromMatrix.GetMax()));
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbMatrix3x4WorksWithLargeBounds)
+    {
+        // Create an AABB with really large bounds on the Y axis.
+        const Aabb aabb = Aabb::CreateFromMinMax(Vector3(0.0f, AZStd::numeric_limits<float>::lowest(), -10.0f),
+                                                 Vector3(100.0f, 100.0f, 10.0f));
+
+        // Set up a 45 degree rotation around Z so that the X and Y bounds are rotated.
+        const Quaternion rotation = Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(0.0f, 0.0f, 45.0f));
+        // Set up a translation with detectable numbers in X and Y.
+        const Vector3 translation(1000.0f, 2000.0f, 0.0f);
+
+        // Transform the AABB using the given rotation and translation
+        const Matrix3x4 matrix3x4 = Matrix3x4::CreateFromQuaternionAndTranslation(rotation, translation);
+        const Aabb aabbFromMatrix = aabb.GetTransformedAabb(matrix3x4);
+
+        // The expected results on the X axis should go from < 1000 to a really large number,
+        // on the Y axis should go from a negative really large number to > 2000,
+        // and on the Z axis should remain -10 to 10.
+        // If this isn't working, the min on the X axis will be 0, and the max on the Y axis will be 0, because the really large
+        // numbers will destroy the precision needed to pick up the translation and the small X bounds.
+        const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
+        const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
+
+        EXPECT_NEAR(aabbFromMatrix.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromMatrix.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromMatrix.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromMatrix.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabbFromMatrix.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
+    }
+
+    TEST(MATH_AabbTransform, GetTransformedAabbTransformWorksWithLargeBounds)
+    {
+        // Create an AABB with really large bounds on the Y axis.
+        const Aabb aabb =
+            Aabb::CreateFromMinMax(Vector3(0.0f, AZStd::numeric_limits<float>::lowest(), -10.0f), Vector3(100.0f, 100.0f, 10.0f));
+
+        // Set up a 45 degree rotation around Z so that the X and Y bounds are rotated.
+        const Quaternion rotation = Quaternion::CreateFromEulerDegreesXYZ(AZ::Vector3(0.0f, 0.0f, 45.0f));
+        // Set up a translation with detectable numbers in X and Y.
+        const Vector3 translation(1000.0f, 2000.0f, 0.0f);
+
+        // Transform the AABB using the given rotation and translation
+        const Transform transform = Transform::CreateFromQuaternionAndTranslation(rotation, translation);
+        const Aabb aabbFromTransform = aabb.GetTransformedAabb(transform);
+
+        // The expected results on the X axis should go from < 1000 to a really large number,
+        // on the Y axis should go from a negative really large number to > 2000,
+        // and on the Z axis should remain -10 to 10.
+        // If this isn't working, the min on the X axis will be 0, and the max on the Y axis will be 0, because the really large
+        // numbers will destroy the precision needed to pick up the translation and the small X bounds.
+        const Vector3 expectedMin(929.289307f, -2.40615924e+38f, -10.0f);
+        const Vector3 expectedMax(2.40615965e+38f, 2141.42139f, 10.0f);
+
+        EXPECT_NEAR(aabbFromTransform.GetMin().GetX(), expectedMin.GetX(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMin().GetY(), expectedMin.GetY(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromTransform.GetMin().GetZ(), expectedMin.GetZ(), AZ::Constants::Tolerance);
+        EXPECT_TRUE(IsCloseMag(aabbFromTransform.GetMax().GetX(), expectedMax.GetX(), AZ::Constants::Tolerance));
+        EXPECT_NEAR(aabbFromTransform.GetMax().GetY(), expectedMax.GetY(), AZ::Constants::Tolerance);
+        EXPECT_NEAR(aabbFromTransform.GetMax().GetZ(), expectedMax.GetZ(), AZ::Constants::Tolerance);
     }
 
     TEST(MATH_AabbTransform, MultiplyByScale)

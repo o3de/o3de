@@ -36,12 +36,19 @@ namespace AZ
 
             const AssImpSDKWrapper::AssImpSceneWrapper* assImpScene = azrtti_cast<const AssImpSDKWrapper::AssImpSceneWrapper*>(scene);
 
-            // If either meta data piece is not available, the default of 1 will be used.
-            assImpScene->GetAssImpScene()->mMetaData->Get("UnitScaleFactor", m_unitSizeInMeters);
-            assImpScene->GetAssImpScene()->mMetaData->Get("OriginalUnitScaleFactor", m_originalUnitSizeInMeters);
+            /* Check if metadata has information about "UnitScaleFactor" or "OriginalUnitScaleFactor". 
+             * This particular metadata is FBX format only. */
+            if (assImpScene->GetAssImpScene()->mMetaData->HasKey("UnitScaleFactor") ||
+                assImpScene->GetAssImpScene()->mMetaData->HasKey("OriginalUnitScaleFactor"))
+            {
+                // If either metadata piece is not available, the default of 1 will be used.
+                assImpScene->GetAssImpScene()->mMetaData->Get("UnitScaleFactor", m_unitSizeInMeters);
+                assImpScene->GetAssImpScene()->mMetaData->Get("OriginalUnitScaleFactor", m_originalUnitSizeInMeters);
 
-            /* Conversion factor for converting from centimeters to meters */
-            m_unitSizeInMeters = m_unitSizeInMeters * .01f;
+                /* Conversion factor for converting from centimeters to meters.
+                 * This applies to an FBX format in which the default unit is a centimeter. */
+                m_unitSizeInMeters = m_unitSizeInMeters * .01f;
+            }
 
             AZStd::pair<AssImpSDKWrapper::AssImpSceneWrapper::AxisVector, int32_t> upAxisAndSign = assImpScene->GetUpVectorAndSign();
 

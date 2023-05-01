@@ -6,7 +6,6 @@
  *
  */
 
-#include "RagdollTestData.h"
 #include <AzTest/Utils.h>
 #include <AZTestShared/Utils/Utils.h>
 #include <AzFramework/Physics/PhysicsScene.h>
@@ -15,8 +14,11 @@
 #include <PhysXCharacters/Components/RagdollComponent.h>
 #include <PhysX/NativeTypeIdentifiers.h>
 #include <PhysX/PhysXLocks.h>
+#include <Scene/PhysXScene.h>
 #include <Tests/PhysXTestFixtures.h>
 #include <Tests/PhysXTestCommon.h>
+#include <Tests/RagdollTestData.h>
+#include <Tests/RagdollConfiguration.h>
 
 namespace PhysX
 {
@@ -42,7 +44,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 0);
     }
 
-    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Dynamic)
+    Physics::RagdollState GetTPose(Physics::SimulationType simulationType = Physics::SimulationType::Simulated)
     {
         Physics::RagdollState ragdollState;
         for (int nodeIndex = 0; nodeIndex < RagdollTestData::NumNodes; nodeIndex++)
@@ -59,8 +61,8 @@ namespace PhysX
 
     Ragdoll* CreateRagdoll(AzPhysics::SceneHandle sceneHandle)
     {
-        Physics::RagdollConfiguration* configuration =
-            AZ::Utils::LoadObjectFromFile<Physics::RagdollConfiguration>(AZ::Test::GetCurrentExecutablePath() + "/Test.Assets/Gems/PhysX/Code/Tests/RagdollConfiguration.xml");
+        Physics::RagdollConfiguration* configuration = AZ::Utils::LoadObjectFromBuffer<Physics::RagdollConfiguration>(
+            RagdollTestData::RagdollConfiguration.data(), RagdollTestData::RagdollConfiguration.size());
         if (!configuration)
         {
             return nullptr;
@@ -84,11 +86,7 @@ namespace PhysX
         return ragdoll;
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetNativeType_CorrectType)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNativeType_CorrectType)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         EXPECT_EQ(ragdoll->GetNativeType(), NativeTypeIdentifiers::Ragdoll);
@@ -100,11 +98,7 @@ namespace PhysX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_RagdollNode_GetNativePointer_CorrectType)
-#else
     TEST_F(PhysXDefaultWorldTest, RagdollNode_GetNativePointer_CorrectType)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
@@ -116,11 +110,7 @@ namespace PhysX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_RagdollNode_GetTransform_MatchesTestSetup)
-#else
     TEST_F(PhysXDefaultWorldTest, RagdollNode_GetTransform_MatchesTestSetup)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         ragdoll->EnableSimulation(GetTPose());
@@ -137,11 +127,7 @@ namespace PhysX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetTransform_MatchesTestSetup)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetTransform_MatchesTestSetup)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
@@ -154,11 +140,7 @@ namespace PhysX
             RagdollTestData::NodeOrientations[0], RagdollTestData::NodePositions[0])));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetWorld_CorrectWorld)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetWorld_CorrectWorld)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
@@ -178,21 +160,13 @@ namespace PhysX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetNumNodes_EqualsNumInTestPose)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNumNodes_EqualsNumInTestPose)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         EXPECT_EQ(ragdoll->GetNumNodes(), RagdollTestData::NumNodes);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetJoint_MatchesTestDataJointStructure)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetJoint_MatchesTestDataJointStructure)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         const size_t numNodes = RagdollTestData::NumNodes;
@@ -215,11 +189,7 @@ namespace PhysX
         }
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetAabb_MatchesTestPoseAabb)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetAabb_MatchesTestPoseAabb)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         auto aabb = ragdoll->GetAabb();
@@ -227,11 +197,7 @@ namespace PhysX
         EXPECT_TRUE(aabb.GetMax().IsClose(AZ::Vector3(0.623f, 0.166f, 1.724f), 1e-3f));
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetNodeOutsideRange_GeneratesError)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNodeOutsideRange_GeneratesError)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
@@ -245,11 +211,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 1);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_GetNodeStateOutsideRange_GeneratesError)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_GetNodeStateOutsideRange_GeneratesError)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
@@ -264,11 +226,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 1);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_SetNodeStateOutsideRange_GeneratesError)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_SetNodeStateOutsideRange_GeneratesError)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         UnitTest::ErrorHandler errorHandler("Invalid node index");
@@ -285,11 +243,7 @@ namespace PhysX
         EXPECT_EQ(errorHandler.GetErrorCount(), 1);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_SimulateWithKinematicState_AabbDoesNotChange)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_SimulateWithKinematicState_AabbDoesNotChange)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
         auto initialAabb = ragdoll->GetAabb();
@@ -305,6 +259,7 @@ namespace PhysX
             EXPECT_TRUE(ragdoll->GetAabb().GetMax().IsClose(initialAabb.GetMax()));
             EXPECT_TRUE(ragdoll->GetAabb().GetMin().IsClose(initialAabb.GetMin()));
         }
+        static_cast<PhysX::PhysXScene*>(m_defaultScene)->FlushTransformSync();
     }
 
     AZ::u32 GetNumRigidDynamicActors(physx::PxScene* scene)
@@ -313,11 +268,7 @@ namespace PhysX
         return scene->getNbActors(physx::PxActorTypeFlag::eRIGID_DYNAMIC);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_EnableDisableSimulation_NumActorsInSceneCorrect)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_EnableDisableSimulation_NumActorsInSceneCorrect)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
@@ -334,11 +285,7 @@ namespace PhysX
         EXPECT_FALSE(ragdoll->IsSimulated());
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_NoOtherGeometry_FallsUnderGravity)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_NoOtherGeometry_FallsUnderGravity)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         auto ragdoll = CreateRagdoll(m_testSceneHandle);
 
@@ -356,11 +303,7 @@ namespace PhysX
         EXPECT_NEAR(z, expectedInitialZ - 4.9f, 0.5f);
     }
 
-#if AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
-    TEST_F(PhysXDefaultWorldTest, DISABLED_Ragdoll_AboveStaticFloor_SettlesOnFloor)
-#else
     TEST_F(PhysXDefaultWorldTest, Ragdoll_AboveStaticFloor_SettlesOnFloor)
-#endif // AZ_TRAIT_DISABLE_FAILED_PHYSICS_TESTS
     {
         AZ::Transform floorTransform = AZ::Transform::CreateTranslation(AZ::Vector3::CreateAxisZ(-0.5f));
         PhysX::TestUtils::AddStaticFloorToScene(m_testSceneHandle, floorTransform);

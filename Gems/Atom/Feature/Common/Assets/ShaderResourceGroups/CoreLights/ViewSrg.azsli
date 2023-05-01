@@ -204,8 +204,10 @@ partial ShaderResourceGroup ViewSrg
     {
         float3 m_position;
         uint m_startEndIndex; // 16 bit start and end indices packed into one 32 bit uint
-        float3 m_rgbIntensityNits; // sign bit on red indicates winding order of first two edges. Used to determine direction.
+        float3 m_rgbIntensityNits;
         float m_invAttenuationRadiusSquared; // negative sign bit indicates double sided.
+        float3 m_direction;
+        float m_padding0;
     };
 
     StructuredBuffer<PolygonLight> m_polygonLights;

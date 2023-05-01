@@ -18,7 +18,7 @@
 #include <AzCore/std/string/string_view.h>
 #include <AzFramework/StringFunc/StringFunc.h>
 #include <AzToolsFramework/API/EditorAssetSystemAPI.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <ScriptCanvas/Bus/ScriptCanvasBus.h>
 #include <ScriptCanvas/Components/EditorGraph.h>
 #include <ScriptCanvas/Components/EditorUtils.h>
@@ -33,7 +33,7 @@ namespace ScriptCanvasFileHandlingCpp
     class SourceTreeLoader
     {
     public:
-        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SourceTreeLoader, AZ::SystemAllocator);
 
         ScriptCanvas::SourceHandle m_source;
         AZStd::vector<SourceTreeLoader> m_dependencies;

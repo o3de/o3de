@@ -13,7 +13,10 @@
 
 #include <Atom/RPI.Edit/Material/MaterialTypeSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPipelineSourceData.h>
 #include <Atom/RPI.Edit/Material/MaterialPropertyValueSourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialPropertySourceData.h>
+#include <Atom/RPI.Edit/Material/MaterialFunctorSourceDataHolder.h>
 #include <Atom/RPI.Edit/Material/LuaMaterialFunctorSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
@@ -35,6 +38,7 @@
 #include <BuilderComponent.h>
 #include <Common/AnyAssetBuilder.h>
 #include <Material/MaterialBuilder.h>
+#include <Material/MaterialTypeBuilder.h>
 #include <ResourcePool/ResourcePoolBuilder.h>
 #include <Pass/PassBuilder.h>
 
@@ -52,9 +56,12 @@ namespace AZ
                 ;
             }
 
+            MaterialPropertySourceData::Reflect(context);
             MaterialTypeSourceData::Reflect(context);
             MaterialSourceData::Reflect(context);
+            MaterialPipelineSourceData::Reflect(context);
             MaterialPropertyValueSourceData::Reflect(context);
+            MaterialFunctorSourceData::Reflect(context);
             MaterialFunctorSourceDataHolder::Reflect(context);
             LuaMaterialFunctorSourceData::Reflect(context);
             ResourcePoolSourceData::Reflect(context);
@@ -78,6 +85,7 @@ namespace AZ
         {
             // Register asset workers
             m_assetWorkers.emplace_back(MakeAssetBuilder<MaterialBuilder>());
+            m_assetWorkers.emplace_back(MakeAssetBuilder<MaterialTypeBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<ResourcePoolBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<AnyAssetBuilder>());
             m_assetWorkers.emplace_back(MakeAssetBuilder<PassBuilder>());

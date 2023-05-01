@@ -16,7 +16,7 @@ namespace AZ::Render
 {
     namespace RenderDebug
     {
-        static constexpr const char* const RenderDebugEditorComponentTypeId = "{235031F8-2AAD-442D-AB4D-F9B5B8337DCD}";
+        inline constexpr AZ::TypeId RenderDebugEditorComponentTypeId{ "{235031F8-2AAD-442D-AB4D-F9B5B8337DCD}" };
     }
 
     class RenderDebugEditorComponent final

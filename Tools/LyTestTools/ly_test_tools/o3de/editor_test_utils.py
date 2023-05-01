@@ -14,6 +14,7 @@ import time
 
 import ly_test_tools.environment.process_utils as process_utils
 import ly_test_tools.environment.waiter as waiter
+from ly_test_tools._internal.exceptions import EditorToolsFrameworkException
 from ly_test_tools.o3de.asset_processor import AssetProcessor
 
 logger = logging.getLogger(__name__)
@@ -43,7 +44,8 @@ def kill_all_ly_processes(include_asset_processor: bool = True) -> None:
     :return: None
     """
     ly_processes = [
-        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'MaterialEditor'
+        'Editor', 'Profiler', 'RemoteConsole', 'o3de', 'AutomatedTesting.ServerLauncher', 'MaterialEditor',
+        'MaterialCanvas'
     ]
     ap_processes = [
         'AssetProcessor', 'AssetProcessorBatch', 'AssetBuilder'
@@ -85,13 +87,13 @@ def retrieve_log_path(run_id: int, workspace: ly_test_tools._internal.managers.w
     return os.path.join(workspace.paths.project(), "user", f"log_test_{run_id}")
 
 
-def retrieve_material_editor_log_path(
+def atom_tools_log_path(
         run_id: int, workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager) -> str:
     """
-    return the log path for MaterialEditor test runs
-    :param run_id: MaterialEditor id that will be used for differentiating paths
+    return the log path for Atom tools test runs
+    :param run_id: executable id that will be used for differentiating paths
     :param workspace: Workspace fixture
-    :return: str: The full path to the given MaterialEditor log
+    :return: str: The full path to the given executable log
     """
     return os.path.join(workspace.paths.project(), "user", "log", f"log_test_{run_id}")
 
@@ -173,27 +175,26 @@ def retrieve_editor_log_content(run_id: int,
     return editor_info
 
 
-def retrieve_material_editor_log_content(run_id: int,
-                                         log_name: str,
-                                         workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
-                                         timeout: int = 10) -> str:
+def retrieve_non_editor_log_content(run_id: int,
+                                    log_name: str,
+                                    workspace: ly_test_tools._internal.managers.workspace.AbstractWorkspaceManager,
+                                    timeout: int = 10) -> str:
     """
-    Retrieves the contents of the given path to the MaterialEditor log file.
-    :param run_id: MaterialEditor id that will be used for differentiating paths
-    :param log_name: The name of the MaterialEditor log being retrieved
+    Retrieves the contents of the given path to the executable log file.
+    :param run_id: executable id that will be used for differentiating paths
+    :param log_name: The name of the executable log being retrieved
     :param workspace: Workspace fixture
     :param timeout: Maximum time to wait for the log file to appear
     :return str: The contents of the log
     """
-    material_editor_info = "-- No MaterialEditor log available --"
-    material_editor_log = os.path.join(retrieve_material_editor_log_path(run_id, workspace), log_name)
+    atom_tools_log = os.path.join(atom_tools_log_path(run_id, workspace), log_name)
     try:
-        waiter.wait_for(lambda: os.path.exists(material_editor_log), timeout=timeout)
+        waiter.wait_for(lambda: os.path.exists(atom_tools_log), timeout=timeout)
     except AssertionError:
         pass  # Even if the path didn't exist, we are interested on the exact reason why it couldn't be read
 
     try:
-        with open(material_editor_log) as opened_log:
+        with open(atom_tools_log) as opened_log:
             editor_info = ""
             for line in opened_log:
                 editor_info += f"[{log_name}]  {line}"
@@ -252,8 +253,8 @@ def split_batched_editor_log_file(workspace: ly_test_tools._internal.managers.wo
     :return: None
     """
     if not os.path.exists(destination_file):
-        logger.warning(f'No destination_file path found, got {destination_file} instead.')
-        raise FileNotFoundError
+        raise FileNotFoundError(f'Error occurred when splitting batched editor log file. '
+                                f'Path not found at {destination_file}')
     # text that designates the start of logging for a new test
     test_case_split = ".py (testcase )"
     dir_name = os.path.dirname(starting_path)
@@ -349,4 +350,4 @@ def prepare_asset_processor(workspace: ly_test_tools._internal.managers.workspac
             collected_test_data.asset_processor.start()
     except Exception as ex:
         collected_test_data.asset_processor = None
-        raise ex
+        raise EditorToolsFrameworkException from ex

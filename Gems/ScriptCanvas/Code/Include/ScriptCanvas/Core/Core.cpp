@@ -284,7 +284,7 @@ namespace ScriptCanvas
         return SourceHandle(graph, path);
     }
 
-    SourceHandle SourceHandle::FromRelativePathAndScenFolder
+    SourceHandle SourceHandle::FromRelativePathAndScanFolder
         ( AZStd::string_view relativePath
         , AZStd::string_view scanFolder
         , const AZ::Uuid& sourceId)

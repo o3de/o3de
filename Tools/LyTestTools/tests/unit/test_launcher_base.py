@@ -210,7 +210,7 @@ class TestLauncherBuilder(object):
         dummy_workspace = mock.MagicMock()
         dummy_workspace.paths.build_directory.return_value = 'dummy'
         under_test = ly_test_tools.launchers.launcher_helper.create_editor(
-            dummy_workspace, ly_test_tools.HOST_OS_GENERIC_EXECUTABLE)
+            dummy_workspace, ly_test_tools.HOST_OS_EDITOR)
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
 
     def test_CreateEditor_InvalidPlatform_ValidLauncherStillReturned(self):
@@ -219,3 +219,12 @@ class TestLauncherBuilder(object):
         under_test = ly_test_tools.launchers.launcher_helper.create_editor(
             dummy_workspace, 'does not exist')
         assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+
+    def test_CreateAtomTools_DummyWorkspace_DefaultLauncher(self):
+        dummy_workspace = mock.MagicMock()
+        dummy_workspace.paths.build_directory.return_value = 'dummy'
+        dummy_app_file_name = 'dummy_app'
+        under_test = ly_test_tools.launchers.launcher_helper.create_atom_tools_launcher(
+            dummy_workspace, dummy_app_file_name)
+        assert isinstance(under_test, ly_test_tools.launchers.Launcher)
+        assert under_test.app_file_name == dummy_app_file_name

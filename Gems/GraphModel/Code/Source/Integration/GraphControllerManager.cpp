@@ -17,6 +17,16 @@
 
 namespace GraphModelIntegration
 {
+    GraphControllerManager::GraphControllerManager()
+    {
+        GraphManagerRequestBus::Handler::BusConnect();
+    }
+
+    GraphControllerManager::~GraphControllerManager()
+    {
+        GraphManagerRequestBus::Handler::BusDisconnect();
+    }
+
     AZ::Entity* GraphControllerManager::CreateScene(GraphModel::GraphPtr graph, const GraphCanvas::EditorId editorId)
     {
         AZ::Entity* scene = nullptr;
@@ -49,13 +59,8 @@ namespace GraphModelIntegration
 
     GraphModel::GraphPtr GraphControllerManager::GetGraph(const GraphCanvas::GraphId& sceneId)
     {
-        auto it = m_graphControllers.find(sceneId);
-        if (it != m_graphControllers.end())
-        {
-            return it->second->GetGraph();
-        }
-
-        return nullptr;
+        const auto it = m_graphControllers.find(sceneId);
+        return it != m_graphControllers.end() ? it->second->GetGraph() : nullptr;
     }
 
     const GraphModelSerialization& GraphControllerManager::GetSerializedMappings()
@@ -66,15 +71,5 @@ namespace GraphModelIntegration
     void GraphControllerManager::SetSerializedMappings(const GraphModelSerialization& serialization)
     {
         m_serialization = serialization;
-    }
-
-    void GraphControllerManager::Activate()
-    {
-        GraphManagerRequestBus::Handler::BusConnect();
-    }
-
-    void GraphControllerManager::Deactivate()
-    {
-        GraphManagerRequestBus::Handler::BusDisconnect();
     }
 } // namespace GraphModelIntegration

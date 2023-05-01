@@ -408,21 +408,8 @@ namespace AZ
         {
             if (m_requestedAsDefaultImguiPass)
             {
-                // Check to see if another default is already set.
-                ImGuiPass* currentDefaultPass = nullptr;
-                ImGuiSystemRequestBus::BroadcastResult(currentDefaultPass, &ImGuiSystemRequestBus::Events::GetDefaultImGuiPass);
-
-                if (currentDefaultPass != nullptr && currentDefaultPass->GetRenderPipeline() == GetRenderPipeline())
-                {
-                    // Only error when the pipelines match, meaning the default was set multiple times for the same pipeline. When the pipelines differ,
-                    // it's possible that multiple default ImGui passes are intentional, and only the first one to load should actually be set as default.
-                    AZ_Error("ImGuiPass", false, "Default ImGui pass is already set on this pipeline, ignoring request to set this pass as default. Only one ImGui pass should be marked as default in the pipeline.");
-                }
-                else
-                {
-                    m_isDefaultImGuiPass = true;
-                    ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
-                }
+                m_isDefaultImGuiPass = true;
+                ImGuiSystemRequestBus::Broadcast(&ImGuiSystemRequestBus::Events::PushDefaultImGuiPass, this);
             }
 
             // This ImguiContextScope is just to ensure we set the imgui context to what it was previously at the end of this function

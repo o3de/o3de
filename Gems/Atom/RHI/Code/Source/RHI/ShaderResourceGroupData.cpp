@@ -8,6 +8,7 @@
 #include <Atom/RHI/ShaderResourceGroupData.h>
 #include <Atom/RHI/ShaderResourceGroupPool.h>
 #include <Atom/RHI.Reflect/Bits.h>
+#include <Atom/RHI/BufferPool.h>
 
 namespace AZ
 {
@@ -392,6 +393,105 @@ namespace AZ
         {
             m_updateMask = 0;
         }
+    
+        void ShaderResourceGroupData::SetBindlessViews(
+            ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const ImageView* const> imageViews,
+            uint32_t* outIndices,
+            bool viewReadOnly,
+            uint32_t arrayIndex)
+        {
+            BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
+            AZ_Assert(desc.m_heapMemoryLevel == HeapMemoryLevel::Device, "Indirect buffer that contains indices to the bindless resource views should be device as that is protected against triple buffering.");
+            
+            auto key = AZStd::make_pair(indirectResourceBufferIndex, arrayIndex);
+            auto it = m_bindlessResourceViews.find(key);
+            if (it == m_bindlessResourceViews.end())
+            {
+                it = m_bindlessResourceViews.try_emplace(key).first;
+            }
+            else
+            {
+                // Release existing views
+                it->second.m_bindlessResources.clear();
+            }
+
+            size_t i = 0;
+            for (const ImageView* imageView : imageViews)
+            {
+                it->second.m_bindlessResources.push_back(imageView);
+                BindlessResourceType resourceType = BindlessResourceType::ReadTexture;
+                //Update the indirect buffer with view indices
+                if (viewReadOnly)
+                {
+                    outIndices[i] = imageView->GetBindlessReadIndex();
+                }
+                else
+                {
+                    resourceType = BindlessResourceType::ReadWriteTexture;
+                    outIndices[i] = imageView->GetBindlessReadWriteIndex();
+                }
+                it->second.m_bindlessResourceType = resourceType;
+                ++i;
+            }
+
+            SetBufferView(indirectResourceBufferIndex, indirectResourceBuffer);
+        }
+
+        void ShaderResourceGroupData::SetBindlessViews(
+            ShaderInputBufferIndex indirectResourceBufferIndex,
+            const RHI::BufferView* indirectResourceBuffer,
+            AZStd::span<const BufferView* const> bufferViews,
+            uint32_t* outIndices,
+            bool viewReadOnly,
+            uint32_t arrayIndex)
+        {
+            BufferPoolDescriptor desc = static_cast<const BufferPool*>(indirectResourceBuffer->GetBuffer().GetPool())->GetDescriptor();
+            AZ_Assert(desc.m_heapMemoryLevel == HeapMemoryLevel::Device, "Indirect buffer that contains indices to the bindless resource views should be device as that is protected against triple buffering.");
+            
+            auto key = AZStd::make_pair(indirectResourceBufferIndex, arrayIndex);
+            auto it = m_bindlessResourceViews.find(key);
+            if (it == m_bindlessResourceViews.end())
+            {
+                it = m_bindlessResourceViews.try_emplace(key).first;
+            }
+            else
+            {
+                // Release existing views
+                it->second.m_bindlessResources.clear();
+            }
+
+            size_t i = 0;
+            for (const BufferView* bufferView : bufferViews)
+            {
+                it->second.m_bindlessResources.push_back(bufferView);
+                BindlessResourceType resourceType = BindlessResourceType::ReadBuffer;
+                //Update the indirect buffer with view indices
+                if (viewReadOnly)
+                {
+                    outIndices[i] = bufferView->GetBindlessReadIndex();
+                }
+                else
+                {
+                    resourceType = BindlessResourceType::ReadWriteBuffer;
+                    outIndices[i] = bufferView->GetBindlessReadWriteIndex();
+                }
+                it->second.m_bindlessResourceType = resourceType;
+                ++i;
+            }
+
+            SetBufferView(indirectResourceBufferIndex, indirectResourceBuffer);
+        }
+
+        const uint32_t ShaderResourceGroupData::GetBindlessViewsSize() const
+        {
+            return aznumeric_cast<uint32_t>(m_bindlessResourceViews.size());
+        }
  
+        const AZStd::unordered_map<AZStd::pair<ShaderInputBufferIndex, uint32_t>, ShaderResourceGroupData::BindlessResourceViews>& ShaderResourceGroupData::GetBindlessResourceViews() const
+        {
+            return m_bindlessResourceViews;
+        }
     } // namespace RHI
 } // namespace AZ

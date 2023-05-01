@@ -187,7 +187,7 @@ namespace AZ::IO
         StreamStackEntry::UpdateStatus(status);
     }
 
-    void DedicatedCache::UpdateCompletionEstimates(AZStd::chrono::system_clock::time_point now,
+    void DedicatedCache::UpdateCompletionEstimates(AZStd::chrono::steady_clock::time_point now,
         AZStd::vector<FileRequest*>& internalPending, StreamerContext::PreparedQueue::iterator pendingBegin,
         StreamerContext::PreparedQueue::iterator pendingEnd)
     {

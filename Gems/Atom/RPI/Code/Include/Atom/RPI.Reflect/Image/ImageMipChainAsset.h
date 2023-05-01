@@ -48,7 +48,7 @@ namespace AZ
             static const char* Group;
 
             AZ_RTTI(ImageMipChainAsset, "{CB403C8A-6982-4C9F-8090-78C9C36FBEDB}", Data::AssetData);
-            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ImageMipChainAsset, AZ::SystemAllocator);
 
             static void Reflect(AZ::ReflectContext* context);
 
@@ -98,7 +98,7 @@ namespace AZ
             // Array of mip slice pointers; initialized after serialization. Used for constructing the RHI update request.
             MipSliceList m_mipSlices;
 
-            // The list of subresource datas, fixed up from serialization.
+            // The list of subresource data, fixed up from serialization.
             AZStd::vector<RHI::StreamingImageSubresourceData> m_subImageDatas;
 
             // [Serialized] Topology of sub-images in the mip group.

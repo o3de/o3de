@@ -69,10 +69,7 @@ namespace AtomToolsFramework
         DocumentExtensionInfoVector m_supportedExtensionsToSave;
 
         //! Used to make the initial selection in the create document dialog.
-        AZ::Data::AssetId m_defaultAssetIdToCreate;
-
-        //! Optional asset type used to filter suitable assets for creation
-        AZStd::unordered_set<AZ::Uuid> m_supportedAssetTypesToCreate;
+        AZStd::string m_defaultDocumentTemplate;
     };
 
     using DocumentTypeInfoVector = AZStd::vector<DocumentTypeInfo>;

@@ -42,6 +42,7 @@ namespace AZ
             m_resolveTransitionBarrierRequests.clear();
             m_aliasingBarriers.clear();
             m_depthStencilAttachment = nullptr;
+            m_shadingRateAttachment = nullptr;
             m_depthStencilAccess = RHI::ScopeAttachmentAccess::ReadWrite;
             m_colorAttachments.clear();
             m_clearRenderTargetRequests.clear();
@@ -115,32 +116,37 @@ namespace AZ
             return false;
         }
 
-        void Scope::QueueAliasingBarrier(const D3D12_RESOURCE_ALIASING_BARRIER& barrier)
+        void Scope::QueueAliasingBarrier(
+            const D3D12_RESOURCE_ALIASING_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_aliasingBarriers.push_back(barrier);
+            m_aliasingBarriers.emplace_back(barrier, state);
         }
 
-        void Scope::QueueResolveTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier)
+        void Scope::QueueResolveTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& transitionBarrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
             AZ_Assert(
                 transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_SOURCE || transitionBarrier.StateAfter == D3D12_RESOURCE_STATE_RESOLVE_DEST,
                 "Invalid state for resolve barrier");
-            m_resolveTransitionBarrierRequests.push_back(transitionBarrier);
+            m_resolveTransitionBarrierRequests.emplace_back(transitionBarrier, state);
         }
 
-        void Scope::QueuePrologueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueuePrologueTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_prologueTransitionBarrierRequests.push_back(barrier);
+            m_prologueTransitionBarrierRequests.emplace_back(barrier, state);
         }
 
-        void Scope::QueueEpilogueTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueueEpilogueTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_epilogueTransitionBarrierRequests.push_back(barrier);
+            m_epilogueTransitionBarrierRequests.emplace_back(barrier, state);
         }
 
-        void Scope::QueuePreDiscardTransition(const D3D12_RESOURCE_TRANSITION_BARRIER& barrier)
+        void Scope::QueuePreDiscardTransition(
+            const D3D12_RESOURCE_TRANSITION_BARRIER& barrier, const BarrierOp::CommandListState* state /*= nullptr*/)
         {
-            m_preDiscardTransitionBarrierRequests.push_back(barrier);
+            m_preDiscardTransitionBarrierRequests.emplace_back(barrier, state);
         }
   
         bool Scope::IsInDiscardResourceRequests(ID3D12Resource* nativeResource) const
@@ -253,6 +259,11 @@ namespace AZ
                         m_depthStencilAccess = usageAndAccess.m_access;
                         break;
 
+                    case RHI::ScopeAttachmentUsage::ShadingRate:
+                        {
+                            m_shadingRateAttachment = imageView;
+                        }
+                        break;
                     case RHI::ScopeAttachmentUsage::Uninitialized:
                         AZ_Assert(false, "ScopeAttachmentUsage is Uninitialized");
                         break;
@@ -306,19 +317,16 @@ namespace AZ
             AZ_PROFILE_FUNCTION(RHI);
 
             commandList.GetValidator().BeginScope(*this);
-
-            PIXBeginEvent(0xFFFF00FF, GetId().GetCStr());
-
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
-            {
-                PIXBeginEvent(commandList.GetCommandList(), 0xFFFF00FF, GetId().GetCStr());
-            }
-
             commandList.SetAftermathEventMarker(GetId().GetCStr());
             
             const bool isPrologue = commandListIndex == 0;
             if (isPrologue)
             {
+                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                {
+                    PIXBeginEvent(commandList.GetCommandList(), PIX_MARKER_CMDLIST_COL, GetMarkerLabel().data());
+                }
+
                 for (const auto& barrier : m_preDiscardTransitionBarrierRequests)
                 {
                     commandList.QueueTransitionBarrier(barrier);
@@ -370,13 +378,14 @@ namespace AZ
             }
 
             // Bind output merger attachments to *all* command lists in the batch.
-            if (m_colorAttachments.size() || m_depthStencilAttachment)
+            if (m_colorAttachments.size() || m_depthStencilAttachment || m_shadingRateAttachment)
             {
                 commandList.SetRenderTargets(
                     static_cast<uint32_t>(m_colorAttachments.size()),
                     m_colorAttachments.data(),
                     m_depthStencilAttachment,
-                    m_depthStencilAccess);
+                    m_depthStencilAccess,
+                    m_shadingRateAttachment);
             }
         }
 
@@ -424,13 +433,12 @@ namespace AZ
                 {
                     commandList.QueueTransitionBarrier(request);
                 }
-            }
 
-            if (RHI::Factory::Get().PixGpuEventsEnabled())
-            {
-                PIXEndEvent(commandList.GetCommandList());
+                if (RHI::Factory::Get().PixGpuEventsEnabled())
+                {
+                    PIXEndEvent(commandList.GetCommandList());
+                }
             }
-            PIXEndEvent();
 
             commandList.GetValidator().EndScope();
         }

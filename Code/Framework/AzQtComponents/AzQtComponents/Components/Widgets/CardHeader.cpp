@@ -21,10 +21,42 @@
 #include <QPushButton>
 #include <QStyle>
 #include <QTimer>
+#include <QPainter>
 
 namespace AzQtComponents
 {
     static QString g_containerCardHeaderClass = QStringLiteral("ContainerCardHeader");
+    static QString g_sectionCardHeaderClass = QStringLiteral("SectionCardHeader");
+
+    namespace Internal
+    {
+        ClickableIconLabel::ClickableIconLabel(QWidget* parent)
+            : QLabel(parent)
+        {
+        }
+
+        void ClickableIconLabel::SetClickable(bool clickable)
+        {
+            m_clickable = clickable;
+        }
+
+        bool ClickableIconLabel::GetClickable() const
+        {
+            return m_clickable;
+        }
+
+        void ClickableIconLabel::mouseReleaseEvent(QMouseEvent* event)
+        {
+            if (m_clickable)
+            {
+                emit clicked(event->globalPos());
+            }
+            else
+            {
+                event->ignore();
+            }
+        }
+    }
 
     namespace HeaderBarConstants
     {
@@ -48,6 +80,12 @@ namespace AzQtComponents
         Style::addClass(header, g_containerCardHeaderClass);
     }
 
+    void CardHeader::applySectionStyle(CardHeader* header)
+    {
+        Style::addClass(header, g_sectionCardHeaderClass);
+        header->setHasContextMenu(false);
+    }
+
     int CardHeader::s_iconSize = CardHeader::defaultIconSize();
 
     CardHeader::CardHeader(QWidget* parent /*= nullptr*/)
@@ -69,11 +107,12 @@ namespace AzQtComponents
         connect(m_expanderButton, &QPushButton::toggled, this, &CardHeader::expanderChanged);
 
         // icon widget
-        m_iconLabel = new QLabel(m_backgroundFrame);
+        m_iconLabel = new Internal::ClickableIconLabel(m_backgroundFrame);
         m_iconLabel->setObjectName(HeaderBarConstants::kIconId);
         m_iconLabel->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
         Style::addClass(m_iconLabel, HeaderBarConstants::kCardHeaderIconClassName);
         m_iconLabel->hide();
+        connect(m_iconLabel, &Internal::ClickableIconLabel::clicked, this, &CardHeader::triggerIconLabelClicked);
 
         // title widget
         m_titleLabel = new AzQtComponents::ElidingLabel(m_backgroundFrame);
@@ -143,6 +182,12 @@ namespace AzQtComponents
         m_titleLabel->setVisible(!title.isEmpty());
     }
 
+    void CardHeader::setTitleToolTip(const QString& toolTip)
+    {
+        m_titleLabel->setToolTip(toolTip);
+        setToolTip(toolTip);
+    }
+
     void CardHeader::setFilter(const QString& filter)
     {
         m_titleLabel->setFilter(filter);
@@ -173,20 +218,45 @@ namespace AzQtComponents
     void CardHeader::setIcon(const QIcon& icon)
     {
         m_icon = icon;
+        updateIconLabel();
+    }
 
-        if (!icon.isNull())
+    void CardHeader::setIconOverlay(const QIcon& iconOverlay)
+    {
+        m_iconOverlay = iconOverlay;
+        updateIconLabel();
+    }
+
+    void CardHeader::setIconClickable(bool clickable)
+    {
+        m_iconLabel->SetClickable(clickable);
+    }
+
+    bool CardHeader::isIconClickable() const
+    {
+        return m_iconLabel->GetClickable();
+    }
+
+    void CardHeader::updateIconLabel()
+    {
+        if (!m_icon.isNull())
         {
-            m_iconLabel->setPixmap(icon.pixmap(s_iconSize, s_iconSize));
+            QPixmap pixmap = m_icon.pixmap(s_iconSize, s_iconSize);
+            if (!m_iconOverlay.isNull())
+            {
+                QPainter paint(&pixmap);
+                paint.drawPixmap(0, 0, m_iconOverlay.pixmap(s_iconSize, s_iconSize));
+            }
+            m_iconLabel->setPixmap(pixmap);
         }
-
-        m_iconLabel->setVisible(!icon.isNull());
+        m_iconLabel->setVisible(!m_icon.isNull());
     }
 
     void CardHeader::configSettingsChanged()
     {
         if (!m_icon.isNull() && (m_iconLabel != nullptr))
         {
-            m_iconLabel->setPixmap(m_icon.pixmap(s_iconSize, s_iconSize));
+            updateIconLabel();
         }
 
         if (!m_warningIcon.isNull())
@@ -214,6 +284,7 @@ namespace AzQtComponents
     void CardHeader::setExpandable(bool expandable)
     {
         m_expanderButton->setEnabled(expandable);
+        m_expanderButton->setVisible(expandable);
     }
 
     bool CardHeader::isExpandable() const
@@ -313,6 +384,11 @@ namespace AzQtComponents
     void CardHeader::triggerHelpButton()
     {
         QDesktopServices::openUrl(QUrl(m_helpUrl));
+    }
+
+    void CardHeader::triggerIconLabelClicked(const QPoint& position)
+    {
+        Q_EMIT iconLabelClicked(position);
     }
 
     void CardHeader::setHelpURL(const QString& url)

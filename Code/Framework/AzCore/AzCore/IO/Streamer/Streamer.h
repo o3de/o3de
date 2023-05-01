@@ -37,7 +37,7 @@ namespace AZ::IO
     {
     public:
         AZ_RTTI(Streamer, "{3D880982-6E3F-4913-9947-55E01030D4AA}", IStreamer);
-        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Streamer, SystemAllocator);
 
         //
         // Streamer commands.
@@ -161,7 +161,7 @@ namespace AZ::IO
         IStreamerTypes::RequestStatus GetRequestStatus(FileRequestHandle request) const override;
 
         //! Returns the time that the provided request will complete.
-        AZStd::chrono::system_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const override;
+        AZStd::chrono::steady_clock::time_point GetEstimatedRequestCompletionTime(FileRequestHandle request) const override;
 
         //! Gets the result for operations that read data.
         bool GetReadRequestResult(FileRequestHandle request, void*& buffer, u64& numBytesRead,

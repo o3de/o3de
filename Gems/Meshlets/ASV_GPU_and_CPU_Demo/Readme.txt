@@ -95,19 +95,23 @@ Epic Nanite 2021: https://quip-amazon.com/-/blob/RKb9AAL3zt8/G7A6Cxor0gvn_WPGltB
 Activision - Geometry Rendering Pipeline architecture 2021: https://research.activision.com/publications/2021/09/geometry-rendering-pipeline-architecture
  
 
-Quick Build and Run Direction
-=============================
-1. Go over the files in this directory - you'd needd to folow the instructions below and copy 
+Quick Build and Run Directions
+==============================
+This is a summary of the steps you'll need to follow, see the additional sections below for details.
+
+1. Go over the files in this directory - you'd need to follow the instructions below and copy 
     the files to various locations. Create a Meshlets branch so you'd do it once only.
 2. Add the gem directory to the file engine.json:
     "external_subdirectories": [
         "Gems/Meshlets",
         ...
-3. Run cmake again
-4. Compile meshoptimizer.lib as static library and add it to the Meshlets gem
-5. Build the ASV solution
-6. Run the standalone ASV and choose the Meshlets demo from the RPI demos sub-menu 
-7. When selecting a model, a secondary CPU meshlet model will be generated and 
+3. Compile meshoptimizer.lib as static library and add it to the Meshlets gem
+4. Update several build configuration files to connect the gem to AtomSampleViewer (ASV)
+5. Run cmake to apply the configuration changes
+6. Update ASV code to add the Meshlets sample
+7. Build the ASV standalone project
+8. Run the standalone ASV and choose the Meshlets demo from the RPI demos sub-menu 
+9. When selecting a model, a secondary CPU meshlet model will be generated and 
     displayed alongside, and in the GPU demo, a third one created by the GPU will 
     be displayed as well.
 
@@ -116,14 +120,26 @@ Adding the meshoptimizer library to the Gem
 ===========================================
 The meshoptimizer library is not included as part of the O3DE.
 When adding and compiling this Gem, compile the meshoptimizer 
-library and add it as part of Meshlets.Static project (for example, in 
-Visual Studio you simply add the library file to the project).
+library and add it as part of Meshlets.Static project.
 Once this is done, the Gem should compile and link properly to allow you 
-to run the ASV sample 'Meshlets' (created with the MeshletsExampleComponent)
+to run the ASV sample 'Meshlets' (created with the MeshletsExampleComponent).
 
 The meshoptimizer library and source can be found in the following Github link:
 https://github.com/zeux/meshoptimizer
 
+Here are the specific steps to build and install the library, on Windows:
+git clone https://github.com/zeux/meshoptimizer
+cd meshoptimizer
+mkdir build
+cmake . -B build
+cmake --build build --config Release
+copy build\Release\meshoptimizer.lib [YourO3DEPath]\Gems\Meshlets\External\Lib
+
+Finally, in Visual Studio, right-click the Meshlets.Static project 
+    and click Add > Existing Item..., then select 
+    [YourO3DEPath]\Gems\Meshlets\External\Lib\meshoptimizer.lib
+    (Note that if you run cmake in O3DE again, this setting will be lost and you
+    will have to add meshoptimizer.lib to the Meshlets.Static project again).
 
 Connecting the Gem to the project folder (AtomSamplesViewer for example):
 =========================================================================
@@ -156,25 +172,29 @@ is not the case, simply replace with the directory name of your active project.
             }
     Remark: this is NOT required in this case as Meshlets can process regular Atom meshes
 
-3. Enable Meshlets gem for the active project - AtomSampleViewer/Gem/code/enabled_gems.cmake
-            (
-                set(ENABLED_GEMS
+3. Enable Meshlets gem for the active project - AtomSampleViewer/project.json
+            "gem_names": [
                 ...
-                Meshlets
-            )
+                "Meshlets"
+            ]
 
-4. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to the shader directory:
+4. Add a build dependency on the meshlets gem - AtomSampleViewer/Gem/Code/CMakeLists.txt
+        ly_add_target(
+            NAME AtomSampleViewer.Private.Static STATIC
+            ...
+            BUILD_DEPENDENCIES
+                PUBLIC
+                    Gem::Meshlets.Static
+
+5. Copy the shader debug files (DebugShaderPBR_ForwardPass.*) to the material types directory:
     [o3de]\AtomSampleViewer\Materials\Types\*
 
-5. Add the material file 'debugshadermaterial_01.material' to the material directory:
+6. Copy the material type file 'DebugShaderPBR.materialtype' to the material types directory:
+    [o3de]\AtomSampleViewer\Materials\DebugShaderPBR.materialtype
+    
+7. Copy the material file 'debugshadermaterial_01.material' to the material directory:
     [o3de]\AtomSampleViewer\Materials\DebugShaderMaterial_01.material
-    
-6. Complie meshoptimizer to a library, copy the compiled library (you can compile and place it under Gems\Meshlets\External\Lib) 
-    and add it to your Meshlets.static project.
-    
-Remark: at this point there is no need to copy the MainPipeline.pass that was provided 
-    as an example, since the meshlets parent pass is being injected into the pipeline by the 
-    MeshletsFeatureProcessor.
+        
 
 
 Including the Meshlets sample in ASV

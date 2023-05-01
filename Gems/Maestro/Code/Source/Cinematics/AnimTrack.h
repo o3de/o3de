@@ -23,7 +23,7 @@ class TAnimTrack
     : public IAnimTrack
 {
 public:
-    AZ_CLASS_ALLOCATOR(TAnimTrack, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR(TAnimTrack, AZ::SystemAllocator);
     AZ_RTTI((TAnimTrack, "{D6E0F0E3-8843-46F0-8484-7B6E130409AE}", KeyType), IAnimTrack);
 
     TAnimTrack();
@@ -481,7 +481,7 @@ inline bool TAnimTrack<KeyType>::SerializeSelection(XmlNodeRef& xmlNode, bool bL
         int numCur = GetNumKeys();
         int num = xmlNode->getChildCount();
 
-        int type;
+        unsigned int type;
         xmlNode->getAttr("TrackType", type);
 
         if (type != GetCurveType())

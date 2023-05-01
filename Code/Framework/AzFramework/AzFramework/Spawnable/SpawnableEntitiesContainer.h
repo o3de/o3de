@@ -57,7 +57,8 @@ namespace AzFramework
         [[nodiscard]] uint32_t GetCurrentGeneration() const;
 
         //! Puts in a request to spawn entities using all entities in the provided spawnable as a template.
-        void SpawnAllEntities();
+        //! @param optionalArgs optional arguments for spawning
+        void SpawnAllEntities(SpawnAllEntitiesOptionalArgs optionalArgs = {});
         //! Puts in a request to spawn entities using the entities found in the spawnable at the provided indices as a template.
         //! @param entityIndices A list of indices to the entities in the spawnable.
         void SpawnEntities(AZStd::vector<uint32_t> entityIndices);
@@ -90,7 +91,7 @@ namespace AzFramework
 
         struct ThreadSafeData
         {
-            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(SpawnableEntitiesContainer::ThreadSafeData, AZ::SystemAllocator);
             EntitySpawnTicket m_spawnedEntitiesTicket;
             uint32_t m_generation{ 0 };
         };

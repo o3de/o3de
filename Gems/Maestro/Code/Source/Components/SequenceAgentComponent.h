@@ -59,7 +59,7 @@ namespace Maestro
         }
 
         // Override from SequenceAgent
-        const AZ::Uuid& GetComponentTypeUuid(const AZ::Component& component) const override
+        AZ::TypeId GetComponentTypeUuid(const AZ::Component& component) const override
         {
             return component.RTTI_GetType();
         }

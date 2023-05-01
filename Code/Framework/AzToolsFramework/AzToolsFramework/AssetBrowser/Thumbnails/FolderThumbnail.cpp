@@ -36,7 +36,7 @@ namespace AzToolsFramework
         //////////////////////////////////////////////////////////////////////////
         // FolderThumbnail
         //////////////////////////////////////////////////////////////////////////
-        static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_16.svg";
+        static constexpr const char* FolderIconPath = "Assets/Editor/Icons/AssetBrowser/Folder_80.svg";
 
         FolderThumbnail::FolderThumbnail(SharedThumbnailKey key)
             : Thumbnail(key)

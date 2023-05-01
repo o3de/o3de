@@ -11,7 +11,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/ProductAssetBrowserEntry.h>
 #include <Editor/View/Widgets/LoggingPanel/PivotTree/GraphPivotTree/GraphPivotTree.h>
-#include <ScriptCanvas/Asset/RuntimeAsset.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 
 namespace ScriptCanvasEditor
 {

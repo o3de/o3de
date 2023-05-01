@@ -60,7 +60,7 @@ namespace AZ::NameBenchmarks
             existingNames.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -81,7 +81,7 @@ namespace AZ::NameBenchmarks
             namesToCreate.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -102,7 +102,7 @@ namespace AZ::NameBenchmarks
             existingNames.emplace_back(AZStd::string::format("name%zu", i));
         }
 
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             for (size_t i = 0; i < poolSize; ++i)
             {
@@ -116,7 +116,7 @@ namespace AZ::NameBenchmarks
 
     BENCHMARK_DEFINE_F(NameBenchmarkFixture, RetrieveName_WithNameLiteral)(::benchmark::State& state)
     {
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             benchmark::DoNotOptimize(AZ::Name(NameFromCachedLiteral()));
         }
@@ -127,7 +127,7 @@ namespace AZ::NameBenchmarks
 
     BENCHMARK_DEFINE_F(NameBenchmarkFixture, RetrieveName_WithoutNameLiteral)(::benchmark::State& state)
     {
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             benchmark::DoNotOptimize(AZ::Name(NameFromUncachedLiteral()));
         }
@@ -141,15 +141,15 @@ namespace AZ::NameBenchmarks
         AZStd::vector<AZ::Name> names;
         names.resize(state.range(0));
 
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name("not created as a literal"));
+                names[i] = (AZ::Name("not created as a literal"));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = Name();
+                names[i] = AZ::Name();
             }
         }
 
@@ -162,15 +162,15 @@ namespace AZ::NameBenchmarks
         AZStd::vector<AZ::Name> names;
         names.resize(state.range(0));
 
-        for ([[maybe_unused]] auto _ : state)
+        for ([[maybe_unused]] auto var_ : state)
         {
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = (Name::FromStringLiteral("created as a literal", AZ::Interface<AZ::NameDictionary>::Get()));
+                names[i] = (AZ::Name::FromStringLiteral("created as a literal", AZ::Interface<AZ::NameDictionary>::Get()));
             }
             for (int64_t i = 0; i < state.range(0); ++i)
             {
-                names[i] = Name();
+                names[i] = AZ::Name();
             }
         }
 

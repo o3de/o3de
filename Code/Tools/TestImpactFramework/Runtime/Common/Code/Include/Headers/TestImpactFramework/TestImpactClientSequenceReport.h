@@ -46,7 +46,7 @@ namespace TestImpact
             //! @param unexecutedTestRuns The set of test runs that were queued up for execution but did not get the opportunity to execute.
             TestRunReport(
                 TestSequenceResult result,
-                AZStd::chrono::high_resolution_clock::time_point startTime,
+                AZStd::chrono::steady_clock::time_point startTime,
                 AZStd::chrono::milliseconds duration,
                 AZStd::vector<PassingTestRun>&& passingTestRuns,
                 AZStd::vector<FailingTestRun>&& failingTestRuns,
@@ -58,10 +58,10 @@ namespace TestImpact
             TestSequenceResult GetResult() const;
 
             //! Returns the time this sequence of test runs started relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const;
+            AZStd::chrono::steady_clock::time_point GetStartTime() const;
 
             //! Returns the time this sequence of test runs ended relative to T0.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const;
+            AZStd::chrono::steady_clock::time_point GetEndTime() const;
 
             //! Returns the duration this sequence of test runs took to complete.
             AZStd::chrono::milliseconds GetDuration() const;
@@ -109,7 +109,7 @@ namespace TestImpact
             const AZStd::vector<UnexecutedTestRun>& GetUnexecutedTestRuns() const;
         private:
             TestSequenceResult m_result = TestSequenceResult::Success;
-            AZStd::chrono::high_resolution_clock::time_point m_startTime;
+            AZStd::chrono::steady_clock::time_point m_startTime;
             AZStd::chrono::milliseconds m_duration = AZStd::chrono::milliseconds{ 0 };
             AZStd::vector<PassingTestRun> m_passingTestRuns;
             AZStd::vector<FailingTestRun> m_failingTestRuns;
@@ -134,7 +134,8 @@ namespace TestImpact
             //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
-            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param suiteSet The suites from which the tests have been selected from.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
             SequenceReportBase(
@@ -142,14 +143,16 @@ namespace TestImpact
                 AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
                 PolicyStateType policyState,
-                SuiteType suiteType,
+                const SuiteSet& suiteSet,
+                const SuiteLabelExcludeSet& suiteLabelExcludeSet,
                 TestRunSelection selectedTestRuns,
                 TestRunReport selectedTestRunReport)
                 : m_maxConcurrency(maxConcurrency)
                 , m_testTargetTimeout(AZStd::move(testTargetTimeout))
                 , m_globalTimeout(AZStd::move(globalTimeout))
                 , m_policyState(AZStd::move(policyState))
-                , m_suite(suiteType)
+                , m_suiteSet(suiteSet)
+                , m_suiteLabelExcludeSet(suiteLabelExcludeSet)
                 , m_selectedTestRuns(AZStd::move(selectedTestRuns))
                 , m_selectedTestRunReport(AZStd::move(selectedTestRunReport))
             {
@@ -161,7 +164,8 @@ namespace TestImpact
                     AZStd::move(report.m_testTargetTimeout),
                     AZStd::move(report.m_globalTimeout),
                     AZStd::move(report.m_policyState),
-                    AZStd::move(report.m_suite),
+                    AZStd::move(report.m_suiteSet),
+                    AZStd::move(report.m_suiteLabelExcludeSet),
                     AZStd::move(report.m_selectedTestRuns),
                     AZStd::move(report.m_selectedTestRunReport))
             {
@@ -173,7 +177,8 @@ namespace TestImpact
                     report.m_testTargetTimeout,
                     report.m_globalTimeout,
                     report.m_policyState,
-                    report.m_suite,
+                    report.m_suiteSet,
+                    AZStd::move(report.m_suiteLabelExcludeSet),
                     report.m_selectedTestRuns,
                     report.m_selectedTestRunReport)
             {
@@ -205,10 +210,16 @@ namespace TestImpact
                 return m_policyState;
             }
 
-            //! Returns the suite for this sequence.
-            SuiteType GetSuite() const
+            //! Returns the suite set for this sequence.
+            const SuiteSet& GetSuiteSet() const
             {
-                return m_suite;
+                return m_suiteSet;
+            }
+
+            //! Returns the suite label exclude set for this sequence.
+            const SuiteSet& GetSuiteLabelExcludeSet() const
+            {
+                return m_suiteLabelExcludeSet;
             }
 
              //! Returns the result of the sequence.
@@ -230,13 +241,13 @@ namespace TestImpact
             }
 
             //! Returns the start time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetStartTime() const
+            AZStd::chrono::steady_clock::time_point GetStartTime() const
             {
                 return m_selectedTestRunReport.GetStartTime();
             }
 
             //! Returns the end time of the sequence.
-            AZStd::chrono::high_resolution_clock::time_point GetEndTime() const
+            AZStd::chrono::steady_clock::time_point GetEndTime() const
             {
                 return GetStartTime() + GetDuration();
             }
@@ -306,7 +317,8 @@ namespace TestImpact
             AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
             AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
             PolicyStateType m_policyState;
-            SuiteType m_suite = SuiteType::Main;
+            SuiteSet m_suiteSet;
+            SuiteLabelExcludeSet m_suiteLabelExcludeSet;
             TestRunSelection m_selectedTestRuns;
             TestRunReport m_selectedTestRunReport;
         };
@@ -338,7 +350,8 @@ namespace TestImpact
             //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
-            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param suiteSet The suites suite from which the tests have been selected from.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
@@ -348,7 +361,8 @@ namespace TestImpact
                 AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
                 PolicyStateType policyState,
-                SuiteType suiteType,
+                SuiteSet suiteSet,
+                const SuiteLabelExcludeSet& suiteLabelExcludeSet,
                 TestRunSelection selectedTestRuns,
                 AZStd::vector<AZStd::string> draftedTestRuns,
                 TestRunReport&& selectedTestRunReport,
@@ -358,7 +372,8 @@ namespace TestImpact
                     testTargetTimeout,
                     globalTimeout,
                     policyState,
-                    suiteType,
+                    suiteSet,
+                    suiteLabelExcludeSet,
                     selectedTestRuns,
                     AZStd::move(selectedTestRunReport))
                 , m_draftedTestRuns(AZStd::move(draftedTestRuns))
@@ -459,7 +474,8 @@ namespace TestImpact
             //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
-            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param suiteSet The suites from which the tests have been selected from.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
             //! @param selectedTestRunReport The report for the set of selected test runs.
@@ -469,7 +485,8 @@ namespace TestImpact
                 AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
                 ImpactAnalysisSequencePolicyState policyState,
-                SuiteType suiteType,
+                SuiteSet suiteSet,
+                SuiteLabelExcludeSet suiteLabelExcludeSet,
                 TestRunSelection selectedTestRuns,
                 AZStd::vector<AZStd::string> discardedTestRuns,
                 AZStd::vector<AZStd::string> draftedTestRuns,
@@ -494,7 +511,8 @@ namespace TestImpact
             //! @param testTargetTimeout The maximum duration individual test targets may be in flight for (infinite if empty).
             //! @param globalTimeout The maximum duration the entire test sequence may run for (infinite if empty).
             //! @param policyState The policy state this sequence was executed under.
-            //! @param suiteType The suite from which the tests have been selected from.
+            //! @param suiteSet The suites from which the tests have been selected from.
+            //! @param suiteLabelExcludeSet Any tests with suites that match a label from this set will be excluded.
             //! @param selectedTestRuns The target names of the selected test runs.
             //! @param discardedTestRuns The target names of the discarded test runs.
             //! @param draftedTestRuns The target names of the drafted test runs.
@@ -506,7 +524,8 @@ namespace TestImpact
                 AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
                 AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
                 SafeImpactAnalysisSequencePolicyState policyState,
-                SuiteType suiteType,
+                SuiteSet suiteSet,
+                SuiteLabelExcludeSet suiteLabelExcludeSet,
                 TestRunSelection selectedTestRuns,
                 TestRunSelection discardedTestRuns,
                 AZStd::vector<AZStd::string> draftedTestRuns,

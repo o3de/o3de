@@ -19,7 +19,7 @@ namespace AZ
     {
         namespace UI
         {
-            AZ_CLASS_ALLOCATOR_IMPL_INTERNAL(IManifestVectorHandler<ManifestType>, SystemAllocator, 0, template<typename ManifestType>)
+            AZ_CLASS_ALLOCATOR_IMPL_INTERNAL(IManifestVectorHandler<ManifestType>, SystemAllocator, template<typename ManifestType>)
 
             template<typename ManifestType> SerializeContext* IManifestVectorHandler<ManifestType>::s_serializeContext = nullptr;
             template<typename ManifestType> IManifestVectorHandler<ManifestType>* IManifestVectorHandler<ManifestType>::s_instance = nullptr;

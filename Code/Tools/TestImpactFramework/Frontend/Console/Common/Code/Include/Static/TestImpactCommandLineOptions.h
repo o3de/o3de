@@ -91,14 +91,20 @@ namespace TestImpact
         //! Returns the test target standard output capture policy to use.
         Policy::TargetOutputCapture GetTargetOutputCapture() const;
 
+        //! Returns the test runner policy to use
+        Policy::TestRunner GetTestRunnerPolicy() const;
+
         //! Returns the individual test target timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetTestTargetTimeout() const;
 
         //! Returns the global test sequence timeout to use (if any).
         const AZStd::optional<AZStd::chrono::milliseconds>& GetGlobalTimeout() const;
 
-        //! Returns the filter for test suite that will be allowed to be run.
-        SuiteType GetSuiteFilter() const;
+        //! Returns the filter for test suites that will be allowed to be run.
+        const SuiteSet& GetSuiteSet() const;
+
+        //! Returns the test suite label exclude set that will be used to exclude any test targets with any matching suite labels.
+        const SuiteLabelExcludeSet& GetSuiteLabelExcludeSet() const;
 
         //! Returns the tests to exclude from this run of TIAF (if any).
         const AZStd::vector<ExcludedTarget>& GetExcludedTests() const;
@@ -122,9 +128,11 @@ namespace TestImpact
         Policy::TestFailure m_testFailurePolicy = Policy::TestFailure::Abort;
         Policy::IntegrityFailure m_integrityFailurePolicy = Policy::IntegrityFailure::Abort;
         Policy::TargetOutputCapture m_targetOutputCapture = Policy::TargetOutputCapture::None;
+        Policy::TestRunner m_testRunnerPolicy = Policy::TestRunner::UseLiveTestRunner;
         AZStd::optional<AZStd::chrono::milliseconds> m_testTargetTimeout;
         AZStd::optional<AZStd::chrono::milliseconds> m_globalTimeout;
-        SuiteType m_suiteFilter;
+        SuiteSet m_suiteSet;
+        SuiteLabelExcludeSet m_suiteLabelExcludes;
         bool m_draftFailingTests = false;
         AZStd::vector<ExcludedTarget> m_excludedTests;
         bool m_safeMode = false;

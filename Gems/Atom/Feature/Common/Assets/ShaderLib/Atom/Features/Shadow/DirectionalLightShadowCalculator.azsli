@@ -115,7 +115,7 @@ float DirectionalShadowCalculator::GetThickness()
         float3 shadowCoord = m_shadowCoords[m_cascadeIndex];
         if (IsShadowCoordInCascade(shadowCoord, size))
         {
-            const float depthBufferValue = shadowmap.SampleLevel(PassSrg::LinearSampler, float3(shadowCoord.xy, m_cascadeIndex), 0).r;
+            const float depthBufferValue = shadowmap.SampleLevel(PassSrg::PointSampler, float3(shadowCoord.xy, m_cascadeIndex), 0).r;
 
             // Normalized thickness (avoid negative values given by precision errors or shrinking offsets)
             const float deltaDepth = max(shadowCoord.z - depthBufferValue,0.0);
@@ -178,7 +178,7 @@ bool2 DirectionalShadowCalculator::IsShadowed(const float3 shadowCoord, const in
     if (IsShadowCoordInCascade(shadowCoord, size))
     {
         const float3 coord = float3(shadowCoord.xy, indexOfCascade);
-        const float depthInShadowmap = m_directionalLightShadowmap.SampleLevel(PassSrg::LinearSampler, coord, 0).r;
+        const float depthInShadowmap = m_directionalLightShadowmap.SampleLevel(PassSrg::PointSampler, coord, 0).r;
         const float depthDiff = shadowCoord.z - depthInShadowmap;
         return bool2(true, (depthDiff > m_slopeBias[indexOfCascade]));
     }

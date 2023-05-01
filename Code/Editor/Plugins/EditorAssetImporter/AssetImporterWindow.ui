@@ -25,7 +25,8 @@
           <string>&amp;Edit</string>
         </property>
         <addaction name="m_actionResetSettings"/>
-		<addaction name="m_actionAssignScript"/>
+        <addaction name="m_actionClearUnsavedChanges"/>        
+        <addaction name="m_actionAssignScript"/>
 	  </widget>
       <widget class="QMenu" name="helpMenu">
         <property name="title">
@@ -75,6 +76,27 @@
               <property name="bottomMargin">
                 <number>0</number>
               </property>
+              <item>
+                <widget class="QSplitter" name="m_mainAreaSplitter">
+                  <property name="orientation">
+                    <enum>Qt::Vertical</enum>
+                  </property>
+                  <widget class="QWidget" name="m_notificationAreaLayoutWidget">
+                    <layout class="QVBoxLayout" name="m_notificationAreaLayout">
+                      <item>
+                          <widget class="QWidget" name="m_cardAreaLayoutWidget">
+                            <layout class="QVBoxLayout" name="m_cardAreaLayout">
+                            </layout>
+                          </widget>
+                      </item>
+                    </layout>
+                  </widget>
+                  <widget class="QWidget" name="m_settingsAreaLayoutWidget">
+                    <layout class="QVBoxLayout" name="m_settingsAreaLayout">
+                    </layout>
+                  </widget>
+                </widget>
+              </item>
             </layout>
           </widget>
         </item>
@@ -170,10 +192,19 @@
   
     <action name="m_actionResetSettings">
       <property name="text">
-        <string>Reset settings...</string>
+        <string>Reset settings to default...</string>
       </property>
       <property name="toolTip">
-        <string>Reset the settings for this file (note: you will have to update to commit)</string>
+        <string>Sets all settings to their default values.</string>
+      </property>
+    </action>
+
+    <action name="m_actionClearUnsavedChanges">
+      <property name="text">
+        <string>Clear unsaved changes...</string>
+      </property>
+      <property name="toolTip">
+        <string>Restores this file to the last time it was saved.</string>
       </property>
     </action>
 
@@ -213,6 +244,12 @@
       <signal>triggered()</signal>
       <receiver>AssetImporterWindow</receiver>
       <slot>OnSceneResetRequested()</slot>
+    </connection>
+    <connection>
+      <sender>m_actionClearUnsavedChanges</sender>
+      <signal>triggered()</signal>
+      <receiver>AssetImporterWindow</receiver>
+      <slot>OnClearUnsavedChangesRequested()</slot>
     </connection>
     <connection>
       <sender>m_actionAssignScript</sender>

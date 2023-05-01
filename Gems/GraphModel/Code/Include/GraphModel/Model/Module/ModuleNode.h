@@ -22,7 +22,7 @@ namespace GraphModel
     class ModuleNode : public Node
     {
     public:
-        AZ_CLASS_ALLOCATOR(ModuleNode, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ModuleNode, AZ::SystemAllocator);
         AZ_RTTI(ModuleNode, "{C7D57EFE-462D-48A0-B46F-6E927D504BA5}", Node);
         static void Reflect(AZ::ReflectContext* context);
 

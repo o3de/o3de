@@ -24,7 +24,7 @@ namespace O3DE::ProjectManager
     namespace ProjectUtils
     {
         class ProjectManagerUtilsTests
-            : public ::UnitTest::ScopedAllocatorSetupFixture
+            : public ::UnitTest::LeakDetectionFixture
         {
         public:
             static inline QString ReplaceFirstAWithB(const QString& originalString)

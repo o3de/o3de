@@ -20,7 +20,8 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'azpy.core'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.core'
 
 __all__ = []
 

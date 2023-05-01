@@ -23,7 +23,7 @@ namespace ShaderManagementConsole
         , public AtomToolsFramework::AtomToolsDocumentNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleTableView, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleTableView, AZ::SystemAllocator);
         ShaderManagementConsoleTableView(const AZ::Crc32& toolId, const AZ::Uuid& documentId, QWidget* parent);
         ~ShaderManagementConsoleTableView();
 

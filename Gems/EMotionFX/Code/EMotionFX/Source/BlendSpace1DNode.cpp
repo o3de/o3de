@@ -42,8 +42,8 @@ namespace
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace1DNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace1DNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace1DNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendSpace1DNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     BlendSpace1DNode::UniqueData::UniqueData(AnimGraphNode* node, AnimGraphInstance* animGraphInstance)
         : AnimGraphNodeData(node, animGraphInstance)
@@ -270,7 +270,7 @@ namespace EMotionFX
             AnimGraphNode* paramSrcNode = paramConnection->GetSourceNode();
             if (paramSrcNode)
             {
-                paramSrcNode->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, paramSrcNode, timePassedInSeconds);
             }
         }
     }
@@ -347,7 +347,7 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* paramConnection = GetInputPort(INPUTPORT_VALUE).m_connection;
         if (paramConnection)
         {
-            paramConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, paramConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         if (uniqueData->m_motionInfos.empty())

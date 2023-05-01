@@ -56,6 +56,7 @@ ly_add_target(
 # use the NvCloth module in clients and servers:
 ly_create_alias(NAME NvCloth.Clients NAMESPACE Gem TARGETS Gem::NvCloth)
 ly_create_alias(NAME NvCloth.Servers NAMESPACE Gem TARGETS Gem::NvCloth)
+ly_create_alias(NAME NvCloth.Unified NAMESPACE Gem TARGETS Gem::NvCloth)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(

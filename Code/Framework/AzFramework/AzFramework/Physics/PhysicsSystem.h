@@ -87,7 +87,7 @@ namespace AzPhysics
 
         //! Get the Scene of the requested SceneHandle.
         //! @param handle The SceneHandle of the requested scene.
-        //! @return Returns a SceneInterface pointer if found, otherwise nullptr.
+        //! @return Returns a Scene pointer if found, otherwise nullptr.
         virtual Scene* GetScene(SceneHandle handle) = 0;
 
         //! Get multiple Scenes.

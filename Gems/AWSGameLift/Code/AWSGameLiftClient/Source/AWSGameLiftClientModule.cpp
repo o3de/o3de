@@ -11,6 +11,10 @@
 
 #include <AWSGameLiftClientSystemComponent.h>
 
+#if defined(AWS_GAMELIFT_CLIENT_EDITOR)
+#include <AWSGameLiftClientEditorSystemComponent.h>
+#endif
+
 namespace AWSGameLift
 {
     //! Provide the entry point for the gem and register the system component.
@@ -19,15 +23,21 @@ namespace AWSGameLift
     {
     public:
         AZ_RTTI(AWSGameLiftClientModule, "{7b920f3e-2b23-482e-a1b6-16bd278d126c}", AZ::Module);
-        AZ_CLASS_ALLOCATOR(AWSGameLiftClientModule, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AWSGameLiftClientModule, AZ::SystemAllocator);
 
         AWSGameLiftClientModule()
             : AZ::Module()
         {
             // Push results of [MyComponent]::CreateDescriptor() into m_descriptors here.
-            m_descriptors.insert(m_descriptors.end(), {
-                AWSGameLiftClientSystemComponent::CreateDescriptor(),
-            });
+            m_descriptors.insert(m_descriptors.end(),
+                {
+#if defined(AWS_GAMELIFT_CLIENT_EDITOR)
+                    AWSGameLiftClientEditorSystemComponent::CreateDescriptor()
+#else
+                    AWSGameLiftClientSystemComponent::CreateDescriptor()
+#endif
+                }
+            );
         }
 
         /**
@@ -35,8 +45,13 @@ namespace AWSGameLift
          */
         AZ::ComponentTypeList GetRequiredSystemComponents() const override
         {
-            return AZ::ComponentTypeList {
-                azrtti_typeid<AWSGameLiftClientSystemComponent>(),
+            return AZ::ComponentTypeList
+            {
+    #if defined(AWS_GAMELIFT_CLIENT_EDITOR)
+                azrtti_typeid<AWSGameLiftClientEditorSystemComponent>()
+    #else
+                azrtti_typeid<AWSGameLiftClientSystemComponent>()
+    #endif
             };
         }
     };

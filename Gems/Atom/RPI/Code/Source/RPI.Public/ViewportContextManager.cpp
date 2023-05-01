@@ -78,8 +78,10 @@ namespace AZ
                 viewportData.dpiScalingChangedHandler = ViewportContext::ScalarChangedEvent::Handler(onDpiScalingChanged);
                 viewportContext->ConnectSizeChangedHandler(viewportData.sizeChangedHandler);
                 viewportContext->ConnectDpiScalingFactorChangedHandler(viewportData.dpiScalingChangedHandler);
+
+
                 ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
-                viewportContext->SetDefaultView(associatedViews.back());
+                viewportContext->SetViewGroup(associatedViews.back());
                 onSizeChanged(viewportContext->GetViewportSize());
             }
 
@@ -198,8 +200,16 @@ namespace AZ
                 AZ_Assert(false, "Attempted to rename ViewportContext \"%s\" to \"%s\", but \"%s\" is already assigned to another ViewportContext", viewportContext->m_name.GetCStr(), newContextName.GetCStr(), newContextName.GetCStr());
                 return;
             }
-            GetOrCreateViewStackForContext(newContextName);
+
+            // find the existing view group stack with the old name and extract it
+            auto nodeHandle = m_viewportViews.extract(viewportContext->GetName());
+            // rename the node handle with the new name (key)
+            nodeHandle.key() = newContextName;
+            // insert the updated view group back into the map with the new name
+            m_viewportViews.insert(AZStd::move(nodeHandle));
+            // update name of element
             viewportContext->m_name = newContextName;
+
             UpdateViewForContext(newContextName);
             // Ensure anyone listening on per-name viewport size updates gets notified.
             ViewportContextNotificationBus::Event(newContextName, &ViewportContextNotificationBus::Events::OnViewportSizeChanged, viewportContext->GetViewportSize());
@@ -226,62 +236,85 @@ namespace AZ
             return GetViewportContextByName(m_defaultViewportContextName);
         }
 
-        void ViewportContextManager::PushView(const Name& context, ViewPtr view)
+        void ViewportContextManager::PushViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
+                AZ_Assert(viewGroup->GetNumViews() > 0, "Attempted to push a null view to context \"%s\"", contextName.GetCStr());
 
-                AZ_Assert(view, "Attempted to push a null view to context \"%s\"", context.GetCStr());
-                AZ_Assert((view->GetUsageFlags() & View::UsageFlags::UsageCamera) != 0, "Attempted to register a non-camera view to context \"%s\", ensure the view is flagged with UsageCamera", context.GetCStr());
+                ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(contextName);
 
-                ViewPtrStack& associatedViews = GetOrCreateViewStackForContext(context);
-                if (auto it = AZStd::find(associatedViews.begin(), associatedViews.end(), view); it != associatedViews.end())
-                {
-                    // Remove from its existing position, if any, before re-adding below
-                    associatedViews.erase(it);
-                }
+                // Remove from its existing position, if any, before re-adding below at the top of the stack
+                AZStd::erase(associatedViews, viewGroup);
 
-                associatedViews.push_back(view);
+                associatedViews.push_back(viewGroup);
             }
-
-            UpdateViewForContext(context);
+            UpdateViewForContext(contextName);
         }
-
-        bool ViewportContextManager::PopView(const Name& context, ViewPtr view)
+        
+        bool ViewportContextManager::PopViewGroup(const Name& contextName, ViewGroupPtr viewGroup)
         {
             {
                 AZStd::lock_guard lock(m_containerMutex);
-
-                auto viewStackIt = m_viewportViews.find(context);
+                
+                auto viewStackIt = m_viewportViews.find(contextName);
                 if (viewStackIt == m_viewportViews.end())
                 {
                     return false;
                 }
                 ViewPtrStack& associatedViews = viewStackIt->second;
-                if (view == associatedViews[0])
+                AZ_Assert(!associatedViews.empty(), "There are no associated views for context %s", contextName.GetCStr());
+                if (viewGroup == associatedViews[0])
                 {
-                    AZ_Assert(false, "Attempted to pop the root view for context \"%s\"", context.GetCStr());
+                    AZ_Error("ViewportContextManager", false, "Attempted to pop the root view for context \"%s\"", contextName.GetCStr());
                     return false;
                 }
-                auto viewIt = AZStd::find(associatedViews.begin(), associatedViews.end(), view);
-                if (viewIt == associatedViews.end())
-                {
-                    return false;
-                }
-                associatedViews.erase(viewIt);
-            }
 
-            UpdateViewForContext(context);
+                // Remove the view group
+                const size_t eraseCount = AZStd::erase(associatedViews, viewGroup);
+                if (eraseCount == 0)
+                {
+                    return false;
+                }
+            }
+            
+            UpdateViewForContext(contextName);
             return true;
         }
 
-        ViewPtr ViewportContextManager::GetCurrentView(const Name& context) const
+        ViewPtr ViewportContextManager::GetCurrentView(const Name& context)
         {
             AZStd::lock_guard lock(m_containerMutex);
 
             if (auto viewIt = m_viewportViews.find(context); viewIt != m_viewportViews.end())
             {
+                return viewIt->second.back()->GetView(ViewType::Default);
+            }
+            return {};
+        }
+
+        ViewGroupPtr ViewportContextManager::GetCurrentViewGroup(const Name& contextName)
+        {
+            AZStd::lock_guard lock(m_containerMutex);
+
+            if (auto viewIt = m_viewportViews.find(contextName); viewIt != m_viewportViews.end())
+            {
                 return viewIt->second.back();
+            }
+            return {};
+        }
+
+        ViewPtr ViewportContextManager::GetCurrentStereoscopicView(const Name& context, ViewType viewType)
+        {
+            AZStd::lock_guard lock(m_containerMutex);
+
+            if (auto viewIt = m_viewportViews.find(context); viewIt != m_viewportViews.end())
+            {
+                uint32_t xrViewIndex = static_cast<uint32_t>(viewType);
+                if (xrViewIndex < viewIt->second.back()->GetNumViews())
+                {
+                    return viewIt->second.back()->GetView(static_cast<ViewType>(xrViewIndex));
+                }      
             }
             return {};
         }
@@ -293,26 +326,30 @@ namespace AZ
             if (viewStack.empty())
             {
                 Name defaultViewName = Name(AZStd::string::format("%s (Root Camera)", context.GetCStr()));
-                ViewPtr defaultView = View::CreateView(defaultViewName, View::UsageFlags::UsageCamera);
-                viewStack.push_back(AZStd::move(defaultView));
+                ViewGroupPtr defaultViewGroup = AZStd::make_shared<ViewGroup>();
+                defaultViewGroup->Init(ViewGroup::Descriptor{ nullptr, nullptr });
+                defaultViewGroup->CreateMainView(defaultViewName);
+                defaultViewGroup->CreateStereoscopicViews(defaultViewName);
+                viewStack.push_back(defaultViewGroup);
             }
             return viewStack;
         }
 
         void ViewportContextManager::UpdateViewForContext(const Name& context)
         {
-            auto currentView = GetCurrentView(context);
+            auto currentViewGroup = GetCurrentViewGroup(context);
 
             for (const auto& viewportData : m_viewportContexts)
             {
                 ViewportContextPtr viewportContext = viewportData.second.context.lock();
                 if (viewportContext && viewportContext->GetName() == context)
                 {
-                    viewportContext->SetDefaultView(currentView);
+                    viewportContext->SetViewGroup(currentViewGroup);
+
                     ViewportContextIdNotificationBus::Event(
                         viewportContext->GetId(),
                         &ViewportContextIdNotificationBus::Events::OnViewportDefaultViewChanged,
-                        currentView);
+                        currentViewGroup->GetView(ViewType::Default));
                     break;
                 }
             }
@@ -320,7 +357,7 @@ namespace AZ
             ViewportContextNotificationBus::Event(
                 context,
                 &ViewportContextNotificationBus::Events::OnViewportDefaultViewChanged,
-                currentView);
+                currentViewGroup->GetView(ViewType::Default));
         }
     } // namespace RPI
 } // namespace AZ

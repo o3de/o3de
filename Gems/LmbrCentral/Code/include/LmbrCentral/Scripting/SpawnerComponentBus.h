@@ -16,8 +16,8 @@
 
 namespace LmbrCentral
 {
-    static const AZ::Uuid SpawnerComponentTypeId = "{8022A627-DD76-5432-C75A-7234AC2798C1}";
-    static const AZ::Uuid DeprecatedSpawnerComponentTypeId = "{8022A627-FA7D-4516-A155-657A0927A3CA}";
+    inline constexpr AZ::TypeId SpawnerComponentTypeId{ "{8022A627-DD76-5432-C75A-7234AC2798C1}" };
+    inline constexpr AZ::TypeId DeprecatedSpawnerComponentTypeId{ "{8022A627-FA7D-4516-A155-657A0927A3CA}" };
 
     /*!
      * SpawnerComponentRequests
@@ -130,7 +130,7 @@ namespace LmbrCentral
     {
     public:
         AZ_RTTI(SpawnerConfig, "{D4D68E8E-9031-448F-9D56-B5575CF4833C}", AZ::ComponentConfig);
-        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SpawnerConfig, AZ::SystemAllocator);
 
         SpawnerConfig() = default;
 

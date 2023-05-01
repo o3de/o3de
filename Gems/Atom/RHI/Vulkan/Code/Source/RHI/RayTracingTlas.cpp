@@ -15,6 +15,7 @@
 #include <Atom/RHI/Factory.h>
 #include <Atom/RHI/BufferPool.h>
 #include <Atom/RHI/RayTracingBufferPools.h>
+#include <Atom/RHI.Reflect/VkAllocator.h>
 
 namespace AZ
 {
@@ -37,7 +38,8 @@ namespace AZ
 
             if (buffers.m_accelerationStructure)
             {
-                device.GetContext().DestroyAccelerationStructureKHR(device.GetNativeDevice(), buffers.m_accelerationStructure, nullptr);
+                device.GetContext().DestroyAccelerationStructureKHR(
+                    device.GetNativeDevice(), buffers.m_accelerationStructure, VkSystemAllocator::Get());
                 buffers.m_accelerationStructure = nullptr;
             }
 
@@ -100,6 +102,7 @@ namespace AZ
 
                     // [GFX TODO][ATOM-5270] Add ray tracing TLAS instance mask support
                     mappedData[i].mask = 0x1;
+                    mappedData[i].flags = instance.m_transparent ? VK_GEOMETRY_INSTANCE_FORCE_NO_OPAQUE_BIT_KHR : 0;
                 }
             
                 bufferPools.GetTlasInstancesBufferPool()->UnmapBuffer(*buffers.m_tlasInstancesBuffer);
@@ -192,7 +195,7 @@ namespace AZ
             createInfo.buffer = tlasMemoryView->GetNativeBuffer();
 
             VkResult vkResult = device.GetContext().CreateAccelerationStructureKHR(
-                device.GetNativeDevice(), &createInfo, nullptr, &buffers.m_accelerationStructure);
+                device.GetNativeDevice(), &createInfo, VkSystemAllocator::Get(), &buffers.m_accelerationStructure);
             AssertSuccess(vkResult);
             
             buffers.m_buildInfo.dstAccelerationStructure = buffers.m_accelerationStructure;

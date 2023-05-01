@@ -48,6 +48,7 @@ namespace Terrain
                 ->Version(2)
                 ->Field("DebugWireframe", &TerrainWorldDebuggerConfig::m_drawWireframe)
                 ->Field("DebugWorldBounds", &TerrainWorldDebuggerConfig::m_drawWorldBounds)
+                ->Field("DebugDirtyRegion", &TerrainWorldDebuggerConfig::m_drawLastDirtyRegion)
                 ->Field("DebugQueries", &TerrainWorldDebuggerConfig::m_debugQueries)
                 ;
 
@@ -119,6 +120,8 @@ namespace Terrain
                         "Draw a wireframe for the terrain quads in an area around the camera")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawWorldBounds, "Show World Bounds",
                         "Draw the current world bounds for the terrain")
+                    ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_drawLastDirtyRegion,
+                        "Show Dirty Region", "Draw the most recent dirty region for the terrain")
                     ->DataElement(AZ::Edit::UIHandlers::Default, &TerrainWorldDebuggerConfig::m_debugQueries, "Show Normals",
                         "Settings for drawing terrain normals")
                         ->Attribute(AZ::Edit::Attributes::Visibility, AZ::Edit::PropertyVisibility::ShowChildrenOnly)
@@ -256,6 +259,29 @@ namespace Terrain
         }
     }
 
+    void TerrainWorldDebuggerComponent::DrawLastDirtyRegion(AzFramework::DebugDisplayRequests& debugDisplay)
+    {
+        using DataChangedMask = AzFramework::Terrain::TerrainDataNotifications::TerrainDataChangedMask;
+
+        if (!m_configuration.m_drawLastDirtyRegion)
+        {
+            return;
+        }
+
+        // Draw a translucent box around the terrain dirty region
+        const AZ::Color dirtyRegionColor(
+            (m_lastDirtyData & (DataChangedMask::HeightData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::SurfaceData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            (m_lastDirtyData & (DataChangedMask::ColorData | DataChangedMask::Settings)) != DataChangedMask::None ? 1.0f : 0.0f,
+            0.25f);
+
+        if (m_lastDirtyRegion.IsValid())
+        {
+            debugDisplay.SetColor(dirtyRegionColor);
+            debugDisplay.DrawSolidBox(m_lastDirtyRegion.GetMin(), m_lastDirtyRegion.GetMax());
+        }
+    }
+
     void TerrainWorldDebuggerComponent::DrawWorldBounds(AzFramework::DebugDisplayRequests& debugDisplay)
     {
         if (!m_configuration.m_drawWorldBounds)
@@ -264,11 +290,14 @@ namespace Terrain
         }
 
         // Draw a wireframe box around the entire terrain world bounds
-        AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
-        AZ::Aabb aabb = GetWorldBounds();
+        const AZ::Color outlineColor(1.0f, 0.0f, 0.0f, 1.0f);
+        const AZ::Aabb aabb = GetWorldBounds();
 
-        debugDisplay.SetColor(outlineColor);
-        debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        if (aabb.IsValid())
+        {
+            debugDisplay.SetColor(outlineColor);
+            debugDisplay.DrawWireBox(aabb.GetMin(), aabb.GetMax());
+        }
     }
 
     void TerrainWorldDebuggerComponent::DrawQueries(
@@ -509,6 +538,7 @@ namespace Terrain
         const AzFramework::ViewportInfo& viewportInfo, AzFramework::DebugDisplayRequests& debugDisplay)
     {
         DrawWorldBounds(debugDisplay);
+        DrawLastDirtyRegion(debugDisplay);
         DrawWireframe(viewportInfo, debugDisplay);
         DrawQueries(viewportInfo, debugDisplay);
     }
@@ -622,13 +652,13 @@ namespace Terrain
 
     void TerrainWorldDebuggerComponent::OnTerrainDataChanged(const AZ::Aabb& dirtyRegion, TerrainDataChangedMask dataChangedMask)
     {
-        if (dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData))
+        m_lastDirtyRegion = dirtyRegion;
+        m_lastDirtyData = dataChangedMask;
+
+        if ((dataChangedMask & (TerrainDataChangedMask::Settings | TerrainDataChangedMask::HeightData)) != TerrainDataChangedMask::None)
         {
             MarkDirtySectors(dirtyRegion);
-        }
 
-        if (dataChangedMask & TerrainDataChangedMask::Settings)
-        {
             // Any time the world bounds potentially changes, notify that the terrain debugger's visibility bounds also changed.
             AzFramework::IEntityBoundsUnionRequestBus::Broadcast(
                 &AzFramework::IEntityBoundsUnionRequestBus::Events::RefreshEntityLocalBoundsUnion, GetEntityId());

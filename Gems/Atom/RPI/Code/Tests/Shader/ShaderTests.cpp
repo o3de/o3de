@@ -92,7 +92,7 @@ namespace UnitTest
     {
     public:
         AZ_RTTI(TestShaderStageFunction, "{1BAEE536-96CA-4AEB-BA73-D5D72EE35B45}", AZ::RHI::ShaderStageFunction);
-        AZ_CLASS_ALLOCATOR(ShaderStageFunction, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestShaderStageFunction, AZ::SystemAllocator)
 
         static void Reflect(AZ::ReflectContext* context)
         {
@@ -300,7 +300,7 @@ namespace UnitTest
             srgLayout->SetName(srgId);
             srgLayout->SetBindingSlot(aznumeric_caster(index));
             srgLayout->AddShaderInput(RHI::ShaderInputBufferDescriptor{
-                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index) });
+                srgId, RHI::ShaderInputBufferAccess::Read, RHI::ShaderInputBufferType::Raw, 1, 4, static_cast<uint32_t>(index), static_cast<uint32_t>(index)});
 
             EXPECT_TRUE(srgLayout->Finalize());
 
@@ -311,7 +311,7 @@ namespace UnitTest
         {
             Name srgId = CreateShaderResourceGroupId(index);
             AZ::RHI::ShaderResourceGroupBindingInfo bindingInfo;
-            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index)} });
+            bindingInfo.m_resourcesRegisterMap.insert({ srgId, RHI::ResourceBindingInfo{RHI::ShaderStageMask::Vertex, static_cast<uint32_t>(index), static_cast<uint32_t>(index)} });
             return bindingInfo;
         }
 
@@ -345,16 +345,15 @@ namespace UnitTest
             while (nextValue != optionValues.end() &&
                 nextOption != m_shaderOptionGroupLayoutForVariants->GetShaderOptions().end())
             {
-                AZStd::string optionNameStr(nextOption->GetName().GetCStr());
                 if (nextValue->empty())
                 {
                     // TODO (To consider) If we decide to support gaps (unqualified options) in the lookup key
                     //  we can actually remove this check
-                    variantInfo.m_options[optionNameStr] = nextOption->GetDefaultValue().GetCStr();
+                    variantInfo.m_options[nextOption->GetName()] = nextOption->GetDefaultValue();
                 }
                 else
                 {
-                    variantInfo.m_options[optionNameStr] = *nextValue;
+                    variantInfo.m_options[nextOption->GetName()] = Name{*nextValue};
                 }
                 nextValue++;
                 nextOption++;
@@ -1290,6 +1289,26 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION_NO_COUNT;
 
         EXPECT_FALSE(shaderVariantTreeAsset);
+    }
+
+    TEST_F(ShaderTests, ShaderAsset_DefaultShaderOptions)
+    {
+        using namespace AZ;
+               
+        RPI::ShaderAssetCreator creator;
+        BeginCreatingTestShaderAsset(creator);
+        // Override two of the default values. The others will maintain the default value from the shader options layout, see SetUp().
+        creator.SetShaderOptionDefaultValue(Name{"Quality"}, Name{"Quality::Average"});
+        creator.SetShaderOptionDefaultValue(Name{"Raytracing"}, Name{"On"});
+        Data::Asset<RPI::ShaderAsset> shaderAssetWithShaderOptionOverrides = EndCreatingTestShaderAsset(creator);
+
+        // These options were overridden
+        EXPECT_EQ(3, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Quality"}).GetIndex());
+        EXPECT_EQ(1, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Raytracing"}).GetIndex());
+
+        // These options maintain their original default values
+        EXPECT_EQ(13, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"Color"}).GetIndex());
+        EXPECT_EQ(50, shaderAssetWithShaderOptionOverrides->GetDefaultShaderOptions().GetValue(Name{"NumberSamples"}).GetIndex());
     }
 
     TEST_F(ShaderTests, Shader_Baseline_Test)

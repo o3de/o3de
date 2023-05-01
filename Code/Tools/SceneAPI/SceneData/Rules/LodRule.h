@@ -1,5 +1,3 @@
-#pragma once
-
 /*
  * Copyright (c) Contributors to the Open 3D Engine Project.
  * For complete copyright and license terms please see the LICENSE at the root of this distribution.
@@ -7,6 +5,7 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#pragma once
 
 #include <AzCore/Memory/Memory.h>
 #include <AzCore/std/containers/fixed_vector.h>
@@ -30,7 +29,7 @@ namespace AZ
             {
             public:
                 AZ_RTTI(LodRule, "{6E796AC8-1484-4909-860A-6D3F22A7346F}", DataTypes::ILodRule);
-                AZ_CLASS_ALLOCATOR(LodRule, AZ::SystemAllocator, 0)
+                AZ_CLASS_ALLOCATOR(LodRule, AZ::SystemAllocator)
 
                 SCENE_DATA_API ~LodRule() override = default;
 

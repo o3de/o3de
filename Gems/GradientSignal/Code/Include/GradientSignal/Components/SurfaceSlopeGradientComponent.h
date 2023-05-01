@@ -37,7 +37,7 @@ namespace GradientSignal
             SMOOTH_STEP
         };
 
-        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(SurfaceSlopeGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(SurfaceSlopeGradientConfig, "{691E0F23-37E9-434F-A1D1-E8DE5B4A3405}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_slopeMin = 0.0f;
@@ -61,7 +61,7 @@ namespace GradientSignal
         }
     };
 
-    static const AZ::Uuid SurfaceSlopeGradientComponentTypeId = "{F480A866-6296-4F2D-B97C-E80C7409EF61}";
+    inline constexpr AZ::TypeId SurfaceSlopeGradientComponentTypeId{ "{F480A866-6296-4F2D-B97C-E80C7409EF61}" };
 
     /**
     * Component implementing GradientRequestBus based on slope

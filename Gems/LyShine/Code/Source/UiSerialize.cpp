@@ -497,11 +497,11 @@ namespace UiSerialize
                 ->Field("SerializeString", &AnimationData::m_serializeData);
 
             // deprecate old classes that no longer exist
-            serializeContext->ClassDeprecate("UiCanvasEditor", "{65682E87-B573-435B-88CB-B4C12B71EEEE}");
-            serializeContext->ClassDeprecate("ImageAsset", "{138E471A-F3AE-404A-9075-EDC7488C97FC}");
+            serializeContext->ClassDeprecate("UiCanvasEditor", AZ::Uuid("{65682E87-B573-435B-88CB-B4C12B71EEEE}"));
+            serializeContext->ClassDeprecate("ImageAsset", AZ::Uuid("{138E471A-F3AE-404A-9075-EDC7488C97FC}"));
 
             // Allow loading FontAssets and CanvasAssets with previous Uuid specializations of AZ_TYPE_INFO_SPECIALIZE
-            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", "{D6342379-A5FA-4B18-B890-702C2FE99A5A}",
+            serializeContext->ClassDeprecate("SimpleAssetReference_FontAsset", AZ::Uuid("{D6342379-A5FA-4B18-B890-702C2FE99A5A}"),
                 [](AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& rootElement)
             {
                 AZStd::vector<AZ::SerializeContext::DataElementNode> childNodeElements;

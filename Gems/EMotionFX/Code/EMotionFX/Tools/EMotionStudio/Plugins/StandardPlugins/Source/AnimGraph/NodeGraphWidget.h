@@ -17,10 +17,15 @@
 #include <QPoint>
 #endif
 
+QT_FORWARD_DECLARE_CLASS(QLineEdit)
 QT_FORWARD_DECLARE_CLASS(QPainter)
 
-
 #define NODEGRAPHWIDGET_USE_OPENGL
+
+namespace EMotionFX
+{
+    class AnimGraphNodeGroup;
+}
 
 namespace EMStudio
 {
@@ -60,7 +65,9 @@ namespace EMStudio
 
         QPoint LocalToGlobal(const QPoint& inPoint) const;
         QPoint GlobalToLocal(const QPoint& inPoint) const;
-        QPoint SnapLocalToGrid(const QPoint& inPoint, uint32 cellSize = 10) const;
+
+        static constexpr uint32 s_snapCellSize = 10;
+        QPoint SnapLocalToGrid(const QPoint& inPoint) const;
 
         void CalcSelectRect(QRect& outRect);
 
@@ -154,5 +161,7 @@ namespace EMStudio
         QColor                      m_borderOverwriteColor;
         float                       m_borderOverwriteWidth;
         QString                     m_titleBarText;
+
+        void SelectNodesInGroup(EMotionFX::AnimGraphNodeGroup* nodeGroup);
     };
 } // namespace EMStudio

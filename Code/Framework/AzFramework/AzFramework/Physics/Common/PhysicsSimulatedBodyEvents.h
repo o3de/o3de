@@ -44,6 +44,18 @@ namespace AzPhysics
         //! see OnTriggerEnter
         using OnTriggerExit = AZ::Event<SimulatedBodyHandle, const TriggerEvent&>;
 
+        //! Sync Transform event for simulated bodies.
+        //! When the physics world position of the body is changed, the scene will send a Sync Transform event to tell the receiver to update the entity transform.
+        //! The floating point number passed is the delta time of the physics update (in seconds).
+        using OnSyncTransform = AZ::Event<float>;
+
+        //! Helper to register a Sync Transform Event handler.
+        //! @param sceneHandle A handle to the scene that owns the simulated body.
+        //! @param bodyHandle A handle to the simulated body.
+        //! @param handler The handle to register.
+        void RegisterOnSyncTransformHandler(
+            AzPhysics::SceneHandle sceneHandle, AzPhysics::SimulatedBodyHandle bodyHandle, OnSyncTransform::Handler& handler);
+
         //! Helper to register a Collision Event handler.
         //! @param sceneHandle A handle to the scene that owns the simulated body.
         //! @param bodyHandle A handle to the simulated body.

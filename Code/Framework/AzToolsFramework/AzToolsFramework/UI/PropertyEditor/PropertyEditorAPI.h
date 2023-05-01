@@ -13,7 +13,6 @@
 #include <AzCore/Math/Uuid.h>
 #include <AzCore/RTTI/RTTI.h>
 #include <AzCore/EBus/EBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Component/ComponentBus.h>
 #include "PropertyEditorAPI_Internals.h"
 #include <AzToolsFramework/UI/DocumentPropertyEditor/PropertyHandlerWidget.h>
@@ -21,6 +20,11 @@
 class QWidget;
 class QCheckBox;
 class QLabel;
+
+namespace AZ
+{
+    class SerializeContext;
+}
 
 namespace AzToolsFramework
 {
@@ -142,7 +146,9 @@ namespace AzToolsFramework
         // Invoked by widgets to notify the property editor that the editing session has finished
         // This can be used to end an undo batch operation
         virtual void OnEditingFinished([[maybe_unused]] QWidget* editorGUI) {}
-    }; 
+    };
+
+    using PropertyEditorGUIMessagesBus = AZ::EBus<PropertyEditorGUIMessages>;
 
     // A GenericPropertyHandler may be used to register a widget for a property handler ID that is always used, regardless of the underlying
     // type This is useful for UI elements that don't have any specific underlying storage, like buttons
@@ -221,9 +227,9 @@ namespace AzToolsFramework
             return true;
         }
 
-        const AZ::Uuid& GetHandledType() const override
+        AZ::TypeId GetHandledType() const override
         {
-            return nullUuid;
+            return {};
         }
 
         void WriteGUIValuesIntoProperty_Internal(QWidget* widget, InstanceDataNode* node) override
@@ -234,9 +240,8 @@ namespace AzToolsFramework
             }
         }
 
-        void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext* serializeContext) override
+        void WriteGUIValuesIntoTempProperty_Internal(QWidget* widget, void* tempValue, const AZ::Uuid& propertyType, AZ::SerializeContext*) override
         {
-            (void)serializeContext;
             WriteGUIValuesIntoProperty(0, reinterpret_cast<WidgetType*>(widget), tempValue, propertyType);
         }
 
@@ -253,8 +258,6 @@ namespace AzToolsFramework
             }
         }
 
-        // Needed since GetHandledType returns a reference
-        AZ::Uuid nullUuid = AZ::Uuid::CreateNull();
         PropertyEditorToolsSystemInterface::PropertyHandlerId m_registeredDpeHandlerId = PropertyEditorToolsSystemInterface::InvalidHandlerId;
     };
 
@@ -288,6 +291,8 @@ namespace AzToolsFramework
         // you probably don't need to use this, but you can.  Given a name and type it will return the property handler responsible were that type and name
         virtual PropertyHandlerBase* ResolvePropertyHandler(AZ::u32 handlerName, const AZ::Uuid& handlerType) = 0;
     };
+
+    using PropertyTypeRegistrationMessageBus = AZ::EBus<PropertyTypeRegistrationMessages>;
 
     /**
      * Events/bus for listening externally for property changes on a specific entity.

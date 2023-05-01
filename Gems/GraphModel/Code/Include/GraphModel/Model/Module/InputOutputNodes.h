@@ -25,6 +25,7 @@ namespace GraphModel
     class BaseInputOutputNode : public Node
     {
     public:
+        AZ_CLASS_ALLOCATOR(BaseInputOutputNode, AZ::SystemAllocator)
         AZ_RTTI(BaseInputOutputNode, "{C54F11AE-3151-44D7-B206-9206FA888963}", Node);
 
         static void Reflect(AZ::ReflectContext* context);

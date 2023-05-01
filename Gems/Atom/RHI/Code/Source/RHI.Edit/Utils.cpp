@@ -19,11 +19,11 @@
 #include <AzCore/IO/SystemFile.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/std/string/regex.h>
+#include <AzCore/Math/Sha1.h>
 #include <AzCore/Platform.h>
+#include <AzCore/std/time.h>
 
 #include <AzFramework/StringFunc/StringFunc.h>
-
-#include <md5.h>
 
 namespace AZ
 {
@@ -108,7 +108,7 @@ namespace AZ
         AZStd::string PrependFile(PrependArguments& arguments)
         {
             static const char* executableFolder = nullptr;
-            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string> 
+            const auto AsAbsolute = [](const AZStd::string& localFile) -> AZStd::optional<AZStd::string>
             {
                 if (!AzFramework::StringFunc::Path::IsRelative(localFile.c_str()))
                 {
@@ -155,7 +155,12 @@ namespace AZ
                 AZ_Error(ShaderPlatformInterfaceName, false, "%s", prependFileLoadResult.GetError().c_str());
                 return arguments.m_sourceFile;
             }
-            
+            else if (!prependFileLoadResult.GetValue().ends_with("\n"))
+            {
+                // Add new line to prepend file if not present
+                prependFileLoadResult.GetValue() += "\n";
+            }
+
             auto sourceFileAbsolutePath = AsAbsolute(arguments.m_sourceFile);
             if (!sourceFileAbsolutePath)
             {
@@ -189,6 +194,9 @@ namespace AZ
             }
             combinedFile += (arguments.m_addSuffixToFileName ? "." + AZStd::string{ arguments.m_addSuffixToFileName } : "") + ".prepend";
 
+            // Make sure the slashes face the right way, so when this command line shows up in a log, the user can easily copy and paste the path.
+            AzFramework::StringFunc::Path::Normalize(combinedFile);
+
             if (arguments.m_destinationStringOpt)
             {
                 *arguments.m_destinationStringOpt = prependFileLoadResult.GetValue().c_str();
@@ -211,11 +219,11 @@ namespace AZ
 
             if (arguments.m_digest)  // if the function's caller requested to compute a digest, let's hash the content and store it in the digest array.
             {            // this is useful for lld/pdb file naming (shader debug symbols) because it's the automatically recognized scheme by PIX and alike.
-                MD5Context md5;
-                MD5Init(&md5);
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
-                MD5Update(&md5, reinterpret_cast<unsigned char*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
-                MD5Final(*arguments.m_digest, &md5);
+                
+                AZ::Sha1 hasher;
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(prependFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(prependFileLoadResult.GetValue().size()));
+                hasher.ProcessBytes(reinterpret_cast<AZStd::byte*>(sourceFileLoadResult.GetValue().data()), aznumeric_cast<unsigned>(sourceFileLoadResult.GetValue().size()));
+                hasher.GetDigest((reinterpret_cast<AZ::Sha1::DigestType>(*arguments.m_digest)));
             }
 
             return combinedFile;
@@ -281,8 +289,8 @@ namespace AZ
             auto pumpOuputStreams = [&watcherPtr, &errorMessages]()
             {
                 auto communicator = watcherPtr->GetCommunicator();
-                
-                // Instead of collecting all the output in a giant string, it would be better to report 
+
+                // Instead of collecting all the output in a giant string, it would be better to report
                 // the chunks of messages as they arrive, but this should be good enough for now.
                 if (auto byteCount = communicator->PeekError())
                 {
@@ -369,6 +377,11 @@ namespace AZ
 
         bool ReportMessages([[maybe_unused]] AZStd::string_view window, AZStd::string_view errorMessages, bool reportAsErrors)
         {
+            if (errorMessages.empty())
+            {
+                return false;
+            }
+
             if (reportAsErrors)
             {
                 AZ_Error(window.data(), false, "%.*s", aznumeric_cast<int>(errorMessages.size()), errorMessages.data());
@@ -422,7 +435,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(text));
         }
 
@@ -442,7 +455,7 @@ namespace AZ
             {
                 return AZ::Failure(AZStd::string::format("Failed to load file '%s'.", path));
             }
-            
+
             return AZ::Success(AZStd::move(bytes));
         }
 
@@ -467,7 +480,7 @@ namespace AZ
             } while (searchFrom != text.end());
             return count;
         }
-    
+
         AZStd::string BuildFileNameWithExtension(const AZStd::string& shaderSourceFile,
                                                                    const AZStd::string& tempFolder,
                                                                    const char* outputExtension)

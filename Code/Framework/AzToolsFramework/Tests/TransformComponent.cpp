@@ -32,18 +32,12 @@ namespace UnitTest
 {
     // Fixture base class for AzFramework::TransformComponent tests.
     class TransformComponentApplication
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
     {
-    public:
-        TransformComponentApplication()
-            : AllocatorsFixture()
-        {
-        }
-
     protected:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
             ComponentApplication::Descriptor desc;
             desc.m_useExistingAllocator = true;
 
@@ -58,7 +52,7 @@ namespace UnitTest
         void TearDown() override
         {
             m_app.Stop();
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         AzFramework::Application m_app;
@@ -978,7 +972,7 @@ namespace UnitTest
 
     // Fixture base class for AzToolsFramework::Components::TransformComponent tests
     class OldEditorTransformComponentTest
-        : public ::testing::Test
+        : public UnitTest::LeakDetectionFixture
     {
     protected:
         void SetUp() override
@@ -1075,13 +1069,11 @@ R"DELIMITER(<ObjectStream version="1">
         void SetUpEditorFixtureImpl() override
         {
             PrefabTestFixture::SetUpEditorFixtureImpl();
-
-            CreateRootPrefab();
         }
 
         void TearDownEditorFixtureImpl() override
         {
-            BusDisconnect();
+            AZ::TransformNotificationBus::Handler::BusDisconnect();
             
             PrefabTestFixture::TearDownEditorFixtureImpl();
         }
@@ -1102,10 +1094,10 @@ R"DELIMITER(<ObjectStream version="1">
     
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsSentWhenEntityIsActivatedViaUndoRedo)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
         MoveEntity(entityId);
         ProcessDeferredUpdates();
-        BusConnect(entityId);
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that undoing/redoing move operations fires TransformChanged event
         Undo();
@@ -1119,8 +1111,8 @@ R"DELIMITER(<ObjectStream version="1">
 
     TEST_F(TransformComponentActivationTest, TransformChangedEventIsNotSentWhenEntityIsDeactivatedAndActivated)
     {
-        AZ::EntityId entityId = CreateEntityUnderRootPrefab("Entity");
-        BusConnect(entityId);
+        AZ::EntityId entityId = CreateEditorEntityUnderRoot("Entity");
+        AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
         // verify that simply activating/deactivating an entity does not fire TransformChanged event
         Entity* entity = nullptr;

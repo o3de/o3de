@@ -19,7 +19,7 @@
 
 namespace AzPhysics
 {
-    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBody, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(SimulatedBody, AZ::SystemAllocator);
 
     namespace Internal
     {
@@ -168,6 +168,11 @@ namespace AzPhysics
         }
     }
 
+    void SimulatedBody::SyncTransform(float deltaTime) const
+    {
+        m_syncTransformEvent.Signal(deltaTime);
+    }
+
     Scene* SimulatedBody::GetScene()
     {
         if (auto* physicsSystem = AZ::Interface<SystemInterface>::Get())
@@ -200,5 +205,10 @@ namespace AzPhysics
     SimulatedBodyEvents::OnTriggerExit* SimulatedBody::GetOnTriggerExitEvent()
     {
         return &m_triggerExitEvent;
+    }
+
+    SimulatedBodyEvents::OnSyncTransform* SimulatedBody::GetOnSyncTransformEvent()
+    {
+        return &m_syncTransformEvent;
     }
 }

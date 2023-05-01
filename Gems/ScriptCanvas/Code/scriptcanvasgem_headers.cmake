@@ -16,6 +16,8 @@ set(FILES
     Include/ScriptCanvas/Asset/ExecutionLogAssetBus.h
     Include/ScriptCanvas/Asset/RuntimeAsset.h
     Include/ScriptCanvas/Asset/RuntimeAssetHandler.h
+    Include/ScriptCanvas/Asset/RuntimeInputs.h
+    Include/ScriptCanvas/Asset/SubgraphInterfaceAsset.h
     Include/ScriptCanvas/Asset/SubgraphInterfaceAssetHandler.h
     Include/ScriptCanvas/Core/ScriptCanvasBus.h
     Include/ScriptCanvas/Core/ExecutionNotificationsBus.h
@@ -57,17 +59,6 @@ set(FILES
     Include/ScriptCanvas/Core/SlotNames.h
     Include/ScriptCanvas/Core/SubgraphInterface.h
     Include/ScriptCanvas/Core/SubgraphInterfaceUtility.h
-    Include/ScriptCanvas/Translation/Configuration.h
-    Include/ScriptCanvas/Translation/GraphToLua.h
-    Include/ScriptCanvas/Translation/GraphToLuaUtility.h
-    Include/ScriptCanvas/Translation/GraphToX.h
-    Include/ScriptCanvas/Translation/Translation.h
-    Include/ScriptCanvas/Translation/TranslationContext.h
-    Include/ScriptCanvas/Translation/TranslationResult.h
-    Include/ScriptCanvas/Translation/TranslationUtilities.h
-    Include/ScriptCanvas/PerformanceStatistician.h
-    Include/ScriptCanvas/PerformanceStatisticsBus.h
-    Include/ScriptCanvas/PerformanceTracker.h
     Include/ScriptCanvas/CodeGen/NodeableCodegen.h
     Include/ScriptCanvas/Core/Contracts/ConnectionLimitContract.h
     Include/ScriptCanvas/Core/Contracts/ContractRTTI.h
@@ -81,10 +72,13 @@ set(FILES
     Include/ScriptCanvas/Core/Contracts/TypeContract.h
     Include/ScriptCanvas/Data/BehaviorContextObject.h
     Include/ScriptCanvas/Data/BehaviorContextObjectPtr.h
+    Include/ScriptCanvas/Data/Constants.h
     Include/ScriptCanvas/Data/Data.h
-    Include/ScriptCanvas/Data/DataMacros.h
     Include/ScriptCanvas/Data/DataRegistry.h
+    Include/ScriptCanvas/Data/DataTrait.h
     Include/ScriptCanvas/Data/NumericData.h
+    Include/ScriptCanvas/Data/PropertyTraits.h
+    Include/ScriptCanvas/Data/Traits.h
     Include/ScriptCanvas/Deprecated/VariableDatumBase.h
     Include/ScriptCanvas/Deprecated/VariableDatum.h
     Include/ScriptCanvas/Deprecated/VariableHelpers.h
@@ -123,10 +117,6 @@ set(FILES
     Include/ScriptCanvas/Grammar/PrimitivesDeclarations.h
     Include/ScriptCanvas/Grammar/PrimitivesExecution.h
     Include/ScriptCanvas/Grammar/SymbolNames.h
-    Include/ScriptCanvas/Execution/ErrorBus.h
-    Include/ScriptCanvas/Execution/ExecutionContext.h
-    Include/ScriptCanvas/Execution/ExecutionBus.h
-    Include/ScriptCanvas/Execution/RuntimeComponent.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.h
     Include/ScriptCanvas/Internal/Nodeables/BaseTimer.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Internal/Nodes/BaseTimerNode.h
@@ -135,13 +125,11 @@ set(FILES
     Include/ScriptCanvas/Internal/Nodes/ExpressionNodeBase.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.h
     Include/ScriptCanvas/Internal/Nodes/StringFormatted.ScriptCanvasGrammar.xml
-    Include/ScriptCanvas/Grammar/AbstractCodeModel.h
     Include/ScriptCanvas/Libraries/Libraries.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.h
     Include/ScriptCanvas/Libraries/Core/AzEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/BinaryOperator.h
     Include/ScriptCanvas/Libraries/Core/CoreLibrary.h
-    Include/ScriptCanvas/Libraries/Core/ContainerTypeReflection.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.h
     Include/ScriptCanvas/Libraries/Core/EBusEventHandler.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Core/ExtractProperty.h
@@ -342,9 +330,9 @@ set(FILES
     Include/ScriptCanvas/Libraries/Time/RepeaterNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.h
     Include/ScriptCanvas/Libraries/Time/TimerNodeable.ScriptCanvasNodeable.xml
-    Include/ScriptCanvas/Libraries/Spawning/SpawningLibrary.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/CreateSpawnTicketNodeable.ScriptCanvasNodeable.xml
+    Include/ScriptCanvas/Libraries/Spawning/SpawningData.ScriptCanvasData.xml
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.h
     Include/ScriptCanvas/Libraries/Spawning/SpawnNodeable.ScriptCanvasNodeable.xml
     Include/ScriptCanvas/Libraries/Spawning/DespawnNodeable.h
@@ -373,13 +361,21 @@ set(FILES
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorSub.ScriptCanvasGrammar.xml
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeable.h
     Include/ScriptCanvas/Libraries/Operators/Math/OperatorLerpNodeableNode.h
+    Include/ScriptCanvas/PerformanceStatistician.h
+    Include/ScriptCanvas/PerformanceStatisticsBus.h
+    Include/ScriptCanvas/PerformanceTracker.h
     Include/ScriptCanvas/Results/ErrorText.h
     Include/ScriptCanvas/Serialization/BehaviorContextObjectSerializer.h
     Include/ScriptCanvas/Serialization/DatumSerializer.h
     Include/ScriptCanvas/Serialization/RuntimeVariableSerializer.h
-    Include/ScriptCanvas/Data/DataTrait.h
-    Include/ScriptCanvas/Data/PropertyTraits.h
-    Include/ScriptCanvas/Data/Traits.h
+    Include/ScriptCanvas/Translation/Configuration.h
+    Include/ScriptCanvas/Translation/GraphToLua.h
+    Include/ScriptCanvas/Translation/GraphToLuaUtility.h
+    Include/ScriptCanvas/Translation/GraphToX.h
+    Include/ScriptCanvas/Translation/Translation.h
+    Include/ScriptCanvas/Translation/TranslationContext.h
+    Include/ScriptCanvas/Translation/TranslationResult.h
+    Include/ScriptCanvas/Translation/TranslationUtilities.h
     Include/ScriptCanvas/Variable/VariableBus.h
     Include/ScriptCanvas/Variable/GraphVariable.h
     Include/ScriptCanvas/Variable/GraphVariableManagerComponent.h
@@ -389,8 +385,8 @@ set(FILES
     Include/ScriptCanvas/Utils/NodeUtils.h
     Include/ScriptCanvas/Utils/SerializationUtils.h
     Include/ScriptCanvas/Utils/VersionConverters.h
+    Include/ScriptCanvas/Utils/VersioningUtils.h
     Include/ScriptCanvas/Utils/BehaviorContextUtils.h
-    Include/ScriptCanvas/Utils/ReplacementUtils.h
     Include/ScriptCanvas/Utils/ScriptCanvasConstants.h
 )
 

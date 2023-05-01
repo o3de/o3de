@@ -3,33 +3,33 @@
     "version": 1,
     "propertyLayout": {
         "properties": {
+            // TODO(MaterialPipeline): Maybe we should make a way for the .materialtype to set shader options and internal properties directly without having to define material properties.
             "general": [
                 {
-                    "name": "texcoord",
-                    "displayName": "Texture Coordinate Stream",
-                    "description": "Which UV channel to use when sampling textures.",
-                    "type": "Int",
-                    "defaultValue": 0,
-                    "min": 0,
-                    "max": 8
-                },
-                {
                     "name": "enableShadows",
-                    "displayName": "Enable Shadows",
-                    "description": "Whether to use the shadow maps.",
                     "type": "Bool",
                     "defaultValue": false,
+                    "visibility": "Hidden",
                     "connection": {
                         "type": "ShaderOption",
                         "name": "o_enableShadows"
                     }
                 },
                 {
-                    "name": "enableDirectionalLights",
-                    "displayName": "Enable Directional Lights",
-                    "description": "Whether to use directional lights.",
+                    "name": "castShadows",
                     "type": "Bool",
                     "defaultValue": false,
+                    "visibility": "Hidden",
+                    "connection": {
+                        "type": "InternalProperty",
+                        "name": "castShadows"
+                    }
+                },
+                {
+                    "name": "enableDirectionalLights",
+                    "type": "Bool",
+                    "defaultValue": false,
+                    "visibility": "Hidden",
                     "connection": {
                         "type": "ShaderOption",
                         "name": "o_enableDirectionalLights"
@@ -37,10 +37,9 @@
                 },
                 {
                     "name": "enablePunctualLights",
-                    "displayName": "Enable Punctual Lights",
-                    "description": "Whether to use punctual lights.",
                     "type": "Bool",
                     "defaultValue": false,
+                    "visibility": "Hidden",
                     "connection": {
                         "type": "ShaderOption",
                         "name": "o_enablePunctualLights"
@@ -48,10 +47,9 @@
                 },
                 {
                     "name": "enableAreaLights",
-                    "displayName": "Enable Area Lights",
-                    "description": "Whether to use area lights.",
                     "type": "Bool",
                     "defaultValue": false,
+                    "visibility": "Hidden",
                     "connection": {
                         "type": "ShaderOption",
                         "name": "o_enableAreaLights"
@@ -59,457 +57,17 @@
                 },
                 {
                     "name": "enableIBL",
-                    "displayName": "Enable IBL",
-                    "description": "Whether to use Image Based Lighting (IBL).",
                     "type": "Bool",
                     "defaultValue": true,
+                    "visibility": "Hidden",
                     "connection": {
                         "type": "ShaderOption",
                         "name": "o_enableIBL"
                     }
                 }
-            ],
-            "baseColor": [
-                {
-                    "name": "color",
-                    "displayName": "Color",
-                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 1.0, 1.0 ],
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_baseColor"
-                    }
-                },
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the base color values. Zero (0.0) is black, white (1.0) is full color.",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_baseColorFactor"
-                    }
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Base color texture map",
-                    "type": "Image",
-                    "defaultValue": "Textures/Default/default_basecolor.tif",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_baseColorMap"
-                    }
-                }
-            ],
-            "metallic": [
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "This value is linear, black is non-metal and white means raw metal.",
-                    "type": "Float",
-                    "defaultValue": 0.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_metallicFactor"
-                    }
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_metallicMap"
-                    }
-                }
-            ],
-            "roughness": [
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_roughnessFactor"
-                    }
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface roughness.",
-                    "type": "Image",
-                        "defaultValue": "Textures/Default/default_roughness.tif",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_roughnessMap"
-                    }
-                }
-            ],
-            "specularF0": [
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "The default IOR is 1.5, which gives you 0.04 (4% of light reflected at 0 degree angle for dielectric materials). F0 values lie in the range 0-0.08, so that is why the default F0 slider is set on 0.5.",
-                    "type": "Float",
-                    "defaultValue": 0.5,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_specularF0Factor"
-                    }
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just default to the Factor value.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface reflectance.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_specularF0Map"
-                    }
-                },
-                {
-                    "name": "applySpecularAA",
-                    "displayName": "Apply Specular AA",
-                    "description": "Whether to apply specular anti-aliasing in the shader.",
-                    "type": "Bool",
-                    "defaultValue": true,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "name": "o_applySpecularAA"
-                    }
-                },
-                {
-                    "name": "enableMultiScatterCompensation",
-                    "displayName": "Multiscattering Compensation",
-                    "description": "Whether to enable multiple scattering compensation.",
-                    "type": "Bool",
-                    "connection": {
-                        "type": "ShaderOption",
-                        "name": "o_specularF0_enableMultiScatterCompensation"
-                    }
-                }
-            ],
-            "normal": [
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the values",
-                    "type": "Float",
-                    "defaultValue": 1.0,
-                    "min": 0.0,
-                    // "softMax": [GFX TODO] replace this max with a softMax to allow a slider but have an arbitrarily high range
-                    "max": 2.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_normalFactor"
-                    }
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map, or just rely on vertex normals.",
-                    "type": "Bool",
-                    "defaultValue": true
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface normal direction.",
-                    "type": "Image",
-                    "defaultValue": "Textures/Default/default_normal.tif",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_normalMap"
-                    }
-                },
-                {
-                    "name": "flipX",
-                    "displayName": "Flip X Channel",
-                    "description": "Flip tangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_flipNormalX"
-                    }
-                },
-                {
-                    "name": "flipY",
-                    "displayName": "Flip Y Channel",
-                    "description": "Flip bitangent direction for this normal map.",
-                    "type": "Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_flipNormalY"
-                    }
-                }
-            ],
-            "opacity": [
-                {
-                    "name": "mode",
-                    "displayName": "Opacity Mode",
-                    "description": "Opacity mode for this texture. 0: Opaque, 1: Cutout, 2:Blended",
-                    "type": "Uint",
-                    "defaultValue": 0,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "name": "o_opacity_mode"
-                    }
-                },
-                {
-                    "name": "alphaSource",
-                    "displayName": "Alpha Source",
-                    "description": "Source texture of alpha value. 0:Packed, 1:Split, 2:None",
-                    "type": "Uint",
-                    "defaultValue": 0,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "name": "o_opacity_source"
-                    }
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining surface opacity.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_opacityMap"
-                    }
-                },
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "Factor for cutout threshold and blending",
-                    "type": "Float",
-                    "min": 0.001,
-                    "max": 1.0,
-                    "defaultValue": 0.5,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_opacityFactor"
-                    }
-                },
-                {
-                    "name": "doubleSided",
-                    "displayName": "Double-sided",
-                    "description": "Whether to render back-faces or just front-faces.",
-                    "type": "Bool"
-                }
-            ],
-            "uv": [
-                {
-                    "name": "center",
-                    "displayName": "Center",
-                    "description": "Center point for scaling and rotation transformations.",
-                    "type": "vector2",
-                    "defaultValue": [0.0, 0.0]
-                },
-                {
-                    "name": "tileU",
-                    "displayName": "Tile U",
-                    "description": "Scales texture coordinates in V.",
-                    "type": "float",
-                    "defaultValue": 1.0,
-                    "step": 0.1
-                },
-                {
-                    "name": "tileV",
-                    "displayName": "Tile V",
-                    "description": "Scales texture coordinates in V.",
-                    "type": "float",
-                    "defaultValue": 1.0,
-                    "step": 0.1
-                },
-                {
-                    "name": "offsetU",
-                    "displayName": "Offset U",
-                    "description": "Offsets texture coordinates in the U direction.",
-                    "type": "float",
-                    "defaultValue": 0.0,
-                    "min": -1.0,
-                    "max": 1.0
-                },
-                {
-                    "name": "offsetV",
-                    "displayName": "Offset V",
-                    "description": "Offsets texture coordinates in the V direction.",
-                    "type": "float",
-                    "defaultValue": 0.0,
-                    "min": -1.0,
-                    "max": 1.0
-                },
-                {
-                    "name": "rotateDegrees",
-                    "displayName": "Rotate",
-                    "description": "Rotates the texture coordinates (degrees).",
-                    "type": "float",
-                    "defaultValue": 0.0,
-                    "min": -180.0,
-                    "max": 180.0,
-                    "step": 1.0 
-                },
-                {
-                    "name": "scale",
-                    "displayName": "Scale",
-                    "description": "Scales texture coordinates in both U and V.",
-                    "type": "float",
-                    "defaultValue": 1.0,
-                    "step": 0.1
-                }
-            ],
-            "emissive": [
-                {
-                    "name": "enable",
-                    "displayName": "Enable",
-                    "description": "Enable the emissive group",
-                    "type":"Bool",
-                    "defaultValue": false,
-                    "connection": {
-                        "type": "ShaderOption",
-                        "name": "o_emissiveEnabled"
-                    }
-                },
-                {
-                    "name": "color",
-                    "displayName": "Color",
-                    "description": "Color is displayed as sRGB but the values are stored as linear color.",
-                    "type": "Color",
-                    "defaultValue": [ 1.0, 1.0, 1.0 ],
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_emissiveColor"
-                    }
-                },
-                {
-                    "name": "intensity",
-                    "displayName": "Intensity",
-                    "description": "The amount of energy emitted, in EV100 unit",
-                    "type": "Float",
-                    "defaultValue": 0,
-                    "min": -5,
-                    "max": 5
-                },
-                {
-                    "name": "useTexture",
-                    "displayName": "Use Texture",
-                    "description": "Whether to use the texture map.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Texture map for defining emissive area.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_emissiveMap"
-                    }
-                }
-            ],
-            "parallax": [
-                {
-                    "name": "enable",
-                    "displayName": "Enable",
-                    "description": "Whether to enable the parallax feature.",
-                    "type": "Bool",
-                    "defaultValue": false
-                },
-                {
-                    "name": "factor",
-                    "displayName": "Factor",
-                    "description": "Strength factor for scaling the depth values",
-                    "type": "Float",
-                    "defaultValue": 0.0,
-                    "min": 0.0,
-                    "max": 1.0,
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_heightmapScale"
-                    }
-                },
-                {
-                    "name": "textureMap",
-                    "displayName": "Texture Map",
-                    "description": "Depthmap to create parallax effect.",
-                    "type": "Image",
-                    "connection": {
-                        "type": "ShaderInput",
-                        "name": "m_heightmap"
-                    }
-                },
-                {
-                    "name": "algorithm",
-                    "displayName": "Algorithm",
-                    "description": "Select the algorithm to use for parallax mapping. 0: Basic, 1:Steep, 2:POM, 3:Relief, 4:Contact refinement",
-                    "type": "Uint",
-                    "defaultValue": 0,
-                    "connection":{
-                        "type": "ShaderOption",
-                        "name": "o_parallax_algorithm"
-                    }
-                },
-                {
-                    "name": "quality",
-                    "displayName": "Quality",
-                    "description": "Quality of parallax mapping. 0:Low, 1:Medium, 2:High, 3:Ultra",
-                    "type": "Uint",
-                    "defaultValue": 0,
-                    "connection":{
-                        "type": "ShaderOption",
-                        "name": "o_parallax_quality"
-                    }
-                }
             ]
         }
     },
-    "shaders": [
-        {
-            "file": "../Types/StandardPBR_ForwardPass.shader"
-        }
-    ]
+    "lightingModel": "Base",
+    "materialShaderCode": "ReflectionProbeVisualization.azsli"
 }

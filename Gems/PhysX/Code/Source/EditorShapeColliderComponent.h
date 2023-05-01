@@ -83,6 +83,10 @@ namespace PhysX
         virtual const Physics::ColliderConfiguration& GetColliderConfiguration() const;
         virtual const AZStd::vector<AZStd::shared_ptr<Physics::ShapeConfiguration>>& GetShapeConfigurations() const;
 
+        //! Returns a collider configuration with the entity scale applied to the collider position.
+        //! Non-uniform scale is not applied here, because it is already stored in the collider position.
+        Physics::ColliderConfiguration GetColliderConfigurationScaled() const;
+
         // EditorComponentBase
         void BuildGameEntity(AZ::Entity* gameEntity) override;
     private:
@@ -92,16 +96,15 @@ namespace PhysX
         void UpdateShapeConfigs();
         void UpdateBoxConfig(const AZ::Vector3& scale);
         void UpdateQuadConfig(const AZ::Vector3& scale);
-        void UpdateCapsuleConfig(const AZ::Vector3& scale);
-        void UpdateSphereConfig(const AZ::Vector3& scale);
-        void UpdateCylinderConfig(const AZ::Vector3& scale);
+        void UpdateCapsuleConfig(const float scale);
+        void UpdateSphereConfig(const float scale);
+        void UpdateCylinderConfig(const float scale);
         void UpdatePolygonPrismDecomposition();
         void UpdatePolygonPrismDecomposition(const AZ::PolygonPrismPtr polygonPrismPtr);
 
         // Helper function to set a specific shape configuration
         template<typename ConfigType>
         void SetShapeConfig(ShapeType shapeType, const ConfigType& shapeConfig);
-
         void RefreshUiProperties();
 
         AZ::u32 OnSubdivisionCountChange();
@@ -145,6 +148,7 @@ namespace PhysX
 
         void UpdateTriggerSettings();
         void UpdateSingleSidedSettings();
+        void UpdateTranslationOffset();
 
         Physics::ColliderConfiguration m_colliderConfig; //!< Stores collision layers, whether the collider is a trigger, etc.
         DebugDraw::Collider m_colliderDebugDraw; //!< Handles drawing the collider based on global and local

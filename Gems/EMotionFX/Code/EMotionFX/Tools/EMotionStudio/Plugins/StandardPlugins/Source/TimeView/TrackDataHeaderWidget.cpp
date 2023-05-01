@@ -37,7 +37,6 @@
 #include <EMotionFX/Source/MotionManager.h>
 #include <EMotionFX/Source/AnimGraphManager.h>
 #include <EMotionFX/CommandSystem/Source/MotionEventCommands.h>
-#include "../MotionEvents/MotionEventsPlugin.h"
 #include "../../../../EMStudioSDK/Source/EMStudioManager.h"
 #include "../../../../EMStudioSDK/Source/MainWindow.h"
 
@@ -159,7 +158,7 @@ namespace EMStudio
         painter.setPen(m_plugin->m_penCurTimeHandle);
         painter.drawLine(QPointF(curTimeX, startHeight), QPointF(curTimeX, rect.bottom()));
     }
-        
+
     void TrackDataHeaderWidget::mouseDoubleClickEvent(QMouseEvent* event)
     {
         if (event->button() != Qt::LeftButton)
@@ -480,7 +479,7 @@ namespace EMStudio
             m_plugin->OnKeyReleaseEvent(event);
         }
     }
-    
+
     // draw the time line
     void TrackDataHeaderWidget::DrawTimeLine(QPainter& painter, const QRect& rect)
     {

@@ -18,11 +18,14 @@ This module manages a predefined set of prefs for maya
 # -- Standard Python modules
 import os
 import sys
+import logging as _logging
+
 # -- External Python modules
+# none
 
 # -- DCCsi Extension Modules
-import azpy
-from azpy.constants import *
+import DccScriptingInterface.azpy
+from DccScriptingInterface.azpy.constants import *
 
 # -- maya imports
 import maya.cmds as mc
@@ -32,28 +35,23 @@ import maya.mel as mm
 
 
 # -------------------------------------------------------------------------
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-from azpy.constants import ENVAR_DCCSI_DEV_MODE
+#  global scope
+from DccScriptingInterface.Tools.DCC.Maya import _PACKAGENAME
+_MODULENAME = f'{_PACKAGENAME}.set_defaults'
+_LOGGER = _logging.getLogger(_MODULENAME)
+_LOGGER.info(f'Initializing: {_MODULENAME}')
 
-#  global space
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
-_DCCSI_DEV_MODE = env_bool(ENVAR_DCCSI_DEV_MODE, False)
-
-_MODULENAME = r'DCCsi.SDK.Maya.Scripts.set_defaults'
-
-_LOGGER = azpy.initialize_logger(_MODULENAME, default_log_level=int(20))
-_LOGGER.debug('Invoking:: {0}.'.format({_MODULENAME}))
+from DccScriptingInterface.globals import *
 # -------------------------------------------------------------------------
 
 
 # -------------------------------------------------------------------------
 def set_defaults(units='meter'):
-    """This method will make defined settings changes to Maya prefs, 
+    """This method will make defined settings changes to Maya prefs,
     to better configure maya to work with Lumberyard"""
     # To Do: make this data-driven env/settings, game teams should be able
     # to opt out and/or set their prefered configuration.
-    
+
     _LOGGER.debug('set_defaults_lumberyard() fired')
 
     # set up default units ... this should be moved to bootstrap config
@@ -77,7 +75,7 @@ def set_defaults(units='meter'):
         mc.viewFit()
     except Exception as e:
         _LOGGER.warning('{0}'.format(e))
-        
+
     # some mel commands
     _LOGGER.info('Changing sersp camera clipping planes')
     try:

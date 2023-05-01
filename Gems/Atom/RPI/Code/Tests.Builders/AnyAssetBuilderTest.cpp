@@ -8,6 +8,7 @@
 
 #include <AzTest/AzTest.h>
 
+#include <AzCore/IO/Streamer/FileRequest.h>
 #include <AzCore/Serialization/ObjectStream.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/Serialization/Utils.h>
@@ -31,7 +32,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(Test1, "{A3369968-6E98-4319-A4CA-A0E2CF9F2E7C}");
-        AZ_CLASS_ALLOCATOR(Test1, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Test1, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -55,7 +56,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(Test2Source, "{D472B405-F688-4EAF-A361-D8D1C63E303D}");
-        AZ_CLASS_ALLOCATOR(Test2Source, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Test2Source, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -83,7 +84,7 @@ namespace UnitTest
         : public Data::AssetData
     {
     public:
-        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetData, AZ::SystemAllocator);
         AZ_RTTI(TestAssetData, "{A7D2C40A-2559-4DF7-A308-D52286EE16D8}", Data::AssetData);
     };
 
@@ -92,7 +93,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(TestAssetIdReference, "{87DC6B1E-4660-4AEA-AEE1-6F50EF7FA0D7}");
-        AZ_CLASS_ALLOCATOR(TestAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestAssetIdReference, AZ::SystemAllocator);
 
         virtual ~TestAssetIdReference() = default;
 
@@ -141,7 +142,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(DerivedTestAssetIdReference, "{B5778901-A553-41B2-B411-CF8FBE2B1E10}");
-        AZ_CLASS_ALLOCATOR(DerivedTestAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DerivedTestAssetIdReference, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -159,7 +160,7 @@ namespace UnitTest
     {
     public:
         AZ_TYPE_INFO(TestIndirectAssetIdReference, "{402D2672-55CD-46B9-9387-E34D6B10F88A}");
-        AZ_CLASS_ALLOCATOR(TestIndirectAssetIdReference, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(TestIndirectAssetIdReference, AZ::SystemAllocator);
 
         static void Reflect(ReflectContext* context)
         {
@@ -224,7 +225,7 @@ namespace UnitTest
 
         // Helper function to generate source AnyAsset and save it to specified folder
         template<typename T>
-        void SaveClassToAnyAssetSourceFile(T& data, const char* saveFileName)
+        void SaveClassToAnyAssetSourceFile(T& data, const AZStd::string& saveFileName)
         {
             JsonSerializationUtils::SaveObjectToFile<T>(&data, saveFileName);
         }
@@ -239,6 +240,19 @@ namespace UnitTest
             stream->Open(assetFile, 0, fileLength);
             stream->BlockUntilLoadComplete();
             m_assetHandler->LoadAssetData(outAsset, stream, {});
+            stream->Close();
+
+            // Force a file streamer flush to ensure that file handles don't remain used
+            auto streamer = AZ::Interface<AZ::IO::IStreamer>::Get();
+            AZStd::binary_semaphore wait;
+            AZ::IO::FileRequestPtr flushRequest = streamer->FlushCaches();
+            streamer->SetRequestCompleteCallback(flushRequest, [&wait]([[maybe_unused]] AZ::IO::FileRequestHandle request)
+                {
+                    wait.release();
+                });
+            streamer->QueueRequest(flushRequest);
+            wait.acquire();
+
             return outAsset;
         }
         
@@ -246,19 +260,23 @@ namespace UnitTest
     
     TEST_F(AnyAssetBuilderTests, ProcessJobBasic)
     {
+        const char* testAssetName = "AnyAssetTest.source";
+        AZ::Test::ScopedAutoTempDirectory productDir;
+        AZ::Test::ScopedAutoTempDirectory sourceDir;
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
+
         // Basic test: test data before and after are same. Test data class doesn't have converter or asset reference.
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request
-        const char* testAssetName = "AnyAssetTest.source";
-        request.m_fullPath = testAssetName;
-        request.m_tempDirPath = m_currentDir;
+        request.m_fullPath = sourceFilePath.Native();
+        request.m_tempDirPath = productDir.GetDirectory();
 
         Test1 test1;
         test1.m_data = "first";
-        SaveClassToAnyAssetSourceFile<Test1>(test1, testAssetName);        
+        SaveClassToAnyAssetSourceFile<Test1>(test1, sourceFilePath.Native());
 
         // Process
         builder.ProcessJob(request, response);
@@ -276,18 +294,22 @@ namespace UnitTest
 
     TEST_F(AnyAssetBuilderTests, ProcessJobConvert)
     {
+        const char* testAssetName = "AnyAssetTest.source";
+        AZ::Test::ScopedAutoTempDirectory productDir;
+        AZ::Test::ScopedAutoTempDirectory sourceDir;
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
+
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request 
-        const char* testAssetName = "AnyAssetTest.source";
-        request.m_fullPath = testAssetName;
-        request.m_tempDirPath = m_currentDir;
+        request.m_fullPath = sourceFilePath.Native();
+        request.m_tempDirPath = productDir.GetDirectory();
         
         // Test data class which has a converter
         Test2Source test2;
-        SaveClassToAnyAssetSourceFile<Test2Source>(test2, testAssetName);
+        SaveClassToAnyAssetSourceFile<Test2Source>(test2, sourceFilePath.Native());
 
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
@@ -300,19 +322,23 @@ namespace UnitTest
 
     TEST_F(AnyAssetBuilderTests, ProcessJobDependencyDirect)
     {
+        const char* testAssetName = "AnyAssetTest.source";
+        AZ::Test::ScopedAutoTempDirectory productDir;
+        AZ::Test::ScopedAutoTempDirectory sourceDir;
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
+
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
             AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request once
-        const char* testAssetName = "AnyAssetTest.source";
-        request.m_fullPath = testAssetName;
-        request.m_tempDirPath = m_currentDir;
+        request.m_fullPath = sourceFilePath.Native();
+        request.m_tempDirPath = productDir.GetDirectory();
 
         // Test class which has asset id and asset reference as member variables
         TestAssetIdReference objectHasAssetIds;
         objectHasAssetIds.Init();
-        SaveClassToAnyAssetSourceFile<TestAssetIdReference>(objectHasAssetIds, testAssetName);
+        SaveClassToAnyAssetSourceFile<TestAssetIdReference>(objectHasAssetIds, sourceFilePath.Native());
         
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);
@@ -325,19 +351,23 @@ namespace UnitTest
         
     TEST_F(AnyAssetBuilderTests, ProcessJobDependencyIndirect)
     {
+        const char* testAssetName = "AnyAssetTest.source";
+        AZ::Test::ScopedAutoTempDirectory productDir;
+        AZ::Test::ScopedAutoTempDirectory sourceDir;
+        AZ::IO::Path sourceFilePath = sourceDir.Resolve(testAssetName);
+
         RPI::AnyAssetBuilder builder;
         AssetBuilderSDK::ProcessJobRequest request;
         AssetBuilderSDK::ProcessJobResponse response;
 
         // Initial job request once
-        const char* testAssetName = "AnyAssetTest.source";
-        request.m_fullPath = testAssetName;
-        request.m_tempDirPath = m_currentDir;
+        request.m_fullPath = sourceFilePath.Native();
+        request.m_tempDirPath = productDir.GetDirectory();
                 
         // Test class includes member which its class has asset id and asset reference as children
         TestIndirectAssetIdReference test4;
         test4.Init();
-        SaveClassToAnyAssetSourceFile<TestIndirectAssetIdReference>(test4, testAssetName);
+        SaveClassToAnyAssetSourceFile<TestIndirectAssetIdReference>(test4, sourceFilePath.Native());
 
         builder.ProcessJob(request, response);
         EXPECT_TRUE(response.m_resultCode == AssetBuilderSDK::ProcessJobResult_Success);

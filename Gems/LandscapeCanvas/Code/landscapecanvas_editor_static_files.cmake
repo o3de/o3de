@@ -122,12 +122,20 @@ set(FILES
     Source/Editor/Nodes/Shapes/SphereShapeNode.h
     Source/Editor/Nodes/Shapes/TubeShapeNode.cpp
     Source/Editor/Nodes/Shapes/TubeShapeNode.h
+    Source/Editor/Nodes/Terrain/PhysXHeightfieldColliderNode.cpp
+    Source/Editor/Nodes/Terrain/PhysXHeightfieldColliderNode.h
     Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.cpp
     Source/Editor/Nodes/Terrain/TerrainHeightGradientListNode.h
     Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.cpp
     Source/Editor/Nodes/Terrain/TerrainLayerSpawnerNode.h
+    Source/Editor/Nodes/Terrain/TerrainMacroMaterialNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainMacroMaterialNode.h
+    Source/Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainPhysicsHeightfieldColliderNode.h
     Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.cpp
     Source/Editor/Nodes/Terrain/TerrainSurfaceGradientListNode.h
+    Source/Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.cpp
+    Source/Editor/Nodes/Terrain/TerrainSurfaceMaterialsListNode.h
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.cpp
     Source/Editor/Nodes/UI/GradientPreviewThumbnailItem.h
 )

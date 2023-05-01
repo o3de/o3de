@@ -14,17 +14,17 @@
 namespace LmbrCentral
 {
     /// Type ID of CylinderShapeComponent
-    static const AZ::Uuid CylinderShapeComponentTypeId = "{B0C6AA97-E754-4E33-8D32-33E267DB622F}";
+    inline constexpr AZ::TypeId CylinderShapeComponentTypeId{ "{B0C6AA97-E754-4E33-8D32-33E267DB622F}" };
 
     /// Type ID of EditorCylinderShapeComponent
-    static const AZ::Uuid EditorCylinderShapeComponentTypeId = "{D5FC4745-3C75-47D9-8C10-9F89502487DE}";
+    inline constexpr AZ::TypeId EditorCylinderShapeComponentTypeId{ "{D5FC4745-3C75-47D9-8C10-9F89502487DE}" };
 
     /// Configuration data for CylinderShapeComponent
     class CylinderShapeConfig
         : public ShapeComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(CylinderShapeConfig, AZ::SystemAllocator);
         AZ_RTTI(CylinderShapeConfig, "{53254779-82F1-441E-9116-81E1FACFECF4}", ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
 

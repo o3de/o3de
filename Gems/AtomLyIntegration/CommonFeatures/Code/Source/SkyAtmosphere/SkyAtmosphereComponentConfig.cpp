@@ -16,7 +16,7 @@ namespace AZ::Render
         if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
         {
             serializeContext->Class<SkyAtmosphereComponentConfig, ComponentConfig>()
-                ->Version(1)
+                ->Version(2)
                 ->Field("OriginMode", &SkyAtmosphereComponentConfig::m_originMode)
                 ->Field("AtmosphereHeight", &SkyAtmosphereComponentConfig::m_atmosphereHeight)
                 ->Field("GroundAlbedo", &SkyAtmosphereComponentConfig::m_groundAlbedo)
@@ -45,6 +45,9 @@ namespace AZ::Render
                 ->Field("FastSkyEnabled", &SkyAtmosphereComponentConfig::m_fastSkyEnabled)
                 ->Field("NearClip", &SkyAtmosphereComponentConfig::m_nearClip)
                 ->Field("NearFadeDistance", &SkyAtmosphereComponentConfig::m_nearFadeDistance)
+                ->Field("FastAerialPerspectiveEnabled", &SkyAtmosphereComponentConfig::m_fastAerialPerspectiveEnabled)
+                ->Field("AerialPerspectiveEnabled", &SkyAtmosphereComponentConfig::m_aerialPerspectiveEnabled)
+                ->Field("AerialDepthFactor", &SkyAtmosphereComponentConfig::m_aerialDepthFactor)
                 ;
         }
     }

@@ -92,7 +92,8 @@ function(update_pip_requirements requirements_file_path unique_name)
     message(VERBOSE "pip output: ${PIP_OUT}")
 
     if (NOT ${PIP_RESULT} EQUAL 0)
-        message(CHECK_FAIL "Failed to fetch / update python dependencies: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+        message(CHECK_FAIL "Failed to fetch / update python dependencies from ${requirements_file_path}\nPip install log:\n${PIP_OUT}")
+        message(FATAL_ERROR "The above failure will cause errors later - stopping now.  Check the output log (above) for details.")
     else()
         string(FIND "${PIP_OUT}" "Installing collected packages" NEW_PACKAGES_INSTALLED)
 
@@ -142,6 +143,11 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
     set(stamp_file ${CMAKE_BINARY_DIR}/packages/pip_installs/${pip_package_name}.stamp)
     get_filename_component(stamp_file_directory ${stamp_file} DIRECTORY)
     file(MAKE_DIRECTORY ${stamp_file_directory})
+    
+    # for the first release of the o3de snap we will only use packages shipped with o3de
+    if ($ENV{O3DE_SNAP})
+        file(TOUCH ${stamp_file})
+    endif()
    
     # we only ever need to do this once per runtime install, since its a link
     # not an actual install:
@@ -193,6 +199,7 @@ function(ly_pip_install_local_package_editable package_folder_path pip_package_n
 
     if (NOT ${PIP_RESULT} EQUAL 0)
         message(CHECK_FAIL "Failed to install ${package_folder_path}: ${PIP_OUT} - use CMAKE_MESSAGE_LOG_LEVEL to VERBOSE for more information")
+        message(FATAL_ERROR "Failure to install a python package will likely cause errors further down the line, stopping!")
     else()
         file(TOUCH ${stamp_file})
     endif()

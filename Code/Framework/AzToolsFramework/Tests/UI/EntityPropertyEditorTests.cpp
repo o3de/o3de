@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/UnitTest/TestTypes.h>
 #include <AzCore/Serialization/SerializeContext.h>
 #include <AzTest/AzTest.h>
 #include <AzToolsFramework/ComponentMode/ComponentModeCollection.h>
@@ -33,18 +34,11 @@ namespace UnitTest
     using namespace AzToolsFramework;
 
     class EntityPropertyEditorTests
-        : public ComponentApplication
+        : public UnitTest::LeakDetectionFixture
     {
-    public:
-        void SetSettingsRegistrySpecializations(SettingsRegistryInterface::Specializations& specializations) override
-        {
-            ComponentApplication::SetSettingsRegistrySpecializations(specializations);
-            specializations.Append("test");
-            specializations.Append("entitypropertyeditor");
-        }
     };
 
-    TEST(EntityPropertyEditorTests, PrioritySort_NonTransformAsFirstItem_TransformMovesToTopRemainderUnchanged)
+    TEST_F(EntityPropertyEditorTests, PrioritySort_NonTransformAsFirstItem_TransformMovesToTopRemainderUnchanged)
     {
         ToolsApplication app;
 
@@ -53,10 +47,8 @@ namespace UnitTest
 
         ToolsApplication::Descriptor desc;
         desc.m_useExistingAllocator = true;
-        ToolsApplication::StartupParameters startupParams;
-        startupParams.m_allocator = &AZ::AllocatorInstance<AZ::SystemAllocator>::Get();
 
-        Entity* systemEntity = app.Create(desc, startupParams);
+        Entity* systemEntity = app.Create(desc, {});
 
         // Need to reflect the components so that edit attribute used for sorting, such as FixedComponentListIndex, get set.
         app.RegisterComponentDescriptor(AzToolsFramework::Components::TransformComponent::CreateDescriptor());
@@ -117,7 +109,7 @@ namespace UnitTest
     }
 
     class EntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
         void SetUpEditorFixtureImpl() override
         {
@@ -212,7 +204,7 @@ namespace UnitTest
     }
 
     class LevelEntityPropertyEditorRequestTest
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
         , public AzToolsFramework::EditorRequestBus::Handler
     {
         void SetUpEditorFixtureImpl() override

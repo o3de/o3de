@@ -38,9 +38,6 @@
 #define std__hash AZStd::hash
 #define std__unordered_map AZStd::unordered_map
 
-template <class T, class Destructor>
-class StaticInstance;
-
 // auto-cleaner: upon destruction, calls the clear() method
 template <class T>
 class CAutoClear
@@ -366,12 +363,6 @@ namespace stl
         new(&t)T;
     }
 
-    template <class T, class D>
-    inline void reconstruct(StaticInstance<T, D>& instance)
-    {
-        reconstruct(*instance);
-    }
-
     template <typename T, typename A1>
     inline void reconstruct(T& t, const A1& a1)
     {
@@ -423,12 +414,6 @@ namespace stl
     inline void free_container(std__hash_map<K, D, H, A>& t)
     {
         reconstruct(t);
-    }
-
-    template <class T, class D>
-    inline void free_container(StaticInstance<T, D>& instance)
-    {
-        reconstruct(*instance);
     }
 
     struct container_freer

@@ -73,7 +73,7 @@ namespace PhysX
 
         const char* MeshAssetHandler::GetBrowserIcon() const
         {
-            return "Icons/Components/ColliderMesh.svg";
+            return "Icons/Components/PhysXMeshCollider.svg";
         }
 
         const char* MeshAssetHandler::GetGroup() const
@@ -85,7 +85,7 @@ namespace PhysX
         AZ::Uuid MeshAssetHandler::GetComponentTypeId() const
         {
             // NOTE: This doesn't do anything when CanCreateComponent returns false
-            return AZ::Uuid("{FD429282-A075-4966-857F-D0BBF186CFE6}"); // EditorColliderComponent
+            return AZ::Uuid("{20382794-0E74-4860-9C35-A19F22DC80D4}"); // EditorMeshColliderComponent
         }
 
         bool MeshAssetHandler::CanCreateComponent([[maybe_unused]] const AZ::Data::AssetId& assetId) const
@@ -185,7 +185,7 @@ namespace PhysX
             if (AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context))
             {
                 AssetColliderConfiguration::Reflect(context);
-                serializeContext->ClassDeprecate("MeshAssetCookedData", "{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}");
+                serializeContext->ClassDeprecate("MeshAssetCookedData", AZ::Uuid("{82955F2F-4DA1-4AEF-ACEF-0AE16BA20EF4}"));
 
                 serializeContext->Class<MeshAssetData>()
                     ->Version(2)
@@ -194,6 +194,16 @@ namespace PhysX
                     ->Field("MaterialIndexPerShape", &MeshAssetData::m_materialIndexPerShape)
                     ;
             }
+        }
+
+        AZ::Data::Asset<MeshAsset> MeshAssetData::CreateMeshAsset() const
+        {
+            AZ::Data::Asset<MeshAsset> meshAsset =
+                AZ::Data::AssetManager::Instance().CreateAsset<MeshAsset>(AZ::Data::AssetId(AZ::Uuid::CreateRandom()));
+
+            meshAsset->SetData(*this);
+
+            return meshAsset;
         }
 
         void MeshAsset::Reflect(AZ::ReflectContext* context)
@@ -215,6 +225,12 @@ namespace PhysX
                         ;
                 }
             }
+        }
+
+        void MeshAsset::SetData(const MeshAssetData& assetData)
+        {
+            m_assetData = assetData;
+            m_status = AZ::Data::AssetData::AssetStatus::Ready;
         }
 
         void AssetColliderConfiguration::Reflect(AZ::ReflectContext* context)

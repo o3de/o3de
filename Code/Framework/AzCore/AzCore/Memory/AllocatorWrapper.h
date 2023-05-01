@@ -25,8 +25,6 @@ namespace AZ
     class AllocatorWrapper
     {
     public:
-        using Descriptor = typename Allocator::Descriptor;
-
         AllocatorWrapper()
         {
         }
@@ -40,12 +38,12 @@ namespace AZ
 
         /// Creates the wrapped allocator. You may pass any custom arguments to the allocator's constructor.
         template<typename... Args>
-        void Create(const Descriptor& desc, Args&&... args)
+        void Create(Args&&... args)
         {
             Destroy();
 
             m_allocator = new (&m_storage) Allocator(AZStd::forward<Args>(args)...);
-            m_allocator->Create(desc);
+            m_allocator->Create();
             m_allocator->PostCreate();
         }
 

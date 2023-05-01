@@ -24,8 +24,8 @@ namespace AZ
             GPU
         };
 
-        // Read the RHI validation mode from the command line arguments.
-        // If not present in the arguments, return nullopt.
-        AZStd::optional<ValidationMode> ReadValidationModeFromCommandArgs();
+        // Read the RHI validation mode considering configurations,
+        // cvars, command line options and registry settings.
+        ValidationMode ReadValidationMode();
     }
 }

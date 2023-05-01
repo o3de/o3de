@@ -20,7 +20,6 @@
 #include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <SceneAPIExt/Rules/LodRule.h>
-#include <SceneAPIExt/Rules/IActorScaleRule.h>
 #include <SceneAPIExt/Rules/SkeletonOptimizationRule.h>
 #include <SceneAPIExt/Groups/ActorGroup.h>
 #include <RCExt/Actor/ActorBuilder.h>
@@ -298,10 +297,9 @@ namespace EMotionFX
             }
 
             // Scale the actor
-            AZStd::shared_ptr<Rule::IActorScaleRule> scaleRule = actorGroup.GetRuleContainerConst().FindFirstByType<Rule::IActorScaleRule>();
-            if (scaleRule)
+            if (coordinateSystemRule)
             {
-                const float scaleFactor = scaleRule->GetScaleFactor();
+                const float scaleFactor = coordinateSystemRule->GetScale();
                 if (!AZ::IsClose(scaleFactor, 1.0f, FLT_EPSILON)) // If the scale factor is 1, no need to call Scale
                 {
                     actor->Scale(scaleFactor);

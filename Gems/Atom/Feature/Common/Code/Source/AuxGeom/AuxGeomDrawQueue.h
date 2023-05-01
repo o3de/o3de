@@ -37,7 +37,7 @@ namespace AZ
         {
         public: // functions
 
-            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(AuxGeomDrawQueue, AZ::SystemAllocator);
 
             AuxGeomDrawQueue() = default;
             ~AuxGeomDrawQueue() override = default;
@@ -70,6 +70,7 @@ namespace AZ
             void DrawAabb(const AZ::Aabb& aabb, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawObb(const AZ::Obb& obb, const AZ::Vector3& position, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
             void DrawObb(const AZ::Obb& obb, const AZ::Matrix3x4& transform, const AZ::Color& color, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
+            void DrawFrustum(const AZ::Frustum& frustum, const AZ::Color& color, bool drawNormals, DrawStyle style, DepthTest depthTest, DepthWrite depthWrite, FaceCullMode faceCull, int32_t viewProjOverrideIndex) override;
 
             //! Switch clients of AuxGeom to using a different buffer and return the filled buffer for processing
             AuxGeomBufferData* Commit();

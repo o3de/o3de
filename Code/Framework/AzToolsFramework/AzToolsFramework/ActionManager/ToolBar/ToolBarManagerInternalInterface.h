@@ -8,8 +8,10 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
 namespace AzToolsFramework
 {
@@ -36,8 +38,16 @@ namespace AzToolsFramework
         //! Refreshes all toolbars that were queued up for refresh.
         virtual void RefreshToolBars() = 0;
 
+        //! Refreshes all toolbar areas that were queued up for refresh.
+        virtual void RefreshToolBarAreas() = 0;
+
         //! Serialize a toolbar by its identifier.
         virtual ToolBarManagerStringResult SerializeToolBar(const AZStd::string& toolBarIdentifier) = 0;
+
+        //! Completely reset the ToolBar Manager from all items registered after initialization.
+        //! Clears all ToolBars and ToolBar Areas.
+        //! Used in Unit tests to allow clearing the environment between runs.
+        virtual void Reset() = 0;
     };
 
 } // namespace AzToolsFramework

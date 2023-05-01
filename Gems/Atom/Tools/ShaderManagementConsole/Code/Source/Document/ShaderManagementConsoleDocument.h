@@ -26,7 +26,7 @@ namespace ShaderManagementConsole
     {
     public:
         AZ_RTTI(ShaderManagementConsoleDocument, "{C8FAF1C7-8665-423C-B1DD-82016231B17B}", AtomToolsFramework::AtomToolsDocument);
-        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ShaderManagementConsoleDocument, AZ::SystemAllocator);
         AZ_DISABLE_COPY_MOVE(ShaderManagementConsoleDocument);
 
         static void Reflect(AZ::ReflectContext* context);
@@ -64,12 +64,6 @@ namespace ShaderManagementConsole
 
         // Read shader source data from JSON then find all references to to populate the shader variant list and initialize the document
         bool LoadShaderVariantListSourceData();
-
-        // Find all material assets that reference material types using shaderFilePath
-        AZStd::vector<AZ::Data::AssetId> FindMaterialAssetsUsingShader(const AZStd::string& shaderFilePath);
-
-        // Retrieve all of the shader collection items from a material instance created from materialAssetId
-        AZStd::vector<AZ::RPI::ShaderCollection::Item> GetMaterialInstanceShaderItems(const AZ::Data::AssetId& materialAssetId);
 
         // Source data for shader variant list
         AZ::RPI::ShaderVariantListSourceData m_shaderVariantListSourceData;

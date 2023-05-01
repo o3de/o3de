@@ -87,7 +87,8 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
     15. Enter game mode and take a screenshot then exit game mode.
     16. Change the Light component Enable shadow and Shadowmap size property values then move Spot Light entity.
     17. Enter game mode and take a screenshot then exit game mode.
-    18. Look for errors.
+    18. Compare the screenshots to golden images.
+    19. Look for errors.
 
     :return: None
     """
@@ -102,7 +103,9 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
     from Atom.atom_utils.atom_constants import AtomComponentProperties, LIGHT_TYPES
     from Atom.atom_utils.atom_component_helper import (
-        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot)
+        initial_viewport_setup, create_basic_atom_rendering_scene, enter_exit_game_mode_take_screenshot, compare_screenshot_to_golden_image)
+
+    from Atom.atom_utils.screenshot_utils import FOLDER_PATH
 
     DEGREE_RADIAN_FACTOR = 0.0174533
 
@@ -120,6 +123,16 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
 
         # Setup: Runs the create_basic_atom_rendering_scene() function to setup the test scene.
         create_basic_atom_rendering_scene()
+
+        # Setup: Define the screenshot names and threshold pairs
+        screenshot_thresholds = {
+            "SpotLight_1.png" : 0.02,
+            "SpotLight_2.png" : 0.02,
+            "SpotLight_3.png" : 0.02,
+            "SpotLight_4.png" : 0.02,
+            "SpotLight_5.png" : 0.02,
+            "SpotLight_6.png" : 0.02
+        }
 
         # Test steps begin.
         # 1. Find the Directional Light entity then disable its Directional Light component.
@@ -163,7 +176,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Light type')) == LIGHT_TYPES['spot_disk'])
 
         # 7. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_1.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_1.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 8. Change the default material asset for the Ground Plane entity.
         ground_plane_name = "Ground Plane"
@@ -182,7 +195,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.material('Material Asset')) == ground_plane_material_asset.id)
 
         # 9. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_2.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_2.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 10. Increase the Intensity value of the Light component.
         light_component.set_component_property_value(AtomComponentProperties.light('Intensity'), 800.0)
@@ -192,7 +205,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
                 AtomComponentProperties.light('Intensity')) == 800.0)
 
         # 11. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_3.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_3.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 12. Change the Light component Color property value.
         color_value = azlmbr.math.Color(47.0 / 255.0, 75.0 / 255.0, 37.0 / 255.0, 255.0 / 255.0)
@@ -202,7 +215,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Color')) == color_value)
 
         # 13. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_4.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_4.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 14. Change the Light component Enable shutters, Inner angle, and Outer angle property values.
         enable_shutters = True
@@ -223,7 +236,7 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
             light_component.get_component_property_value(AtomComponentProperties.light('Outer angle')) == outer_angle)
 
         # 15. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_5.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_5.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
         # 16. Change the Light component Enable shadow and slightly move Spot Light entity.
         light_component.set_component_property_value(AtomComponentProperties.light('Enable shadow'), True)
@@ -233,9 +246,37 @@ def AtomGPU_LightComponent_SpotLightScreenshotsMatchGoldenImages():
         spot_light_entity.set_world_rotation(azlmbr.math.Vector3(0.7, -2.0, 1.9))
 
         # 17. Enter game mode and take a screenshot then exit game mode.
-        enter_exit_game_mode_take_screenshot("SpotLight_6.ppm", Tests.enter_game_mode, Tests.exit_game_mode)
+        enter_exit_game_mode_take_screenshot("SpotLight_6.png", Tests.enter_game_mode, Tests.exit_game_mode)
 
-        # 18. Look for errors.
+        # 18. Compare the screenshots to golden images.
+        for screenshot_name, screenshot_threshold in screenshot_thresholds.items():
+            image_diff_outcome = compare_screenshot_to_golden_image(FOLDER_PATH, screenshot_name, screenshot_name)
+            screenshot_compare_execution = (
+                    f"Screenshot {screenshot_name} comparison succeeded.",
+                    f"Screenshot {screenshot_name} comparison failed.");
+            Report.result(
+                screenshot_compare_execution,
+                image_diff_outcome.IsSuccess()
+            )
+
+            if not image_diff_outcome.IsSuccess():
+                Report.info(f"Error: {image_diff_outcome.GetError().error_message}")
+            else:
+                screenshot_compare_result = (
+                        "{0} diff score {1} under threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_outcome.GetValue().diff_score,
+                            screenshot_threshold),
+                        "{0} diff score {1} over threshold {2}.".format(
+                            screenshot_name,
+                            image_diff_outcome.GetValue().diff_score,
+                            screenshot_threshold)
+                        )
+                Report.result(
+                    screenshot_compare_result,
+                    image_diff_outcome.GetValue().diff_score < screenshot_threshold)
+
+        # 19. Look for errors.
         TestHelper.wait_for_condition(lambda: error_tracer.has_errors or error_tracer.has_asserts, 1.0)
         for error_info in error_tracer.errors:
             Report.info(f"Error: {error_info.filename} {error_info.function} | {error_info.message}")

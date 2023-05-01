@@ -21,25 +21,17 @@ import logging as _logging
 
 # -------------------------------------------------------------------------
 # global scope
-_PACKAGENAME = 'azpy.shared'
+from DccScriptingInterface.azpy import _PACKAGENAME
+_PACKAGENAME = f'{_PACKAGENAME}.shared'
 _LOGGER = _logging.getLogger(_PACKAGENAME)
 _LOGGER.debug(f'Initializing: {_PACKAGENAME}')
 
 __all__ = ['common', 'ui', 'utils']
 
-from azpy.env_bool import env_bool
-from azpy.constants import ENVAR_DCCSI_GDEBUG
-_DCCSI_GDEBUG = env_bool(ENVAR_DCCSI_GDEBUG, False)
+from DccScriptingInterface.azpy.env_bool import env_bool
+from DccScriptingInterface.azpy.constants import ENVAR_DCCSI_GDEBUG
+from DccScriptingInterface.globals import *
 
 _MODULE_PATH = Path(__file__)  # To Do: what if frozen?
 _LOGGER.debug(f'_MODULE_PATH: {_MODULE_PATH}')
-# -------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------------
-from azpy.shared.utils.init import test_imports
-if _DCCSI_GDEBUG:
-    # If in dev mode this will test imports of __all__
-    _LOGGER.debug(f'Testing Imports from {_PACKAGENAME}')
-    test_imports(_all=__all__,_pkg=_PACKAGENAME,_logger=_LOGGER)
-# -------------------------------------------------------------------------

@@ -29,9 +29,6 @@ namespace EMotionFX
 {
     void BuilderMockComponent::Activate()
     {
-        EMotionFX::Integration::EMotionFXAllocator::Descriptor allocatorDescriptor;
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Create(allocatorDescriptor);
-
         ASSERT_TRUE(MCore::Initializer::Init());
         ASSERT_TRUE(EMotionFX::Initializer::Init());
 
@@ -60,7 +57,6 @@ namespace EMotionFX
 
         EMotionFX::Initializer::Shutdown();
         MCore::Initializer::Shutdown();
-        AZ::AllocatorInstance<EMotionFX::Integration::EMotionFXAllocator>::Destroy();
     }
 
     void BuilderMockComponent::ReflectAnimGraphAndMotionSet(AZ::ReflectContext* context)

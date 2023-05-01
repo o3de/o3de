@@ -31,7 +31,8 @@
 
 namespace AWSCore
 {
-    constexpr const char* EngineVersionJsonKey = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat1 = "O3DEVersion";
+    constexpr const char* EngineVersionJsonKeyFileFormat2 = "display_version";
 
     constexpr char EditorAWSPreferencesFileName[] = "editor_aws_preferences.setreg";
     constexpr char AWSAttributionSettingsPrefixKey[] = "/Amazon/AWS/Preferences";
@@ -95,20 +96,20 @@ namespace AWSCore
         {
             ShowConsentDialog();
         }
-        
+
         if (ShouldGenerateMetric())
         {
             // Gather metadata and assemble metric
             AttributionMetric metric;
-            UpdateMetric(metric);            
-            
+            UpdateMetric(metric);
+
             // Post metric
             SubmitMetric(metric);
         }
     }
 
     bool AWSAttributionManager::ShouldGenerateMetric() const
-    {   
+    {
         bool awsAttributionEnabled = false;
         if (!m_settingsRegistry->Get(awsAttributionEnabled, AWSAttributionEnabledKey))
         {
@@ -120,12 +121,12 @@ namespace AWSCore
         {
             return false;
         }
-        
+
         // If delayInSeconds is not found, set default to a day
         AZ::u64 delayInSeconds = 0;
         if (!m_settingsRegistry->Get(delayInSeconds, AWSAttributionDelaySecondsKey))
         {
-            delayInSeconds = 86400 * AWSAttributionDefaultDelayInDays;
+            delayInSeconds = static_cast<AZ::u64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::days(AWSAttributionDefaultDelayInDays)).count());
             m_settingsRegistry->Set(AWSAttributionDelaySecondsKey, delayInSeconds);
         }
 
@@ -237,13 +238,13 @@ namespace AWSCore
             },
             true);
         job->Start();
-        
+
     }
 
     void AWSAttributionManager::UpdateLastSend()
-    {  
+    {
         if (!m_settingsRegistry->Set(AWSAttributionLastTimeStampKey,
-            AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count()))
+            static_cast<AZ::s64>(AZStd::chrono::duration_cast<AZStd::chrono::seconds>(AZStd::chrono::system_clock::now().time_since_epoch()).count())))
         {
             AZ_Warning("AWSAttributionManager", true, "Failed to set AWSAttributionLastTimeStamp");
             return;
@@ -264,7 +265,7 @@ namespace AWSCore
             config->endpointOverride = AWSAttributionChinaEndpoint;
         }
         else
-        {   
+        {
             config->region = Aws::Region::US_EAST_1;
             config->endpointOverride = AWSAttributionEndpoint;
         }
@@ -287,15 +288,37 @@ namespace AWSCore
             if (settingsRegistry.MergeSettingsFile(
                     engineSettingsPath.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch, AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey))
             {
-                settingsRegistry.Get(engineVersion, AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey) + "/" + EngineVersionJsonKey);
+                constexpr auto rootKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::EngineSettingsRootKey);
+                if(!settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat2))
+                {
+                    // fallback to using the old json key
+                    settingsRegistry.Get(engineVersion, rootKey + "/" + EngineVersionJsonKeyFileFormat1);
+                }
             }
         }
         return engineVersion;
     }
 
+    AZStd::string AWSAttributionManager::MapPlatform(AZ::PlatformID platform)
+    {
+        // Only map platforms running the editor to Attributions enums
+        // PC, Linux, Mac are supported values for now
+        switch (platform)
+        {
+        case AZ::PlatformID::PLATFORM_WINDOWS_64:
+            return "PC";
+        case AZ::PlatformID::PLATFORM_LINUX_64:
+            return "Linux";
+        case AZ::PlatformID::PLATFORM_APPLE_MAC:
+            return "Mac";
+        default:
+            return "Other";
+        }
+    }
+
     AZStd::string AWSAttributionManager::GetPlatform() const
     {
-        return AZ::GetPlatformName(AZ::g_currentPlatform);
+        return MapPlatform(AZ::g_currentPlatform);
     }
 
     void AWSAttributionManager::GetActiveAWSGems(AZStd::vector<AZStd::string>& gems)

@@ -20,7 +20,7 @@ namespace AzToolsFramework
         {
             // Collection of helper functions to allow calling the appropriate GetColumn function based on the return type ...
             template<typename T> T GetColumnValue(SQLite::Statement* statement, int index);
-            
+
             template<typename T, typename AZStd::enable_if_t<AZStd::is_enum<T>::value>* = nullptr>
             T GetColumnEnum(SQLite::Statement* statement, int index)
             {
@@ -49,6 +49,9 @@ namespace AzToolsFramework
 
             template<>
             AZ::Uuid GetColumnValue(SQLite::Statement* statement, int index);
+
+            template<>
+            AzToolsFramework::AssetDatabase::PathOrUuid GetColumnValue(SQLite::Statement* statement, int index);
 
             template<>
             double GetColumnValue(SQLite::Statement* statement, int index);

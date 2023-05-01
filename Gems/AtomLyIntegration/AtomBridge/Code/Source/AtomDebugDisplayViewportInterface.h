@@ -138,10 +138,11 @@ namespace AZ::AtomBridge
         void SetColor(const AZ::Color& color) override;
         void SetAlpha(float a) override;
         void DrawQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
-        void DrawQuad(float width, float height) override;
+        void DrawQuad(float width, float height, bool drawShaded) override;
         void DrawWireQuad(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4) override;
         void DrawWireQuad(float width, float height) override;
         void DrawQuadGradient(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3, const AZ::Vector3& p4, const AZ::Vector4& firstColor, const AZ::Vector4& secondColor) override;
+        void DrawQuad2dGradient(const Vector2& p1, const Vector2& p2, const Vector2& p3, const Vector2& p4, float z, const Color& firstColor, const Color& secondColor) override;
         void DrawTri(const AZ::Vector3& p1, const AZ::Vector3& p2, const AZ::Vector3& p3) override;
         void DrawTriangles(const AZStd::vector<AZ::Vector3>& vertices, const AZ::Color& color) override;
         void DrawTrianglesIndexed(const AZStd::vector<AZ::Vector3>& vertices, const AZStd::vector<AZ::u32>& indices, const AZ::Color& color) override;
@@ -175,7 +176,7 @@ namespace AZ::AtomBridge
         void DrawWireHemisphere(const AZ::Vector3& pos, const AZ::Vector3& axis, float radius) override;
         void DrawWireDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
         void DrawBall(const AZ::Vector3& pos, float radius, bool drawShaded) override;
-        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius) override;
+        void DrawDisk(const AZ::Vector3& pos, const AZ::Vector3& dir, float radius, bool drawShaded) override;
         void DrawArrow(const AZ::Vector3& src, const AZ::Vector3& trg, float headScale = 1.0f, bool dualEndedArrow = false) override;
         void DrawTextLabel(const AZ::Vector3& pos, float size, const char* text, const bool bCenter = false, int srcOffsetX = 0, int srcOffsetY = 0) override;
         void Draw2dTextLabel(float x, float y, float size, const char* text, bool bCenter = false) override;

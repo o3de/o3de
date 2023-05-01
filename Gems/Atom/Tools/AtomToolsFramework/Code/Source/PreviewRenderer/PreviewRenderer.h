@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <Atom/Feature/Utils/FrameCaptureBus.h>
 #include <Atom/RPI.Public/Base.h>
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <AtomToolsFramework/PreviewRenderer/PreviewContent.h>
@@ -25,7 +26,7 @@ namespace AtomToolsFramework
         , public PreviewerFeatureProcessorProviderBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(PreviewRenderer, AZ::SystemAllocator);
         AZ_RTTI(PreviewRenderer, "{60FCB7AB-2A94-417A-8C5E-5B588D17F5D1}", PreviewRendererInterface);
 
         PreviewRenderer(const AZStd::string& sceneName, const AZStd::string& pipelineName);
@@ -47,12 +48,12 @@ namespace AtomToolsFramework
 
         void PoseContent();
 
-        uint32_t StartCapture();
+        AZ::Render::FrameCaptureId StartCapture();
         void EndCapture();
 
     private:
         //! AZ::Render::PreviewerFeatureProcessorProviderBus::Handler interface overrides...
-        void GetRequiredFeatureProcessors(AZStd::unordered_set<AZStd::string>& featureProcessors) const override;
+        void GetRequiredFeatureProcessors(AZStd::vector<AZStd::string>& featureProcessors) const override;
 
         static constexpr float AspectRatio = 1.0f;
         static constexpr float NearDist = 0.001f;

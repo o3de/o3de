@@ -199,6 +199,17 @@ namespace AZ
         const FenceSet& CommandQueueContext::GetCompiledFences()
         {
             return m_compiledFences;
-        };
+        }
+
+        size_t CommandQueueContext::GetLastFrameIndex() const
+        {
+            return (m_currentFrameIndex + m_frameFences.size() - 1) % m_frameFences.size();
+        }
+
+        const FenceSet& CommandQueueContext::GetFrameFences(size_t frameIndex) const
+        {
+            frameIndex %= m_frameFences.size();
+            return m_frameFences[frameIndex];
+        }
     }
 }

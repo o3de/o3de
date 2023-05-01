@@ -25,7 +25,7 @@ namespace UnitTest
         Factory();
         ~Factory();
 
-        AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(Factory, AZ::SystemAllocator);
 
     private:
         const AZ::Name m_platformName{"UnitTest"};
@@ -37,6 +37,8 @@ namespace UnitTest
         AZ::RHI::APIPriority GetDefaultPriority() override;
 
         uint32_t GetAPIUniqueIndex() const override { return 0; }
+
+        bool SupportsXR() const override;
 
         AZ::RHI::PhysicalDeviceList EnumeratePhysicalDevices() override;
 

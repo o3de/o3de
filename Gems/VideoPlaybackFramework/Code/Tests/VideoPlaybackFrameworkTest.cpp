@@ -7,6 +7,7 @@
  */
 
 #include <AzTest/AzTest.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/Entity.h>
@@ -15,12 +16,12 @@
 #include <VideoPlaybackFrameworkModule.h>
 #include <VideoPlaybackFrameworkSystemComponent.h>
 
-TEST(VideoPlaybackFrameworkTest, ComponentsWithComponentApplication)
+using VideoPlaybackFrameworkTest = UnitTest::LeakDetectionFixture;
+TEST_F(VideoPlaybackFrameworkTest, ComponentsWithComponentApplication)
 {
     AZ::ComponentApplication::Descriptor appDesc;
     appDesc.m_memoryBlocksByteSize = 10 * 1024 * 1024;
     appDesc.m_recordingMode = AZ::Debug::AllocationRecords::RECORD_FULL;
-    appDesc.m_stackRecordLevels = 20;
 
     AZ::ComponentApplication app;
     AZ::Entity* systemEntity = app.Create(appDesc);

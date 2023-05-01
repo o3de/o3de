@@ -476,6 +476,15 @@ namespace AZ
             const Vector3& segmentEnd,
             float& proportion,
             Vector3& closestPointOnSegment);
+
+        //! Calculate the distance squared from the provided point to the closest point on
+        //! segment segmentStart/segmentEnd.
+        //! @param point The point to test
+        //! @param segmentStart The start of the segment
+        //! @param segmentEnd The end of the segment
+        //! @return the distance squared from the point to the segment.
+        float PointSegmentDistanceSq(const Vector3& point, const Vector3& segmentStart, const Vector3& segmentEnd);
+
     } // namespace Intersect
 } // namespace AZ
 

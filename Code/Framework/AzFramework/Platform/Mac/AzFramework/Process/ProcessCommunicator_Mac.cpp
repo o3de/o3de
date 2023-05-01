@@ -58,7 +58,7 @@ namespace AzFramework
             handle->Break();
         }
 
-        return bytesAvailable;
+        return static_cast<AZ::u32>(bytesAvailable);
     }
 
     AZ::u32 StdInOutCommunication::ReadDataFromHandle(StdProcessCommunicatorHandle& handle, void* readBuffer, AZ::u32 bufferSize)
@@ -99,10 +99,10 @@ namespace AzFramework
             {
                 // Child process exited, we may have read something, so return amount
                 handle->Break();
-                return bytesRead;
+                return static_cast<AZ::u32>(bytesRead);
             }
             AZ_Assert(false, "Unexpected error from ReadFile %d", errno);
-            return bytesRead;
+            return static_cast<AZ::u32>(bytesRead);
         }
 
         //EOF
@@ -110,7 +110,7 @@ namespace AzFramework
         {
             handle->Break();
         }
-        return bytesRead;
+        return static_cast<AZ::u32>(bytesRead);
     }
 
     AZ::u32 StdInOutCommunication::WriteDataToHandle(StdProcessCommunicatorHandle& handle, const void* writeBuffer, AZ::u32 bytesToWrite)
@@ -130,13 +130,13 @@ namespace AzFramework
             {
                 // Child process exited, may have written something, so return amount
                 handle->Break();
-                return bytesWritten;
+                return static_cast<AZ::u32>(bytesWritten);
             }
             AZ_Assert(false, "Unexpected error trying to write to child process. errno = %d", errno);
             return 0;
         }
 
-        return bytesWritten;
+        return static_cast<AZ::u32>(bytesWritten);
     }
 
     bool StdInOutProcessCommunicator::CreatePipesForProcess(ProcessData* processData)
@@ -186,7 +186,7 @@ namespace AzFramework
         return true;
     }
 
-    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status) const
+    void StdInOutProcessCommunicator::WaitForReadyOutputs(OutputStatus& status)
     {
         status.outputDeviceReady = m_stdOutRead->IsValid() && !m_stdOutRead->IsBroken();
         status.errorsDeviceReady = m_stdErrRead->IsValid() && !m_stdErrRead->IsBroken();

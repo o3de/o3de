@@ -21,8 +21,8 @@ namespace AZ
             {
                 serializeContext->Class<ImageSystemDescriptor>()
                     ->Version(0)
-                    ->Field("AssetStreamingImagePoolSize", &ImageSystemDescriptor::m_assetStreamingImagePoolSize)
                     ->Field("SystemStreamingImagePoolSize", &ImageSystemDescriptor::m_systemStreamingImagePoolSize)
+                    ->Field("SystemStreamingImagePoolMipBias", &ImageSystemDescriptor::m_systemStreamingImagePoolMipBias)
                     ->Field("SystemAttachmentImagePoolSize", &ImageSystemDescriptor::m_systemAttachmentImagePoolSize)
                     ;
             }

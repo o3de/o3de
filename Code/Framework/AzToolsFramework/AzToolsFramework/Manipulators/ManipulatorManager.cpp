@@ -67,6 +67,11 @@ namespace AzToolsFramework
             return;
         }
 
+        if (m_activeManipulator && m_activeManipulator->GetManipulatorId() == manipulator->GetManipulatorId())
+        {
+            m_activeManipulator.reset();
+        }
+
         m_manipulatorIdToPtrMap.erase(manipulator->GetManipulatorId());
         manipulator->Invalidate();
     }
@@ -191,6 +196,7 @@ namespace AzToolsFramework
             {
                 if (manipulator->OnLeftMouseDown(interaction, intersectionDistance))
                 {
+                    m_mouseDownButton = ManipulatorMouseDownButton::Left;
                     m_activeManipulator = manipulator;
                     return true;
                 }
@@ -200,13 +206,14 @@ namespace AzToolsFramework
             {
                 if (manipulator->OnRightMouseDown(interaction, intersectionDistance))
                 {
+                    m_mouseDownButton = ManipulatorMouseDownButton::Right;
                     m_activeManipulator = manipulator;
                     return true;
                 }
             }
         }
 
-        return false;
+        return m_activeManipulator != nullptr;
     }
 
     bool ManipulatorManager::ConsumeViewportMouseRelease(const ViewportInteraction::MouseInteraction& interaction)
@@ -215,17 +222,21 @@ namespace AzToolsFramework
         // active manipulator - only notify mouse up if this was the case
         if (m_activeManipulator)
         {
-            if (interaction.m_mouseButtons.Left())
+            if (interaction.m_mouseButtons.Left() && m_mouseDownButton.has_value() &&
+                *m_mouseDownButton == ManipulatorMouseDownButton::Left)
             {
                 m_activeManipulator->OnLeftMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
+                m_mouseDownButton.reset();
                 return true;
             }
 
-            if (interaction.m_mouseButtons.Right())
+            if (interaction.m_mouseButtons.Right() && m_mouseDownButton.has_value() &&
+                *m_mouseDownButton == ManipulatorMouseDownButton::Right)
             {
                 m_activeManipulator->OnRightMouseUp(interaction);
-                m_activeManipulator = nullptr;
+                m_activeManipulator.reset();
+                m_mouseDownButton.reset();
                 return true;
             }
         }

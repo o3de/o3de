@@ -264,7 +264,7 @@ namespace AssetProcessor
 
         if (!QFile::exists(archiveAbsFilePath))
         {
-            // file does not exist on the server 
+            // file does not exist on the server
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive operation canceled. Archive does not exist on server. \n");
             return false;
         }
@@ -275,7 +275,7 @@ namespace AssetProcessor
             return false;
         }
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Extracting archive for job (%s, %s, %s) with fingerprint (%u).\n",
-            builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+            builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
             builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
         std::future<bool> extractResult;
         AzToolsFramework::ArchiveCommandsBus::BroadcastResult(extractResult,
@@ -292,7 +292,7 @@ namespace AssetProcessor
         AssetUtilities::QuitListener listener;
         listener.BusConnect();
         QString archiveAbsFilePath = ComputeArchiveFilePath(builderParams);
-        
+
         if (archiveAbsFilePath.isEmpty())
         {
             AZ_Error(AssetProcessor::DebugChannel, false, "Creating archive operation failed. Archive Absolute Path is empty. \n");
@@ -301,11 +301,11 @@ namespace AssetProcessor
 
         if (QFile::exists(archiveAbsFilePath))
         {
-            // file already exists on the server 
+            // file already exists on the server
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation canceled. An archive of this asset already exists on server. \n");
             return true;
         }
-        
+
         if (listener.WasQuitRequested() || jobCancelListener.IsCancelled())
         {
             AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive operation canceled. \n");
@@ -325,7 +325,7 @@ namespace AssetProcessor
         }
 
         AZ_TracePrintf(AssetProcessor::DebugChannel, "Creating archive for job (%s, %s, %s) with fingerprint (%u).\n",
-            builderParams.m_rcJob->GetJobEntry().m_pathRelativeToWatchFolder.toUtf8().data(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
+            builderParams.m_rcJob->GetJobEntry().m_sourceAssetReference.AbsolutePath().c_str(), builderParams.m_rcJob->GetJobKey().toUtf8().data(),
             builderParams.m_rcJob->GetPlatformInfo().m_identifier.c_str(), builderParams.m_rcJob->GetOriginalFingerprint());
 
         std::future<bool> createResult;

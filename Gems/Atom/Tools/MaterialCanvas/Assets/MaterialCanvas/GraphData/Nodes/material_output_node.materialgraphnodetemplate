@@ -1,0 +1,25 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "category": "Material Outputs",
+        "title": "",
+        "titlePaletteName": "MaterialOutputNodeTitlePalette",
+        "settings": {
+            "templatePaths": [
+            ]
+        },
+        "propertySlots": [
+            {
+                "name": "inDescription",
+                "displayName": "Description",
+                "description": "Provide a description or overview of what this material graph is doing",
+                "supportedDataTypeRegex": "string",
+                "defaultDataType": "string",
+                "visibleOnNode": false,
+                "editableOnNode": false
+            }
+        ]
+    }
+}

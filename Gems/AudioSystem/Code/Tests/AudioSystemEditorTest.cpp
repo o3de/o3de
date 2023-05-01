@@ -8,9 +8,9 @@
 
 #include <AzTest/AzTest.h>
 #include <AzCore/base.h>
-#include <AzCore/Memory/AllocatorScope.h>
 
 #include <AzCore/UnitTest/Mocks/MockFileIOBase.h>
+#include <AzCore/UnitTest/TestTypes.h>
 
 #include <AudioControlsLoader.h>
 #include <ATLControlsModel.h>
@@ -24,7 +24,6 @@ namespace CustomMocks
         : public AZ::IO::MockFileIOBase
     {
     public:
-        AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTest_FileIOMock);
 
         AudioControlsEditorTest_FileIOMock()
         {
@@ -58,33 +57,30 @@ class AudioControlsEditorTestEnvironment
     : public AZ::Test::ITestEnvironment
 {
 public:
-    AZ_TEST_CLASS_ALLOCATOR(AudioControlsEditorTestEnvironment)
-
     ~AudioControlsEditorTestEnvironment() override = default;
 
 protected:
     void SetupEnvironment() override
     {
-        m_allocatorScope.ActivateAllocators();
     }
 
     void TeardownEnvironment() override
     {
-        m_allocatorScope.DeactivateAllocators();
     }
 
 private:
-    AZ::AllocatorScope<AZ::OSAllocator, AZ::SystemAllocator> m_allocatorScope;
 };
 
 AZ_UNIT_TEST_HOOK(new AudioControlsEditorTestEnvironment);
 
 class AudioControlsEditorTest
-    : public ::testing::Test
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
     {
+        UnitTest::LeakDetectionFixture::SetUp();
+
         // Store and remove the existing fileIO...
         m_prevFileIO = AZ::IO::FileIOBase::GetInstance();
         if (m_prevFileIO)
@@ -109,6 +105,7 @@ public:
             AZ::IO::FileIOBase::SetInstance(m_prevFileIO);
             m_prevFileIO = nullptr;
         }
+        UnitTest::LeakDetectionFixture::TearDown();
     }
 
 protected:

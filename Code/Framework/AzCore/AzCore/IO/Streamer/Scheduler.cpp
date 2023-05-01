@@ -248,7 +248,7 @@ namespace AZ::IO
             m_threadData.m_streamStack->UpdateStatus(m_stackStatus);
             if (m_stackStatus.m_isIdle)
             {
-                auto duration = AZStd::chrono::system_clock::now() - m_processingStartTime;
+                auto duration = AZStd::chrono::steady_clock::now() - m_processingStartTime;
                 auto durationSec = AZStd::chrono::duration_cast<AZStd::chrono::duration<double>>(duration);
                 m_processingSpeedStat.PushEntry(m_processingSize / durationSec.count());
                 m_processingSize = 0;
@@ -316,7 +316,7 @@ namespace AZ::IO
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
                 if (m_processingSize == 0)
                 {
-                    m_processingStartTime = AZStd::chrono::system_clock::now();
+                    m_processingStartTime = AZStd::chrono::steady_clock::now();
                 }
 #endif
 
@@ -397,7 +397,7 @@ namespace AZ::IO
         }
 
 #if AZ_STREAMER_ADD_EXTRA_PROFILING_INFO
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
         auto visitor = [this, now](auto&& args) -> void
 #else
         auto visitor = [](auto&& args) -> void
@@ -612,7 +612,7 @@ namespace AZ::IO
 #endif
         AZ_PROFILE_FUNCTION(AzCore);
 
-        AZStd::chrono::system_clock::time_point now = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point now = AZStd::chrono::steady_clock::now();
         auto& pendingQueue = m_context.GetPreparedRequests();
 
         m_threadData.m_streamStack->UpdateCompletionEstimates(now, m_threadData.m_internalPendingRequests,

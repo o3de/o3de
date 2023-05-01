@@ -15,98 +15,27 @@ set(FILES
     Materials/Special/ShadowCatcher.materialtype
     Materials/Special/ShadowCatcher.shader
     Materials/Types/BasePBR.materialtype
-    Materials/Types/BasePBR_Common.azsli
-    Materials/Types/BasePBR_ForwardPass.azsl
-    Materials/Types/BasePBR_ForwardPass.shader
-    Materials/Types/BasePBR_LowEndForward.azsl
-    Materials/Types/BasePBR_LowEndForward.shader
-    Materials/Types/DepthPass_WithPS.azsli
     Materials/Types/EnhancedPBR.materialtype
     Materials/Types/EnhancedPBR_Anisotropy.lua
-    Materials/Types/EnhancedPBR_Common.azsli
-    Materials/Types/EnhancedPBR_DepthPass_WithPS.azsl
-    Materials/Types/EnhancedPBR_DepthPass_WithPS.shader
-    Materials/Types/EnhancedPBR_ForwardPass.azsl
-    Materials/Types/EnhancedPBR_ForwardPass.shader
-    Materials/Types/EnhancedPBR_ForwardPass_EDS.shader
-    Materials/Types/EnhancedPBR_Shadowmap_WithPS.azsl
-    Materials/Types/EnhancedPBR_Shadowmap_WithPS.shader
     Materials/Types/EnhancedPBR_SubsurfaceState.lua
-    Materials/Types/EnhancedSurface_ForwardPass.azsli
-    Materials/Types/Eye.azsl
     Materials/Types/Eye.materialtype
-    Materials/Types/Eye.shader
-    Materials/Types/EyeSurface_ForwardPass.azsli
-    Materials/Types/Eye_Common.azsli
-    Materials/Types/Skin.azsl
     Materials/Types/Skin.materialtype
-    Materials/Types/Skin.shader
-    Materials/Types/Skin_Common.azsli
     Materials/Types/Skin_SpecularF0.lua
     Materials/Types/Skin_WrinkleMaps.lua
     Materials/Types/StandardMultilayerPBR.materialtype
     Materials/Types/StandardMultilayerPBR_ClearCoatEnableFeature.lua
-    Materials/Types/StandardMultilayerPBR_Common.azsli
-    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.azsl
-    Materials/Types/StandardMultilayerPBR_DepthPass_WithPS.shader
     Materials/Types/StandardMultilayerPBR_Displacement.lua
-    Materials/Types/StandardMultilayerPBR_ForwardPass.azsl
-    Materials/Types/StandardMultilayerPBR_ForwardPass.shader
-    Materials/Types/StandardMultilayerPBR_ForwardPass_EDS.shader
     Materials/Types/StandardMultilayerPBR_LayerEnable.lua
-    Materials/Types/StandardMultilayerPBR_ShaderEnable.lua
-    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.azsl
-    Materials/Types/StandardMultilayerPBR_Shadowmap_WithPS.shader
     Materials/Types/StandardPBR.materialtype
     Materials/Types/StandardPBR_ClearCoatEnableFeature.lua
     Materials/Types/StandardPBR_ClearCoatState.lua
-    Materials/Types/StandardPBR_Common.azsli
-    Materials/Types/StandardPBR_DepthPass_WithPS.azsl
-    Materials/Types/StandardPBR_DepthPass_WithPS.shader
     Materials/Types/StandardPBR_EmissiveState.lua
-    Materials/Types/StandardPBR_ForwardPass.azsl
-    Materials/Types/StandardPBR_ForwardPass.shader
-    Materials/Types/StandardPBR_ForwardPass_EDS.shader
     Materials/Types/StandardPBR_HandleIrradianceColorSource.lua
-    Materials/Types/StandardPBR_HandleOpacityDoubleSided.lua
     Materials/Types/StandardPBR_HandleOpacityMode.lua
-    Materials/Types/StandardPBR_LowEndForward.shader
-    Materials/Types/StandardPBR_LowEndForward_EDS.shader
     Materials/Types/StandardPBR_Metallic.lua
     Materials/Types/StandardPBR_ParallaxState.lua
     Materials/Types/StandardPBR_Roughness.lua
-    Materials/Types/StandardPBR_ShaderEnable.lua
-    Materials/Types/StandardPBR_Shadowmap_WithPS.azsl
-    Materials/Types/StandardPBR_Shadowmap_WithPS.shader
-    Materials/Types/StandardSurface_ForwardPass.azsli
-    Materials/Types/MaterialFunctions/EnhancedParallaxDepth.azsli
-    Materials/Types/MaterialFunctions/EvaluateEnhancedSurface.azsli
-    Materials/Types/MaterialFunctions/EvaluateEyeSurface.azsli
-    Materials/Types/MaterialFunctions/EvaluateStandardSurface.azsli
-    Materials/Types/MaterialFunctions/EvaluateTangentFrame.azsli
-    Materials/Types/MaterialFunctions/MultilayerParallaxDepth.azsli
-    Materials/Types/MaterialFunctions/ParallaxDepth.azsli
-    Materials/Types/MaterialFunctions/ParallaxShadowUtil.azsli
-    Materials/Types/MaterialFunctions/StandardGetAlphaAndClip.azsli
-    Materials/Types/MaterialFunctions/StandardGetNormalToWorld.azsli
-    Materials/Types/MaterialFunctions/StandardGetObjectToWorld.azsli
-    Materials/Types/MaterialFunctions/StandardTransformDetailUvs.azsli
-    Materials/Types/MaterialFunctions/StandardTransformUvs.azsli
-    Materials/Types/MaterialInputs/AlphaInput.azsli
-    Materials/Types/MaterialInputs/BaseColorInput.azsli
-    Materials/Types/MaterialInputs/ClearCoatInput.azsli
     Materials/Types/MaterialInputs/DetailMapsCommonFunctor.lua
-    Materials/Types/MaterialInputs/DetailMapsInput.azsli
-    Materials/Types/MaterialInputs/EmissiveInput.azsli
-    Materials/Types/MaterialInputs/MetallicInput.azsli
-    Materials/Types/MaterialInputs/NormalInput.azsli
-    Materials/Types/MaterialInputs/OcclusionInput.azsli
-    Materials/Types/MaterialInputs/ParallaxInput.azsli
-    Materials/Types/MaterialInputs/RoughnessInput.azsli
-    Materials/Types/MaterialInputs/SpecularInput.azsli
-    Materials/Types/MaterialInputs/SubsurfaceInput.azsli
-    Materials/Types/MaterialInputs/TransmissionInput.azsli
-    Materials/Types/MaterialInputs/UvSetCount.azsli
     Passes/AuxGeom.pass
     Passes/BlendColorGradingLuts.pass
     Passes/Bloom.pass
@@ -148,6 +77,7 @@ set(FILES
     Passes/DownsampleLuminanceMinAvgMaxCS.pass
     Passes/DownsampleMinAvgMaxCS.pass
     Passes/DownsampleMipChain.pass
+    Passes/DownsampleSinglePassLuminance.pass
     Passes/EnvironmentCubeMapPipeline.pass
     Passes/EsmShadowmaps.pass
     Passes/EyeAdaptation.pass
@@ -185,6 +115,13 @@ set(FILES
     Passes/MSAAResolveColor.pass
     Passes/MSAAResolveCustom.pass
     Passes/MSAAResolveDepth.pass
+    Passes/MultiViewForward.pass
+    Passes/MultiViewPipeline.pass
+    Passes/MultiViewSkyBox.pass
+    Passes/MultiViewTransparent.pass
+    Passes/MultiViewTransparentParent.pass
+    Passes/MultiViewXRLeftPipeline.pass
+    Passes/MultiViewXRRightPipeline.pass
     Passes/NewDepthOfField.pass
     Passes/NewDepthOfFieldComposite.pass
     Passes/NewDepthOfFieldDownsample.pass
@@ -214,13 +151,14 @@ set(FILES
     Passes/ReflectionScreenSpaceTrace.pass
     Passes/ShadowParent.pass
     Passes/Skinning.pass
-    Passes/SkyAtmosphereParent.pass
     Passes/SkyAtmosphere.pass
-    Passes/SkyTransmittanceLUT.pass
-    Passes/SkyViewLUT.pass
-    Passes/SkyRayMarching.pass
+    Passes/SkyAtmosphereParent.pass
     Passes/SkyBox.pass
     Passes/SkyBox_TwoOutputs.pass
+    Passes/SkyRayMarching.pass
+    Passes/SkyTransmittanceLUT.pass
+    Passes/SkyViewLUT.pass
+    Passes/SkyVolumeLUT.pass
     Passes/SlowClear.pass
     Passes/SMAA1xApplyLinearHDRColor.pass
     Passes/SMAA1xApplyPerceptualColor.pass
@@ -228,6 +166,7 @@ set(FILES
     Passes/SMAAConvertToPerceptualColor.pass
     Passes/SMAAEdgeDetection.pass
     Passes/SMAANeighborhoodBlending.pass
+    Passes/SplashScreen.pass
     Passes/SsaoCompute.pass
     Passes/SsaoParent.pass
     Passes/SubsurfaceScattering.pass
@@ -274,18 +213,13 @@ set(FILES
     ShaderLib/Atom/Features/PBR/BackLighting.azsli
     ShaderLib/Atom/Features/PBR/Decals.azsli
     ShaderLib/Atom/Features/PBR/DefaultObjectSrg.azsli
-    ShaderLib/Atom/Features/PBR/ForwardPassOutput.azsli
-    ShaderLib/Atom/Features/PBR/ForwardPassSrg.azsli
-    ShaderLib/Atom/Features/PBR/ForwardSubsurfacePassOutput.azsli
     ShaderLib/Atom/Features/PBR/Hammersley.azsli
     ShaderLib/Atom/Features/PBR/LightingOptions.azsli
     ShaderLib/Atom/Features/PBR/LightingUtils.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/BaseLighting.azsli
+    ShaderLib/Atom/Features/PBR/MaterialUtils.azsli
+    ShaderLib/Atom/Features/PBR/SpecularAA.azsli
     ShaderLib/Atom/Features/PBR/Lighting/DualSpecularLighting.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/EnhancedLighting.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/EyeLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/LightingData.azsli
-    ShaderLib/Atom/Features/PBR/Lighting/SkinLighting.azsli
     ShaderLib/Atom/Features/PBR/Lighting/StandardLighting.azsli
     ShaderLib/Atom/Features/PBR/Lights/CapsuleLight.azsli
     ShaderLib/Atom/Features/PBR/Lights/DirectionalLight.azsli
@@ -303,12 +237,8 @@ set(FILES
     ShaderLib/Atom/Features/PBR/Microfacet/Fresnel.azsli
     ShaderLib/Atom/Features/PBR/Microfacet/Ggx.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/AnisotropicSurfaceData.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/BasePbrSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/ClearCoatSurfaceData.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/DualSpecularSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/EnhancedSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/EyeSurface.azsli
-    ShaderLib/Atom/Features/PBR/Surfaces/SkinSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/StandardSurface.azsli
     ShaderLib/Atom/Features/PBR/Surfaces/TransmissionSurfaceData.azsli
     ShaderLib/Atom/Features/PostProcessing/Aces.azsli
@@ -339,7 +269,6 @@ set(FILES
     ShaderLib/Atom/Features/Shadow/Shadow.azsli
     ShaderLib/Atom/Features/Shadow/ShadowmapAtlasLib.azsli
     ShaderLib/Atom/Features/Skin/SkinObjectSrg.azsli
-    ShaderLib/Atom/Features/Vertex/VertexHelper.azsli
     ShaderResourceGroups/SceneSrg.azsli
     ShaderResourceGroups/SceneSrgAll.azsli
     ShaderResourceGroups/ViewSrg.azsli
@@ -368,11 +297,6 @@ set(FILES
     Shaders/ColorGrading/LutGeneration.shader
     Shaders/Depth/DepthPass.azsl
     Shaders/Depth/DepthPass.shader
-    Shaders/Depth/DepthPassCommon.azsli
-    Shaders/Depth/DepthPassSkin.azsl
-    Shaders/Depth/DepthPassSkin.shader
-    Shaders/Depth/DepthPassTransparentMax.shader
-    Shaders/Depth/DepthPassTransparentMin.shader
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.azsl
     Shaders/DiffuseGlobalIllumination/DiffuseGlobalFullscreen.shader
     Shaders/ImGui/ImGui.azsl
@@ -385,16 +309,71 @@ set(FILES
     Shaders/LightCulling/LightCullingRemap.shader
     Shaders/LightCulling/LightCullingTilePrepare.azsl
     Shaders/LightCulling/LightCullingTilePrepare.shader
+    Shaders/Materials/BasePBR/BasePBR_LightingBrdf.azsli
+    Shaders/Materials/BasePBR/BasePBR_LightingData.azsli
+    Shaders/Materials/BasePBR/BasePBR_LightingEval.azsli
+    Shaders/Materials/BasePBR/BasePBR_MaterialSrg.azsli
+    Shaders/Materials/BasePBR/BasePBR_PixelGeometryData.azsli
+    Shaders/Materials/BasePBR/BasePBR_PixelGeometryEval.azsli
+    Shaders/Materials/BasePBR/BasePBR_SurfaceData.azsli
+    Shaders/Materials/BasePBR/BasePBR_SurfaceEval.azsli
+    Shaders/Materials/BasePBR/BasePBR_VertexData.azsli
+    Shaders/Materials/BasePBR/BasePBR_VertexEval.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_LightingBrdf.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_MaterialSrg.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryData.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_PixelGeometryEval.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceData.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_SurfaceEval.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexData.azsli
+    Shaders/Materials/EnhancedPBR/EnhancedPBR_VertexEval.azsli
+    Shaders/Materials/Eye/Eye_MaterialSrg.azsli
+    Shaders/Materials/Eye/Eye_PixelGeometryData.azsli
+    Shaders/Materials/Eye/Eye_PixelGeometryEval.azsli
+    Shaders/Materials/Eye/Eye_SurfaceEval.azsli
+    Shaders/Materials/Eye/Eye_VertexData.azsli
+    Shaders/Materials/Eye/Eye_VertexEval.azsli
+    Shaders/Materials/MaterialFunctions/EvaluateTangentFrame.azsli
+    Shaders/Materials/MaterialFunctions/MultilayerParallaxDepth.azsli
+    Shaders/Materials/MaterialFunctions/ParallaxDepth.azsli
+    Shaders/Materials/MaterialFunctions/ParallaxShadowUtil.azsli
+    Shaders/Materials/MaterialFunctions/StandardGetAlphaAndClip.azsli
+    Shaders/Materials/MaterialFunctions/StandardTransformDetailUvs.azsli
+    Shaders/Materials/MaterialInputs/AlphaInput.azsli
+    Shaders/Materials/MaterialInputs/BaseColorInput.azsli
+    Shaders/Materials/MaterialInputs/ClearCoatInput.azsli
+    Shaders/Materials/MaterialInputs/DetailMapsInput.azsli
+    Shaders/Materials/MaterialInputs/EmissiveInput.azsli
+    Shaders/Materials/MaterialInputs/MetallicInput.azsli
+    Shaders/Materials/MaterialInputs/NormalInput.azsli
+    Shaders/Materials/MaterialInputs/OcclusionInput.azsli
+    Shaders/Materials/MaterialInputs/ParallaxInput.azsli
+    Shaders/Materials/MaterialInputs/RoughnessInput.azsli
+    Shaders/Materials/MaterialInputs/SpecularInput.azsli
+    Shaders/Materials/MaterialInputs/SubsurfaceInput.azsli
+    Shaders/Materials/MaterialInputs/TransmissionInput.azsli
+    Shaders/Materials/MaterialInputs/UvSetCount.azsli
+    Shaders/Materials/MultilayerPBR/StandardMultilayerPBR_Common.azsli
+    Shaders/Materials/Skin/Skin_LightingBrdf.azsli
+    Shaders/Materials/Skin/Skin_MaterialSrg.azsli
+    Shaders/Materials/Skin/Skin_PixelGeometryData.azsli
+    Shaders/Materials/Skin/Skin_PixelGeometryEval.azsli
+    Shaders/Materials/Skin/Skin_SurfaceData.azsli
+    Shaders/Materials/Skin/Skin_SurfaceEval.azsli
+    Shaders/Materials/Skin/Skin_VertexData.azsli
+    Shaders/Materials/Skin/Skin_VertexEval.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_LightingBrdf.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_LightingEval.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_MaterialSrg.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryData.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_PixelGeometryEval.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_SurfaceData.azsli
+    Shaders/Materials/StandardPBR/StandardPBR_SurfaceEval.azsli
     Shaders/MorphTargets/MorphTargetCS.azsl
     Shaders/MorphTargets/MorphTargetCS.shader
     Shaders/MorphTargets/MorphTargetSRG.azsli
     Shaders/MotionVector/CameraMotionVector.azsl
     Shaders/MotionVector/CameraMotionVector.shader
-    Shaders/MotionVector/MeshMotionVector.azsl
-    Shaders/MotionVector/MeshMotionVector.shader
-    Shaders/MotionVector/MeshMotionVectorCommon.azsli
-    Shaders/MotionVector/MeshMotionVectorSkin.azsl
-    Shaders/MotionVector/MeshMotionVectorSkin.shader
     Shaders/PostProcessing/AcesOutputTransformLut.azsl
     Shaders/PostProcessing/AcesOutputTransformLut.shader
     Shaders/PostProcessing/ApplyShaperLookupTable.azsl
@@ -444,6 +423,8 @@ set(FILES
     Shaders/PostProcessing/DownsampleLuminanceMinAvgMaxCS.shader
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.azsl
     Shaders/PostProcessing/DownsampleMinAvgMaxCS.shader
+    Shaders/PostProcessing/DownsampleSinglePassLuminance.azsl
+    Shaders/PostProcessing/DownsampleSinglePassLuminance.shader
     Shaders/PostProcessing/EyeAdaptation.azsl
     Shaders/PostProcessing/EyeAdaptation.shader
     Shaders/PostProcessing/EyeAdaptationUtil.azsli
@@ -537,21 +518,20 @@ set(FILES
     Shaders/Shadow/KawaseShadowBlur.shader
     Shaders/Shadow/Shadowmap.azsl
     Shaders/Shadow/Shadowmap.shader
-    Shaders/Shadow/ShadowmapCommon.azsli
-    Shaders/Shadow/ShadowmapSkin.azsl
-    Shaders/Shadow/ShadowmapSkin.shader
     Shaders/SkinnedMesh/LinearSkinningCS.azsl
     Shaders/SkinnedMesh/LinearSkinningCS.shader
     Shaders/SkinnedMesh/LinearSkinningPassSRG.azsli
-    Shaders/SkyBox/SkyBox.azsl
-    Shaders/SkyBox/SkyBox.shader
-    Shaders/SkyBox/SkyBox_TwoOutputs.azsl
-    Shaders/SkyBox/SkyBox_TwoOutputs.shader
     Shaders/SkyAtmosphere/SkyAtmosphereCommon.azsli
+    Shaders/SkyAtmosphere/SkyRayMarching.azsl
+    Shaders/SkyAtmosphere/SkyRayMarching.shader
     Shaders/SkyAtmosphere/SkyTransmittanceLUT.azsl
     Shaders/SkyAtmosphere/SkyTransmittanceLUT.shader
     Shaders/SkyAtmosphere/SkyViewLUT.azsl
     Shaders/SkyAtmosphere/SkyViewLUT.shader
-    Shaders/SkyAtmosphere/SkyRayMarching.azsl
-    Shaders/SkyAtmosphere/SkyRayMarching.shader
+    Shaders/SkyAtmosphere/SkyVolumeLUT.azsl
+    Shaders/SkyAtmosphere/SkyVolumeLUT.shader
+    Shaders/SkyBox/SkyBox.azsl
+    Shaders/SkyBox/SkyBox.shader
+    Shaders/SkyBox/SkyBox_TwoOutputs.shader
+    Shaders/SkyBox/MultiViewSkyBox.shader
 ) 

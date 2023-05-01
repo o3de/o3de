@@ -8,8 +8,13 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
+
+class QMainWindow;
+class QPoint;
 
 namespace AzToolsFramework
 {
@@ -43,14 +48,15 @@ namespace AzToolsFramework
 
         //! Register a new Menu Bar to the Menu Manager.
         //! @param menuBarIdentifier The identifier for the menu bar that is being registered.
+        //! @param mainWindow Pointer to the QMainWindow to associate the menu bar with.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
-        virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier) = 0;
+        virtual MenuManagerOperationResult RegisterMenuBar(const AZStd::string& menuBarIdentifier, QMainWindow* mainWindow) = 0;
 
         //! Returns whether a menu with the identifier queried is registered to the Menu Manager.
         //! @param menuIdentifier The identifier for the menu to query.
         //! @return True if a Menu with the identifier provided was found, false otherwise.
         virtual bool IsMenuRegistered(const AZStd::string& menuIdentifier) const = 0;
-        
+
         //! Add an Action to a Menu. Will prompt an update of the menu.
         //! @param menuIdentifier The identifier for the menu the action is being added to.
         //! @param actionIdentifier The identifier for the action to add to the menu.
@@ -155,6 +161,18 @@ namespace AzToolsFramework
         //! @param menuIdentifier The identifier for the menu whose sort key to get in the menu bar.
         //! @return A successful outcome object containing the sort key, or a string with a message detailing the error in case of failure.
         virtual MenuManagerIntegerResult GetSortKeyOfMenuInMenuBar(const AZStd::string& menuBarIdentifier, const AZStd::string& menuIdentifier) const = 0;
+
+        //! Show the menu at the position provided.
+        //! @param menuIdentifier The identifier for the menu to display.
+        //! @param screenPosition The position where the menu should appear.
+        //! @return A successful outcome object if the menu could be displayed, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult DisplayMenuAtScreenPosition(const AZStd::string& menuIdentifier, const QPoint& screenPosition) const = 0;
+
+        //! Show the menu under the mouse cursor.
+        //! @param menuIdentifier The identifier for the menu to display.
+        //! @return A successful outcome object if the menu could be displayed, or a string with a message detailing the error in case of failure.
+        virtual MenuManagerOperationResult DisplayMenuUnderCursor(const AZStd::string& menuIdentifier) const = 0;
+        
     };
 
 } // namespace AzToolsFramework

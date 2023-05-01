@@ -25,13 +25,13 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(ConstantGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ConstantGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(ConstantGradientConfig, "{B0216514-46B5-4A57-9D9D-8D9EC94C3702}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         float m_value = 1.0f;
     };
 
-    static const AZ::Uuid ConstantGradientComponentTypeId = "{08785CA9-FD25-4036-B8A0-E0ED65C6E54B}";
+    inline constexpr AZ::TypeId ConstantGradientComponentTypeId{ "{08785CA9-FD25-4036-B8A0-E0ED65C6E54B}" };
 
     /**
     * always returns a constant value as a gradient

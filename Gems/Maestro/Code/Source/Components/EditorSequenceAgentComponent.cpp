@@ -52,7 +52,7 @@ namespace Maestro
     }
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////
-    const AZ::Uuid& EditorSequenceAgentComponent::GetComponentTypeUuid(const AZ::Component& component) const
+    AZ::TypeId EditorSequenceAgentComponent::GetComponentTypeUuid(const AZ::Component& component) const
     {
         return AzToolsFramework::GetUnderlyingComponentType(component);
     }

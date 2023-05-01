@@ -197,6 +197,10 @@ CXConsole::CXConsole()
     m_waitSeconds = 0.0f;
     m_blockCounter = 0;
 
+    m_intWrappers.reserve(128);
+    m_floatWrappers.reserve(128);
+    m_stringWrappers.reserve(128);
+
     AzFramework::ConsoleRequestBus::Handler::BusConnect();
     AzFramework::CommandRegistrationBus::Handler::BusConnect();
 
@@ -452,8 +456,24 @@ void CXConsole::RegisterVar(ICVar* pCVar, ConsoleVarFunc pChangeFunc)
     }
 
     ConsoleVariablesMapItor::value_type value = ConsoleVariablesMapItor::value_type(pCVar->GetName(), pCVar);
-
     m_mapVariables.insert(value);
+
+    if (auto consoleInterface = AZ::Interface<AZ::IConsole>::Get();
+        consoleInterface != nullptr && !consoleInterface->HasCommand(pCVar->GetName(), AZ::ConsoleFunctorFlags::Null))
+    {
+        if (pCVar->GetType() == CVAR_INT)
+        {
+            m_intWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetIVal());
+        }
+        else if (pCVar->GetType() == CVAR_FLOAT)
+        {
+            m_floatWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetFVal());
+        }
+        else if (pCVar->GetType() == CVAR_STRING)
+        {
+            m_stringWrappers.emplace_back(pCVar->GetName(), pCVar->GetHelp(), pCVar->GetString());
+        }
+    }
 
     int flags = pCVar->GetFlags();
 
@@ -2113,7 +2133,7 @@ void CXConsole::ExecuteCommand(CConsoleCommand& cmd, AZStd::string& str, bool bI
             for (unsigned int i = 1; i <= args.size(); i++)
             {
                 char pat[10];
-                azsprintf(pat, "%%%d", i);
+                azsnprintf(pat, AZ_ARRAY_SIZE(pat), "%%%d", i);
                 size_t pos = buf.find(pat);
                 if (pos == AZStd::string::npos)
                 {

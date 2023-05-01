@@ -14,17 +14,7 @@ using namespace AZStd;
 
 namespace UnitTest
 {
-    class ConcurrencyCheckerTestFixture
-        : public AllocatorsTestFixture
-    {
-
-        void SetUp() override
-        {
-            AllocatorsFixture::SetUp();
-        }
-    };
-
-    TEST_F(AllocatorsTestFixture, SoftLock_NoContention_NoAsserts)
+    TEST_F(LeakDetectionFixture, SoftLock_NoContention_NoAsserts)
     {
         concurrency_checker concurrencyChecker;
         concurrencyChecker.soft_lock();
@@ -33,7 +23,7 @@ namespace UnitTest
         concurrencyChecker.soft_unlock();
     }
 
-    TEST_F(AllocatorsTestFixture, SoftLock_AlreadyLocked_Assert)
+    TEST_F(LeakDetectionFixture, SoftLock_AlreadyLocked_Assert)
     {
         concurrency_checker concurrencyChecker;
         concurrencyChecker.soft_lock();
@@ -42,7 +32,7 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(AllocatorsTestFixture, SoftUnlock_NotAlreadyLocked_Assert)
+    TEST_F(LeakDetectionFixture, SoftUnlock_NotAlreadyLocked_Assert)
     {
         concurrency_checker concurrencyChecker;
         concurrencyChecker.soft_lock();
@@ -52,7 +42,7 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(AllocatorsTestFixture, SoftLockShared_NoContention_NoAsserts)
+    TEST_F(LeakDetectionFixture, SoftLockShared_NoContention_NoAsserts)
     {
         concurrency_checker concurrencyChecker;
         // Multiple shared locks can be made at once,
@@ -74,7 +64,7 @@ namespace UnitTest
         concurrencyChecker.soft_unlock();
     }
 
-    TEST_F(AllocatorsTestFixture, SoftLockShared_SharedLockAfterSoftLock_Assert)
+    TEST_F(LeakDetectionFixture, SoftLockShared_SharedLockAfterSoftLock_Assert)
     {
         concurrency_checker concurrencyChecker;
 
@@ -84,7 +74,7 @@ namespace UnitTest
         AZ_TEST_STOP_TRACE_SUPPRESSION(1);
     }
 
-    TEST_F(AllocatorsTestFixture, SoftUnlockShared_NotAlreadyLocked_Assert)
+    TEST_F(LeakDetectionFixture, SoftUnlockShared_NotAlreadyLocked_Assert)
     {
         concurrency_checker concurrencyChecker;
         concurrencyChecker.soft_lock_shared();

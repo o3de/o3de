@@ -29,7 +29,7 @@ namespace LmbrCentral
         , public AZ::TransformNotificationBus::Handler
     {
     public:
-        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(SphereShape, AZ::SystemAllocator)
         AZ_RTTI(SphereShape, "{FC63856F-318C-406A-AF3A-FDFF448D850A}")
 
         static void Reflect(AZ::ReflectContext* context);
@@ -45,6 +45,8 @@ namespace LmbrCentral
         bool IsPointInside(const AZ::Vector3& point)  override;
         float DistanceSquaredFromPoint(const AZ::Vector3& point) override;
         bool IntersectRay(const AZ::Vector3& src, const AZ::Vector3& dir, float& distance) override;
+        AZ::Vector3 GetTranslationOffset() const override;
+        void SetTranslationOffset(const AZ::Vector3& translationOffset) override;
 
         // SphereShapeComponentRequestsBus::Handler
         SphereShapeConfig GetSphereConfiguration() override { return m_sphereShapeConfig; }

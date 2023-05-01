@@ -23,7 +23,7 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(BlendTreeBlend2LegacyNode, AnimGraphAllocator)
 
 
     BlendTreeBlend2LegacyNode::BlendTreeBlend2LegacyNode()
@@ -303,7 +303,7 @@ namespace EMotionFX
             AnimGraphNodeData* sourceNodeUniqueData = con->GetSourceNode()->FindOrCreateUniqueNodeData(animGraphInstance);
             sourceNodeUniqueData->SetGlobalWeight(uniqueData->GetGlobalWeight());
             sourceNodeUniqueData->SetLocalWeight(1.0f);
-            con->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -402,11 +402,11 @@ namespace EMotionFX
                 AnimGraphNodeData* uniqueDataNodeB = nodeWeightUpdateB->FindOrCreateUniqueNodeData(animGraphInstance);
                 uniqueDataNodeB->SetGlobalWeight(uniqueData->GetGlobalWeight() * weight);
                 uniqueDataNodeB->SetLocalWeight(weight);
-                nodeWeightUpdateB->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+                TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateB, timePassedInSeconds);
             }
         }
 
-        nodeWeightUpdateA->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+        TopDownUpdateIncomingNode(animGraphInstance, nodeWeightUpdateA, timePassedInSeconds);
     }
 
 
@@ -425,7 +425,7 @@ namespace EMotionFX
         const BlendTreeConnection* con = GetInputPort(INPUTPORT_WEIGHT).m_connection;
         if (con)
         {
-            con->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, con->GetSourceNode(), timePassedInSeconds);
         }
 
         AnimGraphNode* nodeA;
@@ -443,10 +443,10 @@ namespace EMotionFX
             return;
         }
 
-        nodeA->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+        PostUpdateIncomingNode(animGraphInstance, nodeA, timePassedInSeconds);
         if (nodeB && nodeA != nodeB)
         {
-            nodeB->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, nodeB, timePassedInSeconds);
         }
 
         RequestRefDatas(animGraphInstance);

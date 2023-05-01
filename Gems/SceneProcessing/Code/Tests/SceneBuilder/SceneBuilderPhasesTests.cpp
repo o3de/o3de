@@ -40,6 +40,7 @@ class ComponentSingleton
     : public AZ::ComponentDescriptorDefault<ComponentType>
 {
 public:
+    AZ_CLASS_ALLOCATOR(ComponentSingleton, AZ::SystemAllocator)
     AZ::Component* CreateComponent() override { return m_component; }
     void SetComponent(ComponentType* c) { m_component = c; }
 private:
@@ -114,9 +115,9 @@ class TestSceneSerializationHandler
 public:
     TestSceneSerializationHandler() { BusConnect(); }
     ~TestSceneSerializationHandler() override { BusDisconnect(); }
-    MOCK_METHOD2(LoadScene, AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>(const AZStd::string& sceneFilePath, AZ::Uuid sceneSourceGuid));
+    MOCK_METHOD3(LoadScene, AZStd::shared_ptr<AZ::SceneAPI::Containers::Scene>(const AZStd::string& sceneFilePath, AZ::Uuid sceneSourceGuid, const AZStd::string& watchFolder));
 
-    void GenerateImportEvents(const AZStd::string& assetFilePath, [[maybe_unused]] const AZ::Uuid& sourceGuid)
+    void GenerateImportEvents(const AZStd::string& assetFilePath, [[maybe_unused]] const AZ::Uuid& sourceGuid, [[maybe_unused]] const AZStd::string& watchFolder)
     {
         auto loaders = AZ::SceneAPI::SceneCore::EntityConstructor::BuildEntity("Scene Loading", azrtti_typeid<AZ::SceneAPI::SceneCore::LoadingComponent>());
         auto scene = AZStd::make_shared<AZ::SceneAPI::Containers::Scene>("import scene");
@@ -131,7 +132,7 @@ public:
 // This fixture attaches the SceneCore and SceneData libraries, and attaches
 // the AZ::Environment to them
 class SceneBuilderPhasesFixture
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
 public:
     void SetUp() override
@@ -209,7 +210,7 @@ TEST_F(SceneBuilderPhasesFixture, TestProcessingPhases)
     scene->SetManifestFilename("testScene.manifest");
 
     TestSceneSerializationHandler sceneLoadingHandler;
-    EXPECT_CALL(sceneLoadingHandler, LoadScene(testing::_, testing::_))
+    EXPECT_CALL(sceneLoadingHandler, LoadScene(testing::_, testing::_, testing::_))
         .WillOnce(testing::DoAll(
             testing::Invoke(&sceneLoadingHandler, &TestSceneSerializationHandler::GenerateImportEvents),
             testing::Return(scene)

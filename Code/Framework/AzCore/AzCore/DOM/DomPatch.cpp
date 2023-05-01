@@ -133,6 +133,75 @@ namespace AZ::Dom
         return AZ::Failure<AZStd::string>("Unsupported DOM patch operation specified");
     }
 
+    AZ::Outcome<Value, AZStd::string> PatchOperation::ApplyAndDenormalize(Value rootElement)
+    {
+        PatchOutcome outcome = ApplyInPlaceAndDenormalize(rootElement);
+        if (!outcome.IsSuccess())
+        {
+            return AZ::Failure(outcome.TakeError());
+        }
+        return AZ::Success(AZStd::move(rootElement));
+    }
+
+    PatchOutcome PatchOperation::ApplyInPlaceAndDenormalize(Value& rootElement)
+    {
+        switch (m_type)
+        {
+        case Type::Add:
+        case Type::Remove:
+        case Type::Replace:
+            if (!DenormalizePath(m_domPath, rootElement))
+            {
+                return AZ::Failure<AZStd::string>("Failed to denormalize patch destination path, an invalid value or path has been specified");
+            }
+            break;
+        case Type::Copy:
+        case Type::Move:
+            if (!DenormalizePath(m_domPath, rootElement))
+            {
+                return AZ::Failure<AZStd::string>("Failed to denormalize patch destination path, an invalid value or path has been specified");
+            }
+            if (!DenormalizePath(AZStd::get<Dom::Path>(m_value), rootElement))
+            {
+                return AZ::Failure<AZStd::string>("Failed to denormalize patch source path, an invalid value or path has been specified");
+            }
+            break;
+        }
+        return ApplyInPlace(rootElement);
+    }
+
+    bool PatchOperation::DenormalizePath(Dom::Path& path, const Dom::Value& sourceValue)
+    {
+        // If we end with an EndOfArray marker, replace it with a marker for the size of sourceValue's array
+        if (path.Size() > 0 && path[path.Size() - 1].IsEndOfArray())
+        {
+            path.Pop();
+            const Dom::Value* lookupValue = sourceValue.FindChild(path);
+            if (lookupValue == nullptr || (!lookupValue->IsArray() && !lookupValue->IsNode()))
+            {
+                return false;
+            }
+            path.Push(lookupValue->ArraySize());
+        }
+        return true;
+    }
+
+    bool PatchOperation::ContainsNormalizedEntries() const
+    {
+        switch (m_type)
+        {
+        case Type::Add:
+        case Type::Remove:
+        case Type::Replace:
+            return GetDestinationPath().ContainsNormalizedEntries();
+        case Type::Copy:
+        case Type::Move:
+            return GetSourcePath().ContainsNormalizedEntries() || GetDestinationPath().ContainsNormalizedEntries();
+        default:
+            return false;
+        }
+    }
+
     Value PatchOperation::GetDomRepresentation() const
     {
         Value serializedPatch(Dom::Type::Object);
@@ -427,9 +496,18 @@ namespace AZ::Dom
                 return AZ::Failure<AZStd::string>("Array index specified for a value that is not an array or node");
             }
 
-            if (destinationIndex.IsIndex() && destinationIndex.GetIndex() >= targetValue->ArraySize())
+            if (destinationIndex.IsIndex())
             {
-                return AZ::Failure<AZStd::string>("Array index out bounds");
+                // If allowEndOfArray is true, we might get an index exactly equal to our length if we
+                // received a denormalized path.
+                if (allowEndOfArray && destinationIndex.GetIndex() > targetValue->ArraySize())
+                {
+                    return AZ::Failure<AZStd::string>("Array index out of bounds");
+                }
+                else if (!allowEndOfArray && destinationIndex.GetIndex() >= targetValue->ArraySize())
+                {
+                    return AZ::Failure<AZStd::string>("Array index out of bounds");
+                }
             }
         }
         else
@@ -484,7 +562,7 @@ namespace AZ::Dom
 
     PatchOutcome PatchOperation::ApplyRemove(Value& rootElement) const
     {
-        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath | ExistenceCheckFlags::AllowEndOfArray);
+        auto pathLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::VerifyFullPath);
         if (!pathLookup.IsSuccess())
         {
             return AZ::Failure(pathLookup.TakeError());
@@ -526,7 +604,7 @@ namespace AZ::Dom
             return AZ::Failure(sourceLookup.TakeError());
         }
 
-        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::DefaultExistenceCheck);
         if (!destLookup.IsSuccess())
         {
             return AZ::Failure(destLookup.TakeError());
@@ -544,14 +622,14 @@ namespace AZ::Dom
             return AZ::Failure(sourceLookup.TakeError());
         }
 
-        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        auto destLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::DefaultExistenceCheck);
         if (!destLookup.IsSuccess())
         {
             return AZ::Failure(destLookup.TakeError());
         }
 
-        Value valueToMove = rootElement[GetSourcePath()];
         const PathContext& sourceContext = sourceLookup.GetValue();
+        Value valueToMove = sourceContext.m_value[sourceContext.m_key];
         if (sourceContext.m_key.IsEndOfArray())
         {
             sourceContext.m_value.ArrayPopBack();
@@ -565,7 +643,29 @@ namespace AZ::Dom
             sourceContext.m_value.EraseMember(sourceContext.m_key.GetKey());
         }
 
-        rootElement[m_domPath] = AZStd::move(valueToMove);
+        auto newDestLookup = LookupPath(rootElement, m_domPath, ExistenceCheckFlags::AllowEndOfArray);
+        const PathContext& destContext = newDestLookup.GetValue();
+        const PathEntry& destinationIndex = destContext.m_key;
+        Value& targetValue = destContext.m_value;
+
+        if (destinationIndex.IsIndex() || destinationIndex.IsEndOfArray())
+        {
+            const size_t index = destinationIndex.GetIndex();
+            if (destinationIndex.IsEndOfArray() || targetValue.ArraySize() == index)
+            {
+                targetValue.ArrayPushBack(AZStd::move(valueToMove));
+            }
+            else
+            {
+                auto& arrayToChange = targetValue.GetMutableArray();
+                arrayToChange.insert(arrayToChange.begin() + index, AZStd::move(valueToMove));
+            }
+        }
+        else
+        {
+            targetValue[destinationIndex] = AZStd::move(valueToMove);
+        }
+
         return AZ::Success();
     }
 
@@ -752,6 +852,47 @@ namespace AZ::Dom
             }
         }
         return state.m_outcome;
+    }
+
+    AZ::Outcome<Value, AZStd::string> Patch::ApplyAndDenormalize(Value rootElement, StrategyFunctor strategy)
+    {
+        auto result = ApplyInPlaceAndDenormalize(rootElement, strategy);
+        if (!result.IsSuccess())
+        {
+            return AZ::Failure(result.TakeError());
+        }
+        return AZ::Success(AZStd::move(rootElement));
+    }
+
+    PatchOutcome Patch::ApplyInPlaceAndDenormalize(Value& rootElement, StrategyFunctor strategy)
+    {
+        PatchApplicationState state;
+        state.m_currentState = &rootElement;
+        state.m_patch = this;
+
+        for (PatchOperation& operation : m_operations)
+        {
+            state.m_lastOperation = &operation;
+            CombinePatchOutcomes(state.m_outcome, operation.ApplyInPlaceAndDenormalize(rootElement));
+            strategy(state);
+            if (!state.m_shouldContinue)
+            {
+                break;
+            }
+        }
+        return state.m_outcome;
+    }
+
+    bool Patch::ContainsNormalizedEntries() const
+    {
+        for (const PatchOperation& operation : m_operations)
+        {
+            if (operation.ContainsNormalizedEntries())
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     Value Patch::GetDomRepresentation() const

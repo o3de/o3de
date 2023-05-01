@@ -110,46 +110,19 @@ namespace PhysX
     // CharacterGameplayRequestBus
     bool CharacterGameplayComponent::IsOnGround() const
     {
-        if (m_cachedGroundState == CharacterGroundState::NotYetDetermined)
-        {
-            DetermineCachedGroundState();
-        }
-
-        return m_cachedGroundState == CharacterGroundState::Touching;
-    }
-
-    void CharacterGameplayComponent::DetermineCachedGroundState() const
-    {
         Physics::Character* character = nullptr;
         Physics::CharacterRequestBus::EventResult(character, GetEntityId(), &Physics::CharacterRequests::GetCharacter);
         if (!character)
         {
-            m_cachedGroundState = CharacterGroundState::Touching;
-            return;
+            return true;
         }
 
         auto pxController = static_cast<physx::PxController*>(character->GetNativePointer());
         if (!pxController)
         {
-            m_cachedGroundState = CharacterGroundState::Touching;
-            return;
+            return true;
         }
 
-        // first check if we can use the character controller state, which should be cheaper than doing a scene query
-
-        // if the controller is slightly above an object or has not been asked to move downwards, the PxController may
-        // not report a touched actor or downward collision, so this can give false negatives, but should not give
-        // false positives, so it's useful as an early out
-        physx::PxControllerState state;
-        pxController->getState(state);
-
-        if (state.touchedActor != nullptr || (state.collisionFlags & physx::PxControllerCollisionFlag::eCOLLISION_DOWN) != 0)
-        {
-            m_cachedGroundState = CharacterGroundState::Touching;
-            return;
-        }
-
-        // if we get to this point it's still unclear whether the character is touching the ground so
         // use an overlap query to see if there's any geometry immediately below the character's foot position
         if (auto* scene = character->GetScene())
         {
@@ -176,16 +149,16 @@ namespace PhysX
             overlapRequest.m_maxResults = 2;
             AZ::EntityId entityId = GetEntityId();
             AzPhysics::SceneQueryHits sceneQueryHits = scene->QueryScene(&overlapRequest);
-            m_cachedGroundState = AZStd::any_of(
-                                      sceneQueryHits.m_hits.begin(),
-                                      sceneQueryHits.m_hits.end(),
-                                      [&entityId](const AzPhysics::SceneQueryHit& hit)
-                                      {
-                                          return hit.m_entityId != entityId;
-                                      })
-                ? CharacterGroundState::Touching
-                : CharacterGroundState::NotTouching;
+            return AZStd::any_of(
+                sceneQueryHits.m_hits.begin(),
+                sceneQueryHits.m_hits.end(),
+                [&entityId](const AzPhysics::SceneQueryHit& hit)
+                {
+                    return hit.m_entityId != entityId;
+                });
         }
+
+        return true;
     }
 
     float CharacterGameplayComponent::GetGravityMultiplier() const
@@ -235,36 +208,23 @@ namespace PhysX
             {
                 OnSceneSimulationStart(fixedDeltaTime);
             }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Animation));
-
-        m_sceneSimulationFinishHandler = AzPhysics::SceneEvents::OnSceneSimulationStartHandler(
-            [this](
-                [[maybe_unused]] AzPhysics::SceneHandle sceneHandle,
-                [[maybe_unused]] float fixedDeltaTime)
-            {
-                OnSceneSimulationFinish();
-            }, aznumeric_cast<int32_t>(AzPhysics::SceneEvents::PhysicsStartFinishSimulationPriority::Default));
     }
 
     void CharacterGameplayComponent::Activate()
     {
-        AzPhysics::SimulatedBody* worldBody = nullptr;
-        AzPhysics::SimulatedBodyComponentRequestsBus::EventResult(worldBody, GetEntityId(), &AzPhysics::SimulatedBodyComponentRequests::GetSimulatedBody);
-        if (worldBody)
+        AzPhysics::SceneHandle attachedSceneHandle = AzPhysics::InvalidSceneHandle;
+        Physics::DefaultWorldBus::BroadcastResult(attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
+        if (attachedSceneHandle == AzPhysics::InvalidSceneHandle)
         {
-            if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
-            {
-                m_gravity = sceneInterface->GetGravity(worldBody->m_sceneOwner);
-                sceneInterface->RegisterSceneGravityChangedEvent(worldBody->m_sceneOwner, m_onGravityChangedHandler);
-                AzPhysics::SceneHandle attachedSceneHandle = AzPhysics::InvalidSceneHandle;
-                Physics::DefaultWorldBus::BroadcastResult(attachedSceneHandle, &Physics::DefaultWorldRequests::GetDefaultSceneHandle);
-                if (attachedSceneHandle == AzPhysics::InvalidSceneHandle)
-                {
-                    AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
-                    return;
-                }
-                sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
-                sceneInterface->RegisterSceneSimulationFinishHandler(attachedSceneHandle, m_sceneSimulationFinishHandler);
-            }
+            AZ_Error("PhysX Character Controller Component", false, "Failed to retrieve default scene.");
+            return;
+        }
+
+        if (auto* sceneInterface = AZ::Interface<AzPhysics::SceneInterface>::Get())
+        {
+            m_gravity = sceneInterface->GetGravity(attachedSceneHandle);
+            sceneInterface->RegisterSceneGravityChangedEvent(attachedSceneHandle, m_onGravityChangedHandler);
+            sceneInterface->RegisterSceneSimulationStartHandler(attachedSceneHandle, m_sceneSimulationStartHandler);
         }
 
         CharacterGameplayRequestBus::Handler::BusConnect(GetEntityId());
@@ -275,18 +235,12 @@ namespace PhysX
         CharacterGameplayRequestBus::Handler::BusDisconnect();
         m_onGravityChangedHandler.Disconnect();
         m_sceneSimulationStartHandler.Disconnect();
-        m_sceneSimulationFinishHandler.Disconnect();
     }
 
     // Physics::SystemEvent
     void CharacterGameplayComponent::OnSceneSimulationStart(float physicsTimestep)
     {
         ApplyGravity(physicsTimestep);
-    }
-
-    void CharacterGameplayComponent::OnSceneSimulationFinish()
-    {
-        m_cachedGroundState = CharacterGroundState::NotYetDetermined;
     }
 
     void CharacterGameplayComponent::OnGravityChanged(const AZ::Vector3& gravity)

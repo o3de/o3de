@@ -8,9 +8,9 @@
 
 #pragma once
 
-#include <AzCore/RTTI/TypeInfo.h>
 #include <AzCore/std/containers/array.h>
 #include <AzCore/std/function/invoke.h>
+#include <AzCore/std/hash.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/std/typetraits/is_same.h>
 #include <AzCore/std/typetraits/void_t.h>
@@ -33,8 +33,6 @@ namespace AZStd
     using std::forward_as_tuple;
     using std::tuple_cat;
     using std::get;
-
-
     //! Creates an hash specialization for tuple types using the hash_combine function
     //! The std::tuple implementation does not have this support. This is an extension
     template <typename... Types>
@@ -55,31 +53,6 @@ namespace AZStd
             return ElementHasher(value, AZStd::make_index_sequence<sizeof...(Types)>{});
         }
     };
-}
-
-namespace AZ
-{
-    // Specialize the AzDeprcatedTypeNameVisitor for tuple to make sure their
-    // is a mapping of the old type name to current type id
-    inline namespace DeprecatedTypeNames
-    {
-        template<typename... Types>
-        struct AzDeprecatedTypeNameVisitor<AZStd::tuple<Types...>>
-        {
-            template<class Functor>
-            constexpr void operator()(Functor&& visitCallback) const
-            {
-                // AZStd::tuple previous name was place into a buffer of size 128
-                AZStd::array<char, 128> deprecatedName{};
-
-                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), "tuple<");
-                (AggregateTypeNameOld<Types>(deprecatedName.data(), deprecatedName.size()), ...);
-                AZ::Internal::AzTypeInfoSafeCat(deprecatedName.data(), deprecatedName.size(), ">");
-
-                AZStd::invoke(AZStd::forward<Functor>(visitCallback), deprecatedName.data());
-            }
-        };
-    }
 }
 
 namespace AZStd
@@ -365,11 +338,4 @@ namespace std
         using type = T;
     };
     AZ_POP_DISABLE_WARNING
-}
-
-
-// Adds typeinfo specialization for tuple type
-namespace AZ
-{
-    AZ_TYPE_INFO_INTERNAL_SPECIALIZED_TEMPLATE_PREFIX_UUID(AZStd::tuple, "AZStd::tuple", "{F99F9308-DC3E-4384-9341-89CBF1ABD51E}", AZ_TYPE_INFO_INTERNAL_TYPENAME_VARARGS);
 }

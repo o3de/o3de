@@ -13,7 +13,7 @@
 namespace AWSMetrics
 {
     class MetricsEventBuilderTest
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         //! Default attributes include client id, timestamp, event id and event source.
@@ -25,7 +25,7 @@ namespace AWSMetrics
 
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             m_metricsEventBuilder = AZStd::make_unique<MetricsEventBuilder>();
         }
@@ -33,7 +33,7 @@ namespace AWSMetrics
         void TearDown() override
         {
             m_metricsEventBuilder.reset();
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         AZStd::unique_ptr<MetricsEventBuilder> m_metricsEventBuilder;

@@ -18,7 +18,7 @@ namespace DebugDraw
     class DebugDrawObbElement
     {
     public:
-        AZ_CLASS_ALLOCATOR(DebugDrawObbElement, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DebugDrawObbElement, AZ::SystemAllocator);
         AZ_TYPE_INFO(DebugDrawObbElement, "{C0B12E93-287A-4170-B1B6-3BF70D1D9433}");
         static void Reflect(AZ::ReflectContext* context);
 

@@ -9,9 +9,10 @@
 #pragma once
 
 #include <AzCore/Module/Environment.h>
-#include <ScriptCanvas/Data/Traits.h>
 #include <AzCore/std/utils.h>
 #include <AzCore/RTTI/ReflectContext.h>
+
+#include <ScriptCanvas/Data/Traits.h>
 
 namespace ScriptCanvas
 {
@@ -28,7 +29,7 @@ namespace ScriptCanvas
     struct DataRegistry final
     {
         AZ_TYPE_INFO(DataRegistry, "{41049FA8-EA56-401F-9720-6FE9028A1C01}");
-        AZ_CLASS_ALLOCATOR(DataRegistry, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(DataRegistry, AZ::SystemAllocator);
 
         enum class Createability
         {

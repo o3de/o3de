@@ -28,8 +28,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNode, AnimGraphAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNode::UniqueData, AnimGraphObjectUniqueDataAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNode, AnimGraphAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(AnimGraphMotionNode::UniqueData, AnimGraphObjectUniqueDataAllocator)
 
     const float AnimGraphMotionNode::s_defaultWeight = 1.0f;
 
@@ -124,7 +124,7 @@ namespace EMotionFX
         EMotionFX::BlendTreeConnection* playSpeedConnection = GetInputPort(INPUTPORT_PLAYSPEED).m_connection;
         if (playSpeedConnection && m_disabled == false)
         {
-            playSpeedConnection->GetSourceNode()->PerformPostUpdate(animGraphInstance, timePassedInSeconds);
+            PostUpdateIncomingNode(animGraphInstance, playSpeedConnection->GetSourceNode(), timePassedInSeconds);
         }
 
         // clear the event buffer
@@ -202,7 +202,7 @@ namespace EMotionFX
         // top down update all incoming connections
         for (BlendTreeConnection* connection : m_connections)
         {
-            connection->GetSourceNode()->PerformTopDownUpdate(animGraphInstance, timePassedInSeconds);
+            TopDownUpdateIncomingNode(animGraphInstance, connection->GetSourceNode(), timePassedInSeconds);
         }
     }
 
@@ -913,7 +913,7 @@ namespace EMotionFX
         }
     }
 
-    bool AnimGraphMotionNode::VersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
+    static bool AnimGraphMotionNodeVersionConverter(AZ::SerializeContext& context, AZ::SerializeContext::DataElementNode& classElement)
     {
         const unsigned int version = classElement.GetVersion();
         if (version < 2)
@@ -931,7 +931,7 @@ namespace EMotionFX
             {
                 return false;
             }
-            InitializeDefaultMotionIdsRandomWeights(oldMotionIds, motionIdsWothRandomWeights);
+            AnimGraphMotionNode::InitializeDefaultMotionIdsRandomWeights(oldMotionIds, motionIdsWothRandomWeights);
             classElement.RemoveElement(motionIdsIndex);
             classElement.AddElementWithData(context, "motionIds", motionIdsWothRandomWeights);
         }
@@ -947,7 +947,7 @@ namespace EMotionFX
         }
 
         serializeContext->Class<AnimGraphMotionNode, AnimGraphNode>()
-            ->Version(3, VersionConverter)
+            ->Version(3, &AnimGraphMotionNodeVersionConverter)
             ->Field("motionIds", &AnimGraphMotionNode::m_motionRandomSelectionCumulativeWeights)
             ->Field("loop", &AnimGraphMotionNode::m_loop)
             ->Field("retarget", &AnimGraphMotionNode::m_retarget)

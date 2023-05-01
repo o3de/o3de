@@ -18,14 +18,14 @@ namespace EMotionFX::MotionMatching
     class FeatureMatrixTransformer
     {
     public:
-        AZ_RTTI(Transformer, "{B19CDBB8-FA99-4CBD-86C1-640A3CC5988A}");
-        AZ_CLASS_ALLOCATOR(FeatureMatrixTransformer, MotionMatchAllocator, 0);
+        AZ_RTTI(FeatureMatrixTransformer, "{B19CDBB8-FA99-4CBD-86C1-640A3CC5988A}");
+        AZ_CLASS_ALLOCATOR(FeatureMatrixTransformer, MotionMatchAllocator);
 
         virtual ~FeatureMatrixTransformer() = default;
 
         struct Settings
         {
-            float m_featureMin = 0.0f; //!< Minimum value after the transformation.
+            float m_featureMin = -1.0f; //!< Minimum value after the transformation.
             float m_featureMax = 1.0f; //!< Maximum value after the transformation.
 
             //! Depending on the transformer to be used there might be some outliers from range [m_featureMin, m_featureMax].

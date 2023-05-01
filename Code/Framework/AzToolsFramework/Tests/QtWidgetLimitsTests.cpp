@@ -15,7 +15,7 @@ namespace UnitTest
 
     template<typename ValueType>
     struct QtWidgetLimitsFixture
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
 
     };

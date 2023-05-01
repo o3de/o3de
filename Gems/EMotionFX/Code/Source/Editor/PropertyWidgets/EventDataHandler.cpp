@@ -14,8 +14,8 @@
 
 namespace EMotionFX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(EventDataTypeSelectionWidget, EditorAllocator, 0)
-    AZ_CLASS_ALLOCATOR_IMPL(EventDataHandler, EditorAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(EventDataTypeSelectionWidget, EditorAllocator)
+    AZ_CLASS_ALLOCATOR_IMPL(EventDataHandler, EditorAllocator)
 
     class EventDataTypeSelectionWidget::EventDataTypesModel
         : public QAbstractListModel

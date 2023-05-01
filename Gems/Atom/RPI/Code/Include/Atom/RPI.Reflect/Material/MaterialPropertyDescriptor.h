@@ -12,6 +12,7 @@
 #include <AzCore/Name/Name.h>
 #include <Atom/RHI.Reflect/Handle.h>
 #include <Atom/RPI.Reflect/Material/MaterialPropertyValue.h>
+#include <Atom/RPI.Reflect/Limits.h>
 
 namespace AZ
 {
@@ -25,10 +26,14 @@ namespace AZ
 
         using MaterialPropertyIndex = RHI::Handle<uint32_t, MaterialPropertyIndexType>;
 
+        using MaterialPropertyFlags = AZStd::bitset<Limits::Material::PropertyCountMax>;
+
         enum class MaterialPropertyOutputType
         {
-            ShaderInput,  //!< Maps to a ShaderResourceGroup input
-            ShaderOption, //!< Maps to a shader variant option
+            ShaderInput,   //!< Maps to a ShaderResourceGroup input
+            ShaderOption,  //!< Maps to a shader variant option
+            ShaderEnabled, //!< Maps to the enabled flag for a shader
+            InternalProperty, //!< Maps to the internal properties of a MaterialPipelinePayload
             Invalid,
             Count = Invalid
         };
@@ -46,8 +51,11 @@ namespace AZ
 
             MaterialPropertyOutputType m_type = MaterialPropertyOutputType::Invalid;
 
-            //! For m_type==ShaderOption, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
-            //! For m_type==ShaderInput, this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
+            Name m_materialPipelineName;
+
+            //! For m_type==ShaderOption,  this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderEnabled, this is the index of a specific ShaderAsset (see MaterialTypeSourceData's ShaderCollection). 
+            //! For m_type==ShaderInput,   this field is not used (because there is only one material ShaderResourceGroup in a MaterialAsset).
             RHI::Handle<uint32_t> m_containerIndex;
 
             //! Index to the specific setting that the material property maps to. 
@@ -80,7 +88,7 @@ namespace AZ
         AZStd::string GetMaterialPropertyDataTypeString(AZ::TypeId typeId);
         
         //! Checks that the TypeId matches the type expected by materialPropertyDescriptor
-        bool ValidateMaterialPropertyDataType(TypeId typeId, const Name& propertyName, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError);
+        bool ValidateMaterialPropertyDataType(TypeId typeId, const MaterialPropertyDescriptor* materialPropertyDescriptor, AZStd::function<void(const char*)> onError);
 
         //! A material property is any data input to a material, like a bool, float, Vector, Image, Buffer, etc.
         //! This descriptor defines a single input property, including it's name ID, and how it maps

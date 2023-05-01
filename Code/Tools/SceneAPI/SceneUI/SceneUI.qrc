@@ -13,10 +13,12 @@
       <file alias="show_in_explorer.svg">../../../../Assets/Editor/Icons/AssetImporter/show_in_explorer.svg</file>
     </qresource>
     <qresource prefix="/SceneUI/Common">
-      <file alias="WarningIcon.png">../../../../Assets/Editor/Styles/StyleSheetImages/info_icon.png</file>
-      <file alias="ErrorIcon.png">../../../../Assets/Editor/Styles/StyleSheetImages/error_icon.png</file>
       <file alias="AssertIcon.png">../../../../Assets/Editor/Icons/Assets/Lua.png</file>
+      <file alias="WarningIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/logging/warning.svg</file>
+      <file alias="ErrorIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/logging/error.svg</file>
+      <file alias="SuccessIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/logging/valid.svg</file>
       <file alias="ExpandIcon.png">../../../../Assets/Editor/Icons/PropertyEditor/group_closed.png</file>
       <file alias="CollapseIcon.png">../../../../Assets/Editor/Icons/PropertyEditor/group_open.png</file>
+      <file alias="CloseIcon.svg">../../../Framework/AzQtComponents/AzQtComponents/Components/img/close.svg</file>
     </qresource>
 </RCC>

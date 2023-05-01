@@ -9,6 +9,7 @@
 #include <AzCore/Component/ComponentApplication.h>
 #include <AzCore/Component/ComponentApplicationLifecycle.h>
 #include <AzCore/IO/Path/Path.h>
+#include <AzCore/Memory/AllocatorManager.h>
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -24,12 +25,10 @@ class ToolsFrameworkHook
 public:
     void SetupEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
     }
 
     void TeardownEnvironment() override
     {
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
     }
 };
 
@@ -49,6 +48,7 @@ AZTEST_EXPORT int AZ_UNIT_TEST_HOOK_NAME(int argc, char** argv)
         AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SettingsRegistryUnavailable");
         AZ::ComponentApplicationLifecycle::RegisterEvent(*settingsRegistry, "SystemAllocatorPendingDestruction");
     }
+    AZ::AllocatorManager::Instance().GarbageCollect();
     styleManager->initialize(&app, engineRootPath);
     AZ::Test::printUnusedParametersWarning(argc, argv);
     AZ::Test::addTestEnvironments({ DEFAULT_UNIT_TEST_ENV, new ToolsFrameworkHook });

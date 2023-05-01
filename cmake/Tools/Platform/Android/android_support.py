@@ -22,7 +22,8 @@ import sys
 import subprocess
 import pathlib
 
-from distutils.version import LooseVersion
+from packaging.version import Version
+
 
 # Resolve the common python module
 ROOT_DEV_PATH = os.path.realpath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..'))
@@ -35,9 +36,13 @@ from cmake.Tools.layout_tool import remove_link
 
 ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP = {
     '4.2.2': {'min_gradle_version': '6.7.1',
-              'sdk_build': '30.0.2',
+              'sdk_build': '30.0.3',
               'default_ndk': '21.4.7075529',
-              'min_cmake_version': '3.20'}
+              'min_cmake_version': '3.20'},
+    '7.3.1': {'min_gradle_version': '7.5.1',
+              'sdk_build': '33.0.0',
+              'default_ndk': '25.1.8937393',
+              'min_cmake_version': '3.24'},
 }
 
 APP_NAME = 'app'
@@ -362,9 +367,10 @@ CUSTOM_GRADLE_COPY_NATIVE_CONFIG_FORMAT_STR = """
         logger.info('Deleting outputs/native-lib/{abi}')
         delete 'outputs/native-lib/{abi}'
 
-        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}', include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so' )
+        from fileTree(dir: 'build/intermediates/cmake/{config_lower}/obj/arm64-v8a/{config_lower}',
+            include: '**/*.so', exclude: 'lib{project_name}.GameLauncher.so')
         into  'outputs/native-lib/{abi}'
-        eachFile {{ 
+        eachFile {{
             logger.info('Copying {{}} to outputs/native-lib/{abi}', it.name)
         }}
     }}
@@ -414,7 +420,7 @@ CUSTOM_APPLY_ASSET_LAYOUT_TASK_FORMAT_STR = """
         workingDir '{working_dir}'
         commandLine '{python_full_path}', 'layout_tool.py', '--project-path', '{project_path}', '-p', 'Android', '-a', '{asset_type}', '-m', '{asset_mode}', '--create-layout-root', '-l', '{asset_layout_folder}'
     }}
-    
+
     compile{config}Sources.dependsOn syncLYLayoutMode{config}
 
     syncLYLayoutMode{config}.mustRunAfter {{
@@ -839,7 +845,7 @@ class AndroidProjectGenerator(object):
                 '"-GNinja"',
                 f'"-S{template_engine_root}"',
                 f'"-DCMAKE_BUILD_TYPE={native_config_lower}"',
-                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_Android.cmake"',
+                f'"-DCMAKE_TOOLCHAIN_FILE={template_engine_root}/cmake/Platform/Android/Toolchain_android.cmake"',
                 f'"-DLY_3RDPARTY_PATH={template_third_party_path}"',
                 f'"-DLY_UNITY_BUILD={template_unity_build}"']
 
@@ -873,8 +879,9 @@ class AndroidProjectGenerator(object):
             project_name = common.read_project_name_from_project_json(self.project_path)
             # Prepare the config-specific section to place the cmake argument list in the build.gradle for the app
             gradle_build_env[f'NATIVE_CMAKE_SECTION_{native_config_upper}_CONFIG'] = \
-                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(targets_section=f'targets "{project_name}.GameLauncher"'
-                if project_name and not self.is_test_project else "", arguments=','.join(cmake_argument_list))
+                NATIVE_CMAKE_SECTION_BUILD_TYPE_CONFIG_FORMAT_STR.format(arguments=','.join(cmake_argument_list),
+                    targets_section=f'targets "{project_name}.GameLauncher"'
+                        if project_name and not self.is_test_project else 'targets "TEST_SUITE_main"')
 
             if project_name:
                 # Prepare the config-specific section to copy the related .so files that are marked as dependencies for the target
@@ -940,7 +947,7 @@ class AndroidProjectGenerator(object):
         az_android_gradle_file = az_android_dst_path / 'build.gradle'
         self.create_file_from_project_template(src_template_file='build.gradle.in',
                                                template_env=gradle_build_env,
-                                               dst_file=az_android_dst_path / 'build.gradle')
+                                               dst_file=az_android_gradle_file)
 
         # Generate a AndroidManifest.xml and write to ${az_android_dst_path}/src/main/AndroidManifest.xml
         dest_src_main_path = az_android_dst_path / 'src/main'
@@ -1552,16 +1559,16 @@ class AndroidGradlePluginInfo(object):
                                       f"Only the following version(s) are supported: {','.join(ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP.keys())}")
 
         details = ANDROID_GRADLE_PLUGIN_COMPATIBILITY_MAP[android_gradle_plugin_version]
-        self.default_sdk_build_tools_version = LooseVersion(details.get('sdk_build'))
+        self.default_sdk_build_tools_version = Version(details.get('sdk_build'))
 
-        self.default_ndk_version = LooseVersion(details.get('default_ndk'))
+        self.default_ndk_version = Version(details.get('default_ndk'))
 
-        self.min_gradle_version = LooseVersion(details.get('min_gradle_version'))
+        self.min_gradle_version = Version(details.get('min_gradle_version'))
 
-        self.min_cmake_version = LooseVersion(details.get('min_cmake_version'))
+        self.min_cmake_version = Version(details.get('min_cmake_version'))
 
         max_cmake_version_number = details.get('max_cmake_version')
-        self.max_cmake_version = None if max_cmake_version_number is None else LooseVersion(max_cmake_version_number)
+        self.max_cmake_version = None if max_cmake_version_number is None else Version(max_cmake_version_number)
 
 
 class AndroidSDKResolver(object):
@@ -1569,27 +1576,27 @@ class AndroidSDKResolver(object):
     Class that manages the Android SDK tool to validate, install packages (e.g. built tools, sdk platforms, ndk, etc)
     """
 
-    class InstalledPackage(object):
+    class BasePackage(object):
+        def __init__(self, components):
+            self.path = components[0]
+            self.version = Version(components[1].strip().replace(' ', '.'))  # Fix for versions that have spaces between the version number and potential non-numeric versioning (PEP-0440)
+            self.description = components[2]
+
+    class InstalledPackage(BasePackage):
         def __init__(self, installed_package_components):
+            super().__init__(installed_package_components)
             assert len(installed_package_components) == 4, '4 sections expected for installed package components (path, version, description, location)'
-            self.path = installed_package_components[0]
-            self.version = LooseVersion(installed_package_components[1])
-            self.description = installed_package_components[2]
             self.location = installed_package_components[3]
 
-    class AvailablePackage(object):
+    class AvailablePackage(BasePackage):
         def __init__(self, available_package_components):
+            super().__init__(available_package_components)
             assert len(available_package_components) == 3, '3 sections expected for installed package components (path, version, description)'
-            self.path = available_package_components[0]
-            self.version = LooseVersion(available_package_components[1])
-            self.description = available_package_components[2]
 
-    class AvailableUpdate(object):
+    class AvailableUpdate(BasePackage):
         def __init__(self, available_update_components):
+            super().__init__(available_update_components)
             assert len(available_update_components) == 3, '3 sections expected for installed package components (path, version, available)'
-            self.path = available_update_components[0]
-            self.version = LooseVersion(available_update_components[1])
-            self.available = available_update_components[2]
 
     def __init__(self, android_sdk_path, command_line_tools_version):
 

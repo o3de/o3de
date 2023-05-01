@@ -11,7 +11,7 @@
 #include <Target/Native/TestImpactNativeTestTarget.h>
 #include <TestEngine/Common/TestImpactTestEngineException.h>
 #include <TestEngine/Native/TestImpactNativeTestEngine.h>
-#include <TestEngine/Native/TestImpactNativeErrorCodeChecker.h>
+#include <TestRunner/Native/TestImpactNativeErrorCodeChecker.h>
 #include <TestRunner/Native/TestImpactNativeTestEnumerator.h>
 #include <TestRunner/Native/TestImpactNativeInstrumentedTestRunner.h>
 #include <TestRunner/Native/TestImpactNativeRegularTestRunner.h>
@@ -53,7 +53,7 @@ namespace TestImpact
         return AZStd::nullopt;
     }
 
-    //!
+    //! Determines the test run result of a native instrumented test run.
     AZStd::optional<Client::TestRunResult> NativeInstrumentedTestRunnerErrorCodeChecker(
         const typename NativeInstrumentedTestRunner::JobInfo& jobInfo, const JobMeta& meta)
     {
@@ -65,7 +65,6 @@ namespace TestImpact
 
         if (jobInfo.GetLaunchMethod() == LaunchMethod::StandAlone)
         {
-        
             if (auto result = CheckNativeTestLibraryErrorCode(meta.m_returnCode.value()); result.has_value())
             {
                 return result;
@@ -91,6 +90,28 @@ namespace TestImpact
         }
 
         return AZStd::nullopt;
+    }
+
+    //! Checks the successfully completed test runs for missing coverage whoch would compromise the integrity of the dynamic dependency map.
+    AZStd::string GenerateIntegrityErrorString(const TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage>& engineJobs)
+    {
+        // Now that we know the true result of successful jobs that return non-zero we can deduce if we have any integrity failures
+        // where a test target ran and completed its tests without incident yet failed to produce coverage data
+        AZStd::string integrityErrors;
+        const auto& [result, engineRuns] = engineJobs;
+        for (const auto& engineRun : engineRuns)
+        {
+            if (const auto testResult = engineRun.GetTestResult();
+                (testResult == Client::TestRunResult::AllTestsPass || testResult == Client::TestRunResult::TestFailures) &&
+                !engineRun.GetCoverge().has_value())
+            {
+                integrityErrors += AZStd::string::format(
+                    "Test target %s completed its test run but failed to produce coverage data\n",
+                    engineRun.GetTestTarget()->GetName().c_str());
+            }
+        }
+
+        return integrityErrors;
     }
 
     // Type trait for the test enumerator
@@ -122,8 +143,7 @@ namespace TestImpact
         const RepoPath& testRunnerBinary,
         const RepoPath& instrumentBinary,
         size_t maxConcurrentRuns)
-        : m_maxConcurrentRuns(maxConcurrentRuns)
-        , m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
+        : m_regularTestJobInfoGenerator(AZStd::make_unique<NativeRegularTestRunJobInfoGenerator>(
             sourceDir,
             targetBinaryDir,
             artifactDir,
@@ -143,7 +163,7 @@ namespace TestImpact
 
     NativeTestEngine::~NativeTestEngine() = default;
 
-    void NativeTestEngine::DeleteArtifactXmls() const
+    void NativeTestEngine::DeleteXmlArtifacts() const
     {
         DeleteFiles(m_artifactDir.m_testRunArtifactDirectory, "*.xml");
         DeleteFiles(m_artifactDir.m_coverageArtifactDirectory, "*.xml");
@@ -155,24 +175,22 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
-        return GenerateJobInfosAndRunTests(
+        const auto jobInfos = m_regularTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
+        return RunTests(
             m_testRunner.get(),
-            m_regularTestJobInfoGenerator.get(),
+            jobInfos,
             testTargets,
             NativeRegularTestRunnerErrorCodeChecker,
             executionFailurePolicy,
             testFailurePolicy,
             targetOutputCapture,
             testTargetTimeout,
-            globalTimeout,
-            callback,
-            AZStd::nullopt
-            );
+            globalTimeout);
     }
 
     TestEngineInstrumentedRunResult<NativeTestTarget, TestCoverage> NativeTestEngine::InstrumentedRun(
@@ -182,24 +200,34 @@ namespace TestImpact
         Policy::TestFailure testFailurePolicy,
         Policy::TargetOutputCapture targetOutputCapture,
         AZStd::optional<AZStd::chrono::milliseconds> testTargetTimeout,
-        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout,
-        AZStd::optional<TestEngineJobCompleteCallback<NativeTestTarget>> callback) const
+        AZStd::optional<AZStd::chrono::milliseconds> globalTimeout) const
     {
-        DeleteArtifactXmls();
+        DeleteXmlArtifacts();
 
-        return GenerateInstrumentedRunResult(
-            GenerateJobInfosAndRunTests(
+        const auto jobInfos = m_instrumentedTestJobInfoGenerator->GenerateJobInfos(testTargets);
+
+        const auto result = RunTests(
                 m_instrumentedTestRunner.get(),
-                m_instrumentedTestJobInfoGenerator.get(),
+                jobInfos,
                 testTargets,
                 NativeInstrumentedTestRunnerErrorCodeChecker,
                 executionFailurePolicy,
                 testFailurePolicy,
                 targetOutputCapture,
                 testTargetTimeout,
-                globalTimeout,
-                callback,
-                AZStd::nullopt),
-            integrityFailurePolicy);
+                globalTimeout);
+
+            if(const auto integrityErrors = GenerateIntegrityErrorString(result);
+                !integrityErrors.empty())
+            {
+                AZ_TestImpact_Eval(
+                        integrityFailurePolicy != Policy::IntegrityFailure::Abort,
+                        TestEngineException,
+                        integrityErrors);
+
+                AZ_Error("InstrumentedRun", false, integrityErrors.c_str());
+            }
+
+            return result;
     }
 } // namespace TestImpact

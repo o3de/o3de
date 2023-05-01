@@ -52,6 +52,7 @@ ly_create_alias(NAME ScriptCanvasDebugger.Builders NAMESPACE Gem TARGETS Gem::Sc
 ly_create_alias(NAME ScriptCanvasDebugger.Tools    NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 ly_create_alias(NAME ScriptCanvasDebugger.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
+ly_create_alias(NAME ScriptCanvasDebugger.Unified  NAMESPACE Gem TARGETS Gem::ScriptCanvasDebugger)
 
 ly_add_target(
     NAME ScriptCanvas.Extensions STATIC
@@ -98,6 +99,8 @@ ly_add_target(
             AZ::AzFramework
             Gem::ScriptCanvasDebugger
     AUTOGEN_RULES
+        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Header.jinja,AutoGenDataRegistry.generated.h
+        *.ScriptCanvasData.xml,ScriptCanvasDataRegistry_Source.jinja,AutoGenDataRegistry.generated.cpp
         *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Header.jinja,AutoGenFunctionRegistry.generated.h
         *.ScriptCanvasFunction.xml,ScriptCanvasFunctionRegistry_Source.jinja,AutoGenFunctionRegistry.generated.cpp
         *.ScriptCanvasGrammar.xml,ScriptCanvasGrammar_Header.jinja,$path/$fileprefix.generated.h
@@ -110,22 +113,6 @@ ly_add_target(
         *.ScriptCanvasNodeable.xml,ScriptCanvasNodeableRegistry_Source.jinja,AutoGenNodeableRegistry.generated.cpp
     RUNTIME_DEPENDENCIES
         Gem::ScriptCanvasDebugger
-)
-
-ly_add_target(
-    NAME ScriptCanvas.API HEADERONLY
-    NAMESPACE Gem
-    FILES_CMAKE
-        scriptcanvasgem_headers.cmake
-    COMPILE_DEFINITIONS
-        INTERFACE
-            SCRIPTCANVAS_ERRORS_ENABLED
-            ${SCRIPT_CANVAS_COMMON_DEFINES}
-    INCLUDE_DIRECTORIES
-        INTERFACE
-            .
-            Include
-            ${SCRIPT_CANVAS_AUTOGEN_BUILD_DIR}
 )
 
 ly_add_target(
@@ -157,6 +144,7 @@ ly_add_target(
 # the "ScriptCanvas" target is active in Clients and Servers
 ly_create_alias(NAME ScriptCanvas.Clients  NAMESPACE Gem TARGETS Gem::ScriptCanvas)
 ly_create_alias(NAME ScriptCanvas.Servers  NAMESPACE Gem TARGETS Gem::ScriptCanvas)
+ly_create_alias(NAME ScriptCanvas.Unified  NAMESPACE Gem TARGETS Gem::ScriptCanvas)
 
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_add_target(
@@ -256,6 +244,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
         BUILD_DEPENDENCIES
             PRIVATE
                 AZ::AzCore
+                AZ::AzCoreTestCommon
                 AZ::AzFramework
                 AZ::AzTest
                 Gem::ScriptCanvas.Static
@@ -272,12 +261,11 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 scriptcanvasgem_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
-                    .
-                    Include
-                    Include/ScriptCanvas
-                    Source
+                    Builder
+                    Editor
             BUILD_DEPENDENCIES
                 PRIVATE
+                    AZ::AzCoreTestCommon
                     AZ::AzTest
                     Gem::ScriptCanvas.Editor.Static
         )

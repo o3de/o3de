@@ -65,14 +65,18 @@ namespace AZ
             //Create the autorelease pool to ensure command buffer is not leaked
             CreateAutoreleasePool();
             
-            id <MTLCommandBuffer> mtlCommandBuffer = m_commandBuffer.AcquireMTLCommandBuffer();
-            AZ_Assert(mtlCommandBuffer, "Metal command Buffer was not created");
-            mtlCommandBuffer.label = m_cbLabel;
+            m_groupCommandBuffer = m_commandBuffer.AcquireMTLCommandBuffer();
+            AZ_Assert(m_groupCommandBuffer, "Metal command Buffer was not created");
+            m_groupCommandBuffer.label = m_cbLabel;
             m_workRequest.m_commandBuffer = &m_commandBuffer;
             
             //Encode any wait events from the attached scope at the start of the group.
             EncodeWaitEvents();
-                        
+                      
+            //Wait on all the fences related to transient resources, before the
+            //encoders are created as per driver specs
+            m_scope->WaitOnAllResourceFences(m_groupCommandBuffer);
+            
             //Create all the render encoders before in order to establish order.This is because MTLCommandBuffer
             //always match the execution order of the sub render encoders to the order in which they were created
             for(int i = 0 ; i < m_workRequest.m_commandLists.size(); i++)
@@ -87,6 +91,9 @@ namespace AZ
         {
             //End the encoding for ParallelRendercommandEncoder
             m_commandBuffer.FlushParallelEncoder();
+            //Signal all the fences related to transient resources, after the encoders
+            //are flushed as per driver specs
+            m_scope->SignalAllResourceFences(m_groupCommandBuffer);
             FlushAutoreleasePool();
         }
         
@@ -95,7 +102,7 @@ namespace AZ
             AZ::u32 contextIndex)
         {
             CommandList* commandList = m_subRenderEncoders[contextIndex].m_commandList;
-            commandList->Open(m_subRenderEncoders[contextIndex].m_subRenderEncoder);
+            commandList->Open(m_subRenderEncoders[contextIndex].m_subRenderEncoder, m_groupCommandBuffer);
             m_workRequest.m_commandLists[contextIndex] = commandList;
             context.SetCommandList(*commandList);
 

@@ -88,6 +88,13 @@ namespace AZ
             return this;
         }
 
+        RayTracingTlasDescriptor* RayTracingTlasDescriptor::Transparent(bool transparent)
+        {
+            AZ_Assert(m_buildContext, "Transparent property can only be added to a Geometry entry");
+            m_buildContext->m_transparent = transparent;
+            return this;
+        }
+
         RayTracingTlasDescriptor* RayTracingTlasDescriptor::Blas(RHI::Ptr<RHI::RayTracingBlas>& blas)
         {
             AZ_Assert(m_buildContext, "Blas property can only be added to an Instance entry");

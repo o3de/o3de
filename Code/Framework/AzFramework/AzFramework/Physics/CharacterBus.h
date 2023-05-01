@@ -9,6 +9,7 @@
 #pragma once
 
 #include <AzCore/Component/ComponentBus.h>
+#include <AzCore/Component/Entity.h>
 
 namespace AZ
 {
@@ -103,4 +104,75 @@ namespace Physics
     };
 
     using CharacterRequestBus = AZ::EBus<CharacterRequests>;
-} // namespace Physics
+
+    /// Messages sent by character controllers.
+    class CharacterNotifications : public AZ::ComponentBus
+    {
+    private:
+        template<class Bus>
+        struct CharacterNotificationsConnectionPolicy : public AZ::EBusConnectionPolicy<Bus>
+        {
+            static void Connect(
+                typename Bus::BusPtr& busPtr,
+                typename Bus::Context& context,
+                typename Bus::HandlerNode& handler,
+                typename Bus::Context::ConnectLockGuard& connectLock,
+                const typename Bus::BusIdType& id = 0)
+            {
+                AZ::EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
+
+                AZ::Entity* entity = nullptr;
+                AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, id);
+                if (entity)
+                {
+                    // Only immediately dispatch if the entity is already active, otherwise when
+                    // entity will get activated it will send the notifications itself.
+                    const AZ::Entity::State entityState = entity->GetState();
+                    if (entityState == AZ::Entity::State::Active)
+                    {
+                        // Only immediately dispatch if the entity is a CharacterRequests' handler.
+                        CharacterRequestBus::EnumerateHandlersId(
+                            id,
+                            [&handler, id](const CharacterRequests* characterHandler)
+                            {
+                                if (characterHandler->IsPresent())
+                                {
+                                    handler->OnCharacterActivated(id);
+                                }
+                                else
+                                {
+                                    handler->OnCharacterDeactivated(id);
+                                }
+                                return true;
+                            });
+                    }
+                }
+            }
+        };
+
+    public:
+        /// With this connection policy, CharacterNotifications::OnCharacterActivated and
+        /// CharacterNotifications::OnCharacterDeactivated events will be immediately
+        /// dispatched when a handler connects to the bus.
+        template<class Bus>
+        using ConnectionPolicy = CharacterNotificationsConnectionPolicy<Bus>;
+
+        virtual ~CharacterNotifications() = default;
+
+        /// Notifies that the character controller has activated on an entity.
+        /// Other components that depend on the character controller can't simply rely on the component service
+        /// dependencies because the character controller is activated at OnEntityActivated, after the
+        /// components' activation.
+        virtual void OnCharacterActivated([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
+
+        /// Notifies that the character controller has deactivated on an entity.
+        virtual void OnCharacterDeactivated([[maybe_unused]] const AZ::EntityId& entityId)
+        {
+        }
+    };
+
+    using CharacterNotificationBus = AZ::EBus<CharacterNotifications>;
+
+    } // namespace Physics

@@ -166,7 +166,7 @@ namespace UnitTest
 
         if (!info.m_streamName.empty())
         {
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
             IO::FileIOBase* io = IO::FileIOBase::GetInstance();
             io->Size(fullName.c_str(), info.m_dataLen);
         }
@@ -190,7 +190,7 @@ namespace UnitTest
         {
             IO::FileIOBase* io = AZ::IO::FileIOBase::GetInstance();
 
-            AZStd::string fullName = GetTestFolderPath() + info.m_streamName;
+            AZ::IO::Path fullName = GetTestFolderPath() / info.m_streamName;
 
             io->Size(fullName.c_str(), info.m_dataLen);
         }
@@ -271,6 +271,11 @@ namespace UnitTest
         m_loadDelay = loadDelay;
     }
 
+    void DataDrivenHandlerAndCatalog::AddLegacyAssetId(const Uuid& legacyAssetId, const Uuid& canonicalAssetId)
+    {
+        m_legacyAssetIds[AZ::Data::AssetId(legacyAssetId, 0)] = AZ::Data::AssetId(canonicalAssetId, 0);
+    }
+
     Outcome<AZStd::vector<ProductDependency>, AZStd::string> DataDrivenHandlerAndCatalog::GetAllProductDependencies(const AssetId& assetId)
     {
         const auto* def = FindById(assetId);
@@ -310,6 +315,16 @@ namespace UnitTest
     {
         AssetInfo result;
         const auto* def = FindById(assetId);
+
+        if (!def)
+        {
+            auto itr = m_legacyAssetIds.find(assetId);
+
+            if (itr != m_legacyAssetIds.end())
+            {
+                def = FindById(itr->second);
+            }
+        }
 
         if (def && !def->m_noAssetData)
         {

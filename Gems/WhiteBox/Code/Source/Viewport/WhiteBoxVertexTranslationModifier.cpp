@@ -9,8 +9,10 @@
 #include "SubComponentModes/EditorWhiteBoxDefaultModeBus.h"
 #include "Util/WhiteBoxMathUtil.h"
 #include "Viewport/WhiteBoxModifierUtil.h"
+#include "WhiteBox/WhiteBoxToolApi.h"
 #include "WhiteBoxVertexTranslationModifier.h"
 
+#include <AzCore/Debug/Trace.h>
 #include <AzFramework/Viewport/ViewportScreen.h>
 #include <AzToolsFramework/Manipulators/ManipulatorManager.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
@@ -40,7 +42,7 @@ AZ_CVAR(
 
 namespace WhiteBox
 {
-    AZ_CLASS_ALLOCATOR_IMPL(VertexTranslationModifier, AZ::SystemAllocator, 0)
+    AZ_CLASS_ALLOCATOR_IMPL(VertexTranslationModifier, AZ::SystemAllocator)
 
     static bool IsAxisValid(const int axisIndex)
     {
@@ -127,6 +129,9 @@ namespace WhiteBox
             AZStd::vector<AZStd::pair<AZ::Vector3, AZ::Vector3>> m_edgeBeginEnds;
             // has the modifier moved during the action
             bool m_moved = false;
+            
+            // copy of the whitebox mesh before modifying
+            Api::WhiteBoxMeshPtr m_originalMesh = nullptr; 
         };
 
         auto sharedState = AZStd::make_shared<SharedState>();
@@ -143,6 +148,7 @@ namespace WhiteBox
 
                 sharedState->m_appendStage = AppendStage::None;
                 sharedState->m_moved = false;
+                sharedState->m_originalMesh = Api::CloneMesh(*whiteBox);
                 sharedState->m_edgeBeginEnds.clear();
                 m_actionIndex = InvalidAxisIndex;
 
@@ -208,6 +214,28 @@ namespace WhiteBox
                 Api::CalculatePlanarUVs(*whiteBox);
             });
 
+        m_translationManipulator->InstallInvalidateCallback(
+            [this, sharedState]()
+            {
+                WhiteBoxMesh* whiteBox = nullptr;
+                EditorWhiteBoxComponentRequestBus::EventResult(
+                    whiteBox, m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::GetWhiteBoxMesh);
+
+                Api::WhiteBoxMeshStream clondData;
+                if (sharedState->m_originalMesh && Api::ReadMesh(*sharedState->m_originalMesh.get(), clondData) == Api::ReadResult::Full)
+                {
+                    if (!Api::WriteMesh(*whiteBox, clondData))
+                    {
+                        AZ_Error("WhiteBox", false, "failed to restore WhiteBox mesh");
+                    }
+                }
+
+                sharedState->m_originalMesh = nullptr;
+                m_pressTime = 0.0f;
+                m_actionIndex = InvalidAxisIndex;
+                this->AZ::TickBus::Handler::BusDisconnect();
+            });
+
         m_translationManipulator->InstallLeftMouseUpCallback(
             [this, sharedState,
              translationManipulator = AZStd::weak_ptr<MultiLinearManipulator>(m_translationManipulator)](
@@ -233,6 +261,7 @@ namespace WhiteBox
                         manipulator->AddAxes(Api::VertexUserEdgeAxes(*whiteBox, m_vertexHandle));
                     }
 
+                    sharedState->m_originalMesh = nullptr;
                     EditorWhiteBoxComponentRequestBus::Event(
                         m_entityComponentIdPair, &EditorWhiteBoxComponentRequests::SerializeWhiteBox);
                 }

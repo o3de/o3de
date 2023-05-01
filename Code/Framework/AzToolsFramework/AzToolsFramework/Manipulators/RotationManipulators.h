@@ -26,7 +26,7 @@ namespace AzToolsFramework
     {
     public:
         AZ_RTTI(RotationManipulators, "{5D1F1D47-1D5B-4E42-B47E-23F108F8BF7D}")
-        AZ_CLASS_ALLOCATOR(RotationManipulators, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(RotationManipulators, AZ::SystemAllocator)
 
         explicit RotationManipulators(const AZ::Transform& worldFromLocal);
         ~RotationManipulators() = default;
@@ -55,13 +55,12 @@ namespace AzToolsFramework
 
         void ProcessManipulators(const ManipulatorVisitCallback&) override;
 
-        AZStd::shared_ptr<AngularManipulatorCircleViewFeedback> m_angularManipulatorFeedback;
-
     private:
         AZ_DISABLE_COPY_MOVE(RotationManipulators)
 
         AZStd::array<AZStd::shared_ptr<AngularManipulator>, 3> m_localAngularManipulators;
         AZStd::shared_ptr<AngularManipulator> m_viewAngularManipulator;
+        AngularManipulatorCircleViewFeedback m_angularManipulatorFeedback;
         float m_circleBoundWidth = 0.1f; //!< The default circle bound width for the angular manipulator torus.
     };
 } // namespace AzToolsFramework

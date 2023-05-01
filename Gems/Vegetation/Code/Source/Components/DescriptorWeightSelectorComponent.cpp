@@ -13,7 +13,7 @@
 #include <AzCore/Serialization/SerializeContext.h>
 #include <LmbrCentral/Dependency/DependencyNotificationBus.h>
 #include <GradientSignal/Ebuses/GradientRequestBus.h>
-#include <AzCore/Debug/Profiler.h>
+#include <VegetationProfiler.h>
 
 namespace Vegetation
 {
@@ -144,7 +144,7 @@ namespace Vegetation
 
     void DescriptorWeightSelectorComponent::SelectDescriptors(const DescriptorSelectorParams& params, DescriptorPtrVec& descriptors) const
     {
-        AZ_PROFILE_FUNCTION(Entity);
+        VEGETATION_PROFILE_FUNCTION_VERBOSE
 
         switch (m_configuration.m_sortBehavior)
         {

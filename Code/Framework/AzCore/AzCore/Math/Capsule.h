@@ -19,18 +19,16 @@ namespace AZ
     public:
         AZ_TYPE_INFO(Capsule, "{4B7E9154-B258-40D2-81A4-A27A25030588}");
 
-        //! Returns a capsule with uninitialized data members.
-        //! Many of the member functions are not safe to call until the data members have been initialized.
-        static Capsule CreateUninitialized();
+        Capsule() = default; // Creates an uninitialized Capsule. Will not be usable until its data is set.
 
         //! Constructs a Capsule from the centers of the two hemispherical caps (the order is arbitrary), and the radius.
         Capsule(const Vector3& firstHemisphereCenter, const Vector3& secondHemisphereCenter, float radius);
 
-        //! Constructs a Capsule using the ends of the provided LineSegment as the centers of the hemispherical caps, and using the provided
-        //! radius.
+        //! Constructs a Capsule using the ends of the provided LineSegment as the centers of the hemispherical caps, and
+        //! using the provided radius.
         Capsule(const LineSegment& lineSegment, float radius);
 
-        //! Gets the centre of the first hemispherical cap (the order of the caps is arbitrary).
+        //! Gets the center of the first hemispherical cap (the order of the caps is arbitrary).
         const Vector3& GetFirstHemisphereCenter() const;
 
         //! Gets the center of the second hemispherical cap (the order of the caps is arbitrary).
@@ -60,8 +58,10 @@ namespace AZ
         //! Returns whether this capsule is identical to another within the tolerance (allowing either order for the caps).
         bool IsClose(const Capsule& rhs, float tolerance = Constants::Tolerance) const;
 
+        //! Returns true if the point is inside or on the surface of the capsule.
+        bool Contains(const AZ::Vector3& point) const;
+
     private:
-        Capsule() = default;
 
         Vector3 m_firstHemisphereCenter; //!< The center of one of the hemispherical ends (order is interchangeable). 
         Vector3 m_secondHemisphereCenter; //!< The center of the other hemispherical end (order is interchangeable).

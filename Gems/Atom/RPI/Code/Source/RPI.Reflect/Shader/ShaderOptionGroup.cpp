@@ -68,7 +68,7 @@ namespace AZ
 
             if (!optionIndex.IsValid())
             {
-                AZ_Error(DebugCategory, false, "Shader Option '%s' does not exist", optionName.GetCStr());
+                AZ_Error(DebugCategory, false, "ShaderOption '%s' does not exist", optionName.GetCStr());
                 return false;
             }
 

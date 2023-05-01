@@ -39,9 +39,10 @@ namespace AZ
             using Base = RHI::DeviceObject;
             using ObjectType = DescriptorSet;
             friend class Internal::DescriptorPoolFactory;
+            friend class BindlessDescriptorPool;
 
         public:
-            AZ_CLASS_ALLOCATOR(DescriptorPool, AZ::ThreadPoolAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DescriptorPool, AZ::ThreadPoolAllocator);
             AZ_RTTI(DescriptorPool, "AB200FE2-5783-4BB7-9FDB-A99C3CDC1161", Base);
 
             struct Descriptor
@@ -51,6 +52,7 @@ namespace AZ
                 uint32_t m_maxSets = 0;
                 uint32_t m_collectLatency = 0;
                 BufferPool* m_constantDataPool = nullptr;
+                bool m_updateAfterBind = false;
             };
 
             ~DescriptorPool();

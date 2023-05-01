@@ -43,7 +43,7 @@ namespace AZ::IO
 
     template<typename T>
     class StreamStackEntryConformityTests
-        : public UnitTest::AllocatorsTestFixture
+        : public UnitTest::LeakDetectionFixture
     {
     public:
         using Descriptor = T;
@@ -51,7 +51,7 @@ namespace AZ::IO
 
         void SetUp() override
         {
-            UnitTest::AllocatorsFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
             m_description.SetUp();
 
             m_context = AZStd::make_unique<StreamerContext>();
@@ -62,7 +62,7 @@ namespace AZ::IO
             m_context.reset();
 
             m_description.TearDown();
-            UnitTest::AllocatorsFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
         FileRequest* CreateUnknownRequest()
@@ -297,7 +297,7 @@ namespace AZ::IO
 
         EXPECT_CALL(*mock, UpdateCompletionEstimates(_, _, _, _)).Times(1);
 
-        auto now = AZStd::chrono::system_clock::now();
+        auto now = AZStd::chrono::steady_clock::now();
         AZStd::vector<FileRequest*> internalRequests;
         StreamerContext::PreparedQueue pendingRequests;
         entry.UpdateCompletionEstimates(now, internalRequests, pendingRequests.begin(), pendingRequests.end());

@@ -170,7 +170,7 @@ namespace AzFramework
     public:
         friend class SpawnableEntitiesDefinition;
 
-        AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(AzFramework::EntitySpawnTicket, AZ::SystemAllocator);
         AZ_TYPE_INFO(AzFramework::EntitySpawnTicket, "{BA62FF9A-A01E-4FEB-84C6-200881DF2B2B}");
         
         using Id = uint32_t;
@@ -457,3 +457,20 @@ namespace AzFramework
 
     using SpawnableEntitiesInterface = AZ::Interface<SpawnableEntitiesDefinition>;
 } // namespace AzFramework
+
+namespace AZStd
+{
+    template<>
+    struct hash<AzFramework::EntitySpawnTicket>
+    {
+        using argument_type = AzFramework::EntitySpawnTicket;
+        using result_type = size_t;
+
+        result_type operator() (const argument_type& ticket) const
+        {
+            size_t h = 0;
+            hash_combine(h, ticket.GetId());
+            return h;
+        }
+    };
+}

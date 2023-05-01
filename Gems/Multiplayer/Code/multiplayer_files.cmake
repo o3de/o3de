@@ -14,21 +14,28 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerDebug.h
     Include/Multiplayer/MultiplayerDebug.inl
+    Include/Multiplayer/MultiplayerMetrics.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
     Include/Multiplayer/MultiplayerEditorServerBus.h
-    Include/Multiplayer/Components/LocalPredictionPlayerInputComponent.h
+    Include/Multiplayer/Components/SimplePlayerSpawnerComponent.h
+    Include/Multiplayer/Components/ISimplePlayerSpawner.h
     Include/Multiplayer/Components/MultiplayerComponent.h
     Include/Multiplayer/Components/MultiplayerComponentRegistry.h
     Include/Multiplayer/Components/MultiplayerController.h
     Include/Multiplayer/Components/NetBindComponent.h
-    Include/Multiplayer/Components/NetworkHierarchyChildComponent.h
-    Include/Multiplayer/Components/NetworkHierarchyRootComponent.h
-    Include/Multiplayer/Components/NetworkHierarchyBus.h
-    Include/Multiplayer/Components/NetworkCharacterComponent.h
-    Include/Multiplayer/Components/NetworkHitVolumesComponent.h
-    Include/Multiplayer/Components/NetworkRigidBodyComponent.h
-    Include/Multiplayer/Components/NetworkTransformComponent.h
+    Include/Multiplayer/NetworkInput/NetworkInput.h
+    Include/Multiplayer/NetworkInput/NetworkInputArray.h
+    Include/Multiplayer/NetworkInput/NetworkInputChild.h
+    Include/Multiplayer/NetworkInput/NetworkInputHistory.h
+    Include/Multiplayer/NetworkInput/NetworkInputMigrationVector.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.inl
+    Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
+    Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
     Include/Multiplayer/ConnectionData/IConnectionData.h
     Include/Multiplayer/EntityDomains/IEntityDomain.h
     Include/Multiplayer/IMultiplayer.h
@@ -37,22 +44,10 @@ set(FILES
     Include/Multiplayer/MultiplayerConstants.h
     Include/Multiplayer/MultiplayerStats.h
     Include/Multiplayer/MultiplayerTypes.h
-    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicationManager.h
-    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.h
-    Include/Multiplayer/NetworkEntity/EntityReplication/EntityReplicator.inl
-    Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkEntity/IFilterEntityManager.h
     Include/Multiplayer/NetworkEntity/INetworkEntityManager.h
-    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.h
-    Include/Multiplayer/NetworkEntity/NetworkEntityHandle.inl
-    Include/Multiplayer/NetworkEntity/NetworkEntityRpcMessage.h
-    Include/Multiplayer/NetworkEntity/NetworkEntityUpdateMessage.h
+    Include/Multiplayer/NetworkEntity/EntityReplication/ReplicationRecord.h
     Include/Multiplayer/NetworkInput/IMultiplayerComponentInput.h
-    Include/Multiplayer/NetworkInput/NetworkInput.h
-    Include/Multiplayer/NetworkInput/NetworkInputArray.h
-    Include/Multiplayer/NetworkInput/NetworkInputChild.h
-    Include/Multiplayer/NetworkInput/NetworkInputHistory.h
-    Include/Multiplayer/NetworkInput/NetworkInputMigrationVector.h
     Include/Multiplayer/NetworkTime/INetworkTime.h
     Include/Multiplayer/NetworkTime/RewindableArray.h
     Include/Multiplayer/NetworkTime/RewindableArray.inl
@@ -69,77 +64,38 @@ set(FILES
     Include/Multiplayer/Session/SessionRequests.h
     Include/Multiplayer/Session/SessionConfig.h
     Include/Multiplayer/Session/SessionNotifications.h
-    Include/Multiplayer/AutoGen/AutoComponentTypes_Header.jinja
-    Include/Multiplayer/AutoGen/AutoComponentTypes_Source.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Common.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Header.jinja
-    Include/Multiplayer/AutoGen/AutoComponent_Source.jinja
-    Source/AutoGen/LocalPredictionPlayerInputComponent.AutoComponent.xml
-    Source/AutoGen/Multiplayer.AutoPackets.xml
-    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
-    Source/AutoGen/NetworkCharacterComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHitVolumesComponent.AutoComponent.xml
-    Source/AutoGen/NetworkRigidBodyComponent.AutoComponent.xml
-    Source/AutoGen/NetworkTransformComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHierarchyChildComponent.AutoComponent.xml
-    Source/AutoGen/NetworkHierarchyRootComponent.AutoComponent.xml
-    Source/Components/LocalPredictionPlayerInputComponent.cpp
+    Source/Components/SimplePlayerSpawnerComponent.cpp
     Source/Components/MultiplayerComponent.cpp
     Source/Components/MultiplayerComponentRegistry.cpp
     Source/Components/MultiplayerController.cpp
     Source/Components/NetBindComponent.cpp
-    Source/Components/NetworkHierarchyChildComponent.cpp
-    Source/Components/NetworkHierarchyRootComponent.cpp
-    Source/Components/NetworkCharacterComponent.cpp
-    Source/Components/NetworkHitVolumesComponent.cpp
-    Source/Components/NetworkRigidBodyComponent.cpp
-    Source/Components/NetworkTransformComponent.cpp
-    Source/ConnectionData/ClientToServerConnectionData.cpp
-    Source/ConnectionData/ClientToServerConnectionData.h
-    Source/ConnectionData/ClientToServerConnectionData.inl
-    Source/ConnectionData/ServerToClientConnectionData.cpp
-    Source/ConnectionData/ServerToClientConnectionData.h
-    Source/ConnectionData/ServerToClientConnectionData.inl
-    Source/Editor/MultiplayerEditorConnection.cpp
-    Source/Editor/MultiplayerEditorConnection.h
     Source/EntityDomains/FullOwnershipEntityDomain.cpp
     Source/EntityDomains/FullOwnershipEntityDomain.h
     Source/EntityDomains/NullEntityDomain.cpp
     Source/EntityDomains/NullEntityDomain.h
+    Source/MultiplayerStatSystemComponent.cpp
+    Source/MultiplayerStatSystemComponent.h
     Source/MultiplayerStats.cpp
-    Source/MultiplayerSystemComponent.cpp
-    Source/MultiplayerSystemComponent.h
-    Source/NetworkEntity/EntityReplication/EntityReplicationManager.cpp
-    Source/NetworkEntity/EntityReplication/EntityReplicator.cpp
-    Source/NetworkEntity/EntityReplication/PropertyPublisher.cpp
-    Source/NetworkEntity/EntityReplication/PropertyPublisher.h
-    Source/NetworkEntity/EntityReplication/PropertySubscriber.cpp
-    Source/NetworkEntity/EntityReplication/PropertySubscriber.h
-    Source/NetworkEntity/EntityReplication/ReplicationRecord.cpp
-    Source/NetworkEntity/NetworkEntityAuthorityTracker.cpp
-    Source/NetworkEntity/NetworkEntityAuthorityTracker.h
     Source/NetworkEntity/NetworkEntityHandle.cpp
-    Source/NetworkEntity/NetworkEntityManager.cpp
-    Source/NetworkEntity/NetworkEntityManager.h
     Source/NetworkEntity/NetworkEntityRpcMessage.cpp
     Source/NetworkEntity/NetworkEntityTracker.cpp
     Source/NetworkEntity/NetworkEntityTracker.h
     Source/NetworkEntity/NetworkEntityTracker.inl
     Source/NetworkEntity/NetworkEntityUpdateMessage.cpp
-    Source/NetworkEntity/NetworkSpawnableLibrary.cpp
-    Source/NetworkEntity/NetworkSpawnableLibrary.h
+    Source/NetworkEntity/EntityReplication/ReplicationRecord.cpp
     Source/NetworkInput/NetworkInput.cpp
     Source/NetworkInput/NetworkInputArray.cpp
     Source/NetworkInput/NetworkInputChild.cpp
     Source/NetworkInput/NetworkInputHistory.cpp
     Source/NetworkInput/NetworkInputMigrationVector.cpp
-    Source/NetworkTime/NetworkTime.cpp
-    Source/NetworkTime/NetworkTime.h
-    Source/ReplicationWindows/NullReplicationWindow.cpp
-    Source/ReplicationWindows/NullReplicationWindow.h
-    Source/ReplicationWindows/ServerToClientReplicationWindow.cpp
-    Source/ReplicationWindows/ServerToClientReplicationWindow.h
     Source/Session/MatchmakingRequests.cpp
     Source/Session/SessionRequests.cpp
     Source/Session/SessionConfig.cpp
+    ${LY_ROOT_FOLDER}/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Header.jinja
+    ${LY_ROOT_FOLDER}/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Inline.jinja
+    ${LY_ROOT_FOLDER}/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPackets_Source.jinja
+    ${LY_ROOT_FOLDER}/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Header.jinja
+    ${LY_ROOT_FOLDER}/Code/Framework/AzNetworking/AzNetworking/AutoGen/AutoPacketDispatcher_Inline.jinja
+    Source/AutoGen/Multiplayer.AutoPackets.xml
+    Source/AutoGen/MultiplayerEditor.AutoPackets.xml
 )

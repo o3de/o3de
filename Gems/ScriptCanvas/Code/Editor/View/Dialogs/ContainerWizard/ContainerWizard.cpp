@@ -32,7 +32,7 @@ namespace ScriptCanvasEditor
     ////////////////////
 
     ContainerWizard::ContainerWizard(QWidget* parent)
-        : QDialog(parent, Qt::FramelessWindowHint)
+        : QDialog(parent)
         , m_serializeContext(nullptr)
         , m_validationAction(nullptr)
         , m_invalidIcon(":/ScriptCanvasEditorResources/Resources/error_icon.png")

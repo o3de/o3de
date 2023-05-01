@@ -24,7 +24,7 @@ namespace AZ
         public:
             GenericTemplatedClassInfo()
                 : m_classData{ SerializeContext::ClassData::Create<ThisType>(
-                      "TemplatedClass", "{CA4ADF74-66E7-4D16-B4AC-F71278C60EC7}", nullptr, nullptr) }
+                      "TemplatedClass", AZ::TypeId("{CA4ADF74-66E7-4D16-B4AC-F71278C60EC7}"), nullptr, nullptr) }
             {
             }
 
@@ -38,17 +38,17 @@ namespace AZ
                 return 1;
             }
 
-            const Uuid& GetSpecializedTypeId() const override
+            AZ::TypeId GetSpecializedTypeId() const override
+            {
+                return azrtti_typeid<T>();
+            }
+
+            AZ::TypeId GetGenericTypeId() const override
             {
                 return m_classData.m_typeId;
             }
 
-            const Uuid& GetGenericTypeId() const override
-            {
-                return m_classData.m_typeId;
-            }
-
-            const Uuid& GetTemplatedTypeId(size_t element) override
+            AZ::TypeId GetTemplatedTypeId(size_t element) override
             {
                 (void)element;
                 return SerializeGenericTypeInfo<T>::GetClassTypeId();
@@ -75,7 +75,7 @@ namespace AZ
             return GetCurrentSerializeContextModule().CreateGenericClassInfo<ThisType>();
         }
 
-        static const Uuid& GetClassTypeId()
+        static AZ::TypeId GetClassTypeId()
         {
             return GetGenericInfo()->GetClassData()->m_typeId;
         }

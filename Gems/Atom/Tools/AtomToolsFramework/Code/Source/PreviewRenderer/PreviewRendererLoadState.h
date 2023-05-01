@@ -26,6 +26,6 @@ namespace AtomToolsFramework
         //! AZ::SystemTickBus::Handler interface overrides...
         void OnSystemTick() override;
 
-        AZStd::chrono::system_clock::time_point m_startTime = AZStd::chrono::system_clock::now();
+        AZStd::chrono::steady_clock::time_point m_startTime = AZStd::chrono::steady_clock::now();
     };
 } // namespace AtomToolsFramework

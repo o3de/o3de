@@ -21,9 +21,11 @@ namespace AZ
             if (auto serializeContext = azrtti_cast<SerializeContext*>(context))
             {
                 serializeContext->Class<VariantInfo>()
-                    ->Version(1)
+                    ->Version(2) // Added Radeon GPU Analyzer
                     ->Field("StableId", &VariantInfo::m_stableId)
                     ->Field("Options", &VariantInfo::m_options)
+                    ->Field("EnableAnalysis", &VariantInfo::m_enableRegisterAnalysis)
+                    ->Field("Asic", &VariantInfo::m_asic)
                     ;
 
                 serializeContext->Class<ShaderVariantListSourceData>()
@@ -43,6 +45,8 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
                             ->Attribute(AZ::Edit::Attributes::ContainerCanBeModified, false)
                             ->Attribute(AZ::Edit::Attributes::ContainerReorderAllow, false)
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_enableRegisterAnalysis, "Register Analysis", "Whether to output analysis data from Radeon GPU Analyzer")
+                        ->DataElement(AZ::Edit::UIHandlers::Default, &VariantInfo::m_asic, "GPU target", "The GPU target to use on register analysis")
                         ;
 
                     editContext->Class<ShaderVariantListSourceData>("ShaderVariantListSourceData", "")
@@ -65,6 +69,8 @@ namespace AZ
                     ->Attribute(AZ::Script::Attributes::Module, "shader")
                     ->Property("stableId", BehaviorValueGetter(&VariantInfo::m_stableId), BehaviorValueSetter(&VariantInfo::m_stableId))
                     ->Property("options", BehaviorValueGetter(&VariantInfo::m_options), BehaviorValueSetter(&VariantInfo::m_options))
+                    ->Property("enableAnalysis", BehaviorValueGetter(&VariantInfo::m_enableRegisterAnalysis), BehaviorValueSetter(&VariantInfo::m_enableRegisterAnalysis))
+                    ->Property("asic", BehaviorValueGetter(&VariantInfo::m_asic), BehaviorValueSetter(&VariantInfo::m_asic))
                     ;
 
                 behaviorContext->Class<ShaderVariantListSourceData>("ShaderVariantListSourceData")

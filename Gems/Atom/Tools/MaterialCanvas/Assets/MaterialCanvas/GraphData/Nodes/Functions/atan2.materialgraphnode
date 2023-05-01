@@ -1,0 +1,55 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "DynamicNodeConfig",
+    "ClassData": {
+        "id": "{7DAE735C-CC7B-49C9-9B18-CC3314792650}",
+        "category": "Math Functions",
+        "title": "Inverse Tangent 2",
+        "titlePaletteName": "MathNodeTitlePalette",
+        "description": "Returns the arctangent of of two values (x,y) (per component)",
+        "slotDataTypeGroups": [
+            "inY|inX|outValue"
+        ],
+        "inputSlots": [
+            {
+                "name": "inY",
+                "displayName": "Y",
+                "description": "Y",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            },
+            {
+                "name": "inX",
+                "displayName": "X",
+                "description": "X",
+                "supportedDataTypeRegex": "(color|bool|int|uint|float)([1-4])?",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = SLOTVALUE;"
+                    ]
+                }
+            }
+        ],
+        "outputSlots": [
+            {
+                "name": "outValue",
+                "displayName": "Value",
+                "description": "Value",
+                "supportedDataTypeRegex": "float4",
+                "defaultDataType": "float4",
+                "settings": {
+                    "instructions": [
+                        "SLOTTYPE SLOTNAME = atan2(inY, inX);"
+                    ]
+                }
+            }
+        ]
+    }
+}

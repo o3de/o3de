@@ -6,12 +6,13 @@
  *
  */
 
-
-#ifndef CRYINCLUDE_EDITOR_CONTROLS_FOLDERTREECTRL_H
-#define CRYINCLUDE_EDITOR_CONTROLS_FOLDERTREECTRL_H
 #pragma once
 
 #include "Util/FileChangeMonitor.h"
+
+#include <AzCore/std/containers/vector.h>
+#include <AzCore/std/containers/map.h>
+
 #include <QList>
 #include <QStandardItem>
 #include <QTreeView>
@@ -20,39 +21,37 @@
 class QSortFilterProxyModel;
 class QStandardItemModel;
 
-//! Case insensetive less key for any type convertable to const char*.
-struct qstring_icmp
-{
-    bool operator()(const QString& left, const QString& right) const
-    {
-        return QString::compare(left, right, Qt::CaseInsensitive) < 0;
-    }
-};
-
 class CFolderTreeCtrl
     : public QTreeView
     , public CFileChangeMonitorListener
 {
-    Q_OBJECT // AUTOMOC
+    Q_OBJECT 
 
     friend class CTreeItem;
+
+    enum class IconType
+    {
+        FolderIcon = 0,
+        FileIcon = 2
+    };
+
+    enum class Roles : int
+    {
+        IsFolderRole = Qt::UserRole
+    };
 
     class CTreeItem
         : public QStandardItem
     {
-        // Only allow destruction through std::unique_ptr
-        friend struct std::default_delete<CTreeItem>;
-
     public:
-        explicit CTreeItem(CFolderTreeCtrl& folderTreeCtrl, const QString& path);
-        explicit CTreeItem(CFolderTreeCtrl& folderTreeCtrl, CTreeItem* parent,
-            const QString& name, const QString& path, const int image);
+        CTreeItem(CFolderTreeCtrl& folderTreeCtrl, CTreeItem* parent,
+            const QString& name, const QString& path, IconType image);
+        ~CTreeItem();
 
         void Remove();
-        CTreeItem* AddChild(const QString& name, const QString& path, const int image);
+        CTreeItem* AddChild(const QString& name, const QString& path, IconType image);
         QString GetPath() const { return m_path; }
     private:
-        ~CTreeItem();
 
         CFolderTreeCtrl& m_folderTreeCtrl;
         QString m_path;
@@ -60,18 +59,16 @@ class CFolderTreeCtrl
 
 public:
     CFolderTreeCtrl(QWidget* parent = 0);
-    CFolderTreeCtrl(const QStringList& folders, const QString& fileNameSpec,
-        const QString& rootName, bool bDisableMonitor = false, bool bFlatTree = true, QWidget* parent = 0);
     virtual ~CFolderTreeCtrl();
 
-    void init(const QStringList& folders, const QString& fileNameSpec,
-        const QString& rootName, bool bDisableMonitor = false, bool bFlatTree = true);
+    void Configure(const AZStd::vector<QString>& folders, const QString& fileNameSpec,
+        const QString& rootName, bool bEnabledMonitor = true, bool bFlatTree = true);
 
     QString GetPath(QStandardItem* item) const;
     bool IsFolder(QStandardItem* item) const;
     bool IsFile(QStandardItem* item) const;
 
-    QIcon GetItemIcon(int image) const;
+    QIcon GetItemIcon(IconType image) const;
     QList<QStandardItem*> GetSelectedItems() const;
 
     void SetSearchFilter(const QString& searchText);
@@ -83,10 +80,18 @@ protected Q_SLOTS:
     void OnIndexDoubleClicked(const QModelIndex& index);
 
 protected:
+    struct CaseInsensitiveCompare
+    {
+        bool operator()(const QString& left, const QString& right) const
+        {
+            return QString::compare(left, right, Qt::CaseInsensitive) < 0;
+        }
+    };
+
+
     void OnFileMonitorChange(const SFileChangeInfo& rChange) override;
     void contextMenuEvent(QContextMenuEvent* e) override;
 
-    void InitTree();
     void LoadTreeRec(const QString& currentFolder);
 
     void AddItem(const QString& path);
@@ -102,19 +107,17 @@ protected:
     void Edit(const QString& path);
     void ShowInExplorer(const QString& path);
 
-    bool m_bDisableMonitor;
-    bool m_bFlatStyle;
-    std::unique_ptr< CTreeItem > m_rootTreeItem;
-    QString m_fileNameSpec;
-    QStringList m_folders;
-    QString m_rootName;
-    std::map<QString, unsigned int> m_foldersSegments;
+    bool m_bEnableMonitor = false;
+    bool m_bFlatStyle = false;
+    QString m_fileNameSpec = "";
+    AZStd::vector<QString> m_folders = {};
+    QString m_rootName = "";
+    AZStd::map< QString, CTreeItem*, CaseInsensitiveCompare > m_pathToTreeItem = {};
+    CTreeItem* m_rootTreeItem = nullptr;
+
     QIcon m_folderIcon;
     QIcon m_fileIcon;
+    QStandardItemModel* m_model;
+    QSortFilterProxyModel* m_proxyModel;
 
-    QSortFilterProxyModel* m_proxyModel = nullptr;
-    QStandardItemModel* m_model = nullptr;
-    std::map< QString, CTreeItem*, qstring_icmp > m_pathToTreeItem;
 };
-
-#endif // CRYINCLUDE_EDITOR_CONTROLS_FOLDERTREECTRL_H

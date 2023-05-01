@@ -83,8 +83,7 @@ namespace UnitTest
     {
         // Create a single entity wheel instance and create a template out of it.
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();
@@ -242,8 +241,7 @@ namespace UnitTest
     {
         // Create a single entity wheel instance and create a template out of it.
         AZ::Entity* wheelEntity = CreateEntity("WheelEntity1");
-        AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
-            &AzToolsFramework::EditorEntityContextRequests::HandleEntitiesAdded, AzToolsFramework::EntityList{wheelEntity});
+        AddRequiredEditorComponents({ wheelEntity->GetId() });
         AZStd::unique_ptr<Instance> wheelIsolatedInstance = m_prefabSystemComponent->CreatePrefab({ wheelEntity },
             {}, WheelPrefabMockFilePath);
         const TemplateId wheelTemplateId = wheelIsolatedInstance->GetTemplateId();

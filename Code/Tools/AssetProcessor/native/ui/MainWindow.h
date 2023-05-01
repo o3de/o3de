@@ -95,6 +95,9 @@ public:
 
         // Event Log Details
         int logTypeColumnWidth = -1;
+
+        // Event Log Line Details
+        int contextDetailsTableMaximumRows = -1;
     };
 
     /*!
@@ -109,7 +112,7 @@ public:
 
     explicit MainWindow(GUIApplicationManager* guiApplicationManager, QWidget* parent = 0);
     void Activate();
-    ~MainWindow();
+    ~MainWindow() override;
 
 public Q_SLOTS:
     void ShowWindow();
@@ -168,7 +171,6 @@ private:
     AssetProcessor::BuilderInfoMetricsSortModel* m_builderInfoMetricsSort = nullptr;
     AssetProcessor::CacheServerData m_cacheServerData;
 
-    void SetContextLogDetailsVisible(bool visible);
     void SetContextLogDetails(const QMap<QString, QString>& details);
     void ClearContextLogDetails();
 
@@ -254,5 +256,6 @@ private:
 
     AZStd::string m_cachedSourceAssetSelection;
     AZStd::string m_cachedProductAssetSelection;
+    QMetaObject::Connection m_connectionForResettingAssetsView;
 };
 

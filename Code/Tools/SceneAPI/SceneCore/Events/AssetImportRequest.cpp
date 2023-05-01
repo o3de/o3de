@@ -17,6 +17,11 @@
 #include <SceneAPI/SceneCore/Events/AssetImportRequest.h>
 #include <SceneAPI/SceneCore/Events/SceneSerializationBus.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <AzCore/Serialization/Json/JsonUtils.h>
+#include <AzCore/Settings/SettingsRegistryMergeUtils.h>
+#include <AzToolsFramework/Debug/TraceContext.h>
+#include <AzCore/JSON/writer.h>
+#include <AzCore/IO/TextStreamWriters.h>
 
 namespace AZ
 {
@@ -24,6 +29,98 @@ namespace AZ
     {
         namespace Events
         {
+            struct UpdateManifestScope final
+                : public AssetImportRequestReporter
+            {
+                AZ_RTTI(UpdateManifestScope, "{C9DD605E-2A9D-4C0D-A22E-A71B44528420}", AssetImportRequestReporter);
+
+                UpdateManifestScope(AZStd::shared_ptr<Containers::Scene> scene)
+                    : m_scene(scene)
+                {
+                    m_registered = false;
+                    if (AZ::SettingsRegistry::Get())
+                    {
+                        AZ::SettingsRegistry::Get()->Get(m_registered, AZ::SceneAPI::Utilities::Key_AssetProcessorInDebugOutput);
+                    }
+                    if (m_registered)
+                    {
+                        AZ::Interface<AssetImportRequestReporter>::Register(this);
+                    }
+                }
+
+                ~UpdateManifestScope()
+                {
+                    if (m_registered)
+                    {
+                        AZ::Interface<AssetImportRequestReporter>::Unregister(this);
+                        m_registered = false;
+                    }
+                    m_previousManifest = {};
+                }
+
+                void ReportStart([[maybe_unused]] const AssetImportRequest* instance) override
+                {
+                    ++m_reportNumber;
+
+                    if (m_previousManifest.IsEmpty() && !m_scene->GetManifest().IsEmpty())
+                    {
+                        m_previousManifest = m_scene->GetManifest();
+                    }
+                }
+
+                void ReportFinish(const AssetImportRequest* instance) override
+                {
+                    AZStd::string policy;
+                    instance->GetPolicyName(policy);
+                    AZ_TraceContext("PolicyName", policy.c_str());
+
+                    if (ManifestInstancesAreEqual(m_previousManifest, m_scene->GetManifest()))
+                    {
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): No Changes \n", m_reportNumber);
+                    }
+                    else
+                    {
+                        AZ_TraceContext("Old manifest rule count", aznumeric_cast<int32_t>(m_previousManifest.GetEntryCount()));
+                        AZ_TraceContext("New manifest rule count", aznumeric_cast<int32_t>(m_scene->GetManifest().GetEntryCount()));
+                        AZ_TracePrintf(AZ::SceneAPI::Utilities::LogWindow, "UpdateManifest(%d): Updated \n", m_reportNumber);
+                        m_previousManifest = m_scene->GetManifest();
+                    }
+                }
+
+                bool ManifestInstancesAreEqual(const Containers::SceneManifest& lhs, const Containers::SceneManifest& rhs) const
+                {
+                    if (lhs.IsEmpty() && rhs.IsEmpty())
+                    {
+                        return true;
+                    }
+
+                    if (lhs.GetEntryCount() == rhs.GetEntryCount())
+                    {
+                        auto rhsValueStorage = rhs.GetValueStorage();
+                        for (auto index = 0; index < lhs.GetEntryCount(); ++index)
+                        {
+                            const auto lhsObject = lhs.GetValue(index);
+                            auto found = AZStd::find_if(rhsValueStorage.begin(), rhsValueStorage.end(), [lhsObject](const auto& rhs)
+                            {
+                                return lhsObject.get()->RTTI_Type() == rhs.get()->RTTI_Type();
+                            });
+                            if (found == rhsValueStorage.end())
+                            {
+                                return false;
+                            }
+                        }
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                AZStd::shared_ptr<Containers::Scene> m_scene;
+                AZ::s32 m_reportNumber = 0;
+                bool m_registered = false;
+                Containers::SceneManifest m_previousManifest;
+            };
+
             // an internal scope object that is active during a scene import
             struct ImportScope final
                 : public AZ::SceneAPI::Events::AssetPostImportRequestBus::Handler
@@ -98,6 +195,11 @@ namespace AZ
             {
             }
 
+            void AssetImportRequest::GetPolicyName(AZStd::string& result) const
+            {
+                result = "AssetImportRequest Base";
+            }
+
             void AssetImportRequest::GetSupportedFileExtensions(AZStd::unordered_set<AZStd::string>& /*extensions*/)
             {
             }
@@ -132,8 +234,12 @@ namespace AZ
             {
             }
 
-            AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(const AZStd::string& assetFilePath, const Uuid& sourceGuid,
-                                                                                               RequestingApplication requester, const Uuid& loadingComponentUuid)
+            AZStd::shared_ptr<Containers::Scene> AssetImportRequest::LoadSceneFromVerifiedPath(
+                const AZStd::string& assetFilePath,
+                const Uuid& sourceGuid,
+                RequestingApplication requester,
+                const Uuid& loadingComponentUuid,
+                const AZStd::string& watchFolder)
             {
                 ImportScope importScope;
                 AZStd::string sceneName;
@@ -142,17 +248,19 @@ namespace AZ
                 AZ_Assert(scene, "Unable to create new scene for asset importing.");
 
                 Data::AssetInfo assetInfo;
-                AZStd::string watchFolder;
+                AZStd::string watchFolderFromDatabase;
                 bool result = false;
-                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolder);
+                AzToolsFramework::AssetSystemRequestBus::BroadcastResult(result, &AzToolsFramework::AssetSystemRequestBus::Events::GetSourceInfoBySourceUUID, sourceGuid, assetInfo, watchFolderFromDatabase);
 
                 if (result)
                 {
-                    scene->SetWatchFolder(watchFolder);
+                    scene->SetWatchFolder(watchFolderFromDatabase);
                 }
                 else
                 {
-                    AZ_Error(
+                    scene->SetWatchFolder(watchFolder);
+
+                    AZ_Warning(
                         "AssetImportRequest", false, "Failed to get watch folder for source %s",
                         sourceGuid.ToString<AZStd::string>().c_str());
                 }
@@ -188,6 +296,7 @@ namespace AZ
                     scene->GetManifest().Clear();
                     action = ManifestAction::ConstructDefault;
                 }
+                UpdateManifestScope updateManifestScope(scene);
                 ProcessingResultCombiner manifestUpdate;
                 AssetImportRequestBus::BroadcastResult(manifestUpdate, &AssetImportRequestBus::Events::UpdateManifest, *scene, action, requester);
                 if (manifestUpdate.GetResult() == ProcessingResult::Failure)

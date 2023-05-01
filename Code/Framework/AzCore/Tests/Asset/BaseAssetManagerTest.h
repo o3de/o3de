@@ -90,7 +90,7 @@ namespace UnitTest
     
     struct ReadRequest
     {
-        AZStd::chrono::milliseconds m_deadline{};
+        AZ::IO::IStreamerTypes::Deadline m_deadline{};
         AZ::IO::IStreamerTypes::Priority m_priority{};
         IO::IStreamerTypes::RequestMemoryAllocatorResult m_data{ nullptr, 0, IO::IStreamerTypes::MemoryType::ReadWrite };
         AZ::IO::IStreamer::OnCompleteCallback m_callback;
@@ -122,7 +122,7 @@ namespace UnitTest
         AZStd::recursive_mutex m_mutex;
         AZStd::queue<FileRequestHandle> m_processingQueue; // Keeps tracks of requests that have been queued while processing is suspended
         AZStd::vector<ReadRequest> m_readRequests;
-        AZStd::unordered_map<AZStd::string, AZStd::vector<char>> m_virtualFiles;
+        AZStd::unordered_map<AZ::IO::Path, AZStd::vector<char>> m_virtualFiles;
     };
 
     struct DisklessAssetManagerBase : BaseAssetManagerTest

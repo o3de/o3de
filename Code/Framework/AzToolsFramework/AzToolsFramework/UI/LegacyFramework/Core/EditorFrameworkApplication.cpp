@@ -20,7 +20,6 @@
 #include <AzCore/std/time.h>
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzCore/Jobs/JobManagerComponent.h>
 #include <AzCore/Asset/AssetManagerComponent.h>
 #include <AzCore/Script/ScriptSystemComponent.h>
@@ -132,7 +131,7 @@ namespace LegacyFramework
 #ifdef AZ_PLATFORM_WINDOWS
     BOOL CTRL_BREAK_HandlerRoutine(DWORD /*dwCtrlType*/)
     {
-        EBUS_EVENT(FrameworkApplicationMessages::Bus, SetAbortRequested);
+        FrameworkApplicationMessages::Bus::Broadcast(&FrameworkApplicationMessages::Bus::Events::SetAbortRequested);
         return TRUE;
     }
 #endif
@@ -157,11 +156,6 @@ namespace LegacyFramework
 
     int Application::Run(const ApplicationDesc& desc)
     {
-        if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-        {
-            AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-        }
-
         QString appNameConcat = QStringLiteral("%1_GLOBALMUTEX").arg(desc.m_applicationName);
         {
             // If the application crashed before, it may have left behind shared memory
@@ -211,7 +205,7 @@ namespace LegacyFramework
 
             // if we're not the primary instance, what exactly do we do?  This is a generic framework - not a specific app
             // and what we do might depend on implementation specifics for each app.
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, RunAsAnotherInstance);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::RunAsAnotherInstance);
         }
         else
         {
@@ -221,7 +215,7 @@ namespace LegacyFramework
                 CreateApplicationComponent();
             }
 
-            EBUS_EVENT(LegacyFramework::CoreMessageBus, Run);
+            LegacyFramework::CoreMessageBus::Broadcast(&LegacyFramework::CoreMessageBus::Events::Run);
 
             // as a precaution here, we save our app and system entities BEFORE we destroy anything
             // so that we have the highest chance of storing the user's precious application state and preferences
@@ -362,11 +356,10 @@ namespace LegacyFramework
         qstrcpy(m_applicationFilePath, applicationFilePath.c_str());
 
         // load all application entities, if present:
-        AZ::IO::SystemFile cfg;
 
-        if (cfg.Open(m_applicationFilePath, AZ::IO::SystemFile::SF_OPEN_READ_ONLY))
+        if (AZ::IO::SystemFileStream stream(m_applicationFilePath, AZ::IO::OpenMode::ModeRead);
+            stream.IsOpen())
         {
-            AZ::IO::SystemFileStream stream(&cfg, false);
             stream.Seek(0, AZ::IO::GenericStream::ST_SEEK_BEGIN);
             AZ::ObjectStream::LoadBlocking(&stream, *GetSerializeContext(),
                 [this](void* classPtr, const AZ::Uuid& classId, const AZ::SerializeContext* sc)
@@ -377,7 +370,6 @@ namespace LegacyFramework
                         m_applicationEntity = entity;
                     }
                 });
-            cfg.Close();
         }
 
         if (!m_applicationEntity)
@@ -456,7 +448,7 @@ namespace LegacyFramework
             AZ_Warning("ComponentApplication", entityWriteOk, "Failed to write application entity to application file %s!", applicationFilePath.c_str());
             bool flushOk = objStream->Finalize();
             AZ_Warning("ComponentApplication", flushOk, "Failed finalizing application file %s!", applicationFilePath.c_str());
-            
+
             if (entityWriteOk && flushOk)
             {
                 if (IO::SystemFile::Rename(tmpFileName.c_str(), applicationFilePath.c_str(), true))
@@ -475,8 +467,6 @@ namespace LegacyFramework
 
     void Application::CreateSystemComponents()
     {
-        EnsureComponentCreated(AZ::MemoryComponent::RTTI_Type());
-
         AZ_Assert(!m_desc.m_enableProjectManager || m_desc.m_enableGUI, "Enabling the project manager in the application settings requires enabling the GUI as well.");
 
         EnsureComponentCreated(AzToolsFramework::Framework::RTTI_Type());

@@ -75,34 +75,39 @@ namespace AZ
                 ShaderInputBufferType type,
                 uint32_t bufferCount,
                 uint32_t strideSize,
-                uint32_t registerId
-                );
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the buffer input.
+            //! The name id used to reflect the buffer input.
             Name m_name;
 
-            /// The type of the buffer for all array elements in the buffer input.
+            //! The type of the buffer for all array elements in the buffer input.
             ShaderInputBufferType m_type = ShaderInputBufferType::Unknown;
 
-            /// How the array elements in the buffer input are accessed.
+            //! How the array elements in the buffer input are accessed.
             ShaderInputBufferAccess m_access = ShaderInputBufferAccess::Read;
 
-            /// Number of buffers array elements.
+            //! Number of buffers array elements.
             uint32_t m_count = 0;
 
-            /// Size of each buffer array element.
+            //! Size of each buffer array element.
             uint32_t m_strideSize = 0;
             
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         enum class ShaderInputImageAccess : uint32_t
@@ -138,30 +143,36 @@ namespace AZ
                 ShaderInputImageAccess access,
                 ShaderInputImageType type,
                 uint32_t imageCount,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the image input.
+            //! The name id used to reflect the image input.
             Name m_name;
 
-            /// The type of image required for this shader input.
+            //! The type of image required for this shader input.
             ShaderInputImageType m_type = ShaderInputImageType::Unknown;
 
-            /// How the array elements in the image input are accessed.
+            //! How the array elements in the image input are accessed.
             ShaderInputImageAccess m_access = ShaderInputImageAccess::Read;
 
-            /// Number of images array elements.
+            //! Number of images array elements.
             uint32_t m_count = 0;
             
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputBufferUnboundedArrayDescriptor final
@@ -176,30 +187,36 @@ namespace AZ
                 ShaderInputBufferAccess access,
                 ShaderInputBufferType type,
                 uint32_t strideSize,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the buffer input.
+            //! The name id used to reflect the buffer input.
             Name m_name;
 
-            /// The type of buffer required for this shader input.
+            //! The type of buffer required for this shader input.
             ShaderInputBufferType m_type = ShaderInputBufferType::Unknown;
 
-            /// How the array elements in the unbounded array input are accessed.
+            //! How the array elements in the unbounded array input are accessed.
             ShaderInputBufferAccess m_access = ShaderInputBufferAccess::Read;
 
-            /// Size of each buffer array element.
+            //! Size of each buffer array element.
             uint32_t m_strideSize = 0;
 
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputImageUnboundedArrayDescriptor final
@@ -213,27 +230,33 @@ namespace AZ
                 const Name& name,
                 ShaderInputImageAccess access,
                 ShaderInputImageType type,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the image input.
+            //! The name id used to reflect the image input.
             Name m_name;
 
-            /// The type of image required for this shader input.
+            //! The type of image required for this shader input.
             ShaderInputImageType m_type = ShaderInputImageType::Unknown;
 
-            /// How the array elements in the unbounded array input are accessed.
+            //! How the array elements in the unbounded array input are accessed.
             ShaderInputImageAccess m_access = ShaderInputImageAccess::Read;
 
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputSamplerDescriptor final
@@ -243,24 +266,29 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             ShaderInputSamplerDescriptor() = default;
-            ShaderInputSamplerDescriptor(const Name& name, uint32_t samplerCount, uint32_t registerId);
+            ShaderInputSamplerDescriptor(const Name& name, uint32_t samplerCount, uint32_t registerId, uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the sampler input.
+            //! The name id used to reflect the sampler input.
             Name m_name;
 
-            /// Number of sampler array elements.
+            //! Number of sampler array elements.
             uint32_t m_count = 0;
             
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputConstantDescriptor final
@@ -274,28 +302,34 @@ namespace AZ
                 const Name& name,
                 uint32_t constantByteOffset,
                 uint32_t constantByteCount,
-                uint32_t registerId);
+                uint32_t registerId,
+                uint32_t spaceId);
 
-            /// Returns the 64-bit hash of the binding.
+            //! Returns the 64-bit hash of the binding.
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the constant input.
+            //! The name id used to reflect the constant input.
             Name m_name;
 
-            /// The offset from the start of the constant buffer in bytes.
+            //! The offset from the start of the constant buffer in bytes.
             uint32_t m_constantByteOffset = 0;
 
-            /// The number of bytes 
+            //! The number of bytes 
             uint32_t m_constantByteCount = 0;
             
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+             //! Register id of the resource in the SRG.
+             //! This is only valid if the platform compiles the SRGs using "spaces".
+             //! If not, this same information will be in the PipelineLayoutDescriptor.
+             //! Some platforms (like Vulkan) need the register number when creating the
+             //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
         class ShaderInputStaticSamplerDescriptor final
@@ -305,31 +339,36 @@ namespace AZ
             static void Reflect(ReflectContext* context);
 
             ShaderInputStaticSamplerDescriptor() = default;
-            ShaderInputStaticSamplerDescriptor(const Name& name, const SamplerState& samplerState, uint32_t registerId);
+            ShaderInputStaticSamplerDescriptor(const Name& name, const SamplerState& samplerState, uint32_t registerId, uint32_t spaceId);
 
             HashValue64 GetHash(HashValue64 seed = HashValue64{ 0 }) const;
 
-            /// The name id used to reflect the static sampler input.
+            //! The name id used to reflect the static sampler input.
             Name m_name;
             
-            /// The state of this static sampler.
+            //! The state of this static sampler.
             SamplerState m_samplerState;
 
-            /**
-             * Register id of the resource in the SRG.
-             * This is only valid if the platform compiles the SRGs using "spaces".
-             * If not, this same information will be in the PipelineLayoutDescriptor.
-             * Some platforms (like Vulkan) need the register number when creating the
-             * SRG, others need it when creating the PipelineLayout.
-             */
+            //! Register id of the resource in the SRG.
+            //! This is only valid if the platform compiles the SRGs using "spaces".
+            //! If not, this same information will be in the PipelineLayoutDescriptor.
+            //! Some platforms (like Vulkan) need the register number when creating the
+            //! SRG, others need it when creating the PipelineLayout.
             uint32_t m_registerId = UndefinedRegisterSlot;
+
+            //! Logical Register Space that the register id is within.
+            //! This is primarily used when an SRG contains one or more unbounded arrays,
+            //! as an unbounded array contains all register ids in a register space.
+            //! If an SRG doesn't contain any unbounded arrays all resources in it 
+            //! will use the same space id.
+            uint32_t m_spaceId = UndefinedRegisterSlot;
         };
 
-        /// Returns the string name for the shader input type enum.
+        //! Returns the string name for the shader input type enum.
         const char* GetShaderInputTypeName(ShaderInputBufferType bufferInputType);
         const char* GetShaderInputTypeName(ShaderInputImageType imageInputType);
 
-        /// Returns the string name for the shader input access enum.
+        //! Returns the string name for the shader input access enum.
         const char* GetShaderInputAccessName(ShaderInputBufferAccess bufferInputAccess);
         const char* GetShaderInputAccessName(ShaderInputImageAccess imageInputAccess);
 

@@ -26,13 +26,13 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(RandomGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(RandomGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(RandomGradientConfig, "{A435F06D-A148-4B5F-897D-39996495B6F4}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZ::u32 m_randomSeed = 13;
     };
 
-    static const AZ::Uuid RandomGradientComponentTypeId = "{8B7E5121-41B0-4EF9-96A9-04953EC69754}";
+    inline constexpr AZ::TypeId RandomGradientComponentTypeId{ "{8B7E5121-41B0-4EF9-96A9-04953EC69754}" };
 
     class RandomGradientComponent
         : public AZ::Component

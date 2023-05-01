@@ -19,7 +19,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeTranslation, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(JointsSubComponentModeTranslation, AZ::SystemAllocator);
 
     JointsSubComponentModeTranslation::JointsSubComponentModeTranslation()
         : m_manipulator(
@@ -32,7 +32,7 @@ namespace PhysX
         AZ::Transform worldTransform = PhysX::Utils::GetEntityWorldTransformWithoutScale(idPair.GetEntityId());
 
         EditorJointRequestBus::EventResult(
-            m_resetValue, idPair, &EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Position);
+            m_resetValue, idPair, &EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParameterNames::Position);
 
         m_manipulator.SetSpace(worldTransform);
         m_manipulator.SetLocalPosition(m_resetValue);
@@ -63,7 +63,7 @@ namespace PhysX
     {
         AZ::Vector3 localTranslation;
         EditorJointRequestBus::EventResult(
-            localTranslation, idPair, &EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParamaterNames::Position);
+            localTranslation, idPair, &EditorJointRequests::GetVector3Value, JointsComponentModeCommon::ParameterNames::Position);
         m_manipulator.SetLocalPosition(localTranslation);
     }
 
@@ -76,7 +76,7 @@ namespace PhysX
     void JointsSubComponentModeTranslation::ResetValues(const AZ::EntityComponentIdPair& idPair)
     {
         PhysX::EditorJointRequestBus::Event(
-            idPair, &EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position, m_resetValue);
+            idPair, &EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Position, m_resetValue);
         m_manipulator.SetLocalPosition(m_resetValue);
     }
 
@@ -84,7 +84,7 @@ namespace PhysX
     {
         m_manipulator.SetLocalPosition(position);
         PhysX::EditorJointRequestBus::Event(
-            idPair, &EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParamaterNames::Position, position);
+            idPair, &EditorJointRequests::SetVector3Value, JointsComponentModeCommon::ParameterNames::Position, position);
     }
 
 } // namespace PhysX

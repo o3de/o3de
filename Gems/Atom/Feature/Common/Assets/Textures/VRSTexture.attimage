@@ -1,0 +1,20 @@
+{
+    "Type": "JsonSerialization",
+    "Version": 1,
+    "ClassName": "AttachmentImageAsset",
+    "ClassData": {
+        "m_imageDescriptor": {
+            "BindFlags": [
+                "ShadingRate",
+                "ShaderRead"
+            ],
+            "Size": {
+                "Width": 64,
+                "Height": 64
+            },
+            "Format": "R8_UINT"
+        },
+        "Name": "$VrsTexture",
+        "IsUniqueName": true
+    }
+}

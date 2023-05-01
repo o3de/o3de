@@ -12,7 +12,6 @@
 namespace ScriptCanvasTests
 {
     Application* ScriptCanvasTestFixture::s_application = nullptr;
-    UnitTest::AllocatorsBase ScriptCanvasTestFixture::s_allocatorSetup = {};
     AZStd::atomic_bool ScriptCanvasTestFixture::s_asyncOperationActive = {};
     bool ScriptCanvasTestFixture::s_setupSucceeded = false;
 }

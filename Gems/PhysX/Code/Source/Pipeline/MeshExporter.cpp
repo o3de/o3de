@@ -15,8 +15,10 @@
 #include <SceneAPI/SceneCore/Events/ExportProductList.h>
 #include <SceneAPI/SceneCore/Utilities/FileUtilities.h>
 #include <SceneAPI/SceneCore/Utilities/Reporting.h>
+#include <SceneAPI/SceneCore/Containers/Utilities/SceneUtilities.h>
 #include <SceneAPI/SceneCore/Containers/Views/SceneGraphChildIterator.h>
 #include <SceneAPI/SceneCore/DataTypes/GraphData/IMaterialData.h>
+#include <SceneAPI/SceneData/Rules/CoordinateSystemRule.h>
 
 #include <PhysX/MeshAsset.h>
 #include <Source/Pipeline/MeshAssetHandler.h>
@@ -136,7 +138,8 @@ namespace PhysX
             AZ::SerializeContext* serializeContext = azrtti_cast<AZ::SerializeContext*>(context);
             if (serializeContext)
             {
-                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()->Version(5);
+                serializeContext->Class<MeshExporter, AZ::SceneAPI::SceneCore::ExportingComponent>()
+                    ->Version(5 + (1<<PX_PHYSICS_VERSION_MAJOR)); // Use PhysX version to trigger assets recompilation
             }
         }
 
@@ -177,16 +180,16 @@ namespace PhysX
                 // Go through the previous slots and keep the same physics material
                 // association if the slot name is the same.
                 // Example:
-                // 
+                //
                 //     Previous Material Slots from MeshGroup:
                 //        Material_A: glass.physicsmaterial
                 //        Material_B: sand.physicsmaterial
                 //        Material_C: gold.physicsmaterial
-                // 
+                //
                 //     Materials now extracted from mesh nodes selected:
                 //        Material_C
                 //        Material_A
-                // 
+                //
                 //     New Material Slots have to keep the same physics materials association:
                 //        Material_C: gold.physicsmaterial
                 //        Material_A: glass.physicsmaterial
@@ -215,14 +218,14 @@ namespace PhysX
                 // material name from the mesh nodes. In order to cover this case, when the slot name is
                 // default or empty the physics materials assigned will still be used in the new slots.
                 // Example:
-                // 
+                //
                 //     Previous Material Slots from MeshGroup:
                 //        "": glass.physicsmaterial
-                // 
+                //
                 //     Materials now extracted from mesh nodes selected:
                 //        Material_C
                 //        Material_A
-                // 
+                //
                 //     New Material Slots will keep physics materials from empty slot names
                 //        Material_C: glass.physicsmaterial
                 //        Material_A:
@@ -381,16 +384,18 @@ namespace PhysX
             }
         }
 
-        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType(const AZStd::string& platformIdentifier)
+        static physx::PxMeshMidPhase::Enum GetMidPhaseStructureType([[maybe_unused]] const AZStd::string& platformIdentifier)
         {
             // Use by default 3.4 since 3.3 is being deprecated (despite being default)
             physx::PxMeshMidPhase::Enum ret = physx::PxMeshMidPhase::eBVH34;
 
+#if (PX_PHYSICS_VERSION_MAJOR < 5)
             // Fallback to 3.3 on Android and iOS platforms since they don't support SSE2, which is required for 3.4
             if (platformIdentifier == "android" || platformIdentifier == "ios")
             {
                 ret = physx::PxMeshMidPhase::eBVH33;
             }
+#endif
             return ret;
         }
 
@@ -544,7 +549,7 @@ namespace PhysX
             // Assign the materials into cooked data
             assetData.m_materialSlots = meshGroup.GetMaterialSlots();
 
-            // Updating materials lists from new materials gathered from the source scene file 
+            // Updating materials lists from new materials gathered from the source scene file
             // because this exporter runs when the source scene is being processed, which
             // could have a different content from when the mesh group info was
             // entered in Scene Settings Editor.
@@ -635,7 +640,7 @@ namespace PhysX
             if (PhysX::Utils::WriteCookedMeshToFile(filename, assetData))
             {
                 AZStd::string productUuidString = meshGroup.GetId().ToString<AZStd::string>();
-                AZ::Uuid productUuid = AZ::Uuid::CreateData(productUuidString.data(), productUuidString.size() * sizeof(productUuidString[0]));
+                AZ::Uuid productUuid = AZ::Uuid::CreateName(productUuidString);
 
                 context.GetProductList().AddProduct(AZStd::move(filename), productUuid, AZ::AzTypeInfo<MeshAsset>::Uuid(), AZStd::nullopt, AZStd::nullopt);
                 result = SceneEvents::ProcessingResult::Success;
@@ -807,6 +812,16 @@ namespace PhysX
                     totalExportData.reserve(selectedNodeCount);
                 }
 
+                // Get the coordinate system conversion rule.
+                AZ::SceneAPI::CoordinateSystemConverter coordSysConverter;
+                AZStd::shared_ptr<AZ::SceneAPI::SceneData::CoordinateSystemRule> coordinateSystemRule =
+                    pxMeshGroup.GetRuleContainerConst().FindFirstByType<AZ::SceneAPI::SceneData::CoordinateSystemRule>();
+                if (coordinateSystemRule)
+                {
+                    coordinateSystemRule->UpdateCoordinateSystemConverter();
+                    coordSysConverter = coordinateSystemRule->GetCoordinateSystemConverter();
+                }
+
                 for (size_t index = 0; index < selectedNodeCount; index++)
                 {
                     AZ::SceneAPI::Containers::SceneGraph::NodeIndex nodeIndex = graph.Find(sceneNodeSelectionList.GetSelectedNode(index));
@@ -819,7 +834,10 @@ namespace PhysX
 
                     const AZ::SceneAPI::Containers::SceneGraph::Name& nodeName = graph.GetNodeName(nodeIndex);
 
-                    const AZ::SceneAPI::DataTypes::MatrixType worldTransform = SceneUtil::BuildWorldTransform(graph, nodeIndex);
+                    // CoordinateSystemConverter covers the simple transformations of CoordinateSystemRule and
+                    // DetermineWorldTransform function covers the advanced mode of CoordinateSystemRule.
+                    const AZ::SceneAPI::DataTypes::MatrixType worldTransform = coordSysConverter.ConvertMatrix3x4(
+                        AZ::SceneAPI::Utilities::DetermineWorldTransform(scene, nodeIndex, pxMeshGroup.GetRuleContainerConst()));
 
                     NodeCollisionGeomExportData nodeExportData;
                     nodeExportData.m_nodeName = nodeName.GetName();

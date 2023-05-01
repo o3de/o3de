@@ -88,6 +88,7 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
                 AZ::AzToolsFramework
                 AZ::AzToolsFrameworkTestCommon
                 AZ::AzManipulatorTestFramework.Static
+                AZ::AzCoreTestCommon
                 AZ::AzTest
                 AZ::AzQtComponents
         RUNTIME_DEPENDENCIES

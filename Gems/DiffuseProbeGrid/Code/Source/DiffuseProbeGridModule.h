@@ -20,7 +20,7 @@ namespace AZ
         {
         public:
             AZ_RTTI(DiffuseProbeGridModule, "{72F3860A-0EA6-4C61-9EE0-DF0D690FD53B}", AZ::Module);
-            AZ_CLASS_ALLOCATOR(DiffuseProbeGridModule, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(DiffuseProbeGridModule, AZ::SystemAllocator);
 
             DiffuseProbeGridModule();
 

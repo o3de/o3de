@@ -24,6 +24,8 @@
 #include <AzCore/Module/DynamicModuleHandle.h>
 #endif // defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
 
+namespace AZ { class JobCompletion; }
+
 namespace ImGui
 {
     enum class ImGuiStateBroadcast
@@ -74,6 +76,7 @@ namespace ImGui
         float GetDpiScalingFactor() const override;
         void Render() override;
         void ToggleThroughImGuiVisibleState() override;
+        void ToggleToImGuiVisibleState(DisplayState state) override;
         // -- ImGuiManagerBus Interface -------------------------------------------------------------------
 
         // -- AzFramework::InputChannelEventListener and AzFramework::InputTextEventListener Interface ------------
@@ -89,6 +92,8 @@ namespace ImGui
         void InitWindowSize();
 
     private:
+        void RenderJob();
+
         ImGuiContext* m_imguiContext = nullptr;
         DisplayState m_clientMenuBarState = DisplayState::Hidden;
         DisplayState m_editorWindowState = DisplayState::Hidden;
@@ -117,6 +122,8 @@ namespace ImGui
         bool m_simulateBackspaceKeyPressed = false;
 
         ImGuiBroadcastState m_imGuiBroadcastState;
+
+        AZ::JobCompletion* m_renderJobCompletion = nullptr;
 
 #if defined(LOAD_IMGUI_LIB_DYNAMICALLY)  && !defined(AZ_MONOLITHIC_BUILD)
         AZStd::unique_ptr<AZ::DynamicModuleHandle>  m_imgSharedLib;

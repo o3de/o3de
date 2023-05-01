@@ -135,7 +135,7 @@
             "isTemplated": true
         },
         {
-            "file": "Editor/Scripts/${NameLower}_dialog.py",
+            "file": "Editor/Scripts/${SanitizedNameLower}_dialog.py",
             "isTemplated": true
         },
         {

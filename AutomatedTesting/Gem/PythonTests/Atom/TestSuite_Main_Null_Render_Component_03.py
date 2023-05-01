@@ -6,6 +6,7 @@ SPDX-License-Identifier: Apache-2.0 OR MIT
 """
 import pytest
 
+import ly_test_tools
 from ly_test_tools.o3de.editor_test import EditorBatchedTest, EditorTestSuite
 
 
@@ -30,19 +31,24 @@ class TestAutomation(EditorTestSuite):
         from Atom.tests import (
             hydra_AtomEditorComponents_PostFXRadiusWeightModifierAdded as test_module)
 
-    @pytest.mark.skip(reason="GHI# 12253 Failing in undo/redo intermittently")
     @pytest.mark.test_case_id("C36525665")
     class AtomEditorComponents_PostFXShapeWeightModifierAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_PostFxShapeWeightModifierAdded as test_module
 
-    @pytest.mark.skip(reason="GHI# 12253 Failing in undo/redo intermittently")
+    @pytest.mark.skipif(ly_test_tools.LINUX, reason="https://github.com/o3de/o3de/issues/14008")
     @pytest.mark.test_case_id("C32078128")
     class AtomEditorComponents_ReflectionProbeAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_ReflectionProbeAdded as test_module
 
+    class AtomEditorComponents_SkyAtmosphereAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_SkyAtmosphereAdded as test_module
+
     @pytest.mark.test_case_id("C36525666")
     class AtomEditorComponents_SSAOAdded(EditorBatchedTest):
         from Atom.tests import hydra_AtomEditorComponents_SSAOAdded as test_module
+
+    class AtomEditorComponents_StarsAdded(EditorBatchedTest):
+        from Atom.tests import hydra_AtomEditorComponents_StarsAdded as test_module
 
     @pytest.mark.test_case_id("C36529666")
     class AtomEditorComponentsLevel_DiffuseGlobalIlluminationAdded(EditorBatchedTest):

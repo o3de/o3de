@@ -8,10 +8,8 @@
            Base="ScriptCanvas::Node"
            Icon="Editor/Icons/ScriptCanvas/Bus.png"
            EditAttributes="AZ::Edit::Attributes::Category@Gameplay/Input"
-           DeprecationUUID="{0A2EB488-5A6A-E166-BB62-23FF81499E33}"
-           Deprecated="This node has been deprecated in favor of the nodeable form"
+           Deprecated="True"
            GraphEntryPoint="True"
-           GeneratePropertyFriend="True"
            Description="Handle processed input events found in input binding assets">
         <Out Name="Pressed" Description="Signaled when the input event begins."/>
         <Out Name="Held" Description="Signaled while the input event is active."/>

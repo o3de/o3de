@@ -8,10 +8,13 @@
 
 #include <Configuration/AWSCoreConfiguration.h>
 #include <Credential/AWSDefaultCredentialHandler.h>
+#include <aws/core/platform/Environment.h>
+#include <aws/core/utils/StringUtils.h>
 
 namespace AWSCore
 {
     static constexpr char AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG[] = "AWSDefaultCredentialHandler";
+    static constexpr char AWS_EC2_METADATA_DISABLED[] = "AWS_EC2_METADATA_DISABLED";
 
     AWSDefaultCredentialHandler::AWSDefaultCredentialHandler()
         : m_profileName("")
@@ -64,6 +67,30 @@ namespace AWSCore
             }
         }
 
+        {
+            AZStd::lock_guard<AZStd::mutex> credentialsLock{ m_credentialMutex };
+            bool allowAWSMetadata = false;
+            AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataCredentials);
+            if (allowAWSMetadata)
+            {
+                const auto ec2MetadataDisabled = Aws::Environment::GetEnv(AWS_EC2_METADATA_DISABLED);
+                if (Aws::Utils::StringUtils::ToLower(ec2MetadataDisabled.c_str()) != "true")
+                {
+                    if (!m_instanceProfileCredentialsProvider)
+                    {
+                        SetInstanceProfileCredentialProvider(
+                            Aws::MakeShared<Aws::Auth::InstanceProfileCredentialsProvider>(AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG));
+                    }
+
+                    auto credentials = m_instanceProfileCredentialsProvider->GetAWSCredentials();
+                    if (!credentials.IsEmpty())
+                    {
+                        return m_instanceProfileCredentialsProvider;
+                    }
+                }
+            }
+        }
+
         return nullptr;
     }
 
@@ -88,6 +115,14 @@ namespace AWSCore
             SetProfileCredentialsProvider(Aws::MakeShared<Aws::Auth::ProfileConfigFileAWSCredentialsProvider>(
                 AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG, m_profileName.c_str()));
         }
+
+        bool allowAWSMetadata = false;
+        AWSCoreInternalRequestBus::BroadcastResult(allowAWSMetadata, &AWSCoreInternalRequests::IsAllowedAWSMetadataCredentials);
+        if (allowAWSMetadata)
+        {
+            SetInstanceProfileCredentialProvider(
+                Aws::MakeShared<Aws::Auth::InstanceProfileCredentialsProvider>(AWSDEFAULTCREDENTIALHANDLER_ALLOC_TAG));
+        }
     }
 
     void AWSDefaultCredentialHandler::SetEnvironmentCredentialsProvider(
@@ -102,11 +137,21 @@ namespace AWSCore
         m_profileCredentialsProvider = credentialsProvider;
     }
 
+    void AWSDefaultCredentialHandler::SetInstanceProfileCredentialProvider(
+        std::shared_ptr<Aws::Auth::InstanceProfileCredentialsProvider> credentialsProvider)
+    {
+        m_instanceProfileCredentialsProvider = credentialsProvider;
+    }
+
     void AWSDefaultCredentialHandler::ResetCredentialsProviders()
     {
         // Must reset credential provider before AWSNativeSDKs shutdown
         AZStd::lock_guard<AZStd::mutex> credentialsLock{m_credentialMutex};
         m_environmentCredentialsProvider.reset();
         m_profileCredentialsProvider.reset();
+        if (m_instanceProfileCredentialsProvider)
+        {
+            m_instanceProfileCredentialsProvider.reset();
+        }
     }
 } // namespace AWSCore

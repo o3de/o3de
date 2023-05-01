@@ -31,7 +31,6 @@ namespace Multiplayer
     AZ_CVAR_SCOPED(int, cl_viewportConnectionStatusMaxDrawCount, 4, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, 
         "Limits the number of connect statuses seen in the viewport. Generally, clients are connected to 1 server, but defining a max draw count in case other connections are established.");
 
-    AZ_CVAR_EXTERNED(bool, sv_isDedicated);
 
     void MultiplayerConnectionViewportMessageSystemComponent::Reflect(AZ::ReflectContext* context)
     {
@@ -52,10 +51,20 @@ namespace Multiplayer
         AZ::RPI::ViewportContextNotificationBus::Handler::BusConnect(
             AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContextName());
         MultiplayerEditorServerNotificationBus::Handler::BusConnect();
+
+        if (auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get())
+        {
+            multiplayerSystemComponent->AddVersionMismatchHandler(m_versionMismatchEventHandler);
+            multiplayerSystemComponent->AddLevelLoadBlockedHandler(m_levelLoadBlockedHandler);
+            multiplayerSystemComponent->AddNoServerLevelLoadedHandler(m_noServerLevelLoadedHandler);
+        }
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::Deactivate()
     {
+        m_noServerLevelLoadedHandler.Disconnect();
+        m_levelLoadBlockedHandler.Disconnect();
+        m_versionMismatchEventHandler.Disconnect();
         MultiplayerEditorServerNotificationBus::Handler::BusDisconnect();
         AZ::RPI::ViewportContextNotificationBus::Handler::BusDisconnect();
     }
@@ -92,26 +101,8 @@ namespace Multiplayer
         AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
 
         // Display the custom center viewport text
-        if (!m_centerViewportDebugText.empty())
-        {            
-            const float center_screenposition_x = 0.5f*viewportSize.m_width;
-            const float center_screenposition_y = 0.5f*viewportSize.m_height;
-
-            // Draw title
-            const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, CenterViewportDebugTitle).GetY();
-            const float screenposition_title_y = center_screenposition_y-textHeight*0.5f;
-            m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
-            m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
-            m_drawParams.m_color = m_centerViewportDebugTextColor;
-            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, CenterViewportDebugTitle);
-            
-            // Draw center debug text under the title
-            // Calculate line spacing based on the font's actual line height
-            m_drawParams.m_color = AZ::Colors::White;
-            m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textHeight + m_lineSpacing);
-            m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, m_centerViewportDebugText.c_str());
-        }
-
+        DrawCenterViewportMessage(CenterViewportDebugTitle, m_centerViewportDebugTextColor, m_centerViewportDebugText.c_str(), 1.0f);
+        
         // Build the connection status string (just show client connected or disconnected status for now)
         const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
         MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
@@ -124,11 +115,22 @@ namespace Multiplayer
         switch (agentType)
         {
         case MultiplayerAgentType::Uninitialized:
-            if (sv_isDedicated)
+            if (const auto console = AZ::Interface<AZ::IConsole>::Get())
             {
-                DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
-                DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                bool isDedicatedServer = false;
+                if (console->GetCvarValue("sv_isDedicated", isDedicatedServer) != AZ::GetValueResult::Success)
+                {
+                    AZLOG_WARN("MultiplayerConnectionViewport failed to access cvar  (sv_isDedicated).")
+                    break;
+                }
+
+                if (isDedicatedServer)
+                {
+                    DrawConnectionStatusLine(DedicatedServerNotHosting, AZ::Colors::Red);
+                    DrawConnectionStatusLine(DedicatedServerStatusTitle, AZ::Colors::White);
+                }
             }
+            
             break;
         case MultiplayerAgentType::Client:
             {
@@ -195,6 +197,74 @@ namespace Multiplayer
                 GetEnumString(agentType));
             break;
         }
+
+        // Display the viewport toast text
+        if (!m_centerViewportDebugToastText.empty())
+        {
+            // Fade out the toast over time
+            const size_t wordCount = m_centerViewportDebugToastText.find(' ') + 1; // Word count estimated by counting the number of spaces and adding 1.
+            const AZ::TimeMs toastDuration = static_cast<AZ::TimeMs>(wordCount) * CenterViewportDebugToastTimePerWord + CenterViewportDebugToastTimePrefix + CenterViewportDebugToastTimeFade;
+            const AZ::TimeMs currentTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+            const AZ::TimeMs remainingTime = toastDuration - (currentTime - m_centerViewportDebugToastStartTime);
+            const float toastAlpha = AZStd::clamp(aznumeric_cast<float>(remainingTime) / aznumeric_cast<float>(CenterViewportDebugToastTimeFade), 0.0f, 1.0f);
+            DrawCenterViewportMessage(CenterViewportToastTitle, AZ::Colors::Red, m_centerViewportDebugToastText.c_str(), toastAlpha);
+
+            if (toastAlpha < 0.01f)
+            {
+                // toast is completely faded out, remove the toast
+                m_centerViewportDebugToastText.clear();
+            }
+        }
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawCenterViewportMessage(const char* title, const AZ::Color& titleColor, const char* message, float alpha)
+    {
+        const AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        if (!viewport)
+        {
+            return;
+        }
+        
+        // make sure there's a title and message to render
+        if (title == nullptr || strlen(title) == 0)
+        {
+            return;
+        }
+
+        if (message == nullptr || strlen(message) == 0)
+        {
+            return;
+        }
+
+        // only render text that will be visible
+        if (alpha < 0.01f)
+        {
+            return;
+        }
+
+        // Draw background for text contrast
+        DrawScrim(alpha);
+
+        // Find viewport center
+        AzFramework::WindowSize viewportSize = viewport->GetViewportSize();
+        const float center_screenposition_x = 0.5f * viewportSize.m_width;
+        const float center_screenposition_y = 0.5f * viewportSize.m_height;
+
+        // Draw title
+        const float textHeight = m_fontDrawInterface->GetTextSize(m_drawParams, title).GetY();
+        const float screenposition_title_y = center_screenposition_y - textHeight * 0.5f;
+        m_drawParams.m_position = AZ::Vector3(center_screenposition_x, screenposition_title_y, 1.0f);
+        m_drawParams.m_hAlign = AzFramework::TextHorizontalAlignment::Center;
+        m_drawParams.m_color = titleColor;
+        m_drawParams.m_color.SetA(alpha);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, title);
+
+        // Draw message under the title
+        // Calculate line spacing based on the font's actual line height
+        m_drawParams.m_color = AZ::Colors::White;
+        m_drawParams.m_color.SetA(alpha);
+        m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() + textHeight + m_lineSpacing);
+        m_fontDrawInterface->DrawScreenAlignedText2d(m_drawParams, message);
     }
 
     void MultiplayerConnectionViewportMessageSystemComponent::DrawConnectionStatus(AzNetworking::ConnectionState connectionState, const AzNetworking::IpAddress& hostIpAddress)
@@ -252,6 +322,47 @@ namespace Multiplayer
         m_drawParams.m_position.SetY(m_drawParams.m_position.GetY() - textHeight - m_lineSpacing);
     }
 
+    void MultiplayerConnectionViewportMessageSystemComponent::DrawScrim(float alphaMultiplier) const
+    {
+        AZ::RPI::ViewportContextPtr viewport = AZ::RPI::ViewportContextRequests::Get()->GetDefaultViewportContext();
+        if (!viewport)
+        {
+            return;
+        }
+
+        AzFramework::DebugDisplayRequestBus::BusPtr debugDisplayBus;
+        AzFramework::DebugDisplayRequestBus::Bind(debugDisplayBus, viewport->GetId());
+        AzFramework::DebugDisplayRequests*  debugDisplay = AzFramework::DebugDisplayRequestBus::FindFirstHandler(debugDisplayBus);
+        if (!debugDisplay)
+        {
+            return;
+        }
+
+        // we're going to alter the state of depth write and test, store it here so we can restore when we're done drawing.
+        const AZ::u32 previousState = debugDisplay->GetState();
+        debugDisplay->DepthWriteOff();
+        debugDisplay->DepthTestOff();
+        debugDisplay->DrawQuad2dGradient(
+            AZ::Vector2(0, 0),
+            AZ::Vector2(1.f, 0),
+            AZ::Vector2(1.f, 0.5f),
+            AZ::Vector2(0, 0.5f),
+            0,
+            AZ::Color(0.f, 0.f, 0.f, 0.f),
+            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier));
+
+        debugDisplay->DrawQuad2dGradient(
+            AZ::Vector2(0, 0.5f),
+            AZ::Vector2(1.f, 0.5f),
+            AZ::Vector2(1.f, 1.f),
+            AZ::Vector2(0, 1.f),
+            0,
+            AZ::Color(0, 0, 0, ScrimAlpha * alphaMultiplier),
+            AZ::Color(0.f, 0.f, 0.f, 0.f));
+
+        debugDisplay->SetState(previousState);
+    }
+
     void MultiplayerConnectionViewportMessageSystemComponent::OnServerLaunched()
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;
@@ -264,11 +375,24 @@ namespace Multiplayer
         m_centerViewportDebugText = OnServerLaunchFailMessage;
     }
 
-    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData()
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelData(uint32_t bytesSent, uint32_t bytesTotal)
     {
         m_centerViewportDebugTextColor = AZ::Colors::Yellow;
-        m_centerViewportDebugText = OnEditorSendingLevelDataMessage;
+        m_centerViewportDebugText =
+            AZStd::fixed_string<MaxMessageLength>::format(OnEditorSendingLevelDataMessage, bytesSent, bytesTotal);
     }   
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataFailed()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Red;
+        m_centerViewportDebugText = OnEditorSendingLevelDataFailedMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnEditorSendingLevelDataSuccess()
+    {
+        m_centerViewportDebugTextColor = AZ::Colors::Yellow;
+        m_centerViewportDebugText = OnEditorSendingLevelDataSuccessMessage;
+    }
 
     void MultiplayerConnectionViewportMessageSystemComponent::OnEditorConnectionAttempt(uint16_t connectionAttempts, uint16_t maxAttempts)
     {
@@ -304,4 +428,35 @@ namespace Multiplayer
         m_centerViewportDebugText = OnEditorServerStoppedUnexpectedly;
     }
 
+    void MultiplayerConnectionViewportMessageSystemComponent::OnBlockedLevelLoad()
+    {
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+        m_centerViewportDebugToastText = OnBlockedLevelLoadMessage;
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnNoServerLevelLoadedEvent()
+    {
+        const auto multiplayerSystemComponent = AZ::Interface<IMultiplayer>::Get();
+        if (!multiplayerSystemComponent)
+        {
+            return;
+        }
+
+        const MultiplayerAgentType agentType = multiplayerSystemComponent->GetAgentType();
+        if (agentType == MultiplayerAgentType::Client)
+        {
+            m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageClientSide;
+        }
+        else
+        {
+            m_centerViewportDebugToastText = OnNoServerLevelLoadedMessageServerSide;
+        }
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+    }
+
+    void MultiplayerConnectionViewportMessageSystemComponent::OnVersionMismatchEvent()
+    {
+        m_centerViewportDebugToastText = OnVersionMismatch;
+        m_centerViewportDebugToastStartTime = static_cast<AZ::TimeMs>(AZStd::GetTimeUTCMilliSecond());
+    }
 }

@@ -68,7 +68,7 @@ namespace Multiplayer
 
     float MultiplayerDebugByteReporter::GetKbitsPerSecond()
     {
-        const auto now = AZStd::chrono::monotonic_clock::now();
+        const auto now = AZStd::chrono::steady_clock::now();
 
         // Check the amount of time elapsed and update totals if necessary.
         // Time here is measured in whole seconds from the epoch, providing synchronization in

@@ -405,7 +405,7 @@ namespace LUAEditor
     {
         Q_OBJECT;
     public:
-        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowLayout, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowLayout, AZ::SystemAllocator);
         LUAEditorMainWindowLayout(QWidget *pParent);
         virtual ~LUAEditorMainWindowLayout();
         virtual void addItem(QLayoutItem *);
@@ -426,7 +426,7 @@ namespace LUAEditor
     {
     public:
         AZ_RTTI(LUAEditorMainWindowSavedState, "{AEB8E5D6-4F2F-49A2-BB09-795614ABAAFF}", AzToolsFramework::MainWindowSavedState);
-        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowSavedState, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(LUAEditorMainWindowSavedState, AZ::SystemAllocator);
 
         AZStd::vector<AZStd::string> m_openAssetIds;
         bool m_bAutocompleteEnabled;

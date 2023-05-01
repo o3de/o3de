@@ -22,7 +22,7 @@
 
 #include <AzCore/Threading/ThreadUtils.h>
 
-AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, 0.6f, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
+AZ_CVAR(float, cl_jobThreadsConcurrencyRatio, AZ_TRAIT_USE_JOB_THREADS_CONCURRENCY_RATIO, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system multiplier on the number of hw threads the machine creates at initialization");
 AZ_CVAR(uint32_t, cl_jobThreadsNumReserved, 2, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system number of hardware threads that are reserved for O3DE system threads");
 AZ_CVAR(uint32_t, cl_jobThreadsMinNumber, 3, nullptr, AZ::ConsoleFunctorFlags::Null, "Legacy Job system minimum number of worker threads to create after scaling the number of hw threads");
 
@@ -115,7 +115,6 @@ namespace AZ
     //=========================================================================
     void JobManagerComponent::GetDependentServices(ComponentDescriptor::DependencyArrayType& dependent)
     {
-        dependent.push_back(AZ_CRC("MemoryService", 0x5c4d473c));
         dependent.push_back(AZ_CRC("ProfilerService", 0x505033c9));
     }
 
@@ -138,7 +137,6 @@ namespace AZ
                     "Job Manager", "Provides fine grained job system and worker threads")
                     ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Engine")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System", 0xc94d118b))
                     ->DataElement(AZ::Edit::UIHandlers::SpinBox, &JobManagerComponent::m_numberOfWorkerThreads, "Worker threads", "Number of worked threads for this job manager.")
                         ->Attribute(AZ::Edit::Attributes::Min, 0)
                         ->Attribute(AZ::Edit::Attributes::Max, 16)

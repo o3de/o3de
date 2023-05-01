@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/IO/FileIO.h>
 #include <AzCore/Serialization/Json/JsonImporter.h>
 #include <AzCore/Serialization/Json/JsonUtils.h>
 #include <AzCore/Serialization/Json/JsonSerialization.h>
@@ -41,7 +42,7 @@ namespace AZ
         {
             return result;
         }
-        
+
         return ResultCode(Tasks::Import, Outcomes::Success);
     }
 
@@ -50,7 +51,7 @@ namespace AZ
         JsonImportSettings& settings, StackedString& element)
     {
         using namespace JsonSerializationResult;
-        
+
         if (jsonDoc.IsObject())
         {
             for (auto& field : jsonDoc.GetObject())
@@ -60,20 +61,32 @@ namespace AZ
                     const rapidjson::Value& importDirective = field.value;
                     AZ::IO::FixedMaxPath importAbsPath = importPathStack.back();
                     importAbsPath.RemoveFilename();
-                    AZStd::string importName;
+                    AZ::IO::FixedMaxPath importName;
                     if (importDirective.IsObject())
                     {
                         auto filenameField = importDirective.FindMember("filename");
                         if (filenameField != importDirective.MemberEnd())
                         {
-                            importName = AZStd::string(filenameField->value.GetString(), filenameField->value.GetStringLength());
+                            importName = AZ::IO::FixedMaxPath(
+                                AZStd::string_view(filenameField->value.GetString(), filenameField->value.GetStringLength()));
                         }
                     }
                     else
                     {
-                        importName = AZStd::string(importDirective.GetString(), importDirective.GetStringLength());
+                        importName =
+                            AZ::IO::FixedMaxPath(AZStd::string_view(importDirective.GetString(), importDirective.GetStringLength()));
                     }
-                    importAbsPath.Append(importName);
+
+                    // Resolve the any file @..@ aliases in the relative importName if it starts with one
+                    if (auto fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+                    {
+                        // Replace alias doesn't "resolve" the path as FileIOBase::ResolvePath would
+                        // It only replaces an alias, it doesn't make a relative path absolute by
+                        // making subpath of the asset cache
+                        fileIo->ReplaceAlias(importName, importName);
+                    }
+
+                    importAbsPath /= importName;
 
                     rapidjson::Value patch;
                     ResultCode resolveResult = settings.m_importer->ResolveImport(&jsonDoc, patch, importDirective, importAbsPath, allocator, settings);
@@ -85,7 +98,7 @@ namespace AZ
                     if ((settings.m_resolveFlags & ImportTracking::Imports) == ImportTracking::Imports)
                     {
                         rapidjson::Pointer path(element.Get().data(), element.Get().size());
-                        settings.m_importer->AddImportDirective(path, importName);
+                        settings.m_importer->AddImportDirective(path, importName.String());
                     }
                     if ((settings.m_resolveFlags & ImportTracking::Dependencies) == ImportTracking::Dependencies)
                     {
@@ -143,7 +156,7 @@ namespace AZ
             {
                 rapidjson::Pointer importPtr = import.first;
                 rapidjson::Value* currentValue = importPtr.Get(jsonDoc);
-                
+
                 rapidjson::Value importedValue(rapidjson::kObjectType);
                 importedValue.AddMember(rapidjson::StringRef(JsonSerialization::ImportDirectiveIdentifier), rapidjson::StringRef(import.second.c_str()), allocator);
                 ResultCode resolveResult = JsonSerialization::ResolveImports(importedValue, allocator, settings);
@@ -168,7 +181,22 @@ namespace AZ
     {
         using namespace JsonSerializationResult;
 
-        auto importedObject = JsonSerializationUtils::ReadJsonFile(importedFilePath.Native());
+        // Attempt to replace any file aliases at the beginning of the path
+        // with a mapped file path if it exist.
+        AZ::IO::FixedMaxPath unaliasedImportedPath;
+        if (auto fileIo = AZ::IO::FileIOBase::GetInstance(); fileIo != nullptr)
+        {
+            // Replace alias doesn't "resolve" the path as FileIOBase::ResolvePath would
+            // It only replaces an alias, it doesn't make a relative path absolute by
+            // making subpath of the asset cache
+            fileIo->ReplaceAlias(unaliasedImportedPath, importedFilePath);
+        }
+        else
+        {
+            unaliasedImportedPath = importedFilePath;
+        }
+
+        auto importedObject = JsonSerializationUtils::ReadJsonFile(unaliasedImportedPath.Native());
         if (importedObject.IsSuccess())
         {
             rapidjson::Value& importedDoc = importedObject.GetValue();
@@ -198,7 +226,7 @@ namespace AZ
         rapidjson::Value& patch, rapidjson::Document::AllocatorType& allocator, const AZStd::string& importFilename)
     {
         using namespace JsonSerializationResult;
-        
+
         importPtr->SetObject();
         if ((patch.IsObject() && patch.MemberCount() > 0) || (patch.IsArray() && !patch.Empty()))
         {

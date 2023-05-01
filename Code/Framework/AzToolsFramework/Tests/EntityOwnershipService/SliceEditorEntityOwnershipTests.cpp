@@ -251,11 +251,13 @@ namespace UnitTest
         ASSERT_EQ(slicesUnderRootSlice.size(), 0);
 
         // Restore the slice entity
-        AZ::SliceComponent::EntityRestoreInfo entityRestoreInfo = AZ::SliceComponent::EntityRestoreInfo(sliceAsset,
-            sliceInstanceId, entityAncestorList.front().m_entity->GetId(), AZ::DataPatch::FlagsMap{});
+        AZ::SliceComponent::EntityRestoreInfo entityRestoreInfo = AZ::SliceComponent::EntityRestoreInfo(
+            sliceAsset, sliceInstanceId, entityAncestorList.front().m_entity->GetId(), AZ::DataPatch::FlagsMap{});
         AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Broadcast(
-            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity, entitiesOfSlice.front(),
-            entityRestoreInfo, AzToolsFramework::SliceEntityRestoreType::Deleted);
+            &AzToolsFramework::SliceEditorEntityOwnershipServiceRequestBus::Events::RestoreSliceEntity,
+            entitiesOfSlice.front(),
+            entityRestoreInfo,
+            AzToolsFramework::SliceEntityRestoreType::Deleted);
         AZ::TickBus::ExecuteQueuedEvents();
 
         // Verify that slice is restored with the same entity it had before.

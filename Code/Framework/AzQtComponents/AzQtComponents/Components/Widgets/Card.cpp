@@ -27,6 +27,7 @@ namespace AzQtComponents
 {
 
     static QString g_containerCardClass = QStringLiteral("ContainerCard");
+    static QString g_sectionCardClass = QStringLiteral("SectionCard");
 
     static QPixmap ApplyAlphaToPixmap(const QPixmap& pixmap, float alpha)
     {
@@ -47,6 +48,12 @@ namespace AzQtComponents
     {
         Style::addClass(card, g_containerCardClass);
         CardHeader::applyContainerStyle(card->header());
+    }
+
+    void Card::applySectionStyle(Card* card)
+    {
+        Style::addClass(card, g_sectionCardClass);
+        CardHeader::applySectionStyle(card->header());
     }
 
     Card::Card(QWidget* parent /* = nullptr */)
@@ -148,6 +155,11 @@ namespace AzQtComponents
     void Card::setTitle(const QString& title)
     {
         m_header->setTitle(title);
+    }
+    
+    void Card::setTitleToolTip(const QString& toolTip)
+    {
+        m_header->setTitleToolTip(toolTip);
     }
 
     QString Card::title() const

@@ -31,6 +31,7 @@ namespace UnitTest
         , public AZ::Data::AssetCatalogRequestBus::Handler
     {
     public:
+        AZ_CLASS_ALLOCATOR(MockValidationComponent, AZ::SystemAllocator)
 
         MockValidationComponent()
         {
@@ -141,7 +142,7 @@ namespace UnitTest
     };
 
     struct AssetValidationTest
-        : UnitTest::ScopedAllocatorSetupFixture
+        : UnitTest::LeakDetectionFixture
         , UnitTest::SetRestoreFileIOBaseRAII
         , AzFramework::ApplicationRequests::Bus::Handler
     {
@@ -157,10 +158,9 @@ namespace UnitTest
                 m_registry.Set(projectPathKey, (AZ::IO::FixedMaxPath(m_tempDir.GetDirectory()) / "AutomatedTesting").Native());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
 
-                // Set the engine root to the temporary directory and re-update the runtime file paths
-                auto enginePathKey = AZ::SettingsRegistryInterface::FixedValueString(AZ::SettingsRegistryMergeUtils::BootstrapSettingsRootKey)
-                    + "/engine_path";
-                m_registry.Set(enginePathKey, m_tempDir.GetDirectory());
+                // Set the engine root scan up path to the temporary directory  
+                constexpr AZStd::string_view InternalScanUpEngineRootKey{ "/O3DE/Runtime/Internal/engine_root_scan_up_path" };
+                m_registry.Set(InternalScanUpEngineRootKey, m_tempDir.GetDirectory());
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(m_registry);
             }
         }

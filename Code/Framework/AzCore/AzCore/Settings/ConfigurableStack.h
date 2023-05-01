@@ -80,7 +80,7 @@ namespace AZ
 
         virtual ~ConfigurableStackInterface() = default;
 
-        virtual const TypeId& GetNodeType() const = 0;
+        virtual TypeId GetNodeType() const = 0;
 
     protected:
         enum class InsertPosition
@@ -104,7 +104,7 @@ namespace AZ
 
         ~ConfigurableStack() override = default;
 
-        const TypeId& GetNodeType() const override;
+        TypeId GetNodeType() const override;
 
         Iterator begin();
         Iterator end();
@@ -139,9 +139,9 @@ namespace AZ
 
             SerializeContext::ClassData* GetClassData() override;
             size_t GetNumTemplatedArguments() override;
-            const Uuid& GetTemplatedTypeId([[maybe_unused]] size_t element) override;
-            const Uuid& GetSpecializedTypeId() const override;
-            const Uuid& GetGenericTypeId() const override;
+            AZ::TypeId GetTemplatedTypeId([[maybe_unused]] size_t element) override;
+            AZ::TypeId GetSpecializedTypeId() const override;
+            AZ::TypeId GetGenericTypeId() const override;
             
             void Reflect(SerializeContext* serializeContext) override;
 
@@ -151,7 +151,7 @@ namespace AZ
         using ClassInfoType = GenericConfigurableStackInfo;
 
         static ClassInfoType* GetGenericInfo();
-        static const Uuid& GetClassTypeId();
+        static AZ::TypeId GetClassTypeId();
     };
 
     class JsonConfigurableStackSerializer : public BaseJsonSerializer

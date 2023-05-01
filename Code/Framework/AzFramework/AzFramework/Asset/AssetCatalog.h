@@ -10,7 +10,6 @@
 
 #include <AzCore/Asset/AssetCommon.h>
 #include <AzCore/Asset/AssetManager.h>
-#include <AzCore/Serialization/SerializeContext.h>
 
 #include <AzCore/std/parallel/thread.h>
 #include <AzCore/std/smart_ptr/unique_ptr.h>
@@ -27,7 +26,7 @@ namespace AzFramework
     /*
      * An asset catalog keeps a registry of asset data information (file name, size, type, etc)
      */
-    class AssetCatalog 
+    class AssetCatalog
         : public AZ::Data::AssetCatalog
         , public AZ::Data::AssetCatalogRequestBus::Handler
         , private AssetSystem::NetworkAssetUpdateInterface
@@ -35,7 +34,7 @@ namespace AzFramework
     public:
 
         AZ_TYPE_INFO(AssetCatalog, "{D80BAFE6-0391-4D40-9C76-1E63D2D7C64F}");
-        AZ_CLASS_ALLOCATOR(AssetCatalog, AZ::SystemAllocator, 0)
+        AZ_CLASS_ALLOCATOR(AssetCatalog, AZ::SystemAllocator)
 
         AssetCatalog();
         ~AssetCatalog() override;
@@ -98,8 +97,8 @@ namespace AzFramework
 
         //////////////////////////////////////////////////////////////////////////
         // NetworkAssetUpdateInterface
-        void AssetChanged(AzFramework::AssetSystem::AssetNotificationMessage message) override;
-        void AssetRemoved(AzFramework::AssetSystem::AssetNotificationMessage message) override;
+        void AssetChanged(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages, bool isCatalogInitialize = false) override;
+        void AssetRemoved(const AZStd::vector<AzFramework::AssetSystem::AssetNotificationMessage>& messages) override;
         //////////////////////////////////////////////////////////////////////////
 
         static AZStd::shared_ptr<AzFramework::AssetRegistry> LoadCatalogFromFile(const char* catalogFile);
@@ -109,7 +108,7 @@ namespace AzFramework
         /// by the catalog.
         bool IsTrackedAssetType(const char* assetFilename) const;
 
-        /// Helper function that adds all of searchAssetId's dependencies to the depedencySet/List (leaving out ones that are already in the list)
+        /// Helper function that adds all of searchAssetId's dependencies to the dependencySet/List (leaving out ones that are already in the list)
         void AddAssetDependencies(const AZ::Data::AssetId& searchAssetId, AZStd::unordered_set<AZ::Data::AssetId>& assetSet, AZStd::vector<AZ::Data::ProductDependency>& dependencyList, const
                                   AZStd::unordered_set<AZ::Data::AssetId>& exclusionList,
                                   const AZStd::vector<AZStd::string>& wildcardPatternExclusionList,

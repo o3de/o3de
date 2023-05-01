@@ -59,13 +59,21 @@ ly_create_alias(
         Gem::AWSMetrics
 )
 
+ly_create_alias(
+    NAME AWSMetrics.Unified
+    NAMESPACE Gem
+    TARGETS
+        Gem::AWSCore.Unified
+        Gem::AWSMetrics
+)
+
 if (PAL_TRAIT_BUILD_HOST_TOOLS)
     ly_create_alias(
         NAME AWSMetrics.Tools
         NAMESPACE Gem
         TARGETS
             Gem::AWSCore.Tools
-            Gem::AWSMetrics
+            Gem::AWSMetrics.Editor
     )
 
     ly_create_alias(
@@ -75,6 +83,33 @@ if (PAL_TRAIT_BUILD_HOST_TOOLS)
             Gem::AWSCore.Builders
             Gem::AWSMetrics
     )
+endif()
+
+if(PAL_TRAIT_BUILD_HOST_TOOLS)
+    ly_add_target( 
+    NAME AWSMetrics.Editor ${PAL_TRAIT_MONOLITHIC_DRIVEN_MODULE_TYPE}
+    NAMESPACE Gem
+    FILES_CMAKE
+        awsmetrics_editor_files.cmake
+        awsmetrics_shared_files.cmake
+    INCLUDE_DIRECTORIES
+        PUBLIC
+            Include
+        PRIVATE
+            Source
+    COMPILE_DEFINITIONS
+        PRIVATE
+            AWS_METRICS_EDITOR
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AZ::AzCore
+            AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::AWSCore
+            3rdParty::AWSNativeSDK::Core
+    RUNTIME_DEPENDENCIES
+            Gem::AWSMetrics
+)
 endif()
 
 ################################################################################

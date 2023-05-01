@@ -139,7 +139,7 @@ namespace ImageProcessingAtom
         return image;
     }
 
-    void ImageProcessingSystemComponent::AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
+    void ImageProcessingSystemComponent::AddContextMenuActions(QWidget* /*caller*/, QMenu* menu, const AZStd::vector<const AzToolsFramework::AssetBrowser::AssetBrowserEntry*>& entries)
     {
         // Load Texture Settings
         static bool isSettingLoaded = false;
@@ -181,7 +181,7 @@ namespace ImageProcessingAtom
         if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Source)
         {
             // For supported source image files, add menu item to open texture setting editor
-            SourceAssetBrowserEntry* source = azrtti_cast<SourceAssetBrowserEntry*>(*entryIt);
+            const SourceAssetBrowserEntry* source = azrtti_cast<const SourceAssetBrowserEntry*>(*entryIt);
 
             if (!HandlesSource(source))
             {
@@ -189,16 +189,18 @@ namespace ImageProcessingAtom
             }
 
             AZ::Uuid sourceId = source->GetSourceUuid();
-
-            menu->addAction("Edit Texture Settings...", [sourceId, this]()
-                {
-                    OpenSourceTextureFile(sourceId);
-                });
+            if (!sourceId.IsNull())
+            {
+                menu->addAction("Edit Texture Settings...", [sourceId, this]()
+                    {
+                        OpenSourceTextureFile(sourceId);
+                    });
+            }
         }
         else if ((*entryIt)->GetEntryType() == AssetBrowserEntry::AssetEntryType::Product)
         {
             // For product which is streaming image asset, add menu item to save it to a dds file
-            ProductAssetBrowserEntry* product = azrtti_cast<ProductAssetBrowserEntry*>(*entryIt);
+            const ProductAssetBrowserEntry* product = azrtti_cast<const ProductAssetBrowserEntry*>(*entryIt);
             if (product->GetAssetType() == azrtti_typeid<AZ::RPI::StreamingImageAsset>())
             {
                 AZ::Data::AssetId assetId = product->GetAssetId();

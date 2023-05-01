@@ -26,7 +26,7 @@ namespace GradientSignal
     class MixedGradientLayer final
     {
     public:
-        AZ_CLASS_ALLOCATOR(MixedGradientLayer, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MixedGradientLayer, AZ::SystemAllocator);
         AZ_RTTI(MixedGradientLayer, "{957264F7-A169-4D47-B94C-659B078026D4}");
         static void Reflect(AZ::ReflectContext* context);
 
@@ -41,6 +41,7 @@ namespace GradientSignal
             Average,
             Normal,
             Overlay,
+            Screen
         };
 
         bool m_enabled = true;
@@ -54,7 +55,7 @@ namespace GradientSignal
         : public AZ::ComponentConfig
     {
     public:
-        AZ_CLASS_ALLOCATOR(MixedGradientConfig, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(MixedGradientConfig, AZ::SystemAllocator);
         AZ_RTTI(MixedGradientConfig, "{40403A44-31FE-4D1D-941C-6593759CCCBD}", AZ::ComponentConfig);
         static void Reflect(AZ::ReflectContext* context);
         AZStd::vector<MixedGradientLayer> m_layers;
@@ -67,7 +68,7 @@ namespace GradientSignal
         void OnLayerAdded();
     };
 
-    static const AZ::Uuid MixedGradientComponentTypeId = "{BB461301-D8FD-431C-9E4A-BEC6A878297C}";
+    inline constexpr AZ::TypeId MixedGradientComponentTypeId{ "{BB461301-D8FD-431C-9E4A-BEC6A878297C}" };
 
     /**
     * performs operations to combine multiple gradients
@@ -119,6 +120,8 @@ namespace GradientSignal
                 return currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Multiply:
                 return prevValue * currentUnpremultiplied;
+            case MixedGradientLayer::MixingOperation::Screen:
+                return 1.0f - ((1.0f - prevValue) * (1.0f - currentUnpremultiplied));
             case MixedGradientLayer::MixingOperation::Add:
                 return prevValue + currentUnpremultiplied;
             case MixedGradientLayer::MixingOperation::Subtract:

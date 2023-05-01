@@ -56,7 +56,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::FastDepthAwareBlurHorPass, "{934F3772-06DA-42E3-A305-2921FFCEDCD4}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(FastDepthAwareBlurHorPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FastDepthAwareBlurHorPass, SystemAllocator);
             virtual ~FastDepthAwareBlurHorPass() = default;
 
             //! Creates an FastDepthAwareBlurHorPass
@@ -86,7 +86,7 @@ namespace AZ
 
         public:
             AZ_RTTI(AZ::Render::FastDepthAwareBlurVerPass, "{0DCB71EB-5417-4351-AADE-444DBCDF980E}", AZ::RPI::ComputePass);
-            AZ_CLASS_ALLOCATOR(FastDepthAwareBlurVerPass, SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(FastDepthAwareBlurVerPass, SystemAllocator);
             virtual ~FastDepthAwareBlurVerPass() = default;
 
             //! Creates an FastDepthAwareBlurVerPass

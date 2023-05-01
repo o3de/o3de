@@ -31,7 +31,7 @@ namespace LUAEditor
 {
     struct FindOperationImpl
     {
-        AZ_CLASS_ALLOCATOR(FindOperationImpl, AZ::SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(FindOperationImpl, AZ::SystemAllocator);
 
         QTextCursor m_cursor;
         QString m_searchString;
@@ -84,7 +84,7 @@ namespace LUAEditor
     LUADockWidget::LUADockWidget(QWidget* parent, Qt::WindowFlags flags)
         : QDockWidget("LUADockWidget", parent, flags)
     {
-        connect(this, SIGNAL(dockLocationChanged(Qt::DockWidgetArea)), this, SLOT(OnDockLocationChanged(Qt::DockWidgetArea)));
+        connect(this, &LUADockWidget::dockLocationChanged, this, &LUADockWidget::OnDockLocationChanged);
     }
 
     void LUADockWidget::closeEvent(QCloseEvent* event)
@@ -117,6 +117,7 @@ namespace LUAEditor
 
     LUAViewWidget::LUAViewWidget(QWidget* pParent /*=NULL*/)
         : QWidget(pParent)
+        , m_gui(azcreate(Ui::LUAEditorView, ()))
         , m_pLUADockWidget(NULL)
         , m_pLoadingProgressShield(NULL)
         , m_pSavingProgressShield(NULL)
@@ -124,7 +125,6 @@ namespace LUAEditor
         , m_PullRequestQueued(false)
         , m_AutoCompletionEnabled(true)
     {
-        m_gui = azcreate(Ui::LUAEditorView, ());
         m_gui->setupUi(this);
 
         setAcceptDrops(true);
@@ -143,28 +143,29 @@ namespace LUAEditor
 
         UpdateFont();
 
-        connect(m_gui->m_luaTextEdit, SIGNAL(modificationChanged(bool)), this, SLOT(modificationChanged(bool)));
-        connect(this, SIGNAL(RegainFocus()), this, SLOT(RegainFocusFinal()), Qt::QueuedConnection);
-        connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), this, SLOT(UpdateBraceHighlight()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), m_gui->m_folding, SLOT(update()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(cursorPositionChanged()), m_gui->m_breakpoints, SLOT(update()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(Scrolled()), m_gui->m_breakpoints, SLOT(update()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(Scrolled()), m_gui->m_folding, SLOT(update()));
-        connect(m_gui->m_luaTextEdit, SIGNAL(blockCountChanged(int)), m_gui->m_breakpoints, SLOT(OnBlockCountChange()));
-        connect(m_gui->m_luaTextEdit->document(), SIGNAL(contentsChange(int, int, int)), m_gui->m_breakpoints, SLOT(OnCharsRemoved(int, int)));
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::modificationChanged, this, &LUAViewWidget::modificationChanged);
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::cursorPositionChanged, this, &LUAViewWidget::UpdateBraceHighlight);
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::Scrolled, m_gui->m_folding, static_cast<void(FoldingWidget::*)()>(&FoldingWidget::update));
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::blockCountChanged, m_gui->m_breakpoints, &LUAEditorBreakpointWidget::OnBlockCountChange);
+        connect(m_gui->m_luaTextEdit->document(), &QTextDocument::contentsChange, m_gui->m_breakpoints, &LUAEditorBreakpointWidget::OnCharsRemoved);
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::FocusChanged, this, &LUAViewWidget::OnPlainTextFocusChanged);
-        connect(m_gui->m_folding, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_breakpoints->update(); });
-        connect(m_gui->m_folding, &FoldingWidget::TextBlockFoldingChanged, this, [&]() {m_gui->m_luaTextEdit->update(); });
         connect(m_gui->m_luaTextEdit->document(), &QTextDocument::contentsChange, m_gui->m_folding, &FoldingWidget::OnContentChanged);
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::ZoomIn, this, &LUAViewWidget::OnZoomIn);
         connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::ZoomOut, this, &LUAViewWidget::OnZoomOut);
-        connect(m_Highlighter, &LUASyntaxHighlighter::LUANamesInScopeChanged, m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::OnScopeNamesUpdated);
-        connect(m_gui->m_folding, &FoldingWidget::destroyed, this, [&]() {m_gui->m_folding = nullptr; });
-        connect(m_gui->m_breakpoints, &LUAEditorBreakpointWidget::destroyed, this, [&]() {m_gui->m_breakpoints = nullptr; });
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::cursorPositionChanged, m_gui->m_folding, static_cast<void(FoldingWidget::*)()>(&FoldingWidget::update));
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::cursorPositionChanged, m_gui->m_breakpoints, static_cast<void(LUAEditorBreakpointWidget::*)()>(&LUAEditorBreakpointWidget::update));
+        connect(m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::Scrolled, m_gui->m_breakpoints, static_cast<void(LUAEditorBreakpointWidget::*)()>(&LUAEditorBreakpointWidget::update));
 
-        m_gui->m_breakpoints->OnToggleBreakpoint = AZStd::bind(&LUAViewWidget::BreakpointToggle, this, AZStd::placeholders::_1);
-        m_gui->m_breakpoints->OnBreakpointLineMoved = AZStd::bind(&LUAViewWidget::OnBreakpointLineMoved, this, AZStd::placeholders::_1, AZStd::placeholders::_2);
-        m_gui->m_breakpoints->OnBreakpointLineDeleted = AZStd::bind(&LUAViewWidget::OnBreakpointLineDeleted, this, AZStd::placeholders::_1);
+        connect(this, &LUAViewWidget::RegainFocus, this, &LUAViewWidget::RegainFocusFinal, Qt::QueuedConnection);
+    
+        connect(m_gui->m_folding, &FoldingWidget::TextBlockFoldingChanged, m_gui->m_breakpoints, static_cast<void(LUAEditorBreakpointWidget::*)()>(&LUAEditorBreakpointWidget::update));
+        connect(m_gui->m_folding, &FoldingWidget::TextBlockFoldingChanged, m_gui->m_luaTextEdit, static_cast<void(LUAEditorPlainTextEdit::*)()>(&LUAEditorPlainTextEdit::update));
+
+        connect(m_Highlighter, &LUASyntaxHighlighter::LUANamesInScopeChanged, m_gui->m_luaTextEdit, &LUAEditorPlainTextEdit::OnScopeNamesUpdated);
+
+        connect(m_gui->m_breakpoints, &LUAEditorBreakpointWidget::toggleBreakpoint, this, &LUAViewWidget::BreakpointToggle);
+        connect(m_gui->m_breakpoints, &LUAEditorBreakpointWidget::breakpointLineMove, this, &LUAViewWidget::OnBreakpointLineMoved);
+        connect(m_gui->m_breakpoints, &LUAEditorBreakpointWidget::breakpointDelete, this, &LUAViewWidget::OnBreakpointLineDeleted);
 
         CreateStyleSheet();
 
@@ -276,10 +277,11 @@ namespace LUAEditor
             {
                 const char* buffer = NULL;
                 AZStd::size_t actualSize = 0;
-                EBUS_EVENT(Context_DocumentManagement::Bus, GetDocumentData, newInfo.m_assetId, &buffer, actualSize);
+                Context_DocumentManagement::Bus::Broadcast(
+                    &Context_DocumentManagement::Bus::Events::GetDocumentData, newInfo.m_assetId, &buffer, actualSize);
                 m_gui->m_luaTextEdit->setPlainText(buffer);
 
-                EBUS_EVENT(LUAViewMessages::Bus, OnDataLoadedAndSet, newInfo, this);
+                LUAViewMessages::Bus::Broadcast(&LUAViewMessages::Bus::Events::OnDataLoadedAndSet, newInfo, this);
             }
 
             //remove the loading shield
@@ -291,7 +293,8 @@ namespace LUAEditor
 
             // scan the breakpoint store from our context and pre-set the markers to get in sync
             const LUAEditor::BreakpointMap* myData = NULL;
-            EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+            LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+                myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
             AZ_Assert(myData, "LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints failed to return any data.");
             BreakpointsUpdate(*myData);
             UpdateCurrentEditingLine(newInfo.m_PresetLineAtOpen);
@@ -476,13 +479,13 @@ namespace LUAEditor
         {
             m_gui->m_breakpoints->setEnabled(true);
             m_gui->m_folding->setEnabled(true);
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnFocusInEvent, m_Info.m_assetId);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnFocusInEvent, m_Info.m_assetId);
         }
         else
         {
             m_gui->m_breakpoints->setEnabled(false);
             m_gui->m_folding->setEnabled(false);
-            EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnFocusOutEvent, m_Info.m_assetId);
+            LUAEditorMainWindowMessages::Bus::Broadcast(&LUAEditorMainWindowMessages::Bus::Events::OnFocusOutEvent, m_Info.m_assetId);
         }
     }
 
@@ -511,7 +514,8 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(fromLineNumber);
         if (breakpoint != m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, MoveBreakpoint, breakpoint->second.m_editorId, toLineNumber);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::MoveBreakpoint, breakpoint->second.m_editorId, toLineNumber);
         }
     }
 
@@ -520,13 +524,14 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(removedLineNumber);
         if (breakpoint != m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, DeleteBreakpoint, breakpoint->second.m_editorId);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::DeleteBreakpoint, breakpoint->second.m_editorId);
         }
     }
 
     void LUAViewWidget::modificationChanged(bool m)
     {
-        EBUS_EVENT(Context_DocumentManagement::Bus, NotifyDocumentModified, m_Info.m_assetId, m);
+        Context_DocumentManagement::Bus::Broadcast(&Context_DocumentManagement::Bus::Events::NotifyDocumentModified, m_Info.m_assetId, m);
         UpdateModifyFlag();
     }
 
@@ -580,7 +585,7 @@ namespace LUAEditor
 
         if (!m_PullRequestQueued)
         {
-            QTimer::singleShot(1, this, SLOT(PullFreshBreakpoints()));
+            QTimer::singleShot(1, this, &LUAViewWidget::PullFreshBreakpoints);
             m_PullRequestQueued = true;
             return;
         }
@@ -594,7 +599,8 @@ namespace LUAEditor
         m_gui->m_breakpoints->ClearBreakpoints();
 
         const LUAEditor::BreakpointMap* myData = NULL;
-        EBUS_EVENT_RESULT(myData, LUAEditor::LUABreakpointRequestMessages::Bus, RequestBreakpoints);
+        LUAEditor::LUABreakpointRequestMessages::Bus::BroadcastResult(
+            myData, &LUAEditor::LUABreakpointRequestMessages::Bus::Events::RequestBreakpoints);
         AZ_Assert(myData, "Nobody responded to the request breakpoints message.");
 
         // and slam down a new set
@@ -629,11 +635,12 @@ namespace LUAEditor
         auto breakpoint = m_Breakpoints.find(line);
         if (breakpoint == m_Breakpoints.end())
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, CreateBreakpoint, m_Info.m_assetId, line);
+            Context_DebuggerManagement::Bus::Broadcast(&Context_DebuggerManagement::Bus::Events::CreateBreakpoint, m_Info.m_assetId, line);
         }
         else
         {
-            EBUS_EVENT(Context_DebuggerManagement::Bus, DeleteBreakpoint, breakpoint->second.m_editorId);
+            Context_DebuggerManagement::Bus::Broadcast(
+                &Context_DebuggerManagement::Bus::Events::DeleteBreakpoint, breakpoint->second.m_editorId);
         }
     }
 
@@ -671,7 +678,8 @@ namespace LUAEditor
                 int ret = msgBox.exec();
                 if (ret == QMessageBox::Ok)
                 {
-                    EBUS_EVENT(LUAEditorMainWindowMessages::Bus, OnRequestCheckOut, m_Info.m_assetId);
+                    LUAEditorMainWindowMessages::Bus::Broadcast(
+                        &LUAEditorMainWindowMessages::Bus::Events::OnRequestCheckOut, m_Info.m_assetId);
                 }
             }
         }

@@ -18,7 +18,7 @@
 namespace UnitTest
 {
     class ClipmapBoundsTests
-        : public UnitTest::AllocatorsTestFixture
+        : public testing::Test
     {
     public:
         void CheckTransformRegionFullBounds(const Terrain::ClipmapBoundsDescriptor& desc);

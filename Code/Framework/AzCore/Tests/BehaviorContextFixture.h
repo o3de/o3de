@@ -16,13 +16,13 @@ namespace UnitTest
 {
     // Basic fixture for managing a BehaviorContext
     class BehaviorContextFixture
-        : public AllocatorsFixture
+        : public LeakDetectionFixture
         , public AZ::ComponentApplicationBus::Handler
     {
     public:
         void SetUp() override
         {
-            AllocatorsFixture::SetUp();
+            LeakDetectionFixture::SetUp();
 
             m_behaviorContext = aznew AZ::BehaviorContext();
 
@@ -39,7 +39,7 @@ namespace UnitTest
             delete m_behaviorContext;
             m_behaviorContext = nullptr;
 
-            AllocatorsFixture::TearDown();
+            LeakDetectionFixture::TearDown();
         }
 
         // ComponentApplicationBus

@@ -7,7 +7,6 @@
  */
 
 #include <AzCore/Component/ComponentApplication.h>
-#include <AzCore/Memory/MemoryComponent.h>
 #include <AzTest/AzTest.h>
 
 #include <Components/TerrainHeightGradientListComponent.h>

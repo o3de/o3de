@@ -8,10 +8,12 @@
 
 #pragma once
 
-#include <AzCore/Interface/Interface.h>
-#include <AzCore/Serialization/SerializeContext.h>
+#include <AzCore/Outcome/Outcome.h>
+#include <AzCore/RTTI/TypeInfoSimple.h>
+#include <AzCore/RTTI/RTTIMacros.h>
+#include <AzCore/std/string/string.h>
 
-class QToolBar;
+#include <QToolBar>
 
 namespace AzToolsFramework
 {
@@ -42,6 +44,14 @@ namespace AzToolsFramework
         //! @param properties The properties object for the newly registered ToolBar.
         //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
         virtual ToolBarManagerOperationResult RegisterToolBar(const AZStd::string& toolBarIdentifier, const ToolBarProperties& properties) = 0;
+
+        //! Register a new ToolBar Area to the ToolBar Manager.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area that is being registered.
+        //! @param mainWindow Pointer to the QMainWindow to associate the toolbar area with.
+        //! @param toolBarArea Enum of which part of the QMainWindow the toolbar area will cover.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult RegisterToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, QMainWindow* mainWindow, Qt::ToolBarArea toolBarArea) = 0;
 
         //! Add an Action to a ToolBar.
         //! @param toolBarIdentifier The identifier for the ToolBar the action is being added to.
@@ -96,10 +106,21 @@ namespace AzToolsFramework
         virtual ToolBarManagerOperationResult AddWidgetToToolBar(
             const AZStd::string& toolBarIdentifier, const AZStd::string& widgetActionIdentifier, int sortIndex) = 0;
 
-        //! Retrieve a QToolBar from its identifier.
-        //! @param toolBarIdentifier The identifier for the ToolBar to retrieve.
-        //! @return A raw pointer to the QToolBar object.
-        virtual QToolBar* GetToolBar(const AZStd::string& toolBarIdentifier) = 0;
+        //! Add a ToolBar to a ToolBar Area.
+        //! @param toolBarAreaIdentifier The identifier for the toolbar area the toolbar is being added to.
+        //! @param toolBarIdentifier The identifier for the toolbar to add to the toolbar area.
+        //! @param sortIndex An integer defining the position the toolbar should appear in the toolbar area.
+        //! @return A successful outcome object, or a string with a message detailing the error in case of failure.
+        virtual ToolBarManagerOperationResult AddToolBarToToolBarArea(
+            const AZStd::string& toolBarAreaIdentifier, const AZStd::string& toolBarIdentifier, int sortIndex) = 0;
+
+        //! Generate an instance of a ToolBar from its identifier.
+        //! The requester should take care of correctly parenting and deleting the ToolBar once it is no longer needed.
+        //! Note that the ToolBar Manager system will still retain control over the contents of the ToolBar
+        //! and clear and re-populate it when necessary.
+        //! @param toolBarIdentifier The identifier for the ToolBar to generate.
+        //! @return A raw pointer to the new QToolBar object.
+        virtual QToolBar* GenerateToolBar(const AZStd::string& toolBarIdentifier) = 0;
 
         //! Retrieve the sort key of an action in a toolbar from its identifier.
         //! @param toolBarIdentifier The identifier for the toolbar to query.

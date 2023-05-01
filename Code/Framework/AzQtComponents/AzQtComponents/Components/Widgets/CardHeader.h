@@ -27,6 +27,28 @@ namespace AzQtComponents
     namespace Internal
     {
         class RectangleWidget;
+
+        // Clickable icon label
+        class AZ_QT_COMPONENTS_API ClickableIconLabel
+            : public QLabel
+        {
+            Q_OBJECT
+
+        public:
+            explicit ClickableIconLabel(QWidget* parent = nullptr);
+
+            void SetClickable(bool clickable);
+            bool GetClickable() const;
+
+        Q_SIGNALS:
+            void clicked(const QPoint& position);
+
+        protected:
+            void mouseReleaseEvent(QMouseEvent* event) override;
+
+        private:
+            bool m_clickable = false;
+        };
     }
 
     //! Header bar for Card widgets.
@@ -45,6 +67,8 @@ namespace AzQtComponents
         //! Enable content modified styling.
         Q_PROPERTY(bool contentModified READ isContentModified WRITE setContentModified NOTIFY contentModifiedChanged)
     public:
+        static int s_iconSize;
+
         //! Enum used to determine which icon to use for the context menu button.
         enum ContextMenuIcon
         {
@@ -53,11 +77,16 @@ namespace AzQtComponents
         };
 
         static void applyContainerStyle(CardHeader* header);
+        static void applySectionStyle(CardHeader* header);
 
         CardHeader(QWidget* parent = nullptr);
 
         //! Sets the Card Header title. Passing an empty string will hide the Card Header.
         void setTitle(const QString& title);
+
+        //! Sets the tool tip for the card header and card header title.
+        void setTitleToolTip(const QString& toolTip);
+
         //! Returns the current title.
         QString title() const;
         //! Returns a direct pointer to the title label.
@@ -76,6 +105,14 @@ namespace AzQtComponents
 
         //! Sets the icon. Passing a null icon will hide the current icon.
         void setIcon(const QIcon& icon);
+
+        //! Sets a secondary icon to be drawn on top of the main icon.
+        void setIconOverlay(const QIcon& icon);
+
+        //! Set whether the icon can be clicked to trigger an event.
+        void setIconClickable(bool clickable);
+        //! Returns true if the icon can be clicked to trigger an event, false otherwise.
+        bool isIconClickable() const;
 
         //! Set whether the header displays an expander button.
         //! Note that the header itself will not change size or hide, it simply causes
@@ -151,6 +188,8 @@ namespace AzQtComponents
         void readOnlyChanged(bool readOnly);
         //! Triggered when the content modified state is changed.
         void contentModifiedChanged(bool modified);
+        //! Triggered when the icon label is clicked.
+        void iconLabelClicked(const QPoint& position);
 
     protected:
         friend class Card;
@@ -159,6 +198,10 @@ namespace AzQtComponents
         void contextMenuEvent(QContextMenuEvent* event) override;
         void triggerContextMenuUnderButton();
         void triggerHelpButton();
+        void triggerIconLabelClicked(const QPoint& position);
+
+        //! Assign a pixmap for the icon label based on current properties
+        void updateIconLabel();
 
         static bool isCardHeaderIcon(const QWidget* widget);
         static bool isCardHeaderMenuButton(const QWidget* widget);
@@ -168,7 +211,7 @@ namespace AzQtComponents
         QHBoxLayout* m_backgroundLayout = nullptr;
         QFrame* m_backgroundFrame = nullptr;
         QCheckBox* m_expanderButton = nullptr;
-        QLabel* m_iconLabel = nullptr;
+        Internal::ClickableIconLabel* m_iconLabel = nullptr;
         AzQtComponents::ElidingLabel* m_titleLabel = nullptr;
         QLabel* m_warningLabel = nullptr;
         QPushButton* m_contextMenuButton = nullptr;
@@ -180,8 +223,9 @@ namespace AzQtComponents
 
         QIcon m_warningIcon;
         QIcon m_icon;
+        QIcon m_iconOverlay;
         QString m_helpUrl;
 
-        static int s_iconSize;
+        
     };
 } // namespace AzQtComponents

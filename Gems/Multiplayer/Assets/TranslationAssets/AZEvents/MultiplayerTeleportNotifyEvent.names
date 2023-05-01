@@ -1,0 +1,56 @@
+{
+    "entries": [
+        {
+            "base": "MultiplayerTeleport Notify Event",
+            "context": "AZEventHandler",
+            "variant": "",
+            "details": {
+                "name": "Multiplayer Teleport Notify Event"
+            },
+            "slots": [
+                {
+                    "base": "teleportToPosition",
+                    "details": {
+                        "name": "Teleport To Position"
+                    }
+                },
+                {
+                    "base": "MultiplayerTeleport Notify Event",
+                    "details": {
+                        "name": "MultiplayerTeleport Notify Event"
+                    }
+                },
+                {
+                    "base": "Connect",
+                    "details": {
+                        "name": "Connect"
+                    }
+                },
+                {
+                    "base": "Disconnect",
+                    "details": {
+                        "name": "Disconnect"
+                    }
+                },
+                {
+                    "base": "On Connected",
+                    "details": {
+                        "name": "On Connected"
+                    }
+                },
+                {
+                    "base": "On Disconnected",
+                    "details": {
+                        "name": "On Disconnected"
+                    }
+                },
+                {
+                    "base": "OnEvent",
+                    "details": {
+                        "name": "OnEvent"
+                    }
+                }
+            ]
+        }
+    ]
+}

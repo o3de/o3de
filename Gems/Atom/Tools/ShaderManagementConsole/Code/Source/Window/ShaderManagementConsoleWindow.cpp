@@ -8,14 +8,18 @@
 
 #include <Atom/RPI.Edit/Shader/ShaderSourceData.h>
 #include <Atom/RPI.Edit/Shader/ShaderVariantListSourceData.h>
+#include <Atom/RPI.Edit/Common/AssetUtils.h>
 #include <Atom/RPI.Reflect/Shader/ShaderAsset.h>
 #include <AtomToolsFramework/Document/AtomToolsDocumentSystemRequestBus.h>
+#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
 #include <AzCore/Utils/Utils.h>
 #include <Window/ShaderManagementConsoleWindow.h>
+#include <Document/ShaderManagementConsoleDocumentRequestBus.h>
 
 #include <QFileDialog>
 #include <QUrl>
 #include <QWindow>
+#include <QMessageBox>
 
 namespace ShaderManagementConsole
 {
@@ -36,6 +40,57 @@ namespace ShaderManagementConsole
     {
         Base::OnDocumentOpened(documentId);
         m_documentInspector->SetDocumentId(documentId);
+    }
+
+    AZStd::string ShaderManagementConsoleWindow::GetSaveDocumentParams(const AZStd::string& initialPath, const AZ::Uuid& documentId) const
+    {
+        // Get shader file path
+        AZ::IO::Path shaderFullPath;
+        AZ::RPI::ShaderVariantListSourceData shaderVariantList = {};
+        ShaderManagementConsoleDocumentRequestBus::EventResult(
+            shaderVariantList,
+            documentId,
+            &ShaderManagementConsoleDocumentRequestBus::Events::GetShaderVariantListSourceData);
+        shaderFullPath = AZ::RPI::AssetUtils::ResolvePathReference(initialPath, shaderVariantList.m_shaderFilePath);
+        
+        QMessageBox msgBox;
+        msgBox.setText("Where do you want to save the list?");
+        QPushButton* projectBtn = msgBox.addButton(QObject::tr("Save to project"), QMessageBox::ActionRole);
+        QPushButton* engineBtn = msgBox.addButton(QObject::tr("Save to engine"), QMessageBox::ActionRole);
+        msgBox.addButton(QObject::tr("Cancel"), QMessageBox::RejectRole);
+        msgBox.exec();
+
+        AZ::IO::Path result;
+        if (msgBox.clickedButton() == projectBtn)
+        {
+            AZ::IO::FixedMaxPath projectPath = AZ::Utils::GetProjectPath();
+            AZ::IO::Path relativePath, rootFolder;
+            bool pathFound = false;
+            AzToolsFramework::AssetSystemRequestBus::BroadcastResult(
+                pathFound,
+                &AzToolsFramework::AssetSystemRequestBus::Events::GenerateRelativeSourcePath,
+                shaderFullPath.Native(),
+                relativePath.Native(),
+                rootFolder.Native());
+
+            if (pathFound)
+            {
+                relativePath.ReplaceExtension("shadervariantlist");
+                projectPath /= AZ::IO::Path ("ShaderVariants") / relativePath;
+                result = projectPath.LexicallyNormal();
+            }
+            else
+            {
+                AZ_Error("ShaderManagementConsoleWindow", false, "Can not find a relative path from the shader: '%s'.", shaderFullPath.c_str());
+            }
+        }
+        else if(msgBox.clickedButton() == engineBtn)
+        {
+            shaderFullPath.ReplaceExtension("shadervariantlist");
+            result = shaderFullPath;
+        }
+
+        return result.Native();
     }
 } // namespace ShaderManagementConsole
 

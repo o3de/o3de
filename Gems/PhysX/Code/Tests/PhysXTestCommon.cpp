@@ -23,6 +23,7 @@
 #include <CapsuleColliderComponent.h>
 #include <RigidBodyComponent.h>
 #include <SphereColliderComponent.h>
+#include <Scene/PhysXScene.h>
 #include <Tests/PhysXTestUtil.h>
 
 namespace PhysX
@@ -68,6 +69,7 @@ namespace PhysX
             {
                 scene->StartSimulation(timeStep);
                 scene->FinishSimulation();
+                static_cast<PhysX::PhysXScene*>(scene)->FlushTransformSync();
             }
         }
 

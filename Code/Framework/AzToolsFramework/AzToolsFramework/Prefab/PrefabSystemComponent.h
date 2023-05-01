@@ -10,12 +10,11 @@
 
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TickBus.h>
-#include <AzCore/Serialization/SerializeContext.h>
 #include <AzCore/std/containers/unordered_map.h>
 #include <AzCore/std/containers/unordered_set.h>
 #include <AzCore/std/containers/vector.h>
 #include <AzCore/std/string/string.h>
-#include <AzToolsFramework/API/EditorAssetSystemAPI.h>
+#include <AzToolsFramework/AssetBrowser/AssetBrowserBus.h>
 #include <AzToolsFramework/Entity/EntityTypes.h>
 #include <AzToolsFramework/Prefab/Instance/Instance.h>
 #include <AzToolsFramework/Prefab/Instance/InstanceEntityMapper.h>
@@ -31,9 +30,12 @@
 #include <AzToolsFramework/Prefab/Template/Template.h>
 #include <Prefab/PrefabSystemScriptingHandler.h>
 
+AZ_DECLARE_BUDGET(PrefabSystem);
+
 namespace AZ
 {
     class Entity;
+    class SerializeContext;
 } // namespace AZ
 
 namespace AzToolsFramework
@@ -52,7 +54,7 @@ namespace AzToolsFramework
             : public AZ::Component
             , private PrefabSystemComponentInterface
             , private AZ::SystemTickBus::Handler
-            , private AzToolsFramework::AssetSystemBus::Handler
+            , private AzToolsFramework::AssetBrowser::AssetBrowserFileActionNotificationBus::Handler
         {
         public:
 
@@ -78,6 +80,10 @@ namespace AzToolsFramework
 
             // SystemTickBus...
             void OnSystemTick() override;
+
+            // AssetBrowserSourceActionNotificationBus...
+            void OnSourceFilePathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
+            void OnSourceFolderPathNameChanged(const AZStd::string_view fromPathName, const AZStd::string_view toPathName) override;
 
             //////////////////////////////////////////////////////////////////////////
             // PrefabSystemComponentInterface interface implementation
@@ -382,11 +388,12 @@ namespace AzToolsFramework
             // Helper function for GetDirtyTemplatePaths(). It uses vector to speed up iteration times.
             void GetDirtyTemplatePathsHelper(TemplateId rootTemplateId, AZStd::vector<AZ::IO::PathView>& dirtyTemplatePaths);
 
-            //! Called by the AssetProcessor when the source file has been changed.
-            void SourceFileChanged(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
-
-            //! Called by the AssetProcessor when the source file has been removed.
-            void SourceFileRemoved(AZStd::string relativePath, AZStd::string scanFolder, AZ::Uuid sourceUUID) override;
+            //! Free memory if memory is available to free.  This is only necessary if the underlying system
+            //! retains memory (ie, rapidjson, not AZ::DOM).  Doing so will invalidate all existing PrefabDom&
+            //! and PrefabDomValue& references that might be pointing at the garbage collected memory.
+            //! @param doAll if doAll is true, it will garbage collect all templates in the set of those needing
+            //! to be garbage collected - otherwise, it will only garbage collect one (meant for continuous calling).
+            void GarbageCollectTemplates(bool doAll);
 
             // A container for mapping Templates to the Links they may propagate changes to.
             AZStd::unordered_map<TemplateId, AZStd::unordered_set<LinkId>> m_templateToLinkIdsMap;
@@ -435,6 +442,8 @@ namespace AzToolsFramework
 
             // If true, individual template-remove messages will be suppressed
             bool m_removingAllTemplates = false;
+
+            AZStd::unordered_set<TemplateId> m_templatesWhichNeedGarbageCollection;
         };
     } // namespace Prefab
 } // namespace AzToolsFramework

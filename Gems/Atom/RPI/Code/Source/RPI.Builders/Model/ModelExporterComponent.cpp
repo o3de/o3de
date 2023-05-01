@@ -160,12 +160,10 @@ namespace AZ
 
                 AZ_Assert(assetInfoResult, "Failed to retrieve source asset info. Can't reason about product asset paths");
 
-                uint32_t lodIndex = 0;
                 for (const Data::Asset<ModelLodAsset>& lodAsset : modelAsset->GetLodAssets())
                 {
                     AZStd::set<uint32_t> exportedSubAssets;
 
-                    uint32_t bufferIndex = 0;
                     for (const ModelLodAsset::Mesh& mesh : lodAsset->GetMeshes())
                     {
                         //Export all BufferAssets for this Lod
@@ -189,7 +187,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(indexBufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
 
@@ -213,7 +210,6 @@ namespace AZ
                                 }
 
                                 exportedSubAssets.insert(bufferAsset.GetId().m_subId);
-                                bufferIndex++;
                             }
                         }
                     }
@@ -232,7 +228,6 @@ namespace AZ
                         return SceneAPI::Events::ProcessingResult::Failure;
                     }
 
-                    lodIndex++;
                 } //foreach lodAsset                
 
                 //Export ModelAsset

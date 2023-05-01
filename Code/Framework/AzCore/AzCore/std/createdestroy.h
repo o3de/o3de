@@ -191,7 +191,7 @@ namespace AZStd
     //! `new (declval<void*>()) T(declval<Args>()...)` is well-formed
     template <typename T, typename... Args>
     constexpr auto construct_at(T* ptr, Args&&... args)
-        -> enable_if_t<AZStd::is_void_v<AZStd::void_t<decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...))>>, T*>
+        -> decltype(new (AZStd::declval<void*>()) T(AZStd::forward<Args>(args)...), (T*)nullptr)
     {
         return ::new (ptr) T(AZStd::forward<Args>(args)...);
     }

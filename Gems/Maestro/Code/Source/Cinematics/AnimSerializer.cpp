@@ -12,6 +12,9 @@
 
 #include "AnimSerializer.h"
 
+#include <AzCore/Serialization/SerializeContext.h>
+
+
 void AnimSerializer::ReflectAnimTypes(AZ::ReflectContext* context)
 {
     if (auto serializeContext = azrtti_cast<AZ::SerializeContext*>(context); serializeContext != nullptr)

@@ -11,6 +11,7 @@
 
 #include <ScriptCanvas/Asset/RuntimeAsset.h>
 #include <ScriptCanvas/Asset/RuntimeAssetHandler.h>
+#include <ScriptCanvas/Asset/SubgraphInterfaceAsset.h>
 #include <Asset/RuntimeAssetSystemComponent.h>
 #include <Asset/SubgraphInterfaceAssetHandler.h>
 #include <Execution/ExecutionState.h>

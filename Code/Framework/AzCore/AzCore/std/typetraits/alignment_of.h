@@ -13,4 +13,5 @@ namespace AZStd
 {
     using std::alignment_of;
     using std::alignment_of_v;
+    using std::align_val_t;
 }

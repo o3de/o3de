@@ -13,7 +13,7 @@
 #include <AzCore/Memory/SystemAllocator.h>
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/chrono/chrono.h>
-#include <AzCore/std/chrono/clocks.h>
+#include <AzCore/std/chrono/chrono.h>
 #include <AzCore/std/string/string.h>
 #include <AzCore/std/sort.h>
 #include <AzCore/std/containers/unordered_map.h>
@@ -34,13 +34,13 @@ namespace AssetProcessor
         class StatsCaptureImpl final
         {
         public:
-            AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(StatsCaptureImpl, AZ::SystemAllocator);
             StatsCaptureImpl();
             void BeginCaptureStat(AZStd::string_view statName);
             AZStd::optional<AZStd::sys_time_t> EndCaptureStat(AZStd::string_view statName, bool persistToDb);
             void Dump();
         private:
-            using timepoint = AZStd::chrono::high_resolution_clock::time_point;
+            using timepoint = AZStd::chrono::steady_clock::time_point;
             using duration = AZStd::chrono::milliseconds;
             struct StatsEntry
             {
@@ -53,6 +53,7 @@ namespace AssetProcessor
             AZStd::unordered_map<AZStd::string, StatsEntry> m_stats;
             bool m_dumpMachineReadableStats = false;
             bool m_dumpHumanReadableStats = true;
+            bool m_dbConnectionIsOpen = false;
 
             // Make a friendly time string of the format nnHnnMhhS.xxxms
             AZStd::string FormatDuration(const duration& duration)
@@ -61,16 +62,16 @@ namespace AssetProcessor
                 constexpr int64_t millisecondsInASecond = 1000;
                 constexpr int64_t millisecondsInAMinute = millisecondsInASecond * 60;
                 constexpr int64_t millisecondsInAnHour = millisecondsInAMinute * 60;
-                
+
                 int64_t hours = milliseconds / millisecondsInAnHour;
                 milliseconds -= hours * millisecondsInAnHour;
-                
+
                 int64_t minutes = milliseconds / millisecondsInAMinute;
                 milliseconds -= minutes * millisecondsInAMinute;
-                
+
                 int64_t seconds = milliseconds / millisecondsInASecond;
                 milliseconds -= seconds * millisecondsInASecond;
-                
+
                 // omit the sections which dont make sense for readability
                 if (hours)
                 {
@@ -84,11 +85,11 @@ namespace AssetProcessor
                 {
                     return AZStd::string::format("      %02" PRId64 "s%03" PRId64 "ms", seconds, milliseconds);
                 }
-                
+
                 return AZStd::string::format("         %03" PRId64 "ms", milliseconds);
             }
 
-            // Prints out a single stat. 
+            // Prints out a single stat.
             void PrintStat([[maybe_unused]] const char* name, duration milliseconds, int64_t count)
             {
                 // note that name may be unused as it only appears in Trace macros, which are
@@ -130,7 +131,7 @@ namespace AssetProcessor
                             name);
                 }
             }
-            
+
             // calls PrintStat on each element in the vector.
             void PrintStatsArray(AZStd::vector<AZStd::string>& keys, int maxToPrint, const char* header)
             {
@@ -144,14 +145,14 @@ namespace AssetProcessor
                 {
                     AZ_TracePrintf(AssetProcessor::ConsoleChannel,"Top %i %s\n", maxToPrint, header);
                 }
-                   
+
                 auto sortByTimeDescending = [&](const AZStd::string& s1, const AZStd::string& s2)
                 {
                     return this->m_stats[s1].m_cumulativeTime > this->m_stats[s2].m_cumulativeTime;
                 };
-        
+
                 AZStd::sort(keys.begin(), keys.end(), sortByTimeDescending);
-                
+
                 for (int idx = 0; idx < maxToPrint; ++idx)
                 {
                     if (idx < keys.size())
@@ -163,29 +164,43 @@ namespace AssetProcessor
         };
 
 
-        StatsCaptureImpl::StatsCaptureImpl() 
+        StatsCaptureImpl::StatsCaptureImpl()
         {
-            m_dbConnection.OpenDatabase();
+            m_dbConnectionIsOpen = m_dbConnection.OpenDatabase();
+            AZ_Error(
+                AssetProcessor::ConsoleChannel,
+                m_dbConnectionIsOpen,
+                "Cannot open the asset database for capturing asset processing stats.\n");
         }
 
         void StatsCaptureImpl::BeginCaptureStat(AZStd::string_view statName)
         {
+            if (!m_dbConnectionIsOpen)
+            {
+                return;
+            }
+
             StatsEntry& existingStat = m_stats[statName];
             if (existingStat.m_operationStartTime != timepoint())
             {
                 // prevent double 'Begins'
                 return;
             }
-            existingStat.m_operationStartTime = AZStd::chrono::high_resolution_clock::now();
+            existingStat.m_operationStartTime = AZStd::chrono::steady_clock::now();
         }
 
         AZStd::optional<AZStd::sys_time_t> StatsCaptureImpl::EndCaptureStat(AZStd::string_view statName, bool persistToDb)
         {
+            if (!m_dbConnectionIsOpen)
+            {
+                return AZStd::optional<AZStd::sys_time_t>();
+            }
+
             StatsEntry& existingStat = m_stats[statName];
             AZStd::optional<AZStd::sys_time_t> operationDurationInMillisecond;
             if (existingStat.m_operationStartTime != timepoint())
             {
-                duration operationDuration = AZStd::chrono::high_resolution_clock::now() - existingStat.m_operationStartTime;
+                duration operationDuration = AZStd::chrono::duration_cast<duration>(AZStd::chrono::steady_clock::now() - existingStat.m_operationStartTime);
                 operationDurationInMillisecond = operationDuration.count();
                 existingStat.m_cumulativeTime = existingStat.m_cumulativeTime + operationDuration;
                 existingStat.m_operationCount = existingStat.m_operationCount + 1;
@@ -205,7 +220,12 @@ namespace AssetProcessor
 
         void StatsCaptureImpl::Dump()
         {
-            timepoint startTimeStamp = AZStd::chrono::high_resolution_clock::now();
+            if (!m_dbConnectionIsOpen)
+            {
+                return;
+            }
+
+            timepoint startTimeStamp = AZStd::chrono::steady_clock::now();
 
             auto settingsRegistry = AZ::SettingsRegistry::Get();
 
@@ -237,7 +257,7 @@ namespace AssetProcessor
             AZStd::vector<AZStd::string> allHashFiles;
 
             // capture only existing keys as we will be expanding the stats
-            // this approach avoids mutating an iterator.   
+            // this approach avoids mutating an iterator.
             AZStd::vector<AZStd::string> statKeys;
             for (const auto& element : m_stats)
             {
@@ -256,7 +276,7 @@ namespace AssetProcessor
 
                     // look up the builder so you can get its name:
                     AZStd::string_view builderName = tokens[2];
-                
+
                     // synthesize a stat to track per-builder createjobs times:
                     {
                         AZStd::string newStatKey = AZStd::string::format("CreateJobsByBuilder,%.*s", AZ_STRING_ARG(builderName));
@@ -328,7 +348,7 @@ namespace AssetProcessor
                     statToSynth.m_operationCount += statistic.m_operationCount;
                 }
             }
-            
+
             StatsEntry& gemLoadStat = m_stats["LoadingModules"];
             PrintStat("LoadingGems", gemLoadStat.m_cumulativeTime, 1);
             // analysis-related stats
@@ -339,11 +359,11 @@ namespace AssetProcessor
             PrintStat("WarmingFileCache", cacheWarmTime.m_cumulativeTime, cacheWarmTime.m_operationCount);
             StatsEntry& assessTime = m_stats["InitialFileAssessment"];
             PrintStat("InitialFileAssessment", assessTime.m_cumulativeTime, assessTime.m_operationCount);
-            
+
             StatsEntry& totalHashTime = m_stats["HashFileTotal"];
             PrintStat("HashFileTotal", totalHashTime.m_cumulativeTime, totalHashTime.m_operationCount);
             PrintStatsArray(allHashFiles, maxIndividualStats, "longest individual file hashes:");
-        
+
             // CreateJobs stats
             StatsEntry& totalCreateJobs = m_stats["CreateJobsTotal"];
             if (totalCreateJobs.m_operationCount)
@@ -352,7 +372,7 @@ namespace AssetProcessor
                 PrintStatsArray(allCreateJobs, maxIndividualStats, "longest individual CreateJobs");
                 PrintStatsArray(allCreateJobsByBuilder, maxCumulativeStats, "longest CreateJobs By builder");
             }
-            
+
             // ProcessJobs stats
             StatsEntry& totalProcessJobs = m_stats["ProcessJobsTotal"];
             if (totalProcessJobs.m_operationCount)
@@ -362,7 +382,7 @@ namespace AssetProcessor
                 PrintStatsArray(allProcessJobsByJobKey, maxCumulativeStats, "cumulative time spent in ProcessJob by JobKey");
                 PrintStatsArray(allProcessJobsByPlatform, maxCumulativeStats, "cumulative time spent in ProcessJob by Platform");
             }
-            duration costToGenerateStats =  AZStd::chrono::high_resolution_clock::now() - startTimeStamp;
+            duration costToGenerateStats = AZStd::chrono::duration_cast<duration>(AZStd::chrono::steady_clock::now() - startTimeStamp);
             PrintStat("ComputeStatsTime", costToGenerateStats, 1);
         }
 

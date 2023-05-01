@@ -28,6 +28,7 @@
 #include <AzFramework/API/ApplicationAPI.h>
 
 // AzToolsFramework
+#include <AzToolsFramework/ComponentMode/EditorComponentModeBus.h>
 #include <AzToolsFramework/Slice/SliceUtilities.h>
 #include <AzToolsFramework/UI/UICore/WidgetHelpers.h>
 #include <AzToolsFramework/UI/Layer/NameConflictWarning.hxx>
@@ -243,7 +244,8 @@ void CCryEditDoc::DeleteContents()
     GetIEditor()->Notify(eNotify_OnCloseScene);
     CrySystemEventBus::Broadcast(&CrySystemEventBus::Events::OnCryEditorCloseScene);
 
-    EBUS_EVENT(AzToolsFramework::EditorEntityContextRequestBus, ResetEditorContext);
+    AzToolsFramework::EditorEntityContextRequestBus::Broadcast(
+        &AzToolsFramework::EditorEntityContextRequestBus::Events::ResetEditorContext);
 
     //////////////////////////////////////////////////////////////////////////
     // Clear all undo info.
@@ -607,6 +609,12 @@ int CCryEditDoc::GetModifiedModule()
 
 bool CCryEditDoc::CanCloseFrame()
 {
+    if (AzToolsFramework::ComponentModeFramework::InComponentMode())
+    {
+        AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequestBus::Broadcast(
+            &AzToolsFramework::ComponentModeFramework::ComponentModeSystemRequests::EndComponentMode);
+    }
+
     // Ask the base class to ask for saving, which also includes the save
     // status of the plugins. Additionaly we query if all the plugins can exit
     // now. A reason for a failure might be that one of the plugins isn't
@@ -874,7 +882,7 @@ bool CCryEditDoc::OnSaveDocument(const QString& lpszPathName)
         // Don't allow saving in AI/Physics mode.
         // Prompt the user to exit Simulation Mode (aka AI/Phyics mode) before saving.
         QWidget* mainWindow = nullptr;
-        EBUS_EVENT_RESULT(mainWindow, AzToolsFramework::EditorRequests::Bus, GetMainWindow);
+        AzToolsFramework::EditorRequests::Bus::BroadcastResult(mainWindow, &AzToolsFramework::EditorRequests::Bus::Events::GetMainWindow);
 
         QMessageBox msgBox(mainWindow);
         msgBox.setText(tr("You must exit AI/Physics mode before saving."));
@@ -1030,7 +1038,6 @@ bool CCryEditDoc::AfterSaveDocument([[maybe_unused]] const QString& lpszPathName
         CLogFile::WriteLine("$3Document successfully saved");
         SetModifiedFlag(false);
         SetModifiedModules(eModifiedNothing);
-        MainWindow::instance()->ResetAutoSaveTimers();
     }
 
     return bSaved;
@@ -1218,8 +1225,11 @@ bool CCryEditDoc::SaveLevel(const QString& filename)
         AZ::IO::ByteContainerStream<AZStd::vector<char>> entitySaveStream(&entitySaveBuffer);
         {
             AZ_PROFILE_SCOPE(Editor, "CCryEditDoc::SaveLevel Save Entities To Stream");
-            EBUS_EVENT_RESULT(
-                savedEntities, AzToolsFramework::EditorEntityContextRequestBus, SaveToStreamForEditor, entitySaveStream, layerEntities,
+            AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                savedEntities,
+                &AzToolsFramework::EditorEntityContextRequestBus::Events::SaveToStreamForEditor,
+                entitySaveStream,
+                layerEntities,
                 instancesInLayers);
         }
 
@@ -1473,8 +1483,10 @@ bool CCryEditDoc::LoadEntitiesFromLevel(const QString& levelPakFile)
                     {
                         AZ::IO::ByteContainerStream<AZStd::vector<char>> fileStream(&fileBuffer);
 
-                        EBUS_EVENT_RESULT(
-                            loadedSuccessfully, AzToolsFramework::EditorEntityContextRequestBus, LoadFromStreamWithLayers, fileStream,
+                        AzToolsFramework::EditorEntityContextRequestBus::BroadcastResult(
+                            loadedSuccessfully,
+                            &AzToolsFramework::EditorEntityContextRequestBus::Events::LoadFromStreamWithLayers,
+                            fileStream,
                             levelPakFile);
                     }
                     else

@@ -74,6 +74,7 @@ AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>
 {%  endmacro %}
 #pragma once
 
+#include <AzCore/Preprocessor/Enum.h>
 #include <AzCore/RTTI/TypeInfo.h>
 #include <AzNetworking/PacketLayer/IPacket.h>
 #include <AzNetworking/Serialization/ISerializer.h>
@@ -88,14 +89,13 @@ AZStd::fixed_vector<{{ element.attrib['Type'] }}, {{ element.attrib['Count'] }}>
 {%  for xml in dataFiles %}
 namespace {{ xml.attrib['Name'] }}
 {
-    enum class PacketType
-    {
-        START = aznumeric_cast<int32_t>({{ xml.attrib['PacketStart'] }})
+    AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(PacketType, int32_t
+    ,   (START, aznumeric_cast<int32_t>({{ xml.attrib['PacketStart'] }}))
 {%      for Packet in xml.iter('Packet') %}
     ,   {{ Packet.attrib['Name'] }}
 {%      endfor %}
     ,   MAX
-    };
+    );
 
 {%  for Packet in xml.iter('Packet') %}
 {{     DeclarePacket(Packet.attrib['Name'], Packet, "PacketType::" + Packet.attrib['Name']) -}}

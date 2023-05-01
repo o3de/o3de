@@ -17,7 +17,7 @@
 
 using namespace AWSCore;
 
-class AWSCoreResourceMappingToolActionTest
+class DISABLED_AWSCoreResourceMappingToolActionTest
     : public AWSCoreFixture
     , public AWSCoreEditorUIFixture
 {
@@ -34,7 +34,7 @@ class AWSCoreResourceMappingToolActionTest
     }
 };
 
-TEST_F(AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootPath_ExpectErrorsAndResult)
+TEST_F(DISABLED_AWSCoreResourceMappingToolActionTest, AWSCoreResourceMappingToolAction_NoEngineRootPath_ExpectErrorsAndResult)
 {
     AWSCoreResourceMappingToolAction testAction("dummy title");
     AZ_TEST_START_TRACE_SUPPRESSION;

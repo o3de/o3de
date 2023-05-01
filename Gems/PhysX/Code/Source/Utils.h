@@ -124,17 +124,20 @@ namespace PhysX
             return busIds;
         }
 
+        //! Logs an info message using the names of the entities provided.
+        void PrintEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, const char* category, const char* message);
+
         //! Logs a warning message using the names of the entities provided.
         void WarnEntityNames(const AZStd::vector<AZ::EntityId>& entityIds, const char* category, const char* message);
 
         //! Logs a warning if there is more than one connected bus of the particular type.
         template<typename BusT>
-        void LogWarningIfMultipleComponents(const char* messageCategroy, const char* messageFormat)
+        void LogWarningIfMultipleComponents(const char* messageCategory, const char* messageFormat)
         {
             const auto entityIds = FindConnectedBusIds<BusT>();
             if (entityIds.size() > 1)
             {
-                WarnEntityNames(entityIds, messageCategroy, messageFormat);
+                WarnEntityNames(entityIds, messageCategory, messageFormat);
             }
         }
 
@@ -169,7 +172,7 @@ namespace PhysX
 
         bool TriggerColliderExists(AZ::EntityId entityId);
 
-        void GetShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
+        void CreateShapesFromAsset(const Physics::PhysicsAssetShapeConfiguration& assetConfiguration,
             const Physics::ColliderConfiguration& originalColliderConfiguration, bool hasNonUniformScale,
             AZ::u8 subdivisionLevel, AZStd::vector<AZStd::shared_ptr<Physics::Shape>>& resultingShapes);
 
@@ -178,7 +181,7 @@ namespace PhysX
             bool hasNonUniformScale, AZ::u8 subdivisionLevel, AzPhysics::ShapeColliderPairList& resultingColliderShapes);
 
         //! Gets the scale from the entity's Transform component.
-        AZ::Vector3 GetTransformScale(AZ::EntityId entityId);
+        float GetTransformScale(AZ::EntityId entityId);
         //! Returns a vector scale with each element equal to the max element from the entity's Transform component.
         AZ::Vector3 GetUniformScale(AZ::EntityId entityId);
         //! Gets the scale from the entity's Non-Uniform Scale component, if it is present.
@@ -291,10 +294,4 @@ namespace PhysX
         AZStd::shared_ptr<physx::PxRigidDynamic> CreatePxRigidBody(const AzPhysics::RigidBodyConfiguration& configuration);
         AZStd::shared_ptr<physx::PxRigidStatic> CreatePxStaticRigidBody(const AzPhysics::StaticRigidBodyConfiguration& configuration);
     } // namespace PxActorFactories
-
-    namespace StaticRigidBodyUtils
-    {
-        bool CanCreateRuntimeComponent(const AZ::Entity& editorEntity);
-        bool TryCreateRuntimeComponent(const AZ::Entity& editorEntity, AZ::Entity& gameEntity);
-    } // namespace StaticRigidBodyComponent
 } // namespace PhysX

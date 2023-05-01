@@ -108,6 +108,7 @@ namespace PhysX::Utils
 
     void InitializeGenericProperties(const JointGenericProperties& properties, physx::PxJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -125,6 +126,7 @@ namespace PhysX::Utils
 
     void InitializeSphericalLimitProperties(const JointLimitProperties& properties, physx::PxSphericalJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -155,6 +157,7 @@ namespace PhysX::Utils
 
     void InitializeRevoluteLimitProperties(const JointLimitProperties& properties, physx::PxRevoluteJoint* nativeJoint)
     {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
         if (!nativeJoint)
         {
             return;
@@ -179,6 +182,69 @@ namespace PhysX::Utils
 
         nativeJoint->setLimit(limitPair);
         nativeJoint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eLIMIT_ENABLED, true);
+    }
+
+    void InitializePrismaticLimitProperties(const JointLimitProperties& properties, physx::PxPrismaticJoint* nativeJoint)
+    {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
+        if (!nativeJoint)
+        {
+            return;
+        }
+
+        if (!properties.m_isLimited)
+        {
+            nativeJoint->setPrismaticJointFlag(physx::PxPrismaticJointFlag::eLIMIT_ENABLED, false);
+            return;
+        }
+
+
+        const auto[limitLower, limitUpper] = AZStd::minmax(properties.m_limitFirst, properties.m_limitSecond);
+        physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
+
+        if (properties.m_isSoftLimit)
+        {
+            limitPair.stiffness = properties.m_stiffness;
+            limitPair.damping = properties.m_damping;
+        }
+
+        nativeJoint->setLimit(limitPair);
+        nativeJoint->setPrismaticJointFlag(physx::PxPrismaticJointFlag::eLIMIT_ENABLED, true);
+    }
+
+    void InitializePrismaticLimitD6Properties(const JointLimitProperties& properties, physx::PxD6Joint* nativeJoint)
+    {
+        AZ_Assert(nativeJoint, "Called with invalid native joint pointer");
+        if (!nativeJoint)
+        {
+            return;
+        }
+
+        nativeJoint->setMotion(physx::PxD6Axis::eY, physx::PxD6Motion::eLOCKED);
+        nativeJoint->setMotion(physx::PxD6Axis::eZ, physx::PxD6Motion::eLOCKED);
+        nativeJoint->setMotion(physx::PxD6Axis::eTWIST, physx::PxD6Motion::eLOCKED);
+        nativeJoint->setMotion(physx::PxD6Axis::eSWING1, physx::PxD6Motion::eLOCKED);
+        nativeJoint->setMotion(physx::PxD6Axis::eSWING2, physx::PxD6Motion::eLOCKED);
+
+        if (!properties.m_isLimited)
+        {
+            nativeJoint->setMotion(physx::PxD6Axis::eX, physx::PxD6Motion::eFREE);
+            return;
+        }
+
+        const float limitLower = AZ::GetMin(properties.m_limitFirst, properties.m_limitSecond);
+        const float limitUpper = AZ::GetMax(properties.m_limitFirst, properties.m_limitSecond);
+
+        physx::PxJointLinearLimitPair limitPair(physx::PxTolerancesScale(), limitLower, limitUpper, properties.m_tolerance);
+
+        if (properties.m_isSoftLimit)
+        {
+            limitPair.stiffness = properties.m_stiffness;
+            limitPair.damping = properties.m_damping;
+        }
+
+        nativeJoint->setLinearLimit(physx::PxD6Axis::eX, limitPair);
+        nativeJoint->setMotion(physx::PxD6Axis::eX, physx::PxD6Motion::eLIMITED);
     }
 
     namespace PxJointFactories
@@ -351,6 +417,72 @@ namespace PhysX::Utils
                 configuration.m_genericProperties,
                 static_cast<physx::PxJoint*>(joint));
 
+            if (configuration.m_motorProperties.m_useMotor)
+            {
+                joint->setRevoluteJointFlag(physx::PxRevoluteJointFlag::eDRIVE_ENABLED, true);
+                joint->setDriveVelocity(0.0f);
+                joint->setDriveGearRatio(1.0f);
+                joint->setDriveForceLimit(configuration.m_motorProperties.m_driveForceLimit);
+            }
+            return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
+        }
+
+        PxJointUniquePtr CreatePxPrismaticJoint(
+            const PhysX::PrismaticJointConfiguration& configuration,
+            AzPhysics::SceneHandle sceneHandle,
+            AzPhysics::SimulatedBodyHandle parentBodyHandle,
+            AzPhysics::SimulatedBodyHandle childBodyHandle)
+        {
+            PxJointActorData actorData = GetJointPxActors(sceneHandle, parentBodyHandle, childBodyHandle);
+
+            // only check the child actor, as a null parent actor means this joint is a global constraint.
+            if (!actorData.childActor)
+            {
+                return nullptr;
+            }
+
+            const AZ::Transform parentLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                configuration.m_parentLocalRotation, configuration.m_parentLocalPosition);
+            const AZ::Transform childLocalTM = AZ::Transform::CreateFromQuaternionAndTranslation(
+                configuration.m_childLocalRotation, configuration.m_childLocalPosition);
+            physx::PxJoint* joint = nullptr;
+
+            // If drive is enabled, create D6 joint.
+            if (configuration.m_motorProperties.m_useMotor)
+            {
+                physx::PxD6Joint* joint_d6;
+                {
+                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
+                    joint_d6 = physx::PxD6JointCreate(
+                        PxGetPhysics(),
+                        actorData.parentActor,
+                        PxMathConvert(parentLocalTM),
+                        actorData.childActor,
+                        PxMathConvert(childLocalTM));
+                }
+                InitializePrismaticLimitD6Properties(configuration.m_limitProperties, joint_d6);
+                physx::PxD6JointDrive drive(0.0f , PX_MAX_F32, configuration.m_motorProperties.m_driveForceLimit, true);
+                joint_d6->setDrive(physx::PxD6Drive::eX, drive);
+                joint_d6->setDriveVelocity({ 0.0f, 0.0f, 0.0f }, physx::PxVec3(0.0f), true);
+                joint = static_cast<physx::PxJoint*>(joint_d6);
+            }
+            else
+            {
+                physx::PxPrismaticJoint* joint_prismatic;
+                {
+                    PHYSX_SCENE_READ_LOCK(actorData.childActor->getScene());
+                    joint_prismatic = physx::PxPrismaticJointCreate(
+                        PxGetPhysics(),
+                        actorData.parentActor,
+                        PxMathConvert(parentLocalTM),
+                        actorData.childActor,
+                        PxMathConvert(childLocalTM));
+                }
+                InitializePrismaticLimitProperties(configuration.m_limitProperties, joint_prismatic);
+                joint = static_cast<physx::PxJoint*>(joint_prismatic);
+            }
+
+            InitializeGenericProperties(configuration.m_genericProperties, joint);
             return Utils::PxJointUniquePtr(joint, ReleasePxJoint);
         }
     } // namespace PxJointFactories

@@ -15,6 +15,7 @@ namespace UnitTests
     struct ModtimeScanningTest : AssetProcessorManagerTest
     {
         void SetUpAssetProcessorManager();
+        void PopulateDatabase() override;
         void SetUp() override;
         void TearDown() override;
 
@@ -27,11 +28,10 @@ namespace UnitTests
 
         struct StaticData
         {
-            QString m_relativePathFromWatchFolder[3];
-            AZStd::vector<QString> m_absolutePath;
+            AZStd::vector<AssetProcessor::SourceAssetReference> m_sourcePaths;
             AZStd::vector<AssetProcessor::JobDetails> m_processResults;
             AZStd::unordered_multimap<AZStd::string, QString> m_productPaths;
-            AZStd::vector<QString> m_deletedSources;
+            AZStd::vector<AssetProcessor::SourceAssetReference> m_deletedSources;
             AZStd::shared_ptr<AssetProcessor::InternalMockBuilder> m_builderTxtBuilder;
             MockMultiBuilderInfoHandler m_mockBuilderInfoHandler;
         };

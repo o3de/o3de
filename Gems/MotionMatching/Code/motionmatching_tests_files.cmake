@@ -12,4 +12,5 @@ set(FILES
     Tests/FeatureSchemaTests.cpp
     Tests/MinMaxScalerTests.cpp
     Tests/MotionMatchingTest.cpp
+    Tests/StandardScalerTests.cpp
 )

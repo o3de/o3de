@@ -71,6 +71,14 @@ namespace AZ
             RHI::PipelineStateDescriptorForRayTracing closestHitShaderDescriptor;
             closestHitShaderVariant.ConfigurePipelineState(closestHitShaderDescriptor);
 
+            // any hit shader
+            AZStd::string anyHitShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingAnyHit.azshader";
+            m_anyHitShader = RPI::LoadCriticalShader(anyHitShaderFilePath);
+
+            auto anyHitShaderVariant = m_anyHitShader->GetVariant(RPI::ShaderAsset::RootShaderVariantStableId);
+            RHI::PipelineStateDescriptorForRayTracing anyHitShaderDescriptor;
+            anyHitShaderVariant.ConfigurePipelineState(anyHitShaderDescriptor);
+
             // miss shader
             AZStd::string missShaderFilePath = "Shaders/DiffuseGlobalIllumination/DiffuseProbeGridRayTracingMiss.azshader";
             m_missShader = RPI::LoadCriticalShader(missShaderFilePath);
@@ -90,17 +98,21 @@ namespace AZ
             RHI::RayTracingPipelineStateDescriptor descriptor;
             descriptor.Build()
                 ->PipelineState(m_globalPipelineState.get())
-                ->MaxPayloadSize(64)
+                ->MaxPayloadSize(112)
                 ->MaxAttributeSize(32)
-                ->MaxRecursionDepth(2)
+                ->MaxRecursionDepth(MaxRecursionDepth)
                 ->ShaderLibrary(rayGenerationShaderDescriptor)
                     ->RayGenerationShaderName(AZ::Name("RayGen"))
                 ->ShaderLibrary(missShaderDescriptor)
                     ->MissShaderName(AZ::Name("Miss"))
                 ->ShaderLibrary(closestHitShaderDescriptor)
                     ->ClosestHitShaderName(AZ::Name("ClosestHit"))
+                ->ShaderLibrary(anyHitShaderDescriptor)
+                    ->AnyHitShaderName(AZ::Name("AnyHit"))
                 ->HitGroup(AZ::Name("HitGroup"))
-                    ->ClosestHitShaderName(AZ::Name("ClosestHit"));
+                    ->ClosestHitShaderName(AZ::Name("ClosestHit"))
+                    ->AnyHitShaderName(AZ::Name("AnyHit"))
+            ;
 
             // create the ray tracing pipeline state object
             m_rayTracingPipelineState = RHI::Factory::Get().CreateRayTracingPipelineState();
@@ -298,6 +310,8 @@ namespace AZ
                     // the diffuse probe grid Srg must be updated in the Compile phase in order to successfully bind the ReadWrite shader
                     // inputs (see line ValidateSetImageView() in ShaderResourceGroupData.cpp)
                     diffuseProbeGrid->UpdateRayTraceSrg(m_rayTracingShader, m_globalSrgLayout);
+
+                    diffuseProbeGrid->GetRayTraceSrg()->SetConstant(m_maxRecursionDepthNameIndex, MaxRecursionDepth);
                     diffuseProbeGrid->GetRayTraceSrg()->Compile();
                 }
             }
@@ -342,12 +356,13 @@ namespace AZ
 
                     const RHI::ShaderResourceGroup* shaderResourceGroups[] = {
                         diffuseProbeGrid->GetRayTraceSrg()->GetRHIShaderResourceGroup(),
-                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup()
+                        rayTracingFeatureProcessor->GetRayTracingSceneSrg()->GetRHIShaderResourceGroup(),
+                        rayTracingFeatureProcessor->GetRayTracingMaterialSrg()->GetRHIShaderResourceGroup()
                     };
 
                     RHI::DispatchRaysItem dispatchRaysItem;
                     dispatchRaysItem.m_width = diffuseProbeGrid->GetNumRaysPerProbe().m_rayCount;
-                    dispatchRaysItem.m_height = diffuseProbeGrid->GetTotalProbeCount();
+                    dispatchRaysItem.m_height = AZ::DivideAndRoundUp(diffuseProbeGrid->GetTotalProbeCount(), diffuseProbeGrid->GetFrameUpdateCount());
                     dispatchRaysItem.m_depth = 1;
                     dispatchRaysItem.m_rayTracingPipelineState = m_rayTracingPipelineState.get();
                     dispatchRaysItem.m_rayTracingShaderTable = m_rayTracingShaderTable.get();

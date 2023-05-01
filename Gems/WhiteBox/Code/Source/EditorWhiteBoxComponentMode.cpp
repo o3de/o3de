@@ -16,11 +16,16 @@
 #include <AzCore/Settings/SettingsRegistry.h>
 #include <AzCore/std/sort.h>
 
+#include <AzToolsFramework/ActionManager/Action/ActionManagerInterface.h>
+#include <AzToolsFramework/ActionManager/Menu/MenuManagerInterface.h>
+#include <AzToolsFramework/ActionManager/HotKey/HotKeyManagerInterface.h>
+#include <AzToolsFramework/Editor/ActionManagerIdentifiers/EditorContextIdentifiers.h>
 #include <AzToolsFramework/Manipulators/ManipulatorSnapping.h>
 #include <AzToolsFramework/Manipulators/ManipulatorView.h>
 #include <AzToolsFramework/Maths/TransformUtils.h>
 #include <AzToolsFramework/ViewportSelection/EditorSelectionUtil.h>
 #include <QApplication> // required for querying modifier keys
+#include <QTimer>
 #include <QVBoxLayout>
 #include <WhiteBox/EditorWhiteBoxComponentBus.h>
 
@@ -28,7 +33,11 @@ namespace WhiteBox
 {
     constexpr AZStd::string_view WhiteBoxTransformFeature = "/O3DE/Preferences/WhiteBox/TransformFeature";
 
-    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator, 0)
+    constexpr AZStd::string_view WhiteBoxDefaultSubModeIdentifier = "o3de.context.mode.whiteBox.default";
+    constexpr AZStd::string_view WhiteBoxEdgeRestoreSubModeIdentifier = "o3de.context.mode.whiteBox.edgeRestore";
+    constexpr AZStd::string_view WhiteBoxTransformSubModeIdentifier = "o3de.context.mode.whiteBox.transform";
+
+    AZ_CLASS_ALLOCATOR_IMPL(EditorWhiteBoxComponentMode, AZ::SystemAllocator)
 
     static void SetViewportUiClusterActiveButton(
         AzToolsFramework::ViewportUi::ClusterId clusterId, AzToolsFramework::ViewportUi::ButtonId buttonId)
@@ -85,6 +94,48 @@ namespace WhiteBox
         AzFramework::EntityDebugDisplayEventBus::Handler::BusDisconnect();
     }
 
+    void EditorWhiteBoxComponentMode::Reflect(AZ::ReflectContext* context)
+    {
+        AzToolsFramework::ComponentModeFramework::ReflectEditorBaseComponentModeDescendant<EditorWhiteBoxComponentMode>(context);
+    }
+
+    void EditorWhiteBoxComponentMode::RegisterActionContextModes()
+    {
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        AZ_Assert(actionManagerInterface, "EditorWhiteBoxComponentMode - could not get ActionManagerInterface on RegisterActionContextModes.");
+
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        actionManagerInterface->RegisterActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+    }
+
+    void EditorWhiteBoxComponentMode::RegisterActionUpdaters()
+    {
+        DefaultMode::RegisterActionUpdaters();
+        EdgeRestoreMode::RegisterActionUpdaters();
+        TransformMode::RegisterActionUpdaters();
+    }
+
+    void EditorWhiteBoxComponentMode::RegisterActions()
+    {
+        DefaultMode::RegisterActions();
+        EdgeRestoreMode::RegisterActions();
+        TransformMode::RegisterActions();
+    }
+
+    void EditorWhiteBoxComponentMode::BindActionsToModes()
+    {
+        DefaultMode::BindActionsToModes(WhiteBoxDefaultSubModeIdentifier);
+        EdgeRestoreMode::BindActionsToModes(WhiteBoxEdgeRestoreSubModeIdentifier);
+        TransformMode::BindActionsToModes(WhiteBoxTransformSubModeIdentifier);
+    }
+
+    void EditorWhiteBoxComponentMode::BindActionsToMenus()
+    {
+        DefaultMode::BindActionsToMenus();
+        EdgeRestoreMode::BindActionsToMenus();
+        TransformMode::BindActionsToMenus();
+    }
 
     void EditorWhiteBoxComponentMode::Refresh()
     {
@@ -283,6 +334,11 @@ namespace WhiteBox
         return "White Box Edit Mode";
     }
 
+    AZ::Uuid EditorWhiteBoxComponentMode::GetComponentModeType() const
+    {
+        return azrtti_typeid<EditorWhiteBoxComponentMode>();
+    }
+
     AZStd::vector<AzToolsFramework::ActionOverride> EditorWhiteBoxComponentMode::PopulateActionsImpl()
     {
         return AZStd::visit(
@@ -299,6 +355,21 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Default;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_defaultModeButtonId);
+
+        // Change sub-mode to default at the next frame to go after the automated mode switching in ComponentModeActionHandler.
+        QTimer::singleShot(
+            0,
+            []()
+            {
+                // Set the Action Context Mode in the Action Manager, if enabled.
+                auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+                if (actionManagerInterface)
+                {
+                    actionManagerInterface->SetActiveActionContextMode(
+                        EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxDefaultSubModeIdentifier);
+                }
+            }
+        );
     }
 
     void EditorWhiteBoxComponentMode::EnterEdgeRestoreMode()
@@ -307,6 +378,13 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::EdgeRestore;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_edgeRestoreModeButtonId);
+
+        // Set the Action Context Mode in the Action Manager, if enabled.
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        if (actionManagerInterface)
+        {
+            actionManagerInterface->SetActiveActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxEdgeRestoreSubModeIdentifier);
+        }
     }
 
     void EditorWhiteBoxComponentMode::EnterTransformMode()
@@ -315,6 +393,13 @@ namespace WhiteBox
         m_intersectionAndRenderData = {};
         m_currentSubMode = SubMode::Transform;
         SetViewportUiClusterActiveButton(m_modeSelectionClusterId, m_transformModeButtonId);
+
+        // Set the Action Context Mode in the Action Manager, if enabled.
+        auto actionManagerInterface = AZ::Interface<AzToolsFramework::ActionManagerInterface>::Get();
+        if (actionManagerInterface)
+        {
+            actionManagerInterface->SetActiveActionContextMode(EditorIdentifiers::MainWindowActionContextIdentifier, WhiteBoxTransformSubModeIdentifier);
+        }
     }
 
     void EditorWhiteBoxComponentMode::DisplayEntityViewport(
@@ -359,7 +444,7 @@ namespace WhiteBox
         }
 
         debugDisplay.DepthTestOn();
-        debugDisplay.SetColor(cl_whiteBoxEdgeUserColor);
+        debugDisplay.SetColor(ed_whiteBoxEdgeDefault);
         debugDisplay.SetLineWidth(4.0f);
 
         AZStd::visit(

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" style="background: #444444;">
+    <!-- Generator: Sketch 64 (93537) - https://sketch.com -->
+    <title>Icons / Toolbar / Tone Mapping</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Icons-/-Toolbar-/-Tone-Mapping" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <path d="M21,3 L21,21 L3,21 L3,3 L21,3 Z M19,5 L5,5 L5,19 L19,19 L19,5 Z" id="Combined-Shape" fill="#FFFFFF"></path>
+        <path d="M4.5,19.5 C7.10977381,19.3752859 9.2645953,18.2113806 10.9644645,16.0082842 C13.5142682,12.7036395 12.2106423,9.58363419 14.3305826,7 C15.7438762,5.27757721 17.4670153,4.44424388 19.5,4.5" id="Line-2" stroke="#FFFFFF" stroke-width="2" stroke-linecap="square"></path>
+        <rect id="Rectangle" fill="#FFFFFF" x="5" y="3" width="16" height="2"></rect>
+        <rect id="Rectangle" fill="#FFFFFF" x="19" y="3" width="2" height="16"></rect>
+    </g>
+</svg>

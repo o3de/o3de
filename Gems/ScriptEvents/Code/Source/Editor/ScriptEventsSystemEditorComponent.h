@@ -29,6 +29,7 @@ namespace ScriptEventsEditor
         , AzToolsFramework::AssetEditor::AssetEditorValidationRequestBus::MultiHandler
     {
     public:
+        AZ_CLASS_ALLOCATOR(ScriptEventAssetHandler, AZ::SystemAllocator)
         AZ_RTTI(ScriptEventAssetHandler, "{D81DE7D5-5ED0-4D70-8364-AA986E9C490E}", AzFramework::GenericAssetHandler<ScriptEvents::ScriptEventsAsset>);
 
         ScriptEventAssetHandler(const char* displayName, const char* group, const char* extension, const AZ::Uuid& componentTypeId = AZ::Uuid::CreateNull(), AZ::SerializeContext* serializeContext = nullptr);

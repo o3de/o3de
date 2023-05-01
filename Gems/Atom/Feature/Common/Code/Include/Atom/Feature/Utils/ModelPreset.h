@@ -25,10 +25,10 @@ namespace AZ
         struct ModelPreset final
         {
             AZ_TYPE_INFO(AZ::Render::ModelPreset, "{A7304AE2-EC26-44A4-8C00-89D9731CCB13}");
-            AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(ModelPreset, AZ::SystemAllocator);
             static void Reflect(AZ::ReflectContext* context);
 
-            static constexpr const char* Extension = "modelpreset.azasset";
+            static constexpr char const Extension[] = "modelpreset.azasset";
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
         };
 

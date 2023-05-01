@@ -17,7 +17,7 @@
 
 namespace PhysX
 {
-    AZ_CLASS_ALLOCATOR_IMPL(ColliderRotationMode, AZ::SystemAllocator, 0);
+    AZ_CLASS_ALLOCATOR_IMPL(ColliderRotationMode, AZ::SystemAllocator);
 
     ColliderRotationMode::ColliderRotationMode()
         : m_rotationManipulators(AZ::Transform::Identity())
@@ -100,5 +100,6 @@ namespace PhysX
     {
         const AzFramework::CameraState cameraState = AzToolsFramework::GetCameraState(viewportInfo.m_viewportId);
         m_rotationManipulators.RefreshView(cameraState.m_position);
+        m_rotationManipulators.DisplayFeedback(debugDisplay, cameraState);
     }
 } // namespace PhysX

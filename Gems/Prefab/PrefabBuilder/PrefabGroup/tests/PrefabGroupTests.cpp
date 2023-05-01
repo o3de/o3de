@@ -152,7 +152,7 @@ namespace UnitTest
     {
         ExpectExecute("group = PrefabGroup()");
         ExpectExecute("group.name = 'tester'");
-        ExpectExecute("group.id = Uuid.CreateString('{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}', 0)");
+        ExpectExecute("group.id = Uuid.CreateString('{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}')");
         ExpectExecute("group.prefabDomData = '{\"foo\": \"bar\"}'");
         ExpectExecute("assert(group.name == 'tester')");
         ExpectExecute("assert(tostring(group.id) == '{AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE}')");

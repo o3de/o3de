@@ -103,7 +103,7 @@ namespace AZ::IO
     //
 
     class Streamer_StorageDriveWindowsTestFixture
-        : public UnitTest::ScopedAllocatorSetupFixture
+        : public UnitTest::LeakDetectionFixture
         , public UnitTest::SetRestoreFileIOBaseRAII
     {
     public:
@@ -231,7 +231,7 @@ namespace AZ::IO
         void WaitTillCompleted()
         {
             StreamStackEntry::Status status;
-            auto startTime = AZStd::chrono::system_clock::now();
+            auto startTime = AZStd::chrono::steady_clock::now();
             do
             {
                 m_storageDriveWin->ExecuteRequests();
@@ -240,7 +240,7 @@ namespace AZ::IO
                 status.m_isIdle = true;
                 m_storageDriveWin->UpdateStatus(status);
 
-                if (AZStd::chrono::system_clock::now() - startTime > AZStd::chrono::seconds(5))
+                if (AZStd::chrono::steady_clock::now() - startTime > AZStd::chrono::seconds(5))
                 {
                     FAIL();
                 }
@@ -1233,18 +1233,18 @@ namespace Benchmark
             for ([[maybe_unused]] auto _ : state)
             {
                 AZStd::binary_semaphore waitForReads;
-                AZStd::atomic<system_clock::time_point> end;
+                AZStd::atomic<steady_clock::time_point> end;
                 auto callback = [&end, &waitForReads]([[maybe_unused]] FileRequestHandle request)
                 {
-                    benchmark::DoNotOptimize(end = high_resolution_clock::now());
+                    benchmark::DoNotOptimize(end = steady_clock::now());
                     waitForReads.release();
                 };
 
                 FileRequestPtr request = m_streamer->Read(m_absolutePath, buffer.get(), state.range(0), state.range(0));
                 m_streamer->SetRequestCompleteCallback(request, callback);
 
-                system_clock::time_point start;
-                benchmark::DoNotOptimize(start = high_resolution_clock::now());
+                steady_clock::time_point start;
+                benchmark::DoNotOptimize(start = steady_clock::now());
                 m_streamer->QueueRequest(request);
 
                 waitForReads.try_acquire_for(AZStd::chrono::seconds(5));

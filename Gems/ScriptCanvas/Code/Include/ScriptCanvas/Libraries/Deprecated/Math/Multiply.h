@@ -44,13 +44,6 @@ namespace ScriptCanvas
                         }
                     }
                 }
-
-                ScriptCanvas::NodeReplacementConfiguration GetReplacementNodeConfiguration() const override
-                {
-                    ScriptCanvas::NodeReplacementConfiguration nodeConfig{};
-                    nodeConfig.m_type = AZ::Uuid("E9BB45A1-AE96-47B0-B2BF-2927D420A28C");
-                    return nodeConfig;
-                }
             };
 
         }

@@ -35,26 +35,29 @@ void CSelectLightAnimationDialog::OnInitDialog()
 void CSelectLightAnimationDialog::GetItems(std::vector<SItem>& outItems)
 {
     IMovieSystem* pMovieSystem = GetIEditor()->GetMovieSystem();
-    for (int i = 0; i < pMovieSystem->GetNumSequences(); ++i)
+    if (pMovieSystem)
     {
-        IAnimSequence* pSequence = pMovieSystem->GetSequence(i);
-        if ((pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet) == 0)
+        for (int i = 0; i < pMovieSystem->GetNumSequences(); ++i)
         {
-            continue;
-        }
-
-        for (int k = 0; k < pSequence->GetNodeCount(); ++k)
-        {
-            assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light);
-            if (pSequence->GetNode(k)->GetType() != AnimNodeType::Light)
+            IAnimSequence* pSequence = pMovieSystem->GetSequence(i);
+            if ((pSequence->GetFlags() & IAnimSequence::eSeqFlags_LightAnimationSet) == 0)
             {
                 continue;
             }
-            SItem item;
-            item.name = pSequence->GetNode(k)->GetName();
-            outItems.push_back(item);
+
+            for (int k = 0; k < pSequence->GetNodeCount(); ++k)
+            {
+                assert(pSequence->GetNode(k)->GetType() == AnimNodeType::Light);
+                if (pSequence->GetNode(k)->GetType() != AnimNodeType::Light)
+                {
+                    continue;
+                }
+                SItem item;
+                item.name = pSequence->GetNode(k)->GetName();
+                outItems.push_back(item);
+            }
+            return;
         }
-        return;
     }
 }
 

@@ -28,7 +28,7 @@ ViewportMoveGuideInteraction::ViewportMoveGuideInteraction(
     , m_cursorViewportPos(0.0f, 0.0f)
 {
     // store whether snapping is enabled for this canvas
-    EBUS_EVENT_ID_RESULT(m_isSnapping, canvasId, UiEditorCanvasBus, GetIsSnapEnabled);
+    UiEditorCanvasBus::EventResult(m_isSnapping, canvasId, &UiEditorCanvasBus::Events::GetIsSnapEnabled);
 
     m_startingPosition = GuideHelpers::GetGuidePosition(canvasId, m_guideIsVertical, m_guideIndex);
 

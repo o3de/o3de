@@ -66,7 +66,7 @@ namespace AZ
             static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Multiple;
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::Single;
 
-            //! Sent when the active context changes so thet listners can prepare the active context
+            //! Sent when the active context changes so that listeners can prepare the active context
             virtual void ActiveImGuiContextChanged(ImGuiContext* context) = 0;
         };
 

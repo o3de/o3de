@@ -24,14 +24,16 @@ namespace AtomToolsFramework
     {
         Q_OBJECT
     public:
+        using FilterFn = AZStd::function<bool(const AZStd::string&)>;
+
         CreateDocumentDialog(
             const QString& title,
             const QString& sourceLabel,
             const QString& targetLabel,
             const QString& initialPath,
             const QStringList& supportedExtensions,
-            const AZ::Data::AssetId& defaultSourceAssetId,
-            const AZStd::function<bool(const AZ::Data::AssetInfo&)>& filterCallback,
+            const QString& defaultSourcePath,
+            const FilterFn& filterFn,
             QWidget* parent = nullptr);
 
         CreateDocumentDialog(const DocumentTypeInfo& documentType, const QString& initialPath, QWidget* parent = nullptr);

@@ -23,7 +23,7 @@
       <Item Name="base()">m_current</Item>
     </Expand>
   </Type>
-  
+
   <!-- Partial Specialization for raw pointers and smart pointers which are indexable(supports operator[]). See natvis.xsd for more details-->
   <Type Name="AZStd::reverse_iterator&lt;*&gt;" Priority="MediumHigh">
     <SmartPointer Usage="Indexable">m_current - 1</SmartPointer>
@@ -351,7 +351,7 @@
       <Item Name="right">m_right</Item>
     </Expand>
   </Type>
-  
+
   <Type Name="AZStd::Internal::rbtree_node&lt;*&gt;">
     <Expand>
       <Item Name="value">m_value</Item>
@@ -456,7 +456,7 @@
       </ArrayItems>
     </Expand>
   </Type>
-  
+
   <Type Name="AZStd::basic_fixed_string&lt;char,*,*&gt;">
     <DisplayString>{m_buffer,s}</DisplayString>
     <StringView>m_buffer,s</StringView>
@@ -632,7 +632,7 @@
 
   <!-- Implementation without custom types added to the code or plug-ins, displays the UUID as 4 32 bit variables -->
   <Type Name="AZ::Uuid">
-    <DisplayString>{((((int)data[3] &amp; 0xFF)) + (((int)data[2] &amp; 0xFF) &lt;&lt; 8) + (((int)data[1] &amp; 0xFF) &lt;&lt; 16) + (((int)data[0] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[7] &amp; 0xFF)) + (((int)data[6] &amp; 0xFF) &lt;&lt; 8) + (((int)data[5] &amp; 0xFF) &lt;&lt; 16) + (((int)data[4] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[11] &amp; 0xFF)) + (((int)data[10] &amp; 0xFF) &lt;&lt; 8) + (((int)data[9] &amp; 0xFF) &lt;&lt; 16) + (((int)data[8] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)data[15] &amp; 0xFF)) + (((int)data[14] &amp; 0xFF) &lt;&lt; 8) + (((int)data[13] &amp; 0xFF) &lt;&lt; 16) + (((int)data[12] &amp; 0xFF) &lt;&lt; 24)),X}</DisplayString>
+    <DisplayString>{((((int)m_data[3] &amp; 0xFF)) + (((int)m_data[2] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[1] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[0] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[7] &amp; 0xFF)) + (((int)m_data[6] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[5] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[4] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[11] &amp; 0xFF)) + (((int)m_data[10] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[9] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[8] &amp; 0xFF) &lt;&lt; 24)),X} - {((((int)m_data[15] &amp; 0xFF)) + (((int)m_data[14] &amp; 0xFF) &lt;&lt; 8) + (((int)m_data[13] &amp; 0xFF) &lt;&lt; 16) + (((int)m_data[12] &amp; 0xFF) &lt;&lt; 24)),X}</DisplayString>
   </Type>
 
   <Type Name="AZ::EntityId">
@@ -643,27 +643,55 @@
     </Expand>
   </Type>
 
+  <Type Name="AZStd::expected&lt;*&gt;">
+    <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+    <Intrinsic Name="value" Expression="this->m_storage.m_value"/>
+    <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+    <DisplayString Condition="has_value()">Value = {value()}</DisplayString>
+    <DisplayString Condition="!has_value()">Error = {error()}</DisplayString>
+    <Expand>
+      <Item Name="has_value">has_value()</Item>
+      <Item Name="value" Condition="has_value()">value()</Item>
+      <Item Name="error" Condition="!has_value()">error()</Item>
+    </Expand>
+  </Type>
+
+  <Type Name="AZStd::expected&lt;void,*&gt;">
+      <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+      <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+      <DisplayString Condition="has_value()">Value = Success</DisplayString>
+      <DisplayString Condition="!has_value()">Error = {error()}</DisplayString>
+      <Expand>
+          <Item Name="has_value">has_value()</Item>
+          <Item Name="value" Condition="has_value()">Success</Item>
+          <Item Name="error" Condition="!has_value()">error()</Item>
+      </Expand>
+  </Type>
+
   <Type Name="AZ::Outcome&lt;*&gt;">
-    <DisplayString Condition="m_isSuccess" >{{Value = {*(SuccessType*)&amp;m_success}}}</DisplayString>
-    <DisplayString Condition="!m_isSuccess">{{Error = {*(FailureType*)&amp;m_failure}}}</DisplayString>
+    <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+    <Intrinsic Name="value"       Expression="this->m_storage.m_value"/>
+    <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+    <DisplayString Condition="has_value()" >{{Value = {value()}}}</DisplayString>
+    <DisplayString Condition="!has_value()">{{Error = {error()}}}</DisplayString>
     <Expand>
-      <Item Name="IsSuccess">m_isSuccess</Item>
-      <Item Name="Value" Condition="m_isSuccess" >*(SuccessType*)&amp;m_success</Item>
-      <Item Name="Error" Condition="!m_isSuccess">*(FailureType*)&amp;m_failure</Item>
+      <Item Name="IsSuccess">has_value()</Item>
+      <Item Name="Value" Condition="has_value()">value()</Item>
+      <Item Name="Error" Condition="!has_value()">error()</Item>
     </Expand>
   </Type>
 
-  <Type Name="AZ::Internal::OutcomeStorage&lt;void,*&gt;">
-    <DisplayString>{{void}}</DisplayString>
-    <Expand />
-  </Type>
-
-  <Type Name="AZ::Internal::OutcomeStorage&lt;*,*&gt;">
-    <DisplayString>{*($T1*)&amp;m_value}</DisplayString>
-    <Expand>
-      <Item Name="Value">*($T1*)&amp;m_value</Item>
-    </Expand>
-  </Type>
+    <Type Name="AZ::Outcome&lt;void,*&gt;">
+        <Intrinsic Name="has_value" Expression="this->m_hasValue"/>
+        <Intrinsic Name="error" Expression="this->m_storage.m_unexpected"/>
+        <DisplayString Condition="has_value()" >{{Value = Success}}</DisplayString>
+        <DisplayString Condition="!has_value()">{{Error = {error()}}}</DisplayString>
+        <Expand>
+            <Item Name="IsSuccess">has_value()</Item>
+            <Item Name="Value" Condition="has_value()">Success</Item>
+            <Item Name="Error" Condition="!has_value()">error()</Item>
+        </Expand>
+    </Type>
 
   <Type Name="AZ::EnvironmentVariable&lt;*&gt;">
     <DisplayString Condition="m_data != nullptr">{*($T1*)&amp;m_data->m_value}</DisplayString>
@@ -734,7 +762,7 @@
   <Type Name="AZStd::variant_detail::alternative_impl&lt;*,*&gt;">
     <DisplayString>{m_value}</DisplayString>
   </Type>
-  
+
   <Type Name="AZStd::variant&lt;*&gt;">
     <Intrinsic Name="index" Expression="(size_t)m_impl.m_index"/>
     <DisplayString Condition="index() == AZStd::variant_npos">[valueless]</DisplayString>
@@ -881,7 +909,7 @@
       </CustomListItems>
     </Expand>
   </Type>
-   
+
     <Type Name="AZ::Console">
         <DisplayString Condition="m_head != nullptr">{*m_head}</DisplayString>
     </Type>
@@ -889,7 +917,7 @@
     <Type Name="AZ::Name">
         <DisplayString>{m_view,s}</DisplayString>
     </Type>
-    
+
     <Type Name="AZ::Dom::Value">
         <Intrinsic Name="ValueUnion" Expression="m_value.m_impl.m_union_data" />
         <Intrinsic Name="IsNull" Expression="m_value.index() == 0" />
@@ -915,7 +943,7 @@
         <Intrinsic Name="Node" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px" />
         <Intrinsic Name="IsOpaque" Expression="m_value.index() == 11" />
         <Intrinsic Name="Opaque" Expression="ValueUnion().m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_tail.m_head.m_value.px" />
-        
+
         <DisplayString Condition="IsNull()">null</DisplayString>
         <DisplayString Condition="IsInt64()">{Int64()}</DisplayString>
         <DisplayString Condition="IsUint64()">{Uint64()}</DisplayString>

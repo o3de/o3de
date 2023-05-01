@@ -11,6 +11,7 @@
 #include <AzCore/Math/Matrix4x4.h>
 #include <AzCore/Math/MathUtils.h>
 #include <AzCore/Math/MathScriptHelpers.h>
+#include <AzCore/Math/ShapeIntersection.h>
 
 namespace AZ
 {
@@ -235,5 +236,21 @@ namespace AZ
         viewFrustumAttributes.m_verticalFovRadians = 2.0f * std::atan(tanHalfFov);
 
         return viewFrustumAttributes;
+    }
+
+    bool Frustum::GetCorners(CornerVertexArray& corners) const
+    {
+        using ShapeIntersection::IntersectThreePlanes;
+
+        return
+            IntersectThreePlanes(GetPlane(Near), GetPlane(Top), GetPlane(Left), corners[NearTopLeft]) &&
+            IntersectThreePlanes(GetPlane(Near), GetPlane(Top), GetPlane(Right), corners[NearTopRight]) &&
+            IntersectThreePlanes(GetPlane(Near), GetPlane(Bottom), GetPlane(Left), corners[NearBottomLeft]) &&
+            IntersectThreePlanes(GetPlane(Near), GetPlane(Bottom), GetPlane(Right), corners[NearBottomRight]) &&
+            IntersectThreePlanes(GetPlane(Far), GetPlane(Top), GetPlane(Left), corners[FarTopLeft]) &&
+            IntersectThreePlanes(GetPlane(Far), GetPlane(Top), GetPlane(Right), corners[FarTopRight]) &&
+            IntersectThreePlanes(GetPlane(Far), GetPlane(Bottom), GetPlane(Left), corners[FarBottomLeft]) &&
+            IntersectThreePlanes(GetPlane(Far), GetPlane(Bottom), GetPlane(Right), corners[FarBottomRight])
+            ;
     }
 } // namespace AZ

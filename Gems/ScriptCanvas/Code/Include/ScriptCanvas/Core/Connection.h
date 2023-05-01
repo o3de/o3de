@@ -18,7 +18,6 @@
 namespace ScriptCanvas
 {
     class Slot;
-    struct NodeUpdateSlotReport;
 
     class Connection
         : public AZ::Component

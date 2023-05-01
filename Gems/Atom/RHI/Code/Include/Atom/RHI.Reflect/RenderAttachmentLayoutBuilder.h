@@ -124,8 +124,15 @@ namespace AZ
 
                 // Adds the use of a subpass input attachment. The "name" attachment must
                 // be already be added as by a previous pass.
+                // "aspectFlags" is used by some implementations (e.g. Vulkan) when building the renderpass
                 SubpassAttachmentLayoutBuilder* SubpassInputAttachment(
-                    const AZ::Name& name);
+                    const AZ::Name& name,
+                    RHI::ImageAspectFlags aspectFlags);
+
+                // Adds the use of a shading rate attachment.
+                SubpassAttachmentLayoutBuilder* ShadingRateAttachment(
+                    Format format,
+                    const AZ::Name& name = {});
 
             private:
                 struct RenderAttachmentEntry
@@ -136,9 +143,16 @@ namespace AZ
                     AZ::Name m_resolveName;
                 };
 
+                struct SubpassAttachmentEntry
+                {
+                    AZ::Name m_name;
+                    RHI::ImageAspectFlags m_imageAspects = RHI::ImageAspectFlags::None;
+                };
+
                 AZStd::fixed_vector<RenderAttachmentEntry, RHI::Limits::Pipeline::AttachmentColorCountMax> m_renderTargetAttachments;
-                AZStd::fixed_vector<AZ::Name, RHI::Limits::Pipeline::AttachmentColorCountMax> m_subpassInputAttachments;
+                AZStd::fixed_vector<SubpassAttachmentEntry, RHI::Limits::Pipeline::AttachmentColorCountMax> m_subpassInputAttachments;
                 RenderAttachmentEntry m_depthStencilAttachment;
+                RenderAttachmentEntry m_shadingRateAttachment;
                 uint32_t m_subpassIndex = 0;
             };
 

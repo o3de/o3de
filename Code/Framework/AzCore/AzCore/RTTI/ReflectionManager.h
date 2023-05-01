@@ -27,7 +27,7 @@ namespace AZ
         using IsReflectContextT = AZStd::enable_if_t<AZStd::is_base_of<ReflectContext, ReflectContextT>::value>;
 
     public:
-        AZ_CLASS_ALLOCATOR(ReflectionManager, SystemAllocator, 0);
+        AZ_CLASS_ALLOCATOR(ReflectionManager, SystemAllocator);
 
         ReflectionManager() = default;
         ~ReflectionManager();

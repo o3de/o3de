@@ -92,3 +92,4 @@ namespace AzFramework
         AZ::SettingsRegistryInterface::NotifyEventHandler m_criticalAssetsHandler;
     };
 } // namespace AzFramework
+

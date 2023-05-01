@@ -32,18 +32,24 @@ echo     O3DE_BUILD_FOO = %O3DE_BUILD_FOO%
 :: have a build folder location, just the binaries location
 :: C:\O3DE\0.0.0.0\bin\Windows\profile\Default
 
+set "O3DE_DEV=C:\depot\o3de-dev"
+
 :: engine developers may build in an engine centric way
 :: and configure a cmake build anywhere, this allows devs to set their
 :: build folder name (assuming it is in the engine root)
 set O3DE_BUILD_FOLDER=build
-echo     O3DE_BUILD_FOLDER = %O3DE_BUILD_FOLDER%
 
 :: this allows the full path to your build folder to be explicitly set
 :: this would work for also pointing to a project centric build location
 set "PATH_O3DE_BUILD=%O3DE_DEV%\%O3DE_BUILD_FOLDER%"
+echo     PATH_O3DE_BUILD = %PATH_O3DE_BUILD%
+
+:: this is the path down from the build folder to binaries
+set "O3DE_BIN_PATTERN=bin\profile"
 
 :: this allows the full path to your bin folder to be explicitly set
-set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\bin\profile"
+set "PATH_O3DE_BIN=%PATH_O3DE_BUILD%\%O3DE_BIN_PATTERN%"
+echo     PATH_O3DE_BIN = %PATH_O3DE_BIN%
 
 :: this will enable additional debug behaviour within code
 :: this will in many cases cascade into settings like LogLevel

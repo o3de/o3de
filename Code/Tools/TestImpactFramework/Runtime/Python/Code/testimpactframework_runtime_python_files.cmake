@@ -18,16 +18,21 @@ set(FILES
     Source/Target/Python/TestImpactPythonTestTarget.h
     Source/Target/Python/TestImpactPythonTargetListCompiler.cpp
     Source/Target/Python/TestImpactPythonTargetListCompiler.h
-    Source/TestRunner/Python/TestImpactPythonTestRunnerBase.cpp
-    Source/TestRunner/Python/TestImpactPythonTestRunnerBase.h
-    Source/TestRunner/Python/TestImpactPythonTestRunner.h
-    Source/TestRunner/Python/TestImpactPythonNullTestRunner.cpp
-    Source/TestRunner/Python/TestImpactPythonNullTestRunner.h
+    Source/TestRunner/Python/TestImpactPythonErrorCodeChecker.cpp
+    Source/TestRunner/Python/TestImpactPythonErrorCodeChecker.h
+    Source/TestRunner/Python/TestImpactPythonInstrumentedTestRunnerBase.cpp
+    Source/TestRunner/Python/TestImpactPythonInstrumentedTestRunnerBase.h
+    Source/TestRunner/Python/TestImpactPythonInstrumentedTestRunner.h
+    Source/TestRunner/Python/TestImpactPythonInstrumentedNullTestRunner.cpp
+    Source/TestRunner/Python/TestImpactPythonInstrumentedNullTestRunner.h
+    Source/TestRunner/Python/TestImpactPythonRegularTestRunnerBase.cpp
+    Source/TestRunner/Python/TestImpactPythonRegularTestRunnerBase.h
+    Source/TestRunner/Python/TestImpactPythonRegularTestRunner.h
+    Source/TestRunner/Python/TestImpactPythonRegularNullTestRunner.cpp
+    Source/TestRunner/Python/TestImpactPythonRegularNullTestRunner.h
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.cpp
     Source/TestRunner/Python/Job/TestImpactPythonTestJobInfoGenerator.h
     Source/TestEngine/Python/TestImpactPythonTestEngine.cpp
     Source/TestEngine/Python/TestImpactPythonTestEngine.h
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.cpp
-    Source/TestEngine/Python/TestImpactPythonErrorCodeChecker.h
     Source/TestImpactPythonRuntime.cpp
 )

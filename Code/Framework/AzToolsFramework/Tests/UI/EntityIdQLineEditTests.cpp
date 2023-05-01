@@ -43,7 +43,7 @@ namespace UnitTest
     };
 
     class EntityIdQLineEditTests
-        : public ToolsApplicationFixture
+        : public ToolsApplicationFixture<>
     {
     };
 

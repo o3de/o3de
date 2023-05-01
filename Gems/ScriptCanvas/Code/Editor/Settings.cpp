@@ -47,7 +47,7 @@ namespace ScriptCanvasEditor
         {
             if (constructType == GraphCanvas::ConstructType::NodeGroup)
             {
-                GraphCanvas::NodeGroupPresetBucket* nodeGroupPresetBucket = static_cast<GraphCanvas::NodeGroupPresetBucket*>(ModPresetBuckket(GraphCanvas::ConstructType::NodeGroup));
+                GraphCanvas::NodeGroupPresetBucket* nodeGroupPresetBucket = static_cast<GraphCanvas::NodeGroupPresetBucket*>(ModPresetBucket(GraphCanvas::ConstructType::NodeGroup));
 
                 if (nodeGroupPresetBucket)
                 {
@@ -81,7 +81,7 @@ namespace ScriptCanvasEditor
             }
             else if (constructType == GraphCanvas::ConstructType::CommentNode)
             {
-                GraphCanvas::CommentPresetBucket* commentPresetBucket = static_cast<GraphCanvas::CommentPresetBucket*>(ModPresetBuckket(GraphCanvas::ConstructType::CommentNode));
+                GraphCanvas::CommentPresetBucket* commentPresetBucket = static_cast<GraphCanvas::CommentPresetBucket*>(ModPresetBucket(GraphCanvas::ConstructType::CommentNode));
                 commentPresetBucket->ClearPresets();
             }
         }

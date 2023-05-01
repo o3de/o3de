@@ -9,6 +9,8 @@
 set(FILES
     Include/ScriptCanvas/AutoGen/ScriptCanvas_Macros.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvas_Nodeable_Macros.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasDataRegistry_Header.jinja
+    Include/ScriptCanvas/AutoGen/ScriptCanvasDataRegistry_Source.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasFunctionRegistry_Header.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasFunctionRegistry_Source.jinja
     Include/ScriptCanvas/AutoGen/ScriptCanvasGrammar_Header.jinja

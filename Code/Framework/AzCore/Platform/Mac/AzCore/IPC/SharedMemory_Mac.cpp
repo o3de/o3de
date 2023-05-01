@@ -123,7 +123,7 @@ namespace AZ
         fstat(m_mapHandle, &st);
         if (size == 0)
         {
-            size = st.st_size;
+            size = static_cast<unsigned int>(st.st_size);
         }
         int dwDesiredAccess = (mode == ReadOnly ? PROT_READ : PROT_READ | PROT_WRITE);
         m_mappedBase = mmap(0, size, dwDesiredAccess, MAP_SHARED, m_mapHandle, 0);
@@ -141,7 +141,7 @@ namespace AZ
             return false;
         }
 
-        m_dataSize = st.st_size;
+        m_dataSize = static_cast<unsigned int>(st.st_size);
 
         return true;
     }

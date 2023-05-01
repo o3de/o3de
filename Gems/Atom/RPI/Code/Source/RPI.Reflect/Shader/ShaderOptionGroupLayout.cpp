@@ -362,6 +362,21 @@ namespace AZ
 
         Name ShaderOptionDescriptor::GetValueName(ShaderOptionValue value) const
         {
+            if (m_type == ShaderOptionType::IntegerRange)
+            {
+                // We can just return the value here, as IntegerRange's values' ids must be equal to their numerical value, this had been checked in AddValue()
+                // We can't use m_nameReflectionForValues, since it only contains min and max value
+                uint32_t value_uint = value.GetIndex();
+                if (m_minValue.GetIndex() <= value_uint && value_uint <= m_maxValue.GetIndex())
+                {
+                    return Name(AZStd::to_string(value_uint));
+                }
+                else
+                {
+                    // mimic the behavior of RHI::NameIdReflectionMap's Find function
+                    return {};
+                }
+            }
             auto name = m_nameReflectionForValues.Find(value);
             return name;
         }
@@ -385,7 +400,7 @@ namespace AZ
         {
             shaderVariantKey >>= m_bitOffset;
             shaderVariantKey &= AZ_BIT_MASK(m_bitCount);
-            uint32_t value = shaderVariantKey.to_ulong();
+            uint32_t value = static_cast<uint32_t>(shaderVariantKey.to_ulong());
             return value;
         }
         

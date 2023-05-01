@@ -22,7 +22,7 @@ namespace LmbrCentral
             // Deprecate: EditorCylinderColliderComponent -> EditorCylinderShapeComponent
             serializeContext->ClassDeprecate(
                 "EditorCylinderColliderComponent",
-                "{1C10CEE7-0A5C-4D4A-BBD9-5C3B6C6FE844}",
+                AZ::Uuid("{1C10CEE7-0A5C-4D4A-BBD9-5C3B6C6FE844}"),
                 &ClassConverters::DeprecateEditorCylinderColliderComponent)
                 ;
 
@@ -86,7 +86,7 @@ namespace LmbrCentral
             [this](AzFramework::DebugDisplayRequests& debugDisplay)
             {
                 DrawCylinderShape(
-                    { m_shapeColor, m_shapeWireColor, m_displayFilled },
+                    { m_cylinderShape.GetCylinderConfiguration().GetDrawColor(), m_shapeWireColor, m_displayFilled },
                     m_cylinderShape.GetCylinderConfiguration(), debugDisplay);
             },
             m_cylinderShape.GetCurrentTransform());

@@ -6,7 +6,6 @@
 	       PreferredClassName="Sequencer"
            Uuid="{CB98B828-BF86-4623-BF73-396A68FA386A}"
            Base="ScriptCanvas::Node"
-           GeneratePropertyFriend="True"
            Deprecated="True"
            Description="Trigger one of the outputs in sequential order for each input activation.">
         <In Name="In" Description="Input signal"/>

@@ -31,7 +31,7 @@ namespace AZ
 
         namespace ShaderBuilderUtility
         {
-            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile);
+            Outcome<RPI::ShaderSourceData, AZStd::string> LoadShaderDataJson(const AZStd::string& fullPathToJsonFile, bool warningsAsErrors = true);
 
             void GetAbsolutePathToAzslFile(const AZStd::string& shaderSourceFileFullPath, AZStd::string specifiedShaderPathAndName, AZStd::string& absoluteShaderPath);
 
@@ -64,10 +64,13 @@ namespace AZ
             //! @azslData must have paths correctly set.
             //! @azslData, @srgLayoutList, @shaderOptionGroupLayout, @bindingDependencies and @rootConstantData get the output data.
             AssetBuilderSDK::ProcessJobResultCode PopulateAzslDataFromJsonFiles(
-                const char* builderName, const AzslSubProducts::Paths& pathOfJsonFiles,
-                const bool platformUsesRegisterSpaces, AzslData& azslData,
-                RPI::ShaderResourceGroupLayoutList& srgLayoutList, RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
-                BindingDependencies& bindingDependencies, RootConstantData& rootConstantData);
+                const char* builderName,
+                const AzslSubProducts::Paths& pathOfJsonFiles,
+                AzslData& azslData,
+                RPI::ShaderResourceGroupLayoutList& srgLayoutList,
+                RPI::Ptr<RPI::ShaderOptionGroupLayout> shaderOptionGroupLayout,
+                BindingDependencies& bindingDependencies,
+                RootConstantData& rootConstantData);
 
 
             RHI::ShaderHardwareStage ToAssetBuilderShaderType(RPI::ShaderStageType stageType);

@@ -86,7 +86,6 @@
 #define AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE ((SystemFile::FileHandleType) -1)
 #define AZ_TRAIT_SYSTEMFILE_FSYNC_IS_DEFINED 1
 #define AZ_TRAIT_SYSTEMFILE_UNIX_LIKE_PLATFORM_IS_WRITEABLE_DEFINED_ELSEWHERE 0
-#define AZ_TRAIT_TEST_ROOT_FOLDER "./"
 #define AZ_TRAIT_TEST_SUPPORT_DLOPEN 1
 #define AZ_TRAIT_TEST_SUPPORT_LOADLIBRARY 0
 #define AZ_TRAIT_TEST_SUPPORT_MODULE_LOADING 1
@@ -102,6 +101,7 @@
 #define AZ_TRAIT_USE_WINDOWS_FILE_API 0
 #define AZ_TRAIT_UUID_SUPPORTS_GUID_CONVERSION 1
 #define AZ_TRAIT_USE_ERRNO_T_TYPEDEF 1
+#define AZ_TRAIT_USE_JOB_THREADS_CONCURRENCY_RATIO  0.6f
 
 // wchar_t/char formatting
 // Reason: https://docs.microsoft.com/en-us/cpp/c-runtime-library/format-specification-syntax-printf-and-wprintf-functions?view=msvc-160

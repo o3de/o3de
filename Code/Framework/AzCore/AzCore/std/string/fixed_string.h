@@ -38,7 +38,7 @@ namespace AZStd
 
         using iterator = pointer;
         using const_iterator = const_pointer;
-       
+
         using reverse_iterator = AZStd::reverse_iterator<iterator>;
         using const_reverse_iterator = AZStd::reverse_iterator<const_iterator>;
         using value_type = Element;
@@ -269,6 +269,8 @@ namespace AZStd
         constexpr auto resize(size_type newSize) -> void;
         constexpr auto resize(size_type newSize, Element ch) -> void;
         constexpr auto resize_no_construct(size_type newSize) -> void;
+        template<class Operation>
+        constexpr auto resize_and_overwrite(size_type n, Operation op) -> void;
 
         constexpr auto reserve(size_type newCapacity = 0) -> void;
 
@@ -486,6 +488,9 @@ namespace AZStd
 
     template<class Element, size_t MaxElementCount, class Traits>
     struct hash<basic_fixed_string<Element, MaxElementCount, Traits>>;
+
+    // Extern common fixed_string types
+    extern template class basic_fixed_string<char, 1024>;
 
 } // namespace AZStd
 

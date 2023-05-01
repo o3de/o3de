@@ -126,7 +126,7 @@ namespace StartingPointInput
                 serializeContext->Class<StartingPointInputSystemComponent, AZ::Component>()
                     ->Version(1)
                     ;
-                serializeContext->ClassDeprecate("Input", "{546C9EBC-90EF-4F03-891A-0736BE2A487E}", &ConvertToInputEventMap);
+                serializeContext->ClassDeprecate("Input", AZ::Uuid("{546C9EBC-90EF-4F03-891A-0736BE2A487E}"), &ConvertToInputEventMap);
 
                 serializeContext->Class<InputEventNotificationId>()
                     ->Version(1)
@@ -140,7 +140,6 @@ namespace StartingPointInput
                         "Starting point input", "Manages input bindings and events")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                         ->Attribute(AZ::Edit::Attributes::Category, "Editor")
-                        ->Attribute(AZ::Edit::Attributes::AppearsInAddComponentMenu, AZ_CRC("System"))
                         ;
                 }
             }

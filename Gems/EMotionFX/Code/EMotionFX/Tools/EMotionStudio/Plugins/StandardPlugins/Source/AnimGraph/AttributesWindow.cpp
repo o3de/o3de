@@ -823,7 +823,6 @@ namespace EMStudio
         MCore::CommandGroup commandGroup;
         commandGroup.SetGroupName("Pasted transition conditions");
 
-        AZ::u32 numPastedConditions = 0;
         const size_t numConditions = m_copyPasteClipboard.m_conditions.size();
         for (size_t i = 0; i < numConditions; ++i)
         {
@@ -841,7 +840,6 @@ namespace EMStudio
                 m_copyPasteClipboard.m_conditions[i].m_contents);
             commandGroup.AddCommand(addConditionCommand);
 
-            numPastedConditions++;
         }
 
         if (!commandGroup.IsEmpty())

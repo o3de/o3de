@@ -16,6 +16,7 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/Viewport/ClickDetector.h>
 #include <AzFramework/Viewport/CursorState.h>
+#include <AzToolsFramework/ActionManager/ActionManagerRegistrationNotificationBus.h>
 #include <AzToolsFramework/API/EditorCameraBus.h>
 #include <AzToolsFramework/API/EntityCompositionNotificationBus.h>
 #include <AzToolsFramework/API/ViewportEditorModeTrackerNotificationBus.h>
@@ -43,6 +44,7 @@ namespace AzToolsFramework
     }
 
     class ActionManagerInterface;
+    class HotKeyManagerInterface;
     class MenuManagerInterface;
 
     class EditorVisibleEntityDataCacheInterface;
@@ -141,6 +143,7 @@ namespace AzToolsFramework
     //! Provide a suite of functionality for manipulating entities, primarily through their TransformComponent.
     class EditorTransformComponentSelection
         : public ViewportInteraction::ViewportSelectionRequests
+        , public ActionManagerRegistrationNotificationBus::Handler
         , public EditorContextMenuBus::Handler
         , private EditorEventsBus::Handler
         , private EditorTransformComponentSelectionRequestBus::Handler
@@ -220,6 +223,11 @@ namespace AzToolsFramework
         void RegisterActions();
         void UnregisterActions();
 
+        // ActionManagerRegistrationNotificationBus overrides ...
+        void OnActionUpdaterRegistrationHook() override;
+        void OnActionRegistrationHook() override;
+        void OnMenuBindingHook() override;
+
         void BeginRecordManipulatorCommand();
         void EndRecordManipulatorCommand();
 
@@ -266,7 +274,6 @@ namespace AzToolsFramework
 
         // EditorEventsBus overrides ...
         void OnEscape() override;
-        void NotifyMainWindowInitialized(QMainWindow* mainWindow) override;
 
         // ToolsApplicationNotificationBus overrides ...
         void BeforeEntitySelectionChanged() override;
@@ -343,7 +350,6 @@ namespace AzToolsFramework
         Mode m_mode = Mode::Translation; //!< Manipulator mode - default to translation.
         Pivot m_pivotMode = Pivot::Object; //!< Entity pivot mode - default to object (authored root).
         ReferenceFrame m_referenceFrame = ReferenceFrame::Local; //!< What reference frame is the Manipulator currently operating in.
-        Influence m_influence = Influence::Group; //!< What sphere of influence does the Manipulator have.
         Frame m_axisPreview; //!< Axes of entity at the time of mouse down to indicate delta of translation.
         bool m_triedToRefresh = false; //!< Did a refresh event occur to recalculate the current Manipulator transform.
         //! Was EditorTransformComponentSelection responsible for the most recent entity selection change.
@@ -365,6 +371,7 @@ namespace AzToolsFramework
         bool m_viewportUiVisible = true; //!< Used to hide/show the viewport ui elements.
 
         ActionManagerInterface* m_actionManagerInterface = nullptr;
+        HotKeyManagerInterface* m_hotKeyManagerInterface = nullptr;
         MenuManagerInterface* m_menuManagerInterface = nullptr;
     };
 

@@ -19,7 +19,7 @@ namespace AZ
         class CommandQueueContext
         {
         public:
-            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator, 0);
+            AZ_CLASS_ALLOCATOR(CommandQueueContext, AZ::SystemAllocator);
 
             CommandQueueContext() = default;
 
@@ -48,6 +48,12 @@ namespace AZ
             
             // Fences across all queues that are compiled by the frame graph compilation phase
             const FenceSet& GetCompiledFences();
+
+            // Get frame fences for the specified frame
+            const FenceSet& GetFrameFences(size_t frameIndex) const;
+
+            // Get the frame index of the last executed frame
+            size_t GetLastFrameIndex() const;
             
         private:
             void CalibrateClocks();

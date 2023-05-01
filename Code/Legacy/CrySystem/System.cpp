@@ -26,7 +26,6 @@
 #include <AzFramework/Input/Devices/Keyboard/InputDeviceKeyboard.h>
 #include <AzCore/Debug/Profiler.h>
 #include <AzCore/Debug/Trace.h>
-#include <AzCore/Debug/IEventLogger.h>
 #include <AzCore/Interface/Interface.h>
 #include <AzCore/std/algorithm.h>
 #include <AzCore/Time/ITime.h>
@@ -234,18 +233,6 @@ CSystem::CSystem()
 
     m_pXMLUtils = new CXmlUtils(this);
 
-    if (!AZ::AllocatorInstance<AZ::OSAllocator>::IsReady())
-    {
-        m_initedOSAllocator = true;
-        AZ::AllocatorInstance<AZ::OSAllocator>::Create();
-    }
-    if (!AZ::AllocatorInstance<AZ::SystemAllocator>::IsReady())
-    {
-        m_initedSysAllocator = true;
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Create();
-        AZ::Debug::Trace::Instance().Init();
-    }
-
     m_eRuntimeState = ESYSTEM_EVENT_LEVEL_UNLOAD;
 
     m_bHasRenderedErrorMessage = false;
@@ -273,15 +260,6 @@ CSystem::~CSystem()
     SAFE_DELETE(m_pSystemEventDispatcher);
 
     AZCoreLogSink::Disconnect();
-    if (m_initedSysAllocator)
-    {
-        AZ::Debug::Trace::Instance().Destroy();
-        AZ::AllocatorInstance<AZ::SystemAllocator>::Destroy();
-    }
-    if (m_initedOSAllocator)
-    {
-        AZ::AllocatorInstance<AZ::OSAllocator>::Destroy();
-    }
 
     m_env.pSystem = 0;
     gEnv = 0;
@@ -429,12 +407,6 @@ void CSystem::Quit()
     }
 
     gEnv->pLog->Flush();
-
-    // Latest possible place to flush any pending messages to disk before the forceful termination.
-    if (auto logger = AZ::Interface<AZ::Debug::IEventLogger>::Get(); logger)
-    {
-        logger->Flush();
-    }
 
 #ifdef WIN32
     //Post a WM_QUIT message to the Win32 api which causes the message loop to END
@@ -621,7 +593,7 @@ bool CSystem::UpdatePreTickBus(int updateFlags, int nPauseMode)
         }
         if (pVSync == NULL && gEnv && gEnv->pConsole)
         {
-            pVSync = gEnv->pConsole->GetCVar("r_Vsync");
+            pVSync = gEnv->pConsole->GetCVar("vsync_interval");
         }
 
         if (pSysMaxFPS && pVSync)

@@ -52,7 +52,7 @@ class GUIApplicationManager
     Q_OBJECT
 public:
     explicit GUIApplicationManager(int* argc, char*** argv, QObject* parent = 0);
-    virtual ~GUIApplicationManager();
+    ~GUIApplicationManager() override;
 
     ApplicationManager::BeforeRunStatus BeforeRun() override;
     IniConfiguration* GetIniConfiguration() const;
@@ -114,5 +114,5 @@ private:
     QPointer<MainWindow> m_mainWindow;
     AZStd::unique_ptr<ErrorCollector> m_startupErrorCollector; // Collects errors during start up to display when startup has finished
 
-    AZStd::chrono::system_clock::time_point m_timeWhenLastWarningWasShown;
+    AZStd::chrono::steady_clock::time_point m_timeWhenLastWarningWasShown;
 };

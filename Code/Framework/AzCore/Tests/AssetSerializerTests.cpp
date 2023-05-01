@@ -12,12 +12,12 @@
 
 
 class AssetSerializerTest
-    : public UnitTest::ScopedAllocatorSetupFixture
+    : public UnitTest::LeakDetectionFixture
 {
     public:
         void SetUp() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::SetUp();
+            UnitTest::LeakDetectionFixture::SetUp();
 
             // Fill in v0 and v1 of the test data with subsets of our v2 test asset.
             memcpy(m_testSerializedAssetVersion0, m_testSerializedAssetVersion2, AZ_ARRAY_SIZE(m_testSerializedAssetVersion0));
@@ -29,7 +29,7 @@ class AssetSerializerTest
 
         void TearDown() override
         {
-            UnitTest::ScopedAllocatorSetupFixture::TearDown();
+            UnitTest::LeakDetectionFixture::TearDown();
         }
 
     protected:
