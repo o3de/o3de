@@ -59,8 +59,6 @@ namespace AtomToolsFramework
         m_frameworkScene->SetSubsystem(m_scene);
         m_frameworkScene->SetSubsystem(m_entityContext.get());
 
-
-
         // Create the BRDF texture generation pipeline
         AZ::RPI::RenderPipelineDescriptor brdfPipelineDesc;
         brdfPipelineDesc.m_mainViewTagName = "MainCamera";
