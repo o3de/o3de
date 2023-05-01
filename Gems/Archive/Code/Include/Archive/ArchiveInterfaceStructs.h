@@ -145,8 +145,10 @@ namespace Archive
         //! Can represent a file up to 2^35 = 32GiB
         AZ::u64 m_uncompressedSize : 35; // 35-bits
         //! compressed files are stored aligned on 512-byte sectors
-        //! Therefore this can represent size up to 35-bits as well
-        AZ::u64 m_compressedSize : 26; // 61-bits
+        //! Therefore this can represent bytes sizes up to 35-bits as well
+        //! while the value actually being stored is a 512-byte sector size
+        //! 2^26 sectors * 512 bytes = 2^26 * 2^9 = 2^35 bytes
+        AZ::u64 m_compressedSizeInSectors : 26; // 61-bits
         //! Stores an index into Compression ID table to indicate
         //! the compression algorithm the file uses or UncompressedAlgorithmIndex
         //! if the value is set to UncompressedAlgorithmIndex,
@@ -264,10 +266,6 @@ namespace Archive
 
         //! pointer to block offset table which stores the compressed size of all blocks within the archive
         ArchiveBlockLineSection* m_archiveBlockTable{};
-
-        //! Aligns the fileCount up to the next even value, so that
-        //! it can maintain an 8-byte alignment
-        static constexpr size_t AlignFileCount(size_t fileCount);
     };
 
 } // namespace Archive

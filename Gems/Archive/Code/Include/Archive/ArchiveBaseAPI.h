@@ -32,7 +32,8 @@ namespace Archive
         AZ::u64 m_offset{};
         //! Uncompressed size of the file
         AZ::u64 m_uncompressedSize{};
-        //! This will be 0 if the compression algorithm = Uncompressed
+        //! The size of the compressed file
+        //! Note: This will be 0 if the compression algorithm = Uncompressed
         AZ::u64 m_compressedSize{};
         //! The compression algorithm used to compress this file
         //! the archive

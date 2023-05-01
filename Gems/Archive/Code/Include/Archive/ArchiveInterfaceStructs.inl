@@ -15,17 +15,17 @@ namespace Archive
     {
         constexpr AZ::u64 operator"" _kib(AZ::u64 value)
         {
-            return value * 1024;
+            return value * (1 << 10);
         }
 
         constexpr AZ::u64 operator"" _mib(AZ::u64 value)
         {
-            return value * (1024 * 1024);
+            return value * (1 << 20);
         }
 
         constexpr AZ::u64 operator"" _gib(AZ::u64 value)
         {
-            return value * (1024 * 1024 * 1024);
+            return value * (1 << 30);
         }
     }
 
@@ -38,7 +38,7 @@ namespace Archive
     // ArchiveFileMetadata constructor implementation
     ArchiveFileMetadataSection::ArchiveFileMetadataSection()
         : m_uncompressedSize{}
-        , m_compressedSize{}
+        , m_compressedSizeInSectors{}
         , m_compressionAlgoIndex{ Compression::UncompressedAlgorithmIndex }
         , m_blockTableIndex{}
         , m_offset{}
@@ -69,11 +69,5 @@ namespace Archive
     ArchiveBlockLineSection::ArchiveBlockLineSection()
     {
     }
-
-    constexpr size_t ArchiveTableOfContents::AlignFileCount(size_t fileCount)
-    {
-        return (fileCount + 0b1) & ~0b1;
-    }
-
 } // namespace Archive
 

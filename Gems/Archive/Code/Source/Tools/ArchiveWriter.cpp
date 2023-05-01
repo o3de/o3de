@@ -126,7 +126,7 @@ namespace Archive
             AZStd::to_lower(filePath.Native());
             break;
         case ArchiveFilePathCase::Uppercase:
-            AZStd::to_lower(filePath.Native());
+            AZStd::to_upper(filePath.Native());
             break;
         }
 
