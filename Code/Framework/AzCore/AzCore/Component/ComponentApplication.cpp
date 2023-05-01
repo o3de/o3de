@@ -585,9 +585,6 @@ namespace AZ
         m_commandLineUpdatedHandler =
             m_settingsRegistry->RegisterNotifier(UpdateCommandLineEventHandler{ *m_settingsRegistry, m_commandLine });
 
-        // Merge Command Line arguments
-        constexpr bool executeRegDumpCommands = false;
-
         if constexpr (
             AZ::Internal::GetDevelopmentSettingsOverrides() == AZ::Internal::DevelopmentSettingsOverrides::CommandLineProjectAndUser)
         {
@@ -595,7 +592,8 @@ namespace AZ
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
                 *m_settingsRegistry, AZ_TRAIT_OS_PLATFORM_CODENAME, {});
         }
-        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, executeRegDumpCommands);
+        // Merge Command Line arguments using the default CommandToParse instance
+        SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*m_settingsRegistry, m_commandLine, {});
         SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(*m_settingsRegistry);
     }
 
@@ -977,7 +975,7 @@ namespace AZ
                 // values will be replaced by later loads, so this step will happen again at the end of loading.
                 SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
                 // Project User Registry is merged after the command line here to allow make sure the any command line override of the
                 // project path is used for merging the project's user registry
                 SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
@@ -985,7 +983,7 @@ namespace AZ
             }
 
             // Make sure the command line is merged at least once, before updating the runtime filepaths
-            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+            SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
             SettingsRegistryMergeUtils::MergeSettingsToRegistry_AddRuntimeFilePaths(registry);
         }
 
@@ -1036,13 +1034,17 @@ namespace AZ
             {
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_O3deUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, false);
+                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, {});
                 AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectUserRegistry(
                     registry, AZ_TRAIT_OS_PLATFORM_CODENAME, specializations, &scratchBuffer);
             }
 
             // The final merge of the command line should also execute any command-line commands.
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, true);
+            AZ::SettingsRegistryMergeUtils::CommandsToParse commandsToParse;
+            // The regdump and regset-file arguments are parsed in the final merge
+            commandsToParse.m_parseRegdumpCommands = true;
+            commandsToParse.m_parseRegsetFileCommands = true;
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, m_commandLine, commandsToParse);
         }
 
         // Update the Runtime file paths in case the "{BootstrapSettingsRootKey}/assets" key was overriden by a setting registry

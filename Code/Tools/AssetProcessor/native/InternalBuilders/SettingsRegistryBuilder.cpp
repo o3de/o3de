@@ -244,16 +244,26 @@ namespace AssetProcessor
                     CopySettingsToLocalRegistry(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
                 }
 
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer);
-                AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer);
+                AZ::SettingsRegistryInterface::MergeSettingsResult mergeResult;
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_EngineRegistry(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_GemRegistries(registry, platform, specialization, &scratchBuffer));
+                mergeResult.Combine(AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_ProjectRegistry(registry, platform, specialization, &scratchBuffer));
+
+                // Output any Settings Registry Merge result messages using the info log level if not empty
+                if (auto& operationMessages = mergeResult.GetMessages();
+                    !operationMessages.empty())
+                {
+                    AZStd::string_view buildConfiguration(specialization.GetSpecialization(0));
+                    AZ_Info("Settings Registry Builder", R"(Configuration: "%.*s")" "\n"
+                        "Merging the Engine, Gem, Project Registry directories resulted in the following messages:\n%s\n",
+                        AZ_STRING_ARG(buildConfiguration), operationMessages.c_str());
+                }
 
                 // The Gem Root Key and Manifest Gems Root is removed now that each gems "<gem-root>/Registry" directory
                 // have been merged to the local Settings Registry
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ActiveGemsRootKey);
                 registry.Remove(AZ::SettingsRegistryMergeUtils::ManifestGemsRootKey);
 
-                constexpr bool executeRegDumpCommands = false;
                 AZ::CommandLine* commandLine{};
                 AZ::ComponentApplicationBus::Broadcast([&commandLine](AZ::ComponentApplicationRequests* appRequests)
                 {
@@ -262,7 +272,7 @@ namespace AssetProcessor
 
                 if (commandLine)
                 {
-                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, executeRegDumpCommands);
+                    AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(registry, *commandLine, {});
                 }
 
                 if (AZ::IO::ByteContainerStream outputStream(&outputBuffer);

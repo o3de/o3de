@@ -27,7 +27,7 @@ namespace AZ::IO
     public:
         using SizeType = AZ::u64;
 
-        //! Creates FileReader instance in the default state with no file opend
+        //! Creates FileReader instance in the default state with no file opened
         FileReader();
         ~FileReader();
 
@@ -43,12 +43,17 @@ namespace AZ::IO
         //! Moves ownership of FileReader handle to this instance
         FileReader& operator=(FileReader&& other);
 
+        //! Returns a FileReader which wraps the SystemFile handle to stdin
+        //! descriptor
+        static FileReader GetStdin();
+
         //! Opens a File using the FileIOBase instance if non-nullptr
         //! Otherwise fall back to use SystemFile
         //! @param fileIOBase pointer to fileIOBase instance
         //! @param null-terminated filePath to open
         //! @return true if the File is opened successfully
         bool Open(AZ::IO::FileIOBase* fileIoBase, const char* filePath);
+
 
         //! Returns true if a file is currently open
         //! @return true if the file is open
