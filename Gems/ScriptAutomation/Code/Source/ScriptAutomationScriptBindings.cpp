@@ -10,6 +10,8 @@
 
 #include <ScriptAutomationScriptBindings.h>
 
+#include <AzCore/Component/Entity.h>
+#include <AzCore/Component/EntityId.h>
 #include <AzCore/Console/IConsole.h>
 #include <AzCore/Math/MathReflection.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -24,11 +26,15 @@
 #include <AzCore/IO/Path/Path.h>
 
 #include <AzFramework/Components/ConsoleBus.h>
+#include <AzFramework/Components/CameraBus.h>
 #include <AzFramework/IO/LocalFileIO.h>
 #include <AzFramework/Windowing/NativeWindow.h>
 
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
+
+#pragma optimize("", off)
+#pragma inline_depth(0)
 
 namespace AZ::ScriptAutomation
 {
@@ -184,6 +190,33 @@ namespace AZ::ScriptAutomation
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
         }
 
+        void SetCamera(const AZStd::string& entityName)
+        {
+            auto operation = [entityName]()
+            {
+                // Find all Component Entity Cameras
+                AZ::EBusAggregateResults<AZ::EntityId> cameraComponentEntities;
+                Camera::CameraBus::BroadcastResult(cameraComponentEntities, &Camera::CameraRequests::GetCameras);
+
+                // add names of all found entities with Camera Components
+                for (int i = 0; i < cameraComponentEntities.values.size(); i++)
+                {
+                    AZ::Entity* entity = nullptr;
+                    AZ::ComponentApplicationBus::BroadcastResult(entity, &AZ::ComponentApplicationBus::Events::FindEntity, cameraComponentEntities.values[i]);
+                    if (entity)
+                    {
+                        if (entity->GetName() == entityName)
+                        {
+                            Camera::CameraRequestBus::Event(cameraComponentEntities.values[i], &Camera::CameraRequestBus::Events::MakeActiveView);
+                        }
+                    }
+                }            
+            };
+
+            ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+
         void CapturePassTimestamp(const AZStd::string& outputFilePath)
         {
             auto operation = [outputFilePath]()
@@ -260,6 +293,17 @@ namespace AZ::ScriptAutomation
             };
 
             ScriptAutomationInterface::Get()->QueueScriptOperation(AZStd::move(operation));
+        }
+
+        AZStd::vector<AZStd::string> SplitStringImmediate(const AZStd::string& source, const AZStd::string& delimiter)
+        {
+            AZStd::vector<AZStd::string> splitStringList;
+            auto SplitString = [&splitStringList](AZStd::string_view token)
+            {
+                splitStringList.emplace_back(token);
+            };
+            AZ::StringFunc::TokenizeVisitor(source, SplitString, delimiter, false, false);
+            return splitStringList;
         }
 
         AZStd::string ResolvePath(const AZStd::string& path)
@@ -751,7 +795,9 @@ namespace AZ::ScriptAutomation
         behaviorContext->Method("IdleFrames", &Bindings::IdleFrames);
         behaviorContext->Method("IdleSeconds", &Bindings::IdleSeconds);
         behaviorContext->Method("ResizeViewport", &Bindings::ResizeViewport);
+        behaviorContext->Method("SetCamera", &Bindings::SetCamera);
 
+        behaviorContext->Method("SplitString", &Bindings::SplitStringImmediate);
         behaviorContext->Method("ResolvePath", &Bindings::ResolvePath);
         behaviorContext->Method("NormalizePath", [](AZStd::string_view path) -> AZStd::string { return AZ::IO::PathView(path).LexicallyNormal().String(); });
         behaviorContext->Method("DegToRad", &AZ::DegToRad);
@@ -782,3 +828,4 @@ namespace AZ::ScriptAutomation
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
     }
 } // namespace AZ::ScriptAutomation
+#pragma optimize("", on)

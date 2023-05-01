@@ -177,12 +177,13 @@ namespace AZ::ScriptAutomation
 
     void ScriptAutomationSystemComponent::SetIdleFrames(int numFrames)
     {
-        AZ_Assert(m_scriptIdleSeconds == 0, "m_scriptIdleFrames is being stomped");
+        AZ_Assert(m_scriptIdleFrames <= 0, "m_scriptIdleFrames is being stomped");
         m_scriptIdleFrames = numFrames;
     }
 
     void ScriptAutomationSystemComponent::SetIdleSeconds(float numSeconds)
     {
+        AZ_Assert(m_scriptIdleSeconds <= 0, "m_scriptIdleSeconds is being stomped");
         m_scriptIdleSeconds = numSeconds;
     }
 
