@@ -64,7 +64,7 @@ namespace Archive
         //! offset = 10
         AZ::u16 m_layout{};
 
-        //! Represents the The number of files stored within the Archive
+        //! Represents the number of files stored within the Archive
         //! Caps out at (2^25) or ~33 million files that can be represented
         //! offset = 12
         AZ::u32 m_fileCount{};
@@ -131,6 +131,10 @@ namespace Archive
         //! total offset = 88
 
         //! Max FileCount
+        //! Up to 2^32 files can be stored,
+        //! but is limited to 2^25 because around 640MiB of uncompressed data will need to be loaded into memory for an archive of containing ~33million files,
+        //! and memory requirements would increase if the not limited.
+        //! offset = 12
         static constexpr AZ::u32 MaxFileCount{(1 << 25) - 1 };
     };
 

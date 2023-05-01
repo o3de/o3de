@@ -6,7 +6,6 @@
 
 set(FILES
     Include/Archive/ArchiveBaseAPI.h
-    Include/Archive/ArchiveBus.h
     Include/Archive/ArchiveInterfaceStructs.h
     Include/Archive/ArchiveInterfaceStructs.inl
     Include/Archive/ArchiveTypeIds.h

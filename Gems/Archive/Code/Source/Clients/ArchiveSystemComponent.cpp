@@ -45,21 +45,9 @@ namespace Archive
     {
     }
 
-    ArchiveSystemComponent::ArchiveSystemComponent()
-    {
-        if (ArchiveInterface::Get() == nullptr)
-        {
-            ArchiveInterface::Register(this);
-        }
-    }
+    ArchiveSystemComponent::ArchiveSystemComponent() = default;
 
-    ArchiveSystemComponent::~ArchiveSystemComponent()
-    {
-        if (ArchiveInterface::Get() == this)
-        {
-            ArchiveInterface::Unregister(this);
-        }
-    }
+    ArchiveSystemComponent::~ArchiveSystemComponent() = default;
 
     void ArchiveSystemComponent::Init()
     {
@@ -67,18 +55,9 @@ namespace Archive
 
     void ArchiveSystemComponent::Activate()
     {
-        ArchiveRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void ArchiveSystemComponent::Deactivate()
     {
-        AZ::TickBus::Handler::BusDisconnect();
-        ArchiveRequestBus::Handler::BusDisconnect();
     }
-
-    void ArchiveSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
-    {
-    }
-
 } // namespace Archive

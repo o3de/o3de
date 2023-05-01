@@ -64,7 +64,7 @@ namespace Archive
     //! NOTE: The relative file path will be lowercased by default based on the
     //! ArchiveFileCase enum
     //! This due to the Archiving System supporting both case-preserving(Windows, MacOS)
-    //! and case-sensitive systems such as Windows
+    //! and case-sensitive systems such as Linux
     struct ArchiveWriterFileSettings
     {
         AZ::IO::Path m_relativeFilePath;

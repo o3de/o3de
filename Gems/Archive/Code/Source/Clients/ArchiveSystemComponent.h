@@ -9,15 +9,11 @@
 #pragma once
 
 #include <AzCore/Component/Component.h>
-#include <AzCore/Component/TickBus.h>
-#include <Archive/ArchiveBus.h>
 
 namespace Archive
 {
     class ArchiveSystemComponent
         : public AZ::Component
-        , protected ArchiveRequestBus::Handler
-        , public AZ::TickBus::Handler
     {
     public:
         AZ_COMPONENT_DECL(ArchiveSystemComponent);
@@ -33,22 +29,10 @@ namespace Archive
         ~ArchiveSystemComponent();
 
     protected:
-        ////////////////////////////////////////////////////////////////////////
-        // ArchiveRequestBus interface implementation
-
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
         // AZ::Component interface implementation
         void Init() override;
         void Activate() override;
         void Deactivate() override;
-        ////////////////////////////////////////////////////////////////////////
-
-        ////////////////////////////////////////////////////////////////////////
-        // AZTickBus interface implementation
-        void OnTick(float deltaTime, AZ::ScriptTimePoint time) override;
-        ////////////////////////////////////////////////////////////////////////
     };
 
 } // namespace Archive
