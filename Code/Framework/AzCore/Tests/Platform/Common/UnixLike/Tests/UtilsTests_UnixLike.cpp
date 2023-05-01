@@ -66,7 +66,7 @@ namespace UnitTest
         char testValue[1024];
         auto getEnvOutcome = AZ::Utils::GetEnv(AZStd::span(testValue), envKey);
         EXPECT_FALSE(getEnvOutcome);
-        EXPECT_EQ(AZ::Utils::GetEnvErrorCode::EnvNotSet, getEnvOutcome.GetError().m_ec);
+        EXPECT_EQ(AZ::Utils::GetEnvErrorCode::EnvNotSet, getEnvOutcome.GetError().m_errorCode);
     }
 
     TEST_F(UtilsUnixLikeTestFixture, GetEnv_WithSpanSizeThatLessThanEnvValueSize_Fails)
@@ -89,7 +89,7 @@ namespace UnitTest
         testValue.resize_and_overwrite(expectedValue.size() / 2, StoreEnvironmentValue);
 
         EXPECT_FALSE(getEnvOutcome);
-        EXPECT_EQ(AZ::Utils::GetEnvErrorCode::BufferTooSmall, getEnvOutcome.GetError().m_ec);\
+        EXPECT_EQ(AZ::Utils::GetEnvErrorCode::BufferTooSmall, getEnvOutcome.GetError().m_errorCode);
         EXPECT_EQ(512, getEnvOutcome.GetError().m_requiredSize);
         EXPECT_NE(expectedValue, testValue);
 

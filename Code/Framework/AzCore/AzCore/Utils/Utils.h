@@ -164,20 +164,20 @@ namespace AZ
             AZStd::string_view filePath, size_t maxFileSize = AZStd::numeric_limits<size_t>::max());
 
         //! error code value returned when GetEnv fails
-        enum GetEnvErrorCode
+        enum class GetEnvErrorCode
         {
             EnvNotSet = 1,
             BufferTooSmall
         };
 
-        //! Return result from GetEnv when an environment variable values
+        //! Return result from GetEnv when an environment variable value
         //! fails to be returned
         //! The `m_requiredSize` value is set to the needed size of the buffer
         //! when the GetEnvErrorCode is set to `BufferTooSmall`
         struct GetEnvErrorResult
         {
             //! Contains the error code of the GetEnv operation
-            GetEnvErrorCode m_ec{};
+            GetEnvErrorCode m_errorCode{};
             //! Set only when the error code is `BufferTooSmall`
             size_t m_requiredSize{};
         };
@@ -191,7 +191,7 @@ namespace AZ
         //! variable value, a GetEnvErrorResult will be returned
         GetEnvOutcome GetEnv(AZStd::span<char> envvalueBuffer, const char* envname);
 
-        //! Queries if envirnment variable is set
+        //! Queries if environment variable is set
         //! @param envname The environment variable name
         //! @return Return true if successful, otherwise false
         bool IsEnvSet(const char* envname);
