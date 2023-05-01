@@ -329,7 +329,7 @@ namespace Compression
                 "is needed or the number of read slots can be reduced."));
             statistics.push_back(AZ::IO::Statistic::CreateByteSize(
                 m_name, "Buffer memory", m_memoryUsage,
-                "The total amount of memory in megabytes used by the decompressor. This is depended on the compressed file sizes and may "
+                "The total amount of memory in megabytes used by the decompressor. This is dependent on the compressed file sizes and may "
                 "improve by reducing the file sizes of the largest files in the archive."));
 
             double averageJobStartDelay = m_decompressionJobDelayMicroSec.CalculateAverage() * usToMs;
@@ -553,7 +553,7 @@ namespace Compression
                 return;
             }
         }
-        AZ_Assert(false, "%u of %u read slots are use in the DecompressorRegistrarEntry, but no empty slot was found.", m_numInFlightReads, m_maxNumReads);
+        AZ_Assert(false, "%u of %u read slots are used in the DecompressorRegistrarEntry, but no empty slot was found.", m_numInFlightReads, m_maxNumReads);
     }
 
     void DecompressorRegistrarEntry::FinishArchiveRead(AZ::IO::FileRequest* readRequest, AZ::u32 readSlot)
@@ -682,7 +682,8 @@ namespace Compression
                     ++m_numRunningTasks;
                 }
 
-                AZ_Assert(m_taskGraphEvent->IsSignaled() == false, "Decompression has been started on another thread. while executing this function");
+                AZ_Assert(m_taskGraphEvent->IsSignaled() == false, "Decompression has been started on another thread"
+                    " while executing this function");
                 taskGraph.SubmitOnExecutor(m_taskExecutor, m_taskGraphEvent.get());
 
                 m_readRequests[readSlot] = nullptr;

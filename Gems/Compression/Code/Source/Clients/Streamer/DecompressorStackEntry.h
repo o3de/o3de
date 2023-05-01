@@ -52,7 +52,7 @@ namespace Compression
 
         //! Maximum number of reads that are kept in flight.
         AZ::u32 m_maxNumReads{ 2 };
-        //! Maximum number of decompression task that can run simultaneously.
+        //! Maximum number of decompression tasks that can run simultaneously.
         AZ::u32 m_maxNumTasks{ 2 };
     };
 
