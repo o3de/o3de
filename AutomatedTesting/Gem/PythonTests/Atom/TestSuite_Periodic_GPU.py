@@ -39,6 +39,11 @@ atom_feature_test_list = [
     )
 ]
 
+atom_render_pipeline_list = [
+     pytest.param("passes/MainRenderPipeline.azasset"),
+     pytest.param("passes/LowEndRenderPipeline.azasset")
+]
+
 # default names are windows
 launcher_name = "AutomatedTesting.GameLauncher.exe"
 ap_name = "AssetProcessor.exe"
@@ -51,11 +56,12 @@ if LINUX:
     ap_name = "AssetProcessor"
 
 
-def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path, compare_tolerance):
+def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
         game_launcher = launcher_helper.create_game_launcher(workspace)
         game_launcher.args.extend([ f'--rhi={rhi} ',
                                     f'--run-automation-suite={test_script} ',
                                     '--exit-on-automation-end ',
+                                    f'--r_default_pipeline_name={render_pipeline}',
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/LevelPath={level_path}" ',
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/TestGroupName={test_name}" ',
                                     f'--regset="/O3DE/ScriptAutomation/ImageCapture/ImageName={screenshot_name}" ',
@@ -78,27 +84,29 @@ def run_test(workspace, rhi, test_name, screenshot_name, test_script, level_path
 @pytest.mark.skipif(not WINDOWS, reason="DX12 is only supported on windows")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows"])
+@pytest.mark.parametrize("render_pipeline", atom_render_pipeline_list)
 class TestPeriodicSuite_DX12_GPU(object):
 
     @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance", atom_feature_test_list)
     def test_Atom_FeatureTests_DX12(
-            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance):
+            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
         """
         Run Atom on DX12 and screen capture tests on parameterised levels
         """
-        run_test(workspace, "dx12", test_name, screenshot_name, test_script, level_path, compare_tolerance)
+        run_test(workspace, "dx12", test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline)
 
 @pytest.mark.SUITE_periodic
 @pytest.mark.REQUIRES_gpu
 @pytest.mark.skipif(not WINDOWS and not LINUX, reason="Vulkan is only supported on windows, linux, & android")
 @pytest.mark.parametrize("project", ["AutomatedTesting"])
 @pytest.mark.parametrize("launcher_platform", ["windows, linux"])
+@pytest.mark.parametrize("render_pipeline", atom_render_pipeline_list)
 class TestPeriodicSuite_Vulkan_GPU(object):
 
     @pytest.mark.parametrize("test_name, screenshot_name, test_script, level_path, compare_tolerance", atom_feature_test_list)
     def test_Atom_FeatureTests_Vulkan(
-            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance):
+            self, workspace, launcher_platform, test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline):
         """
         Run Atom on Vulkan and screen capture tests on parameterised levels
         """
-        run_test(workspace, "vulkan", test_name, screenshot_name, test_script, level_path, compare_tolerance)
+        run_test(workspace, "vulkan", test_name, screenshot_name, test_script, level_path, compare_tolerance, render_pipeline)
