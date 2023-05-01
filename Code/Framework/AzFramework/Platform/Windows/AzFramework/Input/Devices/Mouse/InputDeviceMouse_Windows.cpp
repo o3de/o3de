@@ -284,8 +284,6 @@ namespace AzFramework
         // Normalize the cursor position relative to the content (client rect) of the focus window
         const float clientRectWidth = static_cast<float>(clientRect.right - clientRect.left);
         const float clientRectHeight = static_cast<float>(clientRect.bottom - clientRect.top);
-
-
         const float normalizedCursorPositionX = static_cast<float>(cursorPos.x) / clientRectWidth;
         const float normalizedCursorPositionY = static_cast<float>(cursorPos.y) / clientRectHeight;
 
