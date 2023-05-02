@@ -37,7 +37,7 @@ namespace AZ::ComponentApplicationLifecycle
         auto eventSignalKey = FixedValueString::format("%.*s/%.*s", AZ_STRING_ARG(ApplicationLifecycleEventSignalKey),
             AZ_STRING_ARG(eventName));
 
-        return settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventSignalKey);
+        return static_cast<bool>(settingsRegistry.MergeSettings(eventValue, Format::JsonMergePatch, eventSignalKey));
     }
 
     bool RegisterEvent(AZ::SettingsRegistryInterface& settingsRegistry, AZStd::string_view eventName)
@@ -50,7 +50,7 @@ namespace AZ::ComponentApplicationLifecycle
             FixedValueString eventRegistrationKey{ ApplicationLifecycleEventRegistrationKey };
             eventRegistrationKey += '/';
             eventRegistrationKey += eventName;
-            return settingsRegistry.MergeSettings(R"({})", Format::JsonMergePatch, eventRegistrationKey);
+            return static_cast<bool>(settingsRegistry.MergeSettings(R"({})", Format::JsonMergePatch, eventRegistrationKey));
         }
 
         return true;

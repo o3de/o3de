@@ -705,7 +705,7 @@ namespace AssetProcessor
     #if defined(AZ_DEBUG_BUILD) || defined(AZ_PROFILE_BUILD)
         if (commandLine)
         {
-            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, true);
+            AZ::SettingsRegistryMergeUtils::MergeSettingsToRegistry_CommandLine(*settingsRegistry, *commandLine, {});
         }
     #endif
 
@@ -1347,7 +1347,7 @@ namespace AssetProcessor
         // file to the settings registry
         if (configFile.Extension() == ".setreg")
         {
-            return settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch).IsSuccess();
+            return static_cast<bool>(settingsRegistry.MergeSettingsFile(configFile.Native(), AZ::SettingsRegistryInterface::Format::JsonMergePatch));
         }
 
         AZ::SettingsRegistryMergeUtils::ConfigParserSettings configParserSettings;
