@@ -1114,7 +1114,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
     // Reset the default view panes to be opened. Used for restoring default layout and component entity layout.
     const QtViewPane* entityOutlinerViewPane = OpenPane(LyViewPane::EntityOutliner, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* assetBrowserViewPane = OpenPane(LyViewPane::AssetBrowser, QtViewPane::OpenMode::UseDefaultState);
-    const QtViewPane* assetBrowserInspectorPane = OpenPane(LyViewPane::AssetBrowserInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* entityInspectorViewPane = OpenPane(LyViewPane::EntityInspector, QtViewPane::OpenMode::UseDefaultState);
     const QtViewPane* consoleViewPane = OpenPane(LyViewPane::Console, QtViewPane::OpenMode::UseDefaultState);
 
@@ -1166,17 +1165,6 @@ void QtViewPaneManager::RestoreDefaultLayout(bool resetSettings)
             {
                 m_mainWindow->resizeDocks({ assetBrowserViewPane->m_dockWidget }, { newHeight }, Qt::Vertical);
             }
-        }
-
-        if (assetBrowserInspectorPane)
-        {
-            m_mainWindow->addDockWidget(Qt::BottomDockWidgetArea, assetBrowserInspectorPane->m_dockWidget);
-            assetBrowserInspectorPane->m_dockWidget->setFloating(false);
-
-            static const float assetBrowserInspectorWidthPercentage = 0.15f;
-            int newWidth = static_cast<int>((float)screenWidth * assetBrowserInspectorWidthPercentage);
-
-            m_mainWindow->resizeDocks({ assetBrowserInspectorPane->m_dockWidget }, { newWidth }, Qt::Horizontal);
         }
 
         if (entityInspectorViewPane)

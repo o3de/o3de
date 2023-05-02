@@ -407,9 +407,6 @@ void AzAssetBrowserWindow::RegisterViewClass()
     options.preferedDockingArea = Qt::BottomDockWidgetArea;
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(LyViewPane::AssetBrowser, LyViewPane::CategoryTools, options);
 
-    options.preferedDockingArea = Qt::BottomDockWidgetArea;
-    AzToolsFramework::RegisterViewPane<AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget>(LyViewPane::AssetBrowserInspector, LyViewPane::CategoryTools, options);
-
     options.showInMenu = false;
     const QString name = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
     AzToolsFramework::RegisterViewPane<AzAssetBrowserWindow>(qPrintable(name), LyViewPane::CategoryTools, options);
