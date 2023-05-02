@@ -434,7 +434,9 @@ namespace AzFramework
         // taking into account the title bar and window border.
         AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, false);
 
-        // By default, SetWindowPos() will clamp the size of the window to the size of the screen.
+        // By default, SetWindowPos() will clamp the size of the window to the maximum size of the screen.
+        // This doesn't take window positioning into account, so it's not clamping the window to be fully visible,
+        // it's just clamping it to a maximum *possible* visible size.
         // If we want to circumvent this behavior, the solution is to add the flag SWP_NOSENDCHANGING
         // when setting the new window pos. Without this flag, Windows will send out the WM_WINDOWPOSCHANGING message
         // and then the WM_GETMINMAXINFO message, so that the window size will be clipped to the screen max size.
@@ -578,8 +580,9 @@ namespace AzFramework
                         SWP_FRAMECHANGED | SWP_NOACTIVATE);
         ShowWindow(m_win32Handle, SW_NORMAL);
 
-        // Sometimes, the above code doesn't set the window above the taskbar, even though other times it does. <shrug>
-        // By setting topmost a secondtime with ASYNCWINDOWPOS the setting seems to stick 100% of the time.
+        // Sometimes, the above code doesn't set the window above the taskbar, even though other times it does.
+        // This might be a bug in the Windows SDK?
+        // By setting topmost a second time with ASYNCWINDOWPOS, the topmost setting seems to apply correctly 100% of the time.
         SetWindowPos(m_win32Handle, HWND_TOPMOST, 0, 0, 0, 0, SWP_ASYNCWINDOWPOS | SWP_NOSIZE | SWP_SHOWWINDOW | SWP_NOMOVE);
 
         WindowNotificationBus::Event(GetWindowHandle(), &WindowNotificationBus::Events::OnFullScreenModeChanged, false);

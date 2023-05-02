@@ -36,6 +36,9 @@ namespace AzFramework
     struct WindowPosOptions
     {
         //! This flag will allow the window to be resized bigger than the screen width or height.
+        //! The default setting of false will clamp the window size to the maximum possible size that can
+        //! fit on the screen, independent of window position. A portion of the window still may not be
+        //! visible, but the window has the ability to fit fully on the screen.
         bool m_ignoreScreenSizeLimit = false;
     };
 
