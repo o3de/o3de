@@ -7,6 +7,7 @@
  */
 
 #include <viewsrg.srgi>
+#include <Atom/Features/InstancedTransforms.azsli>
 #include <Atom/Features/PBR/DefaultObjectSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassSrg.azsli>
 #include <Atom/Features/PBR/ForwardPassOutput.azsli>
@@ -56,11 +57,11 @@ struct VSOutput
 
 #include <Atom/Features/Vertex/VertexHelper.azsli>
 
-VSOutput DebugShaderPBR_MainPassVS(VSInput IN)
+VSOutput DebugShaderPBR_MainPassVS(VSInput IN, uint instanceId : SV_InstanceID)
 {
     VSOutput OUT;
  
-    float3 worldPosition = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_position, 1.0)).xyz;
+    float3 worldPosition = mul(GetObjectToWorldMatrix(instanceId), float4(IN.m_position, 1.0)).xyz;
  
     VertexHelper(IN, OUT, worldPosition);
 

@@ -51,6 +51,7 @@ namespace AZ
 
             friend class ImageSystem;
             friend class StreamingImageController;
+            friend class StreamingImageContext;
         public:
             AZ_INSTANCE_DATA(StreamingImage, "{E48A7FF0-3065-42C6-9673-4FE7C8905629}", Image);
             AZ_CLASS_ALLOCATOR(StreamingImage, SystemAllocator);
@@ -97,6 +98,9 @@ namespace AZ
             
             //! Queues an expansion to the mip chain that is one level higher than the resident mip chain.
             void QueueExpandToNextMipChainLevel();
+
+            //! Cancel ongoing mip expanding
+            void CancelExpanding();
 
             //! Performs the GPU mip chain expansion for any contiguous range of ready (loaded) mip chain assets. Returns
             //! the result of the RHI pool residency update. If no new mip chains are available, this will no-op

@@ -85,6 +85,7 @@ namespace AZ::IO
     {
         AZStd::swap(m_fileName, other.m_fileName);
         AZStd::swap(m_handle, other.m_handle);
+        AZStd::swap(m_closeOnDestruction, other.m_closeOnDestruction);
     }
 
     SystemFile& SystemFile::operator=(SystemFile&& other)
@@ -93,8 +94,10 @@ namespace AZ::IO
         Close();
         m_fileName = AZStd::move(other.m_fileName);
         m_handle = AZStd::move(other.m_handle);
+        m_closeOnDestruction = other.m_closeOnDestruction;
         other.m_fileName = {};
         other.m_handle = AZ_TRAIT_SYSTEMFILE_INVALID_HANDLE;
+        other.m_closeOnDestruction = true;
 
         return *this;
     }

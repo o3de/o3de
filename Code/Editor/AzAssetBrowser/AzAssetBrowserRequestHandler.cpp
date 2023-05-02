@@ -544,7 +544,21 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
 
                 AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
                 
+                if (thumbnailView)
+                {
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ThumbnailView);
+                }
+                else if (expandedTableView)
+                {
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::TableView);
+                }
+                else
+                {
+                    newAssetBrowser->SetCurrentMode(AssetBrowserMode::ListView);
+                }
+
                 newAssetBrowser->SelectAsset(fullFilePath.c_str());
+                  
             });
 
             AZStd::vector<const ProductAssetBrowserEntry*> products;

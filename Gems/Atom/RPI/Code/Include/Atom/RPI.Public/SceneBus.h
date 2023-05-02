@@ -97,7 +97,7 @@ namespace AZ
             static const AZ::EBusAddressPolicy AddressPolicy = AZ::EBusAddressPolicy::ById;
             using BusIdType = SceneId;
 
-            virtual void OnSceneNotifictaionHandlerConnected(SceneNotification* handler) = 0;
+            virtual void OnSceneNotificationHandlerConnected(SceneNotification* handler) = 0;
 
             //! Causes an update of the PipelineStateLookup during the next render tick,
             //! after queued Pipeline changes are executed.
@@ -111,7 +111,7 @@ namespace AZ
             typename Bus::HandlerNode& handler, typename Bus::Context::ConnectLockGuard& connectLock, const typename Bus::BusIdType& id)
         {
             EBusConnectionPolicy<Bus>::Connect(busPtr, context, handler, connectLock, id);
-            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotifictaionHandlerConnected, handler);
+            SceneRequestBus::Event(id, &SceneRequestBus::Events::OnSceneNotificationHandlerConnected, handler);
         }
     } // namespace RPI
 } // namespace AZ

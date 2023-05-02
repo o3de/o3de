@@ -185,6 +185,28 @@ namespace AzFramework
         }
     }
 
+    void OctreeNode::Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const IVisibilityScene::EnumerateCallback& callback) const
+    {
+        if (AZ::ShapeIntersection::Overlaps(includeFrustum, m_bounds) && !AZ::ShapeIntersection::Contains(excludeFrustum, m_bounds))
+        {
+            // Invoke the callback for the current node
+            if (!m_entries.empty())
+            {
+                callback({ m_bounds, m_entries });
+            }
+
+            if (m_children != nullptr)
+            {
+                // If this is not a leaf node, recurse into the children
+                const uint32_t childCount = GetChildNodeCount();
+                for (uint32_t child = 0; child < childCount; ++child)
+                {
+                    m_children[child].Enumerate(includeFrustum, excludeFrustum, callback);
+                }
+            }
+        }
+    }
+
     void OctreeNode::EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const
     {
         // Invoke the callback for the current node
@@ -416,6 +438,12 @@ namespace AzFramework
     {
         AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
         m_root.Enumerate(frustum, callback);
+    }
+
+    void OctreeScene::Enumerate(const AZ::Frustum& includeFrustum, const AZ::Frustum& excludeFrustum, const EnumerateCallback& callback) const
+    {
+        AZStd::shared_lock<AZStd::shared_mutex> lock(m_sharedMutex);
+        m_root.Enumerate(includeFrustum, excludeFrustum, callback);
     }
 
     void OctreeScene::EnumerateNoCull(const IVisibilityScene::EnumerateCallback& callback) const
