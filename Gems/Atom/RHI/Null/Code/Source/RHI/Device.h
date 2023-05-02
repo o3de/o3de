@@ -30,6 +30,7 @@ namespace AZ
             //////////////////////////////////////////////////////////////////////////
             // RHI::Device
             RHI::ResultCode InitInternal([[maybe_unused]] RHI::PhysicalDevice& physicalDevice) override { return RHI::ResultCode::Success; }
+            RHI::ResultCode InitInternalBindlessSrg([[maybe_unused]] const RHI::BindlessSrgDescriptor& bindlessSrgDesc) override { return RHI::ResultCode::Success;}
             void ShutdownInternal() override {}
             void CompileMemoryStatisticsInternal([[maybe_unused]] RHI::MemoryStatisticsBuilder& builder) override {}
             void UpdateCpuTimingStatisticsInternal() const override {}

@@ -34,7 +34,7 @@ namespace AZ
             ResultCode InitDevice();
 
             //! This function initializes the rest of the RHI/RHI backend. 
-            void Init();
+            void Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> srgLayout = nullptr);
             void Shutdown();
 
             //! An external callback to build the frame graph.

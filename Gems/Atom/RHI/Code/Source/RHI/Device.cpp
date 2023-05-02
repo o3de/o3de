@@ -322,5 +322,52 @@ namespace AZ
         {
             return m_lastExecutingScope;
         }
+
+        ResultCode Device::InitBindlessSrg(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
+        {
+            BindlessSrgDescriptor bindlessSrgDesc;
+            // Cache indices associated with each bindless resource type
+            for (const RHI::ShaderInputImageUnboundedArrayDescriptor& shaderInputImageUnboundedArray : bindlessSrgLayout->GetShaderInputListForImageUnboundedArrays())
+            {
+                if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_Texture2D).data()))
+                {
+                    bindlessSrgDesc.m_roTextureIndex = shaderInputImageUnboundedArray.m_registerId;
+                }
+                else if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_RWTexture2D).data()))
+                {
+                    bindlessSrgDesc.m_rwTextureIndex = shaderInputImageUnboundedArray.m_registerId;
+                }
+                else if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_TextureCube).data()))
+                {
+                    bindlessSrgDesc.m_roTextureCubeIndex = shaderInputImageUnboundedArray.m_registerId;
+                }
+            }
+
+            for (const RHI::ShaderInputBufferUnboundedArrayDescriptor& shaderInputImageUnboundedArray : bindlessSrgLayout->GetShaderInputListForBufferUnboundedArrays())
+            {
+                if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_ByteAddressBuffer).data()))
+                {
+                    bindlessSrgDesc.m_roBufferIndex = shaderInputImageUnboundedArray.m_registerId;
+                }
+                else if (strstr(shaderInputImageUnboundedArray.m_name.GetCStr(), ToString(BindlessResourceType::m_RWByteAddressBuffer).data()))
+                {
+                    bindlessSrgDesc.m_rwBufferIndex = shaderInputImageUnboundedArray.m_registerId;
+                }
+            }
+
+            bindlessSrgDesc.m_bindlesSrgBindingSlot = bindlessSrgLayout->GetBindingSlot();
+
+            AZ_Assert(bindlessSrgDesc.m_roTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only textures");
+            AZ_Assert(bindlessSrgDesc.m_rwTextureIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write textures");
+            AZ_Assert(bindlessSrgDesc.m_roTextureCubeIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only cube textures");
+            AZ_Assert(bindlessSrgDesc.m_roBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read only buffers");
+            AZ_Assert(bindlessSrgDesc.m_rwBufferIndex != AZ::RHI::InvalidIndex, "Invalid register id index for bindless read write buffers");
+            AZ_Assert(
+                (bindlessSrgLayout->GetGroupSizeForImageUnboundedArrays() + bindlessSrgLayout->GetGroupSizeForBufferUnboundedArrays()) == static_cast<uint32_t>(BindlessResourceType::Count),
+                "Number of resource types supported in the shader mismatches with the BindlessResourceType enum");
+            AZ_Assert(bindlessSrgDesc.m_bindlesSrgBindingSlot != AZ::RHI::InvalidIndex, "Invalid binding slot id for bindless srg");
+
+            return InitInternalBindlessSrg(bindlessSrgDesc);
+        }
     }
 }

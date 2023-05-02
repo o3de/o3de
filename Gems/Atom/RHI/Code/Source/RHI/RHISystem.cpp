@@ -44,8 +44,14 @@ namespace AZ
             return InitInternalDevices();
         }
     
-        void RHISystem::Init()
+        void RHISystem::Init(RHI::Ptr<RHI::ShaderResourceGroupLayout> bindlessSrgLayout)
         {
+            //! If a bindless srg layout is not provided we simply skip initialization with the assumption that no one will use bindless srg
+            if (bindlessSrgLayout && m_devices[MultiDevice::DefaultDeviceIndex]->InitBindlessSrg(bindlessSrgLayout) != RHI::ResultCode::Success)
+            {
+                AZ_Assert(false, "RHISystem", "Bindless SRG was not initialized.\n");
+            }
+
             Ptr<RHI::PlatformLimitsDescriptor> platformLimitsDescriptor = m_devices[MultiDevice::DefaultDeviceIndex]->GetDescriptor().m_platformLimitsDescriptor;
 
             RHI::FrameSchedulerDescriptor frameSchedulerDescriptor;

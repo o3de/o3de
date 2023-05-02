@@ -25,7 +25,7 @@ namespace AZ
         {
         public:
             BindlessArgumentBuffer() = default;
-            RHI::ResultCode Init(Device* m_device);
+            RHI::ResultCode Init(Device* device, const AZ::RHI::BindlessSrgDescriptor& bindlessSrgDesc);
 
             //! Provide access to the bindless argument buffer
             RHI::Ptr<ArgumentBuffer> GetBindlessArgbuffer() const;
@@ -76,6 +76,10 @@ namespace AZ
                 CommandEncoderType commandEncoderType,
                 ArgumentBuffer::ResourcesPerStageForGraphics& untrackedResourcesGfxRead,
                 ArgumentBuffer::ResourcesForCompute& untrackedResourceComputeRead);
+
+            //! Return the binding slot for the bindless srg
+            uint32_t GetBindlessSrgBindingSlot();
+
         private:
 
             //Bindless ABs + the rootAB which will act as a container. This is used for unbounded arrays.
@@ -89,11 +93,14 @@ namespace AZ
             RHI::Ptr<ArgumentBuffer> m_boundedArgBuffer;
 
             // Free list allocator per bindless resource type
-            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(RHI::ShaderResourceGroupData::BindlessResourceType::Count)];
+            RHI::FreeListAllocator m_allocators[static_cast<uint32_t>(BindlessResourceType::Count)];
             Device* m_device = nullptr;
             bool m_unboundedArraySupported = false;
             // Mutex to protect bindless heap related updates
             AZStd::mutex m_mutex;
+
+            // Descriptor to hold information related to binding indices of bindless srg
+            AZ::RHI::BindlessSrgDescriptor m_bindlessSrgDesc;
         };
     }
 }

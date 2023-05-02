@@ -421,7 +421,7 @@ namespace AZ
             for (const ImageView* imageView : imageViews)
             {
                 it->second.m_bindlessResources.push_back(imageView);
-                BindlessResourceType resourceType = BindlessResourceType::ReadTexture;
+                BindlessResourceType resourceType = BindlessResourceType::m_Texture2D;
                 //Update the indirect buffer with view indices
                 if (viewReadOnly)
                 {
@@ -429,7 +429,7 @@ namespace AZ
                 }
                 else
                 {
-                    resourceType = BindlessResourceType::ReadWriteTexture;
+                    resourceType = BindlessResourceType::m_RWTexture2D;
                     outIndices[i] = imageView->GetBindlessReadWriteIndex();
                 }
                 it->second.m_bindlessResourceType = resourceType;
@@ -466,7 +466,7 @@ namespace AZ
             for (const BufferView* bufferView : bufferViews)
             {
                 it->second.m_bindlessResources.push_back(bufferView);
-                BindlessResourceType resourceType = BindlessResourceType::ReadBuffer;
+                BindlessResourceType resourceType = BindlessResourceType::m_ByteAddressBuffer;
                 //Update the indirect buffer with view indices
                 if (viewReadOnly)
                 {
@@ -474,7 +474,7 @@ namespace AZ
                 }
                 else
                 {
-                    resourceType = BindlessResourceType::ReadWriteBuffer;
+                    resourceType = BindlessResourceType::m_RWByteAddressBuffer;
                     outIndices[i] = bufferView->GetBindlessReadWriteIndex();
                 }
                 it->second.m_bindlessResourceType = resourceType;

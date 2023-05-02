@@ -12,6 +12,16 @@
 #include <Atom/RHI/ImageView.h>
 #include <Atom/RHI/Buffer.h>
 #include <Atom/RHI/BufferView.h>
+#include <AzCore/Preprocessor/Enum.h>
+
+AZ_ENUM_CLASS_WITH_UNDERLYING_TYPE(BindlessResourceType, uint32_t,
+            m_Texture2D,                     //ReadTexture
+            m_RWTexture2D,                   //ReadWriteTexture
+            m_TextureCube,                   //ReadTextureCube
+            m_ByteAddressBuffer,             //ReadBuffer
+            m_RWByteAddressBuffer,           //ReadWriteBuffer
+            Count
+        );
 
 namespace AZ
 {
@@ -204,25 +214,6 @@ namespace AZ
                 ImageViewUnboundedArrayMask = AZ_BIT(static_cast<uint32_t>(ResourceType::ImageViewUnboundedArray)),
                 SamplerMask = AZ_BIT(static_cast<uint32_t>(ResourceType::Sampler))
             };
-
-            //This enum order needs to match the order in Bindless.azsli
-            enum class BindlessResourceType : uint32_t
-            {
-                ReadTexture = 0,
-                ReadWriteTexture,
-                ReadBuffer,
-                ReadWriteBuffer,
-                ReadTextureCube,
-                Count
-            };
-
-            // This number matches FrequencyId of SRG_Bindless within SRGSemantics.azsli
-            // ShaderResourceGroupSemantic SRG_Bindless
-            // {
-            //     FrequencyId = 7;
-            // };
-            // TODO::Need a more data driven way here - https://github.com/o3de/o3de/issues/13324
-            static const uint32_t BindlessSRGFrequencyId = 7;
 
             // Structure to hold all the bindless views and the BindlessResourceType related to it
             struct BindlessResourceViews
