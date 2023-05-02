@@ -861,16 +861,23 @@ namespace AZ::DocumentPropertyEditor
         using Nodes::PropertyEditor;
         using Nodes::PropertyRefreshLevel;
 
-        // Trigger ChangeNotify
-        auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
-        if (changeNotify.IsSuccess())
+        PropertyRefreshLevel level = PropertyRefreshLevel::None;
+
+        auto notifyFunctions = { PropertyEditor::ParentChangeNotify, PropertyEditor::ChangeNotify };
+
+        // Trigger notify functions in order, if they exist
+        for (auto function : notifyFunctions)
         {
-            // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-            PropertyRefreshLevel level = changeNotify.GetValue();
-            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
+            auto functionResult = function.InvokeOnDomNode(domNode);
+            if (functionResult.IsSuccess())
             {
-                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
+                // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
+                level = functionResult.GetValue();
             }
+        }
+        if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
+        {
+            PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
         }
     }
 

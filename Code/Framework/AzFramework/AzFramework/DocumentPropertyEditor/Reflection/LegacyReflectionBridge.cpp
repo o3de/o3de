@@ -429,14 +429,18 @@ namespace AZ::Reflection
                 CacheAttributes();
 
                 // Inherit the change notify attribute from our parent
-                const Name changeNotify = Name("ChangeNotify");
-                if (auto changeNotifyValue = Find(changeNotify); !changeNotifyValue || changeNotifyValue->IsNull())
+                const auto changeNotify = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
+                const auto parentChangeNotify = DocumentPropertyEditor::Nodes::PropertyEditor::ParentChangeNotify.GetName();
+
+                if (auto changeNotifyValue = Find(Name(), changeNotify, parentData); changeNotifyValue && !changeNotifyValue->IsNull())
                 {
-                    changeNotifyValue = Find(Name(), changeNotify, parentData);
-                    if (changeNotifyValue && !changeNotifyValue->IsNull())
-                    {
-                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotify, *changeNotifyValue });
-                    }
+                    nodeData->m_cachedAttributes.push_back(
+                        { Name(), parentChangeNotify, *changeNotifyValue });
+                }
+                else if (auto parentChangeNotifyValue = Find(Name(), parentChangeNotify, parentData);
+                         parentChangeNotifyValue && !parentChangeNotifyValue->IsNull())
+                {
+                    nodeData->m_cachedAttributes.push_back({ Name(), parentChangeNotify, *parentChangeNotifyValue });
                 }
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;
