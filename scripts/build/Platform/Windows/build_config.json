@@ -483,7 +483,7 @@
     "COMMAND": "pytest_windows.cmd",
     "PARAMETERS": {
       "PYTEST_PATH": "cmake\\Platform\\Windows\\Packaging\\Tests",
-      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!/development/Latest/Windows/o3de_installer.exe --project-path=%WORKSPACE%\\TestProject"
+      "PYTEST_PARAMETERS": "--capture=no --log-file=%WORKSPACE%\\installer_test.log --install-root=%WORKSPACE%\\o3de_install --installer-uri=!INSTALLER_S3_BUCKET!!INSTALLER_S3_PATH! --project-path=%WORKSPACE%\\TestProject"
     }
   },
   "install_profile_pipe": {

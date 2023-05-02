@@ -136,6 +136,11 @@ namespace AzToolsFramework
             m_rootIndex = index;
         }
 
+        const QModelIndex AssetBrowserExpandedTableViewProxyModel::GetRootIndex() const
+        {
+            return m_rootIndex;
+        }
+
         bool AssetBrowserExpandedTableViewProxyModel::GetShowSearchResultsMode() const
         {
             return m_searchResultsMode;
