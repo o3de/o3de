@@ -55,7 +55,7 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetFolderFilter() const;
 
-            bool SearchWidget::GetIsEngineFilterActive();
+            bool GetIsEngineFilterActive();
             bool GetIsUnusableProductsFilterActive();
             bool GetIsFolderFilterActive();
 
