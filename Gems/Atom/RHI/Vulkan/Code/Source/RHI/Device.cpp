@@ -658,8 +658,6 @@ namespace AZ
 
             m_nullDescriptorManager.reset();
 
-            m_commandQueueContext.Shutdown();
-
             m_bindlessDescriptorPool.Shutdown();
             m_stagingBufferPool.reset();
             m_constantBufferPool.reset();
@@ -669,11 +667,14 @@ namespace AZ
             m_samplerCache.first.Clear();
             m_pipelineLayoutCache.first.Clear();
             m_semaphoreAllocator.Shutdown();
-            m_asyncUploadQueue.reset();
-            m_commandListAllocator.Shutdown();
 
             // Make sure this is last to flush any objects released in the above calls.
             m_releaseQueue.Shutdown();
+
+            // The Objects in the release-queue need the command / upload queues for shutting down
+            m_asyncUploadQueue.reset();
+            m_commandListAllocator.Shutdown();
+            m_commandQueueContext.Shutdown();
         }
 
         void Device::ShutdownInternal()
