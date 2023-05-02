@@ -946,7 +946,7 @@ void QtViewPaneManager::TogglePane(const QString& name)
     pane = GetPane(name);
     if (!pane)
     {
-        Q_ASSERT(false);
+        Q_ASSERT_X(false, "QtViewPaneManager", ("Failed to open pane " + name).toUtf8().data());
         return;
     }
 
