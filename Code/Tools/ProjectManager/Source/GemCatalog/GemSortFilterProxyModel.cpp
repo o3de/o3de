@@ -30,7 +30,8 @@ namespace O3DE::ProjectManager
 
         const GemInfo& gemInfo = m_sourceModel->GetGemInfo(sourceIndex);
         // Search Bar
-        if (!gemInfo.m_displayName.contains(m_searchString, Qt::CaseInsensitive) &&
+        if (!m_searchString.isEmpty() &&
+            !gemInfo.m_displayName.contains(m_searchString, Qt::CaseInsensitive) &&
             !gemInfo.m_name.contains(m_searchString, Qt::CaseInsensitive) &&
             !gemInfo.m_origin.contains(m_searchString, Qt::CaseInsensitive) &&
             !gemInfo.m_summary.contains(m_searchString, Qt::CaseInsensitive))
@@ -77,7 +78,19 @@ namespace O3DE::ProjectManager
         }
 
         // Update available
-        if (m_updateAvailableFilter && !GemModel::HasUpdates(sourceIndex))
+        if (m_updateAvailableFilter && !GemModel::HasUpdates(sourceIndex, m_compatibleOnlyFilter))
+        {
+            return false;
+        }
+
+        // Compatible
+        if (m_compatibleOnlyFilter && !GemModel::IsCompatible(sourceIndex))
+        {
+            return false;
+        }
+
+        // Missing
+        if (m_gemMissingFilter && !GemModel::IsAddedMissing(sourceIndex))
         {
             return false;
         }
@@ -264,6 +277,8 @@ namespace O3DE::ProjectManager
         m_platformFilter = {};
         m_typeFilter = {};
         m_featureFilter = {};
+        m_updateAvailableFilter = false;
+        m_compatibleOnlyFilter = true;
 
         InvalidateFilter();
     }
@@ -271,6 +286,12 @@ namespace O3DE::ProjectManager
     void GemSortFilterProxyModel::SetUpdateAvailable(bool showGemsWithUpdates)
     {
         m_updateAvailableFilter = showGemsWithUpdates;
+        InvalidateFilter();
+    }
+
+    void GemSortFilterProxyModel::SetCompatibleFilterFlag(bool showCompatibleGemsOnly)
+    {
+        m_compatibleOnlyFilter = showCompatibleGemsOnly;
         InvalidateFilter();
     }
 } // namespace O3DE::ProjectManager

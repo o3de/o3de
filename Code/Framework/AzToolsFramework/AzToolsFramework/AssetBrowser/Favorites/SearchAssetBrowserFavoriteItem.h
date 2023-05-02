@@ -52,7 +52,7 @@ namespace AzToolsFramework
             QString m_name;
             QString m_searchTerm;
             bool m_unusableProductsFilterActive = false;
-            bool m_projectSourceFilterActive = false;
+            bool m_engineFilterActive = false;
             bool m_folderFilterActive = false;
             QList<SavedTypeFilter*> m_typeFilters;
         };

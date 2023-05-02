@@ -113,6 +113,10 @@ namespace AZ
             //! Sets the viewToClip matrix and recalculates the other matrices
             void SetViewToClipMatrix(const AZ::Matrix4x4& viewToClip);
 
+            //! Sets the viewToClip exclusion matrix. This is used by culling to exclude items completely contained inside
+            //! the exclusion frustum. Pass in nullptr to unset.
+            void SetViewToClipExcludeMatrix(const AZ::Matrix4x4* viewToClipExclude);
+            
             //! Sets the viewToClip matrix and recalculates the other matrices for stereoscopic projection
             void SetStereoscopicViewToClipMatrix(const AZ::Matrix4x4& viewToClip, bool reverseDepth = true);
 
@@ -124,6 +128,7 @@ namespace AZ
             const AZ::Matrix4x4& GetViewToWorldMatrix() const;
             const AZ::Matrix4x4& GetViewToClipMatrix() const;
             const AZ::Matrix4x4& GetWorldToClipMatrix() const;
+            const AZ::Matrix4x4* GetWorldToClipExcludeMatrix() const;
             const AZ::Matrix4x4& GetClipToWorldMatrix() const;
 
             AZ::Matrix3x4 GetWorldToViewMatrixAsMatrix3x4() const;
@@ -219,8 +224,10 @@ namespace AZ
             Matrix4x4 m_worldToViewMatrix;
             Matrix4x4 m_viewToWorldMatrix;
             Matrix4x4 m_viewToClipMatrix;
+            AZStd::optional<Matrix4x4> m_viewToClipExcludeMatrix;
             Matrix4x4 m_clipToViewMatrix;
             Matrix4x4 m_clipToWorldMatrix;
+            AZStd::optional<Matrix4x4> m_worldToClipExcludeMatrix;
 
             // View's position in world space
             Vector3 m_position;

@@ -51,7 +51,7 @@ namespace AzToolsFramework
         {
             m_unusableProductsFilterActive = searchWidget->GetIsUnusableProductsFilterActive();
             m_folderFilterActive = searchWidget->GetIsFolderFilterActive();
-            m_projectSourceFilterActive = searchWidget->GetIsProjectSourceAssetFilterActive();
+            m_engineFilterActive = searchWidget->GetIsEngineFilterActive();
 
             m_searchTerm = searchWidget->GetFilterString();
 
@@ -67,7 +67,7 @@ namespace AzToolsFramework
         void SearchAssetBrowserFavoriteItem::WriteToSearchWidget(SearchWidget* searchWidget)
         {
             searchWidget->ToggleUnusableProductsFilter(m_unusableProductsFilterActive);
-            searchWidget->ToggleProjectSourceAssetFilter(m_projectSourceFilterActive);
+            searchWidget->ToggleEngineFilter(m_engineFilterActive);
 
             if (m_folderFilterActive)
             {
@@ -91,7 +91,7 @@ namespace AzToolsFramework
             m_name = settings.value("name").toString();
             m_searchTerm = settings.value("searchTerm").toString();
             m_unusableProductsFilterActive = settings.value("unusableProductsFilterActive").toBool();
-            m_projectSourceFilterActive = settings.value("projectSourceFilterActive").toBool();
+            m_engineFilterActive = settings.value("projectSourceFilterActive").toBool();
             m_folderFilterActive = settings.value("folderFilterActive").toBool();
 
             int filterCount = settings.beginReadArray("typeFilters");
@@ -113,7 +113,7 @@ namespace AzToolsFramework
             settings.setValue("name", m_name);
             settings.setValue("searchTerm", m_searchTerm);
             settings.setValue("unusableProductsFilterActive", m_unusableProductsFilterActive);
-            settings.setValue("projectSourceFilterActive", m_projectSourceFilterActive);
+            settings.setValue("projectSourceFilterActive", m_engineFilterActive);
             settings.setValue("folderFilterActive", m_folderFilterActive);
 
             settings.beginWriteArray("typeFilters", m_typeFilters.size());
