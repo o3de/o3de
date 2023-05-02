@@ -6,6 +6,8 @@
 #
 #
 
+o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Source/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}")
+
 ly_add_target(
     NAME ScriptAutomation.API HEADERONLY
     NAMESPACE Gem
@@ -21,9 +23,11 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         scriptautomation_files.cmake
+        ${pal_dir}/scriptautomation_${PAL_PLATFORM_NAME_LOWERCASE}_files.cmake
     INCLUDE_DIRECTORIES
         PRIVATE
             Source
+            ${pal_dir}
     BUILD_DEPENDENCIES
         PUBLIC
             AZ::AzCore

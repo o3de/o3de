@@ -22,6 +22,7 @@
 #include <AzCore/Settings/SettingsRegistryMergeUtils.h>
 
 #include <AzCore/std/string/string.h>
+#include <AzCore/std/string/string_view.h>
 #include <AzCore/std/optional.h>
 #include <AzCore/IO/Path/Path.h>
 
@@ -33,13 +34,55 @@
 #include <Atom/RPI.Public/Pass/AttachmentReadback.h>
 #include <Atom/RPI.Public/RPISystemInterface.h>
 
-#pragma optimize("", off)
-#pragma inline_depth(0)
+#include <ScriptAutomation_Traits.h>
+
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_app_path, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_PATH, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare app path");
+AZ_CVAR(AZ::CVarFixedString, sa_image_compare_arguments, AZ_TRAIT_SCRIPTAUTOMATION_DEFAULT_IMAGE_COMPARE_ARGUMENTS, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Default image compare arguments");
+AZ_CVAR(bool, sa_launch_image_compare_for_failed_baseline_compare, false, nullptr, AZ::ConsoleFunctorFlags::DontReplicate, "Should ScriptAutomation launch an image compare for every failed screenshot baseline compare");
+
+namespace AZ::Platform
+{
+    bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments);
+}
 
 namespace AZ::ScriptAutomation
 {
-    namespace Utils
+    static constexpr char NewScreenshotPlaceholder[] = "{NewScreenshotPath}";
+    static constexpr char ExpectedScreenshotPlaceholder[] = "{ExpectedScreenshotPath}";
+    static constexpr char TestNamePlaceholder[] = "{TestName}";
+    static constexpr char ImageNamePlaceholder[] = "{ImageName}";
+    static constexpr char PlaceholderEndChar[] = "}";
+
+   namespace Utils
     {
+        void ReplacePlaceholder(AZStd::string& string, const char* placeholderName, const AZStd::string& newValue)
+        {
+            for (auto index = string.find(placeholderName); index != AZStd::string::npos; index = string.find(placeholderName))
+            {
+                auto endIndex = string.find(PlaceholderEndChar, index);
+                string.erase(index, endIndex - index + 1);
+                string.insert(index, newValue);
+            }
+        }
+        void RunImageDiff(
+            const AZStd::string& newImagePath, 
+            const AZStd::string& compareImagePath, 
+            const AZStd::string& testName,
+            const AZStd::string& imageName)
+        {
+            AZStd::string appPath = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_app_path));
+            AZStd::string arguments = static_cast<AZStd::string_view>(static_cast<AZ::CVarFixedString>(sa_image_compare_arguments));
+            ReplacePlaceholder(arguments, NewScreenshotPlaceholder, newImagePath);
+            ReplacePlaceholder(arguments, ExpectedScreenshotPlaceholder, compareImagePath);
+            ReplacePlaceholder(arguments, TestNamePlaceholder, testName);
+            ReplacePlaceholder(arguments, ImageNamePlaceholder, imageName);
+
+            if (!Platform::LaunchProgram(appPath, arguments))
+            {
+                AZ_Error("ScriptAutomation", false, "Failed to launch image diff - \"%s %s\"", appPath.c_str(), arguments.c_str());
+            }
+        }
+
         bool SupportsResizeClientAreaOfDefaultWindow()
         {
             return AzFramework::NativeWindow::SupportsClientAreaResizeOfDefaultWindow();
@@ -760,7 +803,10 @@ namespace AZ::ScriptAutomation
                             toleranceLevel->m_name.c_str()
                         );
 
-                        // TODO: open image compare app if CVAR is set
+                        if (sa_launch_image_compare_for_failed_baseline_compare)
+                        {
+                            Utils::RunImageDiff(screenshotFilePath, baselineFilePath, compareName, imageName);
+                        }
                     }
                     else
                     {
@@ -828,4 +874,3 @@ namespace AZ::ScriptAutomation
         behaviorContext->Method("CaptureBenchmarkMetadata", &Bindings::CaptureBenchmarkMetadata);
     }
 } // namespace AZ::ScriptAutomation
-#pragma optimize("", on)
