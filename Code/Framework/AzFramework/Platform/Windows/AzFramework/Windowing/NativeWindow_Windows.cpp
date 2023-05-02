@@ -325,17 +325,9 @@ namespace AzFramework
                     nativeWindowImpl->SetFullScreenState(false);
                 }
 
-                RECT rect = {};
-                GetWindowRect(nativeWindowImpl->m_win32Handle, &rect);
-
-                SetWindowPos(
-                    nativeWindowImpl->m_win32Handle,
-                    HWND_NOTOPMOST,
-                    rect.left,
-                    rect.top,
-                    rect.right - rect.left,
-                    rect.bottom - rect.top,
-                    SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+                // When becoming inactive, transition from TOPMOST to NOTOPMOST.
+                SetWindowPos(nativeWindowImpl->m_win32Handle,
+                    HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
             }
             else
             {
@@ -344,19 +336,12 @@ namespace AzFramework
                     nativeWindowImpl->m_shouldEnterFullScreenStateOnActivate = false;
                     nativeWindowImpl->SetFullScreenState(true);
                 }
-                else if (!windowFullScreenState)
+                else
                 {
-                    RECT rect = {};
-                    GetWindowRect(nativeWindowImpl->m_win32Handle, &rect);
-
+                    // When becoming active again, transition from NOTOPMOST to TOPMOST.
                     SetWindowPos(
                         nativeWindowImpl->m_win32Handle,
-                        HWND_TOPMOST,
-                        rect.left,
-                        rect.top,
-                        rect.right - rect.left,
-                        rect.bottom - rect.top,
-                        SWP_NOMOVE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
+                        HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE | SWP_NOSENDCHANGING);
                 }
             }
             break;
