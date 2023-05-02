@@ -233,11 +233,26 @@ namespace AzToolsFramework
             for (auto attributeIt = node.MemberBegin(); attributeIt != node.MemberEnd(); ++attributeIt)
             {
                 const AZ::Name& name = attributeIt->first;
+
                 if (name == PropertyEditor::Type.GetName() || name == PropertyEditor::Value.GetName() ||
                     name == PropertyEditor::ValueType.GetName())
                 {
                     continue;
                 }
+                else if (name == PropertyEditor::ParentValue.GetName())
+                {
+                    auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
+                    if (parentValue.has_value())
+                    {
+                        auto parentValuePtr = AZ::Dom::Utils::ValueToType<void*>(parentValue.value()).value_or(nullptr);
+                        m_proxyParentNode.m_instances.push_back(parentValuePtr);
+
+                        // Set up the reference to parent node only if a parent value is available.
+                        m_proxyNode.m_parent = &m_proxyParentNode;
+                    }
+                    continue;
+                }
+
                 AZ::Crc32 attributeId = AZ::Crc32(name.GetStringView());
 
                 AZStd::shared_ptr<AZ::Attribute> marshalledAttribute;
@@ -375,6 +390,7 @@ namespace AzToolsFramework
         AZ::Dom::Value m_domNode;
         QPointer<QWidget> m_widget;
         InstanceDataNode m_proxyNode;
+        InstanceDataNode m_proxyParentNode;
         AZ::SerializeContext::ClassData m_proxyClassData;
         AZ::SerializeContext::ClassElement m_proxyClassElement;
         WrappedType m_proxyValue;
