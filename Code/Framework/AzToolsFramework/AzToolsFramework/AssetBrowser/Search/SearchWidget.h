@@ -55,6 +55,11 @@ namespace AzToolsFramework
 
             QSharedPointer<CompositeFilter> GetFolderFilter() const;
 
+            bool GetIsProjectSourceAssetFilterActive();
+            bool GetIsUnusableProductsFilterActive();
+            bool GetIsFolderFilterActive();
+
+            void SetFilterString(const QString& searchTerm);
             QString GetFilterString() const { return textFilter(); }
             void ClearStringFilter() { ClearTextFilter(); }
 

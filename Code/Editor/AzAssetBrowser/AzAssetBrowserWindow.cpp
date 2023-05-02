@@ -22,6 +22,7 @@
 #include <AzToolsFramework/AssetBrowser/AssetBrowserFilterModel.h>
 #include <AzToolsFramework/AssetBrowser/Entries/AssetBrowserEntryUtils.h>
 #include <AzToolsFramework/AssetBrowser/AssetBrowserEntityInspectorWidget.h>
+#include <AzToolsFramework/AssetBrowser/Favorites/AssetBrowserFavoritesView.h>
 
 // AzQtComponents
 #include <AzQtComponents/Utilities/QtWindowUtilities.h>
@@ -123,6 +124,8 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
 
     this->setMinimumWidth(MinimumWidth);
 
+    m_ui->m_assetBrowserFavoritesWidget->SetSearchWidget(m_ui->m_searchWidget);
+
     if (ed_useNewAssetBrowserTableView)
     {
         m_ui->m_toolsMenuButton->setVisible(true);
@@ -140,6 +143,12 @@ AzAssetBrowserWindow::AzAssetBrowserWindow(QWidget* parent)
         m_ui->m_createButton->setEnabled(true);
         m_ui->m_createButton->setAutoRaise(true);
         m_ui->m_createButton->setPopupMode(QToolButton::InstantPopup);
+
+        //m_ui->m_addToFavoritesButton->setMenu(m_createMenu);
+        m_ui->m_addToFavoritesButton->setEnabled(true);
+        m_ui->m_addToFavoritesButton->setAutoRaise(true);
+        m_ui->m_addToFavoritesButton->setPopupMode(QToolButton::InstantPopup);
+        connect(m_ui->m_addToFavoritesButton, &QAbstractButton::clicked, this, &AzAssetBrowserWindow::AddSearchToFavorites);
 
         connect(m_createMenu, &QMenu::aboutToShow, this, &AzAssetBrowserWindow::AddCreateMenu);
 
@@ -694,6 +703,11 @@ void AzAssetBrowserWindow::SetOneColumnMode()
         m_ui->m_expandedTableView->SetExpandedTableViewActive(false);
         m_ui->m_searchWidget->setEnabled(true);
     }
+}
+
+void AzAssetBrowserWindow::AddSearchToFavorites()
+{
+    AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteSearchFromWidget, m_ui->m_searchWidget);
 }
 
 void AzAssetBrowserWindow::OnDoubleClick(const AssetBrowserEntry* entry)

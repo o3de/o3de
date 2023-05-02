@@ -539,6 +539,30 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
+            bool isFavorite = false;
+            AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+            if (isFavorite)
+            {
+                menu->addAction(
+                    QIcon(QStringLiteral(":/Gallery/Favorites.svg")),
+                    QObject::tr("Remove from Favorites"),
+                    [entry]()
+                    {
+                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+                    });
+            }
+            else
+            {
+                menu->addAction(
+                    QIcon(QStringLiteral(":/Gallery/Favorites.svg")),
+                    QObject::tr("Add to Favorites"),
+                    [entry]()
+                    {
+                        AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
+                    });
+            }
+
             menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath, caller](){
                 auto* browser1 = qobject_cast<AzAssetBrowserWindow*>(QtViewPaneManager::instance()->OpenPane(LyViewPane::AssetBrowser)->Widget());
                 const QString name2 = QString("%1 (2)").arg(LyViewPane::AssetBrowser);
@@ -729,6 +753,30 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
                 action->setShortcut(Qt::Key_F2);
                 action->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+
+                bool isFavorite = false;
+                AssetBrowserFavoriteRequestBus::BroadcastResult(isFavorite, &AssetBrowserFavoriteRequestBus::Events::GetIsFavoriteAsset, entry);
+
+                if (isFavorite)
+                {
+                    menu->addAction(
+                        QIcon(QStringLiteral(":/AssetBrowser/Favorites.svg")),
+                        QObject::tr("Remove from Favorites"),
+                        [entry]()
+                        {
+                            AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::RemoveEntryFromFavorites, entry);
+                        });
+                }
+                else
+                {
+                    menu->addAction(
+                        QIcon(QStringLiteral(":/AssetBrowser/Favorites.svg")),
+                        QObject::tr("Add to favorites"),
+                        [entry]()
+                        {
+                            AssetBrowserFavoriteRequestBus::Broadcast(&AssetBrowserFavoriteRequestBus::Events::AddFavoriteAsset, entry);
+                        });
+                }
 
                 // Add Delete option
                 action = menu->addAction(

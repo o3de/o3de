@@ -276,6 +276,20 @@ namespace AzToolsFramework
             }
         }
 
+        void AssetBrowserEntry::SetDisplayName(const QString name)
+        {
+            m_displayName = name;
+        }
+
+        void AssetBrowserEntry::SetIconPath(const AZ::IO::Path path)
+        {
+            m_iconPath = path;
+        }
+
+        AZ::IO::Path AssetBrowserEntry::GetIconPath() const
+        {
+            return m_iconPath;
+        }
     } // namespace AssetBrowser
 } // namespace AzToolsFramework
 

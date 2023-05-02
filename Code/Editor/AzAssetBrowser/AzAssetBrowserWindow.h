@@ -76,6 +76,7 @@ protected slots:
     void UpdateWidgetAfterFilter();
     void SetTwoColumnMode(QWidget* viewToShow);
     void SetOneColumnMode();
+    void AddSearchToFavorites();
     void OnDoubleClick(const AzToolsFramework::AssetBrowser::AssetBrowserEntry* entry);
 
 private:

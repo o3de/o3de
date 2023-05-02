@@ -12,10 +12,11 @@
 #include <AzCore/std/function/function_fwd.h>
 #include <AzCore/std/string/string.h>
 // warning C4251: 'QBrush::d': class 'QScopedPointer<QBrushData,QBrushDataPointerDeleter>' needs to have dll-interface to be used by clients of class 'QBrush'
-AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option") 
+AZ_PUSH_DISABLE_WARNING(4127 4251, "-Wunknown-warning-option")
 #include <QIcon>
 AZ_POP_DISABLE_WARNING
 
+class QIcon;
 class QMimeData;
 class QWidget;
 class QImage;
@@ -43,6 +44,8 @@ namespace AzToolsFramework
         class AssetSelectionModel;
         class AssetBrowserModel;
         class AssetBrowserEntry;
+        class AssetBrowserFavoriteItem;
+        class SearchWidget;
 
         //////////////////////////////////////////////////////////////////////////
         // AssetBrowserComponent
@@ -399,6 +402,23 @@ namespace AzToolsFramework
             ~AssetBrowserFileActionNotifications() = default;
         };
         using AssetBrowserFileActionNotificationBus = AZ::EBus<AssetBrowserFileActionNotifications>;
+
+        //! Sends requests to the Asset Browser Favorite system.
+        class AssetBrowserFavoriteRequests
+            : public AZ::EBusTraits
+        {
+        public:
+            static const AZ::EBusHandlerPolicy HandlerPolicy = AZ::EBusHandlerPolicy::Single;
+
+            virtual bool GetIsFavoriteAsset(const AssetBrowserEntry* entry) = 0;
+
+            virtual void AddFavoriteAsset(const AssetBrowserEntry* favorite) = 0;
+            virtual void AddFavoriteSearchFromWidget(SearchWidget* searchWidget) = 0;
+
+            virtual void RemoveEntryFromFavorites(const AssetBrowserEntry* favorite) = 0;
+            virtual void RemoveFromFavorites(const AssetBrowserFavoriteItem* favorite) = 0;
+        };
+        using AssetBrowserFavoriteRequestBus = AZ::EBus<AssetBrowserFavoriteRequests>;
 
     } // namespace AssetBrowser
 } // namespace AzToolsFramework

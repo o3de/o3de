@@ -815,6 +815,21 @@ namespace AzQtComponents
         m_inputTimer.setInterval(static_cast<int>(milliseconds.count()));
     }
 
+    int FilteredSearchWidget::GetTypeFilterCount()
+    {
+        return m_typeFilters.size();
+    }
+
+    void FilteredSearchWidget::GetTypeFilterDetails(const int index, QString& categoryKeyOut, QString& displayNameOut, bool& enabledOut)
+    {
+        Q_ASSERT(index <= m_typeFilters.size());
+
+        const auto& filter = m_typeFilters[index];
+        categoryKeyOut = filter.category;
+        displayNameOut = filter.displayName;
+        enabledOut = filter.enabled;
+    }
+
     void FilteredSearchWidget::SetFilterState(const QString& category, const QString& displayName, bool enabled)
     {
         int index = FindFilterIndex(category, displayName);

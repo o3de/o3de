@@ -260,6 +260,8 @@ namespace AzQtComponents
         void SetFilteredParentVisible(bool visible);
         void setEnabledFiltersVisible(bool visible);
 
+        int GetTypeFilterCount();
+        void GetTypeFilterDetails(const int index, QString& categoryKeyOut, QString& displayNameOut, bool& enabledOut);
         void SetFilterState(const QString& category, const QString& displayName, bool enabled);
         void SetFilterInputInterval(AZStd::chrono::milliseconds milliseconds);
 
