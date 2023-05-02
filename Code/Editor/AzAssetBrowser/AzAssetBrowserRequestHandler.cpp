@@ -540,7 +540,10 @@ void AzAssetBrowserRequestHandler::AddContextMenuActions(QWidget* caller, QMenu*
                     });
             }
 
-            menu->addAction(QObject::tr("Open in another Asset Browser"), [fullFilePath](){
+            menu->addAction(
+                QObject::tr("Open in another Asset Browser"),
+                [fullFilePath, thumbnailView, expandedTableView]()
+                {
 
                 AzAssetBrowserWindow* newAssetBrowser = AzAssetBrowserMultiWindow::OpenNewAssetBrowserWindow();
                 
