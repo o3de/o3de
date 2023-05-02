@@ -9,9 +9,12 @@
 #include "CompressionModuleInterface.h"
 #include <AzCore/Memory/Memory.h>
 
-#include <Compression/CompressionTypeIds.h>
-
 #include <Clients/CompressionSystemComponent.h>
+#include <Clients/DecompressionRegistrarImpl.h>
+
+#include <Compression/CompressionTypeIds.h>
+#include <Compression/DecompressionInterfaceAPI.h>
+
 
 namespace Compression
 {
@@ -24,7 +27,22 @@ namespace Compression
     {
         m_descriptors.insert(m_descriptors.end(), {
             CompressionSystemComponent::CreateDescriptor(),
-            });
+        });
+
+        // Create and register the Decompression Registrar
+        m_decompressionRegistrarInterface = AZStd::make_unique<DecompressionRegistrarImpl>();
+        if (DecompressionRegistrar::Get() == nullptr)
+        {
+            DecompressionRegistrar::Register(m_decompressionRegistrarInterface.get());
+        }
+    }
+
+    CompressionModuleInterface::~CompressionModuleInterface()
+    {
+        if (DecompressionRegistrar::Get() == m_decompressionRegistrarInterface.get())
+        {
+            DecompressionRegistrar::Unregister(m_decompressionRegistrarInterface.get());
+        }
     }
 
     AZ::ComponentTypeList CompressionModuleInterface::GetRequiredSystemComponents() const
