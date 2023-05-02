@@ -2,12 +2,12 @@
     "gem_name": "Archive",
     "version": "1.0.0",
     "display_name": "Archive",
-    "license": "License used i.e. Apache-2.0 or MIT",
-    "license_url": "Link to the license web site i.e. https://opensource.org/licenses/Apache-2.0",
-    "origin": "The name of the originator or creator",
-    "origin_url": "The website for this Gem",
+    "license": "Apache-2.0 Or MIT",
+    "license_url": "https://github.com/o3de/o3de/blob/development/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/o3de",
     "type": "Code",
-    "summary": "A short description of this Gem",
+    "summary": "The Archive Gem provides reading and writing support of file contents to the O3AR archive format with optional per file compression support.",
     "canonical_tags": [
         "Gem"
     ],
@@ -15,7 +15,6 @@
         "Archive"
     ],
     "platforms": [
-        ""
     ],
     "icon_path": "preview.png",
     "requirements": "Notice of any requirements for this Gem i.e. This requires X other gem",
