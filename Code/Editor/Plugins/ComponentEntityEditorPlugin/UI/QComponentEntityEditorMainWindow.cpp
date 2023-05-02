@@ -64,8 +64,8 @@ void QComponentEntityEditorInspectorWindow::Init()
     QVBoxLayout* layout = new QVBoxLayout();
 
     m_inspectorWidgetStack = new QStackedWidget();
-    m_propertyEditor = new AzToolsFramework::EntityPropertyEditor();
-    m_assetBrowserInspector = new AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget();
+    m_propertyEditor = new AzToolsFramework::EntityPropertyEditor(this);
+    m_assetBrowserInspector = new AzToolsFramework::AssetBrowser::AssetBrowserEntityInspectorWidget(this);
     m_inspectorWidgetStack->addWidget(m_propertyEditor);
     m_inspectorWidgetStack->addWidget(m_assetBrowserInspector);
     layout->addWidget(m_inspectorWidgetStack);
