@@ -244,7 +244,9 @@ namespace AzToolsFramework
                     auto parentValue = PropertyEditor::ParentValue.ExtractFromDomNode(node);
                     if (parentValue.has_value())
                     {
-                        auto parentValuePtr = AZ::Dom::Utils::ValueToType<void*>(parentValue.value()).value_or(nullptr);
+                        auto parentValuePtr = AZ::Dom::Utils::ValueToTypeUnsafe<void*>(parentValue.value());
+                        AZ_Assert(parentValuePtr, "Parent instance was nullptr when attempting to add to instance list.");
+
                         m_proxyParentNode.m_instances.push_back(parentValuePtr);
 
                         // Set up the reference to parent node only if a parent value is available.
