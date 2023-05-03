@@ -863,18 +863,30 @@ namespace AZ::DocumentPropertyEditor
 
         PropertyRefreshLevel level = PropertyRefreshLevel::None;
 
-        auto notifyFunctions = { PropertyEditor::ParentChangeNotify, PropertyEditor::ChangeNotify };
-
-        // Trigger notify functions in order, if they exist
-        for (auto function : notifyFunctions)
+        const auto ancestorChangeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::AncestorChangeNotify.GetName();
+        auto ancestorNotifyIter = domNode.FindMember(ancestorChangeNotifyName);
+        if (ancestorNotifyIter != domNode.MemberEnd())
         {
-            auto functionResult = function.InvokeOnDomNode(domNode);
-            if (functionResult.IsSuccess())
+            auto& ancestorNotifyValue = ancestorNotifyIter->second;
+            AZ_Assert(ancestorNotifyValue.IsArray(), "AncestorChangeNotify must be an array!");
+            for (size_t functionIndex = 0, numFunctions = ancestorNotifyValue.ArraySize(); functionIndex < numFunctions; ++functionIndex)
             {
-                // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-                level = functionResult.GetValue();
+                auto functionResult = PropertyEditor::AncestorChangeNotify.InvokeOnDomValue(ancestorNotifyValue[functionIndex]);
+                if (functionResult.IsSuccess())
+                {
+                    // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
+                    level = functionResult.GetValue();
+                }
             }
         }
+
+        auto functionResult = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
+        if (functionResult.IsSuccess())
+        {
+            // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
+            level = functionResult.GetValue();
+        }
+
         if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
         {
             PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
