@@ -779,6 +779,7 @@ void SandboxIntegrationManager::OpenPinnedInspector(const AzToolsFramework::Enti
         if (editor && editor->GetPropertyEditor())
         {
             editor->GetPropertyEditor()->SetOverrideEntityIds(entities);
+            editor->SetPinnedInspector();
 
             AZStd::string widgetTitle;
             if (entities.size() == 1)
