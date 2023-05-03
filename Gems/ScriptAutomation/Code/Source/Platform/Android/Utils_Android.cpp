@@ -5,3 +5,12 @@
  * SPDX-License-Identifier: Apache-2.0 OR MIT
  *
  */
+#include <AzCore/std/string/string.h>
+
+namespace AZ::Platform
+{
+    bool LaunchProgram(const AZStd::string& progPath, const AZStd::string& arguments)
+    {
+        return false;
+    }
+}
