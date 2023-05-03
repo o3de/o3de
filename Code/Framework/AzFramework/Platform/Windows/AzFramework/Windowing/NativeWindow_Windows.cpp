@@ -211,8 +211,7 @@ namespace AzFramework
         MONITORINFO monitorInfo;
         memset(&monitorInfo, 0, sizeof(MONITORINFO)); // C4701 potentially uninitialized local variable 'monitorInfo' used
         monitorInfo.cbSize = sizeof(MONITORINFO);
-        const BOOL success = monitor ? GetMonitorInfo(monitor, &monitorInfo) : FALSE;
-        if (!success)
+        if (!GetMonitorInfo(monitor, &monitorInfo))
         {
             AZ_Warning("NativeWindowImpl_Win32::GetMonitorRect", false, "Could not get monitor info.");
             return { 0, 0, 0, 0 };
