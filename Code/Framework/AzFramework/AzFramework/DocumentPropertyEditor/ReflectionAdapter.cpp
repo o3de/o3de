@@ -861,35 +861,16 @@ namespace AZ::DocumentPropertyEditor
         using Nodes::PropertyEditor;
         using Nodes::PropertyRefreshLevel;
 
-        PropertyRefreshLevel level = PropertyRefreshLevel::None;
-
-        const auto ancestorChangeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::AncestorChangeNotify.GetName();
-        auto ancestorNotifyIter = domNode.FindMember(ancestorChangeNotifyName);
-        if (ancestorNotifyIter != domNode.MemberEnd())
-        {
-            auto& ancestorNotifyValue = ancestorNotifyIter->second;
-            AZ_Assert(ancestorNotifyValue.IsArray(), "AncestorChangeNotify must be an array!");
-            for (size_t functionIndex = 0, numFunctions = ancestorNotifyValue.ArraySize(); functionIndex < numFunctions; ++functionIndex)
-            {
-                auto functionResult = PropertyEditor::AncestorChangeNotify.InvokeOnDomValue(ancestorNotifyValue[functionIndex]);
-                if (functionResult.IsSuccess())
-                {
-                    // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-                    level = functionResult.GetValue();
-                }
-            }
-        }
-
-        auto functionResult = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
-        if (functionResult.IsSuccess())
+        // Trigger ChangeNotify
+        auto changeNotify = PropertyEditor::ChangeNotify.InvokeOnDomNode(domNode);
+        if (changeNotify.IsSuccess())
         {
             // If we were told to issue a property refresh, notify our adapter via RequestTreeUpdate
-            level = functionResult.GetValue();
-        }
-
-        if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
-        {
-            PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
+            PropertyRefreshLevel level = changeNotify.GetValue();
+            if (level != PropertyRefreshLevel::Undefined && level != PropertyRefreshLevel::None)
+            {
+                PropertyEditor::RequestTreeUpdate.InvokeOnDomNode(domNode, level);
+            }
         }
     }
 

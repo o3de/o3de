@@ -428,35 +428,53 @@ namespace AZ::Reflection
                 // Cache attributes for the current node. Attribute data will be used in ReflectionAdapter.
                 CacheAttributes();
 
-                // Inherit the change notify attribute from our ancestors
-                const auto ancestorChangeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::AncestorChangeNotify.GetName();
+                // Inherit the change notify attribute from our parent, if it exists
                 const auto changeNotifyName = DocumentPropertyEditor::Nodes::PropertyEditor::ChangeNotify.GetName();
-
-                // check if our parent has an AncestorChangeNotify or a changeNotify value
-                auto existingAncestorChangeNotify = Find(Name(), ancestorChangeNotifyName, parentData);
-                auto changeNotifyValue = Find(Name(), changeNotifyName, parentData);
-
-                if (changeNotifyValue && !changeNotifyValue->IsNull())
+                auto parentValue = Find(Name(), changeNotifyName, parentData);
+                if (parentValue && !parentValue->IsNull())
                 {
-                    // parent has a changeNotify, we'll have to log it in AncestorChangeNotify for the current node
-                    Dom::Value ancestorChangeNotifyValue;
-                    if (!existingAncestorChangeNotify || existingAncestorChangeNotify->IsNull())
+                    Dom::Value* existingValue = nullptr;
+                    for (auto it = nodeData->m_cachedAttributes.begin(); !existingValue && it != nodeData->m_cachedAttributes.end(); ++it)
                     {
-                        // no existing ancestor changeNotify array, make a new one
-                        ancestorChangeNotifyValue.SetArray();
+                        if (it->m_name == changeNotifyName)
+                        {
+                            existingValue = &it->m_value;
+                        }
+                    }
+
+                    auto addValueToArray = [](const Dom::Value& source, Dom::Value& destination)
+                    {
+                        if (source.IsArray())
+                        {
+                            auto& destinationArray = destination.GetMutableArray();
+                            destinationArray.insert(destinationArray.end(), source.ArrayBegin(), source.ArrayEnd());
+                        }
+                        else
+                        {
+                            destination.ArrayPushBack(source);
+                        }
+                    };
+
+                    if (existingValue)
+                    {
+                        if (!existingValue->IsArray())
+                        {
+                            Dom::Value arrayValue;
+                            arrayValue.SetArray();
+                            arrayValue.ArrayPushBack(*existingValue);
+                            *existingValue = arrayValue;
+                        }
+                        // existing value is an array, add parents changeNotify to it
+                        addValueToArray(*parentValue, *existingValue);
                     }
                     else
                     {
-                        // parent has an ancestor changeNotify array, copy it before we add to it
-                        ancestorChangeNotifyValue = *existingAncestorChangeNotify;
+                        // no existing changeNotify, so let's just inherit the parent's one
+                        Dom::Value arrayValue;
+                        arrayValue.SetArray();
+                        addValueToArray(*parentValue, arrayValue);
+                        nodeData->m_cachedAttributes.push_back({ Name(), changeNotifyName, arrayValue });
                     }
-                    ancestorChangeNotifyValue.ArrayPushBack(*changeNotifyValue);
-                    nodeData->m_cachedAttributes.push_back({ Name(), ancestorChangeNotifyName, ancestorChangeNotifyValue });
-                }
-                else if (existingAncestorChangeNotify && !existingAncestorChangeNotify->IsNull())
-                {
-                    // the parent didn't have a changeNotify, but it had its own ancestorChangeNotify that we should pass through
-                    nodeData->m_cachedAttributes.push_back({ Name(), ancestorChangeNotifyName, *existingAncestorChangeNotify });
                 }
 
                 const auto& EnumTypeAttribute = DocumentPropertyEditor::Nodes::PropertyEditor::EnumUnderlyingType;

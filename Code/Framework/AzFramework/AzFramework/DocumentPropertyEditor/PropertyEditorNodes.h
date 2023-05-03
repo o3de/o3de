@@ -156,7 +156,6 @@ namespace AZ::DocumentPropertyEditor::Nodes
         static constexpr auto GenericValueList = GenericValueListAttributeDefinition<GenericValueType>("GenericValueList");
 
         static constexpr auto ChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("ChangeNotify");
-        static constexpr auto AncestorChangeNotify = CallbackAttributeDefinition<PropertyRefreshLevel()>("AncestorChangeNotify");
         static constexpr auto RequestTreeUpdate = CallbackAttributeDefinition<void(PropertyRefreshLevel)>("RequestTreeUpdate");
     };
 
